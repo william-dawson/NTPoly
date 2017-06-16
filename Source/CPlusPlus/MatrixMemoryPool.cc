@@ -1,0 +1,17 @@
+#include "MatrixMemoryPool.h"
+using namespace NTPoly;
+
+////////////////////////////////////////////////////////////////////////////////
+extern "C" {
+#include "MatrixMemoryPool_c.h"
+}
+
+////////////////////////////////////////////////////////////////////////////////
+namespace NTPoly {
+////////////////////////////////////////////////////////////////////////////////
+MatrixMemoryPool::MatrixMemoryPool(int columns, int rows) {
+  ConstructMatrixMemoryPool_wrp(ih_this, &columns, &rows);
+}
+
+MatrixMemoryPool::~MatrixMemoryPool() { DestructMatrixMemoryPool_wrp(ih_this); }
+} // namespace NTPoly

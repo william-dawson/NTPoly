@@ -1,0 +1,26 @@
+set(Csrc
+    ChebyshevSolvers_c.h
+    DensityMatrixSolvers_c.h
+    DistributedBlockedSparseMatrix_c.h
+    DistributedMatrixMemoryPool_c.h
+    ExponentialSolvers_c.h
+    FixedSolversParameters_c.h
+    InverseSolvers_c.h
+    IterativeSolversParameters_c.h
+    LinearSolvers_c.h
+    LoadBalancer_c.h
+    MatrixMemoryPool_c.h
+    MinimizerSolvers_c.h
+    Permutation_c.h
+    Polynomial_c.h
+    ProcessGrid_c.h
+    RootSolvers_c.h
+    SignSolvers_c.h
+    SolverBase_c.h
+    SparseMatrix_c.h
+    SquareRootSolvers_c.h
+    TrigonometrySolvers_c.h
+    TripletList_c.h
+    Triplet_c.h
+    Wrapper.h
+)
