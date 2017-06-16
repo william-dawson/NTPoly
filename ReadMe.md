@@ -89,20 +89,7 @@ The following features and methods have been implemented in NTPoly:
 
 Citation
 --------------------------------------------------------------------------------
-[NTChem: A high‐performance software package for quantum molecular simulation](http://onlinelibrary.wiley.com/doi/10.1002/qua.24860/full)
-
-Here is the bibtex reference:
-
-    @article{nakajima2015ntchem,
-      title={NTChem: A high-performance software package for quantum molecular simulation},
-      author={Nakajima, Takahito and Katouda, Michio and Kamiya, Muneaki and Nakatsuka, Yutaka},
-      journal={International Journal of Quantum Chemistry},
-      volume={115},
-      number={5},
-      pages={349--359},
-      year={2015},
-      publisher={Wiley Online Library}
-    }
+A publication is still forthcoming. 
 
 How To Contribute
 --------------------------------------------------------------------------------
