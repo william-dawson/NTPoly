@@ -538,7 +538,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & triplet_list%data(counter)%point_value, &
             & new_line('A')
        temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
-       WRITE(write_buffer(offset_counter:),*) temp_string2(1:temp_length)
+       WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) temp_string2(1:temp_length)
        offset_counter = offset_counter + temp_length
     END DO
 

@@ -156,7 +156,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL GetLoadBalance(OutputMat,min_size,max_size)
        sparsity = GetSize(OutputMat) / &
-            & REAL((OutputMat%actual_matrix_dimension**2),KIND=NTREAL)
+            & (REAL(OutputMat%actual_matrix_dimension,KIND=NTREAL)**2)
        IF (IsRoot()) THEN
           CALL WriteHeader("Load_Balance")
           CALL EnterSubLog
