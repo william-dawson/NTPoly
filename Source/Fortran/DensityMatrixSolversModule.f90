@@ -69,7 +69,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="TRS2")
@@ -114,7 +114,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     last_trace_value = 0.0d+0
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
@@ -122,8 +122,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0d+0
     DO outer_counter = 1,solver_parameters%max_iterations
        !do outer_counter = 1,1
-       IF (solver_parameters%be_verbose .AND. IsRoot() .AND. &
-            & outer_counter .GT. 1) THEN
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
@@ -165,16 +164,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLoadBalance(X_k,min_size,max_size)
        sparsity = &
             & REAL(GetSize(X_k),NTREAL)/X_k%actual_matrix_dimension**2
-       IF (IsRoot()) THEN
-          CALL ExitSubLog
-          CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-          CALL WriteHeader("Load_Balance")
-          CALL EnterSubLog
-          CALL WriteListElement(key="min_size", int_value_in=min_size)
-          CALL WriteListElement(key="max_size", int_value_in=max_size)
-          CALL ExitSubLog
-          CALL WriteElement(key="Sparsity", float_value_in=sparsity)
-       END IF
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
 
     !! Undo Load Balancing Step
@@ -228,7 +225,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        chemical_potential_out = e_max + (e_min - e_max)*midpoint
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
@@ -284,7 +281,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL EnterSubLog
        CALL WriteHeader("Density Matrix Solver")
        CALL WriteElement(key="Method", text_value_in="TRS4")
@@ -331,15 +328,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     last_trace_value = 0.0d+0
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
     DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. IsRoot() .AND. &
-            & outer_counter .GT. 1) THEN
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
@@ -399,16 +395,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLoadBalance(X_k,min_size,max_size)
        sparsity = &
             & REAL(GetSize(X_k),NTREAL)/X_k%actual_matrix_dimension**2
-       IF (IsRoot()) THEN
-          CALL ExitSubLog
-          CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-          CALL WriteHeader("Load_Balance")
-          CALL EnterSubLog
-          CALL WriteListElement(key="min_size", int_value_in=min_size)
-          CALL WriteListElement(key="max_size", int_value_in=max_size)
-          CALL ExitSubLog
-          CALL WriteElement(key="Sparsity", float_value_in=sparsity)
-       END IF
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
 
     !! Undo Load Balancing Step
@@ -470,7 +464,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
@@ -528,7 +522,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="HPCP")
@@ -587,7 +581,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     trace_value = 0.0d+0
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
@@ -595,8 +589,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0d+0
     norm_value2 = norm_value
     DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. IsRoot() .AND. &
-            & outer_counter .GT. 1) THEN
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
@@ -642,16 +635,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL GetLoadBalance(D1,min_size,max_size)
        sparsity = REAL(GetSize(D1),NTREAL)/D1%actual_matrix_dimension**2
-       IF (IsRoot()) THEN
-          CALL ExitSubLog
-          CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-          CALL WriteHeader("Load_Balance")
-          CALL EnterSubLog
-          CALL WriteListElement(key="min_size", int_value_in=min_size)
-          CALL WriteListElement(key="max_size", int_value_in=max_size)
-          CALL ExitSubLog
-          CALL WriteElement(key="Sparsity", float_value_in=sparsity)
-       END IF
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
 
     !! Undo Load Balancing Step
@@ -704,7 +695,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        chemical_potential_out = mu + (beta_1 - midpoint)/beta_2
     END IF
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     DEALLOCATE(sigma_array)
@@ -764,7 +755,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="HPCP+")
@@ -857,7 +848,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     trace_value = 0.0d+0
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
@@ -865,8 +856,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0d+0
     norm_value2 = norm_value
     DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. IsRoot() .AND. &
-            & outer_counter .GT. 1) THEN
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
@@ -912,16 +902,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL GetLoadBalance(D1,min_size,max_size)
        sparsity = REAL(GetSize(D1),NTREAL)/D1%actual_matrix_dimension**2
-       IF (IsRoot()) THEN
-          CALL ExitSubLog
-          CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-          CALL WriteHeader("Load_Balance")
-          CALL EnterSubLog
-          CALL WriteListElement(key="min_size", int_value_in=min_size)
-          CALL WriteListElement(key="max_size", int_value_in=max_size)
-          CALL ExitSubLog
-          CALL WriteElement(key="Sparsity", float_value_in=sparsity)
-       END IF
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
 
     !! Undo Load Balancing Step
@@ -974,7 +962,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        chemical_potential_out = mu + (beta_1 - midpoint)/beta_2
     END IF
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     DEALLOCATE(sigma_array)

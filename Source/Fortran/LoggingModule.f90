@@ -5,7 +5,10 @@ MODULE LoggingModule
   IMPLICIT NONE
   PRIVATE
   INTEGER :: CurrentLevel=0
+  LOGICAL :: IsActive = .FALSE.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ActivateLogger
+  PUBLIC :: DeactivateLogger
   PUBLIC :: EnterSubLog
   PUBLIC :: WriteHeader
   PUBLIC :: WriteListElement
@@ -13,6 +16,16 @@ MODULE LoggingModule
   PUBLIC :: WriteCitation
   PUBLIC :: ExitSubLog
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Activate the logger.
+  SUBROUTINE ActivateLogger
+    IsActive = .TRUE.
+  END SUBROUTINE ActivateLogger
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Deactivate the logger.
+  SUBROUTINE DeactivateLogger
+    IsActive = .TRUE.
+  END SUBROUTINE DeactivateLogger
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Call this function when you enter into a section with verbose output
   SUBROUTINE EnterSubLog
     CurrentLevel = CurrentLevel + 1
@@ -29,9 +42,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     CHARACTER(LEN=*), INTENT(IN) :: header_value
 
-    CALL WriteIndent
-    WRITE(*,'(A)',ADVANCE='no') header_value
-    WRITE(*,'(A1)') ":"
+    IF (IsActive) THEN
+      CALL WriteIndent
+      WRITE(*,'(A)',ADVANCE='no') header_value
+      WRITE(*,'(A1)') ":"
+    END IF
   END SUBROUTINE WriteHeader
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a element.
@@ -49,31 +64,33 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTReal), INTENT(IN), OPTIONAL :: float_value_in
     LOGICAL, INTENT(IN), OPTIONAL :: bool_value_in
 
-    CALL WriteIndent
+    IF (IsActive) THEN
+      CALL WriteIndent
 
-    WRITE(*,'(A)',ADVANCE='no') key
+      WRITE(*,'(A)',ADVANCE='no') key
 
-    IF (PRESENT(text_value_in)) THEN
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(A)',ADVANCE='no') text_value_in
-    END IF
-    IF (PRESENT(int_value_in)) THEN
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(I10)',ADVANCE='no') int_value_in
-    END IF
-    IF (PRESENT(float_value_in)) THEN
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(ES10.3)',ADVANCE='no') float_value_in
-    END IF
-    IF (PRESENT(bool_value_in)) THEN
-       IF (bool_value_in) THEN
-         WRITE(*,'(A)',ADVANCE='no') ": True"
-       ELSE
-         WRITE(*,'(A)',ADVANCE='no') ": False"
-       END IF
-    END IF
+      IF (PRESENT(text_value_in)) THEN
+         WRITE(*,'(A)',ADVANCE='no') ": "
+         WRITE(*,'(A)',ADVANCE='no') text_value_in
+      END IF
+      IF (PRESENT(int_value_in)) THEN
+         WRITE(*,'(A)',ADVANCE='no') ": "
+         WRITE(*,'(I10)',ADVANCE='no') int_value_in
+      END IF
+      IF (PRESENT(float_value_in)) THEN
+         WRITE(*,'(A)',ADVANCE='no') ": "
+         WRITE(*,'(ES10.3)',ADVANCE='no') float_value_in
+      END IF
+      IF (PRESENT(bool_value_in)) THEN
+         IF (bool_value_in) THEN
+           WRITE(*,'(A)',ADVANCE='no') ": True"
+         ELSE
+           WRITE(*,'(A)',ADVANCE='no') ": False"
+         END IF
+      END IF
 
-    WRITE(*,*)
+      WRITE(*,*)
+    END IF
   END SUBROUTINE WriteElement
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a list element.
@@ -90,32 +107,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTReal), INTENT(IN), OPTIONAL :: float_value_in
     LOGICAL, INTENT(IN), OPTIONAL :: bool_value_in
 
-    CALL WriteIndent
+    IF (IsActive) THEN
+      CALL WriteIndent
 
-    WRITE(*,'(A)',ADVANCE='no') "- "
-    WRITE(*,'(A)',ADVANCE='no') key
+      WRITE(*,'(A)',ADVANCE='no') "- "
+      WRITE(*,'(A)',ADVANCE='no') key
 
-    IF (PRESENT(text_value_in)) THEN
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(A)',ADVANCE='no') text_value_in
-    END IF
-    IF (PRESENT(int_value_in)) THEN
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(I10)',ADVANCE='no') int_value_in
-    END IF
-    IF (PRESENT(float_value_in)) THEN
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(ES11.4)',ADVANCE='no') float_value_in
-    END IF
-    IF (PRESENT(bool_value_in)) THEN
-       IF (bool_value_in) THEN
-         WRITE(*,'(A)',ADVANCE='no') ": True"
-       ELSE
-         WRITE(*,'(A)',ADVANCE='no') ": False"
-       END IF
-    END IF
+      IF (PRESENT(text_value_in)) THEN
+         WRITE(*,'(A)',ADVANCE='no') ": "
+         WRITE(*,'(A)',ADVANCE='no') text_value_in
+      END IF
+      IF (PRESENT(int_value_in)) THEN
+         WRITE(*,'(A)',ADVANCE='no') ": "
+         WRITE(*,'(I10)',ADVANCE='no') int_value_in
+      END IF
+      IF (PRESENT(float_value_in)) THEN
+         WRITE(*,'(A)',ADVANCE='no') ": "
+         WRITE(*,'(ES11.4)',ADVANCE='no') float_value_in
+      END IF
+      IF (PRESENT(bool_value_in)) THEN
+         IF (bool_value_in) THEN
+           WRITE(*,'(A)',ADVANCE='no') ": True"
+         ELSE
+           WRITE(*,'(A)',ADVANCE='no') ": False"
+         END IF
+      END IF
 
-    WRITE(*,*)
+      WRITE(*,*)
+    END IF
   END SUBROUTINE WriteListElement
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a citation element.
@@ -125,22 +144,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CHARACTER(LEN=*), INTENT(IN) :: citation_list
     INTEGER :: pos1, pos2
 
-    CALL WriteIndent
-    WRITE(*,'(A)') "Citations:"
-    CALL EnterSubLog
-
-    pos1 = 1
-    pos2 = INDEX(citation_list(pos1:), ' ')
-    DO WHILE(pos2 .NE. 0)
+    IF (IsActive) THEN
       CALL WriteIndent
-      WRITE(*,'(A)') citation_list(pos1:pos1+pos2-1)
-      pos1 = pos1 + pos2
-      pos2 = INDEX(citation_list(pos1:), ' ')
-    END DO
-    CALL WriteIndent
-    WRITE(*,'(A)') citation_list(pos1:)
+      WRITE(*,'(A)') "Citations:"
+      CALL EnterSubLog
 
-    CALL ExitSubLog
+      pos1 = 1
+      pos2 = INDEX(citation_list(pos1:), ' ')
+      DO WHILE(pos2 .NE. 0)
+        CALL WriteIndent
+        WRITE(*,'(A)') citation_list(pos1:pos1+pos2-1)
+        pos1 = pos1 + pos2
+        pos2 = INDEX(citation_list(pos1:), ' ')
+      END DO
+      CALL WriteIndent
+      WRITE(*,'(A)') citation_list(pos1:)
+
+      CALL ExitSubLog
+    END IF
   END SUBROUTINE WriteCitation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Writes out the indentation needed for this level

@@ -96,7 +96,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     degree = SIZE(poly%coefficients)
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Horner")
@@ -142,7 +142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(Temporary)
@@ -190,7 +190,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     s_value = INT(SQRT(REAL(m_value)))
     r_value = m_value/s_value
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Paterson Stockmeyer")
@@ -248,7 +248,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     DO counter=1,s_value+1

@@ -97,7 +97,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Taylor")
@@ -168,7 +168,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(ScaledMat)
@@ -215,7 +215,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Chebyshev")
@@ -330,7 +330,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(ScaledMat)

@@ -34,7 +34,7 @@ MODULE DistributedBlockedSparseMatrixModule
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
-       & SymmetrizeTripletList
+       & SymmetrizeTripletList, GetTripletAt
   USE iso_c_binding
   USE mpi
   IMPLICIT NONE
@@ -88,6 +88,7 @@ MODULE DistributedBlockedSparseMatrixModule
   PUBLIC :: ComputeSigma
   !! Utilities
   PUBLIC :: PrintDistributedSparseMatrix
+  PUBLIC :: FilterSparseMatrix
   PUBLIC :: GetSize
   PUBLIC :: GetLoadBalance
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1546,6 +1547,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSparseMatrix(merged_columns)
     CALL DestructSparseMatrix(merged_columnsT)
   END SUBROUTINE PrintDistributedSparseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A utility routine that filters a sparse matrix.
+  !! All (absolute) values below the threshold are set to zero.
+  !! @param[inout] this matrix to filter
+  !! @param[in] threshold (absolute) values below this are filtered
+  SUBROUTINE FilterSparseMatrix(this, threshold)
+    !! Parameters
+    TYPE(DistributedSparseMatrix), INTENT(INOUT) :: this
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !! Local Variables
+    TYPE(TripletList_t) :: triplet_list
+    TYPE(TripletList_t) :: new_list
+    TYPE(Triplet_t) :: temporary
+    INTEGER :: counter
+    INTEGER :: size_temp
+
+    CALL GetTripletList(this,triplet_list)
+    CALL ConstructTripletList(new_list)
+    DO counter=1,triplet_list%CurrentSize
+      CALL GetTripletAt(triplet_list,counter,temporary)
+      IF (ABS(temporary%point_value) .GT. threshold) THEN
+        CALL AppendToTripletList(new_list,temporary)
+      END IF
+    END DO
+    size_temp = this%actual_matrix_dimension
+    CALL DestructDistributedSparseMatrix(this)
+    CALL ConstructEmpty(this,size_temp)
+    CALL FillFromTripletList(this,new_list)
+  END SUBROUTINE FilterSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the total number of non zero entries in the distributed sparse matrix.
   !! @param[in] this the distributed sparse matrix to calculate the non-zero

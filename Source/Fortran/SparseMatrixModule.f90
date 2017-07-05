@@ -1226,7 +1226,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & (column_counter_c-1)*memorypool%hash_size, row_counter_c)
              working_value = memorypool%value_array(working_column,row_counter_c)
              memorypool%value_array(working_column,row_counter_c) = 0
-             IF (ABS(working_value) .GT. threshold) THEN
+             IF (ABS(alpha*working_value) .GT. threshold) THEN
                 memorypool%pruned_list(pruned_counter)%point_value = &
                      & alpha*working_value
                 memorypool%pruned_list(pruned_counter)%index_column = &

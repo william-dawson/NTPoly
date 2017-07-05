@@ -94,8 +94,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteHeader("Fixed Solver Parameters")
     CALL EnterSubLog
     CALL WriteListElement(key="be_verbose",bool_value_in=this%be_verbose)
+    CALL WriteListElement(key="threshold",float_value_in=this%threshold)
     CALL WriteListElement(key="do_load_balancing", &
-      & bool_value_in=this%do_load_balancing)
+         & bool_value_in=this%do_load_balancing)
     CALL ExitSubLog
   END SUBROUTINE PrintFixedSolverParameters
 END MODULE FixedSolversModule

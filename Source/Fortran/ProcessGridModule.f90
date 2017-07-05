@@ -169,7 +169,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPITypeInfoInit()
 
     !! Report
-    IF (be_verbose .AND. IsRoot()) THEN
+    IF (IsRoot()) THEN
+      CALL ActivateLogger
+    END IF
+    IF (be_verbose) THEN
        CALL WriteHeader("Process Grid")
        CALL EnterSubLog
        CALL WriteListElement(key = "Process Rows", &

@@ -50,6 +50,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: sigma_val
     INTEGER :: sigma_counter
     INTEGER :: counter
+    INTEGER :: min_size, max_size
+    REAL(NTREAL) :: sparsity
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -59,7 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Chebyshev")
@@ -80,7 +82,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteElement(key="Sigma", float_value_in=sigma_val)
     END IF
 
@@ -120,7 +122,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & REAL(-4.462345204611966e-16,NTREAL))
 
     !CALL ChebyshevCompute(ScaledMat,OutputMat,polynomial,solver_parameters)
-    CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial,solver_parameters)
+    CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
+         & solver_parameters)
 
     !! Undo the scaling by squaring at the end.
     !! Load Balancing Step
@@ -135,13 +138,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyDistributedSparseMatrix(TempMat,OutputMat)
     END DO
 
+    IF (solver_parameters%be_verbose) THEN
+       CALL GetLoadBalance(OutputMat,min_size,max_size)
+       sparsity = REAL(GetSize(OutputMat),KIND=NTREAL)/ &
+            & (OutputMat%actual_matrix_dimension**2)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+    END IF
+
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructChebyshevPolynomial(polynomial)
@@ -181,7 +196,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Taylor")
@@ -237,7 +252,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(ScaledMat)
@@ -280,7 +295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
     f_sub_solver_parameters = solver_parameters
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Chebyshev")
@@ -353,7 +368,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & REAL(2**(sigma_counter-1),NTREAL))
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructChebyshevPolynomial(polynomial)
@@ -397,7 +412,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL ConvertFixedToIterative(solver_parameters, sub_solver_parameters)
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Taylor")
@@ -463,7 +478,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(ScaledMat)

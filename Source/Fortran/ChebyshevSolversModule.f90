@@ -102,7 +102,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     degree = SIZE(poly%coefficients)
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Standard")
@@ -138,6 +138,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL DistributedGemm(BalancedInput, Tkminus1, Tk, &
                & alpha_in=REAL(2.0,NTREAL), &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+          CALL PrintDistributedSparseMatrix(Tk)
           CALL IncrementDistributedSparseMatrix(Tkminus2,Tk,REAL(-1.0,NTREAL))
           CALL IncrementDistributedSparseMatrix(Tk, OutputMat, &
                & alpha_in=poly%coefficients(3))
@@ -157,14 +158,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLoadBalance(OutputMat,min_size,max_size)
        sparsity = GetSize(OutputMat) / &
             & (REAL(OutputMat%actual_matrix_dimension,KIND=NTREAL)**2)
-       IF (IsRoot()) THEN
-          CALL WriteHeader("Load_Balance")
-          CALL EnterSubLog
-          CALL WriteListElement(key="min_size", int_value_in=min_size)
-          CALL WriteListElement(key="max_size", int_value_in=max_size)
-          CALL ExitSubLog
-          CALL WriteElement(key="Sparsity", float_value_in=sparsity)
-       END IF
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
 
     !! Undo Load Balancing Step
@@ -174,7 +173,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(Identity)
@@ -220,7 +219,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     degree = SIZE(poly%coefficients)
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Recursive")
@@ -275,7 +274,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     DO counter=1,log2degree
@@ -347,7 +346,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL IncrementDistributedSparseMatrix(LeftMat,OutputMat)
        CALL IncrementDistributedSparseMatrix(T_Powers(full_midpoint), &
-            & OutputMat, alpha_in=-1.0*right_poly%coefficients(1))
+            & OutputMat, alpha_in=-1.0*right_poly%coefficients(1), &
+            & threshold_in=solver_parameters%threshold)
 
        !! Cleanup
        DEALLOCATE(left_poly%coefficients)
