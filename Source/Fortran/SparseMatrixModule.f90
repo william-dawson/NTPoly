@@ -1101,6 +1101,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: temp_index_a, temp_index_b
     INTEGER :: elements_per_inner_a
     INTEGER :: elements_per_inner_b
+    LOGICAL :: is_set
     !! Counters
     INTEGER :: outer_counter, inner_counter_a, inner_counter_b
 
@@ -1121,20 +1122,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              temp_value_b = matBT%values(matBT%outer_index(temp_index_a)+ &
                   & inner_counter_b)
              temp_value_c = memorypool%value_array(temp_index_b,outer_counter)
-             IF (temp_value_c .EQ. 0) THEN
-                ! temp_inserted_values = memorypool%inserted_per_bucket_ptr(&
-                !   & temp_index_b/memorypool%hash_size+1,outer_counter) + 1
+             is_set = memorypool%dirty_array(temp_index_b,outer_counter)
+             !IF (temp_value_c .EQ. 0) THEN
+             IF (is_set .EQV. .FALSE.) THEN
+                memorypool%dirty_array(temp_index_b,outer_counter) = .TRUE.
                 temp_inserted_values = memorypool%inserted_per_bucket(&
                      & (temp_index_b-1)/memorypool%hash_size+1,outer_counter) + 1
-                ! memorypool%inserted_per_bucket_ptr(&
-                !   & temp_index_b/memorypool%hash_size+1,outer_counter) = &
-                !   & temp_inserted_values
                 memorypool%inserted_per_bucket(&
                      & (temp_index_b-1)/memorypool%hash_size+1,outer_counter) = &
                      & temp_inserted_values
-                ! memorypool%hash_index_ptr(temp_inserted_values, &
-                !   & temp_index_b/memorypool%hash_size+1,outer_counter) = &
-                !   & temp_index_b
                 memorypool%hash_index(temp_inserted_values+ &
                      & ((temp_index_b-1)/memorypool%hash_size)*memorypool%hash_size, &
                      & outer_counter) = temp_index_b
@@ -1226,6 +1222,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & (column_counter_c-1)*memorypool%hash_size, row_counter_c)
              working_value = memorypool%value_array(working_column,row_counter_c)
              memorypool%value_array(working_column,row_counter_c) = 0
+             memorypool%dirty_array(working_column,row_counter_c) = .FALSE.
              IF (ABS(alpha*working_value) .GT. threshold) THEN
                 memorypool%pruned_list(pruned_counter)%point_value = &
                      & alpha*working_value

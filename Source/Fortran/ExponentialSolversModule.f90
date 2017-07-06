@@ -39,6 +39,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters) :: sub_solver_parameters
     !! Local Matrices
     TYPE(DistributedSparseMatrix) :: ScaledMat
     TYPE(DistributedSparseMatrix) :: TempMat
@@ -60,6 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        solver_parameters = FixedSolverParameters()
     END IF
+    sub_solver_parameters = solver_parameters
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
@@ -81,6 +83,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    sub_solver_parameters%threshold = sub_solver_parameters%threshold/sigma_val
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteElement(key="Sigma", float_value_in=sigma_val)

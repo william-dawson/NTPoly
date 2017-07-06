@@ -10,4 +10,4 @@ set(PYTHON_LIBRARIES /usr/local/Cellar/python/2.7.13/Frameworks/Python.framework
 #set(CXX_TOOLCHAINFLAGS "-g -Wall -openmp -lmpi_mpifh -lgfortran -lgomp")
 set(CXX_TOOLCHAINFLAGS "-openmp -lgomp")
 set(F_TOOLCHAINFLAGS "-fbounds-check -O3 -cpp -fopenmp")
-#set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -cpp -fopenmp -Wall")
+#set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -cpp -fopenmp -Wall -DPURE=")

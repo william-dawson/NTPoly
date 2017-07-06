@@ -138,7 +138,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL DistributedGemm(BalancedInput, Tkminus1, Tk, &
                & alpha_in=REAL(2.0,NTREAL), &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-          CALL PrintDistributedSparseMatrix(Tk)
           CALL IncrementDistributedSparseMatrix(Tkminus2,Tk,REAL(-1.0,NTREAL))
           CALL IncrementDistributedSparseMatrix(Tk, OutputMat, &
                & alpha_in=poly%coefficients(3))
@@ -346,8 +345,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL IncrementDistributedSparseMatrix(LeftMat,OutputMat)
        CALL IncrementDistributedSparseMatrix(T_Powers(full_midpoint), &
-            & OutputMat, alpha_in=-1.0*right_poly%coefficients(1), &
-            & threshold_in=solver_parameters%threshold)
+            & OutputMat, alpha_in=-1.0*right_poly%coefficients(1))
 
        !! Cleanup
        DEALLOCATE(left_poly%coefficients)

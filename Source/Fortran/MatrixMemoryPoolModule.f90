@@ -22,6 +22,8 @@ MODULE MatrixMemoryPoolModule
      TYPE(Triplet_t), DIMENSION(:), ALLOCATABLE, PUBLIC :: pruned_list
      !> storage for potential values added to the matrix.
      REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: value_array
+     !> true if an element has been pushed to this part of the matrix.
+     LOGICAL, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: dirty_array
      !> Storage space for indices, hashed.
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: hash_index
      !> Internal storage space for amount of items added to a bucket.
@@ -67,6 +69,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Allocate
     ALLOCATE(this%pruned_list(columns*rows), stat=alloc_stat)
     ALLOCATE(this%value_array(columns,rows), stat=alloc_stat)
+    ALLOCATE(this%dirty_array(columns,rows), stat=alloc_stat)
 
     ALLOCATE(this%hash_index(columns,rows))
     ALLOCATE(this%inserted_per_bucket(columns,rows))
@@ -74,6 +77,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%value_array = 0
     this%hash_index = 0
     this%inserted_per_bucket = 0
+    this%dirty_array = .FALSE.
   END SUBROUTINE ConstructMatrixMemoryPool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A destructor for a matrix memory pool
@@ -85,6 +89,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Perform deallocations.
     IF (ALLOCATED(this%pruned_list)) DEALLOCATE(this%pruned_list)
     IF (ALLOCATED(this%value_array)) DEALLOCATE(this%value_array)
+    IF (ALLOCATED(this%dirty_array)) DEALLOCATE(this%dirty_array)
     IF (ALLOCATED(this%hash_index)) DEALLOCATE(this%hash_index)
     IF (ALLOCATED(this%inserted_per_bucket)) &
          & DEALLOCATE(this%inserted_per_bucket)
