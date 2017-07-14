@@ -1,7 +1,7 @@
 # Pre-made Matrix Example
 
 In this example, we will show you how to use NTPoly to compute the
-density matrix for for a hamiltonian and overlap matrix stored in a file. This
+density matrix for a hamiltonian and overlap matrix stored in a file. This
 example assumes you've already computed a hamiltonian and overlap matrix file,
 and wrote them to file in a matrix market format file. This is the simplest
 example provided.
