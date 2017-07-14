@@ -9,13 +9,10 @@ Imagine we are writing a program that computes an overlap matrix, and then
 uses NTPoly to compute the inverse square root. Let's begin by imagining
 we have 6 MPI processes, arranged in a 2x3 grid.
 
-+-----------+-----------+
-| Process 1 | Process 2 |
-+-----------+-----------+
-| Process 3 | Process 4 |
-+-----------+-----------+
-| Process 5 | Process 6 |
-+-----------+-----------+
+|----------- | -----------|
+| Process 1  |  Process 2 |
+| Process 3  |  Process 4 |
+| Process 5  |  Process 6 |
 
 We can also divide up the overlap matrix in exactly the same way. So
 the 6x6 matrix below:
