@@ -1,4 +1,4 @@
-Test Main Page
+Project Overview
 ================================================================================
 
 NTPoly is a massively parallel library for computing the functions of sparse,
@@ -93,6 +93,6 @@ A publication is still forthcoming.
 
 How To Contribute
 --------------------------------------------------------------------------------
-To begin modifying NTPoly, take a look at the Wiki page
+To begin modifying NTPoly, take a look at the Wiki page (located on github)
 "Adding New Functionality - Example". This example shows how one might go
 about adding a new matrix function to NTPoly.
