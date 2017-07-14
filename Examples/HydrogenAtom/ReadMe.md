@@ -7,7 +7,7 @@ chosen such a simple system). The Hamiltonian is then turned into a sparse
 matrix, and a solver is called on it.
 
 There are three main points to this example.
-1. How to use link the library to your code.
+1. How to link the NTPoly libraries to your code.
 2. How to build a matrix triplet list, and use it to build a distributed sparse
    matrix.
 3. How to call the solver routines.
