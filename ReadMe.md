@@ -8,6 +8,10 @@ time.
 
 Set Up Guide
 --------------------------------------------------------------------------------
+NTPoly is freely available and open source under the MIT license. It can be
+downloaded from the [Github](https://github.com/william-dawson/NTPoly)
+repository.
+
 NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of .cmake files which have example configurations
 on popular systems. You should copy one of these files, and create your own
@@ -20,7 +24,8 @@ After that you can build using:
 And for the documentation:
 > make doc
 
-If you aren't cross compiling, you can perform local tests using:
+[Online documentation](https://william-dawson.github.io/NTPoly/) is also 
+available. If you aren't cross compiling, you can perform local tests using:
 > make test
 
 Basic Theory
