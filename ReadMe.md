@@ -93,6 +93,9 @@ A publication is still forthcoming.
 
 How To Contribute
 --------------------------------------------------------------------------------
-To begin modifying NTPoly, take a look at the Wiki page (located on github)
-"Adding New Functionality - Example". This example shows how one might go
-about adding a new matrix function to NTPoly.
+To begin contributing to NTPoly, take a look at the 
+[Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The 
+[Developer Guide](https://github.com/william-dawson/NTPoly/wiki/Developer-Guide)
+provides an overview of best development practices. Additionally, there is a
+[Adding New Functionality](https://github.com/william-dawson/NTPoly/wiki/Adding-New-Functionality-(Example))
+page which documents how one would go about adding a matrix function to NTPoly.
