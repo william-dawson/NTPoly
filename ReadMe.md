@@ -25,7 +25,9 @@ And for the documentation:
 > make doc
 
 [Online documentation](https://william-dawson.github.io/NTPoly/) is also 
-available. If you aren't cross compiling, you can perform local tests using:
+available. Further details about the library can be found on the 
+[Wiki](https://github.com/william-dawson/NTPoly/wiki).
+If you aren't cross compiling, you can perform local tests using:
 > make test
 
 Basic Theory
