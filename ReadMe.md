@@ -83,7 +83,7 @@ The following features and methods have been implemented in NTPoly:
     * Exponential and Logarithm
 * Matrix Roots
     * Square Root and Inverse Square Root
-    * Inverse *p* th Root
+    * Matrix *p* th Root
 * Quantum Chemistry
     * Density Matrix Minimization
     * Density Matrix Purification
