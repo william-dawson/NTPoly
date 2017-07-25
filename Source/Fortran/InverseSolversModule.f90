@@ -2,12 +2,8 @@
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule

@@ -1,14 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the load balancer module for calling from other languages.
 MODULE LoadBalancerModule_wrp
-  USE DistributedBlockedSparseMatrixModule_wrp, ONLY : &
+  USE DistributedMatrixMemoryPoolModule_wrp, ONLY : &
+       & DistributedMatrixMemoryPool_wrp
+  USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE PermutationModule_wrp, ONLY : Permutation_wrp
-  USE DistributedMatrixMemoryPoolModule_wrp, ONLY : &
-       & DistributedMatrixMemoryPool_wrp
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

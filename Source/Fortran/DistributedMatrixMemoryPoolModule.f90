@@ -5,7 +5,6 @@ MODULE DistributedMatrixMemoryPoolModule
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
        & DestructMatrixMemoryPool
   USE ProcessGridModule, ONLY : number_of_blocks_columns, number_of_blocks_rows
-  USE iso_c_binding, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

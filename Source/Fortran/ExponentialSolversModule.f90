@@ -3,12 +3,8 @@
 MODULE ExponentialSolversModule
   USE ChebyshevSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -18,7 +14,7 @@ MODULE ExponentialSolversModule
   USE RootSolversModule
   USE SquareRootSolversModule
   USE TimerModule
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

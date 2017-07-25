@@ -2,12 +2,8 @@
 !> A Module For Computing General Matrix Polynomials.
 MODULE PolynomialSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule

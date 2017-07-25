@@ -1,12 +1,12 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the overlap solvers module for calling from other languages.
 MODULE SquareRootSolversModule_wrp
+  USE DistributedSparseMatrixModule_wrp, ONLY : &
+       & DistributedSparseMatrix_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
-  USE DistributedBlockedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int, c_bool
+  USE ISO_C_BINDING, ONLY : c_int, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

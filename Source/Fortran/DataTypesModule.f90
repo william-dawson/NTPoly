@@ -2,9 +2,9 @@
 !> A module to store specifications for basic data types.
 MODULE DataTypesModule
   USE ErrorModule
-  USE iso_c_Binding
+  USE ISO_C_BINDING
   USE ISO_FORTRAN_ENV
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

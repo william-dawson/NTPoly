@@ -4,6 +4,7 @@ MODULE LoggingModule
   USE DataTypesModule, ONLY : NTReal
   IMPLICIT NONE
   PRIVATE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTEGER :: CurrentLevel=0
   LOGICAL :: IsActive = .FALSE.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

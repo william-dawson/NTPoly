@@ -2,12 +2,8 @@
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE InverseSolversModule
   USE IterativeSolversModule

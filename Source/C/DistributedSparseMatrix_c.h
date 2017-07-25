@@ -1,5 +1,5 @@
-#ifndef DISTRIBUTEDLBOCKEDSPARSEMATRIX_ch
-#define DISTRIBUTEDLBOCKEDSPARSEMATRIX_ch
+#ifndef DISTRIBUTEDSPARSEMATRIX_ch
+#define DISTRIBUTEDSPARSEMATRIX_ch
 
 void ConstructEmpty_wrp(int *ih_this, const int *matrix_dim);
 void CopyDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_matB);

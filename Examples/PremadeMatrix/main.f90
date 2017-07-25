@@ -3,7 +3,7 @@
 PROGRAM PremadeMatrixProgram
   USE DataTypesModule, ONLY : ntreal
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE DistributedBlockedSparseMatrixModule, ONLY : ConstructFromMatrixMarket, &
+  USE DistributedSparseMatrixModule, ONLY : ConstructFromMatrixMarket, &
        & WriteToMatrixMarket, DistributedSparseMatrix
   USE IterativeSolversModule, ONLY : IterativeSolverParameters
   USE LoggingModule
