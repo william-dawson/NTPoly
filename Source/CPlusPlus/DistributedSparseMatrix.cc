@@ -1,4 +1,4 @@
-#include "DistributedBlockedSparseMatrix.h"
+#include "DistributedSparseMatrix.h"
 #include "DistributedMatrixMemoryPool.h"
 #include "Permutation.h"
 #include "TripletList.h"
@@ -10,7 +10,7 @@ using namespace NTPoly;
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
-#include "DistributedBlockedSparseMatrix_c.h"
+#include "DistributedSparseMatrix_c.h"
 }
 
 ////////////////////////////////////////////////////////////////////////////////

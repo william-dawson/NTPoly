@@ -1,18 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A module for wrapping a Distributed Blocked Sparse Matrix.
-MODULE DistributedBlockedSparseMatrixModule_wrp
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
+!> A module for wrapping a Distributed Sparse Matrix.
+MODULE DistributedSparseMatrixModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
   USE DistributedMatrixMemoryPoolModule_wrp, ONLY : &
        & DistributedMatrixMemoryPool_wrp
+  USE DistributedSparseMatrixModule
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE TripletListModule_wrp, ONLY : TripletList_wrp
-  USE DataTypesModule, ONLY : NTREAL
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int, c_char, c_bool
+  USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -389,4 +385,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     trace_value = Trace(h_this%data)
   END FUNCTION Trace_wrp
-END MODULE DistributedBlockedSparseMatrixModule_wrp
+END MODULE DistributedSparseMatrixModule_wrp

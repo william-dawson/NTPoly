@@ -2,12 +2,8 @@
 !> A Module For Solving Systems Quantum Chemistry Systems Using Minimization.
 MODULE MinimizerSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule

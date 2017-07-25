@@ -3,9 +3,8 @@ set(Fsrc
     DataTypesModule.f90
     DenseMatrixModule.f90
     DensityMatrixSolversModule.f90
-    DistributedBlockedSparseMatrixModule.f90
-    DistributedSparseMatrixModule.f90
     DistributedMatrixMemoryPoolModule.f90
+    DistributedSparseMatrixModule.f90
     ErrorModule.f90
     ExponentialSolversModule.f90
     FixedSolversModule.f90

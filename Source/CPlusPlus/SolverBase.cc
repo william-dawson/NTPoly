@@ -1,6 +1,6 @@
 #include "SolverBase.h"
 
-#include "DistributedBlockedSparseMatrix.h"
+#include "DistributedSparseMatrix.h"
 #include "FixedSolversParameters.h"
 #include "IterativeSolversParameters.h"
 

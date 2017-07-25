@@ -3,7 +3,7 @@
 PROGRAM HydrogenAtom
   USE DataTypesModule, ONLY : ntreal
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE DistributedBlockedSparseMatrixModule, ONLY : &
+  USE DistributedSparseMatrixModule, ONLY : &
        & WriteToMatrixMarket, DistributedSparseMatrix, ConstructEmpty, &
        & FillFromTripletList, CopyDistributedSparseMatrix, &
        & IncrementDistributedSparseMatrix, FillDistributedIdentity

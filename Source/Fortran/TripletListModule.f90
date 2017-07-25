@@ -4,7 +4,7 @@
 MODULE TripletListModule
   USE MatrixMarketModule
   USE TripletModule, ONLY : Triplet_t, CompareTriplets
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.

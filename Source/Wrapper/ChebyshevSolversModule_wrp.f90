@@ -1,15 +1,15 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the Chebyshev Solvers Module
 MODULE ChebyshevSolversModule_wrp
-  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE ChebyshevSolversModule, ONLY : ChebyshevPolynomial_t, &
        & ConstructChebyshevPolynomial, DestructChebyshevPolynomial, &
        & SetChebyshevCoefficient, ChebyshevCompute, FactorizedChebyshevCompute
-  USE DistributedBlockedSparseMatrixModule_wrp, ONLY : &
+  USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
   USE DataTypesModule, ONLY : NTREAL
+  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

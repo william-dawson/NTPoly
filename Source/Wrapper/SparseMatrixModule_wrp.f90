@@ -1,6 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping the sparse matrix data type.
 MODULE SparseMatrixModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
+  USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructEmptySparseMatrix, ConstructSparseMatrixFromFile, &
        & ConstructFromTripletList, DestructSparseMatrix, CopySparseMatrix, &
@@ -9,10 +11,8 @@ MODULE SparseMatrixModule_wrp
        & GetRows, GetColumns, ComposeSparseMatrixColumns, DotSparseMatrix, &
        & PairwiseMultiplySparseMatrix
   USE TripletListModule_wrp, ONLY : TripletList_wrp
-  USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
-  USE DataTypesModule, ONLY : NTREAL
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int, c_char, c_bool
+  USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

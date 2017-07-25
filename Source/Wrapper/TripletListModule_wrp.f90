@@ -1,11 +1,11 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping the triplet list data type.
 MODULE TripletListModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & AppendToTripletList, ResizeTripletList, &
        & DestructTripletList, SetTripletAt, GetTripletAt
   USE TripletModule, ONLY : Triplet_t
-  USE DataTypesModule, ONLY : NTREAL
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int
   IMPLICIT NONE

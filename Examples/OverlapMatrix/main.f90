@@ -2,7 +2,7 @@
 !> An example that shows how to compute the overlap matrix.
 PROGRAM OverlapExample
   USE DataTypesModule, ONLY : ntreal
-  USE DistributedBlockedSparseMatrixModule
+  USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE PermutationModule
   USE ProcessGridModule, ONLY : ConstructProcessGrid, my_row, my_column

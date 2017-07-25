@@ -4,8 +4,8 @@
 MODULE TripletModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
   USE ErrorModule
-  USE iso_c_binding, ONLY : c_int
-  USE mpi
+  USE ISO_C_BINDING, ONLY : c_int
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -2,7 +2,7 @@
 !> A wrapper for the process grid module.
 MODULE ProcessGridModule_wrp
   USE ProcessGridModule, ONLY : ConstructProcessGrid
-  USE iso_c_binding, ONLY : c_int, c_bool
+  USE ISO_C_BINDING, ONLY : c_int, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

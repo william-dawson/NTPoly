@@ -1,13 +1,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the overlap solvers module for calling from other languages.
 MODULE MinimizerSolversModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedSparseMatrixModule_wrp, ONLY : &
+       & DistributedSparseMatrix_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE MinimizerSolversModule, ONLY : ConjugateGradient
-  USE DistributedBlockedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
-  USE DataTypesModule, ONLY : NTREAL
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
