@@ -1,7 +1,7 @@
 # Generic modules
 import sys
 
-# NT Poly
+# NTPoly
 import NTPolySwig as nt
 
 # MPI Module
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     solver_parameters.SetThreshold(threshold)
     solver_parameters.SetLoadBalance(permutation)
 
-    # Call the solver routine.
+    # Call the solver routines.
     nt.SquareRootSolvers.InverseSquareRoot(
         Overlap, ISQOverlap, solver_parameters)
     nt.DensityMatrixSolvers.TRS2(Hamiltonian, ISQOverlap, number_of_electrons,
@@ -61,5 +61,3 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)
-    if comm.Get_rank() == 0:
-        print "Chemical potential:", chemical_potential

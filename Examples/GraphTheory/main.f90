@@ -8,13 +8,12 @@ PROGRAM GraphTheory
        & CopyDistributedSparseMatrix, FillDistributedIdentity, &
        & IncrementDistributedSparseMatrix
   USE InverseSolversModule, ONLY : Invert
-  USE ExponentialSolversModule, ONLY : ComputeExponential
   USE IterativeSolversModule, ONLY : IterativeSolverParameters
   USE ProcessGridModule, ONLY : ConstructProcessGrid
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & SetTripletAt, AppendToTripletList
   USE TripletModule, ONLY : Triplet_t
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
   INTEGER :: process_rows, process_columns, process_slices

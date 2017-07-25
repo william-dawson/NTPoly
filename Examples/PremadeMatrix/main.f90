@@ -8,9 +8,9 @@ PROGRAM PremadeMatrixProgram
   USE IterativeSolversModule, ONLY : IterativeSolverParameters
   USE LoggingModule
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
-  USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot
-  USE mpi
+  USE SquareRootSolversModule, ONLY : InverseSquareRoot
+  USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
   CHARACTER(len=80) :: hamiltonian_file
@@ -67,21 +67,19 @@ PROGRAM PremadeMatrixProgram
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
-  IF (IsRoot()) THEN
-     CALL WriteHeader("Command Line Parameters")
-     CALL EnterSubLog
-     CALL WriteElement(key="hamiltonian", text_value_in=hamiltonian_file)
-     CALL WriteElement(key="overlap", text_value_in=overlap_file)
-     CALL WriteElement(key="density", text_value_in=density_file_out)
-     CALL WriteElement(key="process_rows", int_value_in=process_rows)
-     CALL WriteElement(key="process_columns", int_value_in=process_columns)
-     CALL WriteElement(key="process_slices", int_value_in=process_slices)
-     CALL WriteElement(key="number_of_electrons", int_value_in=number_of_electrons)
-     CALL WriteElement(key="threshold", float_value_in=threshold)
-     CALL WriteElement(key="convergence_threshold", &
-          & float_value_in=convergence_threshold)
-     CALL ExitSubLog
-  END IF
+  CALL WriteHeader("Command Line Parameters")
+  CALL EnterSubLog
+  CALL WriteElement(key="hamiltonian", text_value_in=hamiltonian_file)
+  CALL WriteElement(key="overlap", text_value_in=overlap_file)
+  CALL WriteElement(key="density", text_value_in=density_file_out)
+  CALL WriteElement(key="process_rows", int_value_in=process_rows)
+  CALL WriteElement(key="process_columns", int_value_in=process_columns)
+  CALL WriteElement(key="process_slices", int_value_in=process_slices)
+  CALL WriteElement(key="number_of_electrons", int_value_in=number_of_electrons)
+  CALL WriteElement(key="threshold", float_value_in=threshold)
+  CALL WriteElement(key="convergence_threshold", &
+       & float_value_in=convergence_threshold)
+  CALL ExitSubLog
 
   !! Read in the matrices from file.
   CALL ConstructFromMatrixMarket(Hamiltonian,hamiltonian_file)
@@ -94,7 +92,7 @@ PROGRAM PremadeMatrixProgram
        & converge_diff_in=convergence_threshold, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 
-  !! Call the solver routine.
+  !! Call the solver routines.
   CALL InverseSquareRoot(Overlap, ISQOverlap, solver_parameters)
   CALL TRS2(Hamiltonian, ISQOverlap, number_of_electrons, &
        & Density, solver_parameters_in=solver_parameters, &
@@ -102,9 +100,6 @@ PROGRAM PremadeMatrixProgram
 
   !! Print the density matrix to file.
   CALL WriteToMatrixMarket(Density,density_file_out)
-  IF (rank .EQ. 0) THEN
-     WRITE(*,*) "Chemical potential:", chemical_potential
-  END IF
 
   CALL MPI_Finalize(ierr)
 END PROGRAM PremadeMatrixProgram

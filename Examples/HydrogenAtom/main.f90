@@ -9,12 +9,12 @@ PROGRAM HydrogenAtom
        & IncrementDistributedSparseMatrix, FillDistributedIdentity
   USE IterativeSolversModule, ONLY : IterativeSolverParameters
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
-  USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE ProcessGridModule, ONLY : ConstructProcessGrid
+  USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & AppendToTripletList
   USE TripletModule, ONLY : Triplet_t
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
   INTEGER :: grid_points
