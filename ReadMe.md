@@ -8,6 +8,10 @@ time.
 
 Set Up Guide
 --------------------------------------------------------------------------------
+NTPoly is freely available and open source under the MIT license. It can be
+downloaded from the [Github](https://github.com/william-dawson/NTPoly)
+repository.
+
 NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of .cmake files which have example configurations
 on popular systems. You should copy one of these files, and create your own
@@ -20,6 +24,9 @@ After that you can build using:
 And for the documentation:
 > make doc
 
+[Online documentation](https://william-dawson.github.io/NTPoly/) is also 
+available. Further details about the library can be found on the 
+[Wiki](https://github.com/william-dawson/NTPoly/wiki).
 If you aren't cross compiling, you can perform local tests using:
 > make test
 
@@ -76,7 +83,7 @@ The following features and methods have been implemented in NTPoly:
     * Exponential and Logarithm
 * Matrix Roots
     * Square Root and Inverse Square Root
-    * Inverse *p* th Root
+    * Matrix *p* th Root
 * Quantum Chemistry
     * Density Matrix Minimization
     * Density Matrix Purification
@@ -93,6 +100,9 @@ A publication is still forthcoming.
 
 How To Contribute
 --------------------------------------------------------------------------------
-To begin modifying NTPoly, take a look at the Wiki page (located on github)
-"Adding New Functionality - Example". This example shows how one might go
-about adding a new matrix function to NTPoly.
+To begin contributing to NTPoly, take a look at the 
+[Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The 
+[Developer Guide](https://github.com/william-dawson/NTPoly/wiki/Developer-Guide)
+provides an overview of best development practices. Additionally, there is a
+[Adding New Functionality](https://github.com/william-dawson/NTPoly/wiki/Adding-New-Functionality-(Example))
+page which documents how one would go about adding a matrix function to NTPoly.
