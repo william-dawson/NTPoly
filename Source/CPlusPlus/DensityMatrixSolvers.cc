@@ -1,5 +1,5 @@
 #include "DensityMatrixSolvers.h"
-#include "DistributedBlockedSparseMatrix.h"
+#include "DistributedSparseMatrix.h"
 #include "IterativeSolversParameters.h"
 
 ////////////////////////////////////////////////////////////////////////////////

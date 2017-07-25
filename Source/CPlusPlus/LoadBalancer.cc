@@ -1,4 +1,4 @@
-#include "DistributedBlockedSparseMatrix.h"
+#include "DistributedSparseMatrix.h"
 #include "DistributedMatrixMemoryPool.h"
 #include "LoadBalancer.h"
 #include "Permutation.h"

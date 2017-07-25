@@ -2,12 +2,8 @@
 !> A Module For Computing The Square Root of a Matrix.
 MODULE SquareRootSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule

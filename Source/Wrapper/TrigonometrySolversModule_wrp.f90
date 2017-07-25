@@ -1,10 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the overlap solvers module for calling from other languages.
 MODULE TrigonometrySolversModule_wrp
+  USE DistributedSparseMatrixModule_wrp, ONLY : &
+       & DistributedSparseMatrix_wrp
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE TrigonometrySolversModule, ONLY : Sine, Cosine
-  USE DistributedBlockedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int, c_bool
   IMPLICIT NONE

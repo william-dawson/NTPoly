@@ -2,12 +2,8 @@
 !> A Module For Computing Matrix functions based on Chebyshev polynomials.
 MODULE ChebyshevSolversModule
   USE DataTypesModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule

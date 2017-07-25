@@ -5,7 +5,7 @@ MODULE DistributedMatrixMemoryPoolModule_wrp
        & ConstructDistributedMatrixMemoryPool, &
        & DestructDistributedMatrixMemoryPool
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

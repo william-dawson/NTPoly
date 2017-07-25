@@ -1,7 +1,7 @@
 set(Csrc
     ChebyshevSolvers_c.h
     DensityMatrixSolvers_c.h
-    DistributedBlockedSparseMatrix_c.h
+    DistributedSparseMatrix_c.h
     DistributedMatrixMemoryPool_c.h
     ExponentialSolvers_c.h
     FixedSolversParameters_c.h

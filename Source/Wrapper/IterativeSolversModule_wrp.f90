@@ -1,13 +1,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A wrapper for the chemistry solver parameters.
 MODULE IterativeSolversModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
   USE IterativeSolversModule, ONLY : IterativeSolverParameters, &
        & SetIterativeConvergeDiff, SetIterativeMaxIterations, &
        & SetIterativeThreshold, SetIterativeBeVerbose, SetIterativeLoadBalance
   USE PermutationModule_wrp, ONLY : Permutation_wrp
-  USE DataTypesModule, ONLY : NTREAL
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_bool, c_int
+  USE ISO_C_BINDING, ONLY : c_bool, c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

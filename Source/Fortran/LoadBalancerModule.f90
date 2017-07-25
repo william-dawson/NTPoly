@@ -1,12 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for load balancing the matrix multiplication calculation.
 MODULE LoadBalancerModule
-#ifdef NOBLOCK
-  USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE DistributedMatrixMemoryPoolModule
+    USE DistributedSparseMatrixModule
   USE PermutationModule
   IMPLICIT NONE
   PRIVATE

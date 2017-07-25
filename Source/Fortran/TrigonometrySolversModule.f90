@@ -3,11 +3,7 @@
 MODULE TrigonometrySolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
-#ifdef NOBLOCK
   USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule

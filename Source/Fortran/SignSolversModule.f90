@@ -3,11 +3,7 @@
 MODULE SignSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
-#ifdef NOBLOCK
   USE DistributedSparseMatrixModule
-#else
-  USE DistributedBlockedSparseMatrixModule
-#endif
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule

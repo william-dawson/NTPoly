@@ -3,7 +3,7 @@
 MODULE MatrixGatherModule
   USE DataTypesModule
   USE SparseMatrixModule
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

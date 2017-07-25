@@ -1,22 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the overlap solvers module for calling from other languages.
 MODULE PolynomialSolversModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedSparseMatrixModule_wrp, ONLY : &
+       & DistributedSparseMatrix_wrp
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE PolynomialSolversModule, ONLY : Polynomial_t, ConstructPolynomial, &
        & DestructPolynomial, SetCoefficient, HornerCompute, &
        & PatersonStockmeyerCompute
-  USE DistributedBlockedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
-  USE DataTypesModule, ONLY : NTREAL
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the polynomial data type.
   TYPE, PUBLIC :: Polynomial_wrp
      !> Actual data.
-     TYPE(Polynomial_t), POINTER :: data
+     TYPE(Polynomial_t), POINTER :: DATA
   END TYPE Polynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Polynomial type.

@@ -1,10 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the triplet module for calling from other languages.
 MODULE TripletModule_wrp
-  USE TripletModule, ONLY: Triplet_t, SetTriplet, GetTripletValues
   USE DataTypesModule, ONLY : NTREAL
+  USE TripletModule, ONLY: Triplet_t, SetTriplet, GetTripletValues
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

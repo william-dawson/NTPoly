@@ -3,8 +3,8 @@
 MODULE ProcessGridModule
   USE DataTypesModule, ONLY : MPITypeInfoInit
   USE LoggingModule
-  USE mpi
-  USE iso_c_binding, ONLY : c_int, c_bool
+  USE MPI
+  USE ISO_C_BINDING, ONLY : c_int, c_bool
 #ifdef _OPENMP
   USE omp_lib, ONLY : omp_get_num_threads
 #endif

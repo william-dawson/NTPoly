@@ -4,7 +4,7 @@ MODULE MatrixMemoryPoolModule_wrp
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool
   USE WrapperModule, ONLY : SIZE_wrp
-  USE iso_c_binding, ONLY : c_int
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

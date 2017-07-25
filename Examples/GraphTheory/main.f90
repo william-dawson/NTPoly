@@ -2,7 +2,7 @@
 !> An example based on graph theory.
 PROGRAM GraphTheory
   USE DataTypesModule, ONLY : ntreal
-  USE DistributedBlockedSparseMatrixModule, ONLY : &
+  USE DistributedSparseMatrixModule, ONLY : &
        & WriteToMatrixMarket, DistributedSparseMatrix, ConstructEmpty, &
        & FillFromTripletList, DestructDistributedSparseMatrix, &
        & CopyDistributedSparseMatrix, FillDistributedIdentity, &
