@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.13"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>NTPoly: Todo List</title>
+<title>NTPoly: distributedsparsematrixmodule_wrp::distributedsparsematrix_wrp Type Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -56,29 +56,36 @@ $(function() {
 </iframe>
 </div>
 
+<div id="nav-path" class="navpath">
+  <ul>
+<li class="navelem"><a class="el" href="namespacedistributedsparsematrixmodule__wrp.html">distributedsparsematrixmodule_wrp</a></li><li class="navelem"><a class="el" href="structdistributedsparsematrixmodule__wrp_1_1distributedsparsematrix__wrp.html">distributedsparsematrix_wrp</a></li>  </ul>
+</div>
 </div><!-- top -->
 <div class="header">
+  <div class="summary">
+<a href="#pub-attribs">Public Attributes</a> &#124;
+<a href="structdistributedsparsematrixmodule__wrp_1_1distributedsparsematrix__wrp-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">Todo List </div>  </div>
+<div class="title">distributedsparsematrixmodule_wrp::distributedsparsematrix_wrp Type Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><dl class="reflist">
-<dt><a class="anchor" id="_todo000001"></a>Subprogram <a class="el" href="namespacedistributedsparsematrixmodule.html#a51de55328992a548bfc9d5d40521d711">distributedsparsematrixmodule::computesigma</a>  (this, sigma_value)</dt>
-<dd>describe this better.  </dd>
-<dt><a class="anchor" id="_todo000003"></a>Subprogram <a class="el" href="namespaceminimizersolversmodule.html#adfcf3a08c24f74a2db1df6dff9e92fa5">minimizersolversmodule::conjugategradient</a>  (Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)</dt>
-<dd>chemical potential doesn't work.  </dd>
-<dt><a class="anchor" id="_todo000004"></a>Subprogram <a class="el" href="namespacerootsolversmodule.html#af4db0e7fdac637978d3b0efcd4928faa">rootsolversmodule::computeinverseroot</a>  (InputMat, OutputMat, root, solver_parameters_in)</dt>
-<dd>the inverse cube root.  </dd>
-<dt><a class="anchor" id="_todo000005"></a>Subprogram <a class="el" href="namespacesparsematrixiteratormodule.html#abc7e74e27aba9ac97c02734a807a54d2">sparsematrixiteratormodule::next</a>  (this, sparse_matrix)</dt>
-<dd>it's probably a pain to have to pass the sparse matrix here. But Fortran's requirement that everything that is pointed to has the TARGET attribute is problematic.  </dd>
-<dt><a class="anchor" id="_todo000007"></a>Subprogram <a class="el" href="namespacesparsematrixmodule.html#a9e55ec1c20c80c18347b716bb53b4910">sparsematrixmodule::gemm</a>  (matA, matB, matC, IsATransposed_in, IsBTransposed_in, alpha_in, beta_in, threshold_in, blocked_memory_pool_in)</dt>
-<dd>more performance tuning.  </dd>
-<dt><a class="anchor" id="_todo000006"></a>Subprogram <a class="el" href="namespacesparsematrixmodule.html#a48904eb99767de5d707b822611526516">sparsematrixmodule::incrementsparsematrix</a>  (matA, matB, alpha_in, threshold_in)</dt>
-<dd>I don't like this hack where I have to check if MatrixB is allocated.  </dd>
-<dt><a class="anchor" id="_todo000008"></a>Subprogram <a class="el" href="namespacesparsevectormodule.html#ab082c78c261e01982ae37d5958a07df5">sparsevectormodule::addsparsevectors</a>  (inner_index_a, values_a, inner_index_b, values_b, inner_index_c, values_c, total_values_c, alpha_in, threshold_in)</dt>
-<dd>in principal this can be done without any branching. </dd>
-</dl>
-</div></div><!-- contents -->
+
+<p>A wrapper for the sparse matrix data type.  
+ <a href="structdistributedsparsematrixmodule__wrp_1_1distributedsparsematrix__wrp.html#details">More...</a></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
+Public Attributes</h2></td></tr>
+<tr class="memitem:a09d296d6903d0994bd5f9ca58f906b11"><td class="memItemLeft" align="right" valign="top"><a id="a09d296d6903d0994bd5f9ca58f906b11"></a>
+type(distributedsparsematrix), pointer&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdistributedsparsematrixmodule__wrp_1_1distributedsparsematrix__wrp.html#a09d296d6903d0994bd5f9ca58f906b11">data</a></td></tr>
+<tr class="memdesc:a09d296d6903d0994bd5f9ca58f906b11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Actual data. <br /></td></tr>
+<tr class="separator:a09d296d6903d0994bd5f9ca58f906b11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>A wrapper for the sparse matrix data type. </p>
+</div><hr/>The documentation for this type was generated from the following file:<ul>
+<li>/Users/dawson/Documents/DailyBuilder/Scratch/NTPoly/Source/Wrapper/DistributedSparseMatrixModule_wrp.f90</li>
+</ul>
+</div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
 Generated by &#160;<a href="http://www.doxygen.org/index.html">

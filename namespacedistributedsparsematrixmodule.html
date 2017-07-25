@@ -72,29 +72,20 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Data Types</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">type &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A datatype for a distributed CSR matrix. A CSR matrix stores locally a block of SparseMatrix types. That local CSR matrix is also divided up into blocks for sending/receiving purposes. This allows us to deal with non square slices of a matrix, and is also important for the 3D multiply algorithm.  <a href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html#details">More...</a><br /></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A datatype for a distributed blocked CSR matrix.  <a href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:ab545767fa9a5b52b54dcbaa6d7040639"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#ab545767fa9a5b52b54dcbaa6d7040639">constructempty</a> (this, matrix_dim_)</td></tr>
-<tr class="memdesc:ab545767fa9a5b52b54dcbaa6d7040639"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty sparse, distributed, matrix.  <a href="#ab545767fa9a5b52b54dcbaa6d7040639">More...</a><br /></td></tr>
-<tr class="separator:ab545767fa9a5b52b54dcbaa6d7040639"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3af5141e7589d12a182b401b963da6a5"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a3af5141e7589d12a182b401b963da6a5">destructdistributedsparsematrix</a> (this)</td></tr>
-<tr class="memdesc:a3af5141e7589d12a182b401b963da6a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destruct a distributed sparse matrix.  <a href="#a3af5141e7589d12a182b401b963da6a5">More...</a><br /></td></tr>
-<tr class="separator:a3af5141e7589d12a182b401b963da6a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75cc3e2ab870a4e19fc25fa478493d3c"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a75cc3e2ab870a4e19fc25fa478493d3c">copydistributedsparsematrix</a> (matA, matB)</td></tr>
-<tr class="memdesc:a75cc3e2ab870a4e19fc25fa478493d3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a distributed sparse matrix in a safe way.  <a href="#a75cc3e2ab870a4e19fc25fa478493d3c">More...</a><br /></td></tr>
-<tr class="separator:a75cc3e2ab870a4e19fc25fa478493d3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfe62c786b900828604b43dde3641916"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#acfe62c786b900828604b43dde3641916">fillfromtripletlist</a> (this, triplet_list)</td></tr>
-<tr class="memdesc:acfe62c786b900828604b43dde3641916"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine fills in a matrix based on local triplet lists. Each process should pass in triplet lists with global coordinates. It doesn't matter where each triplet is stored, as long as global coordinates are given.  <a href="#acfe62c786b900828604b43dde3641916">More...</a><br /></td></tr>
-<tr class="separator:acfe62c786b900828604b43dde3641916"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2713d8c3e1ec68f0d1181350debf7a63"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a2713d8c3e1ec68f0d1181350debf7a63">filldistributedidentity</a> (this)</td></tr>
-<tr class="memdesc:a2713d8c3e1ec68f0d1181350debf7a63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the values of a distributed matrix with the identity matrix.  <a href="#a2713d8c3e1ec68f0d1181350debf7a63">More...</a><br /></td></tr>
-<tr class="separator:a2713d8c3e1ec68f0d1181350debf7a63"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a971debe326be81bf9c2c2bf978bc1ac9"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a971debe326be81bf9c2c2bf978bc1ac9">filldistributedpermutation</a> (this, permutation_vector, permuterows)</td></tr>
-<tr class="memdesc:a971debe326be81bf9c2c2bf978bc1ac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the values of a distributed matrix with the identity matrix. If you don't specify permuterows, will default to permuting rows.  <a href="#a971debe326be81bf9c2c2bf978bc1ac9">More...</a><br /></td></tr>
-<tr class="separator:a971debe326be81bf9c2c2bf978bc1ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2f5078e3419d8ad4fd1be2eb4d62f647"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a2f5078e3419d8ad4fd1be2eb4d62f647">constructempty</a> (this, matrix_dim_)</td></tr>
+<tr class="memdesc:a2f5078e3419d8ad4fd1be2eb4d62f647"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct an empty sparse, distributed, matrix.  <a href="#a2f5078e3419d8ad4fd1be2eb4d62f647">More...</a><br /></td></tr>
+<tr class="separator:a2f5078e3419d8ad4fd1be2eb4d62f647"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21f9d5bc7949a48e3fc5a513e1a3d7d8"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a21f9d5bc7949a48e3fc5a513e1a3d7d8">destructdistributedsparsematrix</a> (this)</td></tr>
+<tr class="memdesc:a21f9d5bc7949a48e3fc5a513e1a3d7d8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destruct a distributed sparse matrix.  <a href="#a21f9d5bc7949a48e3fc5a513e1a3d7d8">More...</a><br /></td></tr>
+<tr class="separator:a21f9d5bc7949a48e3fc5a513e1a3d7d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af70792b62e837921ca9e91b2a808ac87"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#af70792b62e837921ca9e91b2a808ac87">copydistributedsparsematrix</a> (matA, matB)</td></tr>
+<tr class="memdesc:af70792b62e837921ca9e91b2a808ac87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a distributed sparse matrix in a safe way.  <a href="#af70792b62e837921ca9e91b2a808ac87">More...</a><br /></td></tr>
+<tr class="separator:af70792b62e837921ca9e91b2a808ac87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9813c682f64bf7570584ae064cca6db"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#ad9813c682f64bf7570584ae064cca6db">constructfrommatrixmarket</a> (this, file_name)</td></tr>
 <tr class="memdesc:ad9813c682f64bf7570584ae064cca6db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct distributed sparse matrix from a matrix market file in parallel.  <a href="#ad9813c682f64bf7570584ae064cca6db">More...</a><br /></td></tr>
 <tr class="separator:ad9813c682f64bf7570584ae064cca6db"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -105,17 +96,44 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a45505c47edf885d45ad81d965dd07957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save a distributed sparse matrix to a file.  <a href="#a45505c47edf885d45ad81d965dd07957">More...</a><br /></td></tr>
 <tr class="separator:a45505c47edf885d45ad81d965dd07957"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12e5b76c5742caae8aab816d06a609dd"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a12e5b76c5742caae8aab816d06a609dd">writetomatrixmarket</a> (this, file_name)</td></tr>
-<tr class="memdesc:a12e5b76c5742caae8aab816d06a609dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save a distributed sparse matrix to a matrix market file.  <a href="#a12e5b76c5742caae8aab816d06a609dd">More...</a><br /></td></tr>
+<tr class="memdesc:a12e5b76c5742caae8aab816d06a609dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed sparse matrix to a matrix market file.  <a href="#a12e5b76c5742caae8aab816d06a609dd">More...</a><br /></td></tr>
 <tr class="separator:a12e5b76c5742caae8aab816d06a609dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acfe62c786b900828604b43dde3641916"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#acfe62c786b900828604b43dde3641916">fillfromtripletlist</a> (this, triplet_list)</td></tr>
+<tr class="memdesc:acfe62c786b900828604b43dde3641916"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine fills in a matrix based on local triplet lists. Each process should pass in triplet lists with global coordinates. It doesn't matter where each triplet is stored, as long as global coordinates are given.  <a href="#acfe62c786b900828604b43dde3641916">More...</a><br /></td></tr>
+<tr class="separator:acfe62c786b900828604b43dde3641916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2713d8c3e1ec68f0d1181350debf7a63"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a2713d8c3e1ec68f0d1181350debf7a63">filldistributedidentity</a> (this)</td></tr>
+<tr class="memdesc:a2713d8c3e1ec68f0d1181350debf7a63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the values of a distributed matrix with the identity matrix.  <a href="#a2713d8c3e1ec68f0d1181350debf7a63">More...</a><br /></td></tr>
+<tr class="separator:a2713d8c3e1ec68f0d1181350debf7a63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a971debe326be81bf9c2c2bf978bc1ac9"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a971debe326be81bf9c2c2bf978bc1ac9">filldistributedpermutation</a> (this, permutation_vector, permuterows)</td></tr>
+<tr class="memdesc:a971debe326be81bf9c2c2bf978bc1ac9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the values of a distributed matrix with a permutation. If you don't specify permuterows, will default to permuting rows.  <a href="#a971debe326be81bf9c2c2bf978bc1ac9">More...</a><br /></td></tr>
+<tr class="separator:a971debe326be81bf9c2c2bf978bc1ac9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95ef415bd8d32e66683470d5f696b329"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a95ef415bd8d32e66683470d5f696b329">gettripletlist</a> (this, triplet_list)</td></tr>
+<tr class="memdesc:a95ef415bd8d32e66683470d5f696b329"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts a triplet list of the data that is stored on this process. Data is returned with absolute coordinates.  <a href="#a95ef415bd8d32e66683470d5f696b329">More...</a><br /></td></tr>
+<tr class="separator:a95ef415bd8d32e66683470d5f696b329"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adc956b06e1582e426faa1d59fa1cf956"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#adc956b06e1582e426faa1d59fa1cf956">getactualdimension</a> (this)</td></tr>
+<tr class="memdesc:adc956b06e1582e426faa1d59fa1cf956"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the actual dimension of the matrix.  <a href="#adc956b06e1582e426faa1d59fa1cf956">More...</a><br /></td></tr>
+<tr class="separator:adc956b06e1582e426faa1d59fa1cf956"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a149a8855000bd591b518ca1600c95c45"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a149a8855000bd591b518ca1600c95c45">getlogicaldimension</a> (this)</td></tr>
+<tr class="memdesc:a149a8855000bd591b518ca1600c95c45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the logical dimension of the matrix.  <a href="#a149a8855000bd591b518ca1600c95c45">More...</a><br /></td></tr>
+<tr class="separator:a149a8855000bd591b518ca1600c95c45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a601c4094f5f61a7b742041a0fb810e8a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a601c4094f5f61a7b742041a0fb810e8a">incrementdistributedsparsematrix</a> (matA, matB, alpha_in, threshold_in)</td></tr>
 <tr class="memdesc:a601c4094f5f61a7b742041a0fb810e8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix B = alpha*Matrix A + Matrix B (AXPY) This will utilize the sparse vector increment routine.  <a href="#a601c4094f5f61a7b742041a0fb810e8a">More...</a><br /></td></tr>
 <tr class="separator:a601c4094f5f61a7b742041a0fb810e8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6c698c3eb4039b2cca4d37b97a4430f0"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a6c698c3eb4039b2cca4d37b97a4430f0">scaledistributedsparsematrix</a> (matA, constant)</td></tr>
-<tr class="memdesc:a6c698c3eb4039b2cca4d37b97a4430f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will scale a distributed sparse matrix by a constant.  <a href="#a6c698c3eb4039b2cca4d37b97a4430f0">More...</a><br /></td></tr>
-<tr class="separator:a6c698c3eb4039b2cca4d37b97a4430f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf4db21837f775237d655d123ec60460"><td class="memItemLeft" align="right" valign="top">real(ntreal) function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#adf4db21837f775237d655d123ec60460">dotdistributedsparsematrix</a> (matA, matB)</td></tr>
+<tr class="memdesc:adf4db21837f775237d655d123ec60460"><td class="mdescLeft">&#160;</td><td class="mdescRight">product = dot(Matrix A,Matrix B)  <a href="#adf4db21837f775237d655d123ec60460">More...</a><br /></td></tr>
+<tr class="separator:adf4db21837f775237d655d123ec60460"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1692be26c7f30156b51a79bf1b1705b6"><td class="memItemLeft" align="right" valign="top">real(ntreal) function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a1692be26c7f30156b51a79bf1b1705b6">distributedgrandsum</a> (matA)</td></tr>
+<tr class="memdesc:a1692be26c7f30156b51a79bf1b1705b6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sum up the elements in a matrix.  <a href="#a1692be26c7f30156b51a79bf1b1705b6">More...</a><br /></td></tr>
+<tr class="separator:a1692be26c7f30156b51a79bf1b1705b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55682201c822bf28da6263d9504c2f50"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a55682201c822bf28da6263d9504c2f50">distributedpairwisemultiply</a> (matA, matB, matC)</td></tr>
+<tr class="memdesc:a55682201c822bf28da6263d9504c2f50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Elementwise multiplication. C_ij = A_ij * B_ij.  <a href="#a55682201c822bf28da6263d9504c2f50">More...</a><br /></td></tr>
+<tr class="separator:a55682201c822bf28da6263d9504c2f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a963c3a40f3ef2ddb7c9f78ffacc5f7ff"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a963c3a40f3ef2ddb7c9f78ffacc5f7ff">distributedgemm</a> (matA, matB, matC, alpha_in, beta_in, threshold_in, memory_pool_in)</td></tr>
 <tr class="memdesc:a963c3a40f3ef2ddb7c9f78ffacc5f7ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Multiply two matrices together, and add to the third. C := alpha*matA*matB+ beta*matC.  <a href="#a963c3a40f3ef2ddb7c9f78ffacc5f7ff">More...</a><br /></td></tr>
 <tr class="separator:a963c3a40f3ef2ddb7c9f78ffacc5f7ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5dc76ea9e1909f27f59dd80f44b7144b"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a5dc76ea9e1909f27f59dd80f44b7144b">scaledistributedsparsematrix</a> (this, constant)</td></tr>
+<tr class="memdesc:a5dc76ea9e1909f27f59dd80f44b7144b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will scale a distributed sparse matrix by a constant.  <a href="#a5dc76ea9e1909f27f59dd80f44b7144b">More...</a><br /></td></tr>
+<tr class="separator:a5dc76ea9e1909f27f59dd80f44b7144b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abac88866a4f7acf53d7a2bed26918918"><td class="memItemLeft" align="right" valign="top">real(ntreal) function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#abac88866a4f7acf53d7a2bed26918918">distributedsparsenorm</a> (this)</td></tr>
 <tr class="memdesc:abac88866a4f7acf53d7a2bed26918918"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the norm of a distributed sparse matrix along the rows.  <a href="#abac88866a4f7acf53d7a2bed26918918">More...</a><br /></td></tr>
 <tr class="separator:abac88866a4f7acf53d7a2bed26918918"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -125,15 +143,18 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a9a510ac879816d92b96a2d65a2b2f28c"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a9a510ac879816d92b96a2d65a2b2f28c">eigencircle</a> (this, min_value, max_value)</td></tr>
 <tr class="memdesc:a9a510ac879816d92b96a2d65a2b2f28c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute a bounds on the minimum and maximum eigenvalue of a matrix. Uses Gershgorin's theorem.  <a href="#a9a510ac879816d92b96a2d65a2b2f28c">More...</a><br /></td></tr>
 <tr class="separator:a9a510ac879816d92b96a2d65a2b2f28c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade3a86212bc069959f2366086036accd"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#ade3a86212bc069959f2366086036accd">printdistributedsparsematrix</a> (this, file_name_in)</td></tr>
-<tr class="memdesc:ade3a86212bc069959f2366086036accd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print ouf a distributed sparse matrix.  <a href="#ade3a86212bc069959f2366086036accd">More...</a><br /></td></tr>
-<tr class="separator:ade3a86212bc069959f2366086036accd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a51de55328992a548bfc9d5d40521d711"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a51de55328992a548bfc9d5d40521d711">computesigma</a> (this, sigma_value)</td></tr>
 <tr class="memdesc:a51de55328992a548bfc9d5d40521d711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute sigma for the inversion method.  <a href="#a51de55328992a548bfc9d5d40521d711">More...</a><br /></td></tr>
 <tr class="separator:a51de55328992a548bfc9d5d40521d711"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10d993c24254247dd5dff151439ed21b"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a10d993c24254247dd5dff151439ed21b">getsize</a> (this)</td></tr>
-<tr class="memdesc:a10d993c24254247dd5dff151439ed21b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the total number of non zero entries in the distributed sparse matrix.  <a href="#a10d993c24254247dd5dff151439ed21b">More...</a><br /></td></tr>
-<tr class="separator:a10d993c24254247dd5dff151439ed21b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade3a86212bc069959f2366086036accd"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#ade3a86212bc069959f2366086036accd">printdistributedsparsematrix</a> (this, file_name_in)</td></tr>
+<tr class="memdesc:ade3a86212bc069959f2366086036accd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print ouf a distributed sparse matrix.  <a href="#ade3a86212bc069959f2366086036accd">More...</a><br /></td></tr>
+<tr class="separator:ade3a86212bc069959f2366086036accd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8a933282e4cbb1597050f810debeadc0"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a8a933282e4cbb1597050f810debeadc0">filtersparsematrix</a> (this, threshold)</td></tr>
+<tr class="memdesc:a8a933282e4cbb1597050f810debeadc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">A utility routine that filters a sparse matrix. All (absolute) values below the threshold are set to zero.  <a href="#a8a933282e4cbb1597050f810debeadc0">More...</a><br /></td></tr>
+<tr class="separator:a8a933282e4cbb1597050f810debeadc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8bc94c2a9026dcaa256cb4c542621bd5"><td class="memItemLeft" align="right" valign="top">integer(c_long) function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a8bc94c2a9026dcaa256cb4c542621bd5">getsize</a> (this)</td></tr>
+<tr class="memdesc:a8bc94c2a9026dcaa256cb4c542621bd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the total number of non zero entries in the distributed sparse matrix.  <a href="#a8bc94c2a9026dcaa256cb4c542621bd5">More...</a><br /></td></tr>
+<tr class="separator:a8bc94c2a9026dcaa256cb4c542621bd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7df56e0361173f090a62ae0c930ac6ff"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a7df56e0361173f090a62ae0c930ac6ff">getloadbalance</a> (this, min_size, max_size)</td></tr>
 <tr class="memdesc:a7df56e0361173f090a62ae0c930ac6ff"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a measure of how load balanced this matrix is. For each process, the number of non-zero entries is calculated. Then, this function returns the max and min of those values.  <a href="#a7df56e0361173f090a62ae0c930ac6ff">More...</a><br /></td></tr>
 <tr class="separator:a7df56e0361173f090a62ae0c930ac6ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -168,7 +189,7 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute sigma for the inversion method. </p>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000003">Todo:</a></b></dt><dd>describe this better. </dd></dl>
+<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000001">Todo:</a></b></dt><dd>describe this better. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to compute the sigma value of. </td></tr>
@@ -179,14 +200,14 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="ab545767fa9a5b52b54dcbaa6d7040639"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab545767fa9a5b52b54dcbaa6d7040639">&#9670;&nbsp;</a></span>constructempty()</h2>
+<a id="a2f5078e3419d8ad4fd1be2eb4d62f647"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2f5078e3419d8ad4fd1be2eb4d62f647">&#9670;&nbsp;</a></span>constructempty()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine, public distributedsparsematrixmodule::constructempty </td>
+          <td class="memname">pure subroutine, public distributedsparsematrixmodule::constructempty </td>
           <td>(</td>
           <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
@@ -290,14 +311,14 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a75cc3e2ab870a4e19fc25fa478493d3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a75cc3e2ab870a4e19fc25fa478493d3c">&#9670;&nbsp;</a></span>copydistributedsparsematrix()</h2>
+<a id="af70792b62e837921ca9e91b2a808ac87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af70792b62e837921ca9e91b2a808ac87">&#9670;&nbsp;</a></span>copydistributedsparsematrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine, public distributedsparsematrixmodule::copydistributedsparsematrix </td>
+          <td class="memname">pure subroutine, public distributedsparsematrixmodule::copydistributedsparsematrix </td>
           <td>(</td>
           <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
           <td class="paramname"><em>matA</em>, </td>
@@ -327,16 +348,16 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a3af5141e7589d12a182b401b963da6a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3af5141e7589d12a182b401b963da6a5">&#9670;&nbsp;</a></span>destructdistributedsparsematrix()</h2>
+<a id="a21f9d5bc7949a48e3fc5a513e1a3d7d8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21f9d5bc7949a48e3fc5a513e1a3d7d8">&#9670;&nbsp;</a></span>destructdistributedsparsematrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine, public distributedsparsematrixmodule::destructdistributedsparsematrix </td>
+          <td class="memname">pure subroutine, public distributedsparsematrixmodule::destructdistributedsparsematrix </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>)&#160;</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em></td><td>)</td>
           <td></td>
         </tr>
@@ -414,11 +435,82 @@ Functions/Subroutines</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">matB</td><td>Matrix B </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">matC</td><td>= alpha*matA*matB + beta*matC </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha_in</td><td>scales the multiplication </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">beta_in</td><td>scales matrix we sum on to </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">matC</td><td>= alpha*matA*matB + beta*matC </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">threshold_in</td><td>for flushing values to zero. Default value is 0.0. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">memory_pool_in</td><td>a memory pool that can be used for the calculation. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1692be26c7f30156b51a79bf1b1705b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1692be26c7f30156b51a79bf1b1705b6">&#9670;&nbsp;</a></span>distributedgrandsum()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">real(ntreal) function, public distributedsparsematrixmodule::distributedgrandsum </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>matA</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sum up the elements in a matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>sum the sum of all elements. </dd></dl>
+
+</div>
+</div>
+<a id="a55682201c822bf28da6263d9504c2f50"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a55682201c822bf28da6263d9504c2f50">&#9670;&nbsp;</a></span>distributedpairwisemultiply()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public distributedsparsematrixmodule::distributedpairwisemultiply </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>matA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>matB</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>matC</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Elementwise multiplication. C_ij = A_ij * B_ij. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">matB</td><td>Matrix B. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">matC</td><td>= MatA mult MatB. </td></tr>
   </table>
   </dd>
 </dl>
@@ -449,6 +541,44 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the norm value of the full distributed sparse matrix. </dd></dl>
+
+</div>
+</div>
+<a id="adf4db21837f775237d655d123ec60460"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf4db21837f775237d655d123ec60460">&#9670;&nbsp;</a></span>dotdistributedsparsematrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">real(ntreal) function, public distributedsparsematrixmodule::dotdistributedsparsematrix </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>matA</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>matB</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>product = dot(Matrix A,Matrix B) </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">matB</td><td>Matrix B. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>product the dot product. </dd></dl>
 
 </div>
 </div>
@@ -554,7 +684,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Fill in the values of a distributed matrix with the identity matrix. If you don't specify permuterows, will default to permuting rows. </p>
+<p>Fill in the values of a distributed matrix with a permutation. If you don't specify permuterows, will default to permuting rows. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the matrix being filled. </td></tr>
@@ -575,13 +705,13 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">subroutine, public distributedsparsematrixmodule::fillfromtripletlist </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(inout)&#160;</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">type(tripletlist_t), intent(in)&#160;</td>
+          <td class="paramtype">type(tripletlist_t)&#160;</td>
           <td class="paramname"><em>triplet_list</em>&#160;</td>
         </tr>
         <tr>
@@ -600,6 +730,70 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a8a933282e4cbb1597050f810debeadc0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a933282e4cbb1597050f810debeadc0">&#9670;&nbsp;</a></span>filtersparsematrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public distributedsparsematrixmodule::filtersparsematrix </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(ntreal), intent(in)&#160;</td>
+          <td class="paramname"><em>threshold</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A utility routine that filters a sparse matrix. All (absolute) values below the threshold are set to zero. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>matrix to filter </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">threshold</td><td>(absolute) values below this are filtered </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="adc956b06e1582e426faa1d59fa1cf956"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adc956b06e1582e426faa1d59fa1cf956">&#9670;&nbsp;</a></span>getactualdimension()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure integer function, public distributedsparsematrixmodule::getactualdimension </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the actual dimension of the matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>dimension of the matrix; </dd></dl>
 
 </div>
 </div>
@@ -647,14 +841,41 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a10d993c24254247dd5dff151439ed21b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a10d993c24254247dd5dff151439ed21b">&#9670;&nbsp;</a></span>getsize()</h2>
+<a id="a149a8855000bd591b518ca1600c95c45"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a149a8855000bd591b518ca1600c95c45">&#9670;&nbsp;</a></span>getlogicaldimension()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">integer function, public distributedsparsematrixmodule::getsize </td>
+          <td class="memname">pure integer function, public distributedsparsematrixmodule::getlogicaldimension </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the logical dimension of the matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>dimension of the matrix; </dd></dl>
+
+</div>
+</div>
+<a id="a8bc94c2a9026dcaa256cb4c542621bd5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8bc94c2a9026dcaa256cb4c542621bd5">&#9670;&nbsp;</a></span>getsize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer(c_long) function, public distributedsparsematrixmodule::getsize </td>
           <td>(</td>
           <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
           <td class="paramname"><em>this</em></td><td>)</td>
@@ -671,6 +892,43 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the number of non-zero entries in the matrix. </dd></dl>
+
+</div>
+</div>
+<a id="a95ef415bd8d32e66683470d5f696b329"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95ef415bd8d32e66683470d5f696b329">&#9670;&nbsp;</a></span>gettripletlist()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public distributedsparsematrixmodule::gettripletlist </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(tripletlist_t), intent(inout)&#160;</td>
+          <td class="paramname"><em>triplet_list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extracts a triplet list of the data that is stored on this process. Data is returned with absolute coordinates. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the distributed sparse matrix. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">triplet_list</td><td>the list to fill. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -715,8 +973,8 @@ Functions/Subroutines</h2></td></tr>
 <p>Matrix B = alpha*Matrix A + Matrix B (AXPY) This will utilize the sparse vector increment routine. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A </td></tr>
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">matB</td><td>Matrix B </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">matB</td><td>Matrix B. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">alpha_in</td><td>multiplier. Default value is 1.0 </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">threshold_in</td><td>for flushing values to zero. Default value is 0.0 </td></tr>
   </table>
@@ -762,8 +1020,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="a6c698c3eb4039b2cca4d37b97a4430f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6c698c3eb4039b2cca4d37b97a4430f0">&#9670;&nbsp;</a></span>scaledistributedsparsematrix()</h2>
+<a id="a5dc76ea9e1909f27f59dd80f44b7144b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5dc76ea9e1909f27f59dd80f44b7144b">&#9670;&nbsp;</a></span>scaledistributedsparsematrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -772,7 +1030,7 @@ Functions/Subroutines</h2></td></tr>
           <td class="memname">pure subroutine, public distributedsparsematrixmodule::scaledistributedsparsematrix </td>
           <td>(</td>
           <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix.html">distributedsparsematrix</a>), intent(inout)&#160;</td>
-          <td class="paramname"><em>matA</em>, </td>
+          <td class="paramname"><em>this</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -791,7 +1049,7 @@ Functions/Subroutines</h2></td></tr>
 <p>Will scale a distributed sparse matrix by a constant. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>Matrix to scale. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">constant</td><td>scale factor. </td></tr>
   </table>
   </dd>
@@ -889,7 +1147,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Save a distributed sparse matrix to a matrix market file. </p>
+<p>Write a distributed sparse matrix to a matrix market file. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the Matrix to write. </td></tr>
