@@ -613,7 +613,7 @@ class TestSolvers(unittest.TestCase):
     ##########################################################################
     # Test our ability to solve general matrix equations.
     #  @param[in] self pointer.
-    def test_cgsolve(self):
+    def a_test_cgsolve(self):
         # Starting Matrix
         A = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                               density=1.0)

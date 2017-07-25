@@ -11,7 +11,6 @@ export HAMILTONIAN=@CMAKE_SOURCE_DIR@/UnitTests/Data/Hamiltonian.mtx
 export OVERLAP=@CMAKE_SOURCE_DIR@/UnitTests/Data/Overlap.mtx
 export DENSITY=@CMAKE_SOURCE_DIR@/UnitTests/Data/Density.mtx
 cd @CMAKE_BINARY_DIR@/UnitTests
-#cd @CMAKE_SOURCE_DIR@
 
 # Get Parameters
 if [ "$#" -ne 4 ]

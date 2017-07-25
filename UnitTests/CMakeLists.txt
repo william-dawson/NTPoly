@@ -15,12 +15,12 @@ find_package(PythonInterp REQUIRED)
 ################################################################################
 configure_file(__init__.py __init__.py COPYONLY)
 configure_file(Helpers.py Helpers.py COPYONLY)
-configure_file(RunTest.sh 
+configure_file(RunTest.sh
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RunTest.sh @ONLY)
-configure_file(CurrentTest.sh 
+configure_file(CurrentTest.sh
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CurrentTest.sh @ONLY)
 configure_file(testChemistry.py testChemistry.py COPYONLY)
-configure_file(testDistributedSparseMatrix.py 
+configure_file(testDistributedSparseMatrix.py
   testDistributedSparseMatrix.py COPYONLY)
 configure_file(testSolvers.py testSolvers.py COPYONLY)
 configure_file(testSparseMatrix.py testSparseMatrix.py COPYONLY)
@@ -39,5 +39,3 @@ add_test(PythonTests222 ${BASH_PROGRAM} ${TestScript} 2 2 2 8)
 
 set(CurrentTestScript ${CMAKE_BINARY_DIR}/bin/CurrentTest.sh)
 add_test(CurrentTest ${BASH_PROGRAM} ${CurrentTestScript} 1 1 1 1)
-#add_test(CurrentTest ${BASH_PROGRAM} ${CurrentTestScript} 2 1 1 2)
-

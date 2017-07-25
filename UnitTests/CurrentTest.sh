@@ -23,29 +23,5 @@ export PROCESS_ROWS="$2"
 export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
-## Local Tests
-#if [ $PROCESSES == "1" ]
-#then
-#  @PYTHON_EXECUTABLE@ -m unittest -v testSparseMatrix.TestLocalMatrix
-#fi
-
-## MPI Tests
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#  -m unittest -v testDistributedSparseMatrix.TestDistributedMatrix
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#  -m unittest -v testSolvers.TestSolvers
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#  -m unittest -v testChemistry.TestChemistry
-
 #@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
 #  -m unittest -v testChemistry.TestChemistry.test_HPCPPlus
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#-m unittest -v testSolvers.TestSolvers.test_root
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#  -m unittest -v testChemistry.TestChemistry.test_trs2
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#  -m unittest -v testChemistry.TestChemistry.test_trs4
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-  -m unittest -v testSolvers.TestSolvers.test_logarithmfunction
-#@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-#  -m unittest testChemistry.TestChemistry
