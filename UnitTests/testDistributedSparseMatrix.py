@@ -52,7 +52,7 @@ class TestDistributedMatrix(unittest.TestCase):
         nt.ConstructProcessGrid(rows, columns, slices)
 
     def setUp(self):
-        mat_size = 16
+        mat_size = 64
         self.my_rank = comm.Get_rank()
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))

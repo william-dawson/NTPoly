@@ -226,20 +226,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Global read
     CALL MPI_File_open(global_comm,file_name,MPI_MODE_RDONLY,&
          & MPI_INFO_NULL,mpi_file_handler,grid_error)
-
-    !! Compute Offsets
     CALL MPI_File_get_size(mpi_file_handler,total_file_size,grid_error)
+
+    !! Compute Offsets And Data Size
     local_data_size = (total_file_size - bytes_per_character*header_length)/&
          total_processors
+    IF (local_data_size .LT. 2*MAX_LINE_LENGTH) THEN
+       local_data_size = 2*MAX_LINE_LENGTH
+    END IF
     local_offset = bytes_per_character*header_length + &
          local_data_size*global_rank
-    local_data_size_plus_buffer = local_data_size
-    IF (.NOT. global_rank .EQ. total_processors-1) THEN
+
+    !! Check if this processor has any work to do, and set the appropriate
+    !! buffer size. We also add some buffer space, so you can read beyond
+    !! your local data size in case the local data read ends in the middle
+    !! of a line.
+    IF (local_offset .LT. total_file_size) THEN
        local_data_size_plus_buffer = local_data_size + &
-            MAX_LINE_LENGTH*bytes_per_character
+            & MAX_LINE_LENGTH*bytes_per_character
+       IF (local_offset + local_data_size_plus_buffer .GT. total_file_size) THEN
+          local_data_size_plus_buffer = (total_file_size - local_offset)
+       END IF
     ELSE
-       local_data_size_plus_buffer = (total_file_size - local_offset)
+       local_data_size_plus_buffer = 0
     END IF
+
+    !! A buffer to read the data into.
     ALLOCATE(CHARACTER(LEN=local_data_size_plus_buffer) :: mpi_input_buffer)
 
     !! Do Actual Reading
@@ -255,6 +267,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Read By Line
     end_of_buffer = .FALSE.
+    IF (local_data_size_plus_buffer .EQ. 0) THEN
+       end_of_buffer = .TRUE.
+    END IF
     CALL ConstructTripletList(triplet_list)
     DO WHILE(.NOT. end_of_buffer)
        current_line_length = INDEX(mpi_input_buffer(full_buffer_counter:),&
@@ -498,10 +513,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     WRITE(temp_string2,*) this%actual_matrix_dimension, &
          & this%actual_matrix_dimension, GetSize(this)
+    !! I don't understand why the +1 is needed, but it is.
     ALLOCATE(CHARACTER(&
-         & len=LEN_TRIM(temp_string2)+NEW_LINE_LENGTH) :: header_line2)
-    WRITE(header_line2,*) TRIM(temp_string2)
-    header_line2 = header_line2//new_line('A')
+         & len=LEN_TRIM(temp_string2)+NEW_LINE_LENGTH+1) :: header_line2)
+    WRITE(header_line2,*) TRIM(temp_string2)//new_line('A')
 
     header_size = LEN(header_line1) + LEN(header_line2)
 
@@ -537,7 +552,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & triplet_list%data(counter)%point_value, &
             & new_line('A')
        temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
-       WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) temp_string2(1:temp_length)
+       WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
+            & temp_string2(1:temp_length)
        offset_counter = offset_counter + temp_length
     END DO
 
@@ -1564,10 +1580,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetTripletList(this,triplet_list)
     CALL ConstructTripletList(new_list)
     DO counter=1,triplet_list%CurrentSize
-      CALL GetTripletAt(triplet_list,counter,temporary)
-      IF (ABS(temporary%point_value) .GT. threshold) THEN
-        CALL AppendToTripletList(new_list,temporary)
-      END IF
+       CALL GetTripletAt(triplet_list,counter,temporary)
+       IF (ABS(temporary%point_value) .GT. threshold) THEN
+          CALL AppendToTripletList(new_list,temporary)
+       END IF
     END DO
     size_temp = this%actual_matrix_dimension
     CALL DestructDistributedSparseMatrix(this)
