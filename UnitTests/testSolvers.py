@@ -30,7 +30,7 @@ class TestSolvers(unittest.TestCase):
     input_file2 = scratch_dir + "/input2.mtx"
     CheckMat = 0
     my_rank = 0
-    matrix_dimension = 128
+    matrix_dimension = 64
 
     ##########################################################################
     # set up all of the tests
@@ -59,7 +59,7 @@ class TestSolvers(unittest.TestCase):
         if (self.my_rank == 0):
             ResultMat = scipy.io.mmread(result_file)
             norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-            relative_error = norm/scipy.sparse.linalg.norm(self.CheckMat)
+            relative_error = norm / scipy.sparse.linalg.norm(self.CheckMat)
             print "Norm:", norm
             print "Relative_Error:", relative_error
         global_norm = comm.bcast(norm, root=0)
@@ -120,7 +120,7 @@ class TestSolvers(unittest.TestCase):
 
         # Check Matrix
         dense_check = scipy.linalg.funm(temp_mat.todense(),
-                                        lambda x: 1.0/numpy.sqrt(x))
+                                        lambda x: 1.0 / numpy.sqrt(x))
         self.CheckMat = scipy.sparse.csr_matrix(dense_check)
         if self.my_rank == 0:
             scipy.io.mmwrite(self.input_file,
@@ -197,7 +197,7 @@ class TestSolvers(unittest.TestCase):
 
             # Check Matrix
             dense_check = scipy.linalg.funm(temp_mat.todense(),
-                                            lambda x: numpy.power(x,-1.0/root))
+                                            lambda x: numpy.power(x, -1.0 / root))
             self.CheckMat = scipy.sparse.csr_matrix(dense_check)
             if self.my_rank == 0:
                 scipy.io.mmwrite(self.input_file,
@@ -238,7 +238,7 @@ class TestSolvers(unittest.TestCase):
 
             # Check Matrix
             dense_check = scipy.linalg.funm(temp_mat.todense(),
-                                            lambda x: numpy.power(x,1.0/root))
+                                            lambda x: numpy.power(x, 1.0 / root))
             self.CheckMat = scipy.sparse.csr_matrix(dense_check)
             if self.my_rank == 0:
                 scipy.io.mmwrite(self.input_file,
@@ -300,7 +300,7 @@ class TestSolvers(unittest.TestCase):
         # Starting Matrix
         temp_mat = scipy.sparse.rand(
             self.matrix_dimension, self.matrix_dimension, density=1.0)
-        temp_mat = 4*(1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
+        temp_mat = 8 * (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
         matrix1 = scipy.sparse.csr_matrix(temp_mat)
 
         # Check Matrix
@@ -335,7 +335,8 @@ class TestSolvers(unittest.TestCase):
                                      density=1.0)
         temp_mat = (temp_mat.T + temp_mat)
         identity_matrix = scipy.sparse.identity(self.matrix_dimension)
-        temp_mat = 4*(temp_mat + identity_matrix * self.matrix_dimension)
+        temp_mat = 4*(1.0 / self.matrix_dimension) * \
+            (temp_mat + identity_matrix * self.matrix_dimension)
         matrix1 = scipy.sparse.csr_matrix(temp_mat)
 
         # Check Matrix
@@ -361,40 +362,36 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    # ##########################################################################
-    # # Test our ability to compute the matrix exponential using a round trip.
-    # #  @param[in] self pointer.
-    # def test_exponentialround(self):
-    #     # Starting Matrix. Care taken to make sure eigenvalues are positive.
-    #     temp_mat = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
-    #                                  density=1.0)
-    #     temp_mat = (0.5/self.matrix_dimension)*(temp_mat.T + temp_mat)
-    #     matrix1 = scipy.sparse.csr_matrix(temp_mat)
-    #
-    #     # Check Matrix
-    #     self.CheckMat = scipy.sparse.csr_matrix(temp_mat)
-    #     if self.my_rank == 0:
-    #         scipy.io.mmwrite(self.input_file,
-    #                          scipy.sparse.csr_matrix(matrix1))
-    #     comm.barrier()
-    #
-    #     # Result Matrix
-    #     input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-    #     exp_matrix = nt.DistributedSparseMatrix(
-    #         input_matrix.GetActualDimension())
-    #     round_matrix = nt.DistributedSparseMatrix(
-    #         input_matrix.GetActualDimension())
-    #     permutation = nt.Permutation(input_matrix.GetLogicalDimension())
-    #     permutation.SetRandomPermutation()
-    #     self.fixed_solver_parameters.SetLoadBalance(permutation)
-    #     nt.ExponentialSolvers.ComputeExponential(input_matrix, exp_matrix,
-    #                                              self.fixed_solver_parameters)
-    #     nt.ExponentialSolvers.ComputeLogarithm(exp_matrix, round_matrix,
-    #                                            self.fixed_solver_parameters)
-    #     round_matrix.WriteToMatrixMarket(result_file)
-    #     comm.barrier()
-    #
-    #     self.check_result()
+    ##########################################################################
+    # Test our ability to compute the matrix exponential using a round trip.
+    #  @param[in] self pointer.
+    def test_exponentialround(self):
+        temp_mat = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
+                                     density=1.0)
+        temp_mat = 0.25 * (0.5 / self.matrix_dimension) * \
+            (temp_mat.T + temp_mat)
+        self.CheckMat = scipy.sparse.csr_matrix(temp_mat)
+
+        # Check Matrix
+        if self.my_rank == 0:
+            scipy.io.mmwrite(
+                self.input_file, scipy.sparse.csr_matrix(temp_mat))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        exp_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        round_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        nt.ExponentialSolvers.ComputeExponential(input_matrix, exp_matrix,
+                                                 self.fixed_solver_parameters)
+        nt.ExponentialSolvers.ComputeLogarithm(exp_matrix, round_matrix,
+                                               self.fixed_solver_parameters)
+        round_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
 
     ##########################################################################
     # Test our ability to compute the matrix sine.
@@ -683,6 +680,7 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
 
         self.check_result()
+
 
 if __name__ == '__main__':
     unittest.main()

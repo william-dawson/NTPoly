@@ -88,37 +88,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Expand Chebyshev Series
     CALL ConstructChebyshevPolynomial(polynomial,16)
     CALL SetChebyshevCoefficient(polynomial,1, &
-         & REAL(1.266065877752007e+00,NTREAL))
+         & REAL(1.266065877752007e+00_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,2, &
-         & REAL(1.130318207984970e+00,NTREAL))
+         & REAL(1.130318207984970e+00_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,3, &
-         & REAL(2.714953395340764e-01,NTREAL))
+         & REAL(2.714953395340771e-01_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,4, &
-         & REAL(4.433684984866457e-02,NTREAL))
+         & REAL(4.433684984866504e-02_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,5, &
-         & REAL(5.474240442093185e-03,NTREAL))
+         & REAL(5.474240442092110e-03_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,6, &
-         & REAL(5.429263119148893e-04,NTREAL))
+         & REAL(5.429263119148932e-04_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,7, &
-         & REAL(4.497732295384419e-05,NTREAL))
+         & REAL(4.497732295351912e-05_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,8, &
-         & REAL(3.198436462646902e-06,NTREAL))
+         & REAL(3.198436462630565e-06_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,9, &
-         & REAL(1.992124791702536e-07,NTREAL))
+         & REAL(1.992124801999838e-07_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,10, &
-         & REAL(1.103677179722673e-08,NTREAL))
+         & REAL(1.103677287249654e-08_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,11, &
-         & REAL(5.505894210845503e-10,NTREAL))
+         & REAL(5.505891628277851e-10_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,12, &
-         & REAL(2.497953174170452e-11,NTREAL))
+         & REAL(2.498021534339559e-11_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,13, &
-         & REAL(1.038796461263896e-12,NTREAL))
+         & REAL(1.038827668772902e-12_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,14, &
-         & REAL(3.933483178134044e-14,NTREAL))
+         & REAL(4.032447357431817e-14_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,15, &
-         & REAL(4.194318048730632e-16,NTREAL))
+         & REAL(2.127980007794583e-15_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,16, &
-         & REAL(-4.462345204611966e-16,NTREAL))
+         & REAL(-1.629151584468762e-16_16,NTREAL))
 
     !CALL ChebyshevCompute(ScaledMat,OutputMat,polynomial,solver_parameters)
     CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
@@ -313,51 +313,87 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sigma_val = 1
     sigma_counter = 1
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
-    DO WHILE (spectral_radius .GT. 4)
+    DO WHILE (spectral_radius .GT. SQRT(2.0))
        spectral_radius = SQRT(spectral_radius)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteElement(key="Sigma", int_value_in=sigma_val)
+    END IF
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_solver_parameters)
 
     !! Shift Scaled Matrix
     CALL IncrementDistributedSparseMatrix(IdentityMat,ScaledMat, &
-         & alpha_in=REAL(-3.0,NTREAL))
+         & alpha_in=REAL(-1.0,NTREAL))
+    CALL EigenCircle(ScaledMat, e_min, e_max)
 
     !! Expand Chebyshev Series
-    CALL ConstructChebyshevPolynomial(polynomial,16)
+    CALL ConstructChebyshevPolynomial(polynomial,32)
     CALL SetChebyshevCoefficient(polynomial,1, &
-         & REAL(1.069599993479196e+00,NTREAL))
+         & REAL(-0.485101351704_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,2, &
-         & REAL(3.431457505076075e-01,NTREAL))
+         & REAL(1.58828112379_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,3, &
-         & REAL(-2.943725152284926e-02,NTREAL))
+         & REAL(-0.600947731795_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,4, &
-         & REAL(3.367089255551476e-03,NTREAL))
+         & REAL(0.287304748177_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,5, &
-         & REAL(-4.332758885990646e-04,NTREAL))
+         & REAL(-0.145496447103_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,6, &
-         & REAL(5.947071197674775e-05,NTREAL))
+         & REAL(0.0734013668818_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,7, &
-         & REAL(-8.502967529983385e-06,NTREAL))
+         & REAL(-0.0356277942958_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,8, &
-         & REAL(1.250467349906989e-06,NTREAL))
+         & REAL(0.0161605505166_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,9, &
-         & REAL(-1.877279855374288e-07,NTREAL))
+         & REAL(-0.0066133591188_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,10, &
-         & REAL(2.863023858749194e-08,NTREAL))
+         & REAL(0.00229833505456_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,11, &
-         & REAL(-4.420947514783171e-09,NTREAL))
+         & REAL(-0.000577804103964_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,12, &
-         & REAL(6.895489131189299e-10,NTREAL))
+         & REAL(2.2849332964e-05_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,13, &
-         & REAL(-1.084419051323420e-10,NTREAL))
+         & REAL(8.37426826403e-05_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,14, &
-         & REAL(1.716514621065752e-11,NTREAL))
+         & REAL(-6.10822859027e-05_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,15, &
-         & REAL(-2.729866800230529e-12,NTREAL))
+         & REAL(2.58132364523e-05_16,NTREAL))
     CALL SetChebyshevCoefficient(polynomial,16, &
-         & REAL(4.277875177870295e-13,NTREAL))
+         & REAL(-5.87577322647e-06_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,17, &
+         & REAL(-8.56711062722e-07_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,18, &
+         & REAL(1.52066488969e-06_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,19, &
+         & REAL(-7.12760496253e-07_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,20, &
+         & REAL(1.23102245249e-07_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,21, &
+         & REAL(6.03168259043e-08_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,22, &
+         & REAL(-5.1865499826e-08_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,23, &
+         & REAL(1.43185107512e-08_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,24, &
+         & REAL(2.58449717089e-09_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,25, &
+         & REAL(-3.73189861771e-09_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,26, &
+         & REAL(1.18469334815e-09_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,27, &
+         & REAL(1.51569931066e-10_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,28, &
+         & REAL(-2.89595999673e-10_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,29, &
+         & REAL(1.26720668874e-10_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,30, &
+         & REAL(-3.00079067694e-11_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,31, &
+         & REAL(3.91175568865e-12_16,NTREAL))
+    CALL SetChebyshevCoefficient(polynomial,32, &
+         & REAL(-2.21155654398e-13_16,NTREAL))
 
     CALL FactorizedChebyshevCompute(ScaledMat, OutputMat, polynomial, &
          & f_sub_solver_parameters)

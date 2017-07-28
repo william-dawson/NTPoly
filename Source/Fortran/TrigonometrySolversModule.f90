@@ -248,23 +248,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Expand the Chebyshev Polynomial.
-    coefficients(1) = 7.651976865579664e-01
+    coefficients(1) = 7.651976865579664e-01_16
     coefficients(2) = 0
-    coefficients(3) = -2.298069698638004e-01
+    coefficients(3) = -2.298069698638004e-01_16
     coefficients(4) = 0
-    coefficients(5) = 4.953277928219409e-03
+    coefficients(5) = 4.953277928219409e-03_16
     coefficients(6) = 0
-    coefficients(7) = -4.187667600472235e-05
+    coefficients(7) = -4.187667600472235e-05_16
     coefficients(8) = 0
-    coefficients(9) = 1.884468822397086e-07
+    coefficients(9) = 1.884468822397086e-07_16
     coefficients(10) = 0
-    coefficients(11) = -5.261224549346905e-10
+    coefficients(11) = -5.261224549346905e-10_16
     coefficients(12) = 0
-    coefficients(13) = 9.999906645345580e-13
+    coefficients(13) = 9.999906645345580e-13_16
     coefficients(14) = 0
-    coefficients(15) = -2.083597362700025e-15
+    coefficients(15) = -2.083597362700025e-15_16
     coefficients(16) = 0
-    coefficients(17) = 9.181480886537484e-17
+    coefficients(17) = 9.181480886537484e-17_16
 
     !! Basic T Values.
     CALL DistributedGemm(ScaledMat,ScaledMat,T2,alpha_in=REAL(2.0,NTREAL),&
