@@ -72,8 +72,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmpty(OutputMat, InputMat%actual_matrix_dimension)
 
     !! Scale the matrix
-    ! CALL GershgorinBounds(InputMat, e_min, e_max)
-    ! spectral_radius = MAX(ABS(e_min), ABS(e_max))
     CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
     sigma_val = 1.0
     sigma_counter = 1
@@ -179,6 +177,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters) :: i_sub_solver_parameters
     !! Local Matrices
     TYPE(DistributedSparseMatrix) :: ScaledMat
     TYPE(DistributedSparseMatrix) :: Ak
@@ -198,6 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        solver_parameters = FixedSolverParameters()
     END IF
+    CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
@@ -207,8 +207,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL GershgorinBounds(InputMat, e_min, e_max)
-    spectral_radius = MAX(ABS(e_min), ABS(e_max))
+    CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
 
     !! Figure out how much to scale the matrix.
     sigma_val = 1.0
@@ -313,10 +312,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat,ScaledMat)
 
     !! Compute The Scaling Factor
-    CALL GershgorinBounds(ScaledMat, e_min, e_max)
     sigma_val = 1
     sigma_counter = 1
-    spectral_radius = MAX(ABS(e_min), ABS(e_max))
+    CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
     DO WHILE (spectral_radius .GT. SQRT(2.0))
        spectral_radius = SQRT(spectral_radius)
        sigma_val = sigma_val * 2
@@ -325,12 +323,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteElement(key="Sigma", int_value_in=sigma_val)
     END IF
+    f_sub_solver_parameters%threshold = &
+      & f_sub_solver_parameters%threshold/REAL(2**(sigma_counter-1),NTREAL)
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_solver_parameters)
 
     !! Shift Scaled Matrix
     CALL IncrementDistributedSparseMatrix(IdentityMat,ScaledMat, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL GershgorinBounds(ScaledMat, e_min, e_max)
 
     !! Expand Chebyshev Series
     CALL ConstructChebyshevPolynomial(polynomial,32)
