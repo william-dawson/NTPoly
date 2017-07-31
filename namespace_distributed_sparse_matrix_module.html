@@ -95,8 +95,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compute the norm of a distributed sparse matrix along the rows.  <a href="#ac9122c40f4e40fe503874b8ef62a71a3"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">REAL(NTREAL)&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#a15a46b29b434c9a03888b4f919e676cc">Trace</a> (this)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compute the trace of the matrix.  <a href="#a15a46b29b434c9a03888b4f919e676cc"></a><br/></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#a492e39c9592268dc6f5a69f647a57f71">EigenCircle</a> (this, min_value, max_value)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compute a bounds on the minimum and maximum eigenvalue of a matrix. Uses Gershgorin's theorem.  <a href="#a492e39c9592268dc6f5a69f647a57f71"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#a127164f6b266403eedb14ead4cef2995">ComputeSigma</a> (this, sigma_value)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Compute sigma for the inversion method.  <a href="#a127164f6b266403eedb14ead4cef2995"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#aec0daf1798b96010dec6d25801247480">PrintDistributedSparseMatrix</a> (this, file_name_in)</td></tr>
@@ -520,49 +518,6 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
   </dd>
 </dl>
 <dl class="return"><dt><b>Returns:</b></dt><dd>product the dot product. </dd></dl>
-
-</div>
-</div>
-<a class="anchor" id="a492e39c9592268dc6f5a69f647a57f71"></a><!-- doxytag: member="DistributedSparseMatrixModule::EigenCircle" ref="a492e39c9592268dc6f5a69f647a57f71" args="(this, min_value, max_value)" -->
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine DistributedSparseMatrixModule::EigenCircle </td>
-          <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
-          <td class="paramname"> <em>this</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">REAL(NTREAL),intent(out)&nbsp;</td>
-          <td class="paramname"> <em>min_value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">REAL(NTREAL),intent(out)&nbsp;</td>
-          <td class="paramname"> <em>max_value</em></td><td>&nbsp;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td><td></td>
-        </tr>
-      </table>
-</div>
-<div class="memdoc">
-
-<p>Compute a bounds on the minimum and maximum eigenvalue of a matrix. Uses Gershgorin's theorem. </p>
-<dl><dt><b>Parameters:</b></dt><dd>
-  <table border="0" cellspacing="2" cellpadding="0">
-    <tr><td valign="top"><tt>[in]</tt>&nbsp;</td><td valign="top"><em>this</em>&nbsp;</td><td>the matrix to compute the min/max of. </td></tr>
-    <tr><td valign="top"><tt>[out]</tt>&nbsp;</td><td valign="top"><em>min_value</em>&nbsp;</td><td>a lower bound on the eigenspectrum. </td></tr>
-    <tr><td valign="top"><tt>[out]</tt>&nbsp;</td><td valign="top"><em>max_value</em>&nbsp;</td><td>an uppder bound on the eigenspectrum. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -1103,7 +1058,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 28 Jul 2017 for NTPoly by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 31 Jul 2017 for NTPoly by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
