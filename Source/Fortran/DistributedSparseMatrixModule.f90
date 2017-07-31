@@ -39,7 +39,7 @@ MODULE DistributedSparseMatrixModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for a distributed blocked CSR matrix.
-  TYPE, PUBLIC :: DistributedSparseMatrix
+  TYPE, PUBLIC :: DistributedSparseMatrix_t
      !> Number of matrix rows/columns for full matrix, scaled for process grid.
      INTEGER :: logical_matrix_dimension
      !> Number of matrix rows/columns for the full matrix, unscaled.
@@ -53,10 +53,10 @@ MODULE DistributedSparseMatrixModule
      INTEGER :: end_row !< last row stored locally is less than this.
      INTEGER :: local_columns !< number of local columns.
      INTEGER :: local_rows !< number of local rows.
-  END TYPE DistributedSparseMatrix
+  END TYPE DistributedSparseMatrix_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Constructors/Destructors
-  PUBLIC :: ConstructEmpty
+  PUBLIC :: ConstructEmptyDistributedSparseMatrix
   PUBLIC :: DestructDistributedSparseMatrix
   PUBLIC :: CopyDistributedSparseMatrix
   !! File I/O
@@ -92,9 +92,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   !! @param[out] this the matrix to be constructed.
   !! @param[in] matrix_dim_ the dimension of the full matrix.
-  PURE SUBROUTINE ConstructEmpty(this, matrix_dim_)
+  PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix(this, matrix_dim_)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     INTEGER, INTENT(in)           :: matrix_dim_
 
     CALL DestructDistributedSparseMatrix(this)
@@ -113,13 +113,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%end_column   = this%start_column + this%local_columns
 
     ALLOCATE(this%local_data(number_of_blocks_columns,number_of_blocks_rows))
-  END SUBROUTINE ConstructEmpty
+  END SUBROUTINE ConstructEmptyDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix
   !! @param[in,out] this the matrix to destruct
   PURE SUBROUTINE DestructDistributedSparseMatrix(this)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     !! Local Data
     INTEGER :: row_counter, column_counter
 
@@ -139,8 +139,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matB = matA
   PURE SUBROUTINE CopyDistributedSparseMatrix(matA, matB)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)    :: matA
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(in)    :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: matB
 
     CALL DestructDistributedSparseMatrix(matB)
     matB = matA
@@ -151,7 +151,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to read.
   SUBROUTINE ConstructFromMatrixMarket(this, file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix) :: this
+    TYPE(DistributedSparseMatrix_t) :: this
     CHARACTER(len=*), INTENT(in) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
@@ -220,7 +220,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Bcast(pattern_type,1,MPI_INT,RootID,global_comm,grid_error)
 
     !! Build Local Storage
-    CALL ConstructEmpty(this,matrix_rows)
+    CALL ConstructEmptyDistributedSparseMatrix(this,matrix_rows)
 
     !! Global read
     CALL MPI_File_open(global_comm,file_name,MPI_MODE_RDONLY,&
@@ -312,7 +312,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to read.
   SUBROUTINE ConstructFromBinary(this, file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix) :: this
+    TYPE(DistributedSparseMatrix_t) :: this
     CHARACTER(len=*), INTENT(in) :: file_name
     !! File Handles
     INTEGER :: mpi_file_handler
@@ -351,7 +351,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Bcast(total_values,1,MPI_INT,RootID,global_comm,grid_error)
 
     !! Build Local Storage
-    CALL ConstructEmpty(this, matrix_rows)
+    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows)
 
     !! Compute Offset
     local_triplets = total_values/total_processors
@@ -383,7 +383,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to write to.
   SUBROUTINE WriteToBinary(this,file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix) :: this
+    TYPE(DistributedSparseMatrix_t) :: this
     CHARACTER(len=*), INTENT(in) :: file_name
     !! Local Data
     TYPE(TripletList_t) :: triplet_list
@@ -468,7 +468,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to write to.
   SUBROUTINE WriteToMatrixMarket(this,file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix) :: this
+    TYPE(DistributedSparseMatrix_t) :: this
     CHARACTER(len=*), INTENT(in) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
     !! Local MPI Variables
@@ -602,7 +602,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_list the triplet list of values.
   SUBROUTINE FillFromTripletList(this,triplet_list)
     !! Parameters
-    TYPE(DistributedSparseMatrix) :: this
+    TYPE(DistributedSparseMatrix_t) :: this
     TYPE(TripletList_t) :: triplet_list
     !! Local Data
     TYPE(Permutation_t) :: basic_permutation
@@ -651,7 +651,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the matrix being filled.
   PURE SUBROUTINE FillDistributedIdentity(this)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     !! Local Data
     TYPE(TripletList_t) :: triplet_list
     TYPE(TripletList_t) :: unsorted_triplet_list
@@ -701,7 +701,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE FillDistributedPermutation(this, permutation_vector, &
        & permuterows)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     INTEGER, DIMENSION(:), INTENT(in) :: permutation_vector
     LOGICAL, OPTIONAL, INTENT(in) :: permuterows
     !! Local Data
@@ -773,7 +773,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] triplet_list the list to fill.
   PURE SUBROUTINE GetTripletList(this,triplet_list)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     TYPE(TripletList_t), INTENT(inout) :: triplet_list
     !! Local Data
     TYPE(SparseMatrix_t) :: merged_local_data
@@ -796,7 +796,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result dimension of the matrix;
   PURE FUNCTION GetActualDimension(this) RESULT(DIMENSION)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     INTEGER :: DIMENSION
     DIMENSION = this%actual_matrix_dimension
   END FUNCTION GetActualDimension
@@ -806,7 +806,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result dimension of the matrix;
   PURE FUNCTION GetLogicalDimension(this) RESULT(DIMENSION)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     INTEGER :: DIMENSION
     DIMENSION = this%logical_matrix_dimension
   END FUNCTION GetLogicalDimension
@@ -819,8 +819,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold_in for flushing values to zero. Default value is 0.0
   SUBROUTINE IncrementDistributedSparseMatrix(matA, matB, alpha_in,threshold_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: matA
-    TYPE(DistributedSparseMatrix), INTENT(inout)  :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(inout)  :: matB
     REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
     !! Local Data
@@ -859,11 +859,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result product the dot product.
   FUNCTION DotDistributedSparseMatrix(matA, matB) RESULT(product)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: matA
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matB
     REAL(NTREAL) :: product
     !! Local Data
-    TYPE(DistributedSparseMatrix)  :: matC
+    TYPE(DistributedSparseMatrix_t)  :: matC
 
     CALL DistributedPairwiseMultiply(matA,matB,matC)
     product = DistributedGrandSum(matC)
@@ -875,7 +875,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result sum the sum of all elements.
   FUNCTION DistributedGrandSum(matA) RESULT(sum)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
     REAL(NTREAL) :: sum
     !! Local Data
     INTEGER :: row_counter, column_counter
@@ -900,13 +900,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in,out] matC = MatA mult MatB.
   SUBROUTINE DistributedPairwiseMultiply(matA, matB, matC)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: matA
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: matB
-    TYPE(DistributedSparseMatrix), INTENT(inout)  :: matC
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(inout)  :: matC
     !! Local Data
     INTEGER :: row_counter, column_counter
 
-    CALL ConstructEmpty(matC,matA%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(matC,matA%actual_matrix_dimension)
 
     !$omp parallel
     !$omp do collapse(2)
@@ -935,9 +935,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DistributedGemm(matA,matB,matC,alpha_in,beta_in,threshold_in, &
        & memory_pool_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)    :: matA
-    TYPE(DistributedSparseMatrix), INTENT(in)    :: matB
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: matC
+    TYPE(DistributedSparseMatrix_t), INTENT(in)    :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(in)    :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: matC
     REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(in) :: beta_in
     REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
@@ -947,7 +947,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: beta
     REAL(NTREAL) :: threshold
-    TYPE(DistributedSparseMatrix) :: matAB
+    TYPE(DistributedSparseMatrix_t) :: matAB
     !! Temporary Matrices
     TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks
     TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: LocalRowContribution
@@ -1004,7 +1004,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct The Temporary Matrices
-    CALL ConstructEmpty(matAB,matA%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(matAB, &
+         & matA%actual_matrix_dimension)
 
     ALLOCATE(AdjacentABlocks(number_of_blocks_columns/num_process_slices, &
          & number_of_blocks_rows))
@@ -1321,7 +1322,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] constant scale factor.
   PURE SUBROUTINE ScaleDistributedSparseMatrix(this,constant)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     REAL(NTREAL), INTENT(in) :: constant
     INTEGER :: row_counter, column_counter
 
@@ -1338,7 +1339,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the norm value of the full distributed sparse matrix.
   FUNCTION DistributedSparseNorm(this) RESULT(norm_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     REAL(NTREAL) :: norm_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: local_norm
@@ -1366,7 +1367,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the trace value of the full distributed sparse matrix.
   FUNCTION Trace(this) RESULT(trace_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     REAL(NTREAL) :: trace_value
     !! Local data
     TYPE(TripletList_t) :: triplet_list
@@ -1400,7 +1401,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] sigma_value sigma.
   SUBROUTINE ComputeSigma(this,sigma_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     REAL(NTREAL), INTENT(out) :: sigma_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: &
@@ -1438,7 +1439,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name_in optionally, you can pass a file to print to.
   SUBROUTINE PrintDistributedSparseMatrix(this, file_name_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix) :: this
+    TYPE(DistributedSparseMatrix_t) :: this
     CHARACTER(len=*), OPTIONAL, INTENT(in) :: file_name_in
     !! Helpers For Communication
     TYPE(GatherHelper_t) :: row_helper
@@ -1501,7 +1502,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold (absolute) values below this are filtered
   SUBROUTINE FilterSparseMatrix(this, threshold)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(INOUT) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
     TYPE(TripletList_t) :: triplet_list
@@ -1520,7 +1521,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     size_temp = this%actual_matrix_dimension
     CALL DestructDistributedSparseMatrix(this)
-    CALL ConstructEmpty(this,size_temp)
+    CALL ConstructEmptyDistributedSparseMatrix(this,size_temp)
     CALL FillFromTripletList(this,new_list)
   END SUBROUTINE FilterSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1530,7 +1531,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the number of non-zero entries in the matrix.
   FUNCTION GetSize(this) RESULT(total_size)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     INTEGER(c_long) :: total_size
     !! Local Data
     !integer :: local_size
@@ -1558,7 +1559,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] max_size the maximum entries contained on a single process.
   SUBROUTINE GetLoadBalance(this, min_size, max_size)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     INTEGER, INTENT(out) :: min_size
     INTEGER, INTENT(out) :: max_size
     !! Local Data
@@ -1591,7 +1592,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE RedistributeTripletList(this,index_lookup,reverse_index_lookup,&
        & initial_triplet_list,sorted_triplet_list)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     INTEGER, DIMENSION(:), INTENT(in) :: index_lookup
     INTEGER, DIMENSION(:), INTENT(in) :: reverse_index_lookup
     TYPE(TripletList_t), INTENT(in) :: initial_triplet_list
@@ -1763,7 +1764,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matrix_to_split the matrix to split up.
   PURE SUBROUTINE SplitToLocalBlocks(this, matrix_to_split)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
     TYPE(SparseMatrix_t), INTENT(in) :: matrix_to_split
     !! Local Data
     TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: column_split
@@ -1805,7 +1806,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matrix_to_split the matrix to split up.
   PURE SUBROUTINE MergeLocalBlocks(this, merged_matrix)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     TYPE(SparseMatrix_t), INTENT(inout) :: merged_matrix
     !! Local Data
     TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: rows_of_merged

@@ -2,7 +2,7 @@
 !> A wrapper for the chemistry solver parameters.
 MODULE FixedSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE FixedSolversModule, ONLY : FixedSolverParameters, &
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
        & SetFixedThreshold, SetFixedBeVerbose, SetFixedLoadBalance
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -13,7 +13,7 @@ MODULE FixedSolversModule_wrp
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: FixedSolverParameters_wrp
      !> Actual data.
-     TYPE(FixedSolverParameters), POINTER :: data
+     TYPE(FixedSolverParameters_t), POINTER :: data
   END TYPE FixedSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructFixedSolverParameters_wrp
@@ -31,7 +31,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    h_this%data = FixedSolverParameters()
+    h_this%data = FixedSolverParameters_t()
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructFixedSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

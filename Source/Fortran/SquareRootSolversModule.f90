@@ -23,9 +23,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE SquareRoot(InputMat, OutputMat, solver_parameters_in)
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(IterativeSolverParameters),INTENT(in),OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(IterativeSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL NewtonSchultzISR(InputMat, OutputMat, .FALSE., &
             & solver_parameters_in)
@@ -39,9 +39,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE InverseSquareRoot(InputMat, OutputMat, solver_parameters_in)
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(IterativeSolverParameters),INTENT(in),OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(IterativeSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL NewtonSchultzISR(InputMat, OutputMat, .TRUE., &
             & solver_parameters_in)
@@ -61,20 +61,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE NewtonSchultzISR(Mat1, OutMat, compute_inverse_in, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: Mat1
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutMat
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Mat1
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutMat
     LOGICAL, INTENT(in), OPTIONAL :: compute_inverse_in
-    TYPE(IterativeSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
     LOGICAL :: compute_inverse
     !! Local Variables
     REAL(NTREAL) :: lambda
-    TYPE(DistributedSparseMatrix) :: X_k,T_k,Temp,Identity
-    TYPE(DistributedSparseMatrix) :: SquareRootMat
-    TYPE(DistributedSparseMatrix) :: InverseSquareRootMat
+    TYPE(DistributedSparseMatrix_t) :: X_k,T_k,Temp,Identity
+    TYPE(DistributedSparseMatrix_t) :: SquareRootMat
+    TYPE(DistributedSparseMatrix_t) :: InverseSquareRootMat
     !! Temporary Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: max_between
@@ -88,7 +88,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters()
+       solver_parameters = IterativeSolverParameters_t()
     END IF
     IF (PRESENT(compute_inverse_in)) THEN
        compute_inverse = compute_inverse_in
@@ -104,12 +104,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmpty(X_k, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(SquareRootMat, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(InverseSquareRootMat, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(T_k, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Temp, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Identity, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(X_k, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(SquareRootMat, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(InverseSquareRootMat, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(T_k, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, Mat1%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the lambda scaling value.

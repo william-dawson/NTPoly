@@ -15,10 +15,10 @@ MODULE DistributedSparseMatrixModule_wrp
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: DistributedSparseMatrix_wrp
      !> Actual data.
-     TYPE(DistributedSparseMatrix), POINTER :: data
+     TYPE(DistributedSparseMatrix_t), POINTER :: data
   END TYPE DistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructEmpty_wrp
+  PUBLIC :: ConstructEmptyDistributedSparseMatrix_wrp
   PUBLIC :: CopyDistributedSparseMatrix_wrp
   PUBLIC :: DestructDistributedSparseMatrix_wrp
   PUBLIC :: ConstructFromMatrixMarket_wrp
@@ -42,16 +42,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
   !! @param[inout] ih_this the matrix to be constructed.
   !! @param[in] matrix_dim the dimension of the full matrix.
-  PURE SUBROUTINE ConstructEmpty_wrp(ih_this,matrix_dim) &
-       & bind(c,name="ConstructEmpty_wrp")
+  PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix_wrp(ih_this,matrix_dim) &
+       & bind(c,name="ConstructEmptyDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: matrix_dim
     TYPE(DistributedSparseMatrix_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL ConstructEmpty(h_this%data,matrix_dim)
+    CALL ConstructEmptyDistributedSparseMatrix(h_this%data,matrix_dim)
     ih_this = TRANSFER(h_this,ih_this)
-  END SUBROUTINE ConstructEmpty_wrp
+  END SUBROUTINE ConstructEmptyDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   !! @param[out] ih_this the file being constructed.

@@ -17,7 +17,7 @@ extern "C" {
 namespace NTPoly {
 //////////////////////////////////////////////////////////////////////////////
 DistributedSparseMatrix::DistributedSparseMatrix(int matrix_dimension) {
-  ConstructEmpty_wrp(ih_this, &matrix_dimension);
+  ConstructEmptyDistributedSparseMatrix_wrp(ih_this, &matrix_dimension);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,7 +38,7 @@ DistributedSparseMatrix::DistributedSparseMatrix(
   // Constructing empty here is important because the call to Empty_wrp
   // also allocates a handle.
   int matrix_dimension = matB.GetActualDimension();
-  ConstructEmpty_wrp(ih_this, &matrix_dimension);
+  ConstructEmptyDistributedSparseMatrix_wrp(ih_this, &matrix_dimension);
   CopyDistributedSparseMatrix_wrp(matB.ih_this, ih_this);
 }
 

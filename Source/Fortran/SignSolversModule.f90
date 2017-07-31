@@ -22,15 +22,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in optional parameters for the routine.
   SUBROUTINE SignFunction(Mat1, SignMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: Mat1
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: SignMat
-    TYPE(IterativeSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: Mat1
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: SignMat
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: Identity
-    TYPE(DistributedSparseMatrix) :: Temp1
-    TYPE(DistributedSparseMatrix) :: Temp2
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: Temp1
+    TYPE(DistributedSparseMatrix_t) :: Temp2
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! Local Data
     REAL(NTREAL), PARAMETER :: alpha = 1.69770248526
@@ -48,7 +48,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters()
+       solver_parameters = IterativeSolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -59,9 +59,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmpty(Identity, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Temp1, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Temp2, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp1, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp2, Mat1%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step

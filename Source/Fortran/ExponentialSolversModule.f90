@@ -31,16 +31,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponential(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
-    TYPE(FixedSolverParameters) :: sub_solver_parameters
-    TYPE(IterativeSolverParameters) :: i_sub_solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: sub_solver_parameters
+    TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: ScaledMat
-    TYPE(DistributedSparseMatrix) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! For Chebyshev Expansion
     TYPE(ChebyshevPolynomial_t) :: polynomial
@@ -57,7 +57,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
     sub_solver_parameters = solver_parameters
     CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
@@ -70,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmpty(OutputMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, InputMat%actual_matrix_dimension)
 
     !! Scale the matrix
     CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
@@ -172,17 +172,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponentialTaylor(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
-    TYPE(IterativeSolverParameters) :: i_sub_solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: ScaledMat
-    TYPE(DistributedSparseMatrix) :: Ak
-    TYPE(DistributedSparseMatrix) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: Ak
+    TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
@@ -196,7 +196,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
     CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
     i_sub_solver_parameters%max_iterations = 10
@@ -222,7 +222,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
 
-    CALL ConstructEmpty(OutputMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(OutputMat)
 
     !! Load Balancing Step
@@ -270,20 +270,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithm(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(INOUT) :: OutputMat
-    TYPE(FixedSolverParameters), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: ScaledMat
-    TYPE(DistributedSparseMatrix) :: TempMat
-    TYPE(DistributedSparseMatrix) :: IdentityMat
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: IdentityMat
     !! For Chebyshev Expansion
     TYPE(ChebyshevPolynomial_t) :: polynomial
     !! Local Variables
-    TYPE(IterativeSolverParameters) :: i_sub_solver_parameters
-    TYPE(FixedSolverParameters) :: f_sub_solver_parameters
+    TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
+    TYPE(IterativeSolverParameters_t) :: p_sub_solver_parameters
+    TYPE(FixedSolverParameters_t) :: f_sub_solver_parameters
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     INTEGER :: sigma_val
     INTEGER :: sigma_counter
@@ -294,9 +295,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
     CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
+    CALL ConvertFixedToIterative(solver_parameters, p_sub_solver_parameters)
+    p_sub_solver_parameters%max_iterations=16
     f_sub_solver_parameters = solver_parameters
 
     IF (solver_parameters%be_verbose) THEN
@@ -307,7 +310,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup
-    CALL ConstructEmpty(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Copy to a temporary matrix for scaling.
@@ -316,7 +319,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute The Scaling Factor
     sigma_val = 1
     sigma_counter = 1
-    CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
+    CALL PowerBounds(InputMat,spectral_radius,p_sub_solver_parameters)
     DO WHILE (spectral_radius .GT. SQRT(2.0))
        spectral_radius = SQRT(spectral_radius)
        sigma_val = sigma_val * 2
@@ -423,20 +426,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithmTaylor(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: ScaledMat
-    TYPE(DistributedSparseMatrix) :: TempMat
-    TYPE(DistributedSparseMatrix) :: Ak
-    TYPE(DistributedSparseMatrix) :: IdentityMat
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: Ak
+    TYPE(DistributedSparseMatrix_t) :: IdentityMat
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! Local Variables
-    TYPE(IterativeSolverParameters) :: sub_solver_parameters
+    TYPE(IterativeSolverParameters_t) :: sub_solver_parameters
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
     REAL(NTREAL) :: taylor_denom
@@ -448,7 +451,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
     CALL ConvertFixedToIterative(solver_parameters, sub_solver_parameters)
 
@@ -477,7 +480,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL ConstructEmpty(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Setup Matrices

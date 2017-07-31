@@ -24,17 +24,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Sine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters),INTENT(in),OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     !! A temporary matrix to hold the transformation from sine to cosine.
-    TYPE(DistributedSparseMatrix) :: ShiftedMat
-    TYPE(DistributedSparseMatrix) :: IdentityMat
+    TYPE(DistributedSparseMatrix_t) :: ShiftedMat
+    TYPE(DistributedSparseMatrix_t) :: IdentityMat
     REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.0)
 
     !! Shift
     CALL CopyDistributedSparseMatrix(InputMat,ShiftedMat)
-    CALL ConstructEmpty(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
     CALL IncrementDistributedSparseMatrix(IdentityMat,ShiftedMat, &
          & alpha_in=REAL(-1.0*PI/2.0,NTREAL))
@@ -53,9 +54,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Cosine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters),INTENT(in),OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
     ELSE
@@ -67,19 +68,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] InputMat the matrix to compute.
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver
-  SUBROUTINE ScaleSquareTrigonometryTaylor(InputMat, OutputMat, solver_parameters_in)
+  SUBROUTINE ScaleSquareTrigonometryTaylor(InputMat, OutputMat, &
+       & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: ScaledMat
-    TYPE(DistributedSparseMatrix) :: Ak
-    TYPE(DistributedSparseMatrix) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: Ak
+    TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedMatrixMemoryPool_t) :: pool
-    TYPE(DistributedSparseMatrix) :: IdentityMat
+    TYPE(DistributedSparseMatrix_t) :: IdentityMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -91,7 +93,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -116,9 +118,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmpty(OutputMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(OutputMat)
-    CALL ConstructEmpty(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Load Balancing Step
@@ -183,22 +187,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: ScaledMat
-    TYPE(DistributedSparseMatrix) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedMatrixMemoryPool_t) :: pool
-    TYPE(DistributedSparseMatrix) :: IdentityMat
+    TYPE(DistributedSparseMatrix_t) :: IdentityMat
     !! For Chebyshev Expansion
     REAL(NTREAL), DIMENSION(17) :: coefficients
-    TYPE(DistributedSparseMatrix) :: T2
-    TYPE(DistributedSparseMatrix) :: T4
-    TYPE(DistributedSparseMatrix) :: T6
-    TYPE(DistributedSparseMatrix) :: T8
+    TYPE(DistributedSparseMatrix_t) :: T2
+    TYPE(DistributedSparseMatrix_t) :: T4
+    TYPE(DistributedSparseMatrix_t) :: T6
+    TYPE(DistributedSparseMatrix_t) :: T8
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -209,7 +213,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -234,8 +238,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmpty(OutputMat, InputMat%actual_matrix_dimension)
-    CALL ConstructEmpty(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
+         & InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Load Balancing Step

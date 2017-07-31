@@ -1,7 +1,8 @@
 #ifndef DISTRIBUTEDSPARSEMATRIX_ch
 #define DISTRIBUTEDSPARSEMATRIX_ch
 
-void ConstructEmpty_wrp(int *ih_this, const int *matrix_dim);
+void ConstructEmptyDistributedSparseMatrix_wrp(int *ih_this,
+                                               const int *matrix_dim);
 void CopyDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_matB);
 void DestructDistributedSparseMatrix_wrp(int *ih_this);
 void ConstructFromMatrixMarket_wrp(int *ih_this, const char *file_name,

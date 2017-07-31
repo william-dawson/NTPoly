@@ -70,18 +70,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ChebyshevCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(in) :: poly
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: Identity
-    TYPE(DistributedSparseMatrix) :: BalancedInput
-    TYPE(DistributedSparseMatrix) :: Tk
-    TYPE(DistributedSparseMatrix) :: Tkminus1
-    TYPE(DistributedSparseMatrix) :: Tkminus2
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: BalancedInput
+    TYPE(DistributedSparseMatrix_t) :: Tk
+    TYPE(DistributedSparseMatrix_t) :: Tkminus1
+    TYPE(DistributedSparseMatrix_t) :: Tkminus2
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! Local Variables
     INTEGER :: degree
@@ -93,7 +93,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
@@ -107,7 +107,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmpty(Identity, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
     CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
 
@@ -189,16 +189,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FactorizedChebyshevCompute(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(INOUT) :: OutputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
-    TYPE(FixedSolverParameters), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix) :: Identity
-    TYPE(DistributedSparseMatrix) :: BalancedInput
-    TYPE(DistributedSparseMatrix), DIMENSION(:), ALLOCATABLE :: T_Powers
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: BalancedInput
+    TYPE(DistributedSparseMatrix_t), DIMENSION(:), ALLOCATABLE :: T_Powers
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! Local Variables
     INTEGER :: degree
@@ -209,7 +209,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
@@ -223,7 +223,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmpty(Identity, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
     CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
 
@@ -289,11 +289,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   RECURSIVE SUBROUTINE ComputeRecursive(T_Powers, poly, OutputMat, pool, &
        & depth, solver_parameters)
     !! Parameters
-    TYPE(DistributedSparseMatrix), DIMENSION(:), INTENT(in) :: T_Powers
+    TYPE(DistributedSparseMatrix_t), DIMENSION(:), INTENT(in) :: T_Powers
     TYPE(ChebyshevPolynomial_t), INTENT(in) :: poly
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
     INTEGER, INTENT(in) :: depth
-    TYPE(FixedSolverParameters), INTENT(in) :: solver_parameters
+    TYPE(FixedSolverParameters_t), INTENT(in) :: solver_parameters
     TYPE(DistributedMatrixMemoryPool_t), INTENT(inout) :: pool
     !! Local Data
     INTEGER :: coefficient_midpoint
@@ -302,8 +302,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     TYPE(ChebyshevPolynomial_t) :: left_poly
     TYPE(ChebyshevPolynomial_t) :: right_poly
-    TYPE(DistributedSparseMatrix) :: LeftMat
-    TYPE(DistributedSparseMatrix) :: RightMat
+    TYPE(DistributedSparseMatrix_t) :: LeftMat
+    TYPE(DistributedSparseMatrix_t) :: RightMat
 
     !! First Handle The Base Case
     IF (SIZE(poly%coefficients) .EQ. 2) THEN

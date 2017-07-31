@@ -30,24 +30,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: Hamiltonian, InverseSquareRoot
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, InverseSquareRoot
     INTEGER, INTENT(in) :: nel
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: Density
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: last_trace_value
     REAL(NTREAL) :: norm_value
-    TYPE(DistributedSparseMatrix) :: WorkingHamiltonian
-    TYPE(DistributedSparseMatrix) :: P_k
-    TYPE(DistributedSparseMatrix) :: Gradient
-    TYPE(DistributedSparseMatrix) :: G_k, G_kplusone
-    TYPE(DistributedSparseMatrix) :: H_k
-    TYPE(DistributedSparseMatrix) :: TempMat, TempMat2
-    TYPE(DistributedSparseMatrix) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: WorkingHamiltonian
+    TYPE(DistributedSparseMatrix_t) :: P_k
+    TYPE(DistributedSparseMatrix_t) :: Gradient
+    TYPE(DistributedSparseMatrix_t) :: G_k, G_kplusone
+    TYPE(DistributedSparseMatrix_t) :: H_k
+    TYPE(DistributedSparseMatrix_t) :: TempMat, TempMat2
+    TYPE(DistributedSparseMatrix_t) :: Identity
     REAL(NTREAL) :: mu
     REAL(NTREAL) :: gamma
     REAL(NTREAL) :: step_size
@@ -64,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters()
+       solver_parameters = IterativeSolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -77,16 +77,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     matrix_dimension = Hamiltonian%actual_matrix_dimension
-    CALL ConstructEmpty(Density, matrix_dimension)
-    CALL ConstructEmpty(WorkingHamiltonian, matrix_dimension)
-    CALL ConstructEmpty(P_k, matrix_dimension)
-    CALL ConstructEmpty(G_k, matrix_dimension)
-    CALL ConstructEmpty(G_kplusone, matrix_dimension)
-    CALL ConstructEmpty(H_k, matrix_dimension)
-    CALL ConstructEmpty(TempMat, matrix_dimension)
-    CALL ConstructEmpty(TempMat2, matrix_dimension)
-    CALL ConstructEmpty(Gradient, matrix_dimension)
-    CALL ConstructEmpty(Identity, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(P_k, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(G_k, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(G_kplusone, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(H_k, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat2, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Gradient, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.

@@ -8,7 +8,7 @@ MODULE IterativeSolversModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A class for passing parameters to an iterative solver.
-  TYPE, PUBLIC :: IterativeSolverParameters
+  TYPE, PUBLIC :: IterativeSolverParameters_t
      !> When do we consider a calculation converged.
      REAL(NTREAL) :: converge_diff
      !> Maximum number of iterations of a solver before termination.
@@ -21,9 +21,9 @@ MODULE IterativeSolversModule
      LOGICAL :: do_load_balancing
      !> The permutation used for load balancing.
      TYPE(Permutation_t) :: BalancePermutation
-  END TYPE IterativeSolverParameters
+  END TYPE IterativeSolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE IterativeSolverParameters
+  INTERFACE IterativeSolverParameters_t
      MODULE PROCEDURE IterativeSolverParameters_init
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -46,7 +46,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(in), OPTIONAL :: max_iterations_in
     LOGICAL, INTENT(in), OPTIONAL :: be_verbose_in
     TYPE(Permutation_t), INTENT(in), OPTIONAL :: BalancePermutation_in
-    TYPE(IterativeSolverParameters) :: this
+    TYPE(IterativeSolverParameters_t) :: this
 
     !! Optional Parameters
     IF (.NOT. PRESENT(converge_diff_in)) THEN
@@ -81,7 +81,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetIterativeConvergeDiff(this,new_value)
-    TYPE(IterativeSolverParameters), INTENT(inout) :: this
+    TYPE(IterativeSolverParameters_t), INTENT(inout) :: this
     REAL(NTREAL), INTENT(in) :: new_value
 
     this%converge_diff = new_value
@@ -91,7 +91,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetIterativeMaxIterations(this,new_value)
-    TYPE(IterativeSolverParameters), INTENT(inout) :: this
+    TYPE(IterativeSolverParameters_t), INTENT(inout) :: this
     INTEGER, INTENT(in) :: new_value
 
     this%max_iterations = new_value
@@ -101,7 +101,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetIterativeThreshold(this,new_value)
-    TYPE(IterativeSolverParameters), INTENT(inout) :: this
+    TYPE(IterativeSolverParameters_t), INTENT(inout) :: this
     REAL(NTREAL), INTENT(in) :: new_value
 
     this%threshold = new_value
@@ -111,7 +111,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetIterativeBeVerbose(this,new_value)
-    TYPE(IterativeSolverParameters), INTENT(inout) :: this
+    TYPE(IterativeSolverParameters_t), INTENT(inout) :: this
     LOGICAL, INTENT(in) :: new_value
 
     this%be_verbose = new_value
@@ -121,7 +121,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetIterativeLoadBalance(this,new_value)
-    TYPE(IterativeSolverParameters), INTENT(inout) :: this
+    TYPE(IterativeSolverParameters_t), INTENT(inout) :: this
     TYPE(Permutation_t), INTENT(in) :: new_value
 
     this%do_load_balancing = .TRUE.
@@ -131,7 +131,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the convergence values.
   !! @param[inout] this the parameter object.
   SUBROUTINE PrintIterativeSolverParameters(this)
-    TYPE(IterativeSolverParameters), INTENT(in) :: this
+    TYPE(IterativeSolverParameters_t), INTENT(in) :: this
 
     CALL WriteHeader("Iterative Solver Parameters")
     CALL EnterSubLog

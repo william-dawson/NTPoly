@@ -8,7 +8,7 @@ MODULE FixedSolversModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A class for passing parameters to an iterative solver.
-  TYPE, PUBLIC :: FixedSolverParameters
+  TYPE, PUBLIC :: FixedSolverParameters_t
      !> Threshold for sparse multiplication and addition.
      REAL(NTREAL) :: threshold
      !> If true, the sparse solver prints out information each loop iteration.
@@ -17,9 +17,9 @@ MODULE FixedSolversModule
      LOGICAL :: do_load_balancing
      !> The permutation used for load balancing.
      TYPE(Permutation_t) :: BalancePermutation
-  END TYPE FixedSolverParameters
+  END TYPE FixedSolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE FixedSolverParameters
+  INTERFACE FixedSolverParameters_t
      MODULE PROCEDURE FixedSolverParameters_init
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -35,7 +35,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(in), OPTIONAL :: threshold_in
     LOGICAL, INTENT(in), OPTIONAL :: be_verbose_in
     TYPE(Permutation_t), INTENT(in), OPTIONAL :: BalancePermutation_in
-    TYPE(FixedSolverParameters) :: this
+    TYPE(FixedSolverParameters_t) :: this
 
     !! Optional Parameters
     IF (.NOT. PRESENT(threshold_in)) THEN
@@ -60,7 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetFixedThreshold(this,new_value)
-    TYPE(FixedSolverParameters), INTENT(inout) :: this
+    TYPE(FixedSolverParameters_t), INTENT(inout) :: this
     REAL(NTREAL), INTENT(in) :: new_value
 
     this%threshold = new_value
@@ -70,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetFixedBeVerbose(this,new_value)
-    TYPE(FixedSolverParameters), INTENT(inout) :: this
+    TYPE(FixedSolverParameters_t), INTENT(inout) :: this
     LOGICAL, INTENT(in) :: new_value
 
     this%be_verbose = new_value
@@ -80,7 +80,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the parameter object.
   !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetFixedLoadBalance(this,new_value)
-    TYPE(FixedSolverParameters), INTENT(inout) :: this
+    TYPE(FixedSolverParameters_t), INTENT(inout) :: this
     TYPE(Permutation_t), INTENT(in) :: new_value
 
     this%do_load_balancing = .TRUE.
@@ -90,7 +90,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the convergence values.
   !! @param[inout] this the parameter object.
   SUBROUTINE PrintFixedSolverParameters(this)
-    TYPE(FixedSolverParameters), INTENT(in) :: this
+    TYPE(FixedSolverParameters_t), INTENT(in) :: this
     CALL WriteHeader("Fixed Solver Parameters")
     CALL EnterSubLog
     CALL WriteListElement(key="be_verbose",bool_value_in=this%be_verbose)

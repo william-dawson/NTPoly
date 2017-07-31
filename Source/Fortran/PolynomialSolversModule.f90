@@ -69,16 +69,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HornerCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
     TYPE(Polynomial_t), INTENT(in) :: poly
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix) :: Identity
-    TYPE(DistributedSparseMatrix) :: BalancedInput
-    TYPE(DistributedSparseMatrix) :: Temporary
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: BalancedInput
+    TYPE(DistributedSparseMatrix_t) :: Temporary
     INTEGER :: degree
     INTEGER :: counter
     TYPE(DistributedMatrixMemoryPool_t) :: pool
@@ -87,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
@@ -101,9 +101,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmpty(Identity, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
-    CALL ConstructEmpty(Temporary, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temporary, InputMat%actual_matrix_dimension)
     CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
 
     !! Load Balancing Step
@@ -154,18 +154,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PatersonStockmeyerCompute(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: OutputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
     TYPE(Polynomial_t), INTENT(in) :: poly
-    TYPE(FixedSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix) :: Identity
-    TYPE(DistributedSparseMatrix), DIMENSION(:), ALLOCATABLE :: x_powers
-    TYPE(DistributedSparseMatrix) :: Bk
-    TYPE(DistributedSparseMatrix) :: Xs
-    TYPE(DistributedSparseMatrix) :: Temp
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t), DIMENSION(:), ALLOCATABLE :: x_powers
+    TYPE(DistributedSparseMatrix_t) :: Bk
+    TYPE(DistributedSparseMatrix_t) :: Xs
+    TYPE(DistributedSparseMatrix_t) :: Temp
     INTEGER :: degree
     INTEGER :: m_value, s_value, r_value
     INTEGER :: k_value
@@ -176,7 +176,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters()
+       solver_parameters = FixedSolverParameters_t()
     END IF
 
     !! Parameters for splitting up polynomial.
@@ -197,11 +197,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(x_powers(s_value+1))
 
     !! Initial values for matrices
-    CALL ConstructEmpty(Identity, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Create the X Powers
-    CALL ConstructEmpty(x_powers(1), InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(x_powers(1), InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(x_powers(1))
     DO counter=1,s_value+1-1
        CALL DistributedGemm(InputMat,x_powers(counter-1+1),x_powers(counter+1))

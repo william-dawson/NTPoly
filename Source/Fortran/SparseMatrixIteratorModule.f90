@@ -7,7 +7,7 @@ MODULE SparseMatrixIteratorModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for iterating over a CSR matrix.
-  TYPE, PUBLIC :: SparseMatrixIterator
+  TYPE, PUBLIC :: SparseMatrixIterator_t
      !! Public Members of the iterator
      !> Total elements to iterate over.
      INTEGER :: total_elements
@@ -26,7 +26,7 @@ MODULE SparseMatrixIteratorModule
      INTEGER :: total_counter
      !> Elements in the current row.
      INTEGER :: elements_per_inner
-  END TYPE SparseMatrixIterator
+  END TYPE SparseMatrixIterator_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: Start
   PUBLIC :: Next
@@ -36,7 +36,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] sparse_matrix the matrix to associate it with.
   PURE SUBROUTINE Start(this,sparse_matrix)
     !! Parameters
-    TYPE(SparseMatrixIterator), INTENT(inout) :: this
+    TYPE(SparseMatrixIterator_t), INTENT(inout) :: this
     TYPE(SparseMatrix_t), INTENT(in) :: sparse_matrix
 
     !! Set Inner Representation
@@ -62,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! attribute is problematic.
   PURE SUBROUTINE Next(this,sparse_matrix)
     !! Parameters
-    TYPE(SparseMatrixIterator), INTENT(inout) :: this
+    TYPE(SparseMatrixIterator_t), INTENT(inout) :: this
     TYPE(SparseMatrix_t), INTENT(in) :: sparse_matrix
 
     !! Update Inner Representation

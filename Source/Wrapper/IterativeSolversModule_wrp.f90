@@ -2,7 +2,7 @@
 !> A wrapper for the chemistry solver parameters.
 MODULE IterativeSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters, &
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
        & SetIterativeConvergeDiff, SetIterativeMaxIterations, &
        & SetIterativeThreshold, SetIterativeBeVerbose, SetIterativeLoadBalance
   USE PermutationModule_wrp, ONLY : Permutation_wrp
@@ -14,7 +14,7 @@ MODULE IterativeSolversModule_wrp
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: IterativeSolverParameters_wrp
      !> Actual data.
-     TYPE(IterativeSolverParameters), POINTER :: data
+     TYPE(IterativeSolverParameters_t), POINTER :: data
   END TYPE IterativeSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructIterativeSolverParameters_wrp
@@ -34,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    h_this%data = IterativeSolverParameters()
+    h_this%data = IterativeSolverParameters_t()
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructIterativeSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

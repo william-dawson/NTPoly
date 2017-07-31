@@ -23,17 +23,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE Invert(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in)  :: Mat1
-    TYPE(DistributedSparseMatrix), INTENT(inout) :: InverseMat
-    TYPE(IterativeSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Mat1
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: InverseMat
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
-    TYPE(DistributedSparseMatrix) :: Temp1,Temp2,Identity
-    TYPE(DistributedSparseMatrix) :: BalancedMat1
+    TYPE(DistributedSparseMatrix_t) :: Temp1,Temp2,Identity
+    TYPE(DistributedSparseMatrix_t) :: BalancedMat1
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
@@ -45,7 +45,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters()
+       solver_parameters = IterativeSolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
@@ -56,11 +56,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmpty(InverseMat, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Temp1, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Temp2, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(Identity, Mat1%actual_matrix_dimension)
-    CALL ConstructEmpty(BalancedMat1, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(InverseMat, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp1, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp2, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(BalancedMat1, Mat1%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step

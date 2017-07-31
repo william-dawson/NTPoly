@@ -23,7 +23,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] max_value an uppder bound on the eigenspectrum.
   SUBROUTINE GershgorinBounds(this,min_value,max_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     REAL(NTREAL), INTENT(out) :: min_value, max_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
@@ -84,13 +84,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] solver_parameters_in solver parameters (optional).
   SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     REAL(NTREAL), INTENT(out) :: max_value
-    TYPE(IterativeSolverParameters), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Data
-    TYPE(DistributedSparseMatrix) :: vector, vector2, TempMat
+    TYPE(DistributedSparseMatrix_t) :: vector, vector2, TempMat
     REAL(NTREAL) :: scale_value
     REAL(NTREAL) :: norm_value
     TYPE(TripletList_t) :: temp_list
@@ -102,7 +102,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters()
+       solver_parameters = IterativeSolverParameters_t()
        solver_parameters%max_iterations = 10
     END IF
 
@@ -113,8 +113,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Diagonal matrices serve as vectors.
-    CALL ConstructEmpty(vector,this%actual_matrix_dimension)
-    CALL ConstructEmpty(vector2,this%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(vector,this%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(vector2,this%actual_matrix_dimension)
 
     !! Guess Vector
     CALL ConstructTripletList(temp_list)
@@ -164,14 +164,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Largest Eigenvalue
-    CALL DistributedGemm(vector,vector,TempMat, &
-        & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    scale_value = DistributedSparseNorm(TempMat)
+    scale_value = DotDistributedSparseMatrix(vector,vector)
     CALL DistributedGemm(this,vector,vector2, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL DistributedGemm(vector,vector2,TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    max_value = DistributedSparseNorm(TempMat)/scale_value
+    max_value = DotDistributedSparseMatrix(vector,vector2)
+    max_value = max_value / scale_value
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteElement(key="Max_Eigen_Value",float_value_in=max_value)

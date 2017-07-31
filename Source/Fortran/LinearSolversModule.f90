@@ -22,18 +22,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE CGSolver(AMat, XMat, BMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(IN)  :: AMat
-    TYPE(DistributedSparseMatrix), INTENT(INOUT) :: XMat
-    TYPE(DistributedSparseMatrix), INTENT(IN)  :: BMat
-    TYPE(IterativeSolverParameters), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: XMat
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: BMat
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix) :: Identity
-    TYPE(DistributedSparseMatrix) :: ABalanced
-    TYPE(DistributedSparseMatrix) :: BBalanced
-    TYPE(DistributedSparseMatrix) :: RMat, PMat, QMat
-    TYPE(DistributedSparseMatrix) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: ABalanced
+    TYPE(DistributedSparseMatrix_t) :: BBalanced
+    TYPE(DistributedSparseMatrix_t) :: RMat, PMat, QMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
@@ -46,7 +46,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters()
+       solver_parameters = IterativeSolverParameters_t()
     END IF
 
     !! Print out parameters
@@ -58,14 +58,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup all the matrices
-    CALL ConstructEmpty(Identity, AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & AMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
-    CALL ConstructEmpty(ABalanced, AMat%actual_matrix_dimension)
-    CALL ConstructEmpty(BBalanced, AMat%actual_matrix_dimension)
-    CALL ConstructEmpty(RMat, AMat%actual_matrix_dimension)
-    CALL ConstructEmpty(PMat, AMat%actual_matrix_dimension)
-    CALL ConstructEmpty(QMat, AMat%actual_matrix_dimension)
-    CALL ConstructEmpty(TempMat, AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(ABalanced, &
+         & AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(BBalanced, &
+         & AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(RMat, &
+         & AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(PMat, &
+         & AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(QMat, &
+         & AMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+         & AMat%actual_matrix_dimension)
 
     !! Load Balancing Step
     CALL StartTimer("Load Balance")
