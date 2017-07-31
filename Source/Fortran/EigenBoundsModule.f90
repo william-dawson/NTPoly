@@ -80,7 +80,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the maximum eigenvalue of a matrix.
   !! Uses The Power Method.
   !! @param[in] this the matrix to compute the min/max of.
-  !! @param[out] min_value a lower bound on the eigenspectrum.
+  !! @param[out] max_value an upper bound on the eigenspectrum.
   !! @param[inout] solver_parameters_in solver parameters (optional).
   SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
     !! Parameters

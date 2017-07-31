@@ -11,6 +11,7 @@ namespace NTPoly {
 //! \param[in] process_rows number of grid rows.
 //! \param[in] process_columns number of grid columns.
 //! \param[in] process_slices number of grid slices.
+//! \param[in] be_verbose verbosity flag.
 void ConstructProcessGrid(MPI_Comm world_comm, int process_rows,
                           int process_columns, int process_slices,
                           bool be_verbose = false);
@@ -18,6 +19,7 @@ void ConstructProcessGrid(MPI_Comm world_comm, int process_rows,
 //! \param[in] process_rows number of grid rows.
 //! \param[in] process_columns number of grid columns.
 //! \param[in] process_slices number of grid slices.
+//! \param[in] be_verbose verbosity flag.
 void ConstructProcessGrid(int process_rows, int process_columns,
                           int process_slices, bool be_verbose = false);
 } // namespace NTPoly

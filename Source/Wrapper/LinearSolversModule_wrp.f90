@@ -16,7 +16,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] ih_AMat the matrix A, must be symmetric, positive definite.
   !! @param[out] ih_XMat the solved for matrix X.
   !! @param[in] ih_BMat the right hand side.
-  !! @param[in] ih_solver_parameters_in parameters for the solver
+  !! @param[in] ih_solver_parameters parameters for the solver
   SUBROUTINE CGSolver_wrp(ih_AMat, ih_XMat, ih_BMat, ih_solver_parameters) &
        & bind(c,name="CGSolver_wrp")
     INTEGER(kind=c_int), INTENT(in) :: ih_AMat(SIZE_wrp)

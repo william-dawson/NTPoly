@@ -17,8 +17,8 @@ MODULE MinimizerSolversModule
   PUBLIC :: ConjugateGradient
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the CG method.
-  !! Based on two papers. The first by Scuseria \millam1997linear developed
-  !! the initial method, and then Challacombe \challacombe1999simplified
+  !! Based on two papers. The first by Scuseria \cite millam1997linear developed
+  !! the initial method, and then Challacombe \cite challacombe1999simplified
   !! developed a simplified scheme.
   !! @param[in] Hamiltonian the matrix to compute the corresponding density from.
   !! @param[in] InverseSquareRoot of the overlap matrix.

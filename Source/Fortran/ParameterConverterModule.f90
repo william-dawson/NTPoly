@@ -11,8 +11,8 @@ MODULE ParameterConverterModule
   PUBLIC :: ConvertIterativeToFixed
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert fixed to iterative solver parameters.
-  !! @param[in] fixed_parameters
-  !! @param[inout] iterative_parameters
+  !! @param[in] fixed_parameters the fixed version.
+  !! @param[inout] iterative_parameters the iterative version.
   SUBROUTINE ConvertFixedToIterative(fixed_parameters, iterative_parameters)
     TYPE(FixedSolverParameters), INTENT(IN) :: fixed_parameters
     TYPE(IterativeSolverParameters), INTENT(INOUT) :: iterative_parameters
@@ -26,8 +26,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConvertFixedToIterative
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert interative to fixed solver parameters.
-  !! @param[in] iterative_parameters
-  !! @param[inout] fixed parameters
+  !! @param[in] iterative_parameters the iterative version.
+  !! @param[inout] fixed_parameters the fixed version.
   SUBROUTINE ConvertIterativeToFixed(iterative_parameters, fixed_parameters)
     TYPE(IterativeSolverParameters), INTENT(IN) :: iterative_parameters
     TYPE(FixedSolverParameters), INTENT(INOUT) :: fixed_parameters

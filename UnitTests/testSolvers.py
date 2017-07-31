@@ -180,7 +180,7 @@ class TestSolvers(unittest.TestCase):
     # Test our ability to compute  general matrix inverse root.
     #  @param[in] self pointer.
     def test_inverseroot(self):
-        roots = [1, 2, 4, 5, 6, 7, 8]
+        roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
             print "Root:", root
             # Starting Matrix. Care taken to make sure eigenvalues are
@@ -221,7 +221,7 @@ class TestSolvers(unittest.TestCase):
     # Test our ability to compute  general matrix root.
     #  @param[in] self pointer.
     def test_root(self):
-        roots = [1, 2, 4, 5, 6, 7, 8]
+        roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
             print "Root", root
             # Starting Matrix. Care taken to make sure eigenvalues are

@@ -27,7 +27,7 @@ MODULE TripletListModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
-  !! @param[in] size the length of the triplet list.
+  !! @param[in] size_in the length of the triplet list.
   PURE SUBROUTINE ConstructTripletList(this,size_in)
     !! Parameters
     TYPE(TripletList_t), INTENT(INOUT) :: this
@@ -81,7 +81,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(temporary_data)
   END SUBROUTINE ResizeTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !! Add a value to the end of the triplet list.
+  !> Add a value to the end of the triplet list.
   !! @param[inout] this the triplet list to append to.
   !! @param[in] triplet_value the value to append.
   PURE SUBROUTINE AppendToTripletList(this, triplet_value)
@@ -227,7 +227,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Symmetrizes an unsymmetric triplet list according to the specified
   !! symmetry type.
-  !! @param[inout] input_list list to be symmetrized.
+  !! @param[inout] triplet_list list to be symmetrized.
   !! @param[in] pattern_type type of symmetry.
   SUBROUTINE SymmetrizeTripletList(triplet_list, pattern_type)
     !! Parameters

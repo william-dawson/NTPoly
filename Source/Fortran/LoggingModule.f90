@@ -98,6 +98,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] key some text to add to the list.
   !! @param[in] text_value_in a text value to add to the list.
   !! @param[in] int_value_in an integer value to add to the list.
+  !! @param[in] float_value_in a float value to add to the list.
   !! @param[in] bool_value_in a bool value to add to the list.
   SUBROUTINE WriteListElement(key, text_value_in, int_value_in, float_value_in,&
     bool_value_in)

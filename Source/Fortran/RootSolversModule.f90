@@ -59,7 +59,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE IF (root .EQ. 2) THEN
        CALL SquareRoot(InputMat, OutputMat, solver_parameters)
     ELSE IF (root .EQ. 3) THEN
-       WRITE(*,*) "NOT IMPLEMENTED YET!"
+       CALL DistributedGemm(InputMat, InputMat, TempMat, &
+            & threshold_in=solver_parameters%threshold)
+       CALL ComputeRootImplementation(TempMat, OutputMat, 6, &
+            & solver_parameters)
     ELSE IF (root .EQ. 4) THEN
        CALL SquareRoot(InputMat, TempMat, solver_parameters)
        CALL SquareRoot(TempMat, OutputMat, solver_parameters)
@@ -163,7 +166,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE IF (root .EQ. 2) THEN
        CALL InverseSquareRoot(InputMat, OutputMat, solver_parameters)
     ELSE IF (root .EQ. 3) THEN
-       WRITE(*,*) "NOT IMPLEMENTED YET!"
+       CALL ComputeRoot(InputMat,TempMat,3,solver_parameters)
+       CALL Invert(TempMat, OutputMat, solver_parameters)
     ELSE IF (root .EQ. 4) THEN
        CALL SquareRoot(InputMat, TempMat, solver_parameters)
        CALL InverseSquareRoot(TempMat, OutputMat, solver_parameters)

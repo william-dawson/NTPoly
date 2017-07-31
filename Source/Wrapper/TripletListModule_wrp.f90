@@ -53,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   !! @param[inout] ih_this handle to the triplet list to resize.
-  !! @param[in] size.
+  !! @param[in] size to resize to.
   PURE SUBROUTINE ResizeTripletList_wrp(ih_this, size) &
        & bind(c,name="ResizeTripletList_wrp")
     INTEGER(kind=c_int), INTENT(inout)    :: ih_this(SIZE_wrp)

@@ -57,6 +57,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] process_rows_ number of grid rows.
   !! @param[in] process_columns_ number of grid columns.
   !! @param[in] process_slices_ number of grid slices.
+  !! @param[in] be_verbose_in set true to print process grid info.
   SUBROUTINE ConstructProcessGrid(world_comm_, process_rows_, process_columns_,&
        & process_slices_, be_verbose_in)
     !! Parameters

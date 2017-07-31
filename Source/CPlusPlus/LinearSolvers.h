@@ -14,7 +14,7 @@ public:
   //!\param AMat the matrix A, must be symmetric, positive definite.
   //!\param XMat the solved for matrix X.
   //!\param BMat the right hand side.
-  //!\param solver_parameters_in parameters for the solver
+  //!\param solver_parameters parameters for the solver
   static void CGSolver(const DistributedSparseMatrix &AMat,
                        DistributedSparseMatrix &XMat,
                        const DistributedSparseMatrix &BMat,

@@ -100,7 +100,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteHeader("Timers")
     CALL EnterSubLog
     IF (timer_position > 0) THEN
-       !WRITE(*,*) timer_name//":", elapsed_times(timer_position), " seconds"
        CALL WriteListElement(key=timer_name, &
            & float_value_in=elapsed_times(timer_position))
     END IF
@@ -117,8 +116,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        CALL WriteListElement(key=timer_list(timer_position), &
            & float_value_in=elapsed_times(timer_position))
-       !WRITE(*,*) timer_list(timer_position)//":", &
-      !      & elapsed_times(timer_position), " seconds"
     END DO
     CALL ExitSubLog
   END SUBROUTINE PrintAllTimers
@@ -139,7 +136,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_Allreduce(elapsed,max_time,1,MPI_DOUBLE,MPI_MAX,global_comm, &
             & grid_error)
        IF (IsRoot()) THEN
-          !WRITE(*,*) timer_list(timer_position)//":", max_time, " seconds"
           CALL WriteListElement(key=timer_list(timer_position), &
                & float_value_in=max_time)
        END IF

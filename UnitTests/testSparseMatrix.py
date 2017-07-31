@@ -16,8 +16,6 @@ from Helpers import result_file
 
 ##########################################################################
 # An internal class for holding test parameters.
-
-
 class TestParameters:
     # Default constructor.
     #  @param[in] self pointer.
@@ -31,8 +29,6 @@ class TestParameters:
 
 ##########################################################################
 # A test class for the local matrix module.
-
-
 class TestLocalMatrix(unittest.TestCase):
     # Parameters for the matrices
     parameters = []
