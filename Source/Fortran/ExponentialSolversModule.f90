@@ -61,6 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     sub_solver_parameters = solver_parameters
     CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
+    i_sub_solver_parameters%max_iterations = 10
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
@@ -198,6 +199,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters()
     END IF
     CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
+    i_sub_solver_parameters%max_iterations = 10
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")

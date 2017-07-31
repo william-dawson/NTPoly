@@ -19,6 +19,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     iterative_parameters = IterativeSolverParameters()
     iterative_parameters%threshold = fixed_parameters%threshold
+    iterative_parameters%converge_diff = fixed_parameters%threshold*100
     iterative_parameters%be_verbose = fixed_parameters%be_verbose
     iterative_parameters%do_load_balancing = fixed_parameters%do_load_balancing
     iterative_parameters%BalancePermutation = &

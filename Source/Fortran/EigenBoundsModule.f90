@@ -103,6 +103,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = solver_parameters_in
     ELSE
        solver_parameters = IterativeSolverParameters()
+       solver_parameters%max_iterations = 10
     END IF
 
     IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
@@ -173,6 +174,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     max_value = DistributedSparseNorm(TempMat)/scale_value
 
     IF (solver_parameters%be_verbose) THEN
+       CALL WriteElement(key="Max_Eigen_Value",float_value_in=max_value)
        CALL ExitSubLog
     END IF
 
