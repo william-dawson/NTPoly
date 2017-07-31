@@ -5,6 +5,7 @@ MODULE ExponentialSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
+  USE EigenBoundsModule
   USE FixedSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -36,6 +37,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters) :: solver_parameters
     TYPE(FixedSolverParameters) :: sub_solver_parameters
+    TYPE(IterativeSolverParameters) :: i_sub_solver_parameters
     !! Local Matrices
     TYPE(DistributedSparseMatrix) :: ScaledMat
     TYPE(DistributedSparseMatrix) :: TempMat
@@ -58,6 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters()
     END IF
     sub_solver_parameters = solver_parameters
+    CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
@@ -69,8 +72,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmpty(OutputMat, InputMat%actual_matrix_dimension)
 
     !! Scale the matrix
-    CALL EigenCircle(InputMat, e_min, e_max)
-    spectral_radius = MAX(ABS(e_min), ABS(e_max))
+    ! CALL GershgorinBounds(InputMat, e_min, e_max)
+    ! spectral_radius = MAX(ABS(e_min), ABS(e_max))
+    CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
     sigma_val = 1.0
     sigma_counter = 1
     DO WHILE (spectral_radius/sigma_val .GT. 1.0)
@@ -122,7 +126,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !CALL ChebyshevCompute(ScaledMat,OutputMat,polynomial,solver_parameters)
     CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
-         & solver_parameters)
+         & sub_solver_parameters)
 
     !! Undo the scaling by squaring at the end.
     !! Load Balancing Step
@@ -203,7 +207,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL EigenCircle(InputMat, e_min, e_max)
+    CALL GershgorinBounds(InputMat, e_min, e_max)
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
 
     !! Figure out how much to scale the matrix.
@@ -309,7 +313,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat,ScaledMat)
 
     !! Compute The Scaling Factor
-    CALL EigenCircle(ScaledMat, e_min, e_max)
+    CALL GershgorinBounds(ScaledMat, e_min, e_max)
     sigma_val = 1
     sigma_counter = 1
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
@@ -326,7 +330,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Shift Scaled Matrix
     CALL IncrementDistributedSparseMatrix(IdentityMat,ScaledMat, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL EigenCircle(ScaledMat, e_min, e_max)
+    CALL GershgorinBounds(ScaledMat, e_min, e_max)
 
     !! Expand Chebyshev Series
     CALL ConstructChebyshevPolynomial(polynomial,32)
@@ -455,7 +459,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL EigenCircle(InputMat, e_min, e_max)
+    CALL GershgorinBounds(InputMat, e_min, e_max)
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
 
     !! Figure out how much to scale the matrix.
@@ -466,7 +470,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO WHILE (spectral_radius/sigma_val .GT. 1.1e-7)
        CALL SquareRoot(ScaledMat,TempMat,sub_solver_parameters)
        CALL CopyDistributedSparseMatrix(TempMat,ScaledMat)
-       CALL EigenCircle(ScaledMat, e_min, e_max)
+       CALL GershgorinBounds(ScaledMat, e_min, e_max)
        spectral_radius = MAX(ABS(e_min), ABS(e_max))
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1

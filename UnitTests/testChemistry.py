@@ -86,10 +86,10 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = 0.0
-        nt.DensityMatrixSolvers.TRS2(fock_matrix, inverse_sqrt_matrix,
+        chemical_potential = nt.DensityMatrixSolvers.TRS2(fock_matrix,
+                                     inverse_sqrt_matrix,
                                      self.nel, density_matrix,
-                                     chemical_potential, self.solver_parameters)
+                                     self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -114,10 +114,10 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = 0.0
-        nt.DensityMatrixSolvers.TRS4(fock_matrix, inverse_sqrt_matrix,
+        chemical_potential = nt.DensityMatrixSolvers.TRS4(fock_matrix,
+                                     inverse_sqrt_matrix,
                                      self.nel, density_matrix,
-                                     chemical_potential, self.solver_parameters)
+                                     self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -142,10 +142,10 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = 0.0
-        nt.DensityMatrixSolvers.HPCP(fock_matrix, inverse_sqrt_matrix,
+        chemical_potential = nt.DensityMatrixSolvers.HPCP(fock_matrix,
+                                     inverse_sqrt_matrix,
                                      self.nel, density_matrix,
-                                     chemical_potential, self.solver_parameters)
+                                     self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -170,10 +170,9 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = 0.0
-        nt.DensityMatrixSolvers.HPCPPlus(fock_matrix, inverse_sqrt_matrix,
+        chemical_potential = nt.DensityMatrixSolvers.HPCPPlus(fock_matrix,
+                                         inverse_sqrt_matrix,
                                          self.nel, density_matrix,
-                                         chemical_potential,
                                          self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
@@ -199,10 +198,9 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = 0.0
-        nt.MinimizerSolvers.ConjugateGradient(fock_matrix, inverse_sqrt_matrix,
+        chemical_potential = nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
+                                              inverse_sqrt_matrix,
                                               self.nel, density_matrix,
-                                              chemical_potential,
                                               self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)

@@ -82,7 +82,6 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: DistributedSparseNorm
   PUBLIC :: Trace
   PUBLIC :: DistributedGrandSum
-  PUBLIC :: EigenCircle
   PUBLIC :: ComputeSigma
   !! Utilities
   PUBLIC :: PrintDistributedSparseMatrix
@@ -1394,72 +1393,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructSparseMatrix(merged_local_data)
   END FUNCTION Trace
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
-  !! Uses Gershgorin's theorem.
-  !! @param[in] this the matrix to compute the min/max of.
-  !! @param[out] min_value a lower bound on the eigenspectrum.
-  !! @param[out] max_value an uppder bound on the eigenspectrum.
-  SUBROUTINE EigenCircle(this,min_value,max_value)
-    !! Parameters
-    TYPE(DistributedSparseMatrix), INTENT(in) :: this
-    REAL(NTREAL), INTENT(out) :: min_value, max_value
-    !! Local Data
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_max
-    TYPE(TripletList_t) :: triplet_list
-    !! Counters/Temporary
-    INTEGER :: counter
-    TYPE(SparseMatrix_t) :: merged_local_data
-
-    !! Merge all the local data
-    CALL MergeLocalBlocks(this, merged_local_data)
-
-    !! Allocate Space For Result
-    ALLOCATE(per_column_min(merged_local_data%columns))
-    ALLOCATE(per_column_max(merged_local_data%columns))
-
-    !! Compute The Local Contribution
-    per_column_min = 0
-    per_column_max = 0
-    CALL MatrixToTripletList(merged_local_data,triplet_list)
-    DO counter = 1, triplet_list%CurrentSize
-       IF (this%start_row + triplet_list%data(counter)%index_row .EQ. &
-            & this%start_column + triplet_list%data(counter)%index_column) THEN
-          per_column_min(triplet_list%data(counter)%index_column) = &
-               & per_column_min(triplet_list%data(counter)%index_column) + &
-               & triplet_list%data(counter)%point_value
-          per_column_max(triplet_list%data(counter)%index_column) = &
-               & per_column_max(triplet_list%data(counter)%index_column) + &
-               & triplet_list%data(counter)%point_value
-       ELSE
-          per_column_min(triplet_list%data(counter)%index_column) = &
-               & per_column_min(triplet_list%data(counter)%index_column) - &
-               & ABS(triplet_list%data(counter)%point_value)
-          per_column_max(triplet_list%data(counter)%index_column) = &
-               & per_column_max(triplet_list%data(counter)%index_column) + &
-               & ABS(triplet_list%data(counter)%point_value)
-       END IF
-    END DO
-
-    !! Sum Along Columns
-    CALL MPI_Allreduce(MPI_IN_PLACE,per_column_min,SIZE(per_column_min), &
-         & MPINTREAL,MPI_SUM,column_comm,grid_error)
-    CALL MPI_Allreduce(MPI_IN_PLACE,per_column_max,SIZE(per_column_max), &
-         & MPINTREAL,MPI_SUM,column_comm,grid_error)
-
-    min_value = MINVAL(per_column_min)
-    max_value = MAXVAL(per_column_max)
-
-    CALL MPI_Allreduce(MPI_IN_PLACE,min_value,1,MPINTREAL,MPI_MIN, &
-         & row_comm, grid_error)
-    CALL MPI_Allreduce(MPI_IN_PLACE,max_value,1,MPINTREAL,MPI_MAX, &
-         & row_comm, grid_error)
-
-    DEALLOCATE(per_column_min)
-    DEALLOCATE(per_column_max)
-    CALL DestructSparseMatrix(merged_local_data)
-  END SUBROUTINE EigenCircle
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute sigma for the inversion method.
   !! @todo describe this better.

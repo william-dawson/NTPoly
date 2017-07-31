@@ -3,6 +3,7 @@ set(Csrc
     DensityMatrixSolvers.cc DensityMatrixSolvers.h
     DistributedSparseMatrix.cc DistributedSparseMatrix.h
     DistributedMatrixMemoryPool.cc DistributedMatrixMemoryPool.h
+    EigenBounds.cc EigenBounds.h
     ExponentialSolvers.cc ExponentialSolvers.h
     FixedSolversParameters.cc FixedSolversParameters.h
     InverseSolvers.cc InverseSolvers.h

@@ -3,6 +3,7 @@ set(Wsrc
     DensityMatrixSolversModule_wrp.f90
     DistributedSparseMatrixModule_wrp.f90
     DistributedMatrixMemoryPoolModule_wrp.f90
+    EigenBoundsModule_wrp.f90
     ExponentialSolversModule_wrp.f90
     FixedSolversModule_wrp.f90
     IterativeSolversModule_wrp.f90

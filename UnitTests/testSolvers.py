@@ -21,16 +21,14 @@ from Helpers import result_file
 from Helpers import scratch_dir
 
 ##########################################################################
-# A test class for the distributed matrix module.
-
-
+# A test class for the different kinds of solvers.
 class TestSolvers(unittest.TestCase):
     # Parameters for the tests
     input_file = scratch_dir + "/input.mtx"
     input_file2 = scratch_dir + "/input2.mtx"
     CheckMat = 0
     my_rank = 0
-    matrix_dimension = 64
+    matrix_dimension = 128
 
     ##########################################################################
     # set up all of the tests
@@ -680,7 +678,32 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
 
         self.check_result()
+    ##########################################################################
+    # Test our ability to compute eigenvalues with the power method.
+    #  @param[in] self pointer.
+    def test_powermethod(self):
+        # Starting Matrix
+        temp_mat = scipy.sparse.rand(self.matrix_dimension,
+                                     self.matrix_dimension,
+                                     density=1.0)
+        temp_mat = (temp_mat.T + temp_mat)
 
+        if self.my_rank == 0:
+            scipy.io.mmwrite(self.input_file,
+                             scipy.sparse.csr_matrix(temp_mat))
+        comm.barrier()
+
+        # Result Matrix
+        max_value = 0.0
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        max_value = nt.EigenBounds.PowerBounds(input_matrix,
+            self.iterative_solver_parameters)
+        comm.barrier()
+
+        vals, vec = scipy.sparse.linalg.eigsh(temp_mat,which="LM",k=1)
+        relative_error = abs(max_value - vals[0])
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,6 +4,7 @@ MODULE RootSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
+  USE EigenBoundsModule
   USE FixedSolversModule
   USE InverseSolversModule
   USE IterativeSolversModule
@@ -225,7 +226,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL EigenCircle(InputMat, e_min, e_max)
+    CALL GershgorinBounds(InputMat, e_min, e_max)
     scaling_factor = e_max/SQRT(2.0)**(1.0/root)
 
     !! Compute the target root (adjust for the fact that we just took the

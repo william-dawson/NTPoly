@@ -4,6 +4,7 @@ MODULE SignSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
+  USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -77,7 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("Load Balance")
 
     !! Initialize
-    CALL EigenCircle(Mat1,e_min,e_max)
+    CALL GershgorinBounds(Mat1,e_min,e_max)
     xk = ABS(e_min/e_max)
     CALL ScaleDistributedSparseMatrix(SignMat,1.0/ABS(e_max))
 

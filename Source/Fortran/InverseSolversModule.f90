@@ -91,8 +91,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
     DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. IsRoot() .AND. &
-            & outer_counter .GT. 1) THEN
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
@@ -127,16 +126,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLoadBalance(InverseMat,min_size,max_size)
        sparsity = REAL(GetSize(InverseMat),KIND=NTREAL)/ &
             & (InverseMat%actual_matrix_dimension**2)
-       IF (IsRoot()) THEN
-          CALL ExitSubLog
-          CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
-          CALL WriteHeader("Load_Balance")
-          CALL EnterSubLog
-          CALL WriteListElement(key="min_size", int_value_in=min_size)
-          CALL WriteListElement(key="max_size", int_value_in=max_size)
-          CALL ExitSubLog
-          CALL WriteElement(key="Sparsity", float_value_in=sparsity)
-       END IF
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
     CALL StopTimer("I-Invert")
 
@@ -148,7 +145,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL StopTimer("Load Balance")
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
 

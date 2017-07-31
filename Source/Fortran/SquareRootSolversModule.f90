@@ -4,6 +4,7 @@ MODULE SquareRootSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
+  USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -112,7 +113,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the lambda scaling value.
-    CALL EigenCircle(Mat1,e_min,e_max)
+    CALL GershgorinBounds(Mat1,e_min,e_max)
     max_between = MAX(ABS(e_min),ABS(e_max))
     lambda = 1.0/max_between
 
@@ -150,7 +151,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute X_k
        CALL DistributedGemm(SquareRootMat,InverseSquareRootMat,X_k, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL EigenCircle(X_k,e_min,e_max)
+       CALL GershgorinBounds(X_k,e_min,e_max)
        max_between = MAX(ABS(e_min),ABS(e_max))
        lambda = 1.0/max_between
 

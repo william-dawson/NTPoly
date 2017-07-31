@@ -23,11 +23,7 @@ export PROCESS_ROWS="$2"
 export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
-# @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
-# -m unittest -v testSolvers.TestSolvers.test_exponentialfunction
-#
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
--m unittest -v testSolvers.TestSolvers.test_logarithmfunction
-
+-m unittest -v testSolvers.TestSolvers.test_powermethod
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
--m unittest -v testSolvers.TestSolvers.test_exponentialround
+-m unittest -v testChemistry.TestChemistry.test_trs2

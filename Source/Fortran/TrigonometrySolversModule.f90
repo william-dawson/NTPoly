@@ -4,6 +4,7 @@ MODULE TrigonometrySolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
+  USE EigenBoundsModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -102,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL EigenCircle(InputMat, e_min, e_max)
+    CALL GershgorinBounds(InputMat, e_min, e_max)
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
 
     !! Figure out how much to scale the matrix.
@@ -220,7 +221,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL EigenCircle(InputMat, e_min, e_max)
+    CALL GershgorinBounds(InputMat, e_min, e_max)
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
 
     !! Figure out how much to scale the matrix.
@@ -230,8 +231,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
-    WRITE(*,*) "SR", spectral_radius
-    WRITE(*,*) "sigma_val", sigma_val
 
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)

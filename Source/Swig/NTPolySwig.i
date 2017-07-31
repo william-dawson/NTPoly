@@ -1,12 +1,16 @@
 %module NTPolySwig
 %include "typemaps.i"
-%apply double & INOUT { double & chemical_potential_out };
+%apply double& OUTPUT { double& chemical_potential_out };
+%apply double *OUTPUT { double *max_power_eig };
+%apply double *OUTPUT { double *min_ger_eig };
+%apply double *OUTPUT { double *max_ger_eig };
 %{
 #include "SolverBase.h"
 #include "ChebyshevSolvers.h"
 #include "DensityMatrixSolvers.h"
 #include "DistributedSparseMatrix.h"
 #include "DistributedMatrixMemoryPool.h"
+#include "EigenBounds.h"
 #include "ExponentialSolvers.h"
 #include "FixedSolversParameters.h"
 #include "InverseSolvers.h"
@@ -34,6 +38,7 @@ using namespace NTPoly;
 %include "DensityMatrixSolvers.h"
 %include "DistributedSparseMatrix.h"
 %include "DistributedMatrixMemoryPool.h"
+%include "EigenBounds.h"
 %include "ExponentialSolvers.h"
 %include "FixedSolversParameters.h"
 %include "InverseSolvers.h"

@@ -4,6 +4,7 @@ MODULE DensityMatrixSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
+  USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -99,7 +100,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the lambda scaling value.
-    CALL EigenCircle(WorkingHamiltonian,e_min,e_max)
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
 
     !! Initialize
     CALL CopyDistributedSparseMatrix(WorkingHamiltonian,X_k)
@@ -313,7 +314,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the lambda scaling value.
-    CALL EigenCircle(WorkingHamiltonian,e_min,e_max)
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
 
     !! Initialize
     CALL CopyDistributedSparseMatrix(WorkingHamiltonian,X_k)
@@ -556,7 +557,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the initial matrix.
-    CALL EigenCircle(WorkingHamiltonian,e_min,e_max)
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
     mu = Trace(WorkingHamiltonian)/matrix_dimension
     sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
     sigma = 1.0 - sigma_bar
@@ -789,7 +790,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the initial matrix.
-    CALL EigenCircle(WorkingHamiltonian,e_min,e_max)
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
     mu = Trace(WorkingHamiltonian)/matrix_dimension
     sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
     sigma = 1.0 - sigma_bar
