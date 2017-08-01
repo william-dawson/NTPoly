@@ -4,10 +4,11 @@ PROGRAM HydrogenAtom
   USE DataTypesModule, ONLY : ntreal
   USE DensityMatrixSolversModule, ONLY : TRS2
   USE DistributedSparseMatrixModule, ONLY : &
-       & WriteToMatrixMarket, DistributedSparseMatrix, ConstructEmpty, &
+       & WriteToMatrixMarket, DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, &
        & FillFromTripletList, CopyDistributedSparseMatrix, &
        & IncrementDistributedSparseMatrix, FillDistributedIdentity
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
@@ -21,7 +22,7 @@ PROGRAM HydrogenAtom
   CHARACTER(len=80) :: density_file_out
   INTEGER :: process_rows, process_columns, process_slices
   REAL(ntreal) :: threshold, convergence_threshold
-  TYPE(IterativeSolverParameters) :: solver_parameters
+  TYPE(IterativeSolverParameters_t) :: solver_parameters
   !! MPI Variables
   INTEGER :: rank
   INTEGER :: total_processors
@@ -36,11 +37,11 @@ PROGRAM HydrogenAtom
   REAL(ntreal) :: grid_spacing
   REAL(ntreal), DIMENSION(:), ALLOCATABLE :: x_values
   !! Matrices
-  TYPE(DistributedSparseMatrix) :: KineticEnergy
-  TYPE(DistributedSparseMatrix) :: PotentialEnergy
-  TYPE(DistributedSparseMatrix) :: Hamiltonian
-  TYPE(DistributedSparseMatrix) :: Identity
-  TYPE(DistributedSparseMatrix) :: Density
+  TYPE(DistributedSparseMatrix_t) :: KineticEnergy
+  TYPE(DistributedSparseMatrix_t) :: PotentialEnergy
+  TYPE(DistributedSparseMatrix_t) :: Hamiltonian
+  TYPE(DistributedSparseMatrix_t) :: Identity
+  TYPE(DistributedSparseMatrix_t) :: Density
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
@@ -78,7 +79,7 @@ PROGRAM HydrogenAtom
        & process_slices)
 
   !! Set Up The Solver Parameters.
-  solver_parameters = IterativeSolverParameters( be_verbose_in=.TRUE., &
+  solver_parameters = IterativeSolverParameters_t( be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   !! Divide The Work Amongst Processors.
@@ -88,11 +89,11 @@ PROGRAM HydrogenAtom
   CALL ConstructLinearSpace()
 
   !! Construct The Kinetic Energy Operator.
-  CALL ConstructEmpty(KineticEnergy, grid_points)
+  CALL ConstructEmptyDistributedSparseMatrix(KineticEnergy, grid_points)
   CALL FillKineticEnergy()
 
   !! Construct The Potential Energy Operator.
-  CALL ConstructEmpty(PotentialEnergy, grid_points)
+  CALL ConstructEmptyDistributedSparseMatrix(PotentialEnergy, grid_points)
   CALL FillPotentialEnergy()
 
   !! Construct The Full Hamiltonian.
@@ -100,7 +101,8 @@ PROGRAM HydrogenAtom
   CALL IncrementDistributedSparseMatrix(PotentialEnergy, Hamiltonian)
 
   !! Overlap Matrix is just the identity.
-  CALL ConstructEmpty(Identity,Hamiltonian%actual_matrix_dimension)
+  CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+       & Hamiltonian%actual_matrix_dimension)
   CALL FillDistributedIdentity(Identity)
 
   !! Call the solver routine.

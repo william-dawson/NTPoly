@@ -106,3 +106,6 @@ computed by these routines.
 It is possible to write out a matrix either to either a text or binary format.
 Writing to text is slower, but is portable across systems. Writing to binary
 should probably only be used to store intermediate results.
+
+The output file can be compared to Density-Reference.mtx to verify its
+correctness. 

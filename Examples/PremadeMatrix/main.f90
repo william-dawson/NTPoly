@@ -4,8 +4,8 @@ PROGRAM PremadeMatrixProgram
   USE DataTypesModule, ONLY : ntreal
   USE DensityMatrixSolversModule, ONLY : TRS2
   USE DistributedSparseMatrixModule, ONLY : ConstructFromMatrixMarket, &
-       & WriteToMatrixMarket, DistributedSparseMatrix
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters
+       & WriteToMatrixMarket, DistributedSparseMatrix_t
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE LoggingModule
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot
@@ -19,12 +19,12 @@ PROGRAM PremadeMatrixProgram
   INTEGER :: process_rows, process_columns, process_slices
   REAL(ntreal) :: threshold, convergence_threshold
   INTEGER :: number_of_electrons
-  TYPE(IterativeSolverParameters) :: solver_parameters
+  TYPE(IterativeSolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
   !! Matrices
-  TYPE(DistributedSparseMatrix) :: Hamiltonian, Overlap
-  TYPE(DistributedSparseMatrix) :: ISQOverlap
-  TYPE(DistributedSparseMatrix) :: Density
+  TYPE(DistributedSparseMatrix_t) :: Hamiltonian, Overlap
+  TYPE(DistributedSparseMatrix_t) :: ISQOverlap
+  TYPE(DistributedSparseMatrix_t) :: Density
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
@@ -88,7 +88,7 @@ PROGRAM PremadeMatrixProgram
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
        & Hamiltonian%logical_matrix_dimension)
-  solver_parameters = IterativeSolverParameters(&
+  solver_parameters = IterativeSolverParameters_t(&
        & converge_diff_in=convergence_threshold, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 

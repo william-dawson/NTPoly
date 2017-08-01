@@ -69,7 +69,8 @@ Getting Start With Examples
 --------------------------------------------------------------------------------
 In the examples directory, there are a number of different example programs that
 use NTPoly. You can check the ReadMe.md file in each example directory to
-learn how to build and run each example.
+learn how to build and run each example. The simplest example is PremadeMatrix,
+which includes sample output you can compare to.
 
 Feature Outline
 --------------------------------------------------------------------------------

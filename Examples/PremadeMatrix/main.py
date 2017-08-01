@@ -56,8 +56,9 @@ if __name__ == "__main__":
     # Call the solver routines.
     nt.SquareRootSolvers.InverseSquareRoot(
         Overlap, ISQOverlap, solver_parameters)
-    nt.DensityMatrixSolvers.TRS2(Hamiltonian, ISQOverlap, number_of_electrons,
-                                 Density, chemical_potential, solver_parameters)
+    chemical_potential = nt.DensityMatrixSolvers.TRS2(Hamiltonian, ISQOverlap,
+                                 number_of_electrons,
+                                 Density, solver_parameters)
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)

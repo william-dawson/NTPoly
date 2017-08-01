@@ -117,8 +117,8 @@ if __name__ == "__main__":
     # Call the solver routine.
     chemical_potential = 0
     Density = nt.DistributedSparseMatrix(grid_points)
-    nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 2,
-                                 Density, chemical_potential, solver_parameters)
+    chemical_potential = nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 2,
+                                 Density, solver_parameters)
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)

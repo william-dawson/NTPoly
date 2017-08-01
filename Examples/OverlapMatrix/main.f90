@@ -14,10 +14,10 @@ PROGRAM OverlapExample
   !! Parameters
   INTEGER :: process_rows, process_columns, process_slices
   REAL(ntreal) :: threshold, convergence_threshold
-  TYPE(IterativeSolverParameters) :: solver_parameters
+  TYPE(IterativeSolverParameters_t) :: solver_parameters
   INTEGER :: basis_functions
   !! Matrices
-  TYPE(DistributedSparseMatrix) :: Overlap, ISQOverlap
+  TYPE(DistributedSparseMatrix_t) :: Overlap, ISQOverlap
   TYPE(Permutation_t) :: permutation
   !! Triplet List
   TYPE(TripletList_t) :: triplet_list
@@ -79,8 +79,8 @@ PROGRAM OverlapExample
   end_column = start_column + local_columns - 1
 
   !! Build The Empty Matrices
-  CALL ConstructEmpty(Overlap, basis_functions)
-  CALL ConstructEmpty(ISQOverlap, basis_functions)
+  CALL ConstructEmptyDistributedSparseMatrix(Overlap, basis_functions)
+  CALL ConstructEmptyDistributedSparseMatrix(ISQOverlap, basis_functions)
 
   !! Compute The Overlap Matrix
   CALL StartTimer("Construct Triplet List")
@@ -105,7 +105,7 @@ PROGRAM OverlapExample
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
        & Overlap%logical_matrix_dimension)
-  solver_parameters = IterativeSolverParameters(&
+  solver_parameters = IterativeSolverParameters_t(&
        & converge_diff_in=convergence_threshold, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 

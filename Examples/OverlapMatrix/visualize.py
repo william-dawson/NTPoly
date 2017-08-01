@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy
 from matplotlib.colors import LogNorm
 
-# A function that reads in matrix market-esque files produced by the library.
+# A function that reads in matrix market files produced by the library.
 # @param file_name file to read.
 def ReadMM(file_name):
     matrix = numpy.zeros((0, 0))

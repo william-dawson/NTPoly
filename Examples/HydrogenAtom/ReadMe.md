@@ -16,7 +16,7 @@ There are three main points to this example.
 
 In a somewhat unconventional manner, we will do all this using the real space
 basis set. Of course, it is normally neither practical nor useful to compute
-the density matrix in real space, however the equations in real space are
+the full density matrix in real space, however the equations in real space are
 very simple and will allow us to demonstrate the concepts.
 
 We need to solve the following equation:
