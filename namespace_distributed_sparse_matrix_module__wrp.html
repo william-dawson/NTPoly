@@ -53,8 +53,8 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <tr><td class="memItemLeft" align="right" valign="top">type &nbsp;</td><td class="memItemRight" valign="bottom"><b>DistributedSparseMatrix_wrp</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">A wrapper for the sparse matrix data type. <br/></td></tr>
 <tr><td colspan="2"><h2>Functions/Subroutines</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module__wrp.html#a578a5546a963e6c60a73bf5eb4adf621">ConstructEmpty_wrp</a> (ih_this, matrix_dim)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Wrap the constructor of an empty sparse, distributed, matrix.  <a href="#a578a5546a963e6c60a73bf5eb4adf621"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module__wrp.html#add9c46dcc03db3b065b4911769064ce6">ConstructEmptyDistributedSparseMatrix_wrp</a> (ih_this, matrix_dim)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Wrap the constructor of an empty sparse, distributed, matrix.  <a href="#add9c46dcc03db3b065b4911769064ce6"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module__wrp.html#a703933a142ffc043aef41c421f9e712f">ConstructFromMatrixMarket_wrp</a> (ih_this, file_name, name_size)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Construct distributed sparse matrix from a matrix market file in parallel.  <a href="#a703933a142ffc043aef41c421f9e712f"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module__wrp.html#a5071384fd8dc08f138415c87f364b9ca">ConstructFromBinary_wrp</a> (ih_this, file_name, name_size)</td></tr>
@@ -97,12 +97,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <hr/><a name="_details"></a><h2>Detailed Description</h2>
 <p>A module for wrapping a Distributed Sparse Matrix. </p>
 <hr/><h2>Function/Subroutine Documentation</h2>
-<a class="anchor" id="a578a5546a963e6c60a73bf5eb4adf621"></a><!-- doxytag: member="DistributedSparseMatrixModule_wrp::ConstructEmpty_wrp" ref="a578a5546a963e6c60a73bf5eb4adf621" args="(ih_this, matrix_dim)" -->
+<a class="anchor" id="add9c46dcc03db3b065b4911769064ce6"></a><!-- doxytag: member="DistributedSparseMatrixModule_wrp::ConstructEmptyDistributedSparseMatrix_wrp" ref="add9c46dcc03db3b065b4911769064ce6" args="(ih_this, matrix_dim)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine DistributedSparseMatrixModule_wrp::ConstructEmpty_wrp </td>
+          <td class="memname">subroutine DistributedSparseMatrixModule_wrp::ConstructEmptyDistributedSparseMatrix_wrp </td>
           <td>(</td>
           <td class="paramtype">INTEGER(kind=c_int),dimension(size_wrp),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>ih_this</em>, </td>
@@ -886,7 +886,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 31 Jul 2017 for NTPoly by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 1 Aug 2017 for NTPoly by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

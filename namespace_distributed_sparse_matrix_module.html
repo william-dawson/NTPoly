@@ -50,11 +50,11 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <a href="#_details">More...</a></p>
 <table border="0" cellpadding="0" cellspacing="0">
 <tr><td colspan="2"><h2>Data Types</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">type &nbsp;</td><td class="memItemRight" valign="bottom"><b>DistributedSparseMatrix</b></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">type &nbsp;</td><td class="memItemRight" valign="bottom"><b>DistributedSparseMatrix_t</b></td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">A datatype for a distributed blocked CSR matrix. <br/></td></tr>
 <tr><td colspan="2"><h2>Functions/Subroutines</h2></td></tr>
-<tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#a567e622505b3b078234a09cf56936a51">ConstructEmpty</a> (this, matrix_dim_)</td></tr>
-<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Construct an empty sparse, distributed, matrix.  <a href="#a567e622505b3b078234a09cf56936a51"></a><br/></td></tr>
+<tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#a1ac1bdb118b5892d090d7c8ff0cb959d">ConstructEmptyDistributedSparseMatrix</a> (this, matrix_dim_)</td></tr>
+<tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Construct an empty sparse, distributed, matrix.  <a href="#a1ac1bdb118b5892d090d7c8ff0cb959d"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#aae95ae2e9f6a61874c7735c3c2544afb">DestructDistributedSparseMatrix</a> (this)</td></tr>
 <tr><td class="mdescLeft">&nbsp;</td><td class="mdescRight">Destruct a distributed sparse matrix.  <a href="#aae95ae2e9f6a61874c7735c3c2544afb"></a><br/></td></tr>
 <tr><td class="memItemLeft" align="right" valign="top">subroutine&nbsp;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_distributed_sparse_matrix_module.html#a3e6003c0766c7d3cbd513ce6521e4733">CopyDistributedSparseMatrix</a> (matA, matB)</td></tr>
@@ -116,7 +116,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::ComputeSigma </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -146,14 +146,14 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 
 </div>
 </div>
-<a class="anchor" id="a567e622505b3b078234a09cf56936a51"></a><!-- doxytag: member="DistributedSparseMatrixModule::ConstructEmpty" ref="a567e622505b3b078234a09cf56936a51" args="(this, matrix_dim_)" -->
+<a class="anchor" id="a1ac1bdb118b5892d090d7c8ff0cb959d"></a><!-- doxytag: member="DistributedSparseMatrixModule::ConstructEmptyDistributedSparseMatrix" ref="a1ac1bdb118b5892d090d7c8ff0cb959d" args="(this, matrix_dim_)" -->
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine DistributedSparseMatrixModule::ConstructEmpty </td>
+          <td class="memname">subroutine DistributedSparseMatrixModule::ConstructEmptyDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -189,7 +189,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::ConstructFromBinary </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -225,7 +225,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::ConstructFromMatrixMarket </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -261,13 +261,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::CopyDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>matB</em></td><td>&nbsp;</td>
         </tr>
         <tr>
@@ -297,7 +297,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::DestructDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -323,19 +323,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::DistributedGemm </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matB</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>matC</em>, </td>
         </tr>
         <tr>
@@ -394,7 +394,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">REAL(NTREAL) DistributedSparseMatrixModule::DistributedGrandSum </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matA</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -421,19 +421,19 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::DistributedPairwiseMultiply </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matB</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>matC</em></td><td>&nbsp;</td>
         </tr>
         <tr>
@@ -464,7 +464,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">REAL(NTREAL) DistributedSparseMatrixModule::DistributedSparseNorm </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -491,13 +491,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">REAL(NTREAL) DistributedSparseMatrixModule::DotDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matB</em></td><td>&nbsp;</td>
         </tr>
         <tr>
@@ -528,7 +528,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::FillDistributedIdentity </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -554,7 +554,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::FillDistributedPermutation </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -597,7 +597,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::FillFromTripletList </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -633,7 +633,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::FilterSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -669,7 +669,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">INTEGER DistributedSparseMatrixModule::GetActualDimension </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -696,7 +696,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::GetLoadBalance </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -739,7 +739,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">INTEGER DistributedSparseMatrixModule::GetLogicalDimension </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -766,7 +766,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">INTEGER(c_long) DistributedSparseMatrixModule::GetSize </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -793,7 +793,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::GetTripletList </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -829,13 +829,13 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::IncrementDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>matA</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>matB</em>, </td>
         </tr>
         <tr>
@@ -879,7 +879,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::PrintDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -915,7 +915,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::ScaleDistributedSparseMatrix </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(inout)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(inout)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -951,7 +951,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">REAL(NTREAL) DistributedSparseMatrixModule::Trace </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix),intent(in)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t),intent(in)&nbsp;</td>
           <td class="paramname"> <em>this</em></td>
           <td>&nbsp;)&nbsp;</td>
           <td></td>
@@ -978,7 +978,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::WriteToBinary </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -1014,7 +1014,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
         <tr>
           <td class="memname">subroutine DistributedSparseMatrixModule::WriteToMatrixMarket </td>
           <td>(</td>
-          <td class="paramtype">TYPE(DistributedSparseMatrix)&nbsp;</td>
+          <td class="paramtype">TYPE(DistributedSparseMatrix_t)&nbsp;</td>
           <td class="paramname"> <em>this</em>, </td>
         </tr>
         <tr>
@@ -1058,7 +1058,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 31 Jul 2017 for NTPoly by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 1 Aug 2017 for NTPoly by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>

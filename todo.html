@@ -61,17 +61,12 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 <dt>Subprogram <a class="el" href="namespace_sparse_matrix_iterator_module.html#a0c9b0d3d524412aef533f45af7e1b529">SparseMatrixIteratorModule::Next</a> (this, sparse_matrix) </dt>
 <dd>it's probably a pain to have to pass the sparse matrix here. But Fortran's requirement that everything that is pointed to has the TARGET attribute is problematic. </dd>
 </dl>
-<p><a class="anchor" id="_todo000007"></a> </p>
-<dl>
-<dt>Subprogram <a class="el" href="namespace_sparse_matrix_module.html#a0c4f174f2f21c60867b97fb34ccec69e">SparseMatrixModule::Gemm</a> (matA, matB, matC, IsATransposed_in, IsBTransposed_in, alpha_in, beta_in, threshold_in, blocked_memory_pool_in) </dt>
-<dd>more performance tuning. </dd>
-</dl>
 <p><a class="anchor" id="_todo000006"></a> </p>
 <dl>
 <dt>Subprogram <a class="el" href="namespace_sparse_matrix_module.html#a89ae5fb3ef66cf080ff53ff28fcf565d">SparseMatrixModule::IncrementSparseMatrix</a> (matA, matB, alpha_in, threshold_in) </dt>
 <dd>I don't like this hack where I have to check if MatrixB is allocated. </dd>
 </dl>
-<p><a class="anchor" id="_todo000008"></a> </p>
+<p><a class="anchor" id="_todo000007"></a> </p>
 <dl>
 <dt>Subprogram <a class="el" href="namespace_sparse_vector_module.html#a360a097f3029871b717868f30bdf206c">SparseVectorModule::AddSparseVectors</a> (inner_index_a, values_a, inner_index_b, values_b, inner_index_c, values_c, total_values_c, alpha_in, threshold_in) </dt>
 <dd>in principal this can be done without any branching. </dd>
@@ -91,7 +86,7 @@ var searchBox = new SearchBox("searchBox", "search",false,'Search');
 </iframe>
 </div>
 
-<hr size="1"/><address style="text-align: right;"><small>Generated on 31 Jul 2017 for NTPoly by&nbsp;
+<hr size="1"/><address style="text-align: right;"><small>Generated on 1 Aug 2017 for NTPoly by&nbsp;
 <a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.6.1 </small></address>
 </body>
