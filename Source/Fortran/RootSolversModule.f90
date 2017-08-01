@@ -190,7 +190,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
     TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
     INTEGER, INTENT(in) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
@@ -250,8 +251,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SquareRoot(SqrtMat, FthrtMat, solver_parameters)
     CALL DestructDistributedSparseMatrix(SqrtMat)
 
-    !!! Setup the Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, InputMat%actual_matrix_dimension)
+    !! Setup the Matrices
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Load Balancing Step
@@ -269,9 +271,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(Mk, 1.0/(scaling_factor**target_root))
     CALL DestructDistributedSparseMatrix(FthrtMat)
 
-    CALL ConstructEmptyDistributedSparseMatrix(IntermediateMat, InputMat%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(IntermediateMatP, InputMat%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IntermediateMat, &
+         & InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IntermediateMatP, &
+         & InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp, &
+         & InputMat%actual_matrix_dimension)
 
     outer_counter = 1
     IF (solver_parameters%be_verbose) THEN
@@ -351,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL StopTimer("Load Balance")
 
-    !!! Cleanup
+    !! Cleanup
     IF (solver_parameters_in%be_verbose) THEN
        CALL ExitSubLog
     END IF

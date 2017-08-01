@@ -197,11 +197,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(x_powers(s_value+1))
 
     !! Initial values for matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Create the X Powers
-    CALL ConstructEmptyDistributedSparseMatrix(x_powers(1), InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(x_powers(1), &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(x_powers(1))
     DO counter=1,s_value+1-1
        CALL DistributedGemm(InputMat,x_powers(counter-1+1),x_powers(counter+1))
@@ -232,7 +234,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Loop over the rest.
     DO k_value=r_value-2,-1+1,-1
        CALL CopyDistributedSparseMatrix(Identity,Bk)
-       CALL ScaleDistributedSparseMatrix(Bk,poly%coefficients(s_value*k_value+1))
+       CALL ScaleDistributedSparseMatrix(Bk, &
+            & poly%coefficients(s_value*k_value+1))
        DO counter=1,s_value-1+1-1
           c_index = s_value*k_value + counter
           CALL IncrementDistributedSparseMatrix(x_powers(counter+1),Bk, &

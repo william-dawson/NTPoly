@@ -50,8 +50,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE DestructDistributedMatrixMemoryPool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Checks if a given distributed memory pool has been validly allocated to handle
-  !! the given parameters.
+  !> Checks if a given distributed memory pool has been validly allocated to
+  !! handle the given parameters.
   !> @param[in] this the memory pool to check.
   !> @return true if the memory pool is valid.
   PURE FUNCTION CheckDistributedMemoryPoolValidity(this) &

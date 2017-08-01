@@ -30,11 +30,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, InverseSquareRoot
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, &
+         & InverseSquareRoot
     INTEGER, INTENT(in) :: nel
     TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -78,7 +80,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Construct All The Necessary Matrices
     matrix_dimension = Hamiltonian%actual_matrix_dimension
     CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+         & matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(P_k, matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(G_k, matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(G_kplusone, matrix_dimension)
@@ -220,9 +223,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DistributedGemm(TempMat,InverseSquareRoot,Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
-    if (present(chemical_potential_out)) then
-      chemical_potential_out = mu
-    end if
+    IF (PRESENT(chemical_potential_out)) THEN
+       chemical_potential_out = mu
+    END IF
 
     !! Cleanup
     IF (solver_parameters%be_verbose) THEN

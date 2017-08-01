@@ -70,7 +70,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
+         & InputMat%actual_matrix_dimension)
 
     !! Scale the matrix
     CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
@@ -123,9 +124,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SetChebyshevCoefficient(polynomial,16, &
          & REAL(-1.629151584468762e-16_16,NTREAL))
 
-    !CALL ChebyshevCompute(ScaledMat,OutputMat,polynomial,solver_parameters)
-    CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
-         & sub_solver_parameters)
+    CALL ChebyshevCompute(ScaledMat,OutputMat,polynomial,sub_solver_parameters)
+    !CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
+    !     & sub_solver_parameters)
 
     !! Undo the scaling by squaring at the end.
     !! Load Balancing Step
@@ -222,7 +223,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
 
-    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(OutputMat)
 
     !! Load Balancing Step
@@ -310,7 +312,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Copy to a temporary matrix for scaling.
@@ -329,7 +332,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Sigma", int_value_in=sigma_val)
     END IF
     f_sub_solver_parameters%threshold = &
-      & f_sub_solver_parameters%threshold/REAL(2**(sigma_counter-1),NTREAL)
+         & f_sub_solver_parameters%threshold/REAL(2**(sigma_counter-1),NTREAL)
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_solver_parameters)
 
     !! Shift Scaled Matrix
@@ -480,7 +483,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Setup Matrices

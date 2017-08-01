@@ -422,148 +422,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold_in for flushing values to zero. Default value is 0.0.
   !! @param[inout] blocked_memory_pool_in an optional memory pool for doing the
   !! calculation.
-  !! @todo more performance tuning.
-  ! subroutine Gemm2(matA, matB, matC, IsATransposed_in, IsBTransposed_in, &
-  !   & alpha_in, beta_in, threshold_in, blocked_memory_pool_in)
-  !   !! Parameters
-  !   type(SparseMatrix_t), intent(in)  :: matA
-  !   type(SparseMatrix_t), intent(in)  :: matB
-  !   type(SparseMatrix_t), intent(inout) :: matC
-  !   logical, optional, intent(in) :: IsATransposed_in
-  !   logical, optional, intent(in) :: IsBTransposed_in
-  !   real(NTREAL), optional, intent(in) :: alpha_in
-  !   real(NTREAL), optional, intent(in) :: beta_in
-  !   real(NTREAL), optional, intent(in) :: threshold_in
-  !   type(MatrixMemoryPool_t), optional, &
-  !     & intent(inout), target :: blocked_memory_pool_in
-  !   !! Intermediate Data
-  !   type(SparseMatrix_t) :: matAB
-  !   logical :: IsATransposed, IsBTransposed
-  !   real(NTREAL) :: alpha
-  !   real(NTREAL) :: beta
-  !   real(NTREAL) :: threshold
-  !   type(SparseMatrix_t) :: matAT, matBT
-  !   type(MatrixMemoryPool_t) :: blocked_memory_pool
-  !   !! Counters and temporary data
-  !   integer :: mat_c_columns, mat_c_rows
-  !   !! For Efficiency Purposes
-  !   logical :: pool_flag
-  !
-  !   !! Process Optional Parameters
-  !   if (.not. present(alpha_in)) then
-  !     alpha = 1.0d+0
-  !   else
-  !     alpha = alpha_in
-  !   end if
-  !   if (.not. present(beta_in)) then
-  !     beta = 0.0
-  !   else
-  !     beta = beta_in
-  !   end if
-  !   if (.not. present(IsATransposed_in)) then
-  !     IsATransposed = .false.
-  !   else
-  !     IsATransposed = IsATransposed_in
-  !   end if
-  !   if (.not. present(IsBTransposed_in)) then
-  !     IsBTransposed = .false.
-  !   else
-  !     IsBTransposed = IsBTransposed_in
-  !   end if
-  !   if (.not. present(threshold_in)) then
-  !     threshold = 0.0
-  !   else
-  !     threshold = threshold_in
-  !   end if
-  !
-  !   !! Storage details for result matrix
-  !   if (IsATransposed) then
-  !     mat_c_rows = matA%columns
-  !   else
-  !     mat_c_rows = matA%rows
-  !   end if
-  !   if (IsBTransposed) then
-  !     mat_c_columns = matB%rows
-  !   else
-  !     mat_c_columns = matB%columns
-  !   end if
-  !
-  !   !! Initialization of Memory
-  !   !call StartTimer("Initialize Prune")
-  !   if (.not. present(blocked_memory_pool_in)) then
-  !     call ConstructMatrixMemoryPool(blocked_memory_pool,mat_c_columns, &
-  !          & mat_c_rows)
-  !     pool_flag = .false.
-  !   elseif (.not. CheckMemoryPoolValidity(blocked_memory_pool_in, &
-  !         & mat_c_columns, mat_c_rows)) then
-  !     call DestructMatrixMemoryPool(blocked_memory_pool_in)
-  !     call ConstructMatrixMemoryPool(blocked_memory_pool_in,mat_c_columns, &
-  !          & mat_c_rows)
-  !     pool_flag = .true.
-  !   else
-  !     pool_flag = .true.
-  !   end if
-  !
-  !   !! Block A and B
-  !   !call StartTimer("Transposes")
-  !   if (.not. IsATransposed) then
-  !     call TransposeSparseMatrix(matA,matAT)
-  !   end if
-  !   if (.not. IsBTransposed) then
-  !     call TransposeSparseMatrix(matB,matBT)
-  !   end if
-  !   !call StopTimer("Transposes")
-  !
-  !   !call StopTimer("Initialize Prune")
-  !
-  !   !call StartTimer("MM Loop")
-  !   !call StartTimer("Multiply Block")
-  !   if (pool_flag) then
-  !     if (IsATransposed .and. IsBTransposed) then
-  !       call MultiplyBlock(matA, matB, blocked_memory_pool_in%value_array)
-  !     elseif (IsATransposed) then
-  !       call MultiplyBlock(matA, matBT, blocked_memory_pool_in%value_array)
-  !     elseif (IsBTransposed) then
-  !       call MultiplyBlock(matAT, matB, blocked_memory_pool_in%value_array)
-  !     else
-  !       call MultiplyBlock(matAT, matBT, blocked_memory_pool_in%value_array)
-  !     end if
-  !   else
-  !     if (IsATransposed .and. IsBTransposed) then
-  !       call MultiplyBlock(matA, matB, blocked_memory_pool%value_array)
-  !     elseif (IsATransposed) then
-  !       call MultiplyBlock(matA, matBT, blocked_memory_pool%value_array)
-  !     elseif (IsBTransposed) then
-  !       call MultiplyBlock(matAT, matB, blocked_memory_pool%value_array)
-  !     else
-  !       call MultiplyBlock(matAT, matBT, blocked_memory_pool%value_array)
-  !     end if
-  !   end if
-  !   !call StopTimer("Multiply Block")
-  !
-  !   !! Go from triplets to return matrix
-  !   !call StartTimer("Prune List")
-  !   !call StartTimer("Prune List")
-  !   if (pool_flag) then
-  !     call PruneList(blocked_memory_pool_in,alpha,threshold, &
-  !          & mat_c_columns, mat_c_rows, matAB)
-  !   else
-  !     call PruneList(blocked_memory_pool,alpha,threshold, &
-  !          & mat_c_columns, mat_c_rows, matAB)
-  !   end if
-  !   !call StopTimer("Prune List")
-  !
-  !   if (present(beta_in) .and. abs(beta_in) .gt. 0) then
-  !     call ScaleSparseMatrix(matC,beta)
-  !     call IncrementSparseMatrix(matAB,matC)
-  !   else
-  !     call CopySparseMatrix(matAB,matC)
-  !   end if
-  !
-  !   call DestructSparseMatrix(matAB)
-  !   call DestructMatrixMemoryPool(blocked_memory_pool)
-  !   !call StopTimer("Prune List")
-  ! end subroutine Gemm2
   SUBROUTINE Gemm(matA, matB, matC, IsATransposed_in, IsBTransposed_in, &
        & alpha_in, beta_in, threshold_in, blocked_memory_pool_in)
     !! Parameters
@@ -631,9 +489,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initialization of Memory
-    !call StartTimer("Initialize Prune")
-    !sparsity_estimate = max(dble(size(matA%values))/(matA%rows*matA%columns), &
-    !  & dble(size(matB%values))/(matB%rows*matB%columns))
     sparsity_estimate = 4*MAX(DBLE(SIZE(matA%values))/(matA%rows*matA%columns),&
          & DBLE(SIZE(matB%values))/(matB%rows*matB%columns))
     IF (sparsity_estimate > 1.0) THEN
@@ -658,53 +513,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Block A and B
-    !call StartTimer("Transposes")
     IF (.NOT. IsATransposed) THEN
        CALL TransposeSparseMatrix(matA,matAT)
     END IF
     IF (.NOT. IsBTransposed) THEN
        CALL TransposeSparseMatrix(matB,matBT)
     END IF
-    !call StopTimer("Transposes")
 
-    !call StopTimer("Initialize Prune")
-
-    !call StartTimer("MM Loop")
-    !call StartTimer("Multiply Block")
     IF (pool_flag) THEN
        IF (IsATransposed .AND. IsBTransposed) THEN
-          CALL MultiplyBlock2(matA, matB, blocked_memory_pool_in)
+          CALL MultiplyBlock(matA, matB, blocked_memory_pool_in)
        ELSEIF (IsATransposed) THEN
-          CALL MultiplyBlock2(matA, matBT, blocked_memory_pool_in)
+          CALL MultiplyBlock(matA, matBT, blocked_memory_pool_in)
        ELSEIF (IsBTransposed) THEN
-          CALL MultiplyBlock2(matAT, matB, blocked_memory_pool_in)
+          CALL MultiplyBlock(matAT, matB, blocked_memory_pool_in)
        ELSE
-          CALL MultiplyBlock2(matAT, matBT, blocked_memory_pool_in)
+          CALL MultiplyBlock(matAT, matBT, blocked_memory_pool_in)
        END IF
     ELSE
        IF (IsATransposed .AND. IsBTransposed) THEN
-          CALL MultiplyBlock2(matA, matB, blocked_memory_pool)
+          CALL MultiplyBlock(matA, matB, blocked_memory_pool)
        ELSEIF (IsATransposed) THEN
-          CALL MultiplyBlock2(matA, matBT, blocked_memory_pool)
+          CALL MultiplyBlock(matA, matBT, blocked_memory_pool)
        ELSEIF (IsBTransposed) THEN
-          CALL MultiplyBlock2(matAT, matB, blocked_memory_pool)
+          CALL MultiplyBlock(matAT, matB, blocked_memory_pool)
        ELSE
-          CALL MultiplyBlock2(matAT, matBT, blocked_memory_pool)
+          CALL MultiplyBlock(matAT, matBT, blocked_memory_pool)
        END IF
     END IF
-    !call StopTimer("Multiply Block")
 
     !! Go from triplets to return matrix
-    !call StartTimer("Prune List")
-    !call StartTimer("Prune List")
     IF (pool_flag) THEN
-       CALL PruneList2(blocked_memory_pool_in,alpha,threshold, &
+       CALL PruneList(blocked_memory_pool_in,alpha,threshold, &
             & mat_c_columns, mat_c_rows, matAB)
     ELSE
-       CALL PruneList2(blocked_memory_pool,alpha,threshold, &
+       CALL PruneList(blocked_memory_pool,alpha,threshold, &
             & mat_c_columns, mat_c_rows, matAB)
     END IF
-    !call StopTimer("Prune List")
 
     IF (PRESENT(beta_in)) THEN
        IF (ABS(beta_in) .GT. 0) THEN
@@ -719,7 +564,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructSparseMatrix(matAB)
     CALL DestructMatrixMemoryPool(blocked_memory_pool)
-    !call StopTimer("Prune List")
   END SUBROUTINE Gemm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a sparse matrix along the columns.
@@ -856,7 +700,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & mat_list(counter)%values
        inner_start = inner_start + inner_length
        !! Outer Indices
-       !outer_length = size(mat_list(counter)%outer_index)
        outer_length = mat_list(counter)%columns+1
        out_matrix%outer_index(outer_start:outer_start+outer_length-1) = &
             & mat_list(counter)%outer_index + outer_offset
@@ -1053,44 +896,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(triplet_list)
   END FUNCTION CheckIfIdentity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! pure subroutine MultiplyBlock(matAT,matBT,value_array_ptr)
-  !   !! Parameters
-  !   type(SparseMatrix_t), intent(in)  :: matAT
-  !   type(SparseMatrix_t), intent(in)  :: matBT
-  !   real(NTREAL), dimension(:,:), intent(inout) :: value_array_ptr
-  !   !! Temp Variables
-  !   real(NTREAL) :: temp_value_a, temp_value_b
-  !   integer :: temp_index_a, temp_index_b
-  !   integer :: elements_per_inner_a
-  !   integer :: elements_per_inner_b
-  !   !! Counters
-  !   integer :: outer_counter, inner_counter_a, inner_counter_b
-  !
-  !   !! Multiply
-  !   do outer_counter = 1, matAT%columns
-  !     elements_per_inner_a = matAT%outer_index(outer_counter+1) - &
-  !       & matAT%outer_index(outer_counter)
-  !     do inner_counter_a = 1, elements_per_inner_a
-  !       temp_value_a = matAT%values(matAT%outer_index(outer_counter)+ &
-  !         & inner_counter_a)
-  !       temp_index_a = matAT%inner_index(matAT%outer_index(outer_counter)+ &
-  !           & inner_counter_a)
-  !       elements_per_inner_b = matBT%outer_index(temp_index_a+1) - &
-  !         & matBT%outer_index(temp_index_a)
-  !       do inner_counter_b = 1, elements_per_inner_b
-  !         temp_index_b = matBT%inner_index(matBT%outer_index(temp_index_a)+ &
-  !           & inner_counter_b)
-  !         temp_value_b = matBT%values(matBT%outer_index(temp_index_a)+ &
-  !           & inner_counter_b)
-  !         value_array_ptr(temp_index_b,outer_counter) = &
-  !           & value_array_ptr(temp_index_b,outer_counter) + &
-  !           & temp_value_a*temp_value_b
-  !       end do
-  !     end do
-  !   end do
-  ! end subroutine MultiplyBlock
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE SUBROUTINE MultiplyBlock2(matAT,matBT,memorypool)
+  PURE SUBROUTINE MultiplyBlock(matAT,matBT,memorypool)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(in)  :: matAT
     TYPE(SparseMatrix_t), INTENT(in)  :: matBT
@@ -1140,53 +946,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END DO
        END DO
     END DO
-  END SUBROUTINE MultiplyBlock2
+  END SUBROUTINE MultiplyBlock
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! pure subroutine PruneList(blocked_memory_pool,alpha,threshold, &
-  !      & mat_c_columns, mat_c_rows, matAB)
-  !   !! Parameters
-  !   type(MatrixMemoryPool_t), intent(inout) :: blocked_memory_pool
-  !   real(NTREAL), intent(in) :: alpha
-  !   real(NTREAL), intent(in) :: threshold
-  !   integer, intent(in) :: mat_c_columns
-  !   integer, intent(in) :: mat_c_rows
-  !   type(SparseMatrix_t), intent(inout) :: matAB
-  !   !! Local data
-  !   integer :: pruned_counter
-  !   integer :: row_counter_c, column_counter_c
-  !   real(NTREAL) :: working_value
-  !   type(TripletList_t) :: unsorted_pruned_list
-  !   type(TripletList_t) :: sorted_pruned_list
-  !
-  !   pruned_counter = 1
-  !   do row_counter_c = 1, mat_c_rows
-  !     do column_counter_c = 1, mat_c_columns
-  !       working_value = blocked_memory_pool%value_array(column_counter_c,&
-  !         & row_counter_c)
-  !       blocked_memory_pool%value_array(column_counter_c, &
-  !         & row_counter_c) = 0
-  !       if (abs(working_value) .gt. threshold) then
-  !         blocked_memory_pool%pruned_list(pruned_counter)%point_value = &
-  !           & alpha*working_value
-  !         blocked_memory_pool%pruned_list(pruned_counter)%index_column = &
-  !           & column_counter_c
-  !         blocked_memory_pool%pruned_list(pruned_counter)%index_row = &
-  !           & row_counter_c
-  !         pruned_counter = pruned_counter + 1
-  !       end if
-  !     end do
-  !   end do
-  !   call ConstructTripletList(unsorted_pruned_list,pruned_counter-1)
-  !   unsorted_pruned_list%data = &
-  !     & blocked_memory_pool%pruned_list(1:pruned_counter-1)
-  !   call SortTripletList(unsorted_pruned_list,mat_c_columns,sorted_pruned_list)
-  !   !call SortTripletList(blocked_memory_pool%pruned_list(1:pruned_counter-1),&
-  !   !     & mat_c_columns, sorted_pruned_list)
-  !   call ConstructFromTripletList(matAB,sorted_pruned_list,mat_c_rows, &
-  !        & mat_c_columns)
-  !   call DestructTripletList(sorted_pruned_list)
-  ! end subroutine PruneList
-  PURE SUBROUTINE PruneList2(memorypool,alpha,threshold, &
+  PURE SUBROUTINE PruneList(memorypool,alpha,threshold, &
        & mat_c_columns, mat_c_rows, matAB)
     !! Parameters
     TYPE(MatrixMemoryPool_t), INTENT(inout) :: memorypool
@@ -1208,16 +970,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO row_counter_c = 1, mat_c_rows
        DO column_counter_c = 1, (mat_c_columns-1)/memorypool%hash_size+1
           !! Sort the elements in a hash
-          ! temp_values_per_hash = memorypool%inserted_per_bucket_ptr(&
-          !   & column_counter_c, row_counter_c)
           temp_values_per_hash = memorypool%inserted_per_bucket(&
                & column_counter_c,row_counter_c)
           ! memorypool%inserted_per_bucket_ptr(column_counter_c, row_counter_c) = 0
           memorypool%inserted_per_bucket(column_counter_c,row_counter_c) = 0
           !! Copy them
           DO hash_counter=1,temp_values_per_hash
-             ! working_column = memorypool%hash_index_ptr(hash_counter, &
-             !   & column_counter_c,row_counter_c)
              working_column = memorypool%hash_index(hash_counter+ &
                   & (column_counter_c-1)*memorypool%hash_size, row_counter_c)
              working_value = memorypool%value_array(working_column,row_counter_c)
@@ -1242,6 +1000,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructFromTripletList(matAB,sorted_pruned_list,mat_c_rows, &
          & mat_c_columns)
     CALL DestructTripletList(sorted_pruned_list)
-  END SUBROUTINE PruneList2
+  END SUBROUTINE PruneList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SparseMatrixModule

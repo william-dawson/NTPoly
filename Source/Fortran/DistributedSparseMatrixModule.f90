@@ -906,7 +906,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: row_counter, column_counter
 
-    CALL ConstructEmptyDistributedSparseMatrix(matC,matA%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(matC, &
+         & matA%actual_matrix_dimension)
 
     !$omp parallel
     !$omp do collapse(2)

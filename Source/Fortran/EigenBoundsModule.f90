@@ -86,7 +86,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
     REAL(NTREAL), INTENT(out) :: max_value
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Data
@@ -113,16 +114,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Diagonal matrices serve as vectors.
-    CALL ConstructEmptyDistributedSparseMatrix(vector,this%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(vector2,this%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(vector, &
+         & this%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(vector2, &
+         & this%actual_matrix_dimension)
 
     !! Guess Vector
     CALL ConstructTripletList(temp_list)
     IF (global_rank .EQ. 0) THEN
-      temp_triplet%index_row = 1
-      temp_triplet%index_column = 1
-      temp_triplet%point_value = 1.0
-      CALL AppendToTripletList(temp_list,temp_triplet)
+       temp_triplet%index_row = 1
+       temp_triplet%index_column = 1
+       temp_triplet%point_value = 1.0
+       CALL AppendToTripletList(temp_list,temp_triplet)
     END IF
     CALL FillFromTripletList(vector,temp_list)
 
@@ -159,8 +162,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     IF (solver_parameters%be_verbose) THEN
-        CALL ExitSubLog
-        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
     END IF
 
     !! Compute The Largest Eigenvalue

@@ -44,7 +44,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%inner_counter = 1
     this%total_counter = 1
 
-    this%elements_per_inner = sparse_matrix%outer_index(this%outer_counter+1) - &
+    this%elements_per_inner = sparse_matrix%outer_index(this%outer_counter+1) -&
          & sparse_matrix%outer_index(this%outer_counter)
 
     !! Set Public Values

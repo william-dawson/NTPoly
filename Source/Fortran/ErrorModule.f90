@@ -189,7 +189,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE PrintError
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> As a last case resort, this will print an error message and quit the program.
+  !> As a last case resort, this will print an error message and quit.
   !! @param[in] this the error which has caused the need to cleanup the program.
   SUBROUTINE Cleanup(this)
     !! Parameters

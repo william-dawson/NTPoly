@@ -24,7 +24,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(in) :: Mat1
     TYPE(DistributedSparseMatrix_t), INTENT(inout) :: SignMat
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
@@ -59,9 +60,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, Mat1%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp1, Mat1%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp2, Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
+         & Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
+         & Mat1%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step
@@ -109,7 +113,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DistributedGemm(SignMat, Temp1, Temp2, alpha_in=0.5*alpha_k, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
-       CALL IncrementDistributedSparseMatrix(Temp2,SignMat,alpha_in=NEGATIVE_ONE)
+       CALL IncrementDistributedSparseMatrix(Temp2, SignMat, &
+            & alpha_in=NEGATIVE_ONE)
        norm_value = DistributedSparseNorm(SignMat)
        CALL CopyDistributedSparseMatrix(Temp2,SignMat)
 

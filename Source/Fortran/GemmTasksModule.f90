@@ -25,7 +25,7 @@ MODULE GemmTasksModule
     !> No more work to do.
     ENUMERATOR :: FinishedA
   END ENUM
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ENUM, BIND(c)
     !> Something is in progress
     ENUMERATOR :: TaskRunningB
@@ -48,7 +48,7 @@ MODULE GemmTasksModule
     !> No more work to do.
     ENUMERATOR :: FinishedB
   END ENUM
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ENUM, BIND(c)
     !> Something is in progress.
     ENUMERATOR :: TaskRunningAB

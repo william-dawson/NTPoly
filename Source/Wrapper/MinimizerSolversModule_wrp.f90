@@ -14,7 +14,8 @@ MODULE MinimizerSolversModule_wrp
   PUBLIC :: ConjugateGradient_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the CG method.
-  !! @param[in]  ih_Hamiltonian the matrix to compute the corresponding density from.
+  !! @param[in]  ih_Hamiltonian the matrix to compute the corresponding density &
+  !! from.
   !! @param[in]  ih_InverseSquareRoot of the overlap matrix.
   !! @param[in]  nel the number of electrons.
   !! @param[out] ih_Density the density matrix computed by this routine.

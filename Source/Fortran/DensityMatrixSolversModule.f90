@@ -77,12 +77,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k2, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Density, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(X_k, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(X_k2, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & Hamiltonian%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -130,10 +136,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           EXIT
        END IF
 
-       !! Compute Sigma, as well as convergence check
-       !last_trace_value = trace_value
+       !! Compute Sigma
        trace_value = Trace(X_k)
-       !norm_value = abs(trace_value - last_trace_value)
        IF (nel*0.5 - trace_value .LT. REAL(0.0,NTREAL)) THEN
           sigma_array(outer_counter) = REAL(-1.0,NTREAL)
        ELSE
@@ -245,7 +249,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(in) :: nel
     TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     REAL(NTREAL), PARAMETER :: sigma_min = 0.0
     REAL(NTREAL), PARAMETER :: sigma_max = 6.0
     !! Handling Optional Parameters
@@ -289,14 +294,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k2, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Fx_right, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Gx_right, Hamiltonian%actual_matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Density, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(X_k, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(X_k2, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Fx_right, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Gx_right, &
+         & Hamiltonian%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & Hamiltonian%actual_matrix_dimension)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -483,7 +496,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(in) :: nel
     TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
@@ -533,7 +547,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+         & matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension)
@@ -609,7 +624,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
-       CALL DistributedGemm(D1,DDH,D2DH,threshold_in=solver_parameters%threshold,&
+       CALL DistributedGemm(D1,DDH,D2DH, &
+            & threshold_in=solver_parameters%threshold, &
             & memory_pool_in=pool1)
 
        !! Compute Sigma
@@ -709,11 +725,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, InverseSquareRoot
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: Hamiltonian
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: InverseSquareRoot
     INTEGER, INTENT(in) :: nel
     TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
@@ -766,7 +784,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+         & matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension)
@@ -841,7 +860,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(D1,REAL(mixing_value,ntreal))
     CALL CopyDistributedSparseMatrix(Identity,TempMat)
     CALL IncrementDistributedSparseMatrix(DH,TempMat,REAL(-1.0,NTREAL))
-    CALL IncrementDistributedSparseMatrix(TempMat,D1,REAL(1.0-mixing_value,ntreal))
+    CALL IncrementDistributedSparseMatrix(TempMat,D1, &
+         & REAL(1.0-mixing_value,ntreal))
     trace_value = 0.0d+0
 
     !! Iterate

@@ -107,11 +107,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        !! Otherwise make it
        CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
-       !error_occurred = CheckAllocError(error_handler, "Creating MPI triplet", &
-       !  & ierr, immediate_cleanup_in=.true.)
        CALL MPI_Type_extent(MPINTREAL,bytes_per_double,ierr)
-       !error_occurred = CheckAllocError(error_handler, "Creating MPI triplet", &
-       !  & ierr, immediate_cleanup_in=.true.)
        triplet_block_length(1) = 1
        triplet_block_length(2) = 1
        triplet_block_length(3) = 1
