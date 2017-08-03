@@ -17,6 +17,7 @@ set(Wsrc
     ProcessGridModule_wrp.f90
     RootSolversModule_wrp.f90
     SignSolversModule_wrp.f90
+    SparseMatrixAlgebraModule_wrp.f90
     SparseMatrixModule_wrp.f90
     SquareRootSolversModule_wrp.f90
     TrigonometrySolversModule_wrp.f90

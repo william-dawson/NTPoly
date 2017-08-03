@@ -25,6 +25,7 @@ set(Fsrc
     ProcessGridModule.f90
     RootSolversModule.f90
     SignSolversModule.f90
+    SparseMatrixAlgebraModule.f90
     SparseMatrixIteratorModule.f90
     SparseMatrixModule.f90
     SparseVectorModule.f90
