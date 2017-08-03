@@ -2,12 +2,13 @@
 !> A module for performing linear algebra using sparse matrices.
 MODULE SparseMatrixAlgebraModule
   USE DataTypesModule, ONLY : NTREAL
+  USE DenseMatrixModule
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
        & CheckMemoryPoolValidity, SetPoolSparsity
   USE SparseMatrixModule, ONLY: SparseMatrix_t, ConstructEmptySparseMatrix, &
        & DestructSparseMatrix, ConstructFromTripletList, CopySparseMatrix, &
-       & TransposeSparseMatrix
+       & TransposeSparseMatrix, PrintSparseMatrix
   USE SparseVectorModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -27,12 +28,12 @@ MODULE SparseMatrixAlgebraModule
   PUBLIC :: SparseMatrixGrandSum
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
-  !! @param[inout] matA Matrix A.
+  !! @param[INOUT] matA Matrix A.
   !! @param[in] constant scale factor.
   PURE SUBROUTINE ScaleSparseMatrix(matA,constant)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(inout) :: matA
-    REAL(NTREAL), INTENT(in) :: constant
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matA
+    REAL(NTREAL), INTENT(IN) :: constant
 
     matA%values = constant * matA%values
   END SUBROUTINE ScaleSparseMatrix
@@ -46,10 +47,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @todo I don't like this hack where I have to check if MatrixB is allocated.
   PURE SUBROUTINE IncrementSparseMatrix(matA, matB, alpha_in, threshold_in)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)  :: matA
-    TYPE(SparseMatrix_t), INTENT(inout) :: matB
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matB
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Counter Variables
     INTEGER :: outer_counter
     INTEGER :: elements_per_inner_a, elements_per_inner_b
@@ -128,9 +129,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in,out] matC = MatA mult MatB.
   PURE SUBROUTINE PairwiseMultiplySparseMatrix(matA, matB, matC)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)  :: matA
-    TYPE(SparseMatrix_t), INTENT(in) :: matB
-    TYPE(SparseMatrix_t), INTENT(inout) :: matC
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(SparseMatrix_t), INTENT(IN) :: matB
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matC
     !! Counter Variables
     INTEGER :: outer_counter
     INTEGER :: elements_per_inner_a, elements_per_inner_b
@@ -187,8 +188,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result product
   PURE FUNCTION DotSparseMatrix(matA, matB) RESULT(product)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in) :: matA
-    TYPE(SparseMatrix_t), INTENT(in) :: matB
+    TYPE(SparseMatrix_t), INTENT(IN) :: matA
+    TYPE(SparseMatrix_t), INTENT(IN) :: matB
     REAL(NTREAL) :: product
     !! Local Variables
     TYPE(SparseMatrix_t) :: matC
@@ -214,21 +215,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] alpha_in scales the multiplication.
   !! @param[in] beta_in scales matrix we sum on to.
   !! @param[in] threshold_in for flushing values to zero. Default value is 0.0.
-  !! @param[inout] blocked_memory_pool_in an optional memory pool for doing the
+  !! @param[INOUT] blocked_memory_pool_in an optional memory pool for doing the
   !! calculation.
   SUBROUTINE Gemm(matA, matB, matC, IsATransposed_in, IsBTransposed_in, &
        & alpha_in, beta_in, threshold_in, blocked_memory_pool_in)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)  :: matA
-    TYPE(SparseMatrix_t), INTENT(in)  :: matB
-    TYPE(SparseMatrix_t), INTENT(inout) :: matC
-    LOGICAL, OPTIONAL, INTENT(in) :: IsATransposed_in
-    LOGICAL, OPTIONAL, INTENT(in) :: IsBTransposed_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: beta_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matB
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matC
+    LOGICAL, OPTIONAL, INTENT(IN) :: IsATransposed_in
+    LOGICAL, OPTIONAL, INTENT(IN) :: IsBTransposed_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: beta_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     TYPE(MatrixMemoryPool_t), OPTIONAL, &
-         & INTENT(inout), TARGET :: blocked_memory_pool_in
+         & INTENT(INOUT), TARGET :: blocked_memory_pool_in
     !! Intermediate Data
     TYPE(SparseMatrix_t) :: matAB
     LOGICAL :: IsATransposed, IsBTransposed
@@ -316,33 +317,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (pool_flag) THEN
        IF (IsATransposed .AND. IsBTransposed) THEN
-          CALL MultiplyBlock(matA, matB, blocked_memory_pool_in)
+          CALL SparseBranch(matA, matB, matAB, alpha, threshold, &
+               & blocked_memory_pool_in, sparsity_estimate)
        ELSEIF (IsATransposed) THEN
-          CALL MultiplyBlock(matA, matBT, blocked_memory_pool_in)
+          CALL SparseBranch(matA, matBT, matAB, alpha, threshold, &
+               & blocked_memory_pool_in, sparsity_estimate)
        ELSEIF (IsBTransposed) THEN
-          CALL MultiplyBlock(matAT, matB, blocked_memory_pool_in)
+          CALL SparseBranch(matAT, matB, matAB, alpha, threshold, &
+               & blocked_memory_pool_in, sparsity_estimate)
        ELSE
-          CALL MultiplyBlock(matAT, matBT, blocked_memory_pool_in)
+          CALL SparseBranch(matAT, matBT, matAB, alpha, threshold, &
+               & blocked_memory_pool_in, sparsity_estimate)
        END IF
     ELSE
        IF (IsATransposed .AND. IsBTransposed) THEN
-          CALL MultiplyBlock(matA, matB, blocked_memory_pool)
+          CALL SparseBranch(matA, matB, matAB, alpha, threshold, &
+               & blocked_memory_pool, sparsity_estimate)
        ELSEIF (IsATransposed) THEN
-          CALL MultiplyBlock(matA, matBT, blocked_memory_pool)
+          CALL SparseBranch(matA, matBT, matAB, alpha, threshold, &
+               & blocked_memory_pool, sparsity_estimate)
        ELSEIF (IsBTransposed) THEN
-          CALL MultiplyBlock(matAT, matB, blocked_memory_pool)
+          CALL SparseBranch(matAT, matB, matAB, alpha, threshold, &
+               & blocked_memory_pool, sparsity_estimate)
        ELSE
-          CALL MultiplyBlock(matAT, matBT, blocked_memory_pool)
+          CALL SparseBranch(matAT, matBT, matAB, alpha, threshold, &
+               & blocked_memory_pool, sparsity_estimate)
        END IF
-    END IF
-
-    !! Go from triplets to return matrix
-    IF (pool_flag) THEN
-       CALL PruneList(blocked_memory_pool_in,alpha,threshold, &
-            & mat_c_columns, mat_c_rows, matAB)
-    ELSE
-       CALL PruneList(blocked_memory_pool,alpha,threshold, &
-            & mat_c_columns, mat_c_rows, matAB)
     END IF
 
     IF (PRESENT(beta_in)) THEN
@@ -365,7 +365,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] norm_per_column the norm value for each column in this matrix.
   PURE SUBROUTINE SparseMatrixNorm(this, norm_per_column)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in) :: this
+    TYPE(SparseMatrix_t), INTENT(IN) :: this
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE, &
          & INTENT(out) :: norm_per_column
     !! Local Data
@@ -395,24 +395,68 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result sum_value the sum of the matrix elements
   PURE FUNCTION SparseMatrixGrandSum(this) RESULT(sum_value)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in) :: this
+    TYPE(SparseMatrix_t), INTENT(IN) :: this
     REAL(NTREAL) :: sum_value
 
     sum_value = SUM(this%values)
 
   END FUNCTION SparseMatrixGrandSum
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE SUBROUTINE SparseBranch()
-  END SUBROUTINE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE SUBROUTINE DenseBranch()
-  END SUBROUTINE
+  PURE SUBROUTINE SparseBranch(matA,matB, matC,alpha, threshold, memory_pool, &
+       & sparsity_estimate)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matB
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matC
+    REAL(NTREAL), INTENT(IN) :: alpha
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold
+    TYPE(MatrixMemoryPool_t), INTENT(INOUT) :: memory_pool
+    REAL(NTREAL), INTENT(IN) :: sparsity_estimate
+    !! Local Data
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_b
+    TYPE(SparseMatrix_t) :: matCT
+
+    WRITE(*,*) "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    !IF (sparsity_estimate .LT. 1e-1 .OR. .FALSE.) THEN
+       !! Sparse Case
+       CALL MultiplyBlock(matA, matB, memory_pool)
+       CALL PruneList(memory_pool, alpha, threshold, &
+            & memory_pool%columns, memory_pool%rows, matC)
+    !ELSE
+       !! Build dense matrices
+       ALLOCATE(dense_a(matA%columns,matA%rows))
+       ALLOCATE(dense_b(matB%columns,matB%rows))
+       CALL ConstructDenseFromSparse(matA,dense_a)
+       CALL ConstructDenseFromSparse(matB,dense_b)
+
+       CALL PrintSparseMatrix(matA)
+       WRITE(*,*) dense_a
+       CALL PrintSparseMatrix(matB)
+       WRITE(*,*) dense_b
+       WRITE(*,*) "........................................."
+       CALL PrintSparseMatrix(matC)
+       !! Multiply
+       CALL MultiplyDense(dense_a,dense_b,memory_pool%value_array)
+       WRITE(*,*) memory_pool%value_array
+       CALL ConstructSparseFromDense(memory_pool%value_array, matC, threshold)
+       !CALL TransposeSparseMatrix(matCT,matC)
+       CALL ScaleSparseMatrix(matC,alpha)
+       CALL PrintSparseMatrix(matC)
+
+       !! Cleanup
+       DEALLOCATE(dense_a)
+       DEALLOCATE(dense_b)
+       CALL DestructSparseMatrix(matCT)
+    WRITE(*,*) "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+    !END IF
+  END SUBROUTINE SparseBranch
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE MultiplyBlock(matAT,matBT,memorypool)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)  :: matAT
-    TYPE(SparseMatrix_t), INTENT(in)  :: matBT
-    TYPE(MatrixMemoryPool_t), INTENT(inout) :: memorypool
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matAT
+    TYPE(SparseMatrix_t), INTENT(IN)  :: matBT
+    TYPE(MatrixMemoryPool_t), INTENT(INOUT) :: memorypool
     !! Temp Variables
     REAL(NTREAL) :: temp_value_a, temp_value_b, temp_value_c
     INTEGER :: temp_inserted_values
@@ -462,12 +506,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE PruneList(memorypool,alpha,threshold, &
        & mat_c_columns, mat_c_rows, matAB)
     !! Parameters
-    TYPE(MatrixMemoryPool_t), INTENT(inout) :: memorypool
-    REAL(NTREAL), INTENT(in) :: alpha
-    REAL(NTREAL), INTENT(in) :: threshold
-    INTEGER, INTENT(in) :: mat_c_columns
-    INTEGER, INTENT(in) :: mat_c_rows
-    TYPE(SparseMatrix_t), INTENT(inout) :: matAB
+    TYPE(MatrixMemoryPool_t), INTENT(INOUT) :: memorypool
+    REAL(NTREAL), INTENT(IN) :: alpha
+    REAL(NTREAL), INTENT(IN) :: threshold
+    INTEGER, INTENT(IN) :: mat_c_columns
+    INTEGER, INTENT(IN) :: mat_c_rows
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matAB
     !! Local data
     INTEGER :: row_counter_c, column_counter_c, hash_counter
     REAL(NTREAL) :: working_value
