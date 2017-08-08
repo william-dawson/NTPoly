@@ -104,6 +104,7 @@ class TestLocalMatrix(unittest.TestCase):
     ##########################################################################
     # Test our ability to dot two matrices.
     #  @param[in] self pointer.
+
     def test_dot(self):
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
@@ -126,6 +127,7 @@ class TestLocalMatrix(unittest.TestCase):
     ##########################################################################
     # Test our ability to transpose a matrix.
     #  @param[in] self pointer.
+
     def test_transpose(self):
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,

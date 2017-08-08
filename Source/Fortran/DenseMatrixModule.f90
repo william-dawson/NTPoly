@@ -57,24 +57,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: inner_counter, outer_counter
     TYPE(Triplet_t) :: temporary
     TYPE(TripletList_t) :: temporary_list
-    INTEGER :: rows, columns
 
-    rows = SIZE(dense_matrix,DIM=2)
-    columns = SIZE(dense_matrix,DIM=1)
+    CALL ConstructEmptySparseMatrix(sparse_matrix, &
+         & SIZE(dense_matrix,DIM=1), SIZE(dense_matrix,DIM=2))
 
-    CALL ConstructTripletList(temporary_list)
-    DO outer_counter = 1, columns
-       temporary%index_row = outer_counter
-       DO inner_counter = 1, rows
+    DO outer_counter = 1, sparse_matrix%columns
+       temporary%index_column = outer_counter
+       DO inner_counter = 1, sparse_matrix%rows
           temporary%point_value = dense_matrix(outer_counter,inner_counter)
           IF (ABS(temporary%point_value) .GT. threshold) THEN
-             temporary%index_column = inner_counter
+             temporary%index_row = inner_counter
              CALL AppendToTripletList(temporary_list,temporary)
           END IF
        END DO
     END DO
-    CALL ConstructFromTripletList(sparse_matrix,temporary_list, &
-         & rows, columns)
   END SUBROUTINE ConstructSparseFromDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
@@ -86,18 +82,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: MatA
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: MatB
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: MatC
-    !! Local Variables
-    INTEGER :: M, N, K
-    INTEGER :: LDA, LDB, LDC
 
-    M = SIZE(MatA, DIM=2)
-    N = SIZE(MatB, DIM=1)
-    K = SIZE(MatA, DIM=1)
-
-    LDA = M
-    LDB = K
-    LDC = M
-
-    CALL DGEMM('N','N',M,N,K,1.d0,MatA,LDA,MatB,LDB,0.0d0,MatC,LDC)
+    MatC = MATMUL(MatA,MatB)
   END SUBROUTINE MultiplyDense
 END MODULE DenseMatrixModule
