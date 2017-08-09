@@ -25,8 +25,8 @@ MODULE DistributedSparseMatrixAlgebraModule
        & TransposeSparseMatrix, ComposeSparseMatrixColumns, MatrixToTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY : TripletList_t, DestructTripletList
-  USE iso_c_binding
-  USE mpi
+  USE ISO_C_BINDING
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

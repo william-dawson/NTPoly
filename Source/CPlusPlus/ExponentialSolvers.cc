@@ -15,6 +15,13 @@ void ExponentialSolvers::ComputeExponential(
   ComputeExponential_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
+void ExponentialSolvers::ComputeExponentialPade(
+    const DistributedSparseMatrix &Input, DistributedSparseMatrix &Output,
+    const IterativeSolverParameters &solver_parameters) {
+  ComputeExponentialPade_wrp(GetIH(Input), GetIH(Output),
+                             GetIH(solver_parameters));
+}
+////////////////////////////////////////////////////////////////////////////////
 void ExponentialSolvers::ComputeLogarithm(
     const DistributedSparseMatrix &Input, DistributedSparseMatrix &Output,
     const FixedSolverParameters &solver_parameters) {

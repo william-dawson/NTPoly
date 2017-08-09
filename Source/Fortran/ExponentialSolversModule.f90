@@ -9,6 +9,7 @@ MODULE ExponentialSolversModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE IterativeSolversModule
+  USE LinearSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE ParameterConverterModule
@@ -22,6 +23,7 @@ MODULE ExponentialSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
   PUBLIC :: ComputeExponential
+  PUBLIC :: ComputeExponentialPade
   PUBLIC :: ComputeExponentialTaylor
   PUBLIC :: ComputeLogarithm
   PUBLIC :: ComputeLogarithmTaylor
@@ -157,6 +159,134 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(ScaledMat)
     CALL DestructDistributedSparseMatrix(TempMat)
   END SUBROUTINE ComputeExponential
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the exponential of a matrix using a pade approximation.
+  !! @param[in] InputMat the input matrix
+  !! @param[out] OutputMat = exp(InputMat)
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  SUBROUTINE ComputeExponentialPade(InputMat, OutputMat, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Solver Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(IterativeSolverParameters_t) :: sub_solver_parameters
+    !! Local Matrices
+    TYPE(DistributedSparseMatrix_t) :: ScaledMat
+    TYPE(DistributedSparseMatrix_t) :: IdentityMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: B1, B2, B3
+    TYPE(DistributedSparseMatrix_t) :: P1, P2
+    TYPE(DistributedSparseMatrix_t) :: LeftMat, RightMat
+    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    !! Local Variables
+    REAL(NTREAL) :: spectral_radius
+    REAL(NTREAL) :: sigma_val
+    INTEGER :: sigma_counter
+    INTEGER :: counter
+
+    !! Handle The Optional Parameters
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Exponential Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="Pade")
+       CALL PrintIterativeSolverParameters(solver_parameters)
+    END IF
+
+    !! Setup
+    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+         & InputMat%actual_matrix_dimension)
+    CALL FillDistributedIdentity(IdentityMat)
+
+    !! Scale the matrix
+    spectral_radius = DistributedSparseNorm(InputMat)
+    sigma_val = 1.0
+    sigma_counter = 1
+    DO WHILE (spectral_radius/sigma_val .GT. 1.0)
+       sigma_val = sigma_val * 2
+       sigma_counter = sigma_counter + 1
+    END DO
+    CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
+    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteElement(key="Sigma", float_value_in=sigma_val)
+       CALL WriteElement(key="Scaling_Steps", int_value_in=sigma_counter)
+    END IF
+
+    !! Sub Solver Parameters
+    sub_solver_parameters = solver_parameters
+    sub_solver_parameters%threshold = sub_solver_parameters%threshold/sigma_val
+
+    !! Power Matrices
+    CALL DistributedGemm(ScaledMat, ScaledMat, B1, &
+         & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
+    CALL DistributedGemm(B1, B1, B2, &
+         & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
+    CALL DistributedGemm(B2, B2, B3, &
+         & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
+
+    !! Polynomials - 1
+    CALL CopyDistributedSparseMatrix(IdentityMat, P1)
+    CALL ScaleDistributedSparseMatrix(P1,REAL(17297280.0_16,KIND=NTREAL))
+    CALL IncrementDistributedSparseMatrix(B1, P1, &
+         & alpha_in=REAL(1995840.0_16,KIND=NTREAL))
+    CALL IncrementDistributedSparseMatrix(B2, P1, &
+         & alpha_in=REAL(25200.0_16,KIND=NTREAL))
+    CALL IncrementDistributedSparseMatrix(B3, P1, &
+         & alpha_in=REAL(56.0_16,KIND=NTREAL))
+    !! Polynomials - 2
+    CALL CopyDistributedSparseMatrix(IdentityMat, TempMat)
+    CALL ScaleDistributedSparseMatrix(TempMat,REAL(8648640.0_16,KIND=NTREAL))
+    CALL IncrementDistributedSparseMatrix(B1, TempMat, &
+         & alpha_in=REAL(277200.0_16,KIND=NTREAL))
+    CALL IncrementDistributedSparseMatrix(B2, TempMat, &
+         & alpha_in=REAL(1512.0_16,KIND=NTREAL))
+    CALL IncrementDistributedSparseMatrix(B3, TempMat)
+    CALL DistributedGemm(ScaledMat, TempMat, P2, &
+         & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
+
+    !! Left and Right
+    CALL CopyDistributedSparseMatrix(P1, LeftMat)
+    CALL IncrementDistributedSparseMatrix(P2, LeftMat, REAL(-1.0,NTREAL))
+    CALL CopyDistributedSparseMatrix(P1, RightMat)
+    CALL IncrementDistributedSparseMatrix(P2, RightMat, REAL(1.0,NTREAL))
+
+    CALL CGSolver(LeftMat, OutputMat, RightMat, sub_solver_parameters)
+
+    !! Undo the scaling by squaring at the end.
+    DO counter=1,sigma_counter-1
+       CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       CALL CopyDistributedSparseMatrix(TempMat,OutputMat)
+    END DO
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL PrintMatrixInformation(OutputMat)
+    END IF
+
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+    CALL DestructDistributedSparseMatrix(ScaledMat)
+    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructDistributedSparseMatrix(B1)
+    CALL DestructDistributedSparseMatrix(B2)
+    CALL DestructDistributedSparseMatrix(B3)
+    CALL DestructDistributedSparseMatrix(P1)
+    CALL DestructDistributedSparseMatrix(P2)
+    CALL DestructDistributedSparseMatrix(LeftMat)
+    CALL DestructDistributedSparseMatrix(RightMat)
+  END SUBROUTINE ComputeExponentialPade
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a taylor series expansion.
   !! @param[in] InputMat the input matrix

@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class FixedSolverParameters;
+class IterativeSolverParameters;
 class DistributedSparseMatrix;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Module For Computing General Matrix Exponentials.
@@ -19,6 +20,14 @@ public:
   ComputeExponential(const DistributedSparseMatrix &InputMat,
                      DistributedSparseMatrix &OutputMat,
                      const FixedSolverParameters &solver_parameters);
+  //! Compute the matrix exponential using the Pade method.
+  //!\param InputMat matrix to compute the exponential of.
+  //!\param OutputMat = exp(InputMat)
+  //!\param solver_parameters parameters for the solver
+  static void
+  ComputeExponentialPade(const DistributedSparseMatrix &InputMat,
+                     DistributedSparseMatrix &OutputMat,
+                     const IterativeSolverParameters &solver_parameters);
   //! Compute the matrix logarithm.
   //!\param InputMat matrix to compute the exponential of.
   //!\param OutputMat = log(InputMat)
