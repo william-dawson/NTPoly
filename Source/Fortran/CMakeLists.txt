@@ -5,6 +5,7 @@ set(Fsrc
     DensityMatrixSolversModule.f90
     DistributedMatrixMemoryPoolModule.f90
     DistributedSparseMatrixModule.f90
+    DistributedSparseMatrixAlgebraModule.f90
     EigenBoundsModule.f90
     ErrorModule.f90
     ExponentialSolversModule.f90

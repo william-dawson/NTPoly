@@ -22,15 +22,13 @@ from Helpers import scratch_dir
 
 ##########################################################################
 # A test class for the different kinds of solvers.
-
-
 class TestSolvers(unittest.TestCase):
     # Parameters for the tests
     input_file = scratch_dir + "/input.mtx"
     input_file2 = scratch_dir + "/input2.mtx"
     CheckMat = 0
     my_rank = 0
-    matrix_dimension = 128
+    matrix_dimension = 32
 
     ##########################################################################
     # set up all of the tests
@@ -647,9 +645,9 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
     ##########################################################################
-    # Test our ability to solve general matrix equations.
+    # Test our ability to solve general matrix equations with CG.
     #  @param[in] self pointer.
-    def a_test_cgsolve(self):
+    def test_cgsolve(self):
         # Starting Matrix
         A = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                               density=1.0)
@@ -680,6 +678,7 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
 
         self.check_result()
+
     ##########################################################################
     # Test our ability to compute eigenvalues with the power method.
     #  @param[in] self pointer.

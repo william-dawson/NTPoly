@@ -2,6 +2,7 @@
 !> Module for load balancing the matrix multiplication calculation.
 MODULE LoadBalancerModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE PermutationModule
   IMPLICIT NONE

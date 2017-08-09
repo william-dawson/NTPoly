@@ -3,6 +3,7 @@
 MODULE LinearSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -34,13 +35,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: ABalanced
     TYPE(DistributedSparseMatrix_t) :: BBalanced
     TYPE(DistributedSparseMatrix_t) :: RMat, PMat, QMat
+    TYPE(DistributedSparseMatrix_t) :: RMatT, PMatT
     TYPE(DistributedSparseMatrix_t) :: TempMat
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
     TYPE(DistributedMatrixMemoryPool_t) :: pool
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
     REAL(NTREAL) :: top, bottom, new_top, step_size
 
     !! Optional Parameters
@@ -120,8 +120,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute the Step Size
        CALL DistributedGemm(ABalanced, PMat, QMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       top = DotDistributedSparseMatrix(RMat,RMat)
-       bottom = DotDistributedSparseMatrix(PMat,QMat)
+       !  top = DotDistributedSparseMatrix(RMat,RMat)
+       !  bottom = DotDistributedSparseMatrix(PMat,QMat)
+       !  step_size = top/bottom
+       CALL TransposeDistributedSparseMatrix(RMat,RMatT)
+       CALL DistributedGemm(RMatT, RMat, TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       top = Trace(TempMat)
+       CALL TransposeDistributedSparseMatrix(PMat,PMatT)
+       CALL DistributedGemm(PMatT, QMat, TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       bottom = Trace(TempMat)
        step_size = top/bottom
 
        !! Update
@@ -130,24 +139,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementDistributedSparseMatrix(QMat, RMat, alpha_in=-1.0*step_size)
 
        !! Update PMat
-       new_top = DotDistributedSparseMatrix(RMat,RMat)
+       !!new_top = DotDistributedSparseMatrix(RMat,RMat)
+       CALL TransposeDistributedSparseMatrix(RMat,RMatT)
+       CALL DistributedGemm(RMatT, RMat, TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       new_top = Trace(TempMat)
        step_size = new_top / top
        CALL ScaleDistributedSparseMatrix(PMat, step_size)
        CALL IncrementDistributedSparseMatrix(RMat, PMat)
 
     END DO
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(XMat,min_size,max_size)
-       sparsity = GetSize(XMat)/ &
-            & (XMat%actual_matrix_dimension**2)
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(XMat)
     END IF
 
     !! Undo Load Balancing Step

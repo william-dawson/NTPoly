@@ -3,6 +3,7 @@
 MODULE PolynomialSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE LoadBalancerModule

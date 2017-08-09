@@ -3,6 +3,7 @@
 MODULE ExponentialSolversModule
   USE ChebyshevSolversModule
   USE DataTypesModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixModule
   USE EigenBoundsModule
@@ -49,8 +50,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: sigma_val
     INTEGER :: sigma_counter
     INTEGER :: counter
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -142,15 +141,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(OutputMat,min_size,max_size)
-       sparsity = REAL(GetSize(OutputMat),KIND=NTREAL)/ &
-            & (OutputMat%actual_matrix_dimension**2)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(OutputMat)
     END IF
 
     IF (solver_parameters%do_load_balancing) THEN

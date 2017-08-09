@@ -7,7 +7,7 @@ namespace NTPoly {
 class IterativeSolverParameters;
 class DistributedSparseMatrix;
 ////////////////////////////////////////////////////////////////////////////////
-//! A class for inverting matrices.
+//! A class for solving matrix equations.
 class LinearSolvers : public SolverBase {
 public:
   //! Solve the matrix equation AX = B using conjugate gradient.

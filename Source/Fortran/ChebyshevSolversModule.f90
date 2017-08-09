@@ -3,13 +3,14 @@
 MODULE ChebyshevSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE ProcessGridModule
   USE TimerModule
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -86,8 +87,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     INTEGER :: degree
     INTEGER :: counter
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -153,15 +152,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END IF
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(OutputMat,min_size,max_size)
-       sparsity = GetSize(OutputMat) / &
-            & (REAL(OutputMat%actual_matrix_dimension,KIND=NTREAL)**2)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step

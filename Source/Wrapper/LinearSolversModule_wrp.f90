@@ -12,7 +12,7 @@ MODULE LinearSolversModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: CGSolver_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the inverse of a matrix.
+  !> Solve the matrix equation AX = B using conjugate gradient.
   !! @param[in] ih_AMat the matrix A, must be symmetric, positive definite.
   !! @param[out] ih_XMat the solved for matrix X.
   !! @param[in] ih_BMat the right hand side.

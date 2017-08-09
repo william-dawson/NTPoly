@@ -3,6 +3,7 @@
 MODULE SignSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE EigenBoundsModule
   USE IterativeSolversModule
@@ -41,9 +42,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: alpha_k
     REAL(NTREAL) :: xk
     REAL(NTREAL) :: norm_value
-    INTEGER :: min_size, max_size
     INTEGER :: outer_counter
-    REAL(NTREAL) :: sparsity
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -123,17 +122,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO iterate
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(SignMat,min_size,max_size)
-       sparsity = GetSize(SignMat)/ &
-            & (SignMat%actual_matrix_dimension**2)
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(SignMat)
     END IF
 
     !! Undo Load Balancing Step

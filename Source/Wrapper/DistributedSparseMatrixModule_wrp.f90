@@ -4,6 +4,7 @@ MODULE DistributedSparseMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE DistributedMatrixMemoryPoolModule_wrp, ONLY : &
        & DistributedMatrixMemoryPool_wrp
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE TripletListModule_wrp, ONLY : TripletList_wrp
@@ -15,7 +16,7 @@ MODULE DistributedSparseMatrixModule_wrp
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: DistributedSparseMatrix_wrp
      !> Actual data.
-     TYPE(DistributedSparseMatrix_t), POINTER :: data
+     TYPE(DistributedSparseMatrix_t), POINTER :: DATA
   END TYPE DistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructEmptyDistributedSparseMatrix_wrp
@@ -350,7 +351,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
   !! @param[inout] ih_this Matrix to scale.
   !! @param[in] constant scale factor.
-  PURE SUBROUTINE ScaleDistributedSparseMatrix_wrp(ih_this, constant) &
+  SUBROUTINE ScaleDistributedSparseMatrix_wrp(ih_this, constant) &
        & bind(c,name="ScaleDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(in) :: constant

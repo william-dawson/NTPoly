@@ -3,6 +3,7 @@
 MODULE InverseSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -39,8 +40,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -129,17 +128,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(InverseMat,min_size,max_size)
-       sparsity = REAL(GetSize(InverseMat),KIND=NTREAL)/ &
-            & (InverseMat%actual_matrix_dimension**2)
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(InverseMat)
     END IF
     CALL StopTimer("I-Invert")
 

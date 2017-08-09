@@ -3,6 +3,7 @@
 MODULE DensityMatrixSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE EigenBoundsModule
   USE IterativeSolversModule
@@ -55,8 +56,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
     INTEGER :: outer_counter, inner_counter
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
     INTEGER :: total_iterations
 
     !! Optional Parameters
@@ -162,17 +161,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(X_k,min_size,max_size)
-       sparsity = &
-            & REAL(GetSize(X_k),NTREAL)/X_k%actual_matrix_dimension**2
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(X_k)
     END IF
 
     !! Undo Load Balancing Step
@@ -272,8 +263,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
     REAL(NTREAL) :: trace_fx, trace_gx
 
     !! Optional Parameters
@@ -402,17 +391,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(X_k,min_size,max_size)
-       sparsity = &
-            & REAL(GetSize(X_k),NTREAL)/X_k%actual_matrix_dimension**2
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(X_k)
     END IF
 
     !! Undo Load Balancing Step
@@ -522,8 +502,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
     INTEGER :: matrix_dimension
 
     !! Optional Parameters
@@ -646,16 +624,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(D1,min_size,max_size)
-       sparsity = REAL(GetSize(D1),NTREAL)/D1%actual_matrix_dimension**2
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(D1)
     END IF
 
     !! Undo Load Balancing Step
@@ -759,8 +729,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
     INTEGER :: matrix_dimension
 
     !! Optional Parameters
@@ -917,16 +885,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(D1,min_size,max_size)
-       sparsity = REAL(GetSize(D1),NTREAL)/D1%actual_matrix_dimension**2
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(D1)
     END IF
 
     !! Undo Load Balancing Step
