@@ -53,6 +53,15 @@ mpirun -np 1 ./example \
 --number_of_electrons 10 --threshold 1e-6 --convergence_threshold 1e-5 \
 --density Density.mtx
 
+For the C++ version, you can similarly compile with:
+mpif90 main.cc -o example \
+  -I../../Source/CPlusPlus -I../../Source/C \
+  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
+Note that we're using the Fortran wrapper to link, and as a result we
+have to explicitly link against the C++ standard library. For Mac users,
+note that the default clang installation doesn't support openmp, so you will
+need to compile everything with g++.
+
 In the build directory, there is also a /python folder, which is used for
 linking against a python program. Python requires you to set the Python path
 to this directory so that it knows where to look for the python module files:
@@ -108,4 +117,4 @@ Writing to text is slower, but is portable across systems. Writing to binary
 should probably only be used to store intermediate results.
 
 The output file can be compared to Density-Reference.mtx to verify its
-correctness. 
+correctness.
