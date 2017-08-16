@@ -14,7 +14,6 @@ using std::vector;
 #include "DistributedSparseMatrix.h"
 #include "IterativeSolversParameters.h"
 #include "ProcessGrid.h"
-#include "SquareRootSolvers.h"
 #include "Triplet.h"
 #include "TripletList.h"
 // ETC
@@ -71,7 +70,6 @@ int main(int argc, char *argv[]) {
   NTPoly::IterativeSolverParameters solver_parameters;
   solver_parameters.SetConvergeDiff(convergence_threshold);
   solver_parameters.SetThreshold(threshold);
-  solver_parameters.SetVerbosity(true);
 
   // Divide The Work Amongst Processors.
   int local_grid_points = grid_points / total_processors;

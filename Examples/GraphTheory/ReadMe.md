@@ -24,12 +24,19 @@ mpif90 main.f90 -o example \
 And run with:
 mpirun -np 4 ./example \
 --process_rows 2 --process_columns 2 --process_slices 1 \
---threshold 1e-6 --number_of_nodes 2048 --extra_connections 128 \
+--threshold 1e-6 --convergence_threshold 1e-4 \
+--number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
+
+C++ version:
+mpif90 main.cc -o example \
+  -I../../Source/CPlusPlus -I../../Source/C \
+  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
 
 And the python version:
 export PYTHONPATH=../../Build/python
 mpirun -np 4 python main.py \
 --process_rows 2 --process_columns 2 --process_slices 1 \
---threshold 1e-6 --number_of_nodes 2048 --extra_connections 128 \
+--threshold 1e-6 --convergence_threshold 1e-4 \
+--number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
