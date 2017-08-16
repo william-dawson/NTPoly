@@ -57,7 +57,11 @@ For the C++ version, you can similarly compile with:
 mpif90 main.cc -o example \
   -I../../Source/CPlusPlus -I../../Source/C \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
-  
+
+(for the intel compiler, build an intermediate main.o object using the
+C++ compiler, and link with the fortran compiler using the flags:
+-qopenmp -cxxlib -nofor_main).
+
 Note that we're using the Fortran wrapper to link, and as a result we
 have to explicitly link against the C++ standard library. For Mac users,
 note that the default clang installation doesn't support openmp, so you will
