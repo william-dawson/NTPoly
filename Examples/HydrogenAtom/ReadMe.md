@@ -53,6 +53,11 @@ mpirun -np 1 ./example \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
 --density Density.mtx
 
+C++ version:
+mpif90 main.cc -o example \
+  -I../../Source/CPlusPlus -I../../Source/C \
+  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
+
 And the python version:
 export PYTHONPATH=../../Build/python
 mpirun -np 1 python main.py \
