@@ -10,7 +10,9 @@ Set Up Guide
 --------------------------------------------------------------------------------
 NTPoly is freely available and open source under the MIT license. It can be
 downloaded from the [Github](https://github.com/william-dawson/NTPoly)
-repository.
+repository. We of course recommend that you download a 
+[release version](https://github.com/william-dawson/NTPoly/releases)
+to get started.
 
 NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of .cmake files which have example configurations
