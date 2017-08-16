@@ -2,6 +2,7 @@
 // An example based on solving matrices based on premade files.
 #include <math.h>
 #include <mpi.h>
+#include <stdlib.h>
 #include <string>
 using std::string;
 #include <sstream>
