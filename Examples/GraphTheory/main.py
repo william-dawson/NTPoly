@@ -31,6 +31,8 @@ if __name__ == "__main__":
             process_slices = int(argument_value)
         elif argument == '--threshold':
             threshold = float(argument_value)
+        elif argument == '--convergence_threshold':
+            convergence_threshold = float(argument_value)
         elif argument == '--attenuation':
             attenuation = float(argument_value)
         elif argument == '--number_of_nodes':
@@ -44,6 +46,7 @@ if __name__ == "__main__":
     # Set Up The Solver Parameters.
     solver_parameters = nt.IterativeSolverParameters()
     solver_parameters.SetThreshold(threshold)
+    solver_parameters.SetConvergeDiff(convergence_threshold)
 
     # Divide The Nodes Amongst Processors.
     number_of_local_nodes = number_of_nodes / total_processors

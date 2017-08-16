@@ -128,7 +128,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructLinearSpace()
     !! Local Variables
-    REAL(ntreal) :: local_x_start
+    REAL(NTREAL) :: local_x_start
 
     ALLOCATE(x_values(local_grid_points))
     grid_spacing = (x_end - x_start)/(grid_points - 1)
@@ -169,8 +169,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL AppendToTripletList(triplet_list, temp_value)
        !! Stencil point 4.
        IF (temp_value%index_row .LT. grid_points) THEN
-          temp_value%point_value  = (-0.5)*(16.0/(12.0*grid_spacing**2))
           temp_value%index_column = temp_value%index_row + 1
+          temp_value%point_value  = (-0.5)*(16.0/(12.0*grid_spacing**2))
           CALL AppendToTripletList(triplet_list, temp_value)
        END IF
        !! Stencil point 5.

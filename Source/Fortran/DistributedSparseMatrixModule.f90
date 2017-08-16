@@ -20,14 +20,16 @@ MODULE DistributedSparseMatrixModule
        & between_slice_comm, &
        & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
        & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
+  USE SparseMatrixAlgebraModule, ONLY : &
+       & DotSparseMatrix, PairwiseMultiplySparseMatrix, &
+       & SparseMatrixNorm, ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
+       & SparseMatrixGrandSum
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & ConstructEmptySparseMatrix, CopySparseMatrix, &
        & TransposeSparseMatrix, SplitSparseMatrixColumns, &
        & ComposeSparseMatrixColumns, PrintSparseMatrix, &
-       & MatrixToTripletList, DotSparseMatrix, PairwiseMultiplySparseMatrix, &
-       & SparseMatrixNorm, ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
-       & SparseMatrixGrandSum
+       & MatrixToTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &

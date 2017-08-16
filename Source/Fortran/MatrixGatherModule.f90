@@ -2,6 +2,7 @@
 !> Module for gathering matrices across processes.
 MODULE MatrixGatherModule
   USE DataTypesModule
+  USE SparseMatrixAlgebraModule
   USE SparseMatrixModule
   USE MPI
   IMPLICIT NONE

@@ -22,6 +22,7 @@ PROGRAM GraphTheory
   INTEGER :: extra_connections
   CHARACTER(len=80) :: output_file
   REAL(ntreal) :: threshold
+  REAL(ntreal) :: convergence_threshold
   REAL(ntreal) :: attenuation
   TYPE(IterativeSolverParameters_t) :: solver_parameters
   !! MPI Variables
@@ -66,6 +67,8 @@ PROGRAM GraphTheory
         READ(argument_value,*) extra_connections
      CASE('--threshold')
         READ(argument_value,*) threshold
+     CASE('--convergence_threshold')
+        READ(argument_value,*) convergence_threshold
      CASE('--attenuation')
         READ(argument_value,*) attenuation
      END SELECT
@@ -76,8 +79,8 @@ PROGRAM GraphTheory
        & process_slices)
 
   !! Set Up The Solver Parameters.
-  solver_parameters = IterativeSolverParameters_t( &
-       & be_verbose_in = .TRUE., threshold_in = threshold)
+  solver_parameters = IterativeSolverParameters_t( be_verbose_in=.TRUE., &
+       & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   CALL DivideUpWork
 
