@@ -30,7 +30,7 @@ class TestSolvers(unittest.TestCase):
     input_file2 = scratch_dir + "/input2.mtx"
     CheckMat = 0
     my_rank = 0
-    matrix_dimension = 128
+    matrix_dimension = 32
 
     ##########################################################################
     # set up all of the tests
