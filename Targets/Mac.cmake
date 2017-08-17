@@ -13,7 +13,7 @@ set(PYTHON_INCLUDE_DIRS /usr/local/Cellar/python/2.7.13/Frameworks/Python.framew
 set(PYTHON_INCLUDE_PATH /usr/local/Cellar/python/2.7.13/Frameworks/Python.framework/Versions/2.7/Headers /usr/local/lib/python2.7/site-packages/mpi4py/include)
 set(PYTHON_LIBRARIES /usr/local/Cellar/python/2.7.13/Frameworks/Python.framework/Versions/2.7/lib/libpython2.7.dylib)
 
-set(CXX_TOOLCHAINFLAGS "-O3 -openmp -lgomp")
-set(F_TOOLCHAINFLAGS "-O3 -cpp -fopenmp")
+set(CXX_TOOLCHAINFLAGS "-O3 -openmp -framework Accelerate -lgomp")
+#set(F_TOOLCHAINFLAGS "-O3 -cpp -fopenmp")
 # Debug suggestions
-#set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -cpp -fopenmp -Wall -DPURE=")
+set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -fexternal-blas -framework Accelerate -cpp -fopenmp -Wall -DPURE=")

@@ -37,7 +37,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        DO inner_counter = 1, elements_per_inner
           temporary%index_row = sparse_matrix%inner_index(total_counter)
           temporary%point_value = sparse_matrix%values(total_counter)
-          dense_matrix(temporary%index_column,temporary%index_row) = &
+          dense_matrix(temporary%index_row, temporary%index_column) = &
                & temporary%point_value
           total_counter = total_counter + 1
        END DO
@@ -57,20 +57,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: inner_counter, outer_counter
     TYPE(Triplet_t) :: temporary
     TYPE(TripletList_t) :: temporary_list
+    INTEGER :: columns, rows
 
-    CALL ConstructEmptySparseMatrix(sparse_matrix, &
-         & SIZE(dense_matrix,DIM=1), SIZE(dense_matrix,DIM=2))
+    columns = SIZE(dense_matrix,DIM=2)
+    rows = SIZE(dense_matrix,DIM=1)
 
-    DO outer_counter = 1, sparse_matrix%columns
+    CALL ConstructTripletList(temporary_list)
+    DO outer_counter = 1, columns
        temporary%index_column = outer_counter
-       DO inner_counter = 1, sparse_matrix%rows
-          temporary%point_value = dense_matrix(outer_counter,inner_counter)
+       DO inner_counter = 1, rows
+          temporary%point_value = dense_matrix(inner_counter,outer_counter)
           IF (ABS(temporary%point_value) .GT. threshold) THEN
              temporary%index_row = inner_counter
              CALL AppendToTripletList(temporary_list,temporary)
           END IF
        END DO
     END DO
+
+    CALL ConstructFromTripletList(sparse_matrix, temporary_list, rows, columns)
   END SUBROUTINE ConstructSparseFromDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
