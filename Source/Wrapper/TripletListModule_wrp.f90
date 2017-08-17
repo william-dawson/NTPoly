@@ -4,7 +4,7 @@ MODULE TripletListModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & AppendToTripletList, ResizeTripletList, &
-       & DestructTripletList, SetTripletAt, GetTripletAt
+       & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList
   USE TripletModule, ONLY : Triplet_t
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int
@@ -23,6 +23,7 @@ MODULE TripletListModule_wrp
   PUBLIC :: AppendToTripletList_wrp
   PUBLIC :: SetTripletAt_wrp
   PUBLIC :: GetTripletAt_wrp
+  PUBLIC :: SortTripletList_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the triplet list constructor.
   !> @param[out] ih_this handle to a constructed Matrix Memory Pool object.
@@ -131,4 +132,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     index_row = temp%index_row
     point_value = temp%point_value
   END SUBROUTINE GetTripletAt_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Sorts a triplet list by index values.
+  !! @param[in] ih_this handle to the triplet list to sort.
+  !! @param[in] matrix_columns this is the highest column value in the list.
+  !! @param[inout] ih_sorted handle to the sorted list.
+  PURE SUBROUTINE SortTripletList_wrp(ih_this, matrix_columns, ih_sorted) &
+    & bind(c,name="SortTripletList_wrp")
+    INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
+    INTEGER, INTENT(in) :: matrix_columns
+    INTEGER(kind=c_int), INTENT(INOUT)     :: ih_sorted(SIZE_wrp)
+    TYPE(TripletList_wrp) :: h_this
+    TYPE(TripletList_wrp) :: h_sorted
+
+    h_this = TRANSFER(ih_this,h_this)
+    ALLOCATE(h_sorted%data)
+
+    CALL SortTripletList(h_this%data, matrix_columns, h_sorted%data)
+
+    ih_sorted = TRANSFER(h_sorted,ih_sorted)
+  END SUBROUTINE SortTripletList_wrp
 END MODULE TripletListModule_wrp

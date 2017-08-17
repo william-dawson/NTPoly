@@ -345,6 +345,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & mat_c_columns, mat_c_rows, matAB)
     END IF
 
+
     IF (PRESENT(beta_in)) THEN
        IF (ABS(beta_in) .GT. 0) THEN
           CALL ScaleSparseMatrix(matC,beta)

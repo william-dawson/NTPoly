@@ -9,4 +9,5 @@ set(PYTHON_INCLUDE_PATH "/usr/include/python2.6/")
 set(CXX_TOOLCHAINFLAGS "-O3 -qopenmp -lgomp -fPIC")
 set(F_TOOLCHAINFLAGS "-O3 -fpp -qopenmp -fPIC")
 # Debug suggestions
-#set(F_TOOLCHAINFLAGS "-check bounds -O0 -fpp -qopenmp -fPIC")
+#set(CXX_TOOLCHAINFLAGS "-O0 -qopenmp -lgomp -fPIC")
+#set(F_TOOLCHAINFLAGS "-check bounds -O0 -fpp -qopenmp -fPIC -DPURE=")
