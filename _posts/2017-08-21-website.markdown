@@ -2,7 +2,7 @@
 layout: post
 title:  "Website Published"
 date:   2017-08-21 11:00:00 +0900
-categories: blog method
+categories: blog update
 ---
 
 We now have this website to provide easy access to NTPoly and its documentation.
