@@ -18,7 +18,7 @@ author: William Dawson
 email: william.dawson@riken.jp
 description: A library for computing the functions of sparse matrices.
 baseurl: "/NTPoly" # the subpath of your site, e.g. /blog
-url: "" # the base hostname & protocol for your site, e.g. http://example.com
+url: "https://william-dawson.github.io" # the base hostname & protocol for your site, e.g. http://example.com
 twitter_username:
 github_username:  william-dawson
 
