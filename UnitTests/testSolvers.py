@@ -60,8 +60,8 @@ class TestSolvers(unittest.TestCase):
             ResultMat = scipy.io.mmread(result_file)
             norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
             relative_error = norm / scipy.sparse.linalg.norm(self.CheckMat)
-            print "Norm:", norm
-            print "Relative_Error:", relative_error
+            print("Norm:", norm)
+            print("Relative_Error:", relative_error)
         global_norm = comm.bcast(norm, root=0)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
@@ -184,7 +184,7 @@ class TestSolvers(unittest.TestCase):
     def test_inverseroot(self):
         roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
-            print "Root:", root
+            print("Root:", root)
             # Starting Matrix. Care taken to make sure eigenvalues are
             # positive.
             temp_mat = scipy.sparse.rand(self.matrix_dimension,
@@ -225,7 +225,7 @@ class TestSolvers(unittest.TestCase):
     def test_root(self):
         roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
-            print "Root", root
+            print("Root", root)
             # Starting Matrix. Care taken to make sure eigenvalues are
             # positive.
             temp_mat = scipy.sparse.rand(self.matrix_dimension,

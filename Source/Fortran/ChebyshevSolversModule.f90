@@ -207,6 +207,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: degree
     INTEGER :: log2degree
     INTEGER :: counter
+    INTEGER :: min_size, max_size
+    REAL(NTREAL) :: sparsity
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -264,6 +266,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Call Recursive
        CALL ComputeRecursive(T_Powers, poly, OutputMat, &
             &  pool, 1, solver_parameters)
+    END IF
+    IF (solver_parameters%be_verbose) THEN
+       CALL GetLoadBalance(OutputMat,min_size,max_size)
+       sparsity = GetSize(OutputMat) / &
+            & (REAL(OutputMat%actual_matrix_dimension,KIND=NTREAL)**2)
+       CALL WriteHeader("Load_Balance")
+       CALL EnterSubLog
+       CALL WriteListElement(key="min_size", int_value_in=min_size)
+       CALL WriteListElement(key="max_size", int_value_in=max_size)
+       CALL ExitSubLog
+       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
     END IF
 
     !! Undo Load Balancing Step

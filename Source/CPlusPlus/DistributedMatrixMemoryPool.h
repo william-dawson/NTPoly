@@ -22,9 +22,9 @@ private:
 
 private:
   //! Copy constructor, locked.
-  DistributedMatrixMemoryPool(const DistributedSparseMatrix &);
+  DistributedMatrixMemoryPool(const DistributedMatrixMemoryPool &);
   //! Assignment operator, locked.
-  DistributedMatrixMemoryPool &operator=(const DistributedSparseMatrix &);
+  DistributedMatrixMemoryPool &operator=(const DistributedMatrixMemoryPool &);
 
 private:
   friend class DistributedSparseMatrix;
