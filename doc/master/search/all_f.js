@@ -1,8 +1,8 @@
 var searchData=
 [
   ['scale',['Scale',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#acdba128bafada0bf004b35413b958173',1,'NTPoly::DistributedSparseMatrix::Scale()'],['../class_n_t_poly_1_1_sparse_matrix.html#ab302cf3b7f0cfff62e40ca467dcbea73',1,'NTPoly::SparseMatrix::Scale()']]],
-  ['scaledistributedsparsematrix',['scaledistributedsparsematrix',['../namespacedistributedsparsematrixmodule.html#a5dc76ea9e1909f27f59dd80f44b7144b',1,'distributedsparsematrixmodule']]],
-  ['scaledistributedsparsematrix_5fwrp',['scaledistributedsparsematrix_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#a445929a5df183e1f0e660ddc7eb0d89e',1,'distributedsparsematrixmodule_wrp']]],
+  ['scaledistributedsparsematrix',['scaledistributedsparsematrix',['../namespacedistributedsparsematrixalgebramodule.html#adfec5af5355deb72f2f601f904f179cf',1,'distributedsparsematrixalgebramodule']]],
+  ['scaledistributedsparsematrix_5fwrp',['scaledistributedsparsematrix_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#a3bb0a4acc5aafc467592267f0e471ca4',1,'distributedsparsematrixmodule_wrp']]],
   ['scalesparsematrix',['scalesparsematrix',['../namespacesparsematrixalgebramodule.html#a8d2ebf0840fd68ad47fe7b8f9000899a',1,'sparsematrixalgebramodule']]],
   ['scalesparsematrix_5fwrp',['scalesparsematrix_wrp',['../namespacesparsematrixalgebramodule__wrp.html#aaaf4389a8c526a112d6074123cc6f22d',1,'sparsematrixalgebramodule_wrp']]],
   ['scalesquaretrigonometrytaylor',['scalesquaretrigonometrytaylor',['../namespacetrigonometrysolversmodule.html#ae11ca9e81385f2019384b1b5dbe3dc9a',1,'trigonometrysolversmodule']]],

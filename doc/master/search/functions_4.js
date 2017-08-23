@@ -8,6 +8,6 @@ var searchData=
   ['fillfromtripletlist',['FillFromTripletList',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#a43f74ed9e8446abd38abe70e493a2061',1,'NTPoly::DistributedSparseMatrix::FillFromTripletList()'],['../namespacedistributedsparsematrixmodule.html#acfe62c786b900828604b43dde3641916',1,'distributedsparsematrixmodule::fillfromtripletlist()']]],
   ['fillfromtripletlist_5fwrp',['fillfromtripletlist_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#acf5e27875603270d8f4e5b22bc30ddf7',1,'distributedsparsematrixmodule_wrp']]],
   ['fillidentity',['FillIdentity',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#ad4e4f07dded714396912faea02e54634',1,'NTPoly::DistributedSparseMatrix']]],
-  ['filtersparsematrix',['filtersparsematrix',['../namespacedistributedsparsematrixmodule.html#a8a933282e4cbb1597050f810debeadc0',1,'distributedsparsematrixmodule']]],
+  ['filterdistributedsparsematrix',['filterdistributedsparsematrix',['../namespacedistributedsparsematrixmodule.html#a5b63320c17d96f67b0c9af191d8a0927',1,'distributedsparsematrixmodule']]],
   ['fixedsolverparameters',['FixedSolverParameters',['../class_n_t_poly_1_1_fixed_solver_parameters.html#a828c896104edda01152b16bcdc66934c',1,'NTPoly::FixedSolverParameters']]]
 ];

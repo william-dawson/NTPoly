@@ -5,5 +5,5 @@ var searchData=
   ['row',['row',['../structsparsematrixiteratormodule_1_1sparsematrixiterator__t.html#a6e85f91d858658400437e4d218bbdee9',1,'sparsematrixiteratormodule::sparsematrixiterator_t']]],
   ['row_5fcomm',['row_comm',['../namespaceprocessgridmodule.html#adc4fad82193d2d2350b4cf727c9bcd1e',1,'processgridmodule']]],
   ['row_5frank',['row_rank',['../namespaceprocessgridmodule.html#a257ccda3ef551a532b87afe0384bcc63',1,'processgridmodule']]],
-  ['rows',['rows',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#aac0e52e693cfe865acbd09ea347e33c6',1,'matrixmemorypoolmodule::matrixmemorypool_t::rows()'],['../structsparsematrixmodule_1_1sparsematrix__t.html#aad6b178538d24bc24c63274bc6962aeb',1,'sparsematrixmodule::sparsematrix_t::rows()']]]
+  ['rows',['rows',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a82e4f8d2150e6fcbb92b31e8eaf68e08',1,'matrixmemorypoolmodule::matrixmemorypool_t::rows()'],['../structsparsematrixmodule_1_1sparsematrix__t.html#aad6b178538d24bc24c63274bc6962aeb',1,'sparsematrixmodule::sparsematrix_t::rows()']]]
 ];

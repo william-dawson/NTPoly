@@ -113,51 +113,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a4d8e78f04a9343b732748a7e9719a8fb"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a4d8e78f04a9343b732748a7e9719a8fb">printsparsematrix</a> (this, file_name_in)</td></tr>
 <tr class="memdesc:a4d8e78f04a9343b732748a7e9719a8fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out a sparse matrix. We first create a triplet list, and then call the print triplet list function.  <a href="#a4d8e78f04a9343b732748a7e9719a8fb">More...</a><br /></td></tr>
 <tr class="separator:a4d8e78f04a9343b732748a7e9719a8fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4045dfc6797ed4efc54b42e0323ca398"><td class="memItemLeft" align="right" valign="top">pure logical function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a4045dfc6797ed4efc54b42e0323ca398">checkifidentity</a> (this, threshold_in)</td></tr>
-<tr class="memdesc:a4045dfc6797ed4efc54b42e0323ca398"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a matrix is equal to the identity matrix. This routine is really just for testing. You can multiply a matrix and its inverse, and then call this routine to make sure multiplication is correct.  <a href="#a4045dfc6797ed4efc54b42e0323ca398">More...</a><br /></td></tr>
-<tr class="separator:a4045dfc6797ed4efc54b42e0323ca398"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A module for handling locally stored CSR matrices. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="a4045dfc6797ed4efc54b42e0323ca398"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4045dfc6797ed4efc54b42e0323ca398">&#9670;&nbsp;</a></span>checkifidentity()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">pure logical function, public sparsematrixmodule::checkifidentity </td>
-          <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(in)&#160;</td>
-          <td class="paramname"><em>this</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(ntreal), intent(in), optional&#160;</td>
-          <td class="paramname"><em>threshold_in</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Check if a matrix is equal to the identity matrix. This routine is really just for testing. You can multiply a matrix and its inverse, and then call this routine to make sure multiplication is correct. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to check. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">threshold_in</td><td>for flushing values to zero. Default value is 10^-8. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true if the matrix is equal to the identity matrix. </dd></dl>
-
-</div>
-</div>
 <a id="a8610d41ff5ab8f855f8d21667f0048c3"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8610d41ff5ab8f855f8d21667f0048c3">&#9670;&nbsp;</a></span>composesparsematrixcolumns()</h2>
 

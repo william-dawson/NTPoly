@@ -73,6 +73,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a2cf91ed828a8e2f7ad10f824caf003c4"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceexponentialsolversmodule.html#a2cf91ed828a8e2f7ad10f824caf003c4">computeexponential</a> (InputMat, OutputMat, solver_parameters_in)</td></tr>
 <tr class="memdesc:a2cf91ed828a8e2f7ad10f824caf003c4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the exponential of a matrix.  <a href="#a2cf91ed828a8e2f7ad10f824caf003c4">More...</a><br /></td></tr>
 <tr class="separator:a2cf91ed828a8e2f7ad10f824caf003c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4a662d3b62902fd5e2df7e91e2ff727a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceexponentialsolversmodule.html#a4a662d3b62902fd5e2df7e91e2ff727a">computeexponentialpade</a> (InputMat, OutputMat, solver_parameters_in)</td></tr>
+<tr class="memdesc:a4a662d3b62902fd5e2df7e91e2ff727a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the exponential of a matrix using a pade approximation.  <a href="#a4a662d3b62902fd5e2df7e91e2ff727a">More...</a><br /></td></tr>
+<tr class="separator:a4a662d3b62902fd5e2df7e91e2ff727a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8b7859dd68ce54f1b02f82fe9cab838b"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceexponentialsolversmodule.html#a8b7859dd68ce54f1b02f82fe9cab838b">computeexponentialtaylor</a> (InputMat, OutputMat, solver_parameters_in)</td></tr>
 <tr class="memdesc:a8b7859dd68ce54f1b02f82fe9cab838b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the exponential of a matrix using a taylor series expansion.  <a href="#a8b7859dd68ce54f1b02f82fe9cab838b">More...</a><br /></td></tr>
 <tr class="separator:a8b7859dd68ce54f1b02f82fe9cab838b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -119,6 +122,50 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute the exponential of a matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">InputMat</td><td>the input matrix </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">OutputMat</td><td>= exp(InputMat) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver (optional). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a4a662d3b62902fd5e2df7e91e2ff727a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4a662d3b62902fd5e2df7e91e2ff727a">&#9670;&nbsp;</a></span>computeexponentialpade()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public exponentialsolversmodule::computeexponentialpade </td>
+          <td>(</td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
+          <td class="paramname"><em>InputMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(inout)&#160;</td>
+          <td class="paramname"><em>OutputMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(iterativesolverparameters_t), intent(in), optional&#160;</td>
+          <td class="paramname"><em>solver_parameters_in</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compute the exponential of a matrix using a pade approximation. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">InputMat</td><td>the input matrix </td></tr>
