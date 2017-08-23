@@ -296,7 +296,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Decide whether to do dense or sparse version.
-    IF (MAX(sparsity_a, sparsity_b) .GT. 0.3) THEN
+    IF (MIN(sparsity_a, sparsity_b) .GT. 0.3) THEN
       CALL DenseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
            & alpha, threshold)
     ELSE
