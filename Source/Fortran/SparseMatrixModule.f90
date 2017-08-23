@@ -245,6 +245,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Construct a transposed triplet list
     size_of_this = this%outer_index(this%columns+1)
     CALL ConstructTripletList(triplet_list,size_of_this)
+
     CALL MatrixToTripletList(this,triplet_list)
     DO counter = 1,triplet_list%CurrentSize
        temp_int = triplet_list%data(counter)%index_column

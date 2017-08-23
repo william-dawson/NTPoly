@@ -101,8 +101,6 @@ if __name__ == "__main__":
         temp_value.index_column = start_row + row_value + 1
         temp_value.point_value = -1.0 / abs(grid_value)
         triplet_list.Append(temp_value)
-
-    # Construct The Potential Energy Operator.
     PotentialEnergy = nt.DistributedSparseMatrix(grid_points)
     PotentialEnergy.FillFromTripletList(triplet_list)
 
@@ -115,7 +113,6 @@ if __name__ == "__main__":
     Identity.FillIdentity()
 
     # Call the solver routine.
-    chemical_potential = 0
     Density = nt.DistributedSparseMatrix(grid_points)
     chemical_potential = nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 2,
                                  Density, solver_parameters)

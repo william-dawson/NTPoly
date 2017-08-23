@@ -43,4 +43,10 @@ Triplet TripletList::GetTripletAt(int index) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 TripletList::~TripletList() { DestructTripletList_wrp(ih_this); }
+
+////////////////////////////////////////////////////////////////////////////////
+void TripletList::SortTripletList(const TripletList& input, int matrix_columns,
+                             TripletList& sorted) {
+  SortTripletList_wrp(input.ih_this, &matrix_columns, sorted.ih_this);
+}
 } // namespace NTPoly

@@ -90,7 +90,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(h_this%data)
     CALL ConstructFromTripletList(h_this%data, h_triplet_list%data, &
          & rows, columns)
-    h_this = TRANSFER(ih_this,h_this)
+    ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructFromTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
