@@ -10,6 +10,7 @@ var searchData=
   ['matrixtotripletlist',['MatrixToTripletList',['../class_n_t_poly_1_1_sparse_matrix.html#adedd7f7b1f599659868a79e3da888e68',1,'NTPoly::SparseMatrix::MatrixToTripletList()'],['../namespacesparsematrixmodule.html#a9982e6e020366bdba866eb814b943ae4',1,'sparsematrixmodule::matrixtotripletlist()']]],
   ['matrixtotripletlist_5fwrp',['matrixtotripletlist_wrp',['../namespacesparsematrixmodule__wrp.html#ad5bb72ccd5d2c2b1889bc17030bf0073',1,'sparsematrixmodule_wrp']]],
   ['max_5fiterations',['max_iterations',['../structiterativesolversmodule_1_1iterativesolverparameters__t.html#a4c6b311bbf3ca890e5ef41d53d050f9f',1,'iterativesolversmodule::iterativesolverparameters_t']]],
+  ['mergelocalblocks',['mergelocalblocks',['../namespacedistributedsparsematrixmodule.html#a6bdaf2ace1d63a739c7073f9c343b1f0',1,'distributedsparsematrixmodule']]],
   ['minimizersolvers',['MinimizerSolvers',['../class_n_t_poly_1_1_minimizer_solvers.html',1,'NTPoly']]],
   ['minimizersolversmodule',['minimizersolversmodule',['../namespaceminimizersolversmodule.html',1,'']]],
   ['minimizersolversmodule_5fwrp',['minimizersolversmodule_wrp',['../namespaceminimizersolversmodule__wrp.html',1,'']]],

@@ -6,6 +6,7 @@ var searchData=
   ['densitymatrixsolversmodule_5fwrp',['densitymatrixsolversmodule_wrp',['../namespacedensitymatrixsolversmodule__wrp.html',1,'']]],
   ['distributedmatrixmemorypoolmodule',['distributedmatrixmemorypoolmodule',['../namespacedistributedmatrixmemorypoolmodule.html',1,'']]],
   ['distributedmatrixmemorypoolmodule_5fwrp',['distributedmatrixmemorypoolmodule_wrp',['../namespacedistributedmatrixmemorypoolmodule__wrp.html',1,'']]],
+  ['distributedsparsematrixalgebramodule',['distributedsparsematrixalgebramodule',['../namespacedistributedsparsematrixalgebramodule.html',1,'']]],
   ['distributedsparsematrixmodule',['distributedsparsematrixmodule',['../namespacedistributedsparsematrixmodule.html',1,'']]],
   ['distributedsparsematrixmodule_5fwrp',['distributedsparsematrixmodule_wrp',['../namespacedistributedsparsematrixmodule__wrp.html',1,'']]]
 ];

@@ -4,7 +4,7 @@ var searchData=
   ['column',['column',['../structsparsematrixiteratormodule_1_1sparsematrixiterator__t.html#ad2b1c8642214af4b51fa97fc36dccbca',1,'sparsematrixiteratormodule::sparsematrixiterator_t']]],
   ['column_5fcomm',['column_comm',['../namespaceprocessgridmodule.html#a65801b90d8464c4879375b753329e5b7',1,'processgridmodule']]],
   ['column_5frank',['column_rank',['../namespaceprocessgridmodule.html#ae3e155d17ed018216a324f8d408aeeeb',1,'processgridmodule']]],
-  ['columns',['columns',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a7faf4337289f290a559ef8b3ab1a6cc8',1,'matrixmemorypoolmodule::matrixmemorypool_t::columns()'],['../structsparsematrixmodule_1_1sparsematrix__t.html#a186413b543eb11fe76c2ccee605f3b5f',1,'sparsematrixmodule::sparsematrix_t::columns()']]],
+  ['columns',['columns',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a635b8e490761f14e34e69c0fe781314a',1,'matrixmemorypoolmodule::matrixmemorypool_t::columns()'],['../structsparsematrixmodule_1_1sparsematrix__t.html#a186413b543eb11fe76c2ccee605f3b5f',1,'sparsematrixmodule::sparsematrix_t::columns()']]],
   ['comm_5fsize',['comm_size',['../structmatrixgathermodule_1_1gatherhelper__t.html#a11e62adcf5220a2421327a6ec900ae2b',1,'matrixgathermodule::gatherhelper_t']]],
   ['converge_5fdiff',['converge_diff',['../structiterativesolversmodule_1_1iterativesolverparameters__t.html#a990ee855fa4ca3cc0dd40d04447736d8',1,'iterativesolversmodule::iterativesolverparameters_t']]]
 ];

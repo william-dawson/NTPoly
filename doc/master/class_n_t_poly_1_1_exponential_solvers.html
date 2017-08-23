@@ -88,6 +88,8 @@ Inheritance diagram for NTPoly::ExponentialSolvers:</div>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a6b3c3b474d03082eca5553f2ab7ea57d"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_exponential_solvers.html#a6b3c3b474d03082eca5553f2ab7ea57d">ComputeExponential</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;InputMat, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;OutputMat, const <a class="el" href="class_n_t_poly_1_1_fixed_solver_parameters.html">FixedSolverParameters</a> &amp;solver_parameters)</td></tr>
 <tr class="separator:a6b3c3b474d03082eca5553f2ab7ea57d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76a582f4a8eb4ed9bf1f23924e489169"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_exponential_solvers.html#a76a582f4a8eb4ed9bf1f23924e489169">ComputeExponentialPade</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;InputMat, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;OutputMat, const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;solver_parameters)</td></tr>
+<tr class="separator:a76a582f4a8eb4ed9bf1f23924e489169"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6bad39fffee975adb8b144a8c8b474f"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_exponential_solvers.html#ad6bad39fffee975adb8b144a8c8b474f">ComputeLogarithm</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;InputMat, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;OutputMat, const <a class="el" href="class_n_t_poly_1_1_fixed_solver_parameters.html">FixedSolverParameters</a> &amp;solver_parameters)</td></tr>
 <tr class="separator:ad6bad39fffee975adb8b144a8c8b474f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -150,6 +152,56 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Compute the matrix exponential. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">InputMat</td><td>matrix to compute the exponential of. </td></tr>
+    <tr><td class="paramname">OutputMat</td><td>= exp(InputMat) </td></tr>
+    <tr><td class="paramname">solver_parameters</td><td>parameters for the solver </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a76a582f4a8eb4ed9bf1f23924e489169"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76a582f4a8eb4ed9bf1f23924e489169">&#9670;&nbsp;</a></span>ComputeExponentialPade()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::ExponentialSolvers::ComputeExponentialPade </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>InputMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>OutputMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;&#160;</td>
+          <td class="paramname"><em>solver_parameters</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Compute the matrix exponential using the Pade method. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">InputMat</td><td>matrix to compute the exponential of. </td></tr>
     <tr><td class="paramname">OutputMat</td><td>= exp(InputMat) </td></tr>

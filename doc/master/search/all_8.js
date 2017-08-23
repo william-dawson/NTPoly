@@ -1,7 +1,7 @@
 var searchData=
 [
   ['increment',['Increment',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#aeb93d903d109cff2cecdaaa7ffab3202',1,'NTPoly::DistributedSparseMatrix::Increment()'],['../class_n_t_poly_1_1_sparse_matrix.html#ae659c420ec2c6eb950bbf2f045d8ad9b',1,'NTPoly::SparseMatrix::Increment()']]],
-  ['incrementdistributedsparsematrix',['incrementdistributedsparsematrix',['../namespacedistributedsparsematrixmodule.html#a601c4094f5f61a7b742041a0fb810e8a',1,'distributedsparsematrixmodule']]],
+  ['incrementdistributedsparsematrix',['incrementdistributedsparsematrix',['../namespacedistributedsparsematrixalgebramodule.html#a9ad347e92f841d7aac727915ac6d8ba2',1,'distributedsparsematrixalgebramodule']]],
   ['incrementdistributedsparsematrix_5fwrp',['incrementdistributedsparsematrix_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#ab493e636057e9d3f4d577be8003ef784',1,'distributedsparsematrixmodule_wrp']]],
   ['incrementsparsematrix',['incrementsparsematrix',['../namespacesparsematrixalgebramodule.html#a75ea470899228f9b2c1487a0c86eb64e',1,'sparsematrixalgebramodule']]],
   ['incrementsparsematrix_5fwrp',['incrementsparsematrix_wrp',['../namespacesparsematrixalgebramodule__wrp.html#a1e3f8193382006365c41f19dc8ea4f8f',1,'sparsematrixalgebramodule_wrp']]],

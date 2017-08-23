@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['a_5ftest_5fcgsolve',['a_test_cgsolve',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a9969724ad90f5def49be67da04dba42d',1,'UnitTests::testSolvers::TestSolvers']]],
   ['activatelogger',['activatelogger',['../namespaceloggingmodule.html#a095efbd4e37bea55737d460b072241d8',1,'loggingmodule']]],
   ['actual_5fmatrix_5fdimension',['actual_matrix_dimension',['../structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html#a17621465cda0aa9b9e84305a27340fde',1,'distributedsparsematrixmodule::distributedsparsematrix_t']]],
   ['addsparsevectors',['addsparsevectors',['../namespacesparsevectormodule.html#ab082c78c261e01982ae37d5958a07df5',1,'sparsevectormodule']]],

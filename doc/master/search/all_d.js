@@ -31,6 +31,7 @@ var searchData=
   ['printerror',['printerror',['../namespaceerrormodule.html#ab00a01da383320ec683e1319f7013aa5',1,'errormodule']]],
   ['printfixedsolverparameters',['printfixedsolverparameters',['../namespacefixedsolversmodule.html#a672087d199c633d877450bd26f790836',1,'fixedsolversmodule']]],
   ['printiterativesolverparameters',['printiterativesolverparameters',['../namespaceiterativesolversmodule.html#a66688e8f5776fca029ac4e2d8076e8f7',1,'iterativesolversmodule']]],
+  ['printmatrixinformation',['printmatrixinformation',['../namespacedistributedsparsematrixmodule.html#a2d4895521e0e27a9d090d6d4266ba1d0',1,'distributedsparsematrixmodule']]],
   ['printsparsematrix',['printsparsematrix',['../namespacesparsematrixmodule.html#a4d8e78f04a9343b732748a7e9719a8fb',1,'sparsematrixmodule']]],
   ['printsparsematrix_5fwrp',['printsparsematrix_wrp',['../namespacesparsematrixmodule__wrp.html#a9131e326e385789947782f5c6212eebe',1,'sparsematrixmodule_wrp']]],
   ['printsparsematrixf_5fwrp',['printsparsematrixf_wrp',['../namespacesparsematrixmodule__wrp.html#ac526ae9048ce9b53ff26062c36238d66',1,'sparsematrixmodule_wrp']]],
