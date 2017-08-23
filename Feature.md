@@ -3,9 +3,6 @@ layout: page
 title: Feature List
 permalink: /feature/
 ---
-
-Feature Outline
---------------------------------------------------------------------------------
 The following features and methods have been implemented in NTPoly:
 
 * General Polynomials
@@ -26,4 +23,3 @@ The following features and methods have been implemented in NTPoly:
     * Sign Function
     * Load Balancing Matrices
     * File I/O
-

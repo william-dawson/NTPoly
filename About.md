@@ -4,8 +4,7 @@ title: About
 permalink: /about/
 ---
 
-Basic Theory
---------------------------------------------------------------------------------
+## Basic Theory
 The theory of matrix functions is a long studied branch of matrix algebra.
 Matrix functions have a wide range of applications, including graph problems,
 differential equations, and materials science. Common examples of matrix
@@ -39,8 +38,8 @@ replace the dense matrix addition and multiplication routines with sparse
 matrix routines. This allows us to use NTPoly to efficiently compute many
 functions of sparse matrices.
 
-How To Contribute
---------------------------------------------------------------------------------
+##How To Contribute
+
 To begin contributing to NTPoly, take a look at the
 [Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The
 [Developer Guide](https://github.com/william-dawson/NTPoly/wiki/Developer-Guide)

@@ -12,4 +12,5 @@ have release versions available below.
 * [Rolling Release](https://github.com/william-dawson/NTPoly)
 
 ### Stable Releases
+
 * [CPC Submission](https://github.com/william-dawson/NTPoly/releases/tag/1.0-cpc)
