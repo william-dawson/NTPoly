@@ -36,7 +36,6 @@ MODULE SparseMatrixModule
   PUBLIC :: TransposeSparseMatrix
   PUBLIC :: PrintSparseMatrix
   PUBLIC :: MatrixToTripletList
-  PUBLIC :: CheckIfIdentity
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix with a certain number of columns and rows.
   !! Will allocate storage for the outer values.
@@ -462,48 +461,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL DestructTripletList(triplet_list)
   END SUBROUTINE PrintSparseMatrix
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Check if a matrix is equal to the identity matrix.
-  !! This routine is really just for testing. You can multiply a matrix and
-  !! its inverse, and then call this routine to make sure multiplication is
-  !! correct.
-  !! @param[in] this the matrix to check.
-  !! @param[in] threshold_in for flushing values to zero. Default value is 10^-8.
-  !! @result true if the matrix is equal to the identity matrix.
-  PURE FUNCTION CheckIfIdentity(this, threshold_in) RESULT(isidentity)
-    !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in) :: this
-    LOGICAL :: isidentity
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
-    !! Local Data
-    TYPE(TripletList_t) :: triplet_list
-    INTEGER :: counter
-    TYPE(Triplet_t) :: temp
-    REAL(NTREAL) :: threshold
-
-    !! Process Optional Parameters
-    IF (.NOT. PRESENT(threshold_in)) THEN
-       threshold = 1e-8
-    ELSE
-       threshold = threshold_in
-    END IF
-
-    CALL MatrixToTripletList(this,triplet_list)
-    isidentity = .TRUE.
-    DO counter=1, triplet_list%CurrentSize
-       temp = triplet_list%data(counter)
-       IF (temp%index_row .EQ. temp%index_column) THEN
-          IF (ABS(temp%point_value - 1.0) > threshold) THEN
-             isidentity = .FALSE.
-             EXIT
-          ENDIF
-       ELSE
-          IF (ABS(temp%point_value) > threshold) THEN
-             isidentity = .FALSE.
-             EXIT
-          ENDIF
-       ENDIF
-    END DO
-    CALL DestructTripletList(triplet_list)
-  END FUNCTION CheckIfIdentity
 END MODULE SparseMatrixModule

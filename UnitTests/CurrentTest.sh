@@ -23,5 +23,4 @@ export PROCESS_ROWS="$2"
 export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
--m unittest -v testSolvers.TestSolvers.test_exponentialpade
+@PYTHON_EXECUTABLE@ -m unittest -v testSparseMatrix.TestLocalMatrix.test_multiply
