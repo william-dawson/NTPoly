@@ -1,0 +1,23 @@
+---
+layout: post
+title:  "Dense Algebra and Non-Symmetric Exponential"
+date:   2017-08-23 11:00:00 +0900
+categories: blog update
+---
+
+I have merged the Dense Algebra and Nonsymmetric branches into the master
+branch. There are two main changes as a result. First, now if NTPoly
+detects that two matrix blocks are both dense (>30% full), it will perform
+a dense matrix multiply. This optimization might sound like what is done
+in the DBCSR[1] library, but it's not nearly that fancy. It is really meant for
+if you're trying to compare to the full dense solution, because our block sizes
+are still fairly large.
+
+Second I've added a method for computing the matrix exponential of a
+non-symmetric matrix. To use this feature, call the subroutine
+`ComputeExponentialPade`. I was going to wait to merge this branch into the
+master until all the matrix functions had non-symmetric versions, but the
+prospect of computing the exponential of undirected graphs was too tantalizing
+to wait. Feel free to try this experimental method out.
+
+> [1] https://dbcsr.cp2k.org/
