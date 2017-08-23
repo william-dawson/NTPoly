@@ -3,6 +3,7 @@
 MODULE RootSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE EigenBoundsModule
   USE FixedSolversModule
@@ -209,8 +210,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: scaling_factor
     REAL(NTREAL) :: norm_value
     !! Temporary Variables
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
     INTEGER :: outer_counter
     INTEGER :: inner_counter
     TYPE(DistributedMatrixMemoryPool_t) :: pool
@@ -324,17 +323,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(OutputMat,min_size,max_size)
-       sparsity = GetSize(OutputMat)/ &
-            & (OutputMat%actual_matrix_dimension**2)
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(OutputMat)
     END IF
 
     IF (MOD(root,4) .EQ. 1 .OR. MOD(root,4) .EQ. 3) THEN

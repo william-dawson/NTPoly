@@ -327,6 +327,39 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
     ##########################################################################
+    # Test our ability to compute the matrix exponential using the pade method.
+    #  @param[in] self pointer.
+    def test_exponentialpade(self):
+        # Starting Matrix
+        temp_mat = scipy.sparse.rand(
+            self.matrix_dimension, self.matrix_dimension, density=1.0)
+        temp_mat = 8 * (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
+        matrix1 = scipy.sparse.csr_matrix(temp_mat)
+
+        # Check Matrix
+        dense_check = scipy.linalg.funm(temp_mat.todense(),
+                                        lambda x: numpy.exp(x))
+        self.CheckMat = scipy.sparse.csr_matrix(dense_check)
+        if self.my_rank == 0:
+            scipy.io.mmwrite(self.input_file,
+                             scipy.sparse.csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        exp_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
+        nt.ExponentialSolvers.ComputeExponentialPade(input_matrix, exp_matrix,
+                                                     self.iterative_solver_parameters)
+        exp_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    ##########################################################################
     # Test our ability to compute the matrix logarithm.
     #  @param[in] self pointer.
     def test_logarithmfunction(self):
@@ -647,9 +680,9 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
     ##########################################################################
-    # Test our ability to solve general matrix equations.
+    # Test our ability to solve general matrix equations with CG.
     #  @param[in] self pointer.
-    def a_test_cgsolve(self):
+    def test_cgsolve(self):
         # Starting Matrix
         A = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                               density=1.0)
@@ -680,6 +713,7 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
 
         self.check_result()
+
     ##########################################################################
     # Test our ability to compute eigenvalues with the power method.
     #  @param[in] self pointer.

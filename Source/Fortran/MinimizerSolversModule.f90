@@ -3,6 +3,7 @@
 MODULE MinimizerSolversModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -57,10 +58,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: root1, root2, root_temp
     !! Temporary Variables
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
-    INTEGER :: min_size, max_size
     INTEGER :: outer_counter
     INTEGER :: matrix_dimension
-    REAL(NTREAL) :: sparsity
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -198,17 +197,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     IF (solver_parameters%be_verbose) THEN
-       CALL GetLoadBalance(P_k,min_size,max_size)
-       sparsity = REAL(GetSize(P_k),KIND=NTREAL) / &
-            & (P_k%actual_matrix_dimension**2)
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
-       CALL WriteHeader("Load_Balance")
-       CALL EnterSubLog
-       CALL WriteListElement(key="min_size", int_value_in=min_size)
-       CALL WriteListElement(key="max_size", int_value_in=max_size)
-       CALL ExitSubLog
-       CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+       CALL PrintMatrixInformation(P_k)
     END IF
 
     !! Undo Load Balancing Step

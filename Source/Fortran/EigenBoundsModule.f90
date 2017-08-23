@@ -3,6 +3,7 @@
 MODULE EigenBoundsModule
   USE DataTypesModule
   USE DistributedMatrixMemoryPoolModule
+  USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE LoggingModule

@@ -40,6 +40,7 @@ class TestLocalMatrix(unittest.TestCase):
     def setUp(self):
         self.parameters.append(TestParameters(2, 4, 0.0))
         self.parameters.append(TestParameters(8, 8, 0.0))
+        self.parameters.append(TestParameters(2, 2, 1.0))
         self.parameters.append(TestParameters(4, 4, 1.0))
         self.parameters.append(TestParameters(19, 19, 1.0))
         self.parameters.append(TestParameters(4, 2, 1.0))

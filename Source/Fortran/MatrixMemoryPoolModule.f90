@@ -15,9 +15,9 @@ MODULE MatrixMemoryPoolModule
   TYPE, PUBLIC :: MatrixMemoryPool_t
      PRIVATE
      !> Shape of matrix: columns
-     INTEGER :: columns
+     INTEGER, PUBLIC :: columns
      !> Shape of matrix: rows
-     INTEGER :: rows
+     INTEGER, PUBLIC :: rows
      !> storage for actual values added to the matrix.
      TYPE(Triplet_t), DIMENSION(:), ALLOCATABLE, PUBLIC :: pruned_list
      !> storage for potential values added to the matrix.

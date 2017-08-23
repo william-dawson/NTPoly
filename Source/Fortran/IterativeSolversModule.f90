@@ -140,6 +140,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & bool_value_in=this%do_load_balancing)
     CALL WriteListElement(key="converge_diff", &
          & float_value_in=this%converge_diff)
+    CALL WriteListElement(key="threshold", &
+         & float_value_in=this%threshold)
     CALL WriteListElement(key="max_iterations", &
          & int_value_in=this%max_iterations)
     CALL ExitSubLog
