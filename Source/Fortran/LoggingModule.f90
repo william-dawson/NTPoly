@@ -80,7 +80,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       END IF
       IF (PRESENT(float_value_in)) THEN
          WRITE(*,'(A)',ADVANCE='no') ": "
-         WRITE(*,'(ES10.3)',ADVANCE='no') float_value_in
+         WRITE(*,'(ES22.14)',ADVANCE='no') float_value_in
       END IF
       IF (PRESENT(bool_value_in)) THEN
          IF (bool_value_in) THEN
@@ -125,7 +125,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       END IF
       IF (PRESENT(float_value_in)) THEN
          WRITE(*,'(A)',ADVANCE='no') ": "
-         WRITE(*,'(ES11.4)',ADVANCE='no') float_value_in
+         WRITE(*,'(ES22.14)',ADVANCE='no') float_value_in
       END IF
       IF (PRESENT(bool_value_in)) THEN
          IF (bool_value_in) THEN
