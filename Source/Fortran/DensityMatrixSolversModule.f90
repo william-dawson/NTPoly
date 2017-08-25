@@ -158,7 +158,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -389,7 +389,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -626,7 +626,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       energy_value = 2*DotDistributedSparseMatrix(D1, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -889,7 +889,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       energy_value = 2*DotDistributedSparseMatrix(D1, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1

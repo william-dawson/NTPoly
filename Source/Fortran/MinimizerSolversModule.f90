@@ -194,7 +194,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = DotDistributedSparseMatrix(P_k, WorkingHamiltonian)
+       energy_value = 2*DotDistributedSparseMatrix(P_k, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
 
        trace_value = Trace(P_k)
