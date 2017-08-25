@@ -56,6 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: step_size
     REAL(NTREAL) :: b, c, d
     REAL(NTREAL) :: root1, root2, root_temp
+    REAL(NTREAL) :: energy_value, energy_value2
     !! Temporary Variables
     TYPE(DistributedMatrixMemoryPool_t) :: pool1
     INTEGER :: outer_counter
@@ -133,11 +134,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
+    energy_value = 0
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -163,7 +166,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           step_size = root2
        END IF
 
-       norm_value = ABS(step_size*DistributedSparseNorm(H_k))
        CALL IncrementDistributedSparseMatrix(H_k,P_k,REAL(step_size,NTREAL))
 
        !! Compute new gradient
@@ -189,6 +191,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleDistributedSparseMatrix(H_k,gamma)
        CALL IncrementDistributedSparseMatrix(G_kplusone,H_k)
        CALL CopyDistributedSparseMatrix(G_kplusone,G_k)
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       energy_value = DotDistributedSparseMatrix(P_k, WorkingHamiltonian)
+       norm_value = ABS(energy_value - energy_value2)
 
        trace_value = Trace(P_k)
 

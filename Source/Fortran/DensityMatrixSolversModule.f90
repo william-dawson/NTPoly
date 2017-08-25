@@ -32,11 +32,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, InverseSquareRoot
-    INTEGER, INTENT(in) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
-    REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
+    INTEGER, INTENT(IN) :: nel
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
@@ -49,8 +49,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: last_trace_value
     REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
@@ -112,8 +112,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(X_k,REAL(-1.0,NTREAL))
     CALL IncrementDistributedSparseMatrix(Identity,X_k,alpha_in=e_max)
     CALL ScaleDistributedSparseMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
-    trace_value = 0.0d+0
-    last_trace_value = 0.0d+0
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -122,12 +120,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
+    energy_value = 0
     DO outer_counter = 1,solver_parameters%max_iterations
-       !do outer_counter = 1,1
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -156,8 +155,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyDistributedSparseMatrix(X_k,X_k2)
        CALL IncrementDistributedSparseMatrix(TempMat,X_k, &
             & sigma_array(outer_counter))
-       CALL IncrementDistributedSparseMatrix(X_k,X_k2,alpha_in=NEGATIVE_ONE)
-       norm_value = ABS(DistributedSparseNorm(X_k2))
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       energy_value = DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
@@ -236,11 +238,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, InverseSquareRoot
-    INTEGER, INTENT(in) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
-    REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
+    INTEGER, INTENT(IN) :: nel
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: sigma_min = 0.0
     REAL(NTREAL), PARAMETER :: sigma_max = 6.0
@@ -253,9 +256,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
-    REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: last_trace_value
     REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     REAL(NTREAL) :: tempfx,tempgx
@@ -323,8 +325,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(X_k,REAL(-1.0,NTREAL))
     CALL IncrementDistributedSparseMatrix(Identity,X_k,alpha_in=e_max)
     CALL ScaleDistributedSparseMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
-    trace_value = 0.0d+0
-    last_trace_value = 0.0d+0
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -333,11 +333,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
+    energy_value = 0
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -381,13 +383,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        END IF
 
-       !! Check Convergence
        CALL IncrementDistributedSparseMatrix(TempMat,X_k, &
             & alpha_in=REAL(-1.0,NTREAL))
-       norm_value = ABS(DistributedSparseNorm(X_k))
        CALL CopyDistributedSparseMatrix(TempMat,X_k)
 
-       trace_value = Trace(X_k)
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       energy_value = DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
@@ -472,11 +475,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, InverseSquareRoot
-    INTEGER, INTENT(in) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
-    REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
+    INTEGER, INTENT(IN) :: nel
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
@@ -496,6 +499,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: norm_value, norm_value2
+    REAL(NTREAL) :: energy_value, energy_value2
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
@@ -578,11 +582,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
     norm_value2 = norm_value
+    energy_value = 0
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -618,9 +624,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementDistributedSparseMatrix(DDH, D1, &
             & alpha_in=NEGATIVE_ONE*TWO*sigma_array(outer_counter))
 
-       !! Check Convergence
-       CALL IncrementDistributedSparseMatrix(D1,TempMat,alpha_in=NEGATIVE_ONE)
-       norm_value2 = ABS(DistributedSparseNorm(TempMat))
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       energy_value = DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
@@ -695,12 +702,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: Hamiltonian
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: InverseSquareRoot
-    INTEGER, INTENT(in) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
-    REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Hamiltonian
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
+    INTEGER, INTENT(IN) :: nel
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
@@ -722,7 +729,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: mu
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value, norm_value2
+    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
@@ -830,7 +838,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL IncrementDistributedSparseMatrix(DH,TempMat,REAL(-1.0,NTREAL))
     CALL IncrementDistributedSparseMatrix(TempMat,D1, &
          & REAL(1.0-mixing_value,ntreal))
-    trace_value = 0.0d+0
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -839,12 +846,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
-    norm_value2 = norm_value
+    energy_value = 0
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -879,9 +887,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementDistributedSparseMatrix(DDH, D1, &
             & alpha_in=NEGATIVE_ONE*TWO*sigma_array(outer_counter))
 
-       !! Check Convergence
-       CALL IncrementDistributedSparseMatrix(D1,TempMat,alpha_in=NEGATIVE_ONE)
-       norm_value2 = ABS(DistributedSparseNorm(TempMat))
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       energy_value = DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
