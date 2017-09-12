@@ -12,6 +12,7 @@ branches:
 language: C++
 
 before_install:
+  - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
   - sudo apt-get install gfortran
   - sudo apt-get install openmpi-bin libopenmpi-dev
   - sudo apt-get install python3
