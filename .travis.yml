@@ -14,7 +14,7 @@ language: C++
 before_install:
   - sudo apt-get install gfortran
   - sudo apt-get install openmpi-bin libopenmpi-dev
-  - sudo apt-get install python3
+  - sudo apt-get install python-dev
   - sudo apt-get install doxygen
   - sudo apt-get install cmake
   - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
