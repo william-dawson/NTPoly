@@ -12,9 +12,9 @@ branches:
 language: C++
 
 before_install:
-  - mpif90 --version
   - sudo apt-get install gfortran
   - sudo apt-get install openmpi-bin libopenmpi-dev
+  - mpif90 --version
   - sudo apt-get install python-dev
   - sudo apt-get install doxygen
   - sudo apt-get install cmake
