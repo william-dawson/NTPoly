@@ -1,0 +1,31 @@
+os: linux
+sudo: required
+dist: trusty
+
+notifications:
+  email: false
+
+branches:
+  only:
+  - travis-ci
+
+language: Fortran
+
+before_install:
+  - sudo apt-get install -y -q mpich libmpich-dev
+  - sudo apt-get install doxygen
+  - sudo apt-get install cmake
+  - sudo apt-get install python3
+  - sudo pip install scipy --upgrade
+  - sudo pip install numpy --upgrade
+  - test -n $CC  && unset CC
+  - test -n $FCC  && unset FCC
+  - test -n $CXX && unset CXX
+  - mkdir build
+
+script:
+  - cd build
+  - cmake ..
+  - make
+  - make test
+  - cat Testing/Temporary/LastTest.log
