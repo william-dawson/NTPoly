@@ -18,7 +18,7 @@ before_install:
   - sudo apt-get install doxygen
   - sudo apt-get install cmake
   - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
-  - tar xvf https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
+  - tar xvf swig-3.0.12.tar.gz
   - cd swig-3.0.12.tar.gz
   - ./configure
   - make
