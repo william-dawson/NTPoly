@@ -7,4 +7,4 @@ set(CMAKE_CXX_COMPILER mpicxx)
 
 set(PYTHON_INCLUDE_PATH "/usr/include/python2.6/")
 set(CXX_TOOLCHAINFLAGS "-O3 -openmp -lgomp")
-set(F_TOOLCHAINFLAGS "-O3 -fpp -openmp")
+set(F_TOOLCHAINFLAGS "-O3 -cpp -openmp")
