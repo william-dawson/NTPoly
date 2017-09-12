@@ -7,7 +7,7 @@ notifications:
 
 branches:
   only:
-  - travis-ci
+    - travis-ci
 
 language: Fortran
 
