@@ -12,7 +12,8 @@ branches:
 language: C++
 
 before_install:
-  - sudo apt-get install -y -q mpich libmpich-dev
+  - sudo apt-get install swig
+  - sudo apt-get install openmpi
   - sudo apt-get install doxygen
   - sudo apt-get install cmake
   - sudo apt-get install python3
