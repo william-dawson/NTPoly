@@ -12,6 +12,7 @@ branches:
 language: C++
 
 before_install:
+  - apt-cache search openmpi
   - sudo apt-get install gfortran
   - sudo apt-get install openmpi-bin libopenmpi-dev
   - ompi_info
