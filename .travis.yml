@@ -25,7 +25,7 @@ before_install:
 
 script:
   - cd build
-  - cmake ..
+  - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
   - make test
   - cat Testing/Temporary/LastTest.log
