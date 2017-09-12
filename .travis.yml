@@ -12,6 +12,7 @@ branches:
 language: C++
 
 before_install:
+  - mpif90 --version
   - sudo apt-get install gfortran
   - sudo apt-get install openmpi-bin libopenmpi-dev
   - sudo apt-get install python-dev
@@ -26,6 +27,7 @@ before_install:
   - cd ../
   - sudo pip install scipy --upgrade
   - sudo pip install numpy --upgrade
+  - sudo pip install mpi4py --upgrade
   - test -n $CC  && unset CC
   - test -n $FCC  && unset FCC
   - test -n $CXX && unset CXX
