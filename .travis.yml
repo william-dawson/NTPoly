@@ -12,11 +12,14 @@ branches:
 language: C++
 
 before_install:
-  - sudo apt-get update
   - sudo apt-get install gfortran
-  - sudo apt-get install libopenmpi2
-  - sudo apt-get install openmpi-bin libopenmpi-dev
-  - ompi_info
+  - wget https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.gz
+  - tar xvf openmpi-2.1.1.tar.gz
+  - cd openmpi-2.1.1
+  - ./configure
+  - make
+  - sudo make install
+  - cd ../
   - sudo apt-get install python-dev
   - sudo apt-get install doxygen
   - sudo apt-get install cmake
