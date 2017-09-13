@@ -1,6 +1,8 @@
 Project Overview
 ================================================================================
 
+[![Build Status](https://travis-ci.org/william-dawson/NTPoly.svg?branch=travis-ci)](https://travis-ci.org/william-dawson/NTPoly)
+
 NTPoly is a massively parallel library for computing the functions of sparse,
 symmetric matrices based on polynomial expansions. For sufficiently sparse
 matrices, most of the matrix functions in NTPoly can be computed in linear
@@ -10,7 +12,7 @@ Set Up Guide
 --------------------------------------------------------------------------------
 NTPoly is freely available and open source under the MIT license. It can be
 downloaded from the [Github](https://github.com/william-dawson/NTPoly)
-repository. We of course recommend that you download a 
+repository. We of course recommend that you download a
 [release version](https://github.com/william-dawson/NTPoly/releases)
 to get started.
 
@@ -26,8 +28,8 @@ After that you can build using:
 And for the documentation:
 > make doc
 
-[Online documentation](https://william-dawson.github.io/NTPoly/) is also 
-available. Further details about the library can be found on the 
+[Online documentation](https://william-dawson.github.io/NTPoly/) is also
+available. Further details about the library can be found on the
 [Wiki](https://github.com/william-dawson/NTPoly/wiki).
 If you aren't cross compiling, you can perform local tests using:
 > make test
@@ -99,12 +101,12 @@ The following features and methods have been implemented in NTPoly:
 
 Citation
 --------------------------------------------------------------------------------
-A publication is still forthcoming. 
+A publication is still forthcoming.
 
 How To Contribute
 --------------------------------------------------------------------------------
-To begin contributing to NTPoly, take a look at the 
-[Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The 
+To begin contributing to NTPoly, take a look at the
+[Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The
 [Developer Guide](https://github.com/william-dawson/NTPoly/wiki/Developer-Guide)
 provides an overview of best development practices. Additionally, there is a
 [Adding New Functionality](https://github.com/william-dawson/NTPoly/wiki/Adding-New-Functionality-(Example))

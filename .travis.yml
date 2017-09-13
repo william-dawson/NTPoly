@@ -5,10 +5,6 @@ dist: trusty
 notifications:
   email: false
 
-branches:
-  only:
-    - travis-ci
-
 language: C++
 
 before_install:
@@ -44,4 +40,4 @@ script:
   - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
   - make test > test_result.txt
-  - tail Testing/Temporary/LastTest.log
+  - tail -n 13 Testing/Temporary/LastTest.log
