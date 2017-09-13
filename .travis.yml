@@ -17,8 +17,8 @@ before_install:
   - tar xvf openmpi-2.1.1.tar.gz
   - cd openmpi-2.1.1
   - ./configure
-  - make
-  - sudo make install
+  - make >/dev/null
+  - sudo make install >/dev/null
   - cd ../
   - sudo ldconfig
   - sudo apt-get install python-dev
@@ -28,8 +28,8 @@ before_install:
   - tar xvf swig-3.0.12.tar.gz
   - cd swig-3.0.12
   - ./configure
-  - make
-  - sudo make install
+  - make >/dev/null
+  - sudo make install >/dev/null
   - cd ../
   - sudo pip install scipy --upgrade
   - sudo pip install numpy --upgrade
