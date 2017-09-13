@@ -1,6 +1,6 @@
 ################################################################################
 ## Basic Setup
-cmake_minimum_required (VERSION 3.8)
+cmake_minimum_required (VERSION 3.2)
 project(NTPoly)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_language(Fortran)
@@ -21,7 +21,7 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
 ################################################################################
 ## Documentation
 find_package(Doxygen REQUIRED)
-configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in 
+configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
                ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
 add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
 
@@ -34,4 +34,3 @@ set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS})
 ## Get at the source files
 subdirs(Source)
 subdirs(UnitTests)
-

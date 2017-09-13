@@ -18,8 +18,8 @@ if (SWIG_FOUND)
     SET_SOURCE_FILES_PROPERTIES(${file} PROPERTIES CPLUSPLUS ON)
   endforeach(file)
   set(CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/python)
-#SWIG_ADD_MODULE(NTPolySwig python ${Swigsrc})
-  SWIG_ADD_LIBRARY(NTPolySwig LANGUAGE python SOURCES ${Swigsrc})
+  SWIG_ADD_MODULE(NTPolySwig python ${Swigsrc})
+  #SWIG_ADD_LIBRARY(NTPolySwig LANGUAGE python SOURCES ${Swigsrc})
   SWIG_LINK_LIBRARIES(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly ${PYTHON_LIBRARIES})
   set_target_properties(_NTPolySwig PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
