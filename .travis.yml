@@ -16,7 +16,7 @@ before_install:
   - wget https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.gz
   - tar xvf openmpi-2.1.1.tar.gz
   - cd openmpi-2.1.1
-  - sudo ./configure
+  - ./configure
   - make
   - sudo make install
   - cd ../
