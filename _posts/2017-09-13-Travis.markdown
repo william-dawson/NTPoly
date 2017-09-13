@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "Travis CI Based Contiguous Integration"
+date:   2017-09-13 11:00:00 +0900
+categories: blog update
+---
+
+NTPoly now uses [Travis CI](https://travis-ci.org/) to perform contiguous
+integration. We'll still perform local regular compilation tests, since
+Travis CI doesn't provide every possible environment (for example, Intel
+clusters). However, hopefully this will help us catch bugs easier, and
+make it easier to perform pull requests.
+
+One of the main challenges I faced when adding Travis CI support was setting
+up newer versions of libraries. NTPoly requires MPI version 3, as well as
+up to date versions of Swig and Cmake. Unfortunately, those don't come by
+default in the Travis CI environment. This means that currently we have to
+install some libraries from source, which makes the integration tests very
+slow. In the future, hopefully we can use something like docker to speed
+up this process.
