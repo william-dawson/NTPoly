@@ -16,10 +16,11 @@ before_install:
   - wget https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.gz
   - tar xvf openmpi-2.1.1.tar.gz
   - cd openmpi-2.1.1
-  - ./configure
+  - sudo ./configure
   - make
   - sudo make install
   - cd ../
+  - sudo ldconfig
   - sudo apt-get install python-dev
   - sudo apt-get install doxygen
   - sudo apt-get install cmake
