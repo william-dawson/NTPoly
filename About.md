@@ -38,7 +38,7 @@ replace the dense matrix addition and multiplication routines with sparse
 matrix routines. This allows us to use NTPoly to efficiently compute many
 functions of sparse matrices.
 
-##How To Contribute
+## How To Contribute
 
 To begin contributing to NTPoly, take a look at the
 [Wiki](https://github.com/william-dawson/NTPoly/wiki) pages. The
