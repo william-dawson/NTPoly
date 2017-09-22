@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
   solver_parameters.SetConvergeDiff(convergence_threshold);
   solver_parameters.SetThreshold(threshold);
   solver_parameters.SetLoadBalance(permutation);
+  solver_parameters.SetVerbosity(true);
 
   // Call the solver routines.
   NTPoly::SquareRootSolvers::InverseSquareRoot(Overlap, ISQOverlap,

@@ -71,6 +71,7 @@ int main(int argc, char *argv[]) {
   NTPoly::IterativeSolverParameters solver_parameters;
   solver_parameters.SetConvergeDiff(convergence_threshold);
   solver_parameters.SetThreshold(threshold);
+  solver_parameters.SetVerbosity(true);
 
   // Divide The Work Amongst Processors.
   int number_of_local_nodes = number_of_nodes / total_processors;
