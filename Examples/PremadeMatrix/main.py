@@ -52,6 +52,7 @@ if __name__ == "__main__":
     solver_parameters.SetConvergeDiff(convergence_threshold)
     solver_parameters.SetThreshold(threshold)
     solver_parameters.SetLoadBalance(permutation)
+    solver_parameters.SetVerbosity(True)
 
     # Call the solver routines.
     nt.SquareRootSolvers.InverseSquareRoot(

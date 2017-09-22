@@ -47,7 +47,7 @@ if __name__ == "__main__":
     solver_parameters.SetVerbosity(True)
 
     # Divide The Work Amongst Processors.
-    local_grid_points = grid_points / total_processors
+    local_grid_points = int(grid_points / total_processors)
     start_row = local_grid_points * rank
     if rank == total_processors - 1:
         local_grid_points = grid_points - rank * local_grid_points
@@ -65,7 +65,7 @@ if __name__ == "__main__":
     insert_location = 0
     temp_value = nt.Triplet()
     for row_value in local_rows:
-        temp_value.index_row = row_value + 1
+        temp_value.index_row = int(row_value + 1)
         # Stencil point 1.
         if row_value > 1:
             temp_value.index_column = temp_value.index_row - 2

@@ -47,9 +47,10 @@ if __name__ == "__main__":
     solver_parameters = nt.IterativeSolverParameters()
     solver_parameters.SetThreshold(threshold)
     solver_parameters.SetConvergeDiff(convergence_threshold)
+    solver_parameters.SetVerbosity(True)
 
     # Divide The Nodes Amongst Processors.
-    number_of_local_nodes = number_of_nodes / total_processors
+    number_of_local_nodes = int(number_of_nodes / total_processors)
     starting_node = number_of_local_nodes * rank
     # Handles the edge case
     if rank == total_processors - 1:

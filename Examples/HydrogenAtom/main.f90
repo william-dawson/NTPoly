@@ -7,7 +7,9 @@ PROGRAM HydrogenAtom
        & WriteToMatrixMarket, DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, &
        & FillFromTripletList, CopyDistributedSparseMatrix, &
-       & IncrementDistributedSparseMatrix, FillDistributedIdentity
+       & FillDistributedIdentity
+  USE DistributedSparseMatrixAlgebraModule, ONLY : &
+       & IncrementDistributedSparseMatrix
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid

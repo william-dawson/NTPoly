@@ -6,8 +6,8 @@ PROGRAM GraphTheory
        & WriteToMatrixMarket, DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, &
        & FillFromTripletList, DestructDistributedSparseMatrix, &
-       & CopyDistributedSparseMatrix, FillDistributedIdentity, &
-       & IncrementDistributedSparseMatrix
+       & CopyDistributedSparseMatrix, FillDistributedIdentity 
+  USE DistributedSparseMatrixAlgebraModule, ONLY: IncrementDistributedSparseMatrix
   USE InverseSolversModule, ONLY : Invert
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE ProcessGridModule, ONLY : ConstructProcessGrid
