@@ -993,7 +993,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyDistributedSparseMatrix(TransMat, &
          & AMat%actual_matrix_dimension)
     CALL FillFromTripletList(TransMat,new_list)
-
+    CALL DestructTripletList(new_list)
+    CALL DestructTripletList(triplet_list)
   END SUBROUTINE TransposeDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Redistribute the data in a matrix based on row, column list
