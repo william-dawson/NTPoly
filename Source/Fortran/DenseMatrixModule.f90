@@ -51,7 +51,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructSparseFromDense(dense_matrix,sparse_matrix,threshold)
     !! Parameters
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: dense_matrix
-    TYPE(SparseMatrix_t), INTENT(OUT) :: sparse_matrix
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: sparse_matrix
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
     INTEGER :: inner_counter, outer_counter

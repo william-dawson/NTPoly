@@ -461,6 +461,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Convert Back
     CALL ConstructSparseFromDense(DenseC, matC, threshold)
     CALL ScaleSparseMatrix(matC,alpha)
+
+    DEALLOCATE(DenseA)
+    DEALLOCATE(DenseB)
+    DEALLOCATE(DenseC)
   END SUBROUTINE DenseBranch
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE MultiplyBlock(matAT,matBT,memorypool)
