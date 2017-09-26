@@ -811,7 +811,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL GetLoadBalance(this,min_size,max_size)
     sparsity = REAL(GetSize(this),KIND=NTREAL) / &
-         & (this%actual_matrix_dimension**2)
+         & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
 
     CALL WriteHeader("Load_Balance")
     CALL EnterSubLog
