@@ -135,7 +135,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Update
        CALL IncrementDistributedSparseMatrix(PMat, XMat, alpha_in=step_size)
-       norm_value = step_size*DistributedSparseNorm(PMat)
+       norm_value = ABS(step_size*DistributedSparseNorm(PMat))
        CALL IncrementDistributedSparseMatrix(QMat, RMat, alpha_in=-1.0*step_size)
 
        !! Update PMat
