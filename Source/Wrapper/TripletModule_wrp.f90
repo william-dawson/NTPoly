@@ -25,9 +25,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SetTriplet_wrp(ih_this,index_column,index_row,point_value) &
        & bind(c,name="SetTriplet_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: index_column
-    INTEGER(kind=c_int), INTENT(in)    :: index_row
-    REAL(NTREAL), INTENT(in) :: point_value
+    INTEGER(kind=c_int), INTENT(IN)    :: index_column
+    INTEGER(kind=c_int), INTENT(IN)    :: index_row
+    REAL(NTREAL), INTENT(IN) :: point_value
     TYPE(Triplet_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -41,7 +41,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] point_value actual stored value.
   PURE SUBROUTINE GetTripletValues_wrp(ih_this,index_column,index_row, &
        & point_value) bind(c,name="GetTripletValues_wrp")
-    INTEGER(kind=c_int), INTENT(in)     :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(out)    :: index_column
     INTEGER(kind=c_int), INTENT(out)    :: index_row
     REAL(NTREAL), INTENT(out) :: point_value

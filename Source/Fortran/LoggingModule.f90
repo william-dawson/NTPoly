@@ -27,12 +27,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IsActive = .TRUE.
   END SUBROUTINE DeactivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Call this function when you enter into a section with verbose output
+  !> Call this subroutine when you enter into a section with verbose output
   SUBROUTINE EnterSubLog
     CurrentLevel = CurrentLevel + 1
   END SUBROUTINE EnterSubLog
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Call this function when you exit a section with verbose output
+  !> Call this subroutine when you exit a section with verbose output
   SUBROUTINE ExitSubLog
     CurrentLevel = CurrentLevel - 1
   END SUBROUTINE ExitSubLog

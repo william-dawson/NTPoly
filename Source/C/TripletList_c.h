@@ -10,7 +10,8 @@ void SetTripletAt_wrp(int *ih_this, const int *index, const int *index_column,
 void GetTripletAt_wrp(const int *ih_this, const int *index, int *index_column,
                       const int *index_row, double *point_value);
 void DestructTripletList_wrp(int *ih_this);
-void SortTripletList_wrp(const int *ih_this, const int *matrix_size, 
-                         int* h_sorted);
+void SortTripletList_wrp(const int *ih_this, const int *matrix_size,
+                         int *h_sorted);
+int GetTripletListSize_wrp(const int *ih_this);
 
 #endif

@@ -24,6 +24,7 @@ MODULE TripletListModule
   PUBLIC :: GetTripletAt
   PUBLIC :: SortTripletList
   PUBLIC :: SymmetrizeTripletList
+  PUBLIC :: GetTripletListSize
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
@@ -262,4 +263,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END SELECT
   END SUBROUTINE SymmetrizeTripletList
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of entries in a triplet list.
+  !! @param[in] triplet_list list to get the size of.
+  !! @return list_size the number of entries in the triplet list.
+  PURE FUNCTION GetTripletListSize(triplet_list) RESULT(list_size)
+    !! Parameters
+    TYPE(TripletList_t), INTENT(IN)  :: triplet_list
+    INTEGER :: list_size
+    list_size = triplet_list%CurrentSize
+  END FUNCTION GetTripletListSize
 END MODULE TripletListModule

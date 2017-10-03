@@ -33,6 +33,9 @@ public:
   //! Get the triplet value at a given index.
   //!\param index location to get the triplet at.
   Triplet GetTripletAt(int index) const;
+  //! Get the number of entries in a triplet list.
+  //!\result the number of entries in the list.
+  int GetSize() const;
   //! Standard destructor.
   ~TripletList();
   //! Sort a triplet list
@@ -41,7 +44,6 @@ public:
   //!\param sorted a now sorted version of the list.
   static void SortTripletList(const TripletList& list, int matrix_size,
                               TripletList& sorted);
-
 private:
   //! Handle to the actual data.
   int ih_this[SIZE_wrp];

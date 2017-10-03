@@ -4,7 +4,8 @@ MODULE TripletListModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & AppendToTripletList, ResizeTripletList, &
-       & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList
+       & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList, &
+       & GetTripletListSize
   USE TripletModule, ONLY : Triplet_t
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int
@@ -24,6 +25,7 @@ MODULE TripletListModule_wrp
   PUBLIC :: SetTripletAt_wrp
   PUBLIC :: GetTripletAt_wrp
   PUBLIC :: SortTripletList_wrp
+  PUBLIC :: GetTripletListSize_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the triplet list constructor.
   !> @param[out] ih_this handle to a constructed Matrix Memory Pool object.
@@ -152,4 +154,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ih_sorted = TRANSFER(h_sorted,ih_sorted)
   END SUBROUTINE SortTripletList_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of entries in a triplet list.
+  !! @param[in] ih_this list to get the size of.
+  !! @return list_size the number of entries in the triplet list.
+  PURE FUNCTION GetTripletListSize_wrp(ih_this) RESULT(list_size) &
+       & bind(c,name="GetTripletListSize_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER :: list_size
+    TYPE(TripletList_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    list_size = GetTripletListSize(h_this%data)
+  END FUNCTION GetTripletListSize_wrp
 END MODULE TripletListModule_wrp
