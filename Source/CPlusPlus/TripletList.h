@@ -16,7 +16,7 @@ class TripletList {
 public:
   //! Construct the triplet list.
   //!\param size the size of the list.
-  TripletList(int size=0);
+  TripletList(int size = 0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
   TripletList(const DistributedSparseMatrix &matrix);
@@ -42,8 +42,9 @@ public:
   //!\param list to be sorted.
   //!\param matrix_columns this is the highest column value in the list
   //!\param sorted a now sorted version of the list.
-  static void SortTripletList(const TripletList& list, int matrix_size,
-                              TripletList& sorted);
+  static void SortTripletList(const TripletList &list, int matrix_size,
+                              TripletList &sorted);
+
 private:
   //! Handle to the actual data.
   int ih_this[SIZE_wrp];
