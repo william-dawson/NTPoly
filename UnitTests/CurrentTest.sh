@@ -23,4 +23,5 @@ export PROCESS_ROWS="$2"
 export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry.TestChemistry.test_trs2
+#@PYTHON_EXECUTABLE@ -m unittest -v testDistributedSparseMatrix.TestDistributedMatrix.test_zero
+##@PYTHON_EXECUTABLE@ -m unittest -v testDistributedSparseMatrix.TestDistributedMatrix.test_rzero

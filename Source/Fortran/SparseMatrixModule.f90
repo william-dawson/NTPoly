@@ -24,6 +24,7 @@ MODULE SparseMatrixModule
   !! Construct/Destruct
   PUBLIC :: ConstructEmptySparseMatrix
   PUBLIC :: ConstructSparseMatrixFromFile
+  PUBLIC :: ConstructZeroSparseMatrix
   PUBLIC :: ConstructFromTripletList
   PUBLIC :: DestructSparseMatrix
   PUBLIC :: CopySparseMatrix
@@ -37,8 +38,8 @@ MODULE SparseMatrixModule
   PUBLIC :: PrintSparseMatrix
   PUBLIC :: MatrixToTripletList
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Create a sparse matrix with a certain number of columns and rows.
-  !! Will allocate storage for the outer values.
+  !> Internal only. Create a sparse matrix with a certain number of columns
+  !! and rows. Will allocate storage for the outer values, nothing else.
   !! @param[out] this the matrix being created. It will have the outer
   !! index allocated, but nothing else.
   !! @param[in] columns number of matrix columns.
@@ -113,6 +114,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(sorted_triplet_list)
   END SUBROUTINE ConstructSparseMatrixFromFile
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a sparse matrix with zero values in it.
+  !! @param[out] this the matrix being constructed
+  !! @param[in] rows number of matrix rows
+  !! @param[in] columns number of matrix columns
+  PURE SUBROUTINE ConstructZeroSparseMatrix(this,rows,columns)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(out) :: this
+    INTEGER, INTENT(in)             :: rows, columns
+
+    !! Allocate
+    CALL ConstructEmptySparseMatrix(this,columns,rows)
+    ALLOCATE(this%inner_index(0))
+    ALLOCATE(this%values(0))
+
+  END SUBROUTINE ConstructZeroSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
   !! The triplet list must be sorted to efficiently fill in the matrix. This
@@ -375,12 +392,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & split_list(split_counter)%outer_index(1)
           total_values = split_list(split_counter)%outer_index(lcolumns+1)
           !! Copy Inner Indices and Values
-          ALLOCATE(split_list(split_counter)%inner_index(total_values))
-          split_list(split_counter)%inner_index = &
-               & this%inner_index(linner_offset:linner_offset+total_values-1)
-          ALLOCATE(split_list(split_counter)%values(total_values))
-          split_list(split_counter)%values = &
-               & this%values(linner_offset:linner_offset+total_values-1)
+          IF (total_values .GT. 0) THEN
+            ALLOCATE(split_list(split_counter)%inner_index(total_values))
+            split_list(split_counter)%inner_index = &
+                 & this%inner_index(linner_offset:linner_offset+total_values-1)
+            ALLOCATE(split_list(split_counter)%values(total_values))
+            split_list(split_counter)%values = &
+                 & this%values(linner_offset:linner_offset+total_values-1)
+          END IF
        END DO
     END IF
     IF (PRESENT(block_offsets_out)) THEN

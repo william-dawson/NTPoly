@@ -19,6 +19,8 @@ from Helpers import scratch_dir
 
 ##########################################################################
 # An internal class for holding internal class parameters.
+
+
 class TestParameters:
     # Default constructor.
     #  @param[in] self pointer.
@@ -64,8 +66,8 @@ class TestDistributedMatrix(unittest.TestCase):
         if (self.my_rank == 0):
             ResultMat = scipy.io.mmread(self.result_file)
             norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-            #ResultMat = ReadMM(self.result_file)
-            #norm = abs(scipy.linalg.norm(self.CheckMat - ResultMat))
+            # ResultMat = ReadMM(self.result_file)
+            # norm = abs(scipy.linalg.norm(self.CheckMat - ResultMat))
         global_norm = comm.bcast(norm, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
@@ -138,13 +140,17 @@ class TestDistributedMatrix(unittest.TestCase):
             comm.barrier()
             ntmatrix1 = nt.DistributedSparseMatrix(
                 scratch_dir + "/matrix1.mtx", False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix2.mtx", False)
+            if param.sparsity == 0:
+                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
+            else:
+                ntmatrix2 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix2.mtx", False)
             ntmatrix2.Increment(ntmatrix1)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
             self.check_result()
+
     ##########################################################################
     # Test our ability to add together matrices.
     #  @param[in] self pointer.
@@ -235,8 +241,11 @@ class TestDistributedMatrix(unittest.TestCase):
             comm.barrier()
             ntmatrix1 = nt.DistributedSparseMatrix(
                 scratch_dir + "/matrix1.mtx", False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix2.mtx", False)
+            if param.sparsity == 0:
+                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
+            else:
+                ntmatrix2 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix2.mtx", False)
             ntmatrix3 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             memory_pool = nt.DistributedMatrixMemoryPool()
