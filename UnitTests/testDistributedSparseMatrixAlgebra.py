@@ -62,8 +62,6 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         if (self.my_rank == 0):
             ResultMat = scipy.io.mmread(self.result_file)
             norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-            #ResultMat = ReadMM(self.result_file)
-            #norm = abs(scipy.linalg.norm(self.CheckMat - ResultMat))
         global_norm = comm.bcast(norm, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
