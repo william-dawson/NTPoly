@@ -161,7 +161,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE FUNCTION GetTripletListSize_wrp(ih_this) RESULT(list_size) &
        & bind(c,name="GetTripletListSize_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER :: list_size
+    INTEGER(kind=c_int) :: list_size
     TYPE(TripletList_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)

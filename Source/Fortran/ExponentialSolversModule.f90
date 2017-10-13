@@ -48,7 +48,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Chebyshev Expansion
     TYPE(ChebyshevPolynomial_t) :: polynomial
     !! Local Variables
-    REAL(NTREAL) :: e_min, e_max, spectral_radius
+    REAL(NTREAL) :: spectral_radius
     REAL(NTREAL) :: sigma_val
     INTEGER :: sigma_counter
     INTEGER :: counter
@@ -307,7 +307,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedMatrixMemoryPool_t) :: pool
     !! Local Variables
-    REAL(NTREAL) :: e_min, e_max, spectral_radius
+    REAL(NTREAL) :: spectral_radius
     REAL(NTREAL) :: sigma_val
     REAL(NTREAL) :: taylor_denom
     INTEGER :: sigma_counter
@@ -408,10 +408,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
     TYPE(IterativeSolverParameters_t) :: p_sub_solver_parameters
     TYPE(FixedSolverParameters_t) :: f_sub_solver_parameters
-    REAL(NTREAL) :: e_min, e_max, spectral_radius
+    REAL(NTREAL) :: spectral_radius
     INTEGER :: sigma_val
     INTEGER :: sigma_counter
-    INTEGER :: target_root
 
     !! Handle The Optional Parameters
     !! Optional Parameters

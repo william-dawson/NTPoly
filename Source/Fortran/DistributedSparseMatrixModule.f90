@@ -977,7 +977,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_t) :: new_list
     TYPE(Triplet_t) :: temporary, temporary_t
     INTEGER :: counter
-    INTEGER :: size_temp
 
     CALL GetTripletList(AMat,triplet_list)
     CALL ConstructTripletList(new_list)

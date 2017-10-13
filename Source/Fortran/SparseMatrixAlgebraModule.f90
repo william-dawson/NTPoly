@@ -237,7 +237,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: beta
     REAL(NTREAL) :: threshold
-    TYPE(SparseMatrix_t) :: matAT, matBT
     TYPE(MatrixMemoryPool_t) :: blocked_memory_pool
     !! Counters and temporary data
     INTEGER :: mat_c_columns, mat_c_rows
