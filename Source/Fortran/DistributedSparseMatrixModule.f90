@@ -20,7 +20,7 @@ MODULE DistributedSparseMatrixModule
        & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
-       & ConstructEmptySparseMatrix, CopySparseMatrix, &
+       & CopySparseMatrix, ConstructZeroSparseMatrix, &
        & TransposeSparseMatrix, SplitSparseMatrixColumns, &
        & ComposeSparseMatrixColumns, PrintSparseMatrix, &
        & MatrixToTripletList
@@ -58,7 +58,6 @@ MODULE DistributedSparseMatrixModule
   !! File I/O
   PUBLIC :: ConstructFromMatrixMarket
   PUBLIC :: ConstructFromBinary
-  !public :: ConstructFromDenseBinary
   PUBLIC :: WriteToMatrixMarket
   PUBLIC :: WriteToBinary
   !! Fill In Special Matrices
@@ -87,6 +86,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     INTEGER, INTENT(IN)           :: matrix_dim_
+    !! Local Variables
+    TYPE(SparseMatrix_t) :: zeromatrix
 
     CALL DestructDistributedSparseMatrix(this)
 
@@ -94,16 +95,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%actual_matrix_dimension = matrix_dim_
     this%logical_matrix_dimension = CalculateScaledDimension(matrix_dim_, &
          & block_multiplier)
+
     !! Full Local Data Size Description
     this%local_rows = this%logical_matrix_dimension/num_process_rows
     this%local_columns = this%logical_matrix_dimension/num_process_columns
+
     !! Which Block Does This Process Hold?
     this%start_row = this%local_rows * my_row + 1
     this%end_row   = this%start_row + this%local_rows
     this%start_column = this%local_columns * my_column + 1
     this%end_column   = this%start_column + this%local_columns
 
+    !! Build local storage
     ALLOCATE(this%local_data(number_of_blocks_columns,number_of_blocks_rows))
+    CALL ConstructZeroSparseMatrix(zeromatrix,this%local_rows,this%local_columns)
+    CALL SplitToLocalBlocks(this, zeromatrix)
+    CALL DestructSparseMatrix(zeromatrix)
   END SUBROUTINE ConstructEmptyDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix

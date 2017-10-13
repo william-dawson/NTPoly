@@ -1,12 +1,14 @@
 #ifndef SparseMatrix_ch
 #define SparseMatrix_ch
-
-void ConstructEmptySparseMatrix_wrp(int *ih_this, const int *columns,
-                                    const int *rows);
+//
+// void ConstructEmptySparseMatrix_wrp(int *ih_this, const int *columns,
+//                                     const int *rows);
 void ConstructSparseMatrixFromFile_wrp(int *ih_this, const char *file_name,
                                        const int *name_size);
 void ConstructFromTripletList_wrp(int *ih_this, const int *ih_triplet_list,
                                   const int *rows, const int *columns);
+void ConstructZeroSparseMatrix_wrp(int *ih_this, const int *rows,
+                                   const int *columns);
 void CopySparseMatrix_wrp(const int *ih_matA, int *ih_matB);
 void GetRows_wrp(const int *ih_this, int *rows);
 void GetColumns_wrp(const int *ih_this, int *columns);
