@@ -773,14 +773,58 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(SparseMatrix_t) :: merged_local_data
     TYPE(TripletList_t) :: local_triplet_list
-    INTEGER :: counter
+    !! For Gathering
+    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_row_start
+    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_row_end
+    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_col_start
+    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_col_end
+    INTEGER, DIMENSION(:), ALLOCATABLE :: elements_per_proc
+    !! Send Buffer
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_column
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_values
+    !! Temporary
+    INTEGER :: counter, p_counter
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
     CALL MatrixToTripletList(merged_local_data, local_triplet_list)
 
     !! Share row and column information across processors
+    ALLOCATE(per_proc_row_start(total_processors))
+    ALLOCATE(per_proc_row_end(total_processors))
+    ALLOCATE(per_proc_col_start(total_processors))
+    ALLOCATE(per_proc_col_end(total_processors))
+    ! CALL MPI_Allgather(row_start, 1, MPI_INT, per_proc_row_start, 1, MPI_INT,&
+    !      & global_comm, grid_error)
+    ! CALL MPI_Allgather(row_end, 1, MPI_INT, per_proc_row_end, 1, MPI_INT, &
+    !      & global_comm, grid_error)
+    ! CALL MPI_Allgather(column_start, 1, MPI_INT, per_proc_col_start, 1, &
+    !      & MPI_INT, global_comm, grid_error)
+    ! CALL MPI_Allgather(column_end, 1, MPI_INT, per_proc_col_end, 1, MPI_INT, &
+    !      & global_comm, grid_error)
 
+    !! Count The Number of Elements To Send To Each Process
+    ALLOCATE(elements_per_proc(total_processors))
+    elements_per_proc = 0
+    DO counter = 1, local_triplet_list%CurrentSize
+       DO p_counter = 1, total_processors
+       END DO
+    END DO
+
+    !! Build a send buffer
+    ALLOCATE(send_buffer_offsets(total_processors))
+
+    !! Send
+
+    !! Cleanup
+    DEALLOCATE(send_buffer_offsets)
+    DEALLOCATE(elements_per_proc)
+    DEALLOCATE(per_proc_row_start)
+    DEALLOCATE(per_proc_row_end)
+    DEALLOCATE(per_proc_col_start)
+    DEALLOCATE(per_proc_col_end)
   END SUBROUTINE GetRowColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
