@@ -69,6 +69,7 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: GetActualDimension
   PUBLIC :: GetLogicalDimension
   PUBLIC :: GetTripletList
+  PUBLIC :: GetRowColumn
   !! Printing To The Console
   PUBLIC :: PrintDistributedSparseMatrix
   PUBLIC :: PrintMatrixInformation
@@ -756,6 +757,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(unsorted_triplet_list)
     CALL DestructTripletList(sorted_triplet_list)
   END SUBROUTINE FillDistributedPermutation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extracts a triplet list of data stored at a particular row, column range.
+  !! This is slower than GetTripletList, because communication is required.
+  !! Data is returned with absolute coordinates.
+  !! @param[in] this the distributed sparse matrix.
+  !! @param[inout] triplet_list the list to fill.
+  PURE SUBROUTINE GetRowColumn(this,triplet_list, row_start, row_end, &
+       & column_start, column_end)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
+    INTEGER, INTENT(IN) :: row_start, row_end
+    INTEGER, INTENT(IN) :: column_start, column_end
+    !! Local Data
+    TYPE(SparseMatrix_t) :: merged_local_data
+    TYPE(TripletList_t) :: local_triplet_list
+    INTEGER :: counter
+
+    !! Merge all the local data
+    CALL MergeLocalBlocks(this, merged_local_data)
+    CALL MatrixToTripletList(merged_local_data, local_triplet_list)
+
+    !! Share row and column information across processors
+
+  END SUBROUTINE GetRowColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
   !! Data is returned with absolute coordinates.
