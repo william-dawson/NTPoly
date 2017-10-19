@@ -69,7 +69,7 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: GetActualDimension
   PUBLIC :: GetLogicalDimension
   PUBLIC :: GetTripletList
-  PUBLIC :: GetRowColumn
+  PUBLIC :: PartionMatrix
   !! Printing To The Console
   PUBLIC :: PrintDistributedSparseMatrix
   PUBLIC :: PrintMatrixInformation
@@ -763,21 +763,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Data is returned with absolute coordinates.
   !! @param[in] this the distributed sparse matrix.
   !! @param[inout] triplet_list the list to fill.
-  SUBROUTINE GetRowColumn(this, triplet_list, row_start, row_end, &
-       & column_start, column_end)
+  SUBROUTINE PartionMatrix(this, triplet_list, row_start_list, &
+       & column_start_list)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
-    INTEGER, INTENT(IN) :: row_start, row_end
-    INTEGER, INTENT(IN) :: column_start, column_end
+    INTEGER, DIMENSION(:), INTENT(IN) :: row_start_list
+    INTEGER, DIMENSION(:), INTENT(IN) :: column_start_list
     !! Local Data
     TYPE(SparseMatrix_t) :: merged_local_data
     TYPE(TripletList_t) :: local_triplet_list
-    !! For Gathering
-    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_row_start
-    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_row_end
-    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_col_start
-    INTEGER, DIMENSION(:), ALLOCATABLE :: per_proc_col_end
     !! Send Buffer
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_proc
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
@@ -799,20 +794,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MergeLocalBlocks(this, merged_local_data)
     CALL MatrixToTripletList(merged_local_data, local_triplet_list)
 
-    !! Share row and column information across processors
-    ALLOCATE(per_proc_row_start(total_processors))
-    ALLOCATE(per_proc_row_end(total_processors))
-    ALLOCATE(per_proc_col_start(total_processors))
-    ALLOCATE(per_proc_col_end(total_processors))
-    CALL MPI_Allgather(row_start, 1, MPI_INT, per_proc_row_start, 1, MPI_INT,&
-         & global_comm, grid_error)
-    CALL MPI_Allgather(row_end, 1, MPI_INT, per_proc_row_end, 1, MPI_INT, &
-         & global_comm, grid_error)
-    CALL MPI_Allgather(column_start, 1, MPI_INT, per_proc_col_start, 1, &
-         & MPI_INT, global_comm, grid_error)
-    CALL MPI_Allgather(column_end, 1, MPI_INT, per_proc_col_end, 1, MPI_INT, &
-         & global_comm, grid_error)
-
     !! Count The Number of Elements To Send To Each Process
     ALLOCATE(send_per_proc(total_processors))
     send_per_proc = 0
@@ -833,9 +814,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Build a receive buffer
     ALLOCATE(recv_per_proc(total_processors))
-    ALLOCATE(recv_buffer_offsets(total_processors))
     CALL MPI_Alltoall(send_per_proc, 1, MPI_INT, recv_per_proc, 1, MPI_INT, &
          & global_comm, grid_error)
+    ALLOCATE(recv_buffer_offsets(total_processors))
     ALLOCATE(recv_buffer_row(SUM(recv_per_proc)))
     ALLOCATE(recv_buffer_col(SUM(recv_per_proc)))
     ALLOCATE(recv_buffer_val(SUM(recv_per_proc)))
@@ -870,11 +851,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(send_buffer_row)
     DEALLOCATE(send_buffer_offsets)
     DEALLOCATE(send_per_proc)
-    DEALLOCATE(per_proc_row_start)
-    DEALLOCATE(per_proc_row_end)
-    DEALLOCATE(per_proc_col_start)
-    DEALLOCATE(per_proc_col_end)
-  END SUBROUTINE GetRowColumn
+  END SUBROUTINE PartionMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
   !! Data is returned with absolute coordinates.
