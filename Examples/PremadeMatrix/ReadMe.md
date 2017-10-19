@@ -70,8 +70,9 @@ need to compile everything with g++.
 
 In the build directory, there is also a /python folder, which is used for
 linking against a python program. Python requires you to set the Python path
-to this directory so that it knows where to look for the python module files:
+to this directory so that it knows where to look for the python module files.
 
+Python version:
 export PYTHONPATH=../../Build/python
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \

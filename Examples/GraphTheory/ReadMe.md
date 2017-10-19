@@ -39,7 +39,7 @@ mpirun -np 4 ./example \
 --number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
 
-And the python version:
+Python version:
 export PYTHONPATH=../../Build/python
 mpirun -np 4 python main.py \
 --process_rows 2 --process_columns 2 --process_slices 1 \
