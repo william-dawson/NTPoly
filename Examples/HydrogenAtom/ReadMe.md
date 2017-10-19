@@ -43,17 +43,13 @@ The following steps are carried out.
 ## Build System
 
 See the pre-made matrix example for details. Build with something like:
+
+Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp
 
-And run with:
-mpirun -np 1 ./example \
---process_rows 1 --process_columns 1 --process_slices 1 \
---threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
---density Density.mtx
-
-C++ version:
+C++ Build Instructions:
 mpif90 main.cc -o example \
   -I../../Source/CPlusPlus -I../../Source/C \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
@@ -61,6 +57,12 @@ mpif90 main.cc -o example \
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
 -qopenmp -cxxlib -nofor_main).
+
+And then run with:
+mpirun -np 1 ./example \
+--process_rows 1 --process_columns 1 --process_slices 1 \
+--threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
+--density Density.mtx
 
 And the python version:
 export PYTHONPATH=../../Build/python
