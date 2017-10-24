@@ -36,11 +36,17 @@ before_install:
 
 script:
   - cd Build
-  - ls -l
   - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
   - make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
   - cd ../UnitTests/
   - python testBuildInstructions.py ../Examples/GraphTheory/ run-fortran
+  - python testBuildInstructions.py ../Examples/GraphTheory/ run-c++
   - python testBuildInstructions.py ../Examples/GraphTheory/ run-python
+  - python testBuildInstructions.py ../Examples/HydrogenAtom/ run-fortran
+  - python testBuildInstructions.py ../Examples/HydrogenAtom/ run-c++
+  - python testBuildInstructions.py ../Examples/HydrogenAtom/ run-python
+  - python testBuildInstructions.py ../Examples/PremadeMatrix/ run-fortran
+  - python testBuildInstructions.py ../Examples/PremadeMatrix/ run-c++
+  - python testBuildInstructions.py ../Examples/PremadeMatrix/ run-python
