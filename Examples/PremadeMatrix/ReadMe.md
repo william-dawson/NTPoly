@@ -72,8 +72,10 @@ In the build directory, there is also a /python folder, which is used for
 linking against a python program. Python requires you to set the Python path
 to this directory so that it knows where to look for the python module files.
 
-Python version:
+Setup python environment:
 export PYTHONPATH=../../Build/python
+
+Run with python:
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \

@@ -64,8 +64,10 @@ mpirun -np 1 ./example \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
 --density Density.mtx
 
-Python version:
+Setup python environment:
 export PYTHONPATH=../../Build/python
+
+Run with python:
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
