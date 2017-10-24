@@ -33,10 +33,10 @@ before_install:
   - test -n $CC  && unset CC
   - test -n $FCC  && unset FCC
   - test -n $CXX && unset CXX
-  - mkdir Build
 
 script:
   - cd Build
+  - ls -l
   - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
   - make test > test_result.txt
