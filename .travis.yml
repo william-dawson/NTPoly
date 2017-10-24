@@ -33,13 +33,14 @@ before_install:
   - test -n $CC  && unset CC
   - test -n $FCC  && unset FCC
   - test -n $CXX && unset CXX
-  - mkdir build
+  - mkdir Build
 
 script:
-  - cd build
+  - cd Build
   - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
   - make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
   - cd ../UnitTests/
+  - python testBuildInstructions.py ../Examples/GraphTheory/ run-fortran
   - python testBuildInstructions.py ../Examples/GraphTheory/ run-python

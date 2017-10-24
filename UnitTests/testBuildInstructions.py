@@ -54,7 +54,6 @@ if __name__ == "__main__":
             print("Run Error")
             exit(-1)
     else:
-        print(run_command)
         env_var = os.environ.copy()
         env_var["PYTHONPATH"] = "../../Build/python"
         run_command = " ".join(run_command)
