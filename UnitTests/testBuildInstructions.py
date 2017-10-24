@@ -10,7 +10,6 @@ def parse_command(fin):
     while(temp_string != '\n'):
         return_string = return_string + temp_string
         temp_string = fin.readline()
-        print(":::",temp_string)
     return return_string
 
 ################################################################################
@@ -46,11 +45,20 @@ if __name__ == "__main__":
 
     os.chdir(check_directory)
     if check_command != "run-python":
-        subprocess.run(build_command, check=True)
-        subprocess.run(run_command, check=True)
+        check = subprocess.call(build_command)
+        if check != 0:
+            print("Build Error")
+            exit(-1)
+        check = subprocess.call(run_command)
+        if check != 0:
+            print("Run Error")
+            exit(-1)
     else:
         print(run_command)
         env_var = os.environ.copy()
         env_var["PYTHONPATH"] = "../../Build/python"
         run_command = " ".join(run_command)
-        subprocess.run(run_command, check=True, shell=True, env=env_var)
+        check = subprocess.call(run_command, shell=True, env=env_var)
+        if check != 0:
+            print("Python Error")
+            exit(-1)
