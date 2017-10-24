@@ -14,6 +14,7 @@ cache:
 
 before_install:
   - sudo apt-get install gfortran
+  - ls
   - bash UnitTests/build_mpi.sh
   - cd openmpi-2.1.1
   - ./configure >/dev/null 2>&1
