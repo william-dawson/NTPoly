@@ -41,3 +41,5 @@ script:
   - make
   - make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
+  - cd ../UnitTests/
+  - python testBuildInstructions.py ../Examples/GraphTheory/ run-python
