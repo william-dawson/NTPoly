@@ -7,10 +7,19 @@ notifications:
 
 language: C++
 
+cache:
+  pip: true
+  directories:
+    - openmpi-2.1.1
+
 before_install:
   - sudo apt-get install gfortran
-  - wget https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.gz
-  - tar xvf openmpi-2.1.1.tar.gz >/dev/null
+  - 'if [ -d "openmpi-2.1.1" ]; then
+      echo "Using cached openmpi"
+    else
+      wget https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.gz;
+      tar xvf openmpi-2.1.1.tar.gz >/dev/null;
+    fi'
   - cd openmpi-2.1.1
   - ./configure >/dev/null 2>&1
   - travis_wait make >/dev/null 2>&1
