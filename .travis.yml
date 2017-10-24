@@ -43,12 +43,4 @@ script:
   - make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
   - cd ../UnitTests/
-  - python testBuildInstructions.py ../Examples/GraphTheory/ run-fortran
-  - python testBuildInstructions.py ../Examples/GraphTheory/ run-c++
-  - python testBuildInstructions.py ../Examples/GraphTheory/ run-python
-  - python testBuildInstructions.py ../Examples/HydrogenAtom/ run-fortran
-  - python testBuildInstructions.py ../Examples/HydrogenAtom/ run-c++
-  - python testBuildInstructions.py ../Examples/HydrogenAtom/ run-python
-  - python testBuildInstructions.py ../Examples/PremadeMatrix/ run-fortran
-  - python testBuildInstructions.py ../Examples/PremadeMatrix/ run-c++
-  - python testBuildInstructions.py ../Examples/PremadeMatrix/ run-python
+  - bash travis_check_examples.sh
