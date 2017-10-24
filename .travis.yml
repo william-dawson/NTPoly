@@ -14,10 +14,8 @@ cache:
 
 before_install:
   - sudo apt-get install gfortran
-  - bash UnitTests/build_mpi.sh
+  - travis_wait bash UnitTests/build_mpi.sh
   - cd openmpi-2.1.1
-  - ./configure >/dev/null 2>&1
-  - travis_wait make >/dev/null 2>&1
   - sudo make install >/dev/null 2>&1
   - cd ../
   - sudo ldconfig
