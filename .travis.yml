@@ -7,13 +7,15 @@ notifications:
 
 language: C++
 
+cache:
+  pip: true
+  directories:
+    - openmpi-2.1.1
+
 before_install:
   - sudo apt-get install gfortran
-  - wget https://www.open-mpi.org/software/ompi/v2.1/downloads/openmpi-2.1.1.tar.gz
-  - tar xvf openmpi-2.1.1.tar.gz >/dev/null
+  - travis_wait bash UnitTests/travis_build_mpi.sh
   - cd openmpi-2.1.1
-  - ./configure >/dev/null 2>&1
-  - travis_wait make >/dev/null 2>&1
   - sudo make install >/dev/null 2>&1
   - cd ../
   - sudo ldconfig
@@ -33,11 +35,12 @@ before_install:
   - test -n $CC  && unset CC
   - test -n $FCC  && unset FCC
   - test -n $CXX && unset CXX
-  - mkdir build
 
 script:
-  - cd build
+  - cd Build
   - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
   - make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
+  - cd ../UnitTests/
+  - bash travis_check_examples.sh

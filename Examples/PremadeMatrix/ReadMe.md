@@ -42,18 +42,12 @@ example, I have built NTPoly in a folder called "Build". So the necessary
 library file is in Build/lib and the necessary modules are in Build/include.
 I can build this example using gfortran with the following command:
 
+Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp
 
-And then run with:
-mpirun -np 1 ./example \
---process_rows 1 --process_columns 1 --process_slices 1 \
---hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \
---number_of_electrons 10 --threshold 1e-6 --convergence_threshold 1e-5 \
---density Density.mtx
-
-For the C++ version, you can similarly compile with:
+C++ Build Instructions:
 mpif90 main.cc -o example \
   -I../../Source/CPlusPlus -I../../Source/C \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
@@ -62,6 +56,13 @@ mpif90 main.cc -o example \
 C++ compiler, and link with the fortran compiler using the flags:
 -qopenmp -cxxlib -nofor_main).
 
+And then run with:
+mpirun -np 1 ./example \
+--process_rows 1 --process_columns 1 --process_slices 1 \
+--hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \
+--number_of_electrons 10 --threshold 1e-6 --convergence_threshold 1e-5 \
+--density Density.mtx
+
 Note that we're using the Fortran wrapper to link, and as a result we
 have to explicitly link against the C++ standard library. For Mac users,
 note that the default clang installation doesn't support openmp, so you will
@@ -69,9 +70,12 @@ need to compile everything with g++.
 
 In the build directory, there is also a /python folder, which is used for
 linking against a python program. Python requires you to set the Python path
-to this directory so that it knows where to look for the python module files:
+to this directory so that it knows where to look for the python module files.
 
+Setup python environment:
 export PYTHONPATH=../../Build/python
+
+Run with python:
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \

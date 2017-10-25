@@ -17,18 +17,13 @@ block for computing the Katz centrality measure.
 ## Build System
 
 See the premade matrix example for details. Build with something like:
+
+Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp
 
-And run with:
-mpirun -np 4 ./example \
---process_rows 2 --process_columns 2 --process_slices 1 \
---threshold 1e-6 --convergence_threshold 1e-4 \
---number_of_nodes 2048 --extra_connections 128 \
---attenuation 0.7 --output_file Output.mtx
-
-C++ version:
+C++ Build Instructions:
 mpif90 main.cc -o example \
   -I../../Source/CPlusPlus -I../../Source/C \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
@@ -37,10 +32,21 @@ mpif90 main.cc -o example \
 C++ compiler, and link with the fortran compiler using the flags:
 -qopenmp -cxxlib -nofor_main).
 
-And the python version:
+And then run with:
+mpirun -np 4 ./example \
+--process_rows 2 --process_columns 2 --process_slices 1 \
+--threshold 1e-6 --convergence_threshold 1e-4 \
+--number_of_nodes 2048 --extra_connections 128 \
+--attenuation 0.7 --output_file Output.mtx
+
+Setup python environment:
 export PYTHONPATH=../../Build/python
+
+Run with python:
 mpirun -np 4 python main.py \
 --process_rows 2 --process_columns 2 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-4 \
 --number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
+
+as with the other examples. 
