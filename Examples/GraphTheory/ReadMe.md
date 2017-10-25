@@ -27,11 +27,11 @@ C++ Build Instructions:
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
 mpif90 main.o -o example \
-  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lc++
+  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
--qopenmp -cxxlib -nofor_main).
+-qopenmp -cxxlib -nofor_main. On the mac, use -lc++ instead of -lstdc++).
 
 And then run with:
 mpirun -np 4 ./example \
