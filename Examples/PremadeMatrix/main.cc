@@ -61,29 +61,29 @@ int main(int argc, char *argv[]) {
 
   // Read in the matrices from file.
   NTPoly::DistributedSparseMatrix Hamiltonian(hamiltonian_file);
-  NTPoly::DistributedSparseMatrix Overlap(overlap_file);
-  NTPoly::DistributedSparseMatrix ISQOverlap(Hamiltonian.GetActualDimension());
-  NTPoly::DistributedSparseMatrix Density(Hamiltonian.GetActualDimension());
+  // NTPoly::DistributedSparseMatrix Overlap(overlap_file);
+  // NTPoly::DistributedSparseMatrix ISQOverlap(Hamiltonian.GetActualDimension());
+  // NTPoly::DistributedSparseMatrix Density(Hamiltonian.GetActualDimension());
 
   // Set Up The Solver Parameters.
-  NTPoly::Permutation permutation(Hamiltonian.GetLogicalDimension());
-  permutation.SetRandomPermutation();
-  NTPoly::IterativeSolverParameters solver_parameters;
-  solver_parameters.SetConvergeDiff(convergence_threshold);
-  solver_parameters.SetThreshold(threshold);
-  solver_parameters.SetLoadBalance(permutation);
-  solver_parameters.SetVerbosity(true);
+  // NTPoly::Permutation permutation(Hamiltonian.GetLogicalDimension());
+  // permutation.SetRandomPermutation();
+  // NTPoly::IterativeSolverParameters solver_parameters;
+  // solver_parameters.SetConvergeDiff(convergence_threshold);
+  // solver_parameters.SetThreshold(threshold);
+  // solver_parameters.SetLoadBalance(permutation);
+  // solver_parameters.SetVerbosity(true);
 
   // Call the solver routines.
-  NTPoly::SquareRootSolvers::InverseSquareRoot(Overlap, ISQOverlap,
-                                               solver_parameters);
-  double chemical_potential;
-  NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, ISQOverlap,
-                                     number_of_electrons, Density,
-                                     chemical_potential, solver_parameters);
+  // NTPoly::SquareRootSolvers::InverseSquareRoot(Overlap, ISQOverlap,
+  //                                              solver_parameters);
+  // double chemical_potential;
+  // NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, ISQOverlap,
+  //                                    number_of_electrons, Density,
+  //                                    chemical_potential, solver_parameters);
 
   // Print the density matrix to file.
-  Density.WriteToMatrixMarket(density_file_out);
+  // Density.WriteToMatrixMarket(density_file_out);
 
   // Cleanup
   MPI_Finalize();
