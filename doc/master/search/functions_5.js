@@ -20,11 +20,13 @@ var searchData=
   ['getmpitriplettype',['getmpitriplettype',['../namespacetripletmodule.html#ada26ca82b9051ca8d6eb4c65ef0c8c1f',1,'tripletmodule']]],
   ['getrows',['GetRows',['../class_n_t_poly_1_1_sparse_matrix.html#a730ea62a4ec0fd0a57a9cb763d2ecd04',1,'NTPoly::SparseMatrix::GetRows()'],['../namespacesparsematrixmodule.html#ac95145de3991c6b39f30abbb62f1f726',1,'sparsematrixmodule::getrows()']]],
   ['getrows_5fwrp',['getrows_wrp',['../namespacesparsematrixmodule__wrp.html#a37fb842c0eb9dabbbcce0fd4eacc3459',1,'sparsematrixmodule_wrp']]],
-  ['getsize',['getsize',['../namespacedistributedsparsematrixmodule.html#a8bc94c2a9026dcaa256cb4c542621bd5',1,'distributedsparsematrixmodule']]],
+  ['getsize',['GetSize',['../class_n_t_poly_1_1_triplet_list.html#afdc84d0290cba1fb1e85f003b613f0dd',1,'NTPoly::TripletList::GetSize()'],['../namespacedistributedsparsematrixmodule.html#a8bc94c2a9026dcaa256cb4c542621bd5',1,'distributedsparsematrixmodule::getsize()']]],
   ['gettripletat',['GetTripletAt',['../class_n_t_poly_1_1_triplet_list.html#a579593b1861e35a2acac1b7ab93808e5',1,'NTPoly::TripletList::GetTripletAt()'],['../namespacetripletlistmodule.html#a7dee2ba2b17a5d358ef4483fefc62743',1,'tripletlistmodule::gettripletat()']]],
   ['gettripletat_5fwrp',['gettripletat_wrp',['../namespacetripletlistmodule__wrp.html#a901fc2e350c34223044b27547e532a82',1,'tripletlistmodule_wrp']]],
   ['gettripletlist',['gettripletlist',['../namespacedistributedsparsematrixmodule.html#a95ef415bd8d32e66683470d5f696b329',1,'distributedsparsematrixmodule']]],
   ['gettripletlist_5fwrp',['gettripletlist_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#a27b6a6f00cbe7e9f8c4ae33564ad0367',1,'distributedsparsematrixmodule_wrp']]],
+  ['gettripletlistsize',['gettripletlistsize',['../namespacetripletlistmodule.html#a65fd2c9869ba45c55da7ea55aeac3303',1,'tripletlistmodule']]],
+  ['gettripletlistsize_5fwrp',['gettripletlistsize_wrp',['../namespacetripletlistmodule__wrp.html#acc80729fa9d8372e23b067b4936ad20f',1,'tripletlistmodule_wrp']]],
   ['gettripletvalues',['gettripletvalues',['../namespacetripletmodule.html#a02e554b468a45a911ded5540abd21904',1,'tripletmodule']]],
   ['gettripletvalues_5fwrp',['gettripletvalues_wrp',['../namespacetripletmodule__wrp.html#a65ddb8390749e39e36fe3cc44b5d8abc',1,'tripletmodule_wrp']]]
 ];

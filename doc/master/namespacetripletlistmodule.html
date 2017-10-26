@@ -101,6 +101,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a8849ea2da9fca5b0b402fc6057a916c8"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule.html#a8849ea2da9fca5b0b402fc6057a916c8">symmetrizetripletlist</a> (triplet_list, pattern_type)</td></tr>
 <tr class="memdesc:a8849ea2da9fca5b0b402fc6057a916c8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Symmetrizes an unsymmetric triplet list according to the specified symmetry type.  <a href="#a8849ea2da9fca5b0b402fc6057a916c8">More...</a><br /></td></tr>
 <tr class="separator:a8849ea2da9fca5b0b402fc6057a916c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65fd2c9869ba45c55da7ea55aeac3303"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule.html#a65fd2c9869ba45c55da7ea55aeac3303">gettripletlistsize</a> (triplet_list)</td></tr>
+<tr class="memdesc:a65fd2c9869ba45c55da7ea55aeac3303"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of entries in a triplet list.  <a href="#a65fd2c9869ba45c55da7ea55aeac3303">More...</a><br /></td></tr>
+<tr class="separator:a65fd2c9869ba45c55da7ea55aeac3303"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Storing Lists of triplets. Contains both a methods for sorting lists. </p>
@@ -246,6 +249,33 @@ Functions/Subroutines</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a65fd2c9869ba45c55da7ea55aeac3303"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a65fd2c9869ba45c55da7ea55aeac3303">&#9670;&nbsp;</a></span>gettripletlistsize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure integer function, public tripletlistmodule::gettripletlistsize </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structtripletlistmodule_1_1tripletlist__t.html">tripletlist_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>triplet_list</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the number of entries in a triplet list. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">triplet_list</td><td>list to get the size of. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>list_size the number of entries in the triplet list. </dd></dl>
 
 </div>
 </div>
