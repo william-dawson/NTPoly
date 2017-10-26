@@ -16,6 +16,6 @@ set(PYTHON_INCLUDE_PATH /usr/local/Cellar/python3/3.6.2/Frameworks/Python.framew
 set(PYTHON_LIBRARIES /usr/local/Cellar/python3/3.6.2/Frameworks/Python.framework/Versions/3.6/lib/libpython3.6.dylib)
 
 set(CXX_TOOLCHAINFLAGS "-O3 -openmp -lgomp")
-set(F_TOOLCHAINFLAGS "-O3 -cpp -fopenmp")
+#set(F_TOOLCHAINFLAGS "-O3 -cpp -fopenmp")
 # Debug suggestions
-#set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -cpp -fopenmp -Wall -DPURE=")
+set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -cpp -fopenmp -Wall -DPURE=")

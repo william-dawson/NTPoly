@@ -50,15 +50,7 @@ class TestChemistry(unittest.TestCase):
         self.nel = 10
 
     ##########################################################################
-    def check_result(self):
-        norm = 0
-        if (self.my_rank == 0):
-            ResultMat = scipy.io.mmread(result_file)
-            norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-        global_norm = comm.bcast(norm, root=0)
-        self.assertLessEqual(global_norm, THRESHOLD)
-
-    ##########################################################################
+    # Checks the results of a unit test
     def check_full(self):
         norm = 0
         if (self.my_rank == 0):

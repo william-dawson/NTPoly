@@ -6,6 +6,7 @@ set(TestFiles
     RunTest.sh
     testChemistry.py
     testDistributedSparseMatrix.py
+    testDistributedSparseMatrixAlgebra.py
     testSolvers.py
     testSparseMatrix.py
 )
@@ -22,6 +23,8 @@ configure_file(CurrentTest.sh
 configure_file(testChemistry.py testChemistry.py COPYONLY)
 configure_file(testDistributedSparseMatrix.py
   testDistributedSparseMatrix.py COPYONLY)
+configure_file(testDistributedSparseMatrixAlgebra.py
+  testDistributedSparseMatrixAlgebra.py COPYONLY)
 configure_file(testSolvers.py testSolvers.py COPYONLY)
 configure_file(testSparseMatrix.py testSparseMatrix.py COPYONLY)
 
@@ -39,3 +42,11 @@ add_test(PythonTests222 ${BASH_PROGRAM} ${TestScript} 2 2 2 8)
 
 set(CurrentTestScript ${CMAKE_BINARY_DIR}/bin/CurrentTest.sh)
 add_test(CurrentTest ${BASH_PROGRAM} ${CurrentTestScript} 1 1 1 1)
+add_test(CurrentTest111 ${BASH_PROGRAM} ${CurrentTestScript} 1 1 1 1)
+add_test(CurrentTest211 ${BASH_PROGRAM} ${CurrentTestScript} 2 1 1 2)
+add_test(CurrentTest121 ${BASH_PROGRAM} ${CurrentTestScript} 1 2 1 2)
+add_test(CurrentTest112 ${BASH_PROGRAM} ${CurrentTestScript} 1 1 2 2)
+add_test(CurrentTest221 ${BASH_PROGRAM} ${CurrentTestScript} 2 2 1 4)
+add_test(CurrentTest212 ${BASH_PROGRAM} ${CurrentTestScript} 2 1 2 4)
+add_test(CurrentTest122 ${BASH_PROGRAM} ${CurrentTestScript} 1 2 2 4)
+add_test(CurrentTest222 ${BASH_PROGRAM} ${CurrentTestScript} 2 2 2 8)

@@ -69,7 +69,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Add a value to the end of the triplet list.
   !! @param[inout] ih_this the triplet list to append to.
-  !! @param[in] ih_triplet_value the value to append.
+  !! @param[in] index_column column of value.
+  !! @param[in] index_row row of value.
+  !! @param[in] point_value the value.
   PURE SUBROUTINE AppendToTripletList_wrp(ih_this, index_column, index_row, &
        & point_value) bind(c,name="AppendToTripletList_wrp")
     INTEGER(kind=c_int), INTENT(inout)    :: ih_this(SIZE_wrp)
@@ -142,7 +144,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SortTripletList_wrp(ih_this, matrix_columns, ih_sorted) &
     & bind(c,name="SortTripletList_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
-    INTEGER, INTENT(in) :: matrix_columns
+    INTEGER(kind=c_int), INTENT(in) :: matrix_columns
     INTEGER(kind=c_int), INTENT(INOUT)     :: ih_sorted(SIZE_wrp)
     TYPE(TripletList_wrp) :: h_this
     TYPE(TripletList_wrp) :: h_sorted

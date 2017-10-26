@@ -50,6 +50,10 @@ MODULE ProcessGridModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid
   PUBLIC :: IsRoot
+  !! Accessors for grid information
+  PUBLIC :: GetMySlice
+  PUBLIC :: GetMyRow
+  PUBLIC :: GetMyColumn
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the process grid.
   !! @param[in] world_comm_ a communicator that every process in the grid is
@@ -201,4 +205,28 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        is_root = .FALSE.
     END IF
   END FUNCTION IsRoot
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the slice of the current process.
+  !! @return slice number of the current process.
+  FUNCTION GetMySlice() RESULT(return_val)
+    !! Parameters
+    INTEGER :: return_val
+    return_val = my_slice
+  END FUNCTION GetMySlice
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the column of the current process.
+  !! @return column number of the current process.
+  FUNCTION GetMyColumn() RESULT(return_val)
+    !! Parameters
+    INTEGER :: return_val
+    return_val = my_column
+  END FUNCTION GetMyColumn
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the row of the current process.
+  !! @return row number of the current process.
+  FUNCTION GetMyRow() RESULT(return_val)
+    !! Parameters
+    INTEGER :: return_val
+    return_val = my_row
+  END FUNCTION GetMyRow
 END MODULE ProcessGridModule

@@ -13,6 +13,7 @@ MODULE TripletListModule
   TYPE, PUBLIC :: TripletList_t
      !> Internal representation of the data.
      TYPE(Triplet_t), DIMENSION(:), ALLOCATABLE :: DATA
+     !> Current number of elements in the triplet list
      INTEGER :: CurrentSize
   END TYPE TripletList_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -59,7 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   !! @param[inout] this the triplet list to resize.
-  !! @param[in] size.
+  !! @param[in] size to resize to.
   PURE SUBROUTINE ResizeTripletList(this, size)
     !! Parameters
     TYPE(TripletList_t), INTENT(INOUT) :: this

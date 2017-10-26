@@ -20,4 +20,7 @@ void ConstructProcessGrid(int process_rows, int process_columns,
   ConstructProcessGrid_wrp(&temp_comm, &process_rows, &process_columns,
                            &process_slices, &be_verbose);
 }
+int GetMySlice() { return GetMySlice_wrp(); }
+int GetMyColumn() { return GetMyColumn_wrp(); }
+int GetMyRow() { return GetMyRow_wrp(); }
 } // namespace NTPoly
