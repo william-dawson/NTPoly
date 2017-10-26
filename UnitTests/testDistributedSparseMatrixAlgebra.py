@@ -32,8 +32,6 @@ class TestParameters:
 
 ##########################################################################
 # A test class for the distributed matrix module.
-
-
 class TestDistributedMatrixAlgebra(unittest.TestCase):
     # Parameters for the tests
     parameters = []

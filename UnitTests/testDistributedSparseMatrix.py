@@ -21,8 +21,6 @@ from Helpers import scratch_dir
 
 ##########################################################################
 # An internal class for holding internal class parameters.
-
-
 class TestParameters:
     # Default constructor.
     #  @param[in] self pointer.
@@ -36,8 +34,6 @@ class TestParameters:
 
 ##########################################################################
 # A test class for the distributed matrix module.
-
-
 class TestDistributedMatrix(unittest.TestCase):
     # Parameters for the tests
     parameters = []

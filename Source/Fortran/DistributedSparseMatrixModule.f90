@@ -1387,9 +1387,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(column_split)
   END SUBROUTINE SplitToLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Take a local matrix, and use it to fill the local block matrix structure.
+  !> Merge together the local matrix blocks into one big matrix.
   !! @param[inout] this the distributed sparse matrix.
-  !! @param[in] matrix_to_split the matrix to split up.
+  !! @param[inout] merged_matrix the merged matrix.
   PURE SUBROUTINE MergeLocalBlocks(this, merged_matrix)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this

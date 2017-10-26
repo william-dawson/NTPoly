@@ -31,7 +31,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return slice number of the current process.
   FUNCTION GetMySlice_wrp() RESULT(return_val) bind(c,name="GetMySlice_wrp")
     !! Parameters
-    INTEGER :: return_val
+    INTEGER(kind=c_int) :: return_val
     return_val = GetMySlice()
   END FUNCTION GetMySlice_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -39,7 +39,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return column number of the current process.
   FUNCTION GetMyColumn_wrp() RESULT(return_val) bind(c,name="GetMyColumn_wrp")
     !! Parameters
-    INTEGER :: return_val
+    INTEGER(kind=c_int) :: return_val
     return_val = GetMyColumn()
   END FUNCTION GetMyColumn_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -47,7 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return row number of the current process.
   FUNCTION GetMyRow_wrp() RESULT(return_val) bind(c,name="GetMyRow_wrp")
     !! Parameters
-    INTEGER :: return_val
+    INTEGER(kind=c_int) :: return_val
     return_val = GetMyRow()
   END FUNCTION GetMyRow_wrp
 END MODULE ProcessGridModule_wrp

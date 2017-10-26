@@ -52,7 +52,6 @@ public:
   int GetLogicalDimension() const;
   //! Extracts a triplet list of the data that is stored on this process.
   //! Data is returned with absolute coordinates.
-  //! \param this the distributed sparse matrix.
   //! \param triplet_list the list to fill.
   void GetTripletList(TripletList &triplet_list);
   //! Extract an arbitrary block of a matrix into a triplet list. Block is
