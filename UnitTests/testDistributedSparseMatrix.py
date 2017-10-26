@@ -59,7 +59,7 @@ class TestDistributedMatrix(unittest.TestCase):
         self.myslice = nt.GetMySlice()
 
     def setUp(self):
-        mat_size = 4
+        mat_size = 64
         self.my_rank = comm.Get_rank()
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
@@ -139,7 +139,8 @@ class TestDistributedMatrix(unittest.TestCase):
             ntmatrix1 = nt.DistributedSparseMatrix(
                 scratch_dir + "/matrix1.mtx", False)
             triplet_list = nt.TripletList(0)
-            ntmatrix1.GetTripletList(triplet_list)
+            if self.myslice == 0:
+                ntmatrix1.GetTripletList(triplet_list)
             ntmatrix2 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)
@@ -161,7 +162,6 @@ class TestDistributedMatrix(unittest.TestCase):
                                  scipy.sparse.csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
-            print("\n")
             comm.barrier()
 
             ntmatrix1 = nt.DistributedSparseMatrix(
@@ -183,17 +183,13 @@ class TestDistributedMatrix(unittest.TestCase):
             for i in range(1, len(col_end_list)):
                 col_start_list.append(col_end_list[i - 1])
 
-            print(self.my_rank,", row :: (", row_start_list[self.myrow], ", ",
-                  row_end_list[self.myrow], ")")
-            print(self.my_rank,", col :: (", col_start_list[self.mycolumn], ", ",
-                  col_end_list[self.mycolumn], ")")
-
             triplet_list = nt.TripletList(0)
-            ntmatrix1.RepartitionMatrix(triplet_list,
-                                        row_start_list[self.myrow],
-                                        row_end_list[self.myrow],
-                                        col_start_list[self.mycolumn],
-                                        col_end_list[self.mycolumn])
+            if self.myslice == 0:
+                ntmatrix1.RepartitionMatrix(triplet_list,
+                                            row_start_list[self.myrow],
+                                            row_end_list[self.myrow],
+                                            col_start_list[self.mycolumn],
+                                            col_end_list[self.mycolumn])
 
             ntmatrix2 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
