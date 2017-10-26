@@ -32,7 +32,7 @@ MODULE DistributedSparseMatrixModule_wrp
   PUBLIC :: GetActualDimension_wrp
   PUBLIC :: GetLogicalDimension_wrp
   PUBLIC :: GetTripletList_wrp
-  PUBLIC :: RepartitionMatrix_wrp
+  PUBLIC :: GetMatrixBlock_wrp
   PUBLIC :: IncrementDistributedSparseMatrix_wrp
   PUBLIC :: DotDistributedSparseMatrix_wrp
   PUBLIC :: DistributedPairwiseMultiply_wrp
@@ -259,8 +259,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetTripletList(h_this%data,h_triplet_list%data)
   END SUBROUTINE GetTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Repartitions a matrix based on a start row and column, and extracts
-  !! this data into a triplet list.
+  !> Extract an arbitrary block of a matrix into a triplet list. Block is
+  !! defined by the row/column start/end values.
   !! This is slower than GetTripletList, because communication is required.
   !! Data is returned with absolute coordinates.
   !! @param[in] ih_this the distributed sparse matrix.
@@ -269,8 +269,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] end_row the ending row for data to store on this process
   !! @param[in] start_column the starting col for data to store on this process.
   !! @param[in] end_column the ending col for data to store on this process
-  SUBROUTINE RepartitionMatrix_wrp(ih_this, ih_triplet_list, start_row, &
-       & end_row, start_column, end_column) bind(c,name="RepartitionMatrix_wrp")
+  SUBROUTINE GetMatrixBlock_wrp(ih_this, ih_triplet_list, start_row, &
+       & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
@@ -280,9 +280,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL RepartitionMatrix(h_this%data,h_triplet_list%data, start_row, end_row,&
+    CALL GetMatrixBlock(h_this%data,h_triplet_list%data, start_row, end_row,&
          & start_column, end_column)
-  END SUBROUTINE RepartitionMatrix_wrp
+  END SUBROUTINE GetMatrixBlock_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   !! @param[in] ih_matA Matrix A

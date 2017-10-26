@@ -20,7 +20,7 @@ void FillDistributedIdentity_wrp(int *ih_this);
 void GetActualDimension_wrp(const int *ih_this, int *size);
 void GetLogicalDimension_wrp(const int *ih_this, int *size);
 void GetTripletList_wrp(const int *ih_this, int *ih_triplet_list);
-void RepartitionMatrix_wrp(const int *ih_this, int *ih_triplet_list,
+void GetMatrixBlock_wrp(const int *ih_this, int *ih_triplet_list,
                            int *start_row, int *end_row, int *start_column,
                            int *end_column);
 double DotDistributedSparseMatrix_wrp(const int *ih_matA, const int *ih_matB);

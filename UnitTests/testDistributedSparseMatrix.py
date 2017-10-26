@@ -188,11 +188,11 @@ class TestDistributedMatrix(unittest.TestCase):
 
             triplet_list = nt.TripletList(0)
             if self.myslice == 0:
-                ntmatrix1.RepartitionMatrix(triplet_list,
-                                            row_start_list[self.myrow],
-                                            row_end_list[self.myrow],
-                                            col_start_list[self.mycolumn],
-                                            col_end_list[self.mycolumn])
+                ntmatrix1.GetMatrixBlock(triplet_list,
+                                         row_start_list[self.myrow],
+                                         row_end_list[self.myrow],
+                                         col_start_list[self.mycolumn],
+                                         col_end_list[self.mycolumn])
 
             ntmatrix2 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())

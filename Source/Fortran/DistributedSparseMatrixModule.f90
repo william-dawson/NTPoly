@@ -69,7 +69,7 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: GetActualDimension
   PUBLIC :: GetLogicalDimension
   PUBLIC :: GetTripletList
-  PUBLIC :: RepartitionMatrix
+  PUBLIC :: GetMatrixBlock
   !! Printing To The Console
   PUBLIC :: PrintDistributedSparseMatrix
   PUBLIC :: PrintMatrixInformation
@@ -782,8 +782,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
   END SUBROUTINE GetTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Repartitions a matrix across a process slice, based on a row/column and
-  !! extracts this data into a triplet list.
+  !> Extract an arbitrary block of a matrix into a triplet list. Block is
+  !! defined by the row/column start/end values.
   !! This is slower than GetTripletList, because communication is required.
   !! Data is returned with absolute coordinates.
   !! @param[in] this the distributed sparse matrix.
@@ -792,7 +792,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] end_row the ending row for data to store on this process.
   !! @param[in] start_column the starting col for data to store on this process
   !! @param[in] end_column the ending col for data to store on this process
-  SUBROUTINE RepartitionMatrix(this, triplet_list, start_row, end_row, &
+  SUBROUTINE GetMatrixBlock(this, triplet_list, start_row, end_row, &
        & start_column, end_column)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
@@ -947,7 +947,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (ALLOCATED(send_buffer_row)) DEALLOCATE(send_buffer_row)
     IF (ALLOCATED(send_buffer_offsets)) DEALLOCATE(send_buffer_offsets)
     IF (ALLOCATED(send_per_proc)) DEALLOCATE(send_per_proc)
-  END SUBROUTINE RepartitionMatrix
+  END SUBROUTINE GetMatrixBlock
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
   !! @param[in] this the matrix.

@@ -91,11 +91,11 @@ void DistributedSparseMatrix::GetTripletList(TripletList &triplet_list) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void DistributedSparseMatrix::RepartitionMatrix(TripletList &triplet_list,
+void DistributedSparseMatrix::GetMatrixBlock(TripletList &triplet_list,
                                                 int start_row, int end_row,
                                                 int start_column,
                                                 int end_column) {
-  RepartitionMatrix_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
+  GetMatrixBlock_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
                         &start_column, &end_column);
 }
 
