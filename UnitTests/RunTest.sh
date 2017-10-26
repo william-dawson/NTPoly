@@ -33,6 +33,8 @@ fi
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
 -m unittest -v testDistributedSparseMatrix.TestDistributedMatrix
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
+-m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
 -m unittest -v testSolvers.TestSolvers
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
 -m unittest -v testChemistry.TestChemistry
