@@ -69,6 +69,7 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: GetActualDimension
   PUBLIC :: GetLogicalDimension
   PUBLIC :: GetTripletList
+  PUBLIC :: RepartitionMatrix
   !! Printing To The Console
   PUBLIC :: PrintDistributedSparseMatrix
   PUBLIC :: PrintMatrixInformation
@@ -780,6 +781,115 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & triplet_list%data(counter)%index_row + this%start_row - 1
     END DO
   END SUBROUTINE GetTripletList
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Repartitions a matrix based on a start row and column, and extracts
+  !! this data into a triplet list.
+  !! This is slower than GetTripletList, because communication is required.
+  !! Data is returned with absolute coordinates.
+  !! @param[in] this the distributed sparse matrix.
+  !! @param[inout] triplet_list the list to fill.
+  !! @param[in] start_row the starting row for data to store on this process.
+  !! @param[in] end_row the ending row for data to store on this process
+  SUBROUTINE RepartitionMatrix(this, triplet_list, start_row, start_column)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
+    INTEGER :: start_row
+    INTEGER :: start_column
+    !! Local Data
+    TYPE(SparseMatrix_t) :: merged_local_data
+    TYPE(TripletList_t) :: local_triplet_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_start_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: column_start_list
+    !! Send Buffer
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_proc
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: send_buffer_val
+    !! Receive Buffer
+    INTEGER :: recv_buffer_size
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_per_proc
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
+    !! Temporary
+    INTEGER :: counter, p_counter
+    INTEGER :: temporary
+
+    !! Merge all the local data
+    CALL MergeLocalBlocks(this, merged_local_data)
+    CALL MatrixToTripletList(merged_local_data, local_triplet_list)
+
+    !! Share the start row/column information across processes
+    ALLOCATE(row_start_list(num_process_rows))
+    ALLOCATE(column_start_list(num_process_columns))
+    CALL MPI_Allgather(start_row, 1, MPI_INT, row_start_list, 1, MPI_INT, &
+         & within_slice_comm, grid_error)
+    CALL MPI_Allgather(start_column, 1, MPI_INT, column_start_list, 1, MPI_INT,&
+         & within_slice_comm, grid_error)
+
+    !! Count The Number of Elements To Send To Each Process
+    ALLOCATE(send_per_proc(total_processors))
+    send_per_proc = 0
+    DO counter = 1, local_triplet_list%CurrentSize
+       DO p_counter = 1, total_processors
+       END DO
+    END DO
+
+    !! Build a send buffer
+    ALLOCATE(send_buffer_offsets(total_processors))
+    ALLOCATE(send_buffer_row(local_triplet_list%CurrentSize))
+    ALLOCATE(send_buffer_col(local_triplet_list%CurrentSize))
+    ALLOCATE(send_buffer_val(local_triplet_list%CurrentSize))
+    DO counter = 1, local_triplet_list%CurrentSize
+       DO p_counter = 1, total_processors
+       END DO
+    END DO
+
+    !! Build a receive buffer
+    ALLOCATE(recv_per_proc(total_processors))
+    CALL MPI_Alltoall(send_per_proc, 1, MPI_INT, recv_per_proc, 1, MPI_INT, &
+         & within_slice_comm, grid_error)
+    ALLOCATE(recv_buffer_offsets(total_processors))
+    ALLOCATE(recv_buffer_row(SUM(recv_per_proc)))
+    ALLOCATE(recv_buffer_col(SUM(recv_per_proc)))
+    ALLOCATE(recv_buffer_val(SUM(recv_per_proc)))
+
+    !! Send
+    CALL MPI_Alltoallv(send_buffer_row, send_per_proc, send_buffer_offsets, &
+         & MPI_INT, recv_buffer_row, recv_per_proc, recv_buffer_offsets, &
+         & MPI_INT, within_slice_comm, grid_error)
+    CALL MPI_Alltoallv(send_buffer_col, send_per_proc, send_buffer_offsets, &
+         & MPI_INT, recv_buffer_col, recv_per_proc, recv_buffer_offsets, &
+         & MPI_INT, within_slice_comm, grid_error)
+    CALL MPI_Alltoallv(send_buffer_val, send_per_proc, send_buffer_offsets, &
+         & MPINTREAL, recv_buffer_val, recv_per_proc, recv_buffer_offsets, &
+         & MPINTREAL, within_slice_comm, grid_error)
+
+    !! Convert receive buffer to triplet list
+    CALL ConstructTripletList(triplet_list, size_in=SUM(recv_per_proc))
+    DO counter=1, SUM(recv_per_proc)
+       triplet_list%data(counter)%index_row = recv_buffer_row(counter)
+       triplet_list%data(counter)%index_column = recv_buffer_col(counter)
+       triplet_list%data(counter)%point_value = recv_buffer_val(counter)
+    END DO
+
+    !! Cleanup
+    DEALLOCATE(row_start_list)
+    DEALLOCATE(column_start_list)
+    DEALLOCATE(recv_buffer_offsets)
+    DEALLOCATE(recv_buffer_val)
+    DEALLOCATE(recv_buffer_col)
+    DEALLOCATE(recv_buffer_row)
+    DEALLOCATE(recv_per_proc)
+    DEALLOCATE(send_buffer_val)
+    DEALLOCATE(send_buffer_col)
+    DEALLOCATE(send_buffer_row)
+    DEALLOCATE(send_buffer_offsets)
+    DEALLOCATE(send_per_proc)
+  END SUBROUTINE RepartitionMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
   !! @param[in] this the matrix.
