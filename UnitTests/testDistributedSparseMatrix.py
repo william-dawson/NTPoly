@@ -11,6 +11,7 @@ import time
 import numpy
 import os
 import random
+import sys
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
@@ -168,7 +169,9 @@ class TestDistributedMatrix(unittest.TestCase):
                 scratch_dir + "/matrix1.mtx", False)
 
             # Compute a random permutation
-            random.seed(1)
+            seed_val = random.randrange(sys.maxsize)
+            seed = comm.bcast(seed_val, root=0)
+            random.seed(seed)
             dimension = ntmatrix1.GetActualDimension()
             row_end_list = random.sample(
                 range(1, dimension), self.process_rows - 1)
