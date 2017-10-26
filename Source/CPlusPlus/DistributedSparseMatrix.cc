@@ -1,5 +1,5 @@
-#include "DistributedSparseMatrix.h"
 #include "DistributedMatrixMemoryPool.h"
+#include "DistributedSparseMatrix.h"
 #include "Permutation.h"
 #include "TripletList.h"
 using std::string;
@@ -83,6 +83,19 @@ int DistributedSparseMatrix::GetActualDimension() const {
   int temp;
   GetActualDimension_wrp(ih_this, &temp);
   return temp;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void DistributedSparseMatrix::GetTripletList(TripletList &triplet_list) {
+  GetTripletList_wrp(ih_this, triplet_list.ih_this);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void DistributedSparseMatrix::RepartitionMatrix(TripletList &triplet_list,
+                                                int start_row,
+                                                int start_column) {
+  RepartitionMatrix_wrp(ih_this, triplet_list.ih_this, &start_row,
+                        &start_column);
 }
 
 //////////////////////////////////////////////////////////////////////////////

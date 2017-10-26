@@ -50,6 +50,9 @@ public:
   int GetActualDimension() const;
   //! the logical dimension is scaled so each process has an even slice.
   int GetLogicalDimension() const;
+  void GetTripletList(TripletList &triplet_list);
+  void RepartitionMatrix(TripletList &triplet_list, int start_row,
+                         int start_column);
 
 public:
   //! this = dot(this,matB)
