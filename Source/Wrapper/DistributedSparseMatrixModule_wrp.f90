@@ -267,19 +267,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] ih_triplet_list the list to fill.
   !! @param[in] start_row the starting row for data to store on this process.
   !! @param[in] end_row the ending row for data to store on this process
+  !! @param[in] start_column the starting col for data to store on this process.
+  !! @param[in] end_column the ending col for data to store on this process
   SUBROUTINE RepartitionMatrix_wrp(ih_this, ih_triplet_list, start_row, &
-       & start_column) bind(c,name="RepartitionMatrix_wrp")
+       & end_row, start_column, end_column) bind(c,name="RepartitionMatrix_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: start_row
-    INTEGER(kind=c_int), INTENT(IN) :: start_column
+    INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
+    INTEGER(kind=c_int), INTENT(IN) :: start_column, end_column
     TYPE(DistributedSparseMatrix_wrp) :: h_this
     TYPE(TripletList_wrp) :: h_triplet_list
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL RepartitionMatrix(h_this%data,h_triplet_list%data, start_row, &
-         & start_column)
+    CALL RepartitionMatrix(h_this%data,h_triplet_list%data, start_row, end_row,&
+         & start_column, end_column)
   END SUBROUTINE RepartitionMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)

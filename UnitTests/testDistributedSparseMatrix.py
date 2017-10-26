@@ -59,7 +59,7 @@ class TestDistributedMatrix(unittest.TestCase):
         self.myslice = nt.GetMySlice()
 
     def setUp(self):
-        mat_size = 64
+        mat_size = 4
         self.my_rank = comm.Get_rank()
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
@@ -180,15 +180,12 @@ class TestDistributedMatrix(unittest.TestCase):
             col_start_list = [1]
             for i in range(1, len(col_end_list)):
                 col_start_list.append(col_end_list[i-1])
-            print(row_start_list)
-            print(row_end_list)
-            print(col_start_list)
-            print(col_end_list)
 
             triplet_list = nt.TripletList(0)
             ntmatrix1.RepartitionMatrix(triplet_list,
-              row_start_list[self.myrow],
-              col_start_list[self.mycolumn])
+              row_start_list[self.myrow], row_end_list[self.myrow],
+              col_start_list[self.mycolumn], col_end_list[self.mycolumn])
+
             ntmatrix2 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)

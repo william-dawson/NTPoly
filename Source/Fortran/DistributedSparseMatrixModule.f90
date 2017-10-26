@@ -782,25 +782,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
   END SUBROUTINE GetTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Repartitions a matrix based on a start row and column, and extracts
-  !! this data into a triplet list.
+  !> Repartitions a matrix across a process slice, based on a row/column and
+  !! extracts this data into a triplet list.
   !! This is slower than GetTripletList, because communication is required.
   !! Data is returned with absolute coordinates.
   !! @param[in] this the distributed sparse matrix.
   !! @param[inout] triplet_list the list to fill.
   !! @param[in] start_row the starting row for data to store on this process.
-  !! @param[in] end_row the ending row for data to store on this process
-  SUBROUTINE RepartitionMatrix(this, triplet_list, start_row, start_column)
+  !! @param[in] end_row the ending row for data to store on this process.
+  !! @param[in] start_column the starting col for data to store on this process
+  !! @param[in] end_column the ending col for data to store on this process
+  SUBROUTINE RepartitionMatrix(this, triplet_list, start_row, end_row, &
+       & start_column, end_column)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
-    INTEGER :: start_row
-    INTEGER :: start_column
+    INTEGER :: start_row, end_row
+    INTEGER :: start_column, end_column
     !! Local Data
     TYPE(SparseMatrix_t) :: merged_local_data
     TYPE(TripletList_t) :: local_triplet_list
     INTEGER, DIMENSION(:), ALLOCATABLE :: row_start_list
     INTEGER, DIMENSION(:), ALLOCATABLE :: column_start_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_end_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: column_end_list
     !! Send Buffer
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_proc
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
@@ -816,6 +821,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
     !! Temporary
     INTEGER :: counter, p_counter
+    TYPE(Triplet_t) :: temp_triplet
     INTEGER :: temporary
 
     !! Merge all the local data
@@ -823,36 +829,75 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixToTripletList(merged_local_data, local_triplet_list)
 
     !! Share the start row/column information across processes
-    ALLOCATE(row_start_list(num_process_rows))
-    ALLOCATE(column_start_list(num_process_columns))
+    ALLOCATE(row_start_list(slice_size))
+    ALLOCATE(column_start_list(slice_size))
+    ALLOCATE(row_end_list(slice_size))
+    ALLOCATE(column_end_list(slice_size))
     CALL MPI_Allgather(start_row, 1, MPI_INT, row_start_list, 1, MPI_INT, &
          & within_slice_comm, grid_error)
     CALL MPI_Allgather(start_column, 1, MPI_INT, column_start_list, 1, MPI_INT,&
          & within_slice_comm, grid_error)
+    CALL MPI_Allgather(end_row, 1, MPI_INT, row_end_list, 1, MPI_INT, &
+         & within_slice_comm, grid_error)
+    CALL MPI_Allgather(end_column, 1, MPI_INT, column_end_list, 1, MPI_INT,&
+         & within_slice_comm, grid_error)
 
     !! Count The Number of Elements To Send To Each Process
-    ALLOCATE(send_per_proc(total_processors))
+    ALLOCATE(send_per_proc(slice_size))
     send_per_proc = 0
     DO counter = 1, local_triplet_list%CurrentSize
-       DO p_counter = 1, total_processors
+       CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
+       DO p_counter = 1, slice_size
+          IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
+               & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
+               & temp_triplet%index_column .GE. column_start_list(p_counter) .AND. &
+               & temp_triplet%index_column .LT. column_end_list(p_counter)) THEN
+             send_per_proc(p_counter) = send_per_proc(p_counter) + 1
+             EXIT
+          END IF
        END DO
+    END DO
+    !! Compute send buffer offsets
+    ALLOCATE(send_buffer_offsets(slice_size))
+    send_buffer_offsets(1) = 1
+    DO counter = 2, slice_size
+       send_buffer_offsets(counter) = send_per_proc(counter-1)
     END DO
 
     !! Build a send buffer
-    ALLOCATE(send_buffer_offsets(total_processors))
     ALLOCATE(send_buffer_row(local_triplet_list%CurrentSize))
     ALLOCATE(send_buffer_col(local_triplet_list%CurrentSize))
     ALLOCATE(send_buffer_val(local_triplet_list%CurrentSize))
     DO counter = 1, local_triplet_list%CurrentSize
-       DO p_counter = 1, total_processors
+       CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
+       DO p_counter = 1, slice_size
+          IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
+               & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
+               & temp_triplet%index_column .GE. column_start_list(p_counter) .AND. &
+               & temp_triplet%index_column .LT. column_end_list(p_counter)) THEN
+             send_buffer_row(send_buffer_offsets(p_counter)) = &
+                  & temp_triplet%index_row
+             send_buffer_col(send_buffer_offsets(p_counter)) = &
+                   & temp_triplet%index_column
+             send_buffer_val(send_buffer_offsets(p_counter)) = &
+                  & temp_triplet%point_value
+             send_buffer_offsets(p_counter) = send_buffer_offsets(p_counter) + 1
+             EXIT
+          END IF
        END DO
+    END DO
+    !! Reset send buffer offsets. But since we're using MPI now, use zero
+    !! based indexing.
+    send_buffer_offsets(1) = 0
+    DO counter = 2, slice_size
+       send_buffer_offsets(counter) = send_per_proc(counter-1)
     END DO
 
     !! Build a receive buffer
-    ALLOCATE(recv_per_proc(total_processors))
+    ALLOCATE(recv_per_proc(slice_size))
     CALL MPI_Alltoall(send_per_proc, 1, MPI_INT, recv_per_proc, 1, MPI_INT, &
          & within_slice_comm, grid_error)
-    ALLOCATE(recv_buffer_offsets(total_processors))
+    ALLOCATE(recv_buffer_offsets(slice_size))
     ALLOCATE(recv_buffer_row(SUM(recv_per_proc)))
     ALLOCATE(recv_buffer_col(SUM(recv_per_proc)))
     ALLOCATE(recv_buffer_val(SUM(recv_per_proc)))
@@ -877,18 +922,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Cleanup
-    DEALLOCATE(row_start_list)
-    DEALLOCATE(column_start_list)
-    DEALLOCATE(recv_buffer_offsets)
-    DEALLOCATE(recv_buffer_val)
-    DEALLOCATE(recv_buffer_col)
-    DEALLOCATE(recv_buffer_row)
-    DEALLOCATE(recv_per_proc)
-    DEALLOCATE(send_buffer_val)
-    DEALLOCATE(send_buffer_col)
-    DEALLOCATE(send_buffer_row)
-    DEALLOCATE(send_buffer_offsets)
-    DEALLOCATE(send_per_proc)
+    IF (ALLOCATED(row_start_list)) DEALLOCATE(row_start_list)
+    IF (ALLOCATED(column_start_list)) DEALLOCATE(column_start_list)
+    IF (ALLOCATED(row_end_list)) DEALLOCATE(row_end_list)
+    IF (ALLOCATED(column_end_list)) DEALLOCATE(column_end_list)
+    IF (ALLOCATED(recv_buffer_offsets)) DEALLOCATE(recv_buffer_offsets)
+    IF (ALLOCATED(recv_buffer_val)) DEALLOCATE(recv_buffer_val)
+    IF (ALLOCATED(recv_buffer_col)) DEALLOCATE(recv_buffer_col)
+    IF (ALLOCATED(recv_buffer_row)) DEALLOCATE(recv_buffer_row)
+    IF (ALLOCATED(recv_per_proc)) DEALLOCATE(recv_per_proc)
+    IF (ALLOCATED(send_buffer_val)) DEALLOCATE(send_buffer_val)
+    IF (ALLOCATED(send_buffer_col)) DEALLOCATE(send_buffer_col)
+    IF (ALLOCATED(send_buffer_row)) DEALLOCATE(send_buffer_row)
+    IF (ALLOCATED(send_buffer_offsets)) DEALLOCATE(send_buffer_offsets)
+    IF (ALLOCATED(send_per_proc)) DEALLOCATE(send_per_proc)
   END SUBROUTINE RepartitionMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
