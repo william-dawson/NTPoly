@@ -813,7 +813,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: send_buffer_val
     !! Receive Buffer
-    INTEGER :: recv_buffer_size
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_offsets
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_per_proc
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
@@ -822,7 +821,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     INTEGER :: counter, p_counter
     TYPE(Triplet_t) :: temp_triplet
-    INTEGER :: temporary
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -847,6 +845,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     send_per_proc = 0
     DO counter = 1, local_triplet_list%CurrentSize
        CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
+       temp_triplet%index_row = temp_triplet%index_row + this%start_row - 1
+       temp_triplet%index_column = temp_triplet%index_column + &
+            & this%start_column - 1
        DO p_counter = 1, slice_size
           IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
                & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
@@ -861,7 +862,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(send_buffer_offsets(slice_size))
     send_buffer_offsets(1) = 1
     DO counter = 2, slice_size
-       send_buffer_offsets(counter) = send_per_proc(counter-1)
+       send_buffer_offsets(counter) = send_buffer_offsets(counter-1) + &
+            & send_per_proc(counter-1)
     END DO
 
     !! Build a send buffer
@@ -870,6 +872,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(send_buffer_val(local_triplet_list%CurrentSize))
     DO counter = 1, local_triplet_list%CurrentSize
        CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
+       temp_triplet%index_row = temp_triplet%index_row + this%start_row - 1
+       temp_triplet%index_column = temp_triplet%index_column + &
+            & this%start_column - 1
        DO p_counter = 1, slice_size
           IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
                & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
@@ -878,7 +883,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              send_buffer_row(send_buffer_offsets(p_counter)) = &
                   & temp_triplet%index_row
              send_buffer_col(send_buffer_offsets(p_counter)) = &
-                   & temp_triplet%index_column
+                  & temp_triplet%index_column
              send_buffer_val(send_buffer_offsets(p_counter)) = &
                   & temp_triplet%point_value
              send_buffer_offsets(p_counter) = send_buffer_offsets(p_counter) + 1
@@ -890,7 +895,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! based indexing.
     send_buffer_offsets(1) = 0
     DO counter = 2, slice_size
-       send_buffer_offsets(counter) = send_per_proc(counter-1)
+       send_buffer_offsets(counter) = send_buffer_offsets(counter-1) + &
+            & send_per_proc(counter-1)
     END DO
 
     !! Build a receive buffer
@@ -898,6 +904,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Alltoall(send_per_proc, 1, MPI_INT, recv_per_proc, 1, MPI_INT, &
          & within_slice_comm, grid_error)
     ALLOCATE(recv_buffer_offsets(slice_size))
+    recv_buffer_offsets(1) = 0
+    DO counter = 2, slice_size
+       recv_buffer_offsets(counter) = recv_buffer_offsets(counter-1) + &
+            & recv_per_proc(counter-1)
+    END DO
     ALLOCATE(recv_buffer_row(SUM(recv_per_proc)))
     ALLOCATE(recv_buffer_col(SUM(recv_per_proc)))
     ALLOCATE(recv_buffer_val(SUM(recv_per_proc)))
