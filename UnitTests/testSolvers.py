@@ -1,6 +1,6 @@
 ##########################################################################
-# @package testDistributedSparseMatrix
-#  A test suite for the Distributed Sparse Matrix module.
+''' @package testDistributedSparseMatrix
+A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
@@ -20,11 +20,9 @@ from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
 
-##########################################################################
-# A test class for the different kinds of solvers.
-
 
 class TestSolvers(unittest.TestCase):
+    '''A test class for the different kinds of solvers.'''
     # Parameters for the tests
     input_file = scratch_dir + "/input.mtx"
     input_file2 = scratch_dir + "/input2.mtx"
@@ -32,28 +30,24 @@ class TestSolvers(unittest.TestCase):
     my_rank = 0
     matrix_dimension = 32
 
-    ##########################################################################
-    # set up all of the tests
-    #  @param[in] self pointer.
     @classmethod
     def setUpClass(self):
+        '''Set up all of the tests.'''
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(rows, columns, slices)
 
-    ##########################################################################
-    # set up an individual test
-    #  @param[in] self pointer
     def setUp(self):
+        '''Set up all of the tests.'''
         self.my_rank = comm.Get_rank()
         self.iterative_solver_parameters = nt.IterativeSolverParameters()
         self.fixed_solver_parameters = nt.FixedSolverParameters()
         self.fixed_solver_parameters.SetVerbosity(True)
         self.iterative_solver_parameters.SetVerbosity(True)
 
-    ##########################################################################
     def check_result(self):
+        '''Compare two computed matrices.'''
         norm = 0
         relative_error = 0
         if (self.my_rank == 0):
@@ -66,10 +60,8 @@ class TestSolvers(unittest.TestCase):
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to invert matrices.
-    #  @param[in] self pointer.
     def test_invert(self):
+        '''Test our ability to invert matrices.'''
         # Starting Matrix
         temp_mat = numpy.zeros((self.matrix_dimension, self.matrix_dimension))
         for j in range(0, self.matrix_dimension):
@@ -106,10 +98,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the inverse square root of matrices.
-    #  @param[in] self pointer.
     def test_inversesquareroot(self):
+        '''Test our ability to compute the inverse square root of matrices.'''
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
         temp_mat = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                                      density=1.0)
@@ -142,10 +132,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the square root of matrices.
-    #  @param[in] self pointer.
     def test_squareroot(self):
+        '''Test our ability to compute the square root of matrices.'''
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
@@ -178,10 +166,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute  general matrix inverse root.
-    #  @param[in] self pointer.
     def test_inverseroot(self):
+        '''Test our ability to compute  general matrix inverse root.'''
         roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
             print("Root:", root)
@@ -219,10 +205,8 @@ class TestSolvers(unittest.TestCase):
 
             self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute  general matrix root.
-    #  @param[in] self pointer.
     def test_root(self):
+        '''Test our ability to compute  general matrix root.'''
         roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
             print("Root", root)
@@ -259,10 +243,8 @@ class TestSolvers(unittest.TestCase):
             comm.barrier()
             self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix sign function.
-    #  @param[in] self pointer.
     def test_signfunction(self):
+        '''Test our ability to compute the matrix sign function.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
@@ -293,10 +275,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix exponential.
-    #  @param[in] self pointer.
     def test_exponentialfunction(self):
+        '''Test our ability to compute the matrix exponential.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(
             self.matrix_dimension, self.matrix_dimension, density=1.0)
@@ -326,10 +306,9 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix exponential using the pade method.
-    #  @param[in] self pointer.
     def test_exponentialpade(self):
+        '''Test our ability to compute the matrix exponential using the
+        pade method.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(
             self.matrix_dimension, self.matrix_dimension, density=1.0)
@@ -359,10 +338,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix logarithm.
-    #  @param[in] self pointer.
     def test_logarithmfunction(self):
+        '''Test our ability to compute the matrix logarithm.'''
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
         temp_mat = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                                      density=1.0)
@@ -395,10 +372,9 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix exponential using a round trip.
-    #  @param[in] self pointer.
     def test_exponentialround(self):
+        '''Test our ability to compute the matrix exponential using a round
+        trip calculation.'''
         temp_mat = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                                      density=1.0)
         temp_mat = 0.25 * (0.5 / self.matrix_dimension) * \
@@ -426,10 +402,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix sine.
-    #  @param[in] self pointer.
     def test_sinfunction(self):
+        '''Test our ability to compute the matrix sine.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
@@ -461,10 +435,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute the matrix cosine.
-    #  @param[in] self pointer.
     def test_cosfunction(self):
+        '''Test our ability to compute the matrix cosine.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension, density=1.0)
@@ -495,10 +467,9 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute a matrix polynomial using horner's method.
-    #  @param[in] self pointer.
     def test_hornerfunction(self):
+        '''Test our ability to compute a matrix polynomial using horner's
+        method.'''
         # Coefficients of the polynomial
         coef = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
 
@@ -542,11 +513,9 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute a matrix polynomial using the paterson
-    #  stockmeyer method.
-    #  @param[in] self pointer.
     def test_patersonstockmeyerfunction(self):
+        '''Test our ability to compute a matrix polynomial using the paterson
+        stockmeyer method.'''
         # Coefficients of the polynomial
         coef = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
 
@@ -590,10 +559,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute using Chebyshev polynomials.
-    #  @param[in] self pointer.
     def test_chebyshevfunction(self):
+        '''Test our ability to compute using Chebyshev polynomials.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
@@ -634,10 +601,9 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute using Chebyshev polynomials recursively.
-    #  @param[in] self pointer.
     def test_recursivechebyshevfunction(self):
+        '''Test our ability to compute using Chebyshev polynomials
+        recursively.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
@@ -679,10 +645,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to solve general matrix equations with CG.
-    #  @param[in] self pointer.
     def test_cgsolve(self):
+        '''Test our ability to solve general matrix equations with CG.'''
         # Starting Matrix
         A = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
                               density=1.0)
@@ -714,11 +678,8 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    ##########################################################################
-    # Test our ability to compute eigenvalues with the power method.
-    #  @param[in] self pointer.
-
     def test_powermethod(self):
+        '''Test our ability to compute eigenvalues with the power method.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,

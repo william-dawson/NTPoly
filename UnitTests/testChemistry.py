@@ -1,6 +1,6 @@
-##########################################################################
-# @package testDistributedSparseMatrix
-#  A test suite for the Distributed Sparse Matrix module.
+''' @package testDistributedSparseMatrix
+A test suite for the Distributed Sparse Matrix module.
+'''
 import unittest
 import NTPolySwig as nt
 
@@ -19,30 +19,24 @@ from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
 
-##########################################################################
-# A test class for the distributed matrix module.
-
 
 class TestChemistry(unittest.TestCase):
+    '''A test class for the distributed matrix module.'''
     # Parameters for the tests
     parameters = []
     CheckMat = 0
     my_rank = 0
 
-    ##########################################################################
-    # set up all of the tests
-    #  @param[in] self pointer.
     @classmethod
     def setUpClass(self):
+        '''Set up all of the tests.'''
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(rows, columns, slices, True)
 
-    ##########################################################################
-    # set up an individual test
-    #  @param[in] self pointer
     def setUp(self):
+        '''Set up an individual test.'''
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.IterativeSolverParameters()
         self.solver_parameters.SetVerbosity(True)
@@ -51,8 +45,8 @@ class TestChemistry(unittest.TestCase):
         self.density = os.environ["DENSITY"]
         self.nel = 10
 
-    ##########################################################################
     def check_full(self):
+        '''Compare two computed matrices.'''
         norm = 0
         if (self.my_rank == 0):
             ResultMat = 2.0 * scipy.io.mmread(result_file)
@@ -61,8 +55,8 @@ class TestChemistry(unittest.TestCase):
         global_norm = comm.bcast(norm, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
-    ##########################################################################
     def check_cp(self, computed):
+        '''Compare two computed chemical potentials.'''
         fock_matrix = scipy.io.mmread(self.hamiltonian)
         overlap_matrix = scipy.io.mmread(self.overlap)
         eig_vals = scipy.linalg.eigh(a=fock_matrix.todense(),
@@ -76,10 +70,8 @@ class TestChemistry(unittest.TestCase):
             self.assertTrue(False)
         pass
 
-    ##########################################################################
-    # Test our ability to compute the density matrix with TRS2.
-    #  @param[in] self pointer.
     def test_trs2(self):
+        '''Test our ability to compute the density matrix with TRS2.'''
         fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
         overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
         inverse_sqrt_matrix = nt.DistributedSparseMatrix(
@@ -105,10 +97,8 @@ class TestChemistry(unittest.TestCase):
         self.check_full()
         self.check_cp(chemical_potential)
 
-    ##########################################################################
-    # Test our ability to compute the density matrix with TRS4.
-    #  @param[in] self pointer.
     def test_trs4(self):
+        '''Test our ability to compute the density matrix with TRS4.'''
         fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
         overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
         inverse_sqrt_matrix = nt.DistributedSparseMatrix(
@@ -134,10 +124,8 @@ class TestChemistry(unittest.TestCase):
         self.check_full()
         self.check_cp(chemical_potential)
 
-    ##########################################################################
-    # Test our ability to compute the density matrix with HPCP.
-    #  @param[in] self pointer.
     def test_HPCP(self):
+        '''Test our ability to compute the density matrix with HPCP.'''
         fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
         overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
         inverse_sqrt_matrix = nt.DistributedSparseMatrix(
@@ -163,11 +151,8 @@ class TestChemistry(unittest.TestCase):
         self.check_full()
         self.check_cp(chemical_potential)
 
-    ##########################################################################
-    # Test our ability to compute the density matrix with HPCP.
-    #  @param[in] self pointer.
-
     # def test_HPCPPlus(self):
+    #     '''Test our ability to compute the density matrix with HPCP+.'''
     #     fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
     #     overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
     #     inverse_sqrt_matrix = nt.DistributedSparseMatrix(
@@ -193,10 +178,9 @@ class TestChemistry(unittest.TestCase):
     #     self.check_full()
     #     self.check_cp(chemical_potential)
 
-    ##########################################################################
-    # Test our ability to compute the density matrix with conjugate gradient.
-    #  @param[in] self pointer.
     def test_cg(self):
+        '''Test our ability to compute the density matrix with conjugate
+           gradient.'''
         fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
         overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
         inverse_sqrt_matrix = nt.DistributedSparseMatrix(
