@@ -1,6 +1,5 @@
-##########################################################################
-# @package testSparseMatrix
-#  A test suite for the Sparse Matrix module.
+'''@package testSparseMatrix
+A test suite for the Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
@@ -14,34 +13,29 @@ import os
 from Helpers import THRESHOLD
 from Helpers import result_file
 
-##########################################################################
-# An internal class for holding test parameters.
-
 
 class TestParameters:
-    # Default constructor.
-    #  @param[in] self pointer.
-    #  @param[in] rows matrix rows.
-    #  @param[in] columns matrix columns.
-    #  @param[in] sparsity matrix sparsity.
+    '''An internal class for holding test parameters.'''
+
     def __init__(self, rows, columns, sparsity):
+        '''Default constructor
+        @param[in] rows matrix rows.
+        @param[in] columns matrix columns.
+        @param[in] sparsity matrix sparsity.
+        '''
         self.rows = rows
         self.columns = columns
         self.sparsity = sparsity
 
-##########################################################################
-# A test class for the local matrix module.
-
 
 class TestLocalMatrix(unittest.TestCase):
+    '''A test class for the local matrix module.'''
     # Parameters for the matrices
     parameters = []
     scratch_dir = os.environ['SCRATCHDIR']
-    ##########################################################################
-    # set up tests
-    #  @param[in] self pointer.
 
     def setUp(self):
+        '''Set up tests.'''
         self.parameters.append(TestParameters(2, 4, 0.0))
         self.parameters.append(TestParameters(8, 8, 0.0))
         self.parameters.append(TestParameters(2, 2, 1.0))
@@ -52,10 +46,8 @@ class TestLocalMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(4, 4, 0.2))
         self.parameters.append(TestParameters(8, 8, 1.0))
 
-    ##########################################################################
-    # Test our ability to read and write matrices.
-    #  @param[in] self pointer.
     def test_read(self):
+        '''Test our ability to read and write matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity, format="csr")
@@ -66,11 +58,9 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
             norm = abs(scipy.sparse.linalg.norm(matrix1 - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
-    ##########################################################################
-    # Test our ability to read and write matrices.
-    #  @param[in] self pointer.
 
     def test_readsymmetric(self):
+        '''Test our ability to read and write matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.rows,
                                           param.sparsity, format="csr")
@@ -82,11 +72,9 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
             norm = abs(scipy.sparse.linalg.norm(matrix1 - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
-    ##########################################################################
-    # Test our ability to add together matrices.
-    #  @param[in] self pointer.
 
     def test_addition(self):
+        '''Test our ability to add together matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -108,10 +96,8 @@ class TestLocalMatrix(unittest.TestCase):
             norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to add together a matrix and zero.
-    #  @param[in] self pointer.
     def test_addzero(self):
+        '''Test our ability to add together a matrix and zero.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -127,10 +113,9 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
             norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
-    ##########################################################################
-    # Test our ability to add together a matrix and zero.
-    #  @param[in] self pointer.
+
     def test_addzeroreverse(self):
+        '''Test our ability to add together a matrix and zero.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -147,11 +132,8 @@ class TestLocalMatrix(unittest.TestCase):
             norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to dot two matrices.
-    #  @param[in] self pointer.
-
     def test_dot(self):
+        '''Test our ability to dot two matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -170,11 +152,9 @@ class TestLocalMatrix(unittest.TestCase):
             result = matrix2.Dot(matrix1)
             norm = result - check
             self.assertLessEqual(norm, THRESHOLD)
-    ##########################################################################
-    # Test our ability to transpose a matrix.
-    #  @param[in] self pointer.
 
     def test_transpose(self):
+        '''Test our ability to transpose a matrix.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -192,10 +172,8 @@ class TestLocalMatrix(unittest.TestCase):
             norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to pairwise multiply two matrices.
-    #  @param[in] self pointer.
     def test_pairwise(self):
+        '''Test our ability to pairwise multiply two matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -220,10 +198,8 @@ class TestLocalMatrix(unittest.TestCase):
             norm = abs(scipy.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to multiply two matrices.
-    #  @param[in] self pointer.
     def test_multiply(self):
+        '''Test our ability to multiply two matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -255,11 +231,9 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix3.mtx")
             norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
-    ##########################################################################
-    # Test our ability to multiply two matrices where one is zero.
-    #  @param[in] self pointer.
 
     def test_multiply_zero(self):
+        '''Test our ability to multiply two matrices where one is zero.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
