@@ -25,10 +25,11 @@ class TestParameters:
     #  @param[in] rows matrix rows.
     #  @param[in] columns matrix columns.
     #  @param[in] sparsity matrix sparsity.
-    def __init__(self, rows, columns, sparsity):
+    def __init__(self, rows, columns, sparsity, sparsity2):
         self.rows = rows
         self.columns = columns
         self.sparsity = sparsity
+        self.sparsity2 = sparsity2
 
 ##########################################################################
 # A test class for the distributed matrix module.
@@ -49,12 +50,16 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(rows, columns, slices)
 
+    ##########################################################################
     def setUp(self):
         mat_size = 64
         self.my_rank = comm.Get_rank()
-        self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
-        self.parameters.append(TestParameters(7, 7, 0.2))
+        self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 1.0))
+        self.parameters.append(TestParameters(mat_size, mat_size, 0.2, 0.2))
+        self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 0.0))
+        self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 0.0))
+        self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 1.0))
+        self.parameters.append(TestParameters(7, 7, 0.2, 0.2))
 
     ##########################################################################
     def check_result(self):
@@ -68,14 +73,13 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     ##########################################################################
     # Test our ability to add together matrices.
     #  @param[in] self pointer.
-
     def test_addition(self):
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
                                           format="csr")
             matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
+                                          param.sparsity2,
                                           format="csr")
             self.CheckMat = matrix1 + matrix2
             if self.my_rank == 0:
@@ -99,7 +103,6 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     ##########################################################################
     # Test our ability to add together matrices.
     #  @param[in] self pointer.
-
     def test_dot(self):
         for param in self.parameters:
             comm.barrier()
@@ -109,7 +112,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
                                               param.sparsity,
                                               format="csr")
                 matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
+                                              param.sparsity2,
                                               format="csr")
                 check = numpy.sum(numpy.multiply(
                     matrix1.todense(), matrix2.todense()))
@@ -122,10 +125,17 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             comm.barrier()
             check = comm.bcast(check, root=0)
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix2.mtx", False)
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix1.mtx", False)
+            else:
+                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+            if param.sparsity2 > 0.0:
+                ntmatrix2 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix2.mtx", False)
+            else:
+                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
+
             result = ntmatrix2.Dot(ntmatrix1)
             comm.barrier()
 
@@ -135,14 +145,13 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     ##########################################################################
     # Test our ability to pairwise multiply two matrices.
     #  @param[in] self pointer.
-
     def test_pairwisemultiply(self):
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
                                           format="csr")
             matrix2 = scipy.sparse.random(param.columns, param.rows,
-                                          param.sparsity,
+                                          param.sparsity2,
                                           format="csr")
             self.CheckMat = scipy.sparse.csr_matrix(numpy.multiply(
                 matrix1.todense(), matrix2.todense()))
@@ -155,10 +164,16 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
                                  symmetry="general")
 
             comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix2.mtx", False)
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix1.mtx", False)
+            else:
+                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+            if param.sparsity2 > 0.0:
+                ntmatrix2 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix2.mtx", False)
+            else:
+                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
             ntmatrix3 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             ntmatrix3.PairwiseMultiply(ntmatrix1, ntmatrix2)
@@ -169,13 +184,12 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     ##########################################################################
     # Test our ability to multiply two matrices.
     #  @param[in] self pointer.
-
     def test_multiply(self):
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns, param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.columns, param.rows, param.sparsity,
-                                          format="csr")
+            matrix1 = scipy.sparse.random(param.rows, param.columns,
+                                          param.sparsity, format="csr")
+            matrix2 = scipy.sparse.random(param.columns, param.rows,
+                                          param.sparsity2, format="csr")
             self.CheckMat = matrix1.dot(matrix2)
             if self.my_rank == 0:
                 scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
@@ -184,10 +198,16 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
                                  scipy.sparse.csr_matrix(matrix2), symmetry="general")
 
             comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix2.mtx", False)
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix1.mtx", False)
+            else:
+                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+            if param.sparsity2 > 0.0:
+                ntmatrix2 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix2.mtx", False)
+            else:
+                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
             ntmatrix3 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             memory_pool = nt.DistributedMatrixMemoryPool()
@@ -213,8 +233,11 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
                                  symmetry="general")
 
             comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.DistributedSparseMatrix(
+                    scratch_dir + "/matrix1.mtx", False)
+            else:
+                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
             permute_rows = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             permute_columns = nt.DistributedSparseMatrix(
@@ -239,6 +262,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             comm.barrier()
 
             self.check_result()
+
 
 if __name__ == '__main__':
     unittest.main()
