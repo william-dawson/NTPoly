@@ -22,5 +22,11 @@ void ConstructProcessGrid(MPI_Comm world_comm, int process_rows,
 //! \param[in] be_verbose verbosity flag.
 void ConstructProcessGrid(int process_rows, int process_columns,
                           int process_slices, bool be_verbose = false);
+//! Get the slice of the current process.
+int GetMySlice();
+//! Get the column of the current process.
+int GetMyColumn();
+//! Get the row of the current process.
+int GetMyRow();
 } // namespace NTPoly
 #endif

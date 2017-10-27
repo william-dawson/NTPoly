@@ -42,7 +42,7 @@ public:
   //!\param list to be sorted.
   //!\param matrix_columns this is the highest column value in the list
   //!\param sorted a now sorted version of the list.
-  static void SortTripletList(const TripletList &list, int matrix_size,
+  static void SortTripletList(const TripletList &list, int matrix_columns,
                               TripletList &sorted);
 
 private:

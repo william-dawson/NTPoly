@@ -50,6 +50,21 @@ public:
   int GetActualDimension() const;
   //! the logical dimension is scaled so each process has an even slice.
   int GetLogicalDimension() const;
+  //! Extracts a triplet list of the data that is stored on this process.
+  //! Data is returned with absolute coordinates.
+  //! \param triplet_list the list to fill.
+  void GetTripletList(TripletList &triplet_list);
+  //! Extract an arbitrary block of a matrix into a triplet list. Block is
+  //! defined by the row/column start/end values.
+  //! This is slower than GetTripletList, because communication is required.
+  //! Data is returned with absolute coordinates.
+  //! \param triplet_list the list to fill.
+  //! \param start_row the starting row for data to store on this process.
+  //! \param end_row the ending row for data to store on this process.
+  //! \param start_column the starting col for data to store on this process
+  //! \param end_column the ending col for data to store on this process
+  void GetMatrixBlock(TripletList &triplet_list, int start_row, int end_row,
+                         int start_column, int end_column);
 
 public:
   //! this = dot(this,matB)
