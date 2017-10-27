@@ -67,11 +67,11 @@ public:
   //!\param Density the density matrix computed by this routine.
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
-  static void HPCPPlus(const DistributedSparseMatrix &Hamiltonian,
-                       const DistributedSparseMatrix &InverseSquareRoot,
-                       int nel, DistributedSparseMatrix &Density,
-                       double &chemical_potential_out,
-                       const IterativeSolverParameters &solver_parameters);
+  // static void HPCPPlus(const DistributedSparseMatrix &Hamiltonian,
+  //                      const DistributedSparseMatrix &InverseSquareRoot,
+  //                      int nel, DistributedSparseMatrix &Density,
+  //                      double &chemical_potential_out,
+  //                      const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

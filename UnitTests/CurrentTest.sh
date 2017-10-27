@@ -22,9 +22,3 @@ export PROCESS_COLUMNS="$1"
 export PROCESS_ROWS="$2"
 export PROCESS_SLICES="$3"
 export PROCESSES="$4"
-
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry.TestChemistry.test_trs2
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry.TestChemistry.test_trs4
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry.TestChemistry.test_HPCP
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry.TestChemistry.test_HPCPPlus
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry.TestChemistry.test_cg
