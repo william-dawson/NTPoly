@@ -13,11 +13,13 @@ import os
 import random
 import sys
 from mpi4py import MPI
+## MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
+
 
 class TestParameters:
     '''An internal class for holding internal class parameters.'''
@@ -32,12 +34,16 @@ class TestParameters:
         self.columns = columns
         self.sparsity = sparsity
 
+
 class TestDistributedMatrix(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
-    # Parameters for the tests
+    ## Parameters for the tests
     parameters = []
+    ## Where to store the result file
     result_file = scratch_dir + "/result.mtx"
+    ## Matrix to compare against
     CheckMat = 0
+    ## Rank of the current process.
     my_rank = 0
 
     @classmethod
@@ -192,6 +198,7 @@ class TestDistributedMatrix(unittest.TestCase):
             comm.barrier()
 
             self.check_result()
+
 
 if __name__ == '__main__':
     unittest.main()

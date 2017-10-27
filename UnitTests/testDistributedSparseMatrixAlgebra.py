@@ -11,6 +11,7 @@ import time
 import numpy
 import os
 from mpi4py import MPI
+## MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -35,10 +36,13 @@ class TestParameters:
 
 class TestDistributedMatrixAlgebra(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
-    # Parameters for the tests
+    ## Parameters for the tests
     parameters = []
+    ## Place to store the result matrix.
     result_file = scratch_dir + "/result.mtx"
+    ## Matrix to compare against.
     CheckMat = 0
+    ## Rank of the current process.
     my_rank = 0
 
     @classmethod

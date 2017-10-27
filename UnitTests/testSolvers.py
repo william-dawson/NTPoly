@@ -14,6 +14,7 @@ import os
 import math
 import numpy.polynomial.chebyshev
 from mpi4py import MPI
+## MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -23,11 +24,15 @@ from Helpers import scratch_dir
 
 class TestSolvers(unittest.TestCase):
     '''A test class for the different kinds of solvers.'''
-    # Parameters for the tests
+    ## First input file.
     input_file = scratch_dir + "/input.mtx"
+    ## Second input file.
     input_file2 = scratch_dir + "/input2.mtx"
+    ## Matrix to compare against.
     CheckMat = 0
+    ## Rank of the current process.
     my_rank = 0
+    ## Dimension of the matrices to test.
     matrix_dimension = 32
 
     @classmethod
@@ -40,8 +45,11 @@ class TestSolvers(unittest.TestCase):
 
     def setUp(self):
         '''Set up all of the tests.'''
+        ## Rank of the current process.
         self.my_rank = comm.Get_rank()
+        ## Parmaeters for iterative solvers.
         self.iterative_solver_parameters = nt.IterativeSolverParameters()
+        ## Parameters for fixed solvers.
         self.fixed_solver_parameters = nt.FixedSolverParameters()
         self.fixed_solver_parameters.SetVerbosity(True)
         self.iterative_solver_parameters.SetVerbosity(True)

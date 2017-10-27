@@ -23,15 +23,19 @@ class TestParameters:
         @param[in] columns matrix columns.
         @param[in] sparsity matrix sparsity.
         '''
+        ## Matrix rows.
         self.rows = rows
+        ## Matrix columns.
         self.columns = columns
+        ## Matrix sparsity.
         self.sparsity = sparsity
 
 
 class TestLocalMatrix(unittest.TestCase):
     '''A test class for the local matrix module.'''
-    # Parameters for the matrices
+    ## Parameters for the matrices
     parameters = []
+    ## Location of the scratch directory.
     scratch_dir = os.environ['SCRATCHDIR']
 
     def setUp(self):

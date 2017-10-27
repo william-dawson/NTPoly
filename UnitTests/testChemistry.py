@@ -13,6 +13,7 @@ import time
 import os
 import math
 from mpi4py import MPI
+## MPI globa communicator
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -22,9 +23,11 @@ from Helpers import scratch_dir
 
 class TestChemistry(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
-    # Parameters for the tests
+    ## Parameters for the tests
     parameters = []
+    ## Matrix to compare to
     CheckMat = 0
+    ## Rank of the current process
     my_rank = 0
 
     @classmethod
