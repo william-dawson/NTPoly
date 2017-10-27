@@ -3,7 +3,7 @@
 MODULE SparseMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, &
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructZeroSparseMatrix, &
        & ConstructEmptySparseMatrix, ConstructSparseMatrixFromFile, &
        & ConstructFromTripletList, DestructSparseMatrix, CopySparseMatrix, &
        & TransposeSparseMatrix, PrintSparseMatrix, MatrixToTripletList, &
@@ -17,12 +17,13 @@ MODULE SparseMatrixModule_wrp
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: SparseMatrix_wrp
      !> Actual data.
-     TYPE(SparseMatrix_t), POINTER :: data
+     TYPE(SparseMatrix_t), POINTER :: DATA
   END TYPE SparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructEmptySparseMatrix_wrp
+  !!PUBLIC :: ConstructEmptySparseMatrix_wrp
   PUBLIC :: ConstructSparseMatrixFromFile_wrp
   PUBLIC :: ConstructFromTripletList_wrp
+  PUBLIC :: ConstructZeroSparseMatrix_wrp
   PUBLIC :: DestructSparseMatrix_wrp
   PUBLIC :: GetRows_wrp
   PUBLIC :: GetColumns_wrp
@@ -32,21 +33,21 @@ MODULE SparseMatrixModule_wrp
   PUBLIC :: PrintSparseMatrixF_wrp
   PUBLIC :: MatrixToTripletList_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Wrap the empty sparse matrix constructor.
-  !! @param[out] ih_this handle to the matrix being created.
-  !! @param[in] columns number of matrix columns.
-  !! @param[in] rows number of matrix rows.
-  PURE SUBROUTINE ConstructEmptySparseMatrix_wrp(ih_this, columns, rows) &
-       & bind(c,name="ConstructEmptySparseMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: columns
-    INTEGER(kind=c_int), INTENT(in) :: rows
-    TYPE(SparseMatrix_wrp) :: h_this
-
-    ALLOCATE(h_this%data)
-    CALL ConstructEmptySparseMatrix(h_this%data,columns,rows)
-    ih_this = TRANSFER(h_this,ih_this)
-  END SUBROUTINE ConstructEmptySparseMatrix_wrp
+  ! !> Wrap the empty sparse matrix constructor.
+  ! !! @param[out] ih_this handle to the matrix being created.
+  ! !! @param[in] columns number of matrix columns.
+  ! !! @param[in] rows number of matrix rows.
+  ! PURE SUBROUTINE ConstructEmptySparseMatrix_wrp(ih_this, columns, rows) &
+  !      & bind(c,name="ConstructEmptySparseMatrix_wrp")
+  !   INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
+  !   INTEGER(kind=c_int), INTENT(in) :: columns
+  !   INTEGER(kind=c_int), INTENT(in) :: rows
+  !   TYPE(SparseMatrix_wrp) :: h_this
+  !
+  !   ALLOCATE(h_this%data)
+  !   CALL ConstructEmptySparseMatrix(h_this%data,columns,rows)
+  !   ih_this = TRANSFER(h_this,ih_this)
+  ! END SUBROUTINE ConstructEmptySparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   !! @param[out] ih_this the matrix being constructed.
@@ -92,6 +93,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructFromTripletList_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a sparse matrix with zero values in it.
+  !! @param[inout] ih_this handle to the matrix being constructed
+  !! @param[in] rows number of matrix rows
+  !! @param[in] columns number of matrix columns
+  PURE SUBROUTINE ConstructZeroSparseMatrix_wrp(ih_this, &
+       & rows, columns) bind(c,name="ConstructZeroSparseMatrix_wrp")
+    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(in) :: columns
+    INTEGER(kind=c_int), INTENT(in) :: rows
+    !! Local Data
+    TYPE(SparseMatrix_wrp) :: h_this
+
+    ALLOCATE(h_this%data)
+    CALL ConstructZeroSparseMatrix(h_this%data, rows, columns)
+    ih_this = TRANSFER(h_this,ih_this)
+  END SUBROUTINE ConstructZeroSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
   !! @param[inout] ih_this handle to the matrix to free up.

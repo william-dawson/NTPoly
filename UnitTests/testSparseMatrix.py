@@ -16,6 +16,8 @@ from Helpers import result_file
 
 ##########################################################################
 # An internal class for holding test parameters.
+
+
 class TestParameters:
     # Default constructor.
     #  @param[in] self pointer.
@@ -29,6 +31,8 @@ class TestParameters:
 
 ##########################################################################
 # A test class for the local matrix module.
+
+
 class TestLocalMatrix(unittest.TestCase):
     # Parameters for the matrices
     parameters = []
@@ -65,6 +69,7 @@ class TestLocalMatrix(unittest.TestCase):
     ##########################################################################
     # Test our ability to read and write matrices.
     #  @param[in] self pointer.
+
     def test_readsymmetric(self):
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.rows,
@@ -102,6 +107,46 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
             norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
             self.assertLessEqual(norm, THRESHOLD)
+
+    ##########################################################################
+    # Test our ability to add together a matrix and zero.
+    #  @param[in] self pointer.
+    def test_addzero(self):
+        for param in self.parameters:
+            matrix1 = scipy.sparse.random(param.rows, param.columns,
+                                          param.sparsity,
+                                          format="csr")
+            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
+                             scipy.sparse.csr_matrix(matrix1))
+
+            CheckMat = matrix1
+            matrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = nt.SparseMatrix(matrix1.GetRows(), matrix1.GetColumns())
+            matrix2.Increment(matrix1, 1.0, 0.0)
+            matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
+            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
+            self.assertLessEqual(norm, THRESHOLD)
+    ##########################################################################
+    # Test our ability to add together a matrix and zero.
+    #  @param[in] self pointer.
+    def test_addzeroreverse(self):
+        for param in self.parameters:
+            matrix1 = scipy.sparse.random(param.rows, param.columns,
+                                          param.sparsity,
+                                          format="csr")
+            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
+                             scipy.sparse.csr_matrix(matrix1))
+
+            CheckMat = matrix1
+            matrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = nt.SparseMatrix(matrix1.GetRows(), matrix1.GetColumns())
+            matrix1.Increment(matrix2, 1.0, 0.0)
+            matrix1.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
+            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
+            self.assertLessEqual(norm, THRESHOLD)
+
     ##########################################################################
     # Test our ability to dot two matrices.
     #  @param[in] self pointer.
@@ -204,6 +249,38 @@ class TestLocalMatrix(unittest.TestCase):
             memory_pool = nt.MatrixMemoryPool(ntmatrix2.GetColumns(),
                                               ntmatrix1.GetRows())
             ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta, 0.0,
+                           memory_pool)
+            ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
+
+            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix3.mtx")
+            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
+            self.assertLessEqual(norm, THRESHOLD)
+    ##########################################################################
+    # Test our ability to multiply two matrices where one is zero.
+    #  @param[in] self pointer.
+
+    def test_multiply_zero(self):
+        for param in self.parameters:
+            matrix1 = scipy.sparse.random(param.rows, param.columns,
+                                          param.sparsity,
+                                          format="csr")
+            matrix2 = scipy.sparse.random(param.columns, param.columns,
+                                          0,
+                                          format="csr")
+            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
+                             scipy.sparse.csr_matrix(matrix1))
+            scipy.io.mmwrite(self.scratch_dir + "/matrix2.mtx",
+                             scipy.sparse.csr_matrix(matrix2))
+            CheckMat = matrix1.dot(matrix2)
+
+            ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix2 = nt.SparseMatrix(
+                ntmatrix1.GetColumns(), ntmatrix1.GetColumns())
+            ntmatrix3 = nt.SparseMatrix(ntmatrix2.GetColumns(),
+                                        ntmatrix1.GetRows())
+            memory_pool = nt.MatrixMemoryPool(ntmatrix2.GetColumns(),
+                                              ntmatrix1.GetRows())
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, 1.0, 0.0, 0.0,
                            memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 

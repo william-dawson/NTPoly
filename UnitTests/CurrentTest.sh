@@ -24,4 +24,6 @@ export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrix.TestDistributedMatrix.test_repartition
+-m unittest -v testDistributedSparseMatrix.TestDistributedMatrix
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @PYTHON_EXECUTABLE@ \
+-m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra

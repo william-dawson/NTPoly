@@ -21,7 +21,7 @@ MODULE DistributedSparseMatrixAlgebraModule
        & SparseMatrixNorm, ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
        & SparseMatrixGrandSum
   USE SparseMatrixModule, ONLY : SparseMatrix_t, DestructSparseMatrix, &
-       & ConstructEmptySparseMatrix, CopySparseMatrix, &
+       & CopySparseMatrix, &
        & TransposeSparseMatrix, ComposeSparseMatrixColumns, MatrixToTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY : TripletList_t, DestructTripletList

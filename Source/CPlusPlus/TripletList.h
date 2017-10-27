@@ -16,7 +16,7 @@ class TripletList {
 public:
   //! Construct the triplet list.
   //!\param size the size of the list.
-  TripletList(int size = 0);
+  TripletList(int size=0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
   TripletList(const DistributedSparseMatrix &matrix);
