@@ -19,7 +19,7 @@ MODULE DensityMatrixSolversModule
   PUBLIC :: TRS2
   PUBLIC :: TRS4
   PUBLIC :: HPCP
-  PUBLIC :: HPCPPlus
+  ! PUBLIC :: HPCPPlus
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS2 method.
   !! Based on the TRS2 algorithm presented in \cite niklasson2002

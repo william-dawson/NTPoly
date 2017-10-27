@@ -40,12 +40,12 @@ void DensityMatrixSolvers::HPCP(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void DensityMatrixSolvers::HPCPPlus(
-    const DistributedSparseMatrix &Hamiltonian,
-    const DistributedSparseMatrix &Overlap, int nel,
-    DistributedSparseMatrix &Density, double &chemical_potential_out,
-    const IterativeSolverParameters &solver_parameters) {
-  HPCPPlus_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel, GetIH(Density),
-               &chemical_potential_out, GetIH(solver_parameters));
-}
+// void DensityMatrixSolvers::HPCPPlus(
+//     const DistributedSparseMatrix &Hamiltonian,
+//     const DistributedSparseMatrix &Overlap, int nel,
+//     DistributedSparseMatrix &Density, double &chemical_potential_out,
+//     const IterativeSolverParameters &solver_parameters) {
+//   HPCPPlus_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel, GetIH(Density),
+//                &chemical_potential_out, GetIH(solver_parameters));
+// }
 } // namespace NTPoly
