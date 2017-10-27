@@ -1,6 +1,6 @@
 ##########################################################################
-# @package testDistributedSparseMatrix
-#  A test suite for the Distributed Sparse Matrix module.
+'''@package testDistributedSparseMatrix
+A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
@@ -11,47 +11,50 @@ import time
 import numpy
 import os
 from mpi4py import MPI
+## MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
 
-##########################################################################
-# An internal class for holding internal class parameters.
+
 class TestParameters:
-    # Default constructor.
-    #  @param[in] self pointer.
-    #  @param[in] rows matrix rows.
-    #  @param[in] columns matrix columns.
-    #  @param[in] sparsity matrix sparsity.
+    '''An internal class for holding internal class parameters.'''
+
     def __init__(self, rows, columns, sparsity, sparsity2):
+        '''Default constructor.
+        @param[in] rows matrix rows.
+        @param[in] columns matrix columns.
+        @param[in] sparsity matrix sparsity.
+        '''
         self.rows = rows
         self.columns = columns
         self.sparsity = sparsity
         self.sparsity2 = sparsity2
 
-##########################################################################
-# A test class for the distributed matrix module.
+
 class TestDistributedMatrixAlgebra(unittest.TestCase):
-    # Parameters for the tests
+    '''A test class for the distributed matrix module.'''
+    ## Parameters for the tests
     parameters = []
+    ## Place to store the result matrix.
     result_file = scratch_dir + "/result.mtx"
+    ## Matrix to compare against.
     CheckMat = 0
+    ## Rank of the current process.
     my_rank = 0
 
-    ##########################################################################
-    # set up tests
-    #  @param[in] self pointer.
     @classmethod
     def setUpClass(self):
+        '''Set up tests.'''
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(rows, columns, slices)
 
-    ##########################################################################
     def setUp(self):
+        '''Set up a specific test.'''
         mat_size = 64
         self.my_rank = comm.Get_rank()
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 1.0))
@@ -61,8 +64,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 1.0))
         self.parameters.append(TestParameters(7, 7, 0.2, 0.2))
 
-    ##########################################################################
     def check_result(self):
+        '''Compare two matrices.'''
         norm = 0
         if (self.my_rank == 0):
             ResultMat = scipy.io.mmread(self.result_file)
@@ -70,10 +73,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         global_norm = comm.bcast(norm, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to add together matrices.
-    #  @param[in] self pointer.
     def test_addition(self):
+        '''Test our ability to add together matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -100,10 +101,9 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             comm.barrier()
 
             self.check_result()
-    ##########################################################################
-    # Test our ability to add together matrices.
-    #  @param[in] self pointer.
+
     def test_dot(self):
+        '''Test our ability to add together matrices.'''
         for param in self.parameters:
             comm.barrier()
             check = 0
@@ -142,10 +142,9 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             norm = abs(result - check)
 
             self.assertLessEqual(norm, THRESHOLD)
-    ##########################################################################
-    # Test our ability to pairwise multiply two matrices.
-    #  @param[in] self pointer.
+
     def test_pairwisemultiply(self):
+        '''Test our ability to pairwise multiply two matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,
@@ -181,10 +180,9 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             comm.barrier()
 
             self.check_result()
-    ##########################################################################
-    # Test our ability to multiply two matrices.
-    #  @param[in] self pointer.
+
     def test_multiply(self):
+        '''Test our ability to multiply two matrices.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity, format="csr")
@@ -217,10 +215,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             self.check_result()
 
-    ##########################################################################
-    # Test our ability to permute a matrix.
-    #  @param[in] self pointer.
     def test_reverse(self):
+        '''Test our ability to permute a matrix.'''
         for param in self.parameters:
             matrix1 = scipy.sparse.random(param.rows, param.columns,
                                           param.sparsity,

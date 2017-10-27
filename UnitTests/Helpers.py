@@ -1,4 +1,7 @@
 ##########################################################################
+''' @package Helpers.py
+Some helper functions for the unit tests.
+'''
 import os
 # Path to the scratch directory.
 scratch_dir = os.environ['SCRATCHDIR']

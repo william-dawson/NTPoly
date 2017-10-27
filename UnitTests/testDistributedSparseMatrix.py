@@ -1,6 +1,6 @@
 ##########################################################################
-# @package testDistributedSparseMatrix
-#  A test suite for the Distributed Sparse Matrix module.
+'''@package testDistributedSparseMatrix
+A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
@@ -13,39 +13,42 @@ import os
 import random
 import sys
 from mpi4py import MPI
+## MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
 
-##########################################################################
-# An internal class for holding internal class parameters.
+
 class TestParameters:
-    # Default constructor.
-    #  @param[in] self pointer.
-    #  @param[in] rows matrix rows.
-    #  @param[in] columns matrix columns.
-    #  @param[in] sparsity matrix sparsity.
+    '''An internal class for holding internal class parameters.'''
+
     def __init__(self, rows, columns, sparsity):
+        '''Default constructor.
+        @param[in] rows matrix rows.
+        @param[in] columns matrix columns.
+        @param[in] sparsity matrix sparsity.
+        '''
         self.rows = rows
         self.columns = columns
         self.sparsity = sparsity
 
-##########################################################################
-# A test class for the distributed matrix module.
+
 class TestDistributedMatrix(unittest.TestCase):
-    # Parameters for the tests
+    '''A test class for the distributed matrix module.'''
+    ## Parameters for the tests
     parameters = []
+    ## Where to store the result file
     result_file = scratch_dir + "/result.mtx"
+    ## Matrix to compare against
     CheckMat = 0
+    ## Rank of the current process.
     my_rank = 0
 
-    ##########################################################################
-    # set up tests
-    #  @param[in] self pointer.
     @classmethod
     def setUpClass(self):
+        '''Set up tests.'''
         self.process_rows = int(os.environ['PROCESS_ROWS'])
         self.process_columns = int(os.environ['PROCESS_COLUMNS'])
         self.process_slices = int(os.environ['PROCESS_SLICES'])
@@ -56,6 +59,7 @@ class TestDistributedMatrix(unittest.TestCase):
         self.myslice = nt.GetMySlice()
 
     def setUp(self):
+        '''Set up specific tests.'''
         mat_size = 64
         self.my_rank = comm.Get_rank()
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
@@ -63,8 +67,8 @@ class TestDistributedMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(mat_size, mat_size, 0.0))
         self.parameters.append(TestParameters(7, 7, 0.2))
 
-    ##########################################################################
     def check_result(self):
+        '''Compare two matrices.'''
         norm = 0
         if (self.my_rank == 0):
             ResultMat = scipy.io.mmread(self.result_file)
@@ -72,10 +76,8 @@ class TestDistributedMatrix(unittest.TestCase):
         global_norm = comm.bcast(norm, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
-    ##########################################################################
-    # Test our ability to read and write matrices.
-    #  @param[in] self pointer.
     def test_read(self):
+        '''Test our ability to read and write matrices.'''
         for param in self.parameters:
             if (self.my_rank == 0):
                 matrix1 = scipy.sparse.random(param.rows, param.columns,
@@ -93,10 +95,8 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
-    ##########################################################################
-    # Test our ability to read and write binary.
-    #  @param[in] self pointer.
     def test_readwritebinary(self):
+        '''Test our ability to read and write binary.'''
         for param in self.parameters:
             if (self.my_rank == 0):
                 matrix1 = scipy.sparse.random(param.rows, param.columns,
@@ -118,10 +118,8 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
-    ##########################################################################
-    # Test extraction of triplet list
-    #  @param[in] self pointer.
     def test_gettripletlist(self):
+        '''Test extraction of triplet list.'''
         for param in self.parameters:
             if (self.my_rank == 0):
                 matrix1 = scipy.sparse.random(param.rows, param.columns,
@@ -148,10 +146,8 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
-    ##########################################################################
-    # Test extraction of triplet list via repartition function
-    #  @param[in] self pointer.
     def test_repartition(self):
+        '''Test extraction of triplet list via repartition function.'''
         for param in self.parameters:
             if (self.my_rank == 0):
                 matrix1 = scipy.sparse.random(param.rows, param.columns,
@@ -202,7 +198,6 @@ class TestDistributedMatrix(unittest.TestCase):
             comm.barrier()
 
             self.check_result()
-        pass
 
 
 if __name__ == '__main__':
