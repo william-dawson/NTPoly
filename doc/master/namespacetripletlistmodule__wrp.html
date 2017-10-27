@@ -86,8 +86,8 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a4d937298fa0728380bc8c865dd379c9e"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule__wrp.html#a4d937298fa0728380bc8c865dd379c9e">resizetripletlist_wrp</a> (ih_this, size)</td></tr>
 <tr class="memdesc:a4d937298fa0728380bc8c865dd379c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Increase the size of a triplet list.  <a href="#a4d937298fa0728380bc8c865dd379c9e">More...</a><br /></td></tr>
 <tr class="separator:a4d937298fa0728380bc8c865dd379c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d98de31a5c787d1a353ca6caf6fe7e9"><td class="memItemLeft" align="right" valign="top"><a id="a1d98de31a5c787d1a353ca6caf6fe7e9"></a>
-pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><b>appendtotripletlist_wrp</b> (ih_this, index_column, index_row, point_value)</td></tr>
+<tr class="memitem:a1d98de31a5c787d1a353ca6caf6fe7e9"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule__wrp.html#a1d98de31a5c787d1a353ca6caf6fe7e9">appendtotripletlist_wrp</a> (ih_this, index_column, index_row, point_value)</td></tr>
+<tr class="memdesc:a1d98de31a5c787d1a353ca6caf6fe7e9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a value to the end of the triplet list.  <a href="#a1d98de31a5c787d1a353ca6caf6fe7e9">More...</a><br /></td></tr>
 <tr class="separator:a1d98de31a5c787d1a353ca6caf6fe7e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a822ad839a8dc96ea8df1ce25a6b550f7"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule__wrp.html#a822ad839a8dc96ea8df1ce25a6b550f7">settripletat_wrp</a> (ih_this, index, index_column, index_row, point_value)</td></tr>
 <tr class="memdesc:a822ad839a8dc96ea8df1ce25a6b550f7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the value of a triplet at a particular index.  <a href="#a822ad839a8dc96ea8df1ce25a6b550f7">More...</a><br /></td></tr>
@@ -105,6 +105,57 @@ pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><b>ap
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A module for wrapping the triplet list data type. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="a1d98de31a5c787d1a353ca6caf6fe7e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1d98de31a5c787d1a353ca6caf6fe7e9">&#9670;&nbsp;</a></span>appendtotripletlist_wrp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public tripletlistmodule_wrp::appendtotripletlist_wrp </td>
+          <td>(</td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
+          <td class="paramname"><em>ih_this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>index_column</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>index_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">real(ntreal), intent(in)&#160;</td>
+          <td class="paramname"><em>point_value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Add a value to the end of the triplet list. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ih_this</td><td>the triplet list to append to. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">index_column</td><td>column of value. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">index_row</td><td>row of value. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">point_value</td><td>the value. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="aec2b447674dcd238807c94f939df1b2c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aec2b447674dcd238807c94f939df1b2c">&#9670;&nbsp;</a></span>constructtripletlist_wrp()</h2>
 
@@ -363,7 +414,7 @@ pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><b>ap
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
           <td class="paramname"><em>matrix_columns</em>, </td>
         </tr>
         <tr>

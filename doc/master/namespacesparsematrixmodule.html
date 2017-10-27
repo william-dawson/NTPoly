@@ -78,11 +78,14 @@ Data Types</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a48fffe3459b3cbc7c769d9bdf854a87a"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a48fffe3459b3cbc7c769d9bdf854a87a">constructemptysparsematrix</a> (this, columns, rows)</td></tr>
-<tr class="memdesc:a48fffe3459b3cbc7c769d9bdf854a87a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a sparse matrix with a certain number of columns and rows. Will allocate storage for the outer values.  <a href="#a48fffe3459b3cbc7c769d9bdf854a87a">More...</a><br /></td></tr>
+<tr class="memdesc:a48fffe3459b3cbc7c769d9bdf854a87a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal only. Create a sparse matrix with a certain number of columns and rows. Will allocate storage for the outer values, nothing else.  <a href="#a48fffe3459b3cbc7c769d9bdf854a87a">More...</a><br /></td></tr>
 <tr class="separator:a48fffe3459b3cbc7c769d9bdf854a87a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aea43b1155f5d2f9a60b266898b7208e8"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#aea43b1155f5d2f9a60b266898b7208e8">constructsparsematrixfromfile</a> (this, file_name)</td></tr>
 <tr class="memdesc:aea43b1155f5d2f9a60b266898b7208e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a sparse matrix by reading in a matrix market file.  <a href="#aea43b1155f5d2f9a60b266898b7208e8">More...</a><br /></td></tr>
 <tr class="separator:aea43b1155f5d2f9a60b266898b7208e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5f1eb1bc9c4ea665ec55a6caf92d2d7c"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a5f1eb1bc9c4ea665ec55a6caf92d2d7c">constructzerosparsematrix</a> (this, rows, columns)</td></tr>
+<tr class="memdesc:a5f1eb1bc9c4ea665ec55a6caf92d2d7c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a sparse matrix with zero values in it.  <a href="#a5f1eb1bc9c4ea665ec55a6caf92d2d7c">More...</a><br /></td></tr>
+<tr class="separator:a5f1eb1bc9c4ea665ec55a6caf92d2d7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a32b3ae65c813eba65e4e93d839eb8e88"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a32b3ae65c813eba65e4e93d839eb8e88">constructfromtripletlist</a> (this, triplet_list, rows, columns)</td></tr>
 <tr class="memdesc:a32b3ae65c813eba65e4e93d839eb8e88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a sparse matrix from a <b>SORTED</b> triplet list. The triplet list must be sorted to efficiently fill in the matrix. This constructor assumes <b>you</b> have already sorted the triplet list.  <a href="#a32b3ae65c813eba65e4e93d839eb8e88">More...</a><br /></td></tr>
 <tr class="separator:a32b3ae65c813eba65e4e93d839eb8e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -186,7 +189,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Create a sparse matrix with a certain number of columns and rows. Will allocate storage for the outer values. </p>
+<p>Internal only. Create a sparse matrix with a certain number of columns and rows. Will allocate storage for the outer values, nothing else. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">this</td><td>the matrix being created. It will have the outer index allocated, but nothing else. </td></tr>
@@ -280,6 +283,50 @@ Functions/Subroutines</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">this</td><td>the matrix being constructed. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">file_name</td><td>name of the file. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a5f1eb1bc9c4ea665ec55a6caf92d2d7c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5f1eb1bc9c4ea665ec55a6caf92d2d7c">&#9670;&nbsp;</a></span>constructzerosparsematrix()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public sparsematrixmodule::constructzerosparsematrix </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(out)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>columns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct a sparse matrix with zero values in it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[out]</td><td class="paramname">this</td><td>the matrix being constructed </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rows</td><td>number of matrix rows </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">columns</td><td>number of matrix columns </td></tr>
   </table>
   </dd>
 </dl>

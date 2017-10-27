@@ -1,9 +1,14 @@
 var searchData=
 [
-  ['_7echebyshevpolynomial',['~ChebyshevPolynomial',['../class_n_t_poly_1_1_chebyshev_polynomial.html#a3cb57c7467c101e5f423b42b96b290d1',1,'NTPoly::ChebyshevPolynomial']]],
-  ['_7edistributedsparsematrix',['~DistributedSparseMatrix',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#af449c73d13cdfd8d0c795827caef9c91',1,'NTPoly::DistributedSparseMatrix']]],
-  ['_7ematrixmemorypool',['~MatrixMemoryPool',['../class_n_t_poly_1_1_matrix_memory_pool.html#aa6fd901215d515a8276511dab332b9e1',1,'NTPoly::MatrixMemoryPool']]],
-  ['_7epolynomial',['~Polynomial',['../class_n_t_poly_1_1_polynomial.html#ac5ae7b39d14bb90ed75a36b03ad57739',1,'NTPoly::Polynomial']]],
-  ['_7esparsematrix',['~SparseMatrix',['../class_n_t_poly_1_1_sparse_matrix.html#a0efff7e2bb455ab1a287e627dc51961c',1,'NTPoly::SparseMatrix']]],
-  ['_7etripletlist',['~TripletList',['../class_n_t_poly_1_1_triplet_list.html#a15d645f9a7a8acccb26f063ca71dc4dd',1,'NTPoly::TripletList']]]
+  ['within_5fslice_5fcomm',['within_slice_comm',['../namespaceprocessgridmodule.html#a7b5afa524b92bbfccd3cc73f6fc352da',1,'processgridmodule']]],
+  ['within_5fslice_5frank',['within_slice_rank',['../namespaceprocessgridmodule.html#ae7db21e23371864de82d412130de42ce',1,'processgridmodule']]],
+  ['wrappermodule',['wrappermodule',['../namespacewrappermodule.html',1,'']]],
+  ['writecitation',['writecitation',['../namespaceloggingmodule.html#aaf3d69a6fdcc7cf26296144f2dd5e97d',1,'loggingmodule']]],
+  ['writeelement',['writeelement',['../namespaceloggingmodule.html#a0cb481793f208031de1e58ecb79df922',1,'loggingmodule']]],
+  ['writeheader',['writeheader',['../namespaceloggingmodule.html#a70408f75d743e2e6757a903e03a82d12',1,'loggingmodule']]],
+  ['writelistelement',['writelistelement',['../namespaceloggingmodule.html#a9657a01518cbcbcf9e316b7c7a7ba1fa',1,'loggingmodule']]],
+  ['writetobinary',['WriteToBinary',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#aeaf7cbe71334ed63bb4a192ef7ff1104',1,'NTPoly::DistributedSparseMatrix::WriteToBinary()'],['../namespacedistributedsparsematrixmodule.html#a45505c47edf885d45ad81d965dd07957',1,'distributedsparsematrixmodule::writetobinary()']]],
+  ['writetobinary_5fwrp',['writetobinary_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#adb7bbd9c2a48c19cd2eb08361265be43',1,'distributedsparsematrixmodule_wrp']]],
+  ['writetomatrixmarket',['WriteToMatrixMarket',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#ad756564f83bd69d70092b8ba9b4480a6',1,'NTPoly::DistributedSparseMatrix::WriteToMatrixMarket()'],['../class_n_t_poly_1_1_sparse_matrix.html#a14e0c43eeaf1cc82c7484d289aadae2d',1,'NTPoly::SparseMatrix::WriteToMatrixMarket()'],['../namespacedistributedsparsematrixmodule.html#a12e5b76c5742caae8aab816d06a609dd',1,'distributedsparsematrixmodule::writetomatrixmarket()']]],
+  ['writetomatrixmarket_5fwrp',['writetomatrixmarket_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#aad8c8b96bc83b99f85c19d044184761b',1,'distributedsparsematrixmodule_wrp']]]
 ];

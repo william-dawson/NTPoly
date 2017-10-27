@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['testdistributedsparsematrix',['testDistributedSparseMatrix',['../namespacetest_distributed_sparse_matrix.html',1,'']]],
-  ['testsparsematrix',['testSparseMatrix',['../namespacetest_sparse_matrix.html',1,'']]],
   ['timermodule',['timermodule',['../namespacetimermodule.html',1,'']]],
   ['trigonometrysolversmodule',['trigonometrysolversmodule',['../namespacetrigonometrysolversmodule.html',1,'']]],
   ['trigonometrysolversmodule_5fwrp',['trigonometrysolversmodule_wrp',['../namespacetrigonometrysolversmodule__wrp.html',1,'']]],

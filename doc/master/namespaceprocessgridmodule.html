@@ -77,6 +77,15 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a829ef381fd4d90c28fd9acc05b9b05e2"><td class="memItemLeft" align="right" valign="top">logical function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprocessgridmodule.html#a829ef381fd4d90c28fd9acc05b9b05e2">isroot</a> ()</td></tr>
 <tr class="memdesc:a829ef381fd4d90c28fd9acc05b9b05e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if the current process is the root process.  <a href="#a829ef381fd4d90c28fd9acc05b9b05e2">More...</a><br /></td></tr>
 <tr class="separator:a829ef381fd4d90c28fd9acc05b9b05e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0187c5f82e12dc5b9431dd970cb4044f"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprocessgridmodule.html#a0187c5f82e12dc5b9431dd970cb4044f">getmyslice</a> ()</td></tr>
+<tr class="memdesc:a0187c5f82e12dc5b9431dd970cb4044f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the slice of the current process.  <a href="#a0187c5f82e12dc5b9431dd970cb4044f">More...</a><br /></td></tr>
+<tr class="separator:a0187c5f82e12dc5b9431dd970cb4044f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2a2775f61dff85a2c792f9d21b59ea1"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprocessgridmodule.html#af2a2775f61dff85a2c792f9d21b59ea1">getmycolumn</a> ()</td></tr>
+<tr class="memdesc:af2a2775f61dff85a2c792f9d21b59ea1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the column of the current process.  <a href="#af2a2775f61dff85a2c792f9d21b59ea1">More...</a><br /></td></tr>
+<tr class="separator:af2a2775f61dff85a2c792f9d21b59ea1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fcfc4828d1740a42613f9df5eaf9691"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceprocessgridmodule.html#a0fcfc4828d1740a42613f9df5eaf9691">getmyrow</a> ()</td></tr>
+<tr class="memdesc:a0fcfc4828d1740a42613f9df5eaf9691"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the row of the current process.  <a href="#a0fcfc4828d1740a42613f9df5eaf9691">More...</a><br /></td></tr>
+<tr class="separator:a0fcfc4828d1740a42613f9df5eaf9691"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -247,6 +256,66 @@ integer, dimension(:,:), allocatable, public&#160;</td><td class="memItemRight" 
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="af2a2775f61dff85a2c792f9d21b59ea1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2a2775f61dff85a2c792f9d21b59ea1">&#9670;&nbsp;</a></span>getmycolumn()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, public processgridmodule::getmycolumn </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the column of the current process. </p>
+<dl class="section return"><dt>Returns</dt><dd>column number of the current process. </dd></dl>
+
+</div>
+</div>
+<a id="a0fcfc4828d1740a42613f9df5eaf9691"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fcfc4828d1740a42613f9df5eaf9691">&#9670;&nbsp;</a></span>getmyrow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, public processgridmodule::getmyrow </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the row of the current process. </p>
+<dl class="section return"><dt>Returns</dt><dd>row number of the current process. </dd></dl>
+
+</div>
+</div>
+<a id="a0187c5f82e12dc5b9431dd970cb4044f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0187c5f82e12dc5b9431dd970cb4044f">&#9670;&nbsp;</a></span>getmyslice()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">integer function, public processgridmodule::getmyslice </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the slice of the current process. </p>
+<dl class="section return"><dt>Returns</dt><dd>slice number of the current process. </dd></dl>
 
 </div>
 </div>

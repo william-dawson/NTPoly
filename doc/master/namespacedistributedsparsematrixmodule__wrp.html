@@ -116,6 +116,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a27b6a6f00cbe7e9f8c4ae33564ad0367"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule__wrp.html#a27b6a6f00cbe7e9f8c4ae33564ad0367">gettripletlist_wrp</a> (ih_this, ih_triplet_list)</td></tr>
 <tr class="memdesc:a27b6a6f00cbe7e9f8c4ae33564ad0367"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts a triplet list of the data that is stored on this process.  <a href="#a27b6a6f00cbe7e9f8c4ae33564ad0367">More...</a><br /></td></tr>
 <tr class="separator:a27b6a6f00cbe7e9f8c4ae33564ad0367"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6d9eb6f77d421a0dd4c2adb08aff1571"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule__wrp.html#a6d9eb6f77d421a0dd4c2adb08aff1571">getmatrixblock_wrp</a> (ih_this, ih_triplet_list, start_row, end_row, start_column, end_column)</td></tr>
+<tr class="memdesc:a6d9eb6f77d421a0dd4c2adb08aff1571"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates.  <a href="#a6d9eb6f77d421a0dd4c2adb08aff1571">More...</a><br /></td></tr>
+<tr class="separator:a6d9eb6f77d421a0dd4c2adb08aff1571"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab493e636057e9d3f4d577be8003ef784"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule__wrp.html#ab493e636057e9d3f4d577be8003ef784">incrementdistributedsparsematrix_wrp</a> (ih_matA, ih_matB, alpha_in, threshold_in)</td></tr>
 <tr class="memdesc:ab493e636057e9d3f4d577be8003ef784"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix B = alpha*Matrix A + Matrix B (AXPY)  <a href="#ab493e636057e9d3f4d577be8003ef784">More...</a><br /></td></tr>
 <tr class="separator:ab493e636057e9d3f4d577be8003ef784"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -685,6 +688,71 @@ Functions/Subroutines</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ih_this</td><td>handle to the matrix. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">mat_dimension</td><td>the size of the matrix. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a6d9eb6f77d421a0dd4c2adb08aff1571"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6d9eb6f77d421a0dd4c2adb08aff1571">&#9670;&nbsp;</a></span>getmatrixblock_wrp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public distributedsparsematrixmodule_wrp::getmatrixblock_wrp </td>
+          <td>(</td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
+          <td class="paramname"><em>ih_this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
+          <td class="paramname"><em>ih_triplet_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>start_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>end_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>start_column</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>end_column</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ih_this</td><td>the distributed sparse matrix. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ih_triplet_list</td><td>the list to fill. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start_row</td><td>the starting row for data to store on this process. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end_row</td><td>the ending row for data to store on this process </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start_column</td><td>the starting col for data to store on this process. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end_column</td><td>the ending col for data to store on this process </td></tr>
   </table>
   </dd>
 </dl>

@@ -77,15 +77,15 @@ Data Types</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:a394c9598bf96c593aecb50365e2d7ac2"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule__wrp.html#a394c9598bf96c593aecb50365e2d7ac2">constructemptysparsematrix_wrp</a> (ih_this, columns, rows)</td></tr>
-<tr class="memdesc:a394c9598bf96c593aecb50365e2d7ac2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wrap the empty sparse matrix constructor.  <a href="#a394c9598bf96c593aecb50365e2d7ac2">More...</a><br /></td></tr>
-<tr class="separator:a394c9598bf96c593aecb50365e2d7ac2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af2776e41c8ca0c8dfa7a6243776b830e"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule__wrp.html#af2776e41c8ca0c8dfa7a6243776b830e">constructsparsematrixfromfile_wrp</a> (ih_this, file_name, name_size)</td></tr>
 <tr class="memdesc:af2776e41c8ca0c8dfa7a6243776b830e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a sparse matrix by reading in a matrix market file.  <a href="#af2776e41c8ca0c8dfa7a6243776b830e">More...</a><br /></td></tr>
 <tr class="separator:af2776e41c8ca0c8dfa7a6243776b830e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8eaf265dfd1ff2a05afac68426702be4"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule__wrp.html#a8eaf265dfd1ff2a05afac68426702be4">constructfromtripletlist_wrp</a> (ih_this, ih_triplet_list, rows, columns)</td></tr>
 <tr class="memdesc:a8eaf265dfd1ff2a05afac68426702be4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a sparse matrix from a <b>SORTED</b> triplet list.  <a href="#a8eaf265dfd1ff2a05afac68426702be4">More...</a><br /></td></tr>
 <tr class="separator:a8eaf265dfd1ff2a05afac68426702be4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a106d4887bdb3185510e394c2eba5a679"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule__wrp.html#a106d4887bdb3185510e394c2eba5a679">constructzerosparsematrix_wrp</a> (ih_this, rows, columns)</td></tr>
+<tr class="memdesc:a106d4887bdb3185510e394c2eba5a679"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a sparse matrix with zero values in it.  <a href="#a106d4887bdb3185510e394c2eba5a679">More...</a><br /></td></tr>
+<tr class="separator:a106d4887bdb3185510e394c2eba5a679"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afe10df8855dbd45039c27ba54e54b02b"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule__wrp.html#afe10df8855dbd45039c27ba54e54b02b">destructsparsematrix_wrp</a> (ih_this)</td></tr>
 <tr class="memdesc:afe10df8855dbd45039c27ba54e54b02b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly destruct a sparse matrix.  <a href="#afe10df8855dbd45039c27ba54e54b02b">More...</a><br /></td></tr>
 <tr class="separator:afe10df8855dbd45039c27ba54e54b02b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -114,50 +114,6 @@ Functions/Subroutines</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A module for wrapping the sparse matrix data type. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="a394c9598bf96c593aecb50365e2d7ac2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a394c9598bf96c593aecb50365e2d7ac2">&#9670;&nbsp;</a></span>constructemptysparsematrix_wrp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">pure subroutine, public sparsematrixmodule_wrp::constructemptysparsematrix_wrp </td>
-          <td>(</td>
-          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
-          <td class="paramname"><em>ih_this</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
-          <td class="paramname"><em>columns</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
-          <td class="paramname"><em>rows</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Wrap the empty sparse matrix constructor. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">ih_this</td><td>handle to the matrix being created. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">columns</td><td>number of matrix columns. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">rows</td><td>number of matrix rows. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a8eaf265dfd1ff2a05afac68426702be4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8eaf265dfd1ff2a05afac68426702be4">&#9670;&nbsp;</a></span>constructfromtripletlist_wrp()</h2>
 
@@ -247,6 +203,50 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">ih_this</td><td>the matrix being constructed. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">file_name</td><td>name of the file. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">name_size</td><td>the number of characters in the file name. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a106d4887bdb3185510e394c2eba5a679"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a106d4887bdb3185510e394c2eba5a679">&#9670;&nbsp;</a></span>constructzerosparsematrix_wrp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public sparsematrixmodule_wrp::constructzerosparsematrix_wrp </td>
+          <td>(</td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
+          <td class="paramname"><em>ih_this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>rows</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
+          <td class="paramname"><em>columns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Construct a sparse matrix with zero values in it. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">ih_this</td><td>handle to the matrix being constructed </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">rows</td><td>number of matrix rows </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">columns</td><td>number of matrix columns </td></tr>
   </table>
   </dd>
 </dl>
