@@ -11,7 +11,6 @@ var searchData=
   ['test_5fexponentialround',['test_exponentialround',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a0aa987d5cf37fa4df0614f9f1cf312df',1,'UnitTests::testSolvers::TestSolvers']]],
   ['test_5fhornerfunction',['test_hornerfunction',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a0f3d0d1863872b00213590b6362fdf3b',1,'UnitTests::testSolvers::TestSolvers']]],
   ['test_5fhpcp',['test_HPCP',['../class_unit_tests_1_1test_chemistry_1_1_test_chemistry.html#aca42ba4f14bb2766c2db324efc0325f9',1,'UnitTests::testChemistry::TestChemistry']]],
-  ['test_5fhpcpplus',['test_HPCPPlus',['../class_unit_tests_1_1test_chemistry_1_1_test_chemistry.html#a598fdd115052c41579d5d0faea5c2faa',1,'UnitTests::testChemistry::TestChemistry']]],
   ['test_5finverseroot',['test_inverseroot',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a7df6ab504031b99e9fd8a71ef1b6c2d6',1,'UnitTests::testSolvers::TestSolvers']]],
   ['test_5finversesquareroot',['test_inversesquareroot',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a42635f418a37f7428efdac9ba9b07431',1,'UnitTests::testSolvers::TestSolvers']]],
   ['test_5finvert',['test_invert',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#ab1292d2984034d88c3626631ac709a53',1,'UnitTests::testSolvers::TestSolvers']]],
