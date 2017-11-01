@@ -14,6 +14,14 @@ set(TestFiles
 find_package(PythonInterp REQUIRED)
 
 ################################################################################
+execute_process(COMMAND ${MPIEXEC} --version
+                OUTPUT_VARIABLE mpiversion OUTPUT_STRIP_TRAILING_WHITESPACE)
+if (${mpiversion} MATCHES "OpenRTE")
+  set(oversubscribe "--oversubscribe")
+else()
+  set(oversubscribe "")
+endif()
+
 configure_file(__init__.py __init__.py COPYONLY)
 configure_file(Helpers.py Helpers.py COPYONLY)
 configure_file(RunTest.sh
@@ -31,6 +39,7 @@ configure_file(testSparseMatrix.py testSparseMatrix.py COPYONLY)
 ################################################################################
 find_program(BASH_PROGRAM bash)
 set(TestScript ${CMAKE_BINARY_DIR}/bin/RunTest.sh)
+
 add_test(PythonTests111 ${BASH_PROGRAM} ${TestScript} 1 1 1 1)
 add_test(PythonTests211 ${BASH_PROGRAM} ${TestScript} 2 1 1 2)
 add_test(PythonTests121 ${BASH_PROGRAM} ${TestScript} 1 2 1 2)
