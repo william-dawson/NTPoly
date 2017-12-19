@@ -155,6 +155,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
+  !! This is still experimental.
   !! An implementation of Hotelling's method \cite palser1998canonical.
   !! We just change the convergence criteria.
   !! @param[in] Mat1 Matrix 1.
@@ -207,7 +208,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
@@ -216,7 +216,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL CopyDistributedSparseMatrix(Mat1,BalancedMat1)
     END IF
-    CALL StopTimer("Load Balance")
 
     !! Compute Sigma
     CALL ComputeSigma(BalancedMat1,sigma)
@@ -230,7 +229,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    CALL StartTimer("I-Invert")
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
     DO outer_counter = 1,solver_parameters%max_iterations
@@ -243,7 +241,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL DistributedGemm(InverseMat,BalancedMat1,Temp1, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-
        CALL DistributedGemm(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
 
@@ -251,7 +248,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyDistributedSparseMatrix(InverseMat,Temp1)
 
        CALL ScaleDistributedSparseMatrix(InverseMat,TWO)
-
        CALL IncrementDistributedSparseMatrix(Temp2,InverseMat, &
             & threshold_in=solver_parameters%threshold)
 
@@ -271,15 +267,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
        CALL PrintMatrixInformation(InverseMat)
     END IF
-    CALL StopTimer("I-Invert")
 
     !! Undo Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(InverseMat,InverseMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     END IF
-    CALL StopTimer("Load Balance")
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
