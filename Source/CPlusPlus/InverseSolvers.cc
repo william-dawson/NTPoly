@@ -14,4 +14,11 @@ void InverseSolvers::Invert(
     const IterativeSolverParameters &solver_parameters) {
   Invert_wrp(GetIH(Overlap), GetIH(InverseMat), GetIH(solver_parameters));
 }
+////////////////////////////////////////////////////////////////////////////////
+void InverseSolvers::PseudoInverse(
+    const DistributedSparseMatrix &Overlap, DistributedSparseMatrix &InverseMat,
+    const IterativeSolverParameters &solver_parameters) {
+  PseudoInverse_wrp(GetIH(Overlap), GetIH(InverseMat),
+                    GetIH(solver_parameters));
+}
 } // namespace NTPoly
