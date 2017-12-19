@@ -4,6 +4,10 @@ A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
+import warnings
+warnings.filterwarnings(action="ignore", module="scipy",
+                        message="^internal gelsd")
+
 import scipy
 import scipy.sparse
 import scipy.io
@@ -14,7 +18,7 @@ import os
 import math
 import numpy.polynomial.chebyshev
 from mpi4py import MPI
-## MPI global communicator.
+# MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -24,15 +28,15 @@ from Helpers import scratch_dir
 
 class TestSolvers(unittest.TestCase):
     '''A test class for the different kinds of solvers.'''
-    ## First input file.
+    # First input file.
     input_file = scratch_dir + "/input.mtx"
-    ## Second input file.
+    # Second input file.
     input_file2 = scratch_dir + "/input2.mtx"
-    ## Matrix to compare against.
+    # Matrix to compare against.
     CheckMat = 0
-    ## Rank of the current process.
+    # Rank of the current process.
     my_rank = 0
-    ## Dimension of the matrices to test.
+    # Dimension of the matrices to test.
     matrix_dimension = 32
 
     @classmethod
@@ -45,11 +49,11 @@ class TestSolvers(unittest.TestCase):
 
     def setUp(self):
         '''Set up all of the tests.'''
-        ## Rank of the current process.
+        # Rank of the current process.
         self.my_rank = comm.Get_rank()
-        ## Parmaeters for iterative solvers.
+        # Parmaeters for iterative solvers.
         self.iterative_solver_parameters = nt.IterativeSolverParameters()
-        ## Parameters for fixed solvers.
+        # Parameters for fixed solvers.
         self.fixed_solver_parameters = nt.FixedSolverParameters()
         self.fixed_solver_parameters.SetVerbosity(True)
         self.iterative_solver_parameters.SetVerbosity(True)
@@ -100,6 +104,41 @@ class TestSolvers(unittest.TestCase):
 
         nt.InverseSolvers.Invert(overlap_matrix, inverse_matrix,
                                  self.iterative_solver_parameters)
+
+        inverse_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_pseudoinverse(self):
+        '''Test our ability to compute the pseudoinverse of matrices.'''
+        # Starting Matrix.
+        temp_mat = scipy.sparse.rand(self.matrix_dimension, self.matrix_dimension,
+                                     density=1.0)
+        matrix1 = scipy.sparse.csr_matrix(temp_mat)
+        # Make it rank deficient
+        k = int(self.matrix_dimension / 2)
+        matrix1 = matrix1[k:].dot(matrix1[k:].T)
+
+        # Check Matrix
+        self.CheckMat = scipy.sparse.csr_matrix(
+            scipy.linalg.pinv(matrix1.todense()))
+        if self.my_rank == 0:
+            scipy.io.mmwrite(self.input_file,
+                             scipy.sparse.csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        overlap_matrix = nt.DistributedSparseMatrix(
+            self.input_file, False)
+        inverse_matrix = nt.DistributedSparseMatrix(
+            overlap_matrix.GetActualDimension())
+        permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
+
+        nt.InverseSolvers.PseudoInverse(overlap_matrix, inverse_matrix,
+                                        self.iterative_solver_parameters)
 
         inverse_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
