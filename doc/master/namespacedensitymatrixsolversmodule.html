@@ -79,9 +79,6 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a8cac6310fc93ac0beb741a7478912408"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedensitymatrixsolversmodule.html#a8cac6310fc93ac0beb741a7478912408">hpcp</a> (Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)</td></tr>
 <tr class="memdesc:a8cac6310fc93ac0beb741a7478912408"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density matrix from a Hamiltonian using the HPCP method. Based on the algorithm presented in <a class="el" href="citelist.html#CITEREF_truflandier2016communication">[6]</a>.  <a href="#a8cac6310fc93ac0beb741a7478912408">More...</a><br /></td></tr>
 <tr class="separator:a8cac6310fc93ac0beb741a7478912408"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad273b77b5ad4693531e49dca3f1cc296"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedensitymatrixsolversmodule.html#ad273b77b5ad4693531e49dca3f1cc296">hpcpplus</a> (Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)</td></tr>
-<tr class="memdesc:ad273b77b5ad4693531e49dca3f1cc296"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density matrix from a Hamiltonian using the HPCP+ method. Based on the algorithm presented in <a class="el" href="citelist.html#CITEREF_truflandier2016communication">[6]</a>.  <a href="#ad273b77b5ad4693531e49dca3f1cc296">More...</a><br /></td></tr>
-<tr class="separator:ad273b77b5ad4693531e49dca3f1cc296"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Solving Quantum Chemistry Systems using Purification. </p>
@@ -137,71 +134,6 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute the density matrix from a Hamiltonian using the HPCP method. Based on the algorithm presented in <a class="el" href="citelist.html#CITEREF_truflandier2016communication">[6]</a>. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Hamiltonian</td><td>the matrix to compute the corresponding density from. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">InverseSquareRoot</td><td>of the overlap matrix. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nel</td><td>the number of electrons. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">Density</td><td>the density matrix computed by this routine. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">chemical_potential_out</td><td>the chemical potential calculated. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ad273b77b5ad4693531e49dca3f1cc296"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad273b77b5ad4693531e49dca3f1cc296">&#9670;&nbsp;</a></span>hpcpplus()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine, public densitymatrixsolversmodule::hpcpplus </td>
-          <td>(</td>
-          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
-          <td class="paramname"><em>Hamiltonian</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
-          <td class="paramname"><em>InverseSquareRoot</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer, intent(in)&#160;</td>
-          <td class="paramname"><em>nel</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">type(distributedsparsematrix_t), intent(inout)&#160;</td>
-          <td class="paramname"><em>Density</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(ntreal), intent(out), optional&#160;</td>
-          <td class="paramname"><em>chemical_potential_out</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">type(iterativesolverparameters_t), intent(in), optional&#160;</td>
-          <td class="paramname"><em>solver_parameters_in</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Compute the density matrix from a Hamiltonian using the HPCP+ method. Based on the algorithm presented in <a class="el" href="citelist.html#CITEREF_truflandier2016communication">[6]</a>. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">Hamiltonian</td><td>the matrix to compute the corresponding density from. </td></tr>

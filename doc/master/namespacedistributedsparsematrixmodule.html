@@ -110,6 +110,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a95ef415bd8d32e66683470d5f696b329"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a95ef415bd8d32e66683470d5f696b329">gettripletlist</a> (this, triplet_list)</td></tr>
 <tr class="memdesc:a95ef415bd8d32e66683470d5f696b329"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extracts a triplet list of the data that is stored on this process. Data is returned with absolute coordinates.  <a href="#a95ef415bd8d32e66683470d5f696b329">More...</a><br /></td></tr>
 <tr class="separator:a95ef415bd8d32e66683470d5f696b329"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a334532e19dcc39d6e91ce7fb22a2bc09"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a334532e19dcc39d6e91ce7fb22a2bc09">getmatrixblock</a> (this, triplet_list, start_row, end_row, start_column, end_column)</td></tr>
+<tr class="memdesc:a334532e19dcc39d6e91ce7fb22a2bc09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates.  <a href="#a334532e19dcc39d6e91ce7fb22a2bc09">More...</a><br /></td></tr>
+<tr class="separator:a334532e19dcc39d6e91ce7fb22a2bc09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc956b06e1582e426faa1d59fa1cf956"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#adc956b06e1582e426faa1d59fa1cf956">getactualdimension</a> (this)</td></tr>
 <tr class="memdesc:adc956b06e1582e426faa1d59fa1cf956"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the actual dimension of the matrix.  <a href="#adc956b06e1582e426faa1d59fa1cf956">More...</a><br /></td></tr>
 <tr class="separator:adc956b06e1582e426faa1d59fa1cf956"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -135,7 +138,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a8ce76b70a99f1545412acf865ab56048"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transpose a sparse matrix.  <a href="#a8ce76b70a99f1545412acf865ab56048">More...</a><br /></td></tr>
 <tr class="separator:a8ce76b70a99f1545412acf865ab56048"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bdaf2ace1d63a739c7073f9c343b1f0"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a6bdaf2ace1d63a739c7073f9c343b1f0">mergelocalblocks</a> (this, merged_matrix)</td></tr>
-<tr class="memdesc:a6bdaf2ace1d63a739c7073f9c343b1f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a local matrix, and use it to fill the local block matrix structure.  <a href="#a6bdaf2ace1d63a739c7073f9c343b1f0">More...</a><br /></td></tr>
+<tr class="memdesc:a6bdaf2ace1d63a739c7073f9c343b1f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merge together the local matrix blocks into one big matrix.  <a href="#a6bdaf2ace1d63a739c7073f9c343b1f0">More...</a><br /></td></tr>
 <tr class="separator:a6bdaf2ace1d63a739c7073f9c343b1f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -557,6 +560,71 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
+<a id="a334532e19dcc39d6e91ce7fb22a2bc09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a334532e19dcc39d6e91ce7fb22a2bc09">&#9670;&nbsp;</a></span>getmatrixblock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public distributedsparsematrixmodule::getmatrixblock </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(tripletlist_t), intent(inout)&#160;</td>
+          <td class="paramname"><em>triplet_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>start_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>end_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>start_column</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer&#160;</td>
+          <td class="paramname"><em>end_column</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the distributed sparse matrix. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">triplet_list</td><td>the list to fill. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start_row</td><td>the starting row for data to store on this process. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end_row</td><td>the ending row for data to store on this process. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">start_column</td><td>the starting col for data to store on this process </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">end_column</td><td>the ending col for data to store on this process </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a8bc94c2a9026dcaa256cb4c542621bd5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8bc94c2a9026dcaa256cb4c542621bd5">&#9670;&nbsp;</a></span>getsize()</h2>
 
@@ -647,11 +715,11 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Take a local matrix, and use it to fill the local block matrix structure. </p>
+<p>Merge together the local matrix blocks into one big matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the distributed sparse matrix. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">matrix_to_split</td><td>the matrix to split up. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">merged_matrix</td><td>the merged matrix. </td></tr>
   </table>
   </dd>
 </dl>

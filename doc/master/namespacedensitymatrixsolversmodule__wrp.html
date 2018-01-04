@@ -79,9 +79,6 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a5acaeb5a554a774966cd89eea913d0ac"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedensitymatrixsolversmodule__wrp.html#a5acaeb5a554a774966cd89eea913d0ac">hpcp_wrp</a> (ih_Hamiltonian, ih_InverseSquareRoot, nel, ih_Density, chemical_potential_out, ih_solver_parameters)</td></tr>
 <tr class="memdesc:a5acaeb5a554a774966cd89eea913d0ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density matrix from a Hamiltonian using the HPCP method.  <a href="#a5acaeb5a554a774966cd89eea913d0ac">More...</a><br /></td></tr>
 <tr class="separator:a5acaeb5a554a774966cd89eea913d0ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af3eb1264da6e23e7e80b7b5696ce04e0"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedensitymatrixsolversmodule__wrp.html#af3eb1264da6e23e7e80b7b5696ce04e0">hpcpplus_wrp</a> (ih_Hamiltonian, ih_InverseSquareRoot, nel, ih_Density, chemical_potential_out, ih_solver_parameters)</td></tr>
-<tr class="memdesc:af3eb1264da6e23e7e80b7b5696ce04e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the density matrix from a Hamiltonian using the HPCP method.  <a href="#af3eb1264da6e23e7e80b7b5696ce04e0">More...</a><br /></td></tr>
-<tr class="separator:af3eb1264da6e23e7e80b7b5696ce04e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Wraps the overlap solvers module for calling from other languages. </p>
@@ -94,71 +91,6 @@ Functions/Subroutines</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">subroutine, public densitymatrixsolversmodule_wrp::hpcp_wrp </td>
-          <td>(</td>
-          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
-          <td class="paramname"><em>ih_Hamiltonian</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
-          <td class="paramname"><em>ih_InverseSquareRoot</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=c_int), intent(in)&#160;</td>
-          <td class="paramname"><em>nel</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
-          <td class="paramname"><em>ih_Density</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">real(ntreal), intent(out)&#160;</td>
-          <td class="paramname"><em>chemical_potential_out</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
-          <td class="paramname"><em>ih_solver_parameters</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Compute the density matrix from a Hamiltonian using the HPCP method. </p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">ih_Hamiltonian</td><td>the matrix to compute the corresponding density. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ih_InverseSquareRoot</td><td>of the overlap matrix. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">nel</td><td>the number of electrons. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">ih_Density</td><td>the density matrix computed by this routine. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">chemical_potential_out</td><td>the chemical potential calculated. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">ih_solver_parameters</td><td>parameters for the solver </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="af3eb1264da6e23e7e80b7b5696ce04e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af3eb1264da6e23e7e80b7b5696ce04e0">&#9670;&nbsp;</a></span>hpcpplus_wrp()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">subroutine, public densitymatrixsolversmodule_wrp::hpcpplus_wrp </td>
           <td>(</td>
           <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
           <td class="paramname"><em>ih_Hamiltonian</em>, </td>

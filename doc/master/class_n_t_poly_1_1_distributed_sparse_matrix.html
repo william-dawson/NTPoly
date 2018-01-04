@@ -104,6 +104,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html#a9ce6a744c21ba04dffedb9574c62f937">GetLogicalDimension</a> () const</td></tr>
 <tr class="memdesc:a9ce6a744c21ba04dffedb9574c62f937"><td class="mdescLeft">&#160;</td><td class="mdescRight">the logical dimension is scaled so each process has an even slice. <br /></td></tr>
 <tr class="separator:a9ce6a744c21ba04dffedb9574c62f937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae8e2b1bd3883f9194354807d480e0a43"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html#ae8e2b1bd3883f9194354807d480e0a43">GetTripletList</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;triplet_list)</td></tr>
+<tr class="separator:ae8e2b1bd3883f9194354807d480e0a43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15bf7906d1d2e3970f45ad7fc552884a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html#a15bf7906d1d2e3970f45ad7fc552884a">GetMatrixBlock</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;triplet_list, int start_row, int end_row, int start_column, int end_column)</td></tr>
+<tr class="separator:a15bf7906d1d2e3970f45ad7fc552884a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a89581c03049de25f9e7ab665d771ef8d"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html#a89581c03049de25f9e7ab665d771ef8d">Dot</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;matB)</td></tr>
 <tr class="separator:a89581c03049de25f9e7ab665d771ef8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeb93d903d109cff2cecdaaa7ffab3202"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html#aeb93d903d109cff2cecdaaa7ffab3202">Increment</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;matB, double alpha=1.0, double threshold=0.0)</td></tr>
@@ -366,6 +370,86 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>TripletList</b></td>
     <tr><td class="paramname">alpha</td><td>scaling factor. </td></tr>
     <tr><td class="paramname">beta</td><td>scaling factor. </td></tr>
     <tr><td class="paramname">threshold</td><td>for flushing small values. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a15bf7906d1d2e3970f45ad7fc552884a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15bf7906d1d2e3970f45ad7fc552884a">&#9670;&nbsp;</a></span>GetMatrixBlock()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::DistributedSparseMatrix::GetMatrixBlock </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;&#160;</td>
+          <td class="paramname"><em>triplet_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>start_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>end_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>start_column</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>end_column</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">triplet_list</td><td>the list to fill. </td></tr>
+    <tr><td class="paramname">start_row</td><td>the starting row for data to store on this process. </td></tr>
+    <tr><td class="paramname">end_row</td><td>the ending row for data to store on this process. </td></tr>
+    <tr><td class="paramname">start_column</td><td>the starting col for data to store on this process </td></tr>
+    <tr><td class="paramname">end_column</td><td>the ending col for data to store on this process </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae8e2b1bd3883f9194354807d480e0a43"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae8e2b1bd3883f9194354807d480e0a43">&#9670;&nbsp;</a></span>GetTripletList()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::DistributedSparseMatrix::GetTripletList </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;&#160;</td>
+          <td class="paramname"><em>triplet_list</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extracts a triplet list of the data that is stored on this process. Data is returned with absolute coordinates. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">triplet_list</td><td>the list to fill. </td></tr>
   </table>
   </dd>
 </dl>

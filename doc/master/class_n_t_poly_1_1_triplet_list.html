@@ -88,6 +88,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a202c0b9fb81777740c6e8c28e864152d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a579593b1861e35a2acac1b7ab93808e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_n_t_poly_1_1_triplet.html">Triplet</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_triplet_list.html#a579593b1861e35a2acac1b7ab93808e5">GetTripletAt</a> (int index) const</td></tr>
 <tr class="separator:a579593b1861e35a2acac1b7ab93808e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afdc84d0290cba1fb1e85f003b613f0dd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_triplet_list.html#afdc84d0290cba1fb1e85f003b613f0dd">GetSize</a> () const</td></tr>
+<tr class="separator:afdc84d0290cba1fb1e85f003b613f0dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15d645f9a7a8acccb26f063ca71dc4dd"><td class="memItemLeft" align="right" valign="top"><a id="a15d645f9a7a8acccb26f063ca71dc4dd"></a>
 &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_triplet_list.html#a15d645f9a7a8acccb26f063ca71dc4dd">~TripletList</a> ()</td></tr>
 <tr class="memdesc:a15d645f9a7a8acccb26f063ca71dc4dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard destructor. <br /></td></tr>
@@ -95,8 +97,8 @@ Public Member Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:af5ab133e82750292c5d77727eea2ca8c"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_triplet_list.html#af5ab133e82750292c5d77727eea2ca8c">SortTripletList</a> (const <a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;list, int matrix_size, <a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;sorted)</td></tr>
-<tr class="separator:af5ab133e82750292c5d77727eea2ca8c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17c49c4c5cf29f61ae14773b08944841"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_triplet_list.html#a17c49c4c5cf29f61ae14773b08944841">SortTripletList</a> (const <a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;list, int matrix_columns, <a class="el" href="class_n_t_poly_1_1_triplet_list.html">TripletList</a> &amp;sorted)</td></tr>
+<tr class="separator:a17c49c4c5cf29f61ae14773b08944841"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="friends"></a>
 Friends</h2></td></tr>
@@ -183,6 +185,24 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>DistributedSparseMat
 
 </div>
 </div>
+<a id="afdc84d0290cba1fb1e85f003b613f0dd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afdc84d0290cba1fb1e85f003b613f0dd">&#9670;&nbsp;</a></span>GetSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int NTPoly::TripletList::GetSize </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Get the number of entries in a triplet list. </p><dl class="section return"><dt>Returns</dt><dd>the number of entries in the list. </dd></dl>
+
+</div>
+</div>
 <a id="a579593b1861e35a2acac1b7ab93808e5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a579593b1861e35a2acac1b7ab93808e5">&#9670;&nbsp;</a></span>GetTripletAt()</h2>
 
@@ -266,8 +286,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>DistributedSparseMat
 
 </div>
 </div>
-<a id="af5ab133e82750292c5d77727eea2ca8c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5ab133e82750292c5d77727eea2ca8c">&#9670;&nbsp;</a></span>SortTripletList()</h2>
+<a id="a17c49c4c5cf29f61ae14773b08944841"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17c49c4c5cf29f61ae14773b08944841">&#9670;&nbsp;</a></span>SortTripletList()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -285,7 +305,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>DistributedSparseMat
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>matrix_size</em>, </td>
+          <td class="paramname"><em>matrix_columns</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
