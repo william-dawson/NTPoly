@@ -107,6 +107,8 @@ Computer Phyics Communications paper:
 > Dawson, William, and Takahito Nakajima. "Massively parallel sparse matrix 
 > function calculations with NTPoly." Computer Physics Communications (2017).
 
+Please cite this paper in accordance to the practices in your field.
+
 How To Contribute
 --------------------------------------------------------------------------------
 To begin contributing to NTPoly, take a look at the
