@@ -21,7 +21,6 @@ before_install:
   - sudo ldconfig
   - sudo apt-get install python-dev
   - sudo apt-get install doxygen
-  - sudo apt-get install cmake
   - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
   - tar xvf swig-3.0.12.tar.gz >/dev/null
   - cd swig-3.0.12
