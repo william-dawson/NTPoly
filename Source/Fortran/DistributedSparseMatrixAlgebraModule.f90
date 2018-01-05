@@ -499,7 +499,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_SUM, within_slice_comm, grid_error)
   END FUNCTION DistributedGrandSum
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Elementwise multiplication. C_ij = A_ij * B_ij.
+  !> Elementwise multiplication. C_ij = A_ij * B_ij. Also known as a Hadamard
+  !! product.
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @param[in,out] matC = MatA mult MatB.

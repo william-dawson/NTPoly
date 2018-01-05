@@ -76,7 +76,8 @@ public:
   //!\param threshold for flushing small values.
   void Increment(const DistributedSparseMatrix &matB, double alpha = 1.0,
                  double threshold = 0.0);
-  //! Pairwise multiply two matrices.
+  //! Elementwise multiplication. C_ij = A_ij * B_ij. Also known as a Hadamard
+  //  product.
   //!\param matA first mat.
   //!\param matB second mat.
   void PairwiseMultiply(const DistributedSparseMatrix &matA,

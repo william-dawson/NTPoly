@@ -322,7 +322,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     product = DotDistributedSparseMatrix(h_matA%data, h_matB%data)
   END FUNCTION DotDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Pairwise multiply two matrices together.
+  !> Elementwise multiplication. C_ij = A_ij * B_ij. Also known as a Hadamard
+  !! product.
   !! @param[in] ih_matA Matrix A
   !! @param[in] ih_matB Matrix B
   !! @param[out] ih_matC = matA*matB
