@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// AAn example based on graph theory.
+// An example based on graph theory.
 #include <math.h>
 #include <mpi.h>
 #include <stdlib.h>
