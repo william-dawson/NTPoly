@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// An example based on solving matrices based on premade files.
+// An example based on graph theory.
 #include <math.h>
 #include <mpi.h>
 #include <stdlib.h>
