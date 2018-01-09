@@ -69,7 +69,7 @@ public:
 public:
   //! Transpose a sparse matrix.
   //\param matA matrix to compute the transpose of.
-  void TransposeSparseMatrix(const NTPoly::SparseMatrix &matA);
+  void Transpose(const NTPoly::SparseMatrix &matA);
 
 public:
   //! Print the sparse matrix to the console.

@@ -168,7 +168,7 @@ class TestLocalMatrix(unittest.TestCase):
 
             matrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2T = nt.SparseMatrix(matrix2.GetRows(), matrix2.GetColumns())
-            matrix2T.TransposeSparseMatrix(matrix2)
+            matrix2T.Transpose(matrix2)
             matrix2T.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
 
             CheckMat = matrix1.T

@@ -21,8 +21,9 @@ void GetActualDimension_wrp(const int *ih_this, int *size);
 void GetLogicalDimension_wrp(const int *ih_this, int *size);
 void GetTripletList_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixBlock_wrp(const int *ih_this, int *ih_triplet_list,
-                           int *start_row, int *end_row, int *start_column,
-                           int *end_column);
+                        int *start_row, int *end_row, int *start_column,
+                        int *end_column);
+void TransposeDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_transmat);
 double DotDistributedSparseMatrix_wrp(const int *ih_matA, const int *ih_matB);
 void IncrementDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_matB,
                                           const double *alpha_in,

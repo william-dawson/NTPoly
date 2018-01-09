@@ -199,6 +199,27 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_transpose(self):
+        '''Test our ability to transpose matrices.'''
+        for param in self.parameters:
+            if (self.my_rank == 0):
+                matrix1 = scipy.sparse.random(param.rows, param.columns,
+                                              param.sparsity,
+                                              format="csr")
+                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
+                                 scipy.sparse.csr_matrix(matrix1))
+                self.CheckMat = matrix1.T
+
+            comm.barrier()
+            ntmatrix1 = nt.DistributedSparseMatrix(
+                scratch_dir + "/matrix1.mtx", False)
+            ntmatrix2 = nt.DistributedSparseMatrix(
+                ntmatrix1.GetActualDimension())
+            ntmatrix2.Transpose(ntmatrix1)
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
 
 if __name__ == '__main__':
     unittest.main()

@@ -1153,14 +1153,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_t) :: temporary, temporary_t
     INTEGER :: counter
 
-    CALL GetTripletList(AMat,triplet_list)
     CALL ConstructTripletList(new_list)
+    CALL GetTripletList(AMat,triplet_list)
     DO counter=1,triplet_list%CurrentSize
-       CALL GetTripletAt(triplet_list,counter,temporary)
-       temporary_t%index_row = temporary%index_column
-       temporary_t%index_column = temporary%index_row
-       temporary_t%point_value = temporary%point_value
-       CALL AppendToTripletList(new_list,temporary_t)
+       IF (MOD(counter, num_process_slices) .EQ. my_slice) THEN
+          CALL GetTripletAt(triplet_list,counter,temporary)
+          temporary_t%index_row = temporary%index_column
+          temporary_t%index_column = temporary%index_row
+          temporary_t%point_value = temporary%point_value
+          CALL AppendToTripletList(new_list,temporary_t)
+       END IF
     END DO
 
     CALL DestructDistributedSparseMatrix(TransMat)

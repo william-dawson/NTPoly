@@ -81,7 +81,7 @@ void SparseMatrix::Gemm(const SparseMatrix &matA, const SparseMatrix &matB,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void SparseMatrix::TransposeSparseMatrix(const SparseMatrix &matA) {
+void SparseMatrix::Transpose(const SparseMatrix &matA) {
   TransposeSparseMatrix_wrp(matA.ih_this, ih_this);
 }
 
