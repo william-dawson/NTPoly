@@ -40,6 +40,7 @@ MODULE DistributedSparseMatrixModule_wrp
   PUBLIC :: ScaleDistributedSparseMatrix_wrp
   PUBLIC :: DistributedSparseNorm_wrp
   PUBLIC :: Trace_wrp
+  PUBLIC :: TransposeDistributedSparseMatrix_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
   !! @param[inout] ih_this the matrix to be constructed.
@@ -414,4 +415,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     trace_value = Trace(h_this%data)
   END FUNCTION Trace_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Transpose a sparse matrix.
+  !! @param[in] ih_matA handle to matrix to transpose.
+  !! @param[inout] ih_transmat handle to the matrix transposed.
+  SUBROUTINE TransposeDistributedSparseMatrix_wrp(ih_matA,ih_transmat) &
+       & bind(c,name="TransposeDistributedSparseMatrix_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_transmat(SIZE_wrp)
+    TYPE(DistributedSparseMatrix_wrp) :: h_matA
+    TYPE(DistributedSparseMatrix_wrp) :: h_transmat
+
+    h_matA = TRANSFER(ih_matA,h_matA)
+    h_transmat = TRANSFER(ih_transmat,h_transmat)
+    CALL TransposeDistributedSparseMatrix(h_matA%data,h_transmat%data)
+  END SUBROUTINE TransposeDistributedSparseMatrix_wrp
 END MODULE DistributedSparseMatrixModule_wrp

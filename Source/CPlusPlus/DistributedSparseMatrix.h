@@ -64,7 +64,12 @@ public:
   //! \param start_column the starting col for data to store on this process
   //! \param end_column the ending col for data to store on this process
   void GetMatrixBlock(TripletList &triplet_list, int start_row, int end_row,
-                         int start_column, int end_column);
+                      int start_column, int end_column);
+
+public:
+  //! Transpose a sparse matrix.
+  //\param matA matrix to compute the transpose of.
+  void Transpose(const NTPoly::DistributedSparseMatrix &matA);
 
 public:
   //! this = dot(this,matB)

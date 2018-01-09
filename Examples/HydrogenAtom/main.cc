@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-// An example based on solving matrices based on premade files.
+// An example based on solving matrices based on a 1D hydrogen molecule.
 #include <math.h>
 #include <mpi.h>
 #include <string>
