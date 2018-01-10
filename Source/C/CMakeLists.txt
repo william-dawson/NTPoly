@@ -6,6 +6,7 @@ set(Csrc
     EigenBounds_c.h
     ExponentialSolvers_c.h
     FixedSolversParameters_c.h
+    HermiteSolvers_c.h
     InverseSolvers_c.h
     IterativeSolversParameters_c.h
     LinearSolvers_c.h
