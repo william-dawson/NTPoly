@@ -14,7 +14,7 @@ import os
 import math
 import numpy.polynomial.chebyshev
 from mpi4py import MPI
-## MPI global communicator.
+# MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -24,15 +24,15 @@ from Helpers import scratch_dir
 
 class TestSolvers(unittest.TestCase):
     '''A test class for the different kinds of solvers.'''
-    ## First input file.
+    # First input file.
     input_file = scratch_dir + "/input.mtx"
-    ## Second input file.
+    # Second input file.
     input_file2 = scratch_dir + "/input2.mtx"
-    ## Matrix to compare against.
+    # Matrix to compare against.
     CheckMat = 0
-    ## Rank of the current process.
+    # Rank of the current process.
     my_rank = 0
-    ## Dimension of the matrices to test.
+    # Dimension of the matrices to test.
     matrix_dimension = 32
 
     @classmethod
@@ -45,11 +45,11 @@ class TestSolvers(unittest.TestCase):
 
     def setUp(self):
         '''Set up all of the tests.'''
-        ## Rank of the current process.
+        # Rank of the current process.
         self.my_rank = comm.Get_rank()
-        ## Parmaeters for iterative solvers.
+        # Parmaeters for iterative solvers.
         self.iterative_solver_parameters = nt.IterativeSolverParameters()
-        ## Parameters for fixed solvers.
+        # Parameters for fixed solvers.
         self.fixed_solver_parameters = nt.FixedSolverParameters()
         self.fixed_solver_parameters.SetVerbosity(True)
         self.iterative_solver_parameters.SetVerbosity(True)
@@ -710,6 +710,48 @@ class TestSolvers(unittest.TestCase):
         relative_error = abs(max_value - vals[0])
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
+
+    def test_hermitefunction(self):
+        '''Test our ability to compute using Hermite polynomials.'''
+        # Starting Matrix
+        temp_mat = scipy.sparse.rand(self.matrix_dimension,
+                                     self.matrix_dimension,
+                                     density=1.0)
+        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
+        matrix1 = scipy.sparse.csr_matrix(temp_mat)
+
+        # Function
+        x = numpy.linspace(-1.0, 1.0, 200)
+        y = [math.cos(i) + math.sin(i) for i in x]
+        coef = numpy.polynomial.hermite.hermfit(x, y, 10)
+
+        # Check Matrix
+        dense_check = scipy.linalg.funm(temp_mat.todense(),
+                                        lambda x: numpy.polynomial.hermite.hermval(x, coef))
+        self.CheckMat = scipy.sparse.csr_matrix(dense_check)
+        if self.my_rank == 0:
+            scipy.io.mmwrite(self.input_file,
+                             scipy.sparse.csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        poly_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+
+        polynomial = nt.HermitePolynomial(len(coef))
+        for j in range(0, len(coef)):
+            polynomial.SetCoefficient(j, coef[j])
+
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.fixed_solver_parameters.SetLoadBalance(permutation)
+        polynomial.Compute(input_matrix, poly_matrix,
+                           self.fixed_solver_parameters)
+        poly_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
 
 
 if __name__ == '__main__':

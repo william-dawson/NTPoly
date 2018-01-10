@@ -11,6 +11,7 @@ set(Fsrc
     ExponentialSolversModule.f90
     FixedSolversModule.f90
     GemmTasksModule.f90
+    HermiteSolversModule.f90
     InverseSolversModule.f90
     IterativeSolversModule.f90
     LinearSolversModule.f90
