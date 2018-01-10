@@ -83,6 +83,7 @@ The following features and methods have been implemented in NTPoly:
 * General Polynomials
     * Standard Polynomials
     * Chebyshev Polynomials
+    * Hermite Polynomials
 * Transcendental Functions
     * Trigonometric Functions
     * Exponential and Logarithm
