@@ -5,6 +5,7 @@ MODULE LinearSolversModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
+  USE FixedSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -15,6 +16,8 @@ MODULE LinearSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
   PUBLIC :: CGSolver
+  PUBLIC :: CholeskyDecomposition
+  PUBLIC :: PivotedCholeskyDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Solve the matrix equation AX = B using the conjugate gradient method.
   !! @param[in] AMat the matrix A, must be symmetric, positive definite.
@@ -175,4 +178,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(ABalanced)
     CALL DestructDistributedSparseMatrix(BBalanced)
   END SUBROUTINE CGSolver
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
+  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
+  !! @param[out] LMat the matrix computed.
+  !! @param[in] solver_parameters_in parameters for the solver
+  SUBROUTINE CholeskyDecomposition(AMat, LMat, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+  END SUBROUTINE CholeskyDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.
+  !! Pass it either a maximum rank and maximum error tolerance to check against
+  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
+  !! @param[out] LMat the matrix computed.
+  !! @param[in] rank_in the target rank of the matrix.
+  !! @param[out] rank_out the actual computed rank, if no target rank is 
+  !! specified
+  !! @param[in] solver_parameters_in parameters for the solver
+  SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+  END SUBROUTINE PivotedCholeskyDecomposition
 END MODULE LinearSolversModule
