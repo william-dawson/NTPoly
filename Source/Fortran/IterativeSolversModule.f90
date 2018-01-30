@@ -34,8 +34,8 @@ MODULE IterativeSolversModule
   PUBLIC :: SetIterativeLoadBalance
   PUBLIC :: PrintIterativeSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  REAL(NTREAL), PARAMETER :: CONVERGENCE_DIFF_CONST = 1e-6
-  INTEGER, PARAMETER :: MAX_ITERATIONS_CONST = 1000
+  REAL(NTREAL), PARAMETER, PUBLIC :: CONVERGENCE_DIFF_CONST = 1e-6
+  INTEGER, PARAMETER, PUBLIC :: MAX_ITERATIONS_CONST = 1000
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Handle the parameters
   !> Construct a data type which stores iterative solver parameters.

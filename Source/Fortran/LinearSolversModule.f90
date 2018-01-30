@@ -197,7 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] AMat the matrix A, must be symmetric, positive definite.
   !! @param[out] LMat the matrix computed.
   !! @param[in] rank_in the target rank of the matrix.
-  !! @param[out] rank_out the actual computed rank, if no target rank is 
+  !! @param[out] rank_out the actual computed rank, if no target rank is
   !! specified
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, solver_parameters_in)

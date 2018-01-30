@@ -15,4 +15,9 @@ void LinearSolvers::CGSolver(
     const IterativeSolverParameters &solver_parameters) {
   CGSolver_wrp(GetIH(AMat), GetIH(XMat), GetIH(BMat), GetIH(solver_parameters));
 }
+void LinearSolvers::CholeskyDecomposition(
+    const DistributedSparseMatrix &AMat, DistributedSparseMatrix &LMat,
+    const FixedSolverParameters &solver_parameters) {
+  CholeskyDecomposition_wrp(GetIH(AMat), GetIH(LMat), GetIH(solver_parameters));
+}
 } // namespace NTPoly

@@ -5,6 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
+class FixedSolverParameters;
 class DistributedSparseMatrix;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class for solving matrix equations.
@@ -19,6 +20,15 @@ public:
                        DistributedSparseMatrix &XMat,
                        const DistributedSparseMatrix &BMat,
                        const IterativeSolverParameters &solver_parameters);
+  //! Compute The Cholesky Decomposition of a Symmetric Positive Definite
+  //! matrix.
+  //!\param AMat the matrix A, must be symmetric, positive definite.
+  //!\param LMat the matrix computed.
+  //!\param solver_parameters parameters for the solver
+  static void
+  CholeskyDecomposition(const DistributedSparseMatrix &AMat,
+                        DistributedSparseMatrix &LMat,
+                        const FixedSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

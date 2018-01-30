@@ -747,6 +747,38 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_cholesky(self):
+        '''Test our ability to compute the cholesky decomposition.'''
+        # Starting Matrix
+        temp_mat = scipy.sparse.rand(self.matrix_dimension,
+                                     self.matrix_dimension,
+                                     density=1.0)
+        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
+        # Symmetric Positive Definite
+        matrix1 = scipy.sparse.csr_matrix(temp_mat.T.dot(temp_mat))
+
+        # Check Matrix
+        dense_check = scipy.linalg.cholesky(matrix1.todense())
+        self.CheckMat = scipy.sparse.csr_matrix(dense_check)
+        if self.my_rank == 0:
+            scipy.io.mmwrite(self.input_file,
+                             scipy.sparse.csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+
+        cholesky_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        nt.LinearSolvers.CholeskyDecomposition(input_matrix, cholesky_matrix,
+                                               self.fixed_solver_parameters)
+
+        cholesky_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+
     def test_polarfunction(self):
         '''Test our ability to compute the matrix polar decomposition.'''
         # Starting Matrix
@@ -780,6 +812,7 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.CheckMat = csr_matrix(dense_check_u)
         u_matrix.WriteToMatrixMarket(result_file)
+
         self.check_result()
 
 
