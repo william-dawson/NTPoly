@@ -1,17 +1,16 @@
-##########################################################################
 '''@package testDistributedSparseMatrix
 A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
 import scipy
-import scipy.sparse
-import scipy.io
-import time
-import numpy
+from scipy.sparse import random, csr_matrix
+from scipy.sparse.linalg import norm
+from scipy.io import mmread, mmwrite
+from numpy import sum, multiply
 import os
 from mpi4py import MPI
-## MPI global communicator.
+# MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -36,13 +35,13 @@ class TestParameters:
 
 class TestDistributedMatrixAlgebra(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
-    ## Parameters for the tests
+    # Parameters for the tests
     parameters = []
-    ## Place to store the result matrix.
+    # Place to store the result matrix.
     result_file = scratch_dir + "/result.mtx"
-    ## Matrix to compare against.
+    # Matrix to compare against.
     CheckMat = 0
-    ## Rank of the current process.
+    # Rank of the current process.
     my_rank = 0
 
     @classmethod
@@ -66,30 +65,26 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
     def check_result(self):
         '''Compare two matrices.'''
-        norm = 0
+        normval = 0
         if (self.my_rank == 0):
-            ResultMat = scipy.io.mmread(self.result_file)
-            norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-        global_norm = comm.bcast(norm, root=0)
+            ResultMat = mmread(self.result_file)
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
     def test_addition(self):
         '''Test our ability to add together matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity2,
-                                          format="csr")
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.rows, param.columns,
+                             param.sparsity2, format="csr")
             self.CheckMat = matrix1 + matrix2
             if self.my_rank == 0:
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1),
-                                 symmetry="general")
-                scipy.io.mmwrite(scratch_dir + "/matrix2.mtx",
-                                 scipy.sparse.csr_matrix(matrix2),
-                                 symmetry="general")
+                mmwrite(scratch_dir + "/matrix1.mtx",
+                        csr_matrix(matrix1), symmetry="general")
+                mmwrite(scratch_dir + "/matrix2.mtx",
+                        csr_matrix(matrix2), symmetry="general")
 
             comm.barrier()
             ntmatrix1 = nt.DistributedSparseMatrix(
@@ -108,20 +103,15 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             comm.barrier()
             check = 0
             if self.my_rank == 0:
-                matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
-                                              format="csr")
-                matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity2,
-                                              format="csr")
-                check = numpy.sum(numpy.multiply(
-                    matrix1.todense(), matrix2.todense()))
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1),
-                                 symmetry="general")
-                scipy.io.mmwrite(scratch_dir + "/matrix2.mtx",
-                                 scipy.sparse.csr_matrix(matrix2),
-                                 symmetry="general")
+                matrix1 = random(param.rows, param.columns,
+                                 param.sparsity, format="csr")
+                matrix2 = random(param.rows, param.columns,
+                                 param.sparsity2, format="csr")
+                check = sum(multiply(matrix1.todense(), matrix2.todense()))
+                mmwrite(scratch_dir + "/matrix1.mtx",
+                        csr_matrix(matrix1), symmetry="general")
+                mmwrite(scratch_dir + "/matrix2.mtx",
+                        csr_matrix(matrix2), symmetry="general")
 
             comm.barrier()
             check = comm.bcast(check, root=0)
@@ -139,28 +129,24 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             result = ntmatrix2.Dot(ntmatrix1)
             comm.barrier()
 
-            norm = abs(result - check)
+            normval = abs(result - check)
 
-            self.assertLessEqual(norm, THRESHOLD)
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_pairwisemultiply(self):
         '''Test our ability to pairwise multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.columns, param.rows,
-                                          param.sparsity2,
-                                          format="csr")
-            self.CheckMat = scipy.sparse.csr_matrix(numpy.multiply(
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.columns, param.rows,
+                             param.sparsity2, format="csr")
+            self.CheckMat = csr_matrix(multiply(
                 matrix1.todense(), matrix2.todense()))
             if self.my_rank == 0:
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1),
-                                 symmetry="general")
-                scipy.io.mmwrite(scratch_dir + "/matrix2.mtx",
-                                 scipy.sparse.csr_matrix(matrix2),
-                                 symmetry="general")
+                mmwrite(scratch_dir + "/matrix1.mtx",
+                        csr_matrix(matrix1), symmetry="general")
+                mmwrite(scratch_dir + "/matrix2.mtx",
+                        csr_matrix(matrix2), symmetry="general")
 
             comm.barrier()
             if param.sparsity > 0.0:
@@ -184,16 +170,16 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_multiply(self):
         '''Test our ability to multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity, format="csr")
-            matrix2 = scipy.sparse.random(param.columns, param.rows,
-                                          param.sparsity2, format="csr")
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.columns, param.rows,
+                             param.sparsity2, format="csr")
             self.CheckMat = matrix1.dot(matrix2)
             if self.my_rank == 0:
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1), symmetry="general")
-                scipy.io.mmwrite(scratch_dir + "/matrix2.mtx",
-                                 scipy.sparse.csr_matrix(matrix2), symmetry="general")
+                mmwrite(scratch_dir + "/matrix1.mtx",
+                        csr_matrix(matrix1), symmetry="general")
+                mmwrite(scratch_dir + "/matrix2.mtx",
+                        csr_matrix(matrix2), symmetry="general")
 
             comm.barrier()
             if param.sparsity > 0.0:
@@ -218,15 +204,13 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_reverse(self):
         '''Test our ability to permute a matrix.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
             self.CheckMat = matrix1
 
             if self.my_rank == 0:
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1),
-                                 symmetry="general")
+                mmwrite(scratch_dir + "/matrix1.mtx",
+                        csr_matrix(matrix1), symmetry="general")
 
             comm.barrier()
             if param.sparsity > 0.0:

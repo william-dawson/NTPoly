@@ -4,10 +4,14 @@ import unittest
 import NTPolySwig as nt
 
 import scipy
-import numpy
+from numpy import sum, multiply
 import scipy.sparse
-import scipy.io
-import random
+from random import uniform
+from scipy.sparse import random, csr_matrix
+from scipy.sparse.linalg import norm
+
+from scipy.io import mmwrite, mmread
+#import random
 import os
 
 from Helpers import THRESHOLD
@@ -23,19 +27,19 @@ class TestParameters:
         @param[in] columns matrix columns.
         @param[in] sparsity matrix sparsity.
         '''
-        ## Matrix rows.
+        # Matrix rows.
         self.rows = rows
-        ## Matrix columns.
+        # Matrix columns.
         self.columns = columns
-        ## Matrix sparsity.
+        # Matrix sparsity.
         self.sparsity = sparsity
 
 
 class TestLocalMatrix(unittest.TestCase):
     '''A test class for the local matrix module.'''
-    ## Parameters for the matrices
+    # Parameters for the matrices
     parameters = []
-    ## Location of the scratch directory.
+    # Location of the scratch directory.
     scratch_dir = os.environ['SCRATCHDIR']
 
     def setUp(self):
@@ -53,118 +57,101 @@ class TestLocalMatrix(unittest.TestCase):
     def test_read(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity, format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             matrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
-            norm = abs(scipy.sparse.linalg.norm(matrix1 - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(matrix1 - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_readsymmetric(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.rows,
-                                          param.sparsity, format="csr")
+            matrix1 = random(param.rows, param.rows,
+                             param.sparsity, format="csr")
             matrix1 = matrix1 + matrix1.T
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             matrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
-            norm = abs(scipy.sparse.linalg.norm(matrix1 - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(matrix1 - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_addition(self):
         '''Test our ability to add together matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
-            scipy.io.mmwrite(self.scratch_dir + "/matrix2.mtx",
-                             scipy.sparse.csr_matrix(matrix2))
-            alpha = random.uniform(1.0, 2.0)
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            alpha = uniform(1.0, 2.0)
             CheckMat = alpha * matrix1 + matrix2
             matrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             matrix2.Increment(matrix1, alpha, 0.0)
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
-            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_addzero(self):
         '''Test our ability to add together a matrix and zero.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             CheckMat = matrix1
             matrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = nt.SparseMatrix(matrix1.GetRows(), matrix1.GetColumns())
             matrix2.Increment(matrix1, 1.0, 0.0)
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
-            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_addzeroreverse(self):
         '''Test our ability to add together a matrix and zero.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             CheckMat = matrix1
             matrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = nt.SparseMatrix(matrix1.GetRows(), matrix1.GetColumns())
             matrix1.Increment(matrix2, 1.0, 0.0)
             matrix1.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
-            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_dot(self):
         '''Test our ability to dot two matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
-            scipy.io.mmwrite(self.scratch_dir + "/matrix2.mtx",
-                             scipy.sparse.csr_matrix(matrix2))
-            check = numpy.sum(numpy.multiply(
-                matrix1.todense(), matrix2.todense()))
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            check = sum(multiply(matrix1.todense(), matrix2.todense()))
             matrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             result = matrix2.Dot(matrix1)
-            norm = result - check
-            self.assertLessEqual(norm, THRESHOLD)
+            normval = result - check
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_transpose(self):
         '''Test our ability to transpose a matrix.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             matrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2T = nt.SparseMatrix(matrix2.GetRows(), matrix2.GetColumns())
@@ -172,24 +159,21 @@ class TestLocalMatrix(unittest.TestCase):
             matrix2T.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
 
             CheckMat = matrix1.T
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix2.mtx")
-            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_pairwise(self):
         '''Test our ability to pairwise multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
-            scipy.io.mmwrite(self.scratch_dir + "/matrix2.mtx",
-                             scipy.sparse.csr_matrix(matrix2))
-            CheckMat = numpy.multiply(matrix1.todense(), matrix2.todense())
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            CheckMat = csr_matrix(
+                multiply(matrix1.todense(), matrix2.todense()))
 
             ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             ntmatrix2 = nt.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
@@ -198,24 +182,20 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix3.PairwiseMultiply(ntmatrix1, ntmatrix2)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix3.mtx")
-            norm = abs(scipy.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_multiply(self):
         '''Test our ability to multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.columns, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
-            scipy.io.mmwrite(self.scratch_dir + "/matrix2.mtx",
-                             scipy.sparse.csr_matrix(matrix2))
-            alpha = random.uniform(1.0, 2.0)
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.columns, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            alpha = uniform(1.0, 2.0)
             beta = 0.0
             if abs(beta) > THRESHOLD:
                 CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
@@ -232,23 +212,18 @@ class TestLocalMatrix(unittest.TestCase):
                            memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix3.mtx")
-            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
     def test_multiply_zero(self):
         '''Test our ability to multiply two matrices where one is zero.'''
         for param in self.parameters:
-            matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                          param.sparsity,
-                                          format="csr")
-            matrix2 = scipy.sparse.random(param.columns, param.columns,
-                                          0,
-                                          format="csr")
-            scipy.io.mmwrite(self.scratch_dir + "/matrix1.mtx",
-                             scipy.sparse.csr_matrix(matrix1))
-            scipy.io.mmwrite(self.scratch_dir + "/matrix2.mtx",
-                             scipy.sparse.csr_matrix(matrix2))
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            matrix2 = random(param.columns, param.columns, 0, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             CheckMat = matrix1.dot(matrix2)
 
             ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
@@ -262,9 +237,9 @@ class TestLocalMatrix(unittest.TestCase):
                            memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
-            ResultMat = scipy.io.mmread(self.scratch_dir + "/matrix3.mtx")
-            norm = abs(scipy.sparse.linalg.norm(CheckMat - ResultMat))
-            self.assertLessEqual(norm, THRESHOLD)
+            ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
 
 
 ###############################################################################
