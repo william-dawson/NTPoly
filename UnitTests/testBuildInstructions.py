@@ -3,7 +3,7 @@
 A script that tests the build instructions of the examples.
 '''
 from sys import argv
-import subprocess
+from subprocess import call
 import os
 
 
@@ -51,11 +51,11 @@ if __name__ == "__main__":
 
     os.chdir(check_directory)
     if check_command != "run-python":
-        check = subprocess.call(build_command)
+        check = call(build_command)
         if check != 0:
             print("Build Error")
             exit(-1)
-        check = subprocess.call(run_command)
+        check = call(run_command)
         if check != 0:
             print("Run Error")
             exit(-1)
@@ -63,7 +63,7 @@ if __name__ == "__main__":
         env_var = os.environ.copy()
         env_var["PYTHONPATH"] = "../../Build/python"
         run_command = " ".join(run_command)
-        check = subprocess.call(run_command, shell=True, env=env_var)
+        check = call(run_command, shell=True, env=env_var)
         if check != 0:
             print("Python Error")
             exit(-1)

@@ -1,19 +1,18 @@
-##########################################################################
 '''@package testDistributedSparseMatrix
 A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
 
+from random import randrange, seed, sample
 import scipy
 import scipy.sparse
-import scipy.io
-import time
-import numpy
+from scipy.sparse import random, csr_matrix
+from scipy.sparse.linalg import norm
+from scipy.io import mmread, mmwrite
 import os
-import random
 import sys
 from mpi4py import MPI
-## MPI global communicator.
+# MPI global communicator.
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -37,13 +36,13 @@ class TestParameters:
 
 class TestDistributedMatrix(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
-    ## Parameters for the tests
+    # Parameters for the tests
     parameters = []
-    ## Where to store the result file
+    # Where to store the result file
     result_file = scratch_dir + "/result.mtx"
-    ## Matrix to compare against
+    # Matrix to compare against
     CheckMat = 0
-    ## Rank of the current process.
+    # Rank of the current process.
     my_rank = 0
 
     @classmethod
@@ -69,22 +68,20 @@ class TestDistributedMatrix(unittest.TestCase):
 
     def check_result(self):
         '''Compare two matrices.'''
-        norm = 0
+        normval = 0
         if (self.my_rank == 0):
-            ResultMat = scipy.io.mmread(self.result_file)
-            norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-        global_norm = comm.bcast(norm, root=0)
+            ResultMat = mmread(self.result_file)
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
     def test_read(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
-                                              format="csr")
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1))
+                matrix1 = random(param.rows, param.columns,
+                                 param.sparsity, format="csr")
+                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
             comm.barrier()
@@ -99,12 +96,10 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test our ability to read and write binary.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
-                                              format="csr")
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1),
-                                 symmetry="general")
+                matrix1 = random(param.rows, param.columns,
+                                 param.sparsity, format="csr")
+                mmwrite(scratch_dir + "/matrix1.mtx",
+                        csr_matrix(matrix1), symmetry="general")
                 self.CheckMat = matrix1
 
             comm.barrier()
@@ -122,11 +117,9 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test extraction of triplet list.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
-                                              format="csr")
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1))
+                matrix1 = random(param.rows, param.columns,
+                                 param.sparsity, format="csr")
+                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
             comm.barrier()
@@ -150,11 +143,9 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test extraction of triplet list via repartition function.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
-                                              format="csr")
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1))
+                matrix1 = random(param.rows, param.columns,
+                                 param.sparsity, format="csr")
+                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
             comm.barrier()
@@ -166,14 +157,13 @@ class TestDistributedMatrix(unittest.TestCase):
                 ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
 
             # Compute a random permutation
-            seed_val = random.randrange(sys.maxsize)
-            seed = comm.bcast(seed_val, root=0)
-            random.seed(seed)
+            seed_val = randrange(sys.maxsize)
+            global_seed = comm.bcast(seed_val, root=0)
+            seed(global_seed)
             dimension = ntmatrix1.GetActualDimension()
-            row_end_list = random.sample(
-                range(1, dimension), self.process_rows - 1)
-            col_end_list = random.sample(
-                range(1, dimension), self.process_columns - 1)
+            row_end_list = sample(range(1, dimension), self.process_rows - 1)
+            col_end_list = sample(range(1, dimension),
+                                  self.process_columns - 1)
             row_end_list.append(dimension + 1)
             col_end_list.append(dimension + 1)
             row_start_list = [1]
@@ -203,11 +193,9 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test our ability to transpose matrices.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = scipy.sparse.random(param.rows, param.columns,
-                                              param.sparsity,
-                                              format="csr")
-                scipy.io.mmwrite(scratch_dir + "/matrix1.mtx",
-                                 scipy.sparse.csr_matrix(matrix1))
+                matrix1 = random(param.rows, param.columns,
+                                 param.sparsity, format="csr")
+                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1.T
 
             comm.barrier()
@@ -220,6 +208,7 @@ class TestDistributedMatrix(unittest.TestCase):
             comm.barrier()
 
             self.check_result()
+
 
 if __name__ == '__main__':
     unittest.main()

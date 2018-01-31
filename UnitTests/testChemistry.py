@@ -5,15 +5,12 @@ import unittest
 import NTPolySwig as nt
 
 import scipy
-import scipy.sparse
-import scipy.io
-import numpy
-import random
-import time
+from scipy.sparse.linalg import norm
+from scipy.io import mmread
+from scipy.linalg import eigh
 import os
-import math
 from mpi4py import MPI
-## MPI globa communicator
+# MPI globa communicator
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD
@@ -23,11 +20,11 @@ from Helpers import scratch_dir
 
 class TestChemistry(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
-    ## Parameters for the tests
+    # Parameters for the tests
     parameters = []
-    ## Matrix to compare to
+    # Matrix to compare to
     CheckMat = 0
-    ## Rank of the current process
+    # Rank of the current process
     my_rank = 0
 
     @classmethod
@@ -50,21 +47,20 @@ class TestChemistry(unittest.TestCase):
 
     def check_full(self):
         '''Compare two computed matrices.'''
-        norm = 0
+        normval = 0
         if (self.my_rank == 0):
-            ResultMat = 2.0 * scipy.io.mmread(result_file)
-            self.CheckMat = scipy.io.mmread(self.density)
-            norm = abs(scipy.sparse.linalg.norm(self.CheckMat - ResultMat))
-        global_norm = comm.bcast(norm, root=0)
+            ResultMat = 2.0 * mmread(result_file)
+            self.CheckMat = mmread(self.density)
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
-        fock_matrix = scipy.io.mmread(self.hamiltonian)
-        overlap_matrix = scipy.io.mmread(self.overlap)
-        eig_vals = scipy.linalg.eigh(a=fock_matrix.todense(),
-                                     b=overlap_matrix.todense(),
-                                     eigvals_only=True)
+        fock_matrix = mmread(self.hamiltonian)
+        overlap_matrix = mmread(self.overlap)
+        eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
+                        eigvals_only=True)
         homo = int(self.nel / 2) - 1
         lumo = homo + 1
         if computed > eig_vals[homo] and computed < eig_vals[lumo]:
