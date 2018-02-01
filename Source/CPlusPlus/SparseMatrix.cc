@@ -50,6 +50,19 @@ int SparseMatrix::GetColumns() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void SparseMatrix::ExtractRow(int row_number, SparseMatrix &row_out) const {
+  int temp = row_number + 1;
+  ExtractRow_wrp(ih_this, &temp, row_out.ih_this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void SparseMatrix::ExtractColumn(int column_number,
+                                 SparseMatrix &column_out) const {
+  int temp = column_number + 1;
+  ExtractColumn_wrp(ih_this, &temp, column_out.ih_this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void SparseMatrix::Scale(double constant) {
   ScaleSparseMatrix_wrp(ih_this, &constant);
 }

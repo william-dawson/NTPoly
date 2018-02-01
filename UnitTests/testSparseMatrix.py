@@ -6,12 +6,11 @@ import NTPolySwig as nt
 import scipy
 from numpy import sum, multiply
 import scipy.sparse
-from random import uniform
+from random import uniform, randint
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
 
 from scipy.io import mmwrite, mmread
-#import random
 import os
 
 from Helpers import THRESHOLD
@@ -238,6 +237,46 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
             ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
+
+    def test_get_row(self):
+        '''Test function that extracts a row from the matrix'''
+        for param in self.parameters:
+            if param.rows == 0:
+                continue
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            row_num = randint(0,param.rows-1)
+            CheckMat = matrix1[row_num, :]
+
+            ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix2 = nt.SparseMatrix(ntmatrix1.GetColumns(), 1)
+            ntmatrix1.ExtractRow(row_num, ntmatrix2)
+            ntmatrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
+
+    def test_get_column(self):
+        '''Test function that extracts a column from the matrix'''
+        for param in self.parameters:
+            if param.columns == 0:
+                continue
+            matrix1 = random(param.rows, param.columns,
+                             param.sparsity, format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            column_num = randint(0,param.columns-1)
+            CheckMat = matrix1[:, column_num]
+
+            ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix2 = nt.SparseMatrix(1, ntmatrix1.GetRows())
+            ntmatrix1.ExtractColumn(column_num, ntmatrix2)
+            ntmatrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
