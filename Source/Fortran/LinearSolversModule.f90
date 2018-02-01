@@ -2,6 +2,7 @@
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
   USE DataTypesModule
+  USE DenseMatrixModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
@@ -10,7 +11,10 @@ MODULE LinearSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE ProcessGridModule
+  USE SparseMatrixModule
+  USE SparseVectorModule
   USE TimerModule
+  USE TripletListModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -180,6 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CGSolver
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
+  !! This is a really naive implementation, that might be worth visiting.
   !! @param[in] AMat the matrix A, must be symmetric, positive definite.
   !! @param[out] LMat the matrix computed.
   !! @param[in] solver_parameters_in parameters for the solver
@@ -190,6 +195,70 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
+    !! Local Variables
+    TYPE(TripletList_t) :: local_triplets
+    TYPE(SparseMatrix_t) :: sparse_a, sparse_l
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_buffer
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: value_buffer
+    !! Variables describing matrix row J
+    INTEGER :: local_j
+    INTEGER, DIMENSION(:), ALLOCATABLE :: index_j
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: values_j
+    !! Variables describing matrix row I
+    INTEGER :: local_i
+    INTEGER, DIMENSION(:), ALLOCATABLE :: index_i
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: values_i
+    !! Temporary Variables
+    REAL(NTREAL) :: temp
+    REAL(NTREAL) :: inverse_factor
+    INTEGER :: i, j
+
+    !! First get the local matrix in a dense recommendation for quick lookup
+    CALL GetTripletList(AMat, local_triplets)
+    CALL ConstructFromTripletList(sparse_a, local_triplets, &
+         & AMat%local_rows, AMat%local_columns)
+    ALLOCATE(dense_a(sparse_a%rows,sparse_a%columns))
+    dense_a = 0
+    CALL ConstructDenseFromSparse(sparse_a, dense_a)
+
+    !! Make scratch space for the local matrix L
+    CALL ConstructZeroSparseMatrix(sparse_l, sparse_a%rows, sparse_a%columns)
+    ALLOCATE(index_buffer(sparse_l%rows,sparse_l%columns))
+    ALLOCATE(value_buffer(sparse_l%rows,sparse_l%columns))
+
+    CALL PrintDistributedSparseMatrix(AMat)
+    !! Main Loop Over Rows
+    DO j = 1, AMat%actual_matrix_dimension
+       !! Diagonal Part
+       !! Extract row J
+       local_j = j - AMat%start_row + 1
+       
+       !! Dot product, and then append diagonal value
+       !!temp = DotSparseVectors(index_j, values_j, index_j, values_j)
+       !! Scatter row j
+       !! Compute Inverse Factor
+       !! Compute Dot Products
+       DO i = j+1, AMat%actual_matrix_dimension
+         !! Extract Row I
+         local_i = i - AMat%start_row + 1
+         !! Dot product, adn then subtract from A
+       END DO
+    END DO
+
+    !! Finish by building the global L matrix
+    CALL MatrixToTripletList(sparse_l, local_triplets)
+    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+         & AMat%actual_matrix_dimension)
+    CALL FillFromTripletList(LMat, local_triplets)
+
+    !! Cleanup
+    DEALLOCATE(dense_a)
+    DEALLOCATE(index_buffer)
+    DEALLOCATE(value_buffer)
+    CALL DestructTripletList(local_triplets)
+    CALL DestructSparseMatrix(sparse_a)
+    CALL DestructSparseMatrix(sparse_l)
   END SUBROUTINE CholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.
