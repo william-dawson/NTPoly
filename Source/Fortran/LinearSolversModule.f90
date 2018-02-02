@@ -10,11 +10,13 @@ MODULE LinearSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
+  USE MatrixGatherModule
   USE ProcessGridModule
+  USE SparseMatrixAlgebraModule
   USE SparseMatrixModule
-  USE SparseVectorModule
   USE TimerModule
   USE TripletListModule
+  USE mpi
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -197,68 +199,108 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(TripletList_t) :: local_triplets
-    TYPE(SparseMatrix_t) :: sparse_a, sparse_l
+    TYPE(SparseMatrix_t) :: sparse_a, l_scratch, l_finished
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
-    INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_buffer
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: value_buffer
-    !! Variables describing matrix row J
+    !! Variables describing local matrix rows
     INTEGER :: local_j
-    INTEGER, DIMENSION(:), ALLOCATABLE :: index_j
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: values_j
-    !! Variables describing matrix row I
     INTEGER :: local_i
-    INTEGER, DIMENSION(:), ALLOCATABLE :: index_i
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: values_i
+    TYPE(SparseMatrix_t) :: row_j
+    TYPE(SparseMatrix_t) :: row_i
     !! Temporary Variables
     REAL(NTREAL) :: temp
     REAL(NTREAL) :: inverse_factor
-    INTEGER :: i, j
+    INTEGER :: i, j, counter
+    INTEGER :: insert_ptr
+    INTEGER :: root
 
     !! First get the local matrix in a dense recommendation for quick lookup
-    CALL GetTripletList(AMat, local_triplets)
-    CALL ConstructFromTripletList(sparse_a, local_triplets, &
-         & AMat%local_rows, AMat%local_columns)
-    ALLOCATE(dense_a(sparse_a%rows,sparse_a%columns))
+    CALL MergeLocalBlocks(AMat, sparse_a)
+    ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
     dense_a = 0
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
 
     !! Make scratch space for the local matrix L
-    CALL ConstructZeroSparseMatrix(sparse_l, sparse_a%rows, sparse_a%columns)
-    ALLOCATE(index_buffer(sparse_l%rows,sparse_l%columns))
-    ALLOCATE(value_buffer(sparse_l%rows,sparse_l%columns))
+    CALL ConstructZeroSparseMatrix(l_scratch, sparse_a%rows, sparse_a%columns)
+    DEALLOCATE(l_scratch%inner_index)
+    DEALLOCATE(l_scratch%values)
+    ALLOCATE(l_scratch%inner_index(l_scratch%rows*l_scratch%columns))
+    l_scratch%inner_index = 0
+    ALLOCATE(l_scratch%values(l_scratch%rows*l_scratch%columns))
+    l_scratch%values = 0
+    insert_ptr = 0
 
-    CALL PrintDistributedSparseMatrix(AMat)
     !! Main Loop Over Rows
     DO j = 1, AMat%actual_matrix_dimension
        !! Diagonal Part
-       !! Extract row J
        local_j = j - AMat%start_row + 1
-       
-       !! Dot product, and then append diagonal value
-       !!temp = DotSparseVectors(index_j, values_j, index_j, values_j)
-       !! Scatter row j
-       !! Compute Inverse Factor
+       IF (j .GE. AMat%start_row .AND. j .LE. AMat%end_row) THEN
+          CALL ExtractRow(l_scratch, local_j, row_j)
+          temp = DotSparseMatrix(row_j, row_j)
+          temp = SQRT(dense_a(local_j,local_j) - temp)
+          insert_ptr = insert_ptr + 1
+          l_scratch%outer_index(local_j+1:) = l_scratch%outer_index(local_j+1) + 1
+          l_scratch%inner_index(insert_ptr) = local_j
+          l_scratch%values(insert_ptr) = temp
+          inverse_factor = 1.0/temp
+          root = column_rank
+       ELSE
+          inverse_factor = 0
+          root = 0
+       END IF
+       !! Broadcast Row J
+       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
+            & column_comm, grid_error)
+       CALL BroadcastMatrix(row_j, column_comm, root)
+       !! Broadcast Inverse Factor
+       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
+            & column_comm, grid_error)
        !! Compute Dot Products
        DO i = j+1, AMat%actual_matrix_dimension
-         !! Extract Row I
-         local_i = i - AMat%start_row + 1
-         !! Dot product, adn then subtract from A
+          IF (i .LT. AMat%start_row .OR. i .GT. AMat%end_row) CONTINUE
+          !! Extract Row I
+          local_i = i - AMat%start_row + 1
+          CALL ExtractRow(l_scratch, local_i, row_i)
+          temp = DotSparseMatrix(row_i, row_j)
+          temp = inverse_factor*(dense_a(local_i, local_j) - temp)
+          insert_ptr = insert_ptr + 1
+          l_scratch%outer_index(local_j+1:) = l_scratch%outer_index(local_j+1) + 1
+          l_scratch%inner_index(insert_ptr) = local_i
+          l_scratch%values(insert_ptr) = temp
        END DO
     END DO
 
+    !! Trim extra memory off the scratch space
+    CALL ConstructZeroSparseMatrix(l_finished, sparse_a%rows, sparse_a%columns)
+    DEALLOCATE(l_finished%inner_index)
+    DEALLOCATE(l_finished%values)
+    ALLOCATE(l_finished%inner_index(insert_ptr))
+    ALLOCATE(l_finished%values(insert_ptr))
+    l_finished%outer_index = l_scratch%outer_index
+    l_finished%inner_index = l_scratch%inner_index(:insert_ptr)
+    l_finished%values = l_scratch%values(:insert_ptr)
+
     !! Finish by building the global L matrix
-    CALL MatrixToTripletList(sparse_l, local_triplets)
+    IF (my_slice .EQ. 0) THEN
+       CALL MatrixToTripletList(l_finished, local_triplets)
+       DO counter = 1, local_triplets%CurrentSize
+          local_triplets%data(counter)%index_row = &
+               & local_triplets%data(counter)%index_row + AMat%start_row - 1
+          local_triplets%data(counter)%index_column = &
+               & local_triplets%data(counter)%index_column + AMat%start_column - 1
+       END DO
+    ELSE
+       CALL ConstructTripletList(local_triplets)
+    END IF
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
          & AMat%actual_matrix_dimension)
     CALL FillFromTripletList(LMat, local_triplets)
 
     !! Cleanup
     DEALLOCATE(dense_a)
-    DEALLOCATE(index_buffer)
-    DEALLOCATE(value_buffer)
     CALL DestructTripletList(local_triplets)
     CALL DestructSparseMatrix(sparse_a)
-    CALL DestructSparseMatrix(sparse_l)
+    CALL DestructSparseMatrix(l_scratch)
+    CALL DestructSparseMatrix(l_finished)
   END SUBROUTINE CholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.

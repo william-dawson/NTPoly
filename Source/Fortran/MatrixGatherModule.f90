@@ -54,6 +54,8 @@ MODULE MatrixGatherModule
   PUBLIC :: GatherAndSumData
   PUBLIC :: GatherAndSumCleanup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: BroadcastMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: TestSizeRequest
   PUBLIC :: TestOuterRequest
   PUBLIC :: TestInnerRequest
@@ -128,7 +130,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & grid_error)
   END SUBROUTINE GatherAndComposeData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Third functiont o call, finishes setting up the matrices.
+  !> Third function to call, finishes setting up the matrices.
   !! @param[in] matrix to send.
   !! @param[in] gathered_matrix matrix we are gathering.
   !! @param[inout] helper a helper associated with this gather.
@@ -198,7 +200,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & communicator, helper%outer_request, grid_error)
   END SUBROUTINE GatherAndListData
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Third routine to build the list of matrices
+  !> Third a routine to cleanup the list builder.
   !! @param[in] matrix to send.
   !! @param[inout] gathered_matrix the matrix being gathered.
   !! @param[inout] helper a helper associated with this gather.
@@ -318,7 +320,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & threshold_in=threshold)
        ELSE
           CALL IncrementSparseMatrix(temporary_matrix,gathered_matrix,&
-               & threshold_in=real(0.0,NTREAL))
+               & threshold_in=REAL(0.0,NTREAL))
        END IF
        DEALLOCATE(temporary_matrix%values)
        DEALLOCATE(temporary_matrix%inner_index)
@@ -330,6 +332,48 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(helper%values_per_process)
     DEALLOCATE(helper%displacement)
   END SUBROUTINE GatherAndSumCleanup
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Broadcast a matrix from the root process across the communicator.
+  !! @param[inout] matrix to broadcast.
+  !! @param[in] comm the communicator to broadcast along.
+  !! @param[in] root the root process which holds the matrix.
+  SUBROUTINE BroadcastMatrix(matrix, comm, root)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: root
+    !! Local Data
+    INTEGER :: rank
+    !! Matrix Buffer
+    INTEGER :: matrows, matcolumns
+    INTEGER :: nnz
+    INTEGER :: ierr
+
+    CALL MPI_COMM_RANK(comm, rank, ierr)
+
+    !! Matrix Size
+    IF (rank .EQ. root) THEN
+       matrows = matrix%rows
+       matcolumns = matrix%columns
+       nnz = matrix%outer_index(matrix%columns)
+    END IF
+    CALL MPI_Bcast(matrows, 1, MPI_INT, root, comm, ierr)
+    CALL MPI_Bcast(matcolumns, 1, MPI_INT, root, comm, ierr)
+    CALL MPI_Bcast(nnz, 1, MPI_INT, root, comm, ierr)
+    IF (rank .NE. root) THEN
+      CALL ConstructZeroSparseMatrix(matrix, matrows, matcolumns)
+      DEALLOCATE(matrix%inner_index)
+      DEALLOCATE(matrix%values)
+      ALLOCATE(matrix%inner_index(nnz))
+      ALLOCATE(matrix%values(nnz))
+    END IF
+
+    !! Gather Matrix Data
+    CALL MPI_Bcast(matrix%outer_index, matcolumns+1, MPI_INT, &
+         & root, comm, ierr)
+    CALL MPI_Bcast(matrix%inner_index, nnz, MPI_INT, root, comm, ierr)
+    CALL MPI_Bcast(matrix%values, nnz, MPINTREAL, root, comm, ierr)
+  END SUBROUTINE BroadcastMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.
   !! @param[in] helper the gatherer helper structure.

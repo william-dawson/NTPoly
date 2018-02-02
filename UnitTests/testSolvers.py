@@ -8,7 +8,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 import scipy
-from scipy.linalg import pinv, funm, polar
+from scipy.linalg import pinv, funm, polar, cholesky
 from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
 from scipy.sparse.linalg import norm, inv, eigsh
@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 4
+    matrix_dimension = 32
 
     @classmethod
     def setUpClass(self):
@@ -748,21 +748,20 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
     def test_cholesky(self):
-        '''Test our ability to compute the cholesky decomposition.'''
+        '''Test subroutine that computes the cholesky decomposition.'''
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
                                      density=1.0)
         temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
         # Symmetric Positive Definite
-        matrix1 = scipy.sparse.csr_matrix(temp_mat.T.dot(temp_mat))
+        matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
 
         # Check Matrix
-        dense_check = scipy.linalg.cholesky(matrix1.todense())
-        self.CheckMat = scipy.sparse.csr_matrix(dense_check)
+        dense_check = cholesky(matrix1.todense(), lower=True)
+        self.CheckMat = csr_matrix(dense_check)
         if self.my_rank == 0:
-            scipy.io.mmwrite(self.input_file,
-                             scipy.sparse.csr_matrix(matrix1))
+            scipy.io.mmwrite(self.input_file, csr_matrix(matrix1))
         comm.barrier()
 
         # Result Matrix
