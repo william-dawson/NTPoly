@@ -248,12 +248,47 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: start_index
     INTEGER :: counter
     TYPE(SparseMatrix_t) :: temp, temp_c
+    !! Temporary Variables
+    INTEGER :: values_found
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: value_buffer
+    INTEGER :: total_counter, elements_per_inner
+    INTEGER :: outer_counter
+    INTEGER :: inner_counter
 
-    CALL TransposeSparseMatrix(this,temp)
-    CALL ExtractColumn(temp, row_number, temp_c)
-    CALL TransposeSparseMatrix(temp_c,row_out)
-    CALL DestructSparseMatrix(temp_c)
-    CALL DestructSparseMatrix(temp)
+    !! Fill a value buffer
+    CALL ConstructEmptySparseMatrix(row_out,this%columns,1)
+    ALLOCATE(value_buffer(this%columns))
+    values_found = 0
+    total_counter = 1
+    row_out%outer_index(1) = 0
+    DO outer_counter = 1, this%columns
+       elements_per_inner = this%outer_index(outer_counter+1) - &
+            & this%outer_index(outer_counter)
+       DO inner_counter = 1, elements_per_inner
+          IF (this%inner_index(total_counter) .EQ. row_number) THEN
+             value_buffer(outer_counter) = this%values(total_counter)
+             row_out%outer_index(outer_counter+1) = 1
+             values_found = values_found + 1
+          END IF
+          total_counter = total_counter + 1
+       END DO
+    END DO
+    
+    !! Compute The Outer Indices
+    DO outer_counter = 1, this%columns
+       row_out%outer_index(outer_counter+1) = &
+            & row_out%outer_index(outer_counter+1) + &
+            & row_out%outer_index(outer_counter)
+    END DO
+
+    !! Copy To Actual Matrix
+    ALLOCATE(row_out%inner_index(values_found))
+    row_out%inner_index = 1
+    ALLOCATE(row_out%values(values_found))
+    row_out%values = value_buffer(:values_found)
+
+    !! Cleanup
+    DEALLOCATE(value_buffer)
   END SUBROUTINE ExtractRow
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a column from the matrix into the compressed vector representation.
@@ -282,8 +317,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     column_out%outer_index(1) = 0
     column_out%outer_index(2) = number_of_values
     DO counter=1, number_of_values
-      column_out%inner_index(counter) = this%inner_index(start_index+counter)
-      column_out%values(counter) = this%values(start_index+counter)
+       column_out%inner_index(counter) = this%inner_index(start_index+counter)
+       column_out%values(counter) = this%values(start_index+counter)
     END DO
   END SUBROUTINE ExtractColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
