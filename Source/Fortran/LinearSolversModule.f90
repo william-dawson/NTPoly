@@ -202,12 +202,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: sparse_a, l_scratch, l_finished
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
     !! Variables describing local matrix rows
-    INTEGER :: local_j
-    INTEGER :: local_i
+    INTEGER :: local_row_j
+    INTEGER :: local_row_i
+    INTEGER :: local_column_j
     TYPE(SparseMatrix_t) :: row_j
     TYPE(SparseMatrix_t) :: row_i
     !! Temporary Variables
-    REAL(NTREAL) :: temp
+    REAL(NTREAL) :: local_dot
+    REAL(NTREAL) :: global_dot
+    REAL(NTREAL) :: insert_value
     REAL(NTREAL) :: inverse_factor
     INTEGER :: i, j, counter
     INTEGER :: insert_ptr
@@ -232,16 +235,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Main Loop Over Rows
     DO j = 1, AMat%actual_matrix_dimension
        !! Diagonal Part
-       local_j = j - AMat%start_row + 1
-       IF (j .GE. AMat%start_row .AND. j .LE. AMat%end_row) THEN
-          CALL ExtractRow(l_scratch, local_j, row_j)
-          temp = DotSparseMatrix(row_j, row_j)
-          temp = SQRT(dense_a(local_j,local_j) - temp)
-          insert_ptr = insert_ptr + 1
-          l_scratch%outer_index(local_j+1:) = l_scratch%outer_index(local_j+1) + 1
-          l_scratch%inner_index(insert_ptr) = local_j
-          l_scratch%values(insert_ptr) = temp
-          inverse_factor = 1.0/temp
+       local_row_j = j - AMat%start_row + 1
+       local_column_j = j - AMat%start_column + 1
+       IF (j .GE. AMat%start_row .AND. j .LT. AMat%end_row) THEN
+          CALL ExtractRow(l_scratch, local_row_j, row_j)
+          local_dot = DotSparseMatrix(row_j, row_j)
+          CALL MPI_Allreduce(MPI_IN_PLACE, local_dot, 1, MPINTREAL, MPI_SUM, &
+               & row_comm, grid_error)
+          IF (j .GE. AMat%start_column .AND. j .LT. AMat%end_column) THEN
+            local_dot = dense_a(local_row_j, local_column_j) - local_dot
+            insert_value = SQRT(local_dot)
+            inverse_factor = 1.0/insert_value
+            CALL AppendValue(l_scratch, local_column_j, local_row_j, &
+                 & insert_value, insert_ptr)
+          END IF
           root = column_rank
        ELSE
           inverse_factor = 0
@@ -256,16 +263,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & column_comm, grid_error)
        !! Compute Dot Products
        DO i = j+1, AMat%actual_matrix_dimension
-          IF (i .LT. AMat%start_row .OR. i .GT. AMat%end_row) CONTINUE
+          IF (i .LT. AMat%start_row .OR. i .GE. AMat%end_row) CYCLE
           !! Extract Row I
-          local_i = i - AMat%start_row + 1
-          CALL ExtractRow(l_scratch, local_i, row_i)
-          temp = DotSparseMatrix(row_i, row_j)
-          temp = inverse_factor*(dense_a(local_i, local_j) - temp)
-          insert_ptr = insert_ptr + 1
-          l_scratch%outer_index(local_j+1:) = l_scratch%outer_index(local_j+1) + 1
-          l_scratch%inner_index(insert_ptr) = local_i
-          l_scratch%values(insert_ptr) = temp
+          local_row_i = i - AMat%start_row + 1
+          CALL ExtractRow(l_scratch, local_row_i, row_i)
+          local_dot = DotSparseMatrix(row_i, row_j)
+          CALL MPI_Allreduce(MPI_IN_PLACE, local_dot, 1, MPINTREAL, MPI_SUM, &
+               & row_comm, grid_error)
+          IF (j .GE. AMat%start_column .AND. j .LT. AMat%end_column) THEN
+            local_dot = dense_a(local_row_i, local_column_j) - local_dot
+            insert_value = inverse_factor*local_dot
+            CALL AppendValue(l_scratch,local_column_j,local_row_i,insert_value,insert_ptr)
+          END IF
        END DO
     END DO
 
@@ -319,4 +328,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
   END SUBROUTINE PivotedCholeskyDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Helper routine to append a value to a sparse matrix.
+  SUBROUTINE AppendValue(matrix, column, row, value, insert_ptr)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    INTEGER, INTENT(IN) :: column
+    INTEGER, INTENT(IN) :: row
+    REAL(NTREAL), INTENT(IN) :: value
+    INTEGER, INTENT(INOUT) :: insert_ptr
+
+    insert_ptr = insert_ptr + 1
+    matrix%outer_index(column+1:) = matrix%outer_index(column+1) + 1
+    matrix%inner_index(insert_ptr) = row
+    matrix%values(insert_ptr) = value
+  END SUBROUTINE AppendValue
 END MODULE LinearSolversModule
