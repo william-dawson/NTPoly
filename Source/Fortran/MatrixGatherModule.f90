@@ -355,7 +355,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (rank .EQ. root) THEN
        matrows = matrix%rows
        matcolumns = matrix%columns
-       nnz = matrix%outer_index(matrix%columns)
+       nnz = matrix%outer_index(matrix%columns+1)
     END IF
     CALL MPI_Bcast(matrows, 1, MPI_INT, root, comm, ierr)
     CALL MPI_Bcast(matcolumns, 1, MPI_INT, root, comm, ierr)
