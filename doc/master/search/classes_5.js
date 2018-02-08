@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['inversesolvers',['InverseSolvers',['../class_n_t_poly_1_1_inverse_solvers.html',1,'NTPoly']]],
-  ['iterativesolverparameters',['IterativeSolverParameters',['../class_n_t_poly_1_1_iterative_solver_parameters.html',1,'NTPoly']]],
-  ['iterativesolverparameters_5ft',['iterativesolverparameters_t',['../structiterativesolversmodule_1_1iterativesolverparameters__t.html',1,'iterativesolversmodule']]],
-  ['iterativesolverparameters_5fwrp',['iterativesolverparameters_wrp',['../structiterativesolversmodule__wrp_1_1iterativesolverparameters__wrp.html',1,'iterativesolversmodule_wrp']]]
+  ['hermitepolynomial',['HermitePolynomial',['../class_n_t_poly_1_1_hermite_polynomial.html',1,'NTPoly']]],
+  ['hermitepolynomial_5ft',['hermitepolynomial_t',['../structhermitesolversmodule_1_1hermitepolynomial__t.html',1,'hermitesolversmodule']]],
+  ['hermitepolynomial_5fwrp',['hermitepolynomial_wrp',['../structhermitesolversmodule__wrp_1_1hermitepolynomial__wrp.html',1,'hermitesolversmodule_wrp']]]
 ];

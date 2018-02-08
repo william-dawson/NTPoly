@@ -91,6 +91,8 @@ Inheritance diagram for NTPoly::InverseSolvers:</div>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:aa93355861bd1fad19fc558455e93caf3"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_inverse_solvers.html#aa93355861bd1fad19fc558455e93caf3">Invert</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Overlap, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;InverseMat, const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;solver_parameters)</td></tr>
 <tr class="separator:aa93355861bd1fad19fc558455e93caf3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4a533c72bd19bf691a692f6b2042a74"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_inverse_solvers.html#ab4a533c72bd19bf691a692f6b2042a74">PseudoInverse</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Overlap, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;InverseMat, const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;solver_parameters)</td></tr>
+<tr class="separator:ab4a533c72bd19bf691a692f6b2042a74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -151,6 +153,56 @@ Additional Inherited Members</h2></td></tr>
 </table>
 </div><div class="memdoc">
 <p>Compute the inverse of a matrix. An implementation of Hotelling's method. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Overlap</td><td>the matrix to invert. </td></tr>
+    <tr><td class="paramname">InverseMat</td><td>= Overlap^-1. </td></tr>
+    <tr><td class="paramname">solver_parameters</td><td>parameters for the solver </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab4a533c72bd19bf691a692f6b2042a74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab4a533c72bd19bf691a692f6b2042a74">&#9670;&nbsp;</a></span>PseudoInverse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::InverseSolvers::PseudoInverse </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>Overlap</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>InverseMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;&#160;</td>
+          <td class="paramname"><em>solver_parameters</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Compute the pseudoinverse of a matrix. An implementation of Hotelling's method, with a different convergence criteria. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">Overlap</td><td>the matrix to invert. </td></tr>
     <tr><td class="paramname">InverseMat</td><td>= Overlap^-1. </td></tr>

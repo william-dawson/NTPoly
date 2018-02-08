@@ -10,6 +10,8 @@ var searchData=
   ['permutation',['Permutation',['../class_n_t_poly_1_1_permutation.html#a7e987e571773d467c2177abdcc400a89',1,'NTPoly::Permutation']]],
   ['permutematrix',['PermuteMatrix',['../class_n_t_poly_1_1_load_balancer.html#ac622b621f4559385cef3914a7fc47b69',1,'NTPoly::LoadBalancer::PermuteMatrix()'],['../namespaceloadbalancermodule.html#afa2d5f9260135361bba85d73f6649fd5',1,'loadbalancermodule::permutematrix()']]],
   ['permutematrix_5fwrp',['permutematrix_wrp',['../namespaceloadbalancermodule__wrp.html#a10a1f18c624d3778d66cdb04219c97db',1,'loadbalancermodule_wrp']]],
+  ['polardecomposition',['polardecomposition',['../namespacesignsolversmodule.html#a81ea2a3368463b13ee4f2662663e2c14',1,'signsolversmodule']]],
+  ['polardecomposition_5fwrp',['polardecomposition_wrp',['../namespacesignsolversmodule__wrp.html#a8dba33a33cb13799dc0cfe30d6ae0b0a',1,'signsolversmodule_wrp']]],
   ['polynomial',['Polynomial',['../class_n_t_poly_1_1_polynomial.html#ad2e3c1c4797b27a873a4e4f546cd286a',1,'NTPoly::Polynomial']]],
   ['powerbounds',['PowerBounds',['../class_n_t_poly_1_1_eigen_bounds.html#ad5f9419d7dec69f14cef351d4366ef09',1,'NTPoly::EigenBounds::PowerBounds()'],['../namespaceeigenboundsmodule.html#af99d7f74eb1933560af68d294f7e4f07',1,'eigenboundsmodule::powerbounds()']]],
   ['powerbounds_5fwrp',['powerbounds_wrp',['../namespaceeigenboundsmodule__wrp.html#a6d33d90408d7bbda63a03023d569dbda',1,'eigenboundsmodule_wrp']]],
@@ -24,5 +26,7 @@ var searchData=
   ['printsparsematrix',['printsparsematrix',['../namespacesparsematrixmodule.html#a4d8e78f04a9343b732748a7e9719a8fb',1,'sparsematrixmodule']]],
   ['printsparsematrix_5fwrp',['printsparsematrix_wrp',['../namespacesparsematrixmodule__wrp.html#a9131e326e385789947782f5c6212eebe',1,'sparsematrixmodule_wrp']]],
   ['printsparsematrixf_5fwrp',['printsparsematrixf_wrp',['../namespacesparsematrixmodule__wrp.html#ac526ae9048ce9b53ff26062c36238d66',1,'sparsematrixmodule_wrp']]],
-  ['printtimer',['printtimer',['../namespacetimermodule.html#ad6b98054ee0ba8b13a410d0e0365e140',1,'timermodule']]]
+  ['printtimer',['printtimer',['../namespacetimermodule.html#ad6b98054ee0ba8b13a410d0e0365e140',1,'timermodule']]],
+  ['pseudoinverse',['PseudoInverse',['../class_n_t_poly_1_1_inverse_solvers.html#ab4a533c72bd19bf691a692f6b2042a74',1,'NTPoly::InverseSolvers::PseudoInverse()'],['../namespaceinversesolversmodule.html#ab741954eeef069967e95ffd02b7e97eb',1,'inversesolversmodule::pseudoinverse()']]],
+  ['pseudoinverse_5fwrp',['pseudoinverse_wrp',['../namespaceinversesolversmodule__wrp.html#a633de8ee7efe14a1bc8b911cfc73065b',1,'inversesolversmodule_wrp']]]
 ];

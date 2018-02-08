@@ -8,6 +8,8 @@ var searchData=
   ['destructdistributedsparsematrix',['destructdistributedsparsematrix',['../namespacedistributedsparsematrixmodule.html#a21f9d5bc7949a48e3fc5a513e1a3d7d8',1,'distributedsparsematrixmodule']]],
   ['destructdistributedsparsematrix_5fwrp',['destructdistributedsparsematrix_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#a5be2d15ce5279781d57e4072e68fc241',1,'distributedsparsematrixmodule_wrp']]],
   ['destructfixedsolverparameters_5fwrp',['destructfixedsolverparameters_wrp',['../namespacefixedsolversmodule__wrp.html#a6732421107067fafb1224e4764f60154',1,'fixedsolversmodule_wrp']]],
+  ['destructhermitepolynomial',['destructhermitepolynomial',['../namespacehermitesolversmodule.html#a6ac8d9ea08578124b59167e23e14aacb',1,'hermitesolversmodule']]],
+  ['destructhermitepolynomial_5fwrp',['destructhermitepolynomial_wrp',['../namespacehermitesolversmodule__wrp.html#a30bf074636034d660108eaf21d4df57c',1,'hermitesolversmodule_wrp']]],
   ['destructiterativesolverparameters_5fwrp',['destructiterativesolverparameters_wrp',['../namespaceiterativesolversmodule__wrp.html#a0b93b28ad1b265354dd4241c1224c58c',1,'iterativesolversmodule_wrp']]],
   ['destructmatrixmemorypool',['destructmatrixmemorypool',['../namespacematrixmemorypoolmodule.html#a733fdadf44979180a8ffdf24af1f7e3b',1,'matrixmemorypoolmodule']]],
   ['destructmatrixmemorypool_5fwrp',['destructmatrixmemorypool_wrp',['../namespacematrixmemorypoolmodule__wrp.html#a7a4df6fba9d25a0841322a6c392187bd',1,'matrixmemorypoolmodule_wrp']]],

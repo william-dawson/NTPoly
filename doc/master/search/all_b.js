@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['matrix_5fdimension',['matrix_dimension',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a829928947421e17814904f8036194311',1,'UnitTests::testSolvers::TestSolvers']]],
   ['matrixgathermodule',['matrixgathermodule',['../namespacematrixgathermodule.html',1,'']]],
   ['matrixmarketmodule',['matrixmarketmodule',['../namespacematrixmarketmodule.html',1,'']]],
   ['matrixmemorypool',['MatrixMemoryPool',['../class_n_t_poly_1_1_matrix_memory_pool.html',1,'NTPoly::MatrixMemoryPool'],['../class_n_t_poly_1_1_matrix_memory_pool.html#a141c8f88afb2939d0b83265ed837a72b',1,'NTPoly::MatrixMemoryPool::MatrixMemoryPool()']]],
@@ -22,7 +21,6 @@ var searchData=
   ['mpitypeinfoinit',['mpitypeinfoinit',['../namespacedatatypesmodule.html#a31e15990d0d43a804aa063ae8e686ea1',1,'datatypesmodule']]],
   ['multiplydense',['multiplydense',['../namespacedensematrixmodule.html#a8a24035f5c8972dbe4edd9aa0a933d21',1,'densematrixmodule']]],
   ['my_5fcolumn',['my_column',['../namespaceprocessgridmodule.html#a9802936de2ae03b7fcb15fe8ce526bcf',1,'processgridmodule']]],
-  ['my_5frank',['my_rank',['../class_unit_tests_1_1test_chemistry_1_1_test_chemistry.html#a4cf529305675c6cf15ceb86c0e0bae82',1,'UnitTests.testChemistry.TestChemistry.my_rank()'],['../class_unit_tests_1_1test_distributed_sparse_matrix_1_1_test_distributed_matrix.html#a0a71600bd61f7614914e8aacdafdc9fd',1,'UnitTests.testDistributedSparseMatrix.TestDistributedMatrix.my_rank()'],['../class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a7a9ea8880b2c18db408c5392b08cd1cb',1,'UnitTests.testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra.my_rank()'],['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a89dfe42d38d8a748e08cc90891a6659d',1,'UnitTests.testSolvers.TestSolvers.my_rank()'],['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a2812bd4cbd2efcef6d81f104a5b2b8b0',1,'UnitTests.testSolvers.TestSolvers.my_rank()']]],
   ['my_5frow',['my_row',['../namespaceprocessgridmodule.html#acea06228e6caf95e9aa0fe2d1d31f534',1,'processgridmodule']]],
   ['my_5fslice',['my_slice',['../namespaceprocessgridmodule.html#a9f6537309a224a7dcfe5d11e517430eb',1,'processgridmodule']]]
 ];

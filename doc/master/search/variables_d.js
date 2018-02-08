@@ -1,6 +1,9 @@
 var searchData=
 [
-  ['parameters',['parameters',['../class_unit_tests_1_1test_chemistry_1_1_test_chemistry.html#a5721edd4e231ff091558b1e4653f0f55',1,'UnitTests.testChemistry.TestChemistry.parameters()'],['../class_unit_tests_1_1test_distributed_sparse_matrix_1_1_test_distributed_matrix.html#a189a211566f03af2ffd12be25cc78fa1',1,'UnitTests.testDistributedSparseMatrix.TestDistributedMatrix.parameters()'],['../class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a1178ebd4b33539dfde2aaeeb86fb64a5',1,'UnitTests.testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra.parameters()'],['../class_unit_tests_1_1test_sparse_matrix_1_1_test_local_matrix.html#a2c8222868619db23178d2f935330a61f',1,'UnitTests.testSparseMatrix.TestLocalMatrix.parameters()']]],
-  ['point_5fvalue',['point_value',['../class_n_t_poly_1_1_triplet.html#a662ca1efdee8ec067ab6c64337535172',1,'NTPoly::Triplet::point_value()'],['../structtripletmodule_1_1triplet__t.html#a6d6b74d0c6c3f6c63489629dfd2825a1',1,'tripletmodule::triplet_t::point_value()']]],
-  ['pruned_5flist',['pruned_list',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a0ee5e8d1d36b0f7a4857d629ac749f91',1,'matrixmemorypoolmodule::matrixmemorypool_t']]]
+  ['reverse_5findex_5flookup',['reverse_index_lookup',['../structpermutationmodule_1_1permutation__t.html#a245c3d308cafc813968b600ef9eed856',1,'permutationmodule::permutation_t']]],
+  ['rootid',['rootid',['../namespaceprocessgridmodule.html#a6edb425f75776539dae529e78665ff3c',1,'processgridmodule']]],
+  ['row',['row',['../structsparsematrixiteratormodule_1_1sparsematrixiterator__t.html#a6e85f91d858658400437e4d218bbdee9',1,'sparsematrixiteratormodule::sparsematrixiterator_t']]],
+  ['row_5fcomm',['row_comm',['../namespaceprocessgridmodule.html#adc4fad82193d2d2350b4cf727c9bcd1e',1,'processgridmodule']]],
+  ['row_5frank',['row_rank',['../namespaceprocessgridmodule.html#a257ccda3ef551a532b87afe0384bcc63',1,'processgridmodule']]],
+  ['rows',['rows',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a82e4f8d2150e6fcbb92b31e8eaf68e08',1,'matrixmemorypoolmodule::matrixmemorypool_t::rows()'],['../structsparsematrixmodule_1_1sparsematrix__t.html#aad6b178538d24bc24c63274bc6962aeb',1,'sparsematrixmodule::sparsematrix_t::rows()']]]
 ];

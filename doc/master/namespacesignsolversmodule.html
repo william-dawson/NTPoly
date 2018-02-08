@@ -76,10 +76,64 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a029d74db369a4b5f7851b150ed05ac99"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesignsolversmodule.html#a029d74db369a4b5f7851b150ed05ac99">signfunction</a> (Mat1, SignMat, solver_parameters_in)</td></tr>
 <tr class="memdesc:a029d74db369a4b5f7851b150ed05ac99"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the matrix sign function.  <a href="#a029d74db369a4b5f7851b150ed05ac99">More...</a><br /></td></tr>
 <tr class="separator:a029d74db369a4b5f7851b150ed05ac99"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a81ea2a3368463b13ee4f2662663e2c14"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesignsolversmodule.html#a81ea2a3368463b13ee4f2662663e2c14">polardecomposition</a> (Mat1, Umat, Hmat, solver_parameters_in)</td></tr>
+<tr class="memdesc:a81ea2a3368463b13ee4f2662663e2c14"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the polar decomposition of a matrix Mat1 = U*H.  <a href="#a81ea2a3368463b13ee4f2662663e2c14">More...</a><br /></td></tr>
+<tr class="separator:a81ea2a3368463b13ee4f2662663e2c14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Computing The Matrix Sign Function. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="a81ea2a3368463b13ee4f2662663e2c14"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a81ea2a3368463b13ee4f2662663e2c14">&#9670;&nbsp;</a></span>polardecomposition()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public signsolversmodule::polardecomposition </td>
+          <td>(</td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
+          <td class="paramname"><em>Mat1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(inout)&#160;</td>
+          <td class="paramname"><em>Umat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(inout), optional&#160;</td>
+          <td class="paramname"><em>Hmat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(iterativesolverparameters_t), intent(in), optional&#160;</td>
+          <td class="paramname"><em>solver_parameters_in</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes the polar decomposition of a matrix Mat1 = U*H. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Mat1</td><td>the input matrix. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">Umat</td><td>the unitary polar factor. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">Hmat</td><td>(optional) the hermitian matrix factor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>optional parameters for the routine. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a029d74db369a4b5f7851b150ed05ac99"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a029d74db369a4b5f7851b150ed05ac99">&#9670;&nbsp;</a></span>signfunction()</h2>
 
