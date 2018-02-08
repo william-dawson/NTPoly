@@ -95,8 +95,8 @@ The following features and methods have been implemented in NTPoly:
     * Density Matrix Purification
     * Chemical Potential Calculation
 * Other
-    * Matrix Inverse
-    * Sign Function
+    * Matrix Inverse/Moore-Penrose Pseudo Inverse
+    * Sign Function/Polar Decomposition
     * Load Balancing Matrices
     * File I/O
 
@@ -105,7 +105,7 @@ Citation
 A description of the techniques used in NTPoly can be found in the following
 Computer Phyics Communications paper:
 
-> Dawson, William, and Takahito Nakajima. "Massively parallel sparse matrix 
+> Dawson, William, and Takahito Nakajima. "Massively parallel sparse matrix
 > function calculations with NTPoly." Computer Physics Communications (2017).
 
 Please cite this paper in accordance to the practices in your field.
