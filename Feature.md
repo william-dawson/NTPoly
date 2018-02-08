@@ -8,6 +8,7 @@ The following features and methods have been implemented in NTPoly:
 * General Polynomials
     * Standard Polynomials
     * Chebyshev Polynomials
+    * Hermite Polynomials
 * Transcendental Functions
     * Trigonometric Functions
     * Exponential and Logarithm
@@ -19,7 +20,7 @@ The following features and methods have been implemented in NTPoly:
     * Density Matrix Purification
     * Chemical Potential Calculation
 * Other
-    * Matrix Inverse
-    * Sign Function
+    * Matrix Inverse/Moore-Penrose Pseudo Inverse
+    * Sign Function/Polar Decomposition
     * Load Balancing Matrices
     * File I/O
