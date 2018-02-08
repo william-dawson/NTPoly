@@ -39,7 +39,7 @@ script:
   - cd Build
   - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
   - make
-  - make test > test_result.txt
+  - travis_wait 30 make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
   - cd ../UnitTests/
   - bash travis_check_examples.sh
