@@ -76,6 +76,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a7c50e19c6a0af81a1f3680d8a7fb3e72"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceinversesolversmodule.html#a7c50e19c6a0af81a1f3680d8a7fb3e72">invert</a> (Mat1, InverseMat, solver_parameters_in)</td></tr>
 <tr class="memdesc:a7c50e19c6a0af81a1f3680d8a7fb3e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse of a matrix. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[5]</a>.  <a href="#a7c50e19c6a0af81a1f3680d8a7fb3e72">More...</a><br /></td></tr>
 <tr class="separator:a7c50e19c6a0af81a1f3680d8a7fb3e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab741954eeef069967e95ffd02b7e97eb"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceinversesolversmodule.html#ab741954eeef069967e95ffd02b7e97eb">pseudoinverse</a> (Mat1, InverseMat, solver_parameters_in)</td></tr>
+<tr class="memdesc:ab741954eeef069967e95ffd02b7e97eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the pseudoinverse of a matrix. This is still experimental. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[5]</a>. We just change the convergence criteria.  <a href="#ab741954eeef069967e95ffd02b7e97eb">More...</a><br /></td></tr>
+<tr class="separator:ab741954eeef069967e95ffd02b7e97eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Computing The Inverse of a Matrix. </p>
@@ -113,6 +116,50 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute the inverse of a matrix. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[5]</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">Mat1</td><td>Matrix 1. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">InverseMat</td><td>= Mat1^-1. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab741954eeef069967e95ffd02b7e97eb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab741954eeef069967e95ffd02b7e97eb">&#9670;&nbsp;</a></span>pseudoinverse()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public inversesolversmodule::pseudoinverse </td>
+          <td>(</td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
+          <td class="paramname"><em>Mat1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(inout)&#160;</td>
+          <td class="paramname"><em>InverseMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(iterativesolverparameters_t), intent(in), optional&#160;</td>
+          <td class="paramname"><em>solver_parameters_in</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compute the pseudoinverse of a matrix. This is still experimental. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[5]</a>. We just change the convergence criteria. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">Mat1</td><td>Matrix 1. </td></tr>

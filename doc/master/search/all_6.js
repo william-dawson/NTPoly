@@ -9,7 +9,6 @@ var searchData=
   ['fillfromtripletlist_5fwrp',['fillfromtripletlist_wrp',['../namespacedistributedsparsematrixmodule__wrp.html#acf5e27875603270d8f4e5b22bc30ddf7',1,'distributedsparsematrixmodule_wrp']]],
   ['fillidentity',['FillIdentity',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#ad4e4f07dded714396912faea02e54634',1,'NTPoly::DistributedSparseMatrix']]],
   ['filterdistributedsparsematrix',['filterdistributedsparsematrix',['../namespacedistributedsparsematrixmodule.html#a5b63320c17d96f67b0c9af191d8a0927',1,'distributedsparsematrixmodule']]],
-  ['fixed_5fsolver_5fparameters',['fixed_solver_parameters',['../class_unit_tests_1_1test_solvers_1_1_test_solvers.html#ad9827685c3210515c3e54d86a0a5f20d',1,'UnitTests::testSolvers::TestSolvers']]],
   ['fixedsolverparameters',['FixedSolverParameters',['../class_n_t_poly_1_1_fixed_solver_parameters.html',1,'NTPoly::FixedSolverParameters'],['../class_n_t_poly_1_1_fixed_solver_parameters.html#a828c896104edda01152b16bcdc66934c',1,'NTPoly::FixedSolverParameters::FixedSolverParameters()']]],
   ['fixedsolverparameters_5ft',['fixedsolverparameters_t',['../structfixedsolversmodule_1_1fixedsolverparameters__t.html',1,'fixedsolversmodule']]],
   ['fixedsolverparameters_5fwrp',['fixedsolverparameters_wrp',['../structfixedsolversmodule__wrp_1_1fixedsolverparameters__wrp.html',1,'fixedsolversmodule_wrp']]],

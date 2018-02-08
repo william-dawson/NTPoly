@@ -89,8 +89,10 @@ Inheritance diagram for NTPoly::SignSolvers:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a9b74d6f0135f3ca01dd0ead0c0b391bb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sign_solvers.html#a9b74d6f0135f3ca01dd0ead0c0b391bb">Compute</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Mat1, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;SignMat, const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;solver_parameters)</td></tr>
-<tr class="separator:a9b74d6f0135f3ca01dd0ead0c0b391bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeacdaa3f80d361535e055bfc4c18fee5"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sign_solvers.html#aeacdaa3f80d361535e055bfc4c18fee5">ComputeSign</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Mat1, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;SignMat, const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;solver_parameters)</td></tr>
+<tr class="separator:aeacdaa3f80d361535e055bfc4c18fee5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab277dd66b9f5c553ad69a227013df242"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sign_solvers.html#ab277dd66b9f5c553ad69a227013df242">ComputePolarDecomposition</a> (const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Mat1, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Umat, <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;Hmat, const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;solver_parameters)</td></tr>
+<tr class="separator:ab277dd66b9f5c553ad69a227013df242"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -111,8 +113,8 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Class For Computing The Matrix Sign Function. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a9b74d6f0135f3ca01dd0ead0c0b391bb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b74d6f0135f3ca01dd0ead0c0b391bb">&#9670;&nbsp;</a></span>Compute()</h2>
+<a id="ab277dd66b9f5c553ad69a227013df242"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab277dd66b9f5c553ad69a227013df242">&#9670;&nbsp;</a></span>ComputePolarDecomposition()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -121,7 +123,64 @@ Additional Inherited Members</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void NTPoly::SignSolvers::Compute </td>
+          <td class="memname">void NTPoly::SignSolvers::ComputePolarDecomposition </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>Mat1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>Umat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>Hmat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_iterative_solver_parameters.html">IterativeSolverParameters</a> &amp;&#160;</td>
+          <td class="paramname"><em>solver_parameters</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Computes the polar decomposition of a matrix Mat1 = U*H. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">Mat1</td><td>input matrix. </td></tr>
+    <tr><td class="paramname">Umat</td><td>the unitary polar factor. </td></tr>
+    <tr><td class="paramname">Hmat</td><td>the hermitian matrix factor. </td></tr>
+    <tr><td class="paramname">solver_parameters</td><td>parameters for the solver </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aeacdaa3f80d361535e055bfc4c18fee5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeacdaa3f80d361535e055bfc4c18fee5">&#9670;&nbsp;</a></span>ComputeSign()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::SignSolvers::ComputeSign </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html">DistributedSparseMatrix</a> &amp;&#160;</td>
           <td class="paramname"><em>Mat1</em>, </td>

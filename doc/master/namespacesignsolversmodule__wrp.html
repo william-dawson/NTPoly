@@ -74,12 +74,66 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a36733603451e704bacfc8e382dd48a47"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesignsolversmodule__wrp.html#a36733603451e704bacfc8e382dd48a47">signfunction_wrp</a> (ih_Mat1, ih_SignMat, ih_solver_parameters)</td></tr>
-<tr class="memdesc:a36733603451e704bacfc8e382dd48a47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse of a matrix. Computes the matrix sign function.  <a href="#a36733603451e704bacfc8e382dd48a47">More...</a><br /></td></tr>
+<tr class="memdesc:a36733603451e704bacfc8e382dd48a47"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the matrix sign function.  <a href="#a36733603451e704bacfc8e382dd48a47">More...</a><br /></td></tr>
 <tr class="separator:a36733603451e704bacfc8e382dd48a47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8dba33a33cb13799dc0cfe30d6ae0b0a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesignsolversmodule__wrp.html#a8dba33a33cb13799dc0cfe30d6ae0b0a">polardecomposition_wrp</a> (ih_Mat1, ih_Umat, ih_Hmat, ih_solver_parameters)</td></tr>
+<tr class="memdesc:a8dba33a33cb13799dc0cfe30d6ae0b0a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Computes the polar decomposition of a matrix Mat1 = U*H.  <a href="#a8dba33a33cb13799dc0cfe30d6ae0b0a">More...</a><br /></td></tr>
+<tr class="separator:a8dba33a33cb13799dc0cfe30d6ae0b0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Wraps the overlap solvers module for calling from other languages. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
+<a id="a8dba33a33cb13799dc0cfe30d6ae0b0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8dba33a33cb13799dc0cfe30d6ae0b0a">&#9670;&nbsp;</a></span>polardecomposition_wrp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public signsolversmodule_wrp::polardecomposition_wrp </td>
+          <td>(</td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
+          <td class="paramname"><em>ih_Mat1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
+          <td class="paramname"><em>ih_Umat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
+          <td class="paramname"><em>ih_Hmat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
+          <td class="paramname"><em>ih_solver_parameters</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Computes the polar decomposition of a matrix Mat1 = U*H. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ih_Mat1</td><td>the input matrix. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ih_Umat</td><td>the unitary polar factor. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ih_Hmat</td><td>the hermitian matrix factor. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ih_solver_parameters</td><td>parameters for the solver. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a36733603451e704bacfc8e382dd48a47"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36733603451e704bacfc8e382dd48a47">&#9670;&nbsp;</a></span>signfunction_wrp()</h2>
 
@@ -112,7 +166,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Compute the inverse of a matrix. Computes the matrix sign function. </p>
+<p>Computes the matrix sign function. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ih_Mat1</td><td>the input matrix. </td></tr>

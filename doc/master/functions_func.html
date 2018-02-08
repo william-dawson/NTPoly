@@ -99,7 +99,7 @@ $(function() {
 </li>
 <li>Compute()
 : <a class="el" href="class_n_t_poly_1_1_chebyshev_polynomial.html#a8de9c75b2153dbf838389e9c832fd70d">NTPoly::ChebyshevPolynomial</a>
-, <a class="el" href="class_n_t_poly_1_1_sign_solvers.html#a9b74d6f0135f3ca01dd0ead0c0b391bb">NTPoly::SignSolvers</a>
+, <a class="el" href="class_n_t_poly_1_1_hermite_polynomial.html#a04ee646e28fb77df83012c428765696a">NTPoly::HermitePolynomial</a>
 </li>
 <li>ComputeExponential()
 : <a class="el" href="class_n_t_poly_1_1_exponential_solvers.html#a6b3c3b474d03082eca5553f2ab7ea57d">NTPoly::ExponentialSolvers</a>
@@ -116,8 +116,14 @@ $(function() {
 <li>ComputeLogarithm()
 : <a class="el" href="class_n_t_poly_1_1_exponential_solvers.html#ad6bad39fffee975adb8b144a8c8b474f">NTPoly::ExponentialSolvers</a>
 </li>
+<li>ComputePolarDecomposition()
+: <a class="el" href="class_n_t_poly_1_1_sign_solvers.html#ab277dd66b9f5c553ad69a227013df242">NTPoly::SignSolvers</a>
+</li>
 <li>ComputeRoot()
 : <a class="el" href="class_n_t_poly_1_1_root_solvers.html#a9bde45a21207e0c3aa980a785002d597">NTPoly::RootSolvers</a>
+</li>
+<li>ComputeSign()
+: <a class="el" href="class_n_t_poly_1_1_sign_solvers.html#aeacdaa3f80d361535e055bfc4c18fee5">NTPoly::SignSolvers</a>
 </li>
 <li>ConjugateGradient()
 : <a class="el" href="class_n_t_poly_1_1_minimizer_solvers.html#af4b478e8438621f95c619c1ecc060271">NTPoly::MinimizerSolvers</a>
@@ -194,6 +200,9 @@ $(function() {
 
 
 <h3><a id="index_h"></a>- h -</h3><ul>
+<li>HermitePolynomial()
+: <a class="el" href="class_n_t_poly_1_1_hermite_polynomial.html#a0dd960871dac1eacb1d170011fc2203f">NTPoly::HermitePolynomial</a>
+</li>
 <li>HornerCompute()
 : <a class="el" href="class_n_t_poly_1_1_polynomial.html#ac78eec93fb3d371522467a0c1d7e98f0">NTPoly::Polynomial</a>
 </li>
@@ -260,6 +269,9 @@ $(function() {
 <li>Print()
 : <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#a727a81b56a3273cd9efa43cb81e95275">NTPoly::SparseMatrix</a>
 </li>
+<li>PseudoInverse()
+: <a class="el" href="class_n_t_poly_1_1_inverse_solvers.html#ab4a533c72bd19bf691a692f6b2042a74">NTPoly::InverseSolvers</a>
+</li>
 </ul>
 
 
@@ -277,6 +289,7 @@ $(function() {
 </li>
 <li>SetCoefficient()
 : <a class="el" href="class_n_t_poly_1_1_chebyshev_polynomial.html#aa199d1e74cdb0e7622d7061c2c7a4284">NTPoly::ChebyshevPolynomial</a>
+, <a class="el" href="class_n_t_poly_1_1_hermite_polynomial.html#ac06438e3ab676f8937ffd7cc9f265e73">NTPoly::HermitePolynomial</a>
 , <a class="el" href="class_n_t_poly_1_1_polynomial.html#a3238979771a2c7b66938d186eef5da42">NTPoly::Polynomial</a>
 </li>
 <li>SetConvergeDiff()
@@ -329,7 +342,7 @@ $(function() {
 : <a class="el" href="class_n_t_poly_1_1_triplet_list.html#a17c49c4c5cf29f61ae14773b08944841">NTPoly::TripletList</a>
 </li>
 <li>SparseMatrix()
-: <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#a1164694143487580f8eb2d44b34c2586">NTPoly::SparseMatrix</a>
+: <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#a69428db08d6f988a4ae6a805e1172893">NTPoly::SparseMatrix</a>
 </li>
 <li>SquareRoot()
 : <a class="el" href="class_n_t_poly_1_1_square_root_solvers.html#a9d0ec95baa12312caba21236bde75b80">NTPoly::SquareRootSolvers</a>
@@ -376,6 +389,9 @@ $(function() {
 <li>test_gettripletlist()
 : <a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_1_1_test_distributed_matrix.html#a38f083a5e7f1f63fe0acb30a64004cba">UnitTests.testDistributedSparseMatrix.TestDistributedMatrix</a>
 </li>
+<li>test_hermitefunction()
+: <a class="el" href="class_unit_tests_1_1test_solvers_1_1_test_solvers.html#aea83f5b15413dad6a51599f3ec8a7e6c">UnitTests.testSolvers.TestSolvers</a>
+</li>
 <li>test_hornerfunction()
 : <a class="el" href="class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a0f3d0d1863872b00213590b6362fdf3b">UnitTests.testSolvers.TestSolvers</a>
 </li>
@@ -410,8 +426,14 @@ $(function() {
 <li>test_patersonstockmeyerfunction()
 : <a class="el" href="class_unit_tests_1_1test_solvers_1_1_test_solvers.html#ae2cebcd949a709e976ad7d2375aa457e">UnitTests.testSolvers.TestSolvers</a>
 </li>
+<li>test_polarfunction()
+: <a class="el" href="class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a9312b8cf363215d3950e8be4f80ef685">UnitTests.testSolvers.TestSolvers</a>
+</li>
 <li>test_powermethod()
 : <a class="el" href="class_unit_tests_1_1test_solvers_1_1_test_solvers.html#a89584a8653e109751a4162e04562762a">UnitTests.testSolvers.TestSolvers</a>
+</li>
+<li>test_pseudoinverse()
+: <a class="el" href="class_unit_tests_1_1test_solvers_1_1_test_solvers.html#afe14da90e0c5a709472230fa074de7d4">UnitTests.testSolvers.TestSolvers</a>
 </li>
 <li>test_read()
 : <a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_1_1_test_distributed_matrix.html#a63864f74e2b913a4a66bb6039b61a5e9">UnitTests.testDistributedSparseMatrix.TestDistributedMatrix</a>
@@ -462,7 +484,7 @@ $(function() {
 , <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#a4cbdc12bc0e85794af9c7aa57889d195">NTPoly::SparseMatrix</a>
 </li>
 <li>TripletList()
-: <a class="el" href="class_n_t_poly_1_1_triplet_list.html#ae7074bdf4be8f2e33b6a75f6c39fa97b">NTPoly::TripletList</a>
+: <a class="el" href="class_n_t_poly_1_1_triplet_list.html#afc41727eafd2cb56f898212bc76325fe">NTPoly::TripletList</a>
 </li>
 <li>TRS2()
 : <a class="el" href="class_n_t_poly_1_1_density_matrix_solvers.html#ab47dfbcf4ddd4377c916ed54b43aecfb">NTPoly::DensityMatrixSolvers</a>
@@ -497,6 +519,9 @@ $(function() {
 </li>
 <li>~DistributedSparseMatrix()
 : <a class="el" href="class_n_t_poly_1_1_distributed_sparse_matrix.html#af449c73d13cdfd8d0c795827caef9c91">NTPoly::DistributedSparseMatrix</a>
+</li>
+<li>~HermitePolynomial()
+: <a class="el" href="class_n_t_poly_1_1_hermite_polynomial.html#a725691d541d168c967aee054e2b938c3">NTPoly::HermitePolynomial</a>
 </li>
 <li>~MatrixMemoryPool()
 : <a class="el" href="class_n_t_poly_1_1_matrix_memory_pool.html#aa6fd901215d515a8276511dab332b9e1">NTPoly::MatrixMemoryPool</a>

@@ -61,7 +61,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><b>UnitTests</b></li><li class="navelem"><b>testDistributedSparseMatrixAlgebra</b></li><li class="navelem"><a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html">TestDistributedMatrixAlgebra</a></li>  </ul>
+<li class="navelem"><b>UnitTests</b></li><li class="navelem"><a class="el" href="namespace_unit_tests_1_1test_distributed_sparse_matrix_algebra.html">testDistributedSparseMatrixAlgebra</a></li><li class="navelem"><a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html">TestDistributedMatrixAlgebra</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -114,17 +114,16 @@ Public Attributes</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-attribs"></a>
 Static Public Attributes</h2></td></tr>
 <tr class="memitem:a1178ebd4b33539dfde2aaeeb86fb64a5"><td class="memItemLeft" align="right" valign="top"><a id="a1178ebd4b33539dfde2aaeeb86fb64a5"></a>
-list&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a1178ebd4b33539dfde2aaeeb86fb64a5">parameters</a> = []</td></tr>
-<tr class="memdesc:a1178ebd4b33539dfde2aaeeb86fb64a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parameters for the tests. <br /></td></tr>
+list&#160;</td><td class="memItemRight" valign="bottom"><b>parameters</b> = []</td></tr>
 <tr class="separator:a1178ebd4b33539dfde2aaeeb86fb64a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46014ca7d9fb1b0056215e7020ebf26f"><td class="memItemLeft" align="right" valign="top">string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a46014ca7d9fb1b0056215e7020ebf26f">result_file</a> = scratch_dir + &quot;/result.mtx&quot;</td></tr>
-<tr class="memdesc:a46014ca7d9fb1b0056215e7020ebf26f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Place to store the result matrix.  <a href="#a46014ca7d9fb1b0056215e7020ebf26f">More...</a><br /></td></tr>
+<tr class="memitem:a46014ca7d9fb1b0056215e7020ebf26f"><td class="memItemLeft" align="right" valign="top"><a id="a46014ca7d9fb1b0056215e7020ebf26f"></a>
+string&#160;</td><td class="memItemRight" valign="bottom"><b>result_file</b> = scratch_dir + &quot;/result.mtx&quot;</td></tr>
 <tr class="separator:a46014ca7d9fb1b0056215e7020ebf26f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0311f1e5a056a5d5dad23942c89cad80"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a0311f1e5a056a5d5dad23942c89cad80">CheckMat</a> = 0</td></tr>
-<tr class="memdesc:a0311f1e5a056a5d5dad23942c89cad80"><td class="mdescLeft">&#160;</td><td class="mdescRight">Matrix to compare against.  <a href="#a0311f1e5a056a5d5dad23942c89cad80">More...</a><br /></td></tr>
+<tr class="memitem:a0311f1e5a056a5d5dad23942c89cad80"><td class="memItemLeft" align="right" valign="top"><a id="a0311f1e5a056a5d5dad23942c89cad80"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>CheckMat</b> = 0</td></tr>
 <tr class="separator:a0311f1e5a056a5d5dad23942c89cad80"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a9ea8880b2c18db408c5392b08cd1cb"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a7a9ea8880b2c18db408c5392b08cd1cb">my_rank</a> = 0</td></tr>
-<tr class="memdesc:a7a9ea8880b2c18db408c5392b08cd1cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rank of the current process.  <a href="#a7a9ea8880b2c18db408c5392b08cd1cb">More...</a><br /></td></tr>
+<tr class="memitem:a7a9ea8880b2c18db408c5392b08cd1cb"><td class="memItemLeft" align="right" valign="top"><a id="a7a9ea8880b2c18db408c5392b08cd1cb"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><b>my_rank</b> = 0</td></tr>
 <tr class="separator:a7a9ea8880b2c18db408c5392b08cd1cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -271,79 +270,6 @@ list&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
       </table>
 </div><div class="memdoc">
 <pre class="fragment">Test our ability to permute a matrix.</pre> 
-</div>
-</div>
-<h2 class="groupheader">Member Data Documentation</h2>
-<a id="a0311f1e5a056a5d5dad23942c89cad80"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0311f1e5a056a5d5dad23942c89cad80">&#9670;&nbsp;</a></span>CheckMat</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int UnitTests.testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra.CheckMat = 0</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Matrix to compare against. </p>
-
-</div>
-</div>
-<a id="a7a9ea8880b2c18db408c5392b08cd1cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7a9ea8880b2c18db408c5392b08cd1cb">&#9670;&nbsp;</a></span>my_rank</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int UnitTests.testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra.my_rank = 0</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Rank of the current process. </p>
-
-</div>
-</div>
-<a id="a46014ca7d9fb1b0056215e7020ebf26f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a46014ca7d9fb1b0056215e7020ebf26f">&#9670;&nbsp;</a></span>result_file</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">string UnitTests.testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra.result_file = scratch_dir + &quot;/result.mtx&quot;</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Place to store the result matrix. </p>
-
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following file:<ul>

@@ -76,6 +76,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ade24338b172611c8bb54b6ce9a0ddf40"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceinversesolversmodule__wrp.html#ade24338b172611c8bb54b6ce9a0ddf40">invert_wrp</a> (ih_Mat1, ih_InverseMat, ih_solver_parameters)</td></tr>
 <tr class="memdesc:ade24338b172611c8bb54b6ce9a0ddf40"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse of a matrix.  <a href="#ade24338b172611c8bb54b6ce9a0ddf40">More...</a><br /></td></tr>
 <tr class="separator:ade24338b172611c8bb54b6ce9a0ddf40"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a633de8ee7efe14a1bc8b911cfc73065b"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceinversesolversmodule__wrp.html#a633de8ee7efe14a1bc8b911cfc73065b">pseudoinverse_wrp</a> (ih_Mat1, ih_InverseMat, ih_solver_parameters)</td></tr>
+<tr class="memdesc:a633de8ee7efe14a1bc8b911cfc73065b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the pseudoinverse of a matrix.  <a href="#a633de8ee7efe14a1bc8b911cfc73065b">More...</a><br /></td></tr>
+<tr class="separator:a633de8ee7efe14a1bc8b911cfc73065b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Wraps the matrix inversion module for calling from other languages. </p>
@@ -113,6 +116,50 @@ Functions/Subroutines</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Compute the inverse of a matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">ih_Mat1</td><td>Matrix 1. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">ih_InverseMat</td><td>= Mat1^-1. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">ih_solver_parameters</td><td>parameters for the solver </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a633de8ee7efe14a1bc8b911cfc73065b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a633de8ee7efe14a1bc8b911cfc73065b">&#9670;&nbsp;</a></span>pseudoinverse_wrp()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public inversesolversmodule_wrp::pseudoinverse_wrp </td>
+          <td>(</td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
+          <td class="paramname"><em>ih_Mat1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(inout)&#160;</td>
+          <td class="paramname"><em>ih_InverseMat</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer(kind=c_int), dimension(size_wrp), intent(in)&#160;</td>
+          <td class="paramname"><em>ih_solver_parameters</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Compute the pseudoinverse of a matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">ih_Mat1</td><td>Matrix 1. </td></tr>

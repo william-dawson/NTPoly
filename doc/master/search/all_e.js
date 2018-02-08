@@ -6,7 +6,6 @@ var searchData=
   ['pairwisemultiplysparsematrix_5fwrp',['pairwisemultiplysparsematrix_wrp',['../namespacesparsematrixalgebramodule__wrp.html#ad5c42c5239e5f30d58054c2b062eac27',1,'sparsematrixalgebramodule_wrp']]],
   ['pairwisemultiplyvectors',['pairwisemultiplyvectors',['../namespacesparsevectormodule.html#a77418499c1bfbdf0b8f7974c23f28f35',1,'sparsevectormodule']]],
   ['parameterconvertermodule',['parameterconvertermodule',['../namespaceparameterconvertermodule.html',1,'']]],
-  ['parameters',['parameters',['../class_unit_tests_1_1test_chemistry_1_1_test_chemistry.html#a5721edd4e231ff091558b1e4653f0f55',1,'UnitTests.testChemistry.TestChemistry.parameters()'],['../class_unit_tests_1_1test_distributed_sparse_matrix_1_1_test_distributed_matrix.html#a189a211566f03af2ffd12be25cc78fa1',1,'UnitTests.testDistributedSparseMatrix.TestDistributedMatrix.parameters()'],['../class_unit_tests_1_1test_distributed_sparse_matrix_algebra_1_1_test_distributed_matrix_algebra.html#a1178ebd4b33539dfde2aaeeb86fb64a5',1,'UnitTests.testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra.parameters()'],['../class_unit_tests_1_1test_sparse_matrix_1_1_test_local_matrix.html#a2c8222868619db23178d2f935330a61f',1,'UnitTests.testSparseMatrix.TestLocalMatrix.parameters()']]],
   ['parsemmheader',['parsemmheader',['../namespacematrixmarketmodule.html#ada16569e6ac6eb5fc219a978275739ef',1,'matrixmarketmodule']]],
   ['patersonstockmeyercompute',['PatersonStockmeyerCompute',['../class_n_t_poly_1_1_polynomial.html#aa4a2e5b6ffce13d477d8eb0624946e10',1,'NTPoly::Polynomial::PatersonStockmeyerCompute()'],['../namespacepolynomialsolversmodule.html#a5b26458ec2997ba544730effd128151b',1,'polynomialsolversmodule::patersonstockmeyercompute()']]],
   ['patersonstockmeyercompute_5fwrp',['patersonstockmeyercompute_wrp',['../namespacepolynomialsolversmodule__wrp.html#a8d0084453e272b22c32ce35817c7a6f0',1,'polynomialsolversmodule_wrp']]],
@@ -18,6 +17,8 @@ var searchData=
   ['permutematrix',['PermuteMatrix',['../class_n_t_poly_1_1_load_balancer.html#ac622b621f4559385cef3914a7fc47b69',1,'NTPoly::LoadBalancer::PermuteMatrix()'],['../namespaceloadbalancermodule.html#afa2d5f9260135361bba85d73f6649fd5',1,'loadbalancermodule::permutematrix()']]],
   ['permutematrix_5fwrp',['permutematrix_wrp',['../namespaceloadbalancermodule__wrp.html#a10a1f18c624d3778d66cdb04219c97db',1,'loadbalancermodule_wrp']]],
   ['point_5fvalue',['point_value',['../class_n_t_poly_1_1_triplet.html#a662ca1efdee8ec067ab6c64337535172',1,'NTPoly::Triplet::point_value()'],['../structtripletmodule_1_1triplet__t.html#a6d6b74d0c6c3f6c63489629dfd2825a1',1,'tripletmodule::triplet_t::point_value()']]],
+  ['polardecomposition',['polardecomposition',['../namespacesignsolversmodule.html#a81ea2a3368463b13ee4f2662663e2c14',1,'signsolversmodule']]],
+  ['polardecomposition_5fwrp',['polardecomposition_wrp',['../namespacesignsolversmodule__wrp.html#a8dba33a33cb13799dc0cfe30d6ae0b0a',1,'signsolversmodule_wrp']]],
   ['polynomial',['Polynomial',['../class_n_t_poly_1_1_polynomial.html',1,'NTPoly::Polynomial'],['../class_n_t_poly_1_1_polynomial.html#ad2e3c1c4797b27a873a4e4f546cd286a',1,'NTPoly::Polynomial::Polynomial()']]],
   ['polynomial_5ft',['polynomial_t',['../structpolynomialsolversmodule_1_1polynomial__t.html',1,'polynomialsolversmodule']]],
   ['polynomial_5fwrp',['polynomial_wrp',['../structpolynomialsolversmodule__wrp_1_1polynomial__wrp.html',1,'polynomialsolversmodule_wrp']]],
@@ -39,5 +40,7 @@ var searchData=
   ['printtimer',['printtimer',['../namespacetimermodule.html#ad6b98054ee0ba8b13a410d0e0365e140',1,'timermodule']]],
   ['processgridmodule',['processgridmodule',['../namespaceprocessgridmodule.html',1,'']]],
   ['processgridmodule_5fwrp',['processgridmodule_wrp',['../namespaceprocessgridmodule__wrp.html',1,'']]],
-  ['pruned_5flist',['pruned_list',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a0ee5e8d1d36b0f7a4857d629ac749f91',1,'matrixmemorypoolmodule::matrixmemorypool_t']]]
+  ['pruned_5flist',['pruned_list',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a0ee5e8d1d36b0f7a4857d629ac749f91',1,'matrixmemorypoolmodule::matrixmemorypool_t']]],
+  ['pseudoinverse',['PseudoInverse',['../class_n_t_poly_1_1_inverse_solvers.html#ab4a533c72bd19bf691a692f6b2042a74',1,'NTPoly::InverseSolvers::PseudoInverse()'],['../namespaceinversesolversmodule.html#ab741954eeef069967e95ffd02b7e97eb',1,'inversesolversmodule::pseudoinverse()']]],
+  ['pseudoinverse_5fwrp',['pseudoinverse_wrp',['../namespaceinversesolversmodule__wrp.html#a633de8ee7efe14a1bc8b911cfc73065b',1,'inversesolversmodule_wrp']]]
 ];

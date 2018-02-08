@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['linearsolversmodule',['linearsolversmodule',['../namespacelinearsolversmodule.html',1,'']]],
-  ['linearsolversmodule_5fwrp',['linearsolversmodule_wrp',['../namespacelinearsolversmodule__wrp.html',1,'']]],
-  ['loadbalancermodule',['loadbalancermodule',['../namespaceloadbalancermodule.html',1,'']]],
-  ['loadbalancermodule_5fwrp',['loadbalancermodule_wrp',['../namespaceloadbalancermodule__wrp.html',1,'']]],
-  ['loggingmodule',['loggingmodule',['../namespaceloggingmodule.html',1,'']]]
+  ['inversesolversmodule',['inversesolversmodule',['../namespaceinversesolversmodule.html',1,'']]],
+  ['inversesolversmodule_5fwrp',['inversesolversmodule_wrp',['../namespaceinversesolversmodule__wrp.html',1,'']]],
+  ['iterativesolversmodule',['iterativesolversmodule',['../namespaceiterativesolversmodule.html',1,'']]],
+  ['iterativesolversmodule_5fwrp',['iterativesolversmodule_wrp',['../namespaceiterativesolversmodule__wrp.html',1,'']]]
 ];
