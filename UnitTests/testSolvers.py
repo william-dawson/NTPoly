@@ -752,7 +752,6 @@ class TestSolvers(unittest.TestCase):
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
                         density=1.0)
-        temp_mat = temp_mat + temp_mat.T
         matrix1 = csr_matrix(temp_mat)
 
         # Check Matrix
