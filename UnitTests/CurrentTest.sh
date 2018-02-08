@@ -24,4 +24,4 @@ export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testSolvers.TestSolvers.test_pseudoinverse
+-m unittest -v testSolvers.TestSolvers.test_polarfunction

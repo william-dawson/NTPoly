@@ -8,7 +8,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 import scipy
-from scipy.linalg import pinv, funm
+from scipy.linalg import pinv, funm, polar
 from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
 from scipy.sparse.linalg import norm, inv, eigsh
@@ -299,8 +299,8 @@ class TestSolvers(unittest.TestCase):
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.iterative_solver_parameters.SetLoadBalance(permutation)
-        nt.SignSolvers.Compute(input_matrix, sign_matrix,
-                               self.iterative_solver_parameters)
+        nt.SignSolvers.ComputeSign(input_matrix, sign_matrix,
+                                   self.iterative_solver_parameters)
         sign_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -745,6 +745,42 @@ class TestSolvers(unittest.TestCase):
         poly_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
+        self.check_result()
+
+    def test_polarfunction(self):
+        '''Test our ability to compute the matrix polar decomposition.'''
+        # Starting Matrix
+        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
+                        density=1.0)
+        temp_mat = temp_mat + temp_mat.T
+        matrix1 = csr_matrix(temp_mat)
+
+        # Check Matrix
+        dense_check_u, dense_check_h = polar(matrix1.todense())
+        self.CheckMat = csr_matrix(dense_check_h)
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        u_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        h_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
+        nt.SignSolvers.ComputePolarDecomposition(input_matrix, u_matrix, h_matrix,
+                                                 self.iterative_solver_parameters)
+        h_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+        comm.barrier()
+        self.CheckMat = csr_matrix(dense_check_u)
+        u_matrix.WriteToMatrixMarket(result_file)
         self.check_result()
 
 

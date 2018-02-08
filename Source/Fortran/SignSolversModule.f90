@@ -16,6 +16,7 @@ MODULE SignSolversModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SignFunction
+  PUBLIC :: PolarDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix sign function.
   !! @param[in] Mat1 the input matrix.
@@ -145,4 +146,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(Temp2)
     CALL DestructDistributedSparseMatrix(Identity)
   END SUBROUTINE SignFunction
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Computes the polar decomposition of a matrix Mat1 = U*H.
+  !! @param[in] Mat1 the input matrix.
+  !! @param[out] Umat the unitary polar factor.
+  !! @param[out] Hmat (optional) the hermitian matrix factor.
+  !! @param[in] solver_parameters_in optional parameters for the routine.
+  SUBROUTINE PolarDecomposition(Mat1, Umat, Hmat, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(in) :: Mat1
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Umat
+    TYPE(DistributedSparseMatrix_t), INTENT(inout), OPTIONAL :: Hmat
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(DistributedSparseMatrix_t) :: UmatT
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+
+    CALL SignFunction(Mat1, Umat, solver_parameters)
+
+    IF (PRESENT(Hmat)) THEN
+       CALL TransposeDistributedSparseMatrix(Umat, UmatT)
+       CALL DistributedGemm(UmatT, Mat1, Hmat, &
+            & threshold_in=solver_parameters%threshold)
+       CALL DestructDistributedSparseMatrix(UmatT)
+    END IF
+
+  END SUBROUTINE PolarDecomposition
 END MODULE SignSolversModule
