@@ -13,7 +13,7 @@ from mpi4py import MPI
 # MPI globa communicator
 comm = MPI.COMM_WORLD
 
-from Helpers import THRESHOLD
+from Helpers import THRESHOLD, EXTRAPTHRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
 
@@ -43,6 +43,10 @@ class TestChemistry(unittest.TestCase):
         self.hamiltonian = os.environ["HAMILTONIAN"]
         self.overlap = os.environ["OVERLAP"]
         self.density = os.environ["DENSITY"]
+        self.geomh1 = os.environ["GEOMH1"]
+        self.geomo1 = os.environ["GEOMO1"]
+        self.geomo2 = os.environ["GEOMO2"]
+        self.geomd2 = os.environ["GEOMD2"]
         self.nel = 10
 
     def check_full(self):
@@ -54,6 +58,16 @@ class TestChemistry(unittest.TestCase):
             normval = abs(norm(self.CheckMat - ResultMat))
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
+
+    def check_full_extrap(self):
+        '''Compare two computed matrices.'''
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = 2.0 * mmread(result_file)
+            self.CheckMat = mmread(self.geomd2)
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, EXTRAPTHRESHOLD)
 
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
@@ -179,34 +193,28 @@ class TestChemistry(unittest.TestCase):
 
     def test_Extrapolate(self):
         '''Test the density extrapolation routine.'''
-        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix2 = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
+        f1 = nt.DistributedSparseMatrix(self.geomh1)
+        o1 = nt.DistributedSparseMatrix(self.geomo1)
+        o2 = nt.DistributedSparseMatrix(self.geomo2)
+        isqm1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
+        d1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
+        extrapd = nt.DistributedSparseMatrix(f1.GetActualDimension())
 
-        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation = nt.Permutation(f1.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.solver_parameters.SetLoadBalance(permutation)
 
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-                                               inverse_sqrt_matrix,
-                                               self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.TRS2(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
-        nt.DensityMatrixSolvers.ExtrapolateGeometry(density_matrix,
-                                                    overlap_matrix,
-                                                    self.nel, density_matrix2,
+        nt.SquareRootSolvers.InverseSquareRoot(
+            o1, isqm1, self.solver_parameters)
+        nt.DensityMatrixSolvers.TRS2(
+            f1, isqm1, self.nel, d1, self.solver_parameters)
+
+        nt.DensityMatrixSolvers.ExtrapolateGeometry(d1, o2, self.nel, extrapd,
                                                     self.solver_parameters)
-        density_matrix2.WriteToMatrixMarket(result_file)
+        extrapd.WriteToMatrixMarket(result_file)
         comm.barrier()
 
-        self.check_full()
+        self.check_full_extrap()
 
     def test_cg(self):
         '''Test our ability to compute the density matrix with conjugate

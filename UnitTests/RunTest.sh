@@ -10,6 +10,10 @@ export SCRATCHDIR=@CMAKE_BINARY_DIR@/scratch
 export HAMILTONIAN=@CMAKE_SOURCE_DIR@/UnitTests/Data/Hamiltonian.mtx
 export OVERLAP=@CMAKE_SOURCE_DIR@/UnitTests/Data/Overlap.mtx
 export DENSITY=@CMAKE_SOURCE_DIR@/UnitTests/Data/Density.mtx
+export GEOMH1=@CMAKE_SOURCE_DIR@/UnitTests/Data/F1.mtx
+export GEOMO1=@CMAKE_SOURCE_DIR@/UnitTests/Data/S1.mtx
+export GEOMO2=@CMAKE_SOURCE_DIR@/UnitTests/Data/S2.mtx
+export GEOMD2=@CMAKE_SOURCE_DIR@/UnitTests/Data/D2.mtx
 cd @CMAKE_BINARY_DIR@/UnitTests
 
 # Get Parameters
