@@ -1,5 +1,5 @@
-#include "GeometryOptimization.h"
 #include "DistributedSparseMatrix.h"
+#include "GeometryOptimization.h"
 #include "IterativeSolversParameters.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -10,12 +10,12 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-void GeometryOptimization::ExtrapolateGeometry(
+void GeometryOptimization::PurificationExtrapolate(
     const DistributedSparseMatrix &PreviousDensity,
     const DistributedSparseMatrix &Overlap, int nel,
     DistributedSparseMatrix &NewDensity,
     const IterativeSolverParameters &solver_parameters) {
-  ExtrapolateGeometry_wrp(GetIH(PreviousDensity), GetIH(Overlap), &nel,
-                          GetIH(NewDensity), GetIH(solver_parameters));
+  PurificationExtrapolate_wrp(GetIH(PreviousDensity), GetIH(Overlap), &nel,
+                              GetIH(NewDensity), GetIH(solver_parameters));
 }
 } // namespace NTPoly

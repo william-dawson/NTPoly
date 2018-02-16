@@ -18,10 +18,10 @@ public:
   //!\param NewDensity the extrapolated density.
   //!\param solver_parameters parameters for the solver
   static void
-  ExtrapolateGeometry(const DistributedSparseMatrix &PreviousDensity,
-                      const DistributedSparseMatrix &Overlap, int nel,
-                      DistributedSparseMatrix &NewDensity,
-                      const IterativeSolverParameters &solver_parameters);
+  PurificationExtrapolate(const DistributedSparseMatrix &PreviousDensity,
+                          const DistributedSparseMatrix &Overlap, int nel,
+                          DistributedSparseMatrix &NewDensity,
+                          const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

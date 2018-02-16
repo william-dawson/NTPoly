@@ -16,7 +16,7 @@ MODULE GeometryOptimizationModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
-  PUBLIC :: ExtrapolateGeometry
+  PUBLIC :: PurificationExtrapolate
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
   !! Based on the purification algorithm in \cite niklasson2010trace .
@@ -25,7 +25,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] nel the number of electrons.
   !! @param[out] NewDensity the extrapolated density.
   !! @param[in] solver_parameters_in parameters for the solver
-  SUBROUTINE ExtrapolateGeometry(PreviousDensity, Overlap, nel, NewDensity, &
+  SUBROUTINE PurificationExtrapolate(PreviousDensity, Overlap, nel, NewDensity,&
        & solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: PreviousDensity, Overlap
@@ -191,5 +191,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-  END SUBROUTINE ExtrapolateGeometry
+  END SUBROUTINE PurificationExtrapolate
 END MODULE GeometryOptimizationModule
