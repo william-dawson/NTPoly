@@ -191,7 +191,7 @@ class TestChemistry(unittest.TestCase):
     #     self.check_full()
     #     self.check_cp(chemical_potential)
 
-    def test_Extrapolate(self):
+    def test_PExtrapolate(self):
         '''Test the density extrapolation routine.'''
         f1 = nt.DistributedSparseMatrix(self.geomh1)
         o1 = nt.DistributedSparseMatrix(self.geomo1)
@@ -210,7 +210,32 @@ class TestChemistry(unittest.TestCase):
             f1, isqm1, self.nel, d1, self.solver_parameters)
 
         nt.GeometryOptimization.PurificationExtrapolate(d1, o2, self.nel, extrapd,
-                                                    self.solver_parameters)
+                                                        self.solver_parameters)
+        extrapd.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full_extrap()
+
+    def test_SExtrapolate(self):
+        '''Test the density extrapolation routine.'''
+        f1 = nt.DistributedSparseMatrix(self.geomh1)
+        o1 = nt.DistributedSparseMatrix(self.geomo1)
+        o2 = nt.DistributedSparseMatrix(self.geomo2)
+        isqm1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
+        d1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
+        extrapd = nt.DistributedSparseMatrix(f1.GetActualDimension())
+
+        permutation = nt.Permutation(f1.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(
+            o1, isqm1, self.solver_parameters)
+        nt.DensityMatrixSolvers.TRS2(
+            f1, isqm1, self.nel, d1, self.solver_parameters)
+
+        nt.GeometryOptimization.LowdinExtrapolate(d1, o1, o2, extrapd,
+                                                  self.solver_parameters)
         extrapd.WriteToMatrixMarket(result_file)
         comm.barrier()
 

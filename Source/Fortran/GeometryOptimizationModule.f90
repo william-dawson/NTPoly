@@ -10,6 +10,7 @@ MODULE GeometryOptimizationModule
   USE LoadBalancerModule
   USE LoggingModule
   USE ProcessGridModule
+  USE SquareRootSolversModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -17,6 +18,7 @@ MODULE GeometryOptimizationModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
   PUBLIC :: PurificationExtrapolate
+  PUBLIC :: LowdinExtrapolate
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
   !! Based on the purification algorithm in \cite niklasson2010trace .
@@ -192,4 +194,65 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
   END SUBROUTINE PurificationExtrapolate
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Create a new guess at the Density Matrix after updating the geometry.
+  !! Based on the lowdin algorithm in \cite exner2002comparison .
+  !! @param[in] PreviousDensity to extrapolate from.
+  !! @param[in] OldOverlap the overlap matrix of the old geometry.
+  !! @param[in] NewOverlap the overlap matrix of the new geometry.
+  !! @param[out] NewDensity the extrapolated density.
+  !! @param[in] solver_parameters_in parameters for the solver
+  SUBROUTINE LowdinExtrapolate(PreviousDensity, OldOverlap, NewOverlap, &
+       & NewDensity, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: PreviousDensity
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: OldOverlap
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: NewOverlap
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: NewDensity
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    !! Local Matrices
+    TYPE(DistributedSparseMatrix_t) :: SQRMat
+    TYPE(DistributedSparseMatrix_t) :: ISQMat
+    TYPE(DistributedSparseMatrix_t) :: TempMat
+    !! Temporary Variables
+    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Extrapolator")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="Lowdin")
+       CALL WriteCitation("exner2002comparison")
+       CALL PrintIterativeSolverParameters(solver_parameters)
+    END IF
+
+    CALL SquareRoot(OldOverlap, SQRMat, solver_parameters)
+    CALL InverseSquareRoot(NewOverlap, ISQMat, solver_parameters)
+
+    CALL DistributedGemm(SQRMat, PreviousDensity, TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL DistributedGemm(TempMat, SQRMat, NewDensity, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL DistributedGemm(ISQMat, NewDensity, TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL DistributedGemm(TempMat, ISQMat, NewDensity, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    CALL DestructDistributedSparseMatrix(SQRMat)
+    CALL DestructDistributedSparseMatrix(ISQMat)
+    CALL DestructDistributedSparseMatrix(TempMat)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+  END SUBROUTINE LowdinExtrapolate
 END MODULE GeometryOptimizationModule

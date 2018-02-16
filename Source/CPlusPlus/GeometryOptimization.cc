@@ -18,4 +18,15 @@ void GeometryOptimization::PurificationExtrapolate(
   PurificationExtrapolate_wrp(GetIH(PreviousDensity), GetIH(Overlap), &nel,
                               GetIH(NewDensity), GetIH(solver_parameters));
 }
+////////////////////////////////////////////////////////////////////////////////
+void GeometryOptimization::LowdinExtrapolate(
+    const DistributedSparseMatrix &PreviousDensity,
+    const DistributedSparseMatrix &OldOverlap,
+    const DistributedSparseMatrix &NewOverlap,
+    DistributedSparseMatrix &NewDensity,
+    const IterativeSolverParameters &solver_parameters) {
+  LowdinExtrapolate_wrp(GetIH(PreviousDensity), GetIH(OldOverlap),
+                        GetIH(NewOverlap), GetIH(NewDensity),
+                        GetIH(solver_parameters));
+}
 } // namespace NTPoly
