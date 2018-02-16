@@ -209,7 +209,7 @@ class TestChemistry(unittest.TestCase):
         nt.DensityMatrixSolvers.TRS2(
             f1, isqm1, self.nel, d1, self.solver_parameters)
 
-        nt.DensityMatrixSolvers.ExtrapolateGeometry(d1, o2, self.nel, extrapd,
+        nt.GeometryOptimization.ExtrapolateGeometry(d1, o2, self.nel, extrapd,
                                                     self.solver_parameters)
         extrapd.WriteToMatrixMarket(result_file)
         comm.barrier()
