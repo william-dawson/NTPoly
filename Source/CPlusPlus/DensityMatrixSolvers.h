@@ -56,22 +56,19 @@ public:
                    DistributedSparseMatrix &Density,
                    double &chemical_potential_out,
                    const IterativeSolverParameters &solver_parameters);
-  //! Compute the density matrix from a Hamiltonian using the HPCP+ method.
-  //! Based on the algorithm presented in:
-  //! Truflandier, Lionel A., Rivo M. Dianzinga, and David R. Bowler.
-  //! "Communication: Generalized canonical purification for density matrix
-  //! minimization." The Journal of chemical physics 144, no. 9 (2016): 091102
-  //!\param Hamiltonian the matrix to compute the corresponding density from.
-  //!\param InverseSquareRoot of the overlap matrix.
+
+  //! Create a new guess at the Density Matrix after updating the geometry.
+  //! Based on the purification algorithm in \cite niklasson2010trace .
+  //!\param PreviousDensity to extrapolate from.
+  //!\param Overlap the overlap matrix of the new geometry.
   //!\param nel the number of electrons.
-  //!\param Density the density matrix computed by this routine.
-  //!\param chemical_potential_out the chemical potential calculated.
+  //!\param NewDensity the extrapolated density.
   //!\param solver_parameters parameters for the solver
-  // static void HPCPPlus(const DistributedSparseMatrix &Hamiltonian,
-  //                      const DistributedSparseMatrix &InverseSquareRoot,
-  //                      int nel, DistributedSparseMatrix &Density,
-  //                      double &chemical_potential_out,
-  //                      const IterativeSolverParameters &solver_parameters);
+  static void
+  ExtrapolateGeometry(const DistributedSparseMatrix &PreviousDensity,
+                      const DistributedSparseMatrix &Overlap, int nel,
+                      DistributedSparseMatrix &NewDensity,
+                      const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif
