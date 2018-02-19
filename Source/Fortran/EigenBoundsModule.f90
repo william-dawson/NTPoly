@@ -24,8 +24,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] max_value an uppder bound on the eigenspectrum.
   SUBROUTINE GershgorinBounds(this,min_value,max_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
-    REAL(NTREAL), INTENT(out) :: min_value, max_value
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    REAL(NTREAL), INTENT(OUT) :: min_value, max_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_max
@@ -85,9 +85,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] solver_parameters_in solver parameters (optional).
   SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
-    REAL(NTREAL), INTENT(out) :: max_value
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    REAL(NTREAL), INTENT(OUT) :: max_value
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters

@@ -19,7 +19,6 @@ MODULE TimerModule
   PUBLIC :: PrintAllTimersDistributed
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Register a timer with the timer module.  Call this before using that timer.
-  !! Basically this adds a timer with that name to the dictionary.
   !! @param[in] timer_name name of the timer.
   SUBROUTINE RegisterTimer(timer_name)
     !! Parameters
@@ -106,7 +105,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ExitSubLog
   END SUBROUTINE PrintTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Print out the elapsed time for each timer
+  !> Print out the elapsed time for each timer on this process.
   SUBROUTINE PrintAllTimers()
     !! Local Data
     INTEGER :: timer_position
@@ -120,7 +119,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ExitSubLog
   END SUBROUTINE PrintAllTimers
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Print out the elapsed time for each timer
+  !> Print out the elapsed time for each timer based on the max value across
+  !! processes.
   SUBROUTINE PrintAllTimersDistributed()
     !! Local Data
     INTEGER          :: timer_position

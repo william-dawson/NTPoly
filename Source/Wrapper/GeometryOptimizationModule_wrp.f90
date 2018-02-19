@@ -21,7 +21,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] ih_Overlap the overlap matrix of the new geometry.
   !! @param[in] nel the number of electrons.
   !! @param[out] ih_NewDensity the extrapolated density.
-  !! @param[in] solver_parameters parameters for the solver
+  !! @param[in] ih_solver_parameters parameters for the solver
   SUBROUTINE PurificationExtrapolate_wrp(ih_PreviousDensity, ih_Overlap, &
        & nel, ih_NewDensity, ih_solver_parameters) &
        & bind(c,name="PurificationExtrapolate_wrp")

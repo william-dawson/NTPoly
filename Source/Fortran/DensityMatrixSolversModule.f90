@@ -27,12 +27,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] InverseSquareRoot of the overlap matrix.
   !! @param[in] nel the number of electrons.
   !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] chemical_potential_out the chemical potential calculated.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !! @param[out] chemical_potential_out the chemical potential (optional).
+  !! @param[in] solver_parameters_in parameters for the solver (optional)
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Hamiltonian
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
@@ -233,8 +234,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] InverseSquareRoot of the overlap matrix.
   !! @param[in] nel the number of electrons.
   !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] chemical_potential_out the chemical potential calculated.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !! @param[out] chemical_potential_out the chemical potential (optional).
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
@@ -466,12 +467,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the HPCP method.
   !! Based on the algorithm presented in \cite truflandier2016communication
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from.
+  !! @param[in] Hamiltonian the matrix to compute the corresponding density from
   !! @param[in] InverseSquareRoot of the overlap matrix.
   !! @param[in] nel the number of electrons.
   !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] chemical_potential_out the chemical potential calculated.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !! @param[out] chemical_potential_out the chemical potential (optional).
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
@@ -697,8 +698,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] InverseSquareRoot of the overlap matrix.
   !! @param[in] nel the number of electrons.
   !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] chemical_potential_out the chemical potential calculated.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !! @param[out] chemical_potential_out the chemical potential (optional).
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters

@@ -51,11 +51,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteHeader
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a element.
+  !! Only specify one of the kinds of values.
   !! @param[in] key some text to write.
-  !! @param[in] text_value_in a text value to write.
-  !! @param[in] int_value_in an integer value to write.
-  !! @param[in] float_value_in an float value to write.
-  !! @param[in] bool_value_in a bool value to write.
+  !! @param[in] text_value_in a text value to write (optional).
+  !! @param[in] int_value_in an integer value to write (optional).
+  !! @param[in] float_value_in an float value to write (optional).
+  !! @param[in] bool_value_in a bool value to write (optional).
   SUBROUTINE WriteElement(key, text_value_in, int_value_in, float_value_in, &
     & bool_value_in)
     !! Parameters
@@ -95,11 +96,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteElement
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a list element.
+  !! Only specify one of the kinds of values.
   !! @param[in] key some text to add to the list.
-  !! @param[in] text_value_in a text value to add to the list.
-  !! @param[in] int_value_in an integer value to add to the list.
-  !! @param[in] float_value_in a float value to add to the list.
-  !! @param[in] bool_value_in a bool value to add to the list.
+  !! @param[in] text_value_in a text value to add to the list (optional).
+  !! @param[in] int_value_in an integer value to add to the list (optional).
+  !! @param[in] float_value_in a float value to add to the list (optional).
+  !! @param[in] bool_value_in a bool value to add to the list (optional).
   SUBROUTINE WriteListElement(key, text_value_in, int_value_in, float_value_in,&
     bool_value_in)
     !! Parameters

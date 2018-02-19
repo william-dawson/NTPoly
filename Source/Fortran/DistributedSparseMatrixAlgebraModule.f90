@@ -42,16 +42,15 @@ MODULE DistributedSparseMatrixAlgebraModule
   PUBLIC :: Trace
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute sigma for the inversion method.
-  !! @todo describe this better.
+  !! See \cite ozaki2001efficient for details.
   !! @param[in] this the matrix to compute the sigma value of.
   !! @param[out] sigma_value sigma.
-  SUBROUTINE ComputeSigma(this,sigma_value)
+  SUBROUTINE ComputeSigma(this, sigma_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
-    REAL(NTREAL), INTENT(out) :: sigma_value
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    REAL(NTREAL), INTENT(OUT) :: sigma_value
     !! Local Data
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: &
-         & column_sigma_contribution
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: column_sigma_contribution
     !! Counters/Temporary
     INTEGER :: inner_counter, outer_counter
     TYPE(SparseMatrix_t) :: merged_local_data
@@ -87,18 +86,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] matC = alpha*matA*matB + beta*matC
   !! @param[in] alpha_in scales the multiplication
   !! @param[in] beta_in scales matrix we sum on to
-  !! @param[in] threshold_in for flushing values to zero. Default value is 0.0.
-  !! @param[inout] memory_pool_in a memory pool that can be used for the
-  !! calculation.
-  SUBROUTINE DistributedGemm(matA,matB,matC,alpha_in,beta_in,threshold_in, &
+  !! @param[in] threshold_in for flushing values to zero (Optional, default=0).
+  !! @param[inout] memory_pool_in a memory pool for the calculation (Optional).
+  SUBROUTINE DistributedGemm(matA, matB ,matC, alpha_in, beta_in, threshold_in,&
        & memory_pool_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)    :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(in)    :: matB
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: matC
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: beta_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)    :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)    :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: matC
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: beta_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     TYPE(DistributedMatrixMemoryPool_t), OPTIONAL, INTENT(inout) :: &
          & memory_pool_in
     !! Local Versions of Optional Parameter
@@ -475,7 +473,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("GEMM")
   END SUBROUTINE DistributedGemm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Sum up the elements in a matrix.
+  !> Sum up the elements in a matrix into a single value.
   !! @param[in] matA Matrix A.
   !! @result sum the sum of all elements.
   FUNCTION DistributedGrandSum(matA) RESULT(sum)
@@ -499,16 +497,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_SUM, within_slice_comm, grid_error)
   END FUNCTION DistributedGrandSum
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Elementwise multiplication. C_ij = A_ij * B_ij. Also known as a Hadamard
-  !! product.
+  !> Elementwise multiplication. C_ij = A_ij * B_ij.
+  !! Also known as a Hadamard product.
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
-  !! @param[in,out] matC = MatA mult MatB.
+  !! @param[inout] matC = MatA mult MatB.
   SUBROUTINE DistributedPairwiseMultiply(matA, matB, matC)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matB
-    TYPE(DistributedSparseMatrix_t), INTENT(inout)  :: matC
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT)  :: matC
     !! Local Data
     INTEGER :: row_counter, column_counter
 
@@ -534,7 +532,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the norm value of the full distributed sparse matrix.
   FUNCTION DistributedSparseNorm(this) RESULT(norm_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     REAL(NTREAL) :: norm_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: local_norm
@@ -558,13 +556,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION DistributedSparseNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(Matrix A,Matrix B)
+  !! Note that a dot product is the sum of elementwise multiplication, not
+  !! traditional matrix multiplication.
   !! @param[in] matA Matrix A.
   !! @param[in,out] matB Matrix B.
   !! @result product the dot product.
   FUNCTION DotDistributedSparseMatrix(matA, matB) RESULT(product)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matB
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matB
     REAL(NTREAL) :: product
     !! Local Data
     TYPE(DistributedSparseMatrix_t)  :: matC
@@ -577,15 +577,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   !! This will utilize the sparse vector increment routine.
   !! @param[in] matA Matrix A.
-  !! @param[in,out] matB Matrix B.
-  !! @param[in] alpha_in multiplier. Default value is 1.0
-  !! @param[in] threshold_in for flushing values to zero. Default value is 0.0
+  !! @param[inout] matB Matrix B.
+  !! @param[in] alpha_in multiplier. (Optional, default= 1.0)
+  !! @param[in] threshold_in for flushing values to zero. (Optional, default=0)
   SUBROUTINE IncrementDistributedSparseMatrix(matA, matB, alpha_in,threshold_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(inout)  :: matB
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT)  :: matB
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Data
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: threshold
@@ -621,8 +621,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] constant scale factor.
   SUBROUTINE ScaleDistributedSparseMatrix(this,constant)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: this
-    REAL(NTREAL), INTENT(in) :: constant
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
+    REAL(NTREAL), INTENT(IN) :: constant
     INTEGER :: row_counter, column_counter
 
     !$omp parallel
@@ -638,11 +638,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
-  !! @param[in] this the matrix to compute the norm of.
+  !! @param[in] this the matrix to compute the trace of.
   !! @return the trace value of the full distributed sparse matrix.
   FUNCTION Trace(this) RESULT(trace_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     REAL(NTREAL) :: trace_value
     !! Local data
     TYPE(TripletList_t) :: triplet_list

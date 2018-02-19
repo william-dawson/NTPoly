@@ -15,7 +15,7 @@ MODULE HermiteSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A datatype that represents a Chebyshev polynomial.
+  !> A datatype that represents a Hermite polynomial.
   TYPE, PUBLIC :: HermitePolynomial_t
      !> Coefficients of the polynomial.
      REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: coefficients
@@ -28,7 +28,7 @@ MODULE HermiteSolversModule
   !! Solvers
   PUBLIC :: HermiteCompute
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct a Chebyshev polynomial object.
+  !> Construct a Hermite polynomial object.
   !! @param[inout] this the polynomial to construct.
   !! @param[in] degree of the polynomial.
   PURE SUBROUTINE ConstructHermitePolynomial(this, degree)
@@ -40,7 +40,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%coefficients = 0
   END SUBROUTINE ConstructHermitePolynomial
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Destruct a polynomial object.
+  !> Destruct a Hermite polynomial object.
   !! @param[inout] this the polynomial to destruct.
   PURE SUBROUTINE DestructHermitePolynomial(this)
     !! Parameters
@@ -50,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE DestructHermitePolynomial
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Set a coefficient of a Chebyshev polynomial.
+  !> Set a coefficient of a Hermite polynomial.
   !! @param[inout] this the polynomial to set.
   !! @param[in] degree for which to set the coefficient.
   !! @param[in] coefficient value.

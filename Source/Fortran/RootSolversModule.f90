@@ -30,10 +30,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    INTEGER, INTENT(in) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    INTEGER, INTENT(IN) :: root
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
@@ -79,7 +79,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ComputeRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute a general matrix root.
+  !> Actual implementation of computing a general matrix root.
   !! @param[in] InputMat the input matrix
   !! @param[out] OutputMat = InputMat^1/root.
   !! @param[in] root which root to compute.
@@ -87,10 +87,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ComputeRootImplementation(InputMat, OutputMat, root, &
        & solver_parameters)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    INTEGER, INTENT(in) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(in) :: solver_parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    INTEGER, INTENT(IN) :: root
+    TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: fixed_parameters
     !! Local Variables
@@ -136,10 +136,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @todo the inverse cube root.
   SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    INTEGER, INTENT(in) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    INTEGER, INTENT(IN) :: root
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
@@ -184,14 +184,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeInverseRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general inverse matrix root for root > 4.
-  !! Implementation details...
   SUBROUTINE ComputeInverseRootImplemention(InputMat, OutputMat, root, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    INTEGER, INTENT(in) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    INTEGER, INTENT(IN) :: root
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters

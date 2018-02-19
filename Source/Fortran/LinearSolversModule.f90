@@ -16,7 +16,7 @@ MODULE LinearSolversModule
   !! Solvers
   PUBLIC :: CGSolver
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Solve the matrix equation AX = B using conjugate gradient.
+  !> Solve the matrix equation AX = B using the conjugate gradient method.
   !! @param[in] AMat the matrix A, must be symmetric, positive definite.
   !! @param[out] XMat the solved for matrix X.
   !! @param[in] BMat the right hand side.

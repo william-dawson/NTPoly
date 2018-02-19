@@ -12,13 +12,10 @@ MODULE DataTypesModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The precision of floating point numbers we will use in this program.
   INTEGER, PARAMETER, PUBLIC :: NTREAL = c_double
-  !integer, parameter, public :: NTREAL = selected_real_kind( &
-  !    & BITSPERDOUBLE)
   !> MPI floating point datatype with the precision we will use in this program.
   INTEGER, PUBLIC :: MPINTREAL
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: MPITypeInfoInit
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine to make a double precision MPI type with the requested
   !! precision. Must be called before MPINTREAL is used.
