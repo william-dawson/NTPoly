@@ -20,7 +20,7 @@ public:
   //! Compute a bounds on and maximum eigenvalue of a matrix.
   //! Uses The Power Method.
   //!\param matrix the matrix to compute the min/max of.
-  //!\param max_power_eig an uppder bound on the eigenspectrum.
+  //!\param max_power_eig an upper bound on the eigenspectrum.
   //!\param solver_parameters parameters for the solver
   static void PowerBounds(const DistributedSparseMatrix &matrix,
                      double * max_power_eig,

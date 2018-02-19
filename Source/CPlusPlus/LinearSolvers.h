@@ -10,7 +10,7 @@ class DistributedSparseMatrix;
 //! A class for solving matrix equations.
 class LinearSolvers : public SolverBase {
 public:
-  //! Solve the matrix equation AX = B using conjugate gradient.
+  //! Solve the matrix equation AX = B using conjugate gradient method.
   //!\param AMat the matrix A, must be symmetric, positive definite.
   //!\param XMat the solved for matrix X.
   //!\param BMat the right hand side.

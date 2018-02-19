@@ -13,7 +13,7 @@ class DistributedMatrixMemoryPool {
 public:
   // Standard constructor.
   DistributedMatrixMemoryPool();
-  // STandard destructor.
+  // Standard destructor.
   ~DistributedMatrixMemoryPool();
 
 private:

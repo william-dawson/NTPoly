@@ -14,7 +14,7 @@ class FixedSolverParameters {
 public:
   //! Constructor.
   FixedSolverParameters();
-  //! Where to have a verbose calculation.
+  //! Whether to have a verbose calculation.
   //!\param new_value
   void SetVerbosity(bool new_value);
   //! Threshold for flushing small values.
