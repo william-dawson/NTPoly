@@ -94,6 +94,7 @@ The following features and methods have been implemented in NTPoly:
     * Density Matrix Minimization
     * Density Matrix Purification
     * Chemical Potential Calculation
+    * Geometry Optimization
 * Other
     * Matrix Inverse/Moore-Penrose Pseudo Inverse
     * Sign Function/Polar Decomposition
