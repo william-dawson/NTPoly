@@ -7,7 +7,8 @@ MODULE SparseMatrixModule_wrp
        & ConstructEmptySparseMatrix, ConstructSparseMatrixFromFile, &
        & ConstructFromTripletList, DestructSparseMatrix, CopySparseMatrix, &
        & TransposeSparseMatrix, PrintSparseMatrix, MatrixToTripletList, &
-       & GetRows, GetColumns, ComposeSparseMatrixColumns
+       & GetRows, GetColumns, ComposeSparseMatrixColumns, &
+       & ExtractRow, ExtractColumn
   USE TripletListModule_wrp, ONLY : TripletList_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
@@ -26,6 +27,8 @@ MODULE SparseMatrixModule_wrp
   PUBLIC :: DestructSparseMatrix_wrp
   PUBLIC :: GetRows_wrp
   PUBLIC :: GetColumns_wrp
+  PUBLIC :: ExtractRow_wrp
+  PUBLIC :: ExtractColumn_wrp
   PUBLIC :: CopySparseMatrix_wrp
   PUBLIC :: TransposeSparseMatrix_wrp
   PUBLIC :: PrintSparseMatrix_wrp
@@ -87,7 +90,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
   PURE SUBROUTINE DestructSparseMatrix_wrp(ih_this) &
        & bind(c,name="DestructSparseMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(SparseMatrix_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -129,6 +132,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     columns = GetColumns(h_this%data)
   END SUBROUTINE GetColumns_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extract a row from the matrix into the compressed vector representation.
+  !! @param[in] ih_this the matrix to extrat from.
+  !! @param[in] row_number the row to extract
+  !! @param[out] ih_row_out the matrix representing that row
+  PURE SUBROUTINE ExtractRow_wrp(ih_this, row_number, ih_row_out) &
+       & bind(c,name="ExtractRow_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: row_number
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_row_out(SIZE_wrp)
+    TYPE(SparseMatrix_wrp) :: h_this
+    TYPE(SparseMatrix_wrp) :: h_row_out
+
+    ALLOCATE(h_row_out%data)
+    h_this = TRANSFER(ih_this,h_this)
+    CALL ExtractRow(h_this%data, row_number, h_row_out%data)
+
+    ih_row_out= TRANSFER(h_row_out,ih_row_out)
+  END SUBROUTINE ExtractRow_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extract a column from the matrix into the compressed vector representation.
+  !! @param[in] ih_this the matrix to extrat from.
+  !! @param[in] column_number the row to extract.
+  !! @param[out] ih_column_out the matrix representing that column.
+  PURE SUBROUTINE ExtractColumn_wrp(ih_this, column_number, ih_column_out) &
+       & bind(c,name="ExtractColumn_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: column_number
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_column_out(SIZE_wrp)
+    TYPE(SparseMatrix_wrp) :: h_this
+    TYPE(SparseMatrix_wrp) :: h_column_out
+
+    ALLOCATE(h_column_out%data)
+    h_this = TRANSFER(ih_this,h_this)
+    CALL ExtractColumn(h_this%data, column_number, h_column_out%data)
+
+    ih_column_out= TRANSFER(h_column_out, ih_column_out)
+  END SUBROUTINE ExtractColumn_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
   PURE SUBROUTINE TransposeSparseMatrix_wrp(ih_matA, ih_matAT) &
        & bind(c,name="TransposeSparseMatrix_wrp")
@@ -164,7 +205,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
   SUBROUTINE PrintSparseMatrix_wrp(ih_this) &
        & bind(c,name="PrintSparseMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     TYPE(SparseMatrix_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
