@@ -1266,6 +1266,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & sorted_triplet_list)
 
     !! Cleanup
+    DO counter = 1, slice_size
+      CALL DestructTripletList(send_triplet_lists(counter))
+    END DO
     DEALLOCATE(row_lookup)
     DEALLOCATE(column_lookup)
     DEALLOCATE(location_list_within_slice)
