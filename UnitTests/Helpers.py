@@ -9,3 +9,4 @@ scratch_dir = os.environ['SCRATCHDIR']
 result_file = scratch_dir + "/result.mtx"
 # Threshold value for comparing floating point values.
 THRESHOLD = 1e-4
+EXTRAPTHRESHOLD = 1e-1

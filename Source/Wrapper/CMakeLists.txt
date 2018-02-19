@@ -6,6 +6,7 @@ set(Wsrc
     EigenBoundsModule_wrp.f90
     ExponentialSolversModule_wrp.f90
     FixedSolversModule_wrp.f90
+    GeometryOptimizationModule_wrp.f90
     HermiteSolversModule_wrp.f90
     IterativeSolversModule_wrp.f90
     InverseSolversModule_wrp.f90

@@ -6,6 +6,7 @@ set(Csrc
     EigenBounds.cc EigenBounds.h
     ExponentialSolvers.cc ExponentialSolvers.h
     FixedSolversParameters.cc FixedSolversParameters.h
+    GeometryOptimization.cc GeometryOptimization.h
     HermiteSolvers.cc HermiteSolvers.h
     InverseSolvers.cc InverseSolvers.h
     IterativeSolversParameters.cc IterativeSolversParameters.h

@@ -48,4 +48,5 @@ void DensityMatrixSolvers::HPCP(
 //   HPCPPlus_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel, GetIH(Density),
 //                &chemical_potential_out, GetIH(solver_parameters));
 // }
+
 } // namespace NTPoly
