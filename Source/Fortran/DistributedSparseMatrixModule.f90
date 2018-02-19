@@ -28,7 +28,7 @@ MODULE DistributedSparseMatrixModule
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
-       & SymmetrizeTripletList, GetTripletAt
+       & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists
   USE iso_c_binding
   USE MPI
   IMPLICIT NONE
@@ -618,7 +618,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! on the correct process.
     CALL ConstructDefaultPermutation(basic_permutation, &
          & this%logical_matrix_dimension)
-    CALL RedistributeTripletList(this,basic_permutation%index_lookup, &
+    CALL RedistributeData(this,basic_permutation%index_lookup, &
          & basic_permutation%reverse_index_lookup, triplet_list, &
          & sorted_triplet_list)
 
@@ -1188,7 +1188,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! coordinates
   !! @param[out] sorted_triplet_list returns an allocated triplet list with
   !! local coordinates in sorted order.
-  SUBROUTINE RedistributeTripletList(this,index_lookup,reverse_index_lookup,&
+  SUBROUTINE RedistributeData(this,index_lookup,reverse_index_lookup,&
        & initial_triplet_list,sorted_triplet_list)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
@@ -1200,28 +1200,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: row_lookup
     INTEGER, DIMENSION(:), ALLOCATABLE :: column_lookup
     INTEGER, DIMENSION(:), ALLOCATABLE :: location_list_within_slice
-    INTEGER, DIMENSION(:), ALLOCATABLE :: internal_offset
-    INTEGER, DIMENSION(:), ALLOCATABLE :: send_offset
-    INTEGER, DIMENSION(:), ALLOCATABLE :: receive_offset
-    TYPE(TripletList_t) :: gathered_triplet_list
-    !! Send Buffer
-    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_index_row
-    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_index_column
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: send_buffer_values
-    INTEGER, DIMENSION(:), ALLOCATABLE :: receive_buffer_index_row
-    INTEGER, DIMENSION(:), ALLOCATABLE :: receive_buffer_index_column
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: receive_buffer_values
-    INTEGER, DIMENSION(:), ALLOCATABLE :: send_count
-    INTEGER, DIMENSION(:), ALLOCATABLE :: receive_count
+    TYPE(TripletList_t) :: gathered_list
+    TYPE(TripletList_t), DIMENSION(slice_size) :: send_triplet_lists
     !! Temporary Values
     INTEGER :: row_size, column_size
     INTEGER :: temp_row, temp_column
-    INTEGER :: temp_index
     INTEGER :: process_id
     TYPE(Triplet_t) :: temp_triplet
     INTEGER :: counter
 
     CALL StartTimer("Redistribute")
+
     !! First we need to figure out where our local elements go
     ALLOCATE(row_lookup(SIZE(index_lookup)))
     ALLOCATE(column_lookup(SIZE(index_lookup)))
@@ -1242,93 +1231,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & temp_column+temp_row*num_process_columns
     END DO
 
-    !! To Each Process, How Many Items To Send, How Many To Receive
-    ALLOCATE(send_count(slice_size))
-    ALLOCATE(receive_count(slice_size))
-    send_count = 0
-    DO counter = 1, SIZE(location_list_within_slice)
-       temp_index = location_list_within_slice(counter)
-       send_count(temp_index+1) = send_count(temp_index+1) + 1
-    END DO
-    ALLOCATE(send_offset(slice_size+1))
-    send_offset(1) = 0
-    DO counter = 1,slice_size
-       send_offset(counter+1) = send_offset(counter) + send_count(counter)
-    END DO
-    CALL MPI_Alltoall(send_count,1,MPI_INT,receive_count,1,MPI_INT,&
-         & within_slice_comm,grid_error)
-    ALLOCATE(receive_offset(slice_size+1))
-    receive_offset(1) = 0
+    !! Build A Send Buffer
     DO counter = 1, slice_size
-       receive_offset(counter+1)=receive_offset(counter)+receive_count(counter)
+       CALL ConstructTripletList(send_triplet_lists(counter))
     END DO
-    ALLOCATE(receive_buffer_index_row(SUM(receive_count)))
-    ALLOCATE(receive_buffer_index_column(SUM(receive_count)))
-    ALLOCATE(receive_buffer_values(SUM(receive_count)))
-
-    !! Prepare the send buffers (and implicitly sort)
-    ALLOCATE(send_buffer_index_row(initial_triplet_list%CurrentSize))
-    ALLOCATE(send_buffer_index_column(initial_triplet_list%CurrentSize))
-    ALLOCATE(send_buffer_values(initial_triplet_list%CurrentSize))
-    ALLOCATE(internal_offset(slice_size))
-    internal_offset = 0
     DO counter = 1, initial_triplet_list%CurrentSize
        process_id = location_list_within_slice(counter)
-       temp_index = send_offset(process_id+1) + internal_offset(process_id+1) + 1
-       send_buffer_index_row(temp_index) = &
-            & initial_triplet_list%data(counter)%index_row
-       send_buffer_index_column(temp_index) = &
-            & initial_triplet_list%data(counter)%index_column
-       send_buffer_values(temp_index) = &
-            & initial_triplet_list%data(counter)%point_value
-       internal_offset(process_id+1) = internal_offset(process_id+1) + 1
+       CALL GetTripletAt(initial_triplet_list, counter, temp_triplet)
+       CALL AppendToTripletList(send_triplet_lists(process_id+1), temp_triplet)
     END DO
 
-    !! Send
-    CALL MPI_Alltoallv(send_buffer_index_row,send_count,send_offset,MPI_INT,&
-         & receive_buffer_index_row,receive_count,receive_offset,MPI_INT,&
-         & within_slice_comm,grid_error)
-    CALL MPI_Alltoallv(send_buffer_index_column,send_count,send_offset,MPI_INT,&
-         & receive_buffer_index_column,receive_count,receive_offset,MPI_INT,&
-         & within_slice_comm,grid_error)
-    CALL MPI_Alltoallv(send_buffer_values,send_count,send_offset, &
-         & MPINTREAL,receive_buffer_values,receive_count, &
-         & receive_offset,MPINTREAL,within_slice_comm,grid_error)
+    !! Actual Send
+    CALL RedistributeTripletLists(send_triplet_lists, within_slice_comm, &
+         & gathered_list)
 
-    !! Construct Matrix
-    CALL ConstructTripletList(gathered_triplet_list,SIZE(receive_buffer_values))
-    DO counter = 1, SIZE(receive_buffer_values)
-       temp_triplet%index_row = &
-            & reverse_index_lookup(receive_buffer_index_row(counter)) - &
+    !! Adjust Indices to Local
+    DO counter = 1, gathered_list%CurrentSize
+       gathered_list%data(counter)%index_row = &
+            & reverse_index_lookup(gathered_list%data(counter)%index_row) - &
             & this%start_row + 1
-       temp_triplet%index_column = &
-            & reverse_index_lookup(receive_buffer_index_column(counter)) - &
+       gathered_list%data(counter)%index_column = &
+            & reverse_index_lookup(gathered_list%data(counter)%index_column) - &
             & this%start_column + 1
-       temp_triplet%point_value = receive_buffer_values(counter)
-       gathered_triplet_list%data(counter) = temp_triplet
     END DO
-    CALL SortTripletList(gathered_triplet_list,this%local_columns,&
+    CALL SortTripletList(gathered_list,this%local_columns, &
          & sorted_triplet_list)
 
     !! Cleanup
     DEALLOCATE(row_lookup)
     DEALLOCATE(column_lookup)
     DEALLOCATE(location_list_within_slice)
-    DEALLOCATE(internal_offset)
-    DEALLOCATE(send_offset)
-    DEALLOCATE(receive_offset)
-    CALL DestructTripletList(gathered_triplet_list)
-    DEALLOCATE(send_buffer_index_row)
-    DEALLOCATE(send_buffer_index_column)
-    DEALLOCATE(send_buffer_values)
-    DEALLOCATE(receive_buffer_index_row)
-    DEALLOCATE(receive_buffer_index_column)
-    DEALLOCATE(receive_buffer_values)
-    DEALLOCATE(send_count)
-    DEALLOCATE(receive_count)
+    CALL DestructTripletList(gathered_list)
 
     CALL StopTimer("Redistribute")
-  END SUBROUTINE RedistributeTripletList
+  END SUBROUTINE RedistributeData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculate a matrix size that can be divided by the number of processors.
   !! @param[in] matrix_dim the dimension of the actual matrix.
