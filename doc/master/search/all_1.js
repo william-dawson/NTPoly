@@ -1,11 +1,13 @@
 var searchData=
 [
-  ['activatelogger',['activatelogger',['../namespaceloggingmodule.html#a095efbd4e37bea55737d460b072241d8',1,'loggingmodule']]],
-  ['actual_5fmatrix_5fdimension',['actual_matrix_dimension',['../structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html#a17621465cda0aa9b9e84305a27340fde',1,'distributedsparsematrixmodule::distributedsparsematrix_t']]],
-  ['addsparsevectors',['addsparsevectors',['../namespacesparsevectormodule.html#ab082c78c261e01982ae37d5958a07df5',1,'sparsevectormodule']]],
-  ['alloc_5ferror',['alloc_error',['../structerrormodule_1_1error__t.html#aa3e954c3053b98ab05afb57a558bd568',1,'errormodule::error_t']]],
-  ['alloc_5ferror_5fset',['alloc_error_set',['../structerrormodule_1_1error__t.html#aa49bd9f363e1d6f7ddd2fef2b88941de',1,'errormodule::error_t']]],
-  ['append',['Append',['../class_n_t_poly_1_1_triplet_list.html#a62e0a1eda69c679c44e94601957ae4b6',1,'NTPoly::TripletList']]],
-  ['appendtotripletlist',['appendtotripletlist',['../namespacetripletlistmodule.html#a3d50bd056f19e8dc563af35437aa981d',1,'tripletlistmodule']]],
-  ['appendtotripletlist_5fwrp',['appendtotripletlist_wrp',['../namespacetripletlistmodule__wrp.html#a1d98de31a5c787d1a353ca6caf6fe7e9',1,'tripletlistmodule_wrp']]]
+  ['balancepermutation',['balancepermutation',['../structfixedsolversmodule_1_1fixedsolverparameters__t.html#a39da2ab66cb559f07423c0eb82789b9b',1,'fixedsolversmodule::fixedsolverparameters_t::balancepermutation()'],['../structiterativesolversmodule_1_1iterativesolverparameters__t.html#a669889760c46391fdcb3c6162b0fe6d1',1,'iterativesolversmodule::iterativesolverparameters_t::balancepermutation()']]],
+  ['be_5fverbose',['be_verbose',['../structfixedsolversmodule_1_1fixedsolverparameters__t.html#a867d22fcbb383fd0a27ca84aa46436e8',1,'fixedsolversmodule::fixedsolverparameters_t::be_verbose()'],['../structiterativesolversmodule_1_1iterativesolverparameters__t.html#aee105e5668384a4d8f44e2f8a4e976f5',1,'iterativesolversmodule::iterativesolverparameters_t::be_verbose()']]],
+  ['between_5fslice_5fcomm',['between_slice_comm',['../namespaceprocessgridmodule.html#a3ba2f229720a342ae393eb6573fc2b57',1,'processgridmodule']]],
+  ['between_5fslice_5frank',['between_slice_rank',['../namespaceprocessgridmodule.html#ac80e4da88e6b595235ff0c20d69e8e1b',1,'processgridmodule']]],
+  ['block_5fmultiplier',['block_multiplier',['../namespaceprocessgridmodule.html#a11c94df98086826588c6a03f1ed96b1f',1,'processgridmodule']]],
+  ['blocked_5fbetween_5fslice_5fcomm',['blocked_between_slice_comm',['../namespaceprocessgridmodule.html#a72d79cf7ae1a26d76c631e41b6d229cf',1,'processgridmodule']]],
+  ['blocked_5fcolumn_5fcomm',['blocked_column_comm',['../namespaceprocessgridmodule.html#a67adf0b29a268dd19139b3edde3953ee',1,'processgridmodule']]],
+  ['blocked_5frow_5fcomm',['blocked_row_comm',['../namespaceprocessgridmodule.html#af042e35a88660ea88a429af721673185',1,'processgridmodule']]],
+  ['blocked_5fwithin_5fslice_5fcomm',['blocked_within_slice_comm',['../namespaceprocessgridmodule.html#ab75d5e9dcd53cd32273cf90979342590',1,'processgridmodule']]],
+  ['bibliography',['Bibliography',['../citelist.html',1,'']]]
 ];

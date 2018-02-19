@@ -90,20 +90,20 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:af70792b62e837921ca9e91b2a808ac87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a distributed sparse matrix in a safe way.  <a href="#af70792b62e837921ca9e91b2a808ac87">More...</a><br /></td></tr>
 <tr class="separator:af70792b62e837921ca9e91b2a808ac87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad9813c682f64bf7570584ae064cca6db"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#ad9813c682f64bf7570584ae064cca6db">constructfrommatrixmarket</a> (this, file_name)</td></tr>
-<tr class="memdesc:ad9813c682f64bf7570584ae064cca6db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct distributed sparse matrix from a matrix market file in parallel.  <a href="#ad9813c682f64bf7570584ae064cca6db">More...</a><br /></td></tr>
+<tr class="memdesc:ad9813c682f64bf7570584ae064cca6db"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct distributed sparse matrix from a matrix market file in parallel. Read <a class="el" href="citelist.html#CITEREF_boisvert1996matrix">[1]</a> for the details.  <a href="#ad9813c682f64bf7570584ae064cca6db">More...</a><br /></td></tr>
 <tr class="separator:ad9813c682f64bf7570584ae064cca6db"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aee3f9cdde1f8bae41400e5f55515ff52"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#aee3f9cdde1f8bae41400e5f55515ff52">constructfrombinary</a> (this, file_name)</td></tr>
-<tr class="memdesc:aee3f9cdde1f8bae41400e5f55515ff52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a distributed sparse matrix from a binary file in parallel.  <a href="#aee3f9cdde1f8bae41400e5f55515ff52">More...</a><br /></td></tr>
+<tr class="memdesc:aee3f9cdde1f8bae41400e5f55515ff52"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a distributed sparse matrix from a binary file in parallel. Faster than text, so this is good for check pointing.  <a href="#aee3f9cdde1f8bae41400e5f55515ff52">More...</a><br /></td></tr>
 <tr class="separator:aee3f9cdde1f8bae41400e5f55515ff52"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a45505c47edf885d45ad81d965dd07957"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a45505c47edf885d45ad81d965dd07957">writetobinary</a> (this, file_name)</td></tr>
-<tr class="memdesc:a45505c47edf885d45ad81d965dd07957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save a distributed sparse matrix to a file.  <a href="#a45505c47edf885d45ad81d965dd07957">More...</a><br /></td></tr>
+<tr class="memdesc:a45505c47edf885d45ad81d965dd07957"><td class="mdescLeft">&#160;</td><td class="mdescRight">Save a distributed sparse matrix to a binary file. Faster than text, so this is good for check pointing.  <a href="#a45505c47edf885d45ad81d965dd07957">More...</a><br /></td></tr>
 <tr class="separator:a45505c47edf885d45ad81d965dd07957"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12e5b76c5742caae8aab816d06a609dd"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a12e5b76c5742caae8aab816d06a609dd">writetomatrixmarket</a> (this, file_name)</td></tr>
-<tr class="memdesc:a12e5b76c5742caae8aab816d06a609dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed sparse matrix to a matrix market file.  <a href="#a12e5b76c5742caae8aab816d06a609dd">More...</a><br /></td></tr>
+<tr class="memdesc:a12e5b76c5742caae8aab816d06a609dd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a distributed sparse matrix to a matrix market file. Read <a class="el" href="citelist.html#CITEREF_boisvert1996matrix">[1]</a> for the details.  <a href="#a12e5b76c5742caae8aab816d06a609dd">More...</a><br /></td></tr>
 <tr class="separator:a12e5b76c5742caae8aab816d06a609dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acfe62c786b900828604b43dde3641916"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#acfe62c786b900828604b43dde3641916">fillfromtripletlist</a> (this, triplet_list)</td></tr>
-<tr class="memdesc:acfe62c786b900828604b43dde3641916"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine fills in a matrix based on local triplet lists. Each process should pass in triplet lists with global coordinates. It doesn't matter where each triplet is stored, as long as global coordinates are given.  <a href="#acfe62c786b900828604b43dde3641916">More...</a><br /></td></tr>
-<tr class="separator:acfe62c786b900828604b43dde3641916"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abde8662744552f9ad8035956bd711b68"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#abde8662744552f9ad8035956bd711b68">fillfromtripletlist</a> (this, triplet_list, preduplicated_in)</td></tr>
+<tr class="memdesc:abde8662744552f9ad8035956bd711b68"><td class="mdescLeft">&#160;</td><td class="mdescRight">This routine fills in a matrix based on local triplet lists. Each process should pass in triplet lists with global coordinates. It doesn't matter where each triplet is stored, as long as global coordinates are given.  <a href="#abde8662744552f9ad8035956bd711b68">More...</a><br /></td></tr>
+<tr class="separator:abde8662744552f9ad8035956bd711b68"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2713d8c3e1ec68f0d1181350debf7a63"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a2713d8c3e1ec68f0d1181350debf7a63">filldistributedidentity</a> (this)</td></tr>
 <tr class="memdesc:a2713d8c3e1ec68f0d1181350debf7a63"><td class="mdescLeft">&#160;</td><td class="mdescRight">Fill in the values of a distributed matrix with the identity matrix.  <a href="#a2713d8c3e1ec68f0d1181350debf7a63">More...</a><br /></td></tr>
 <tr class="separator:a2713d8c3e1ec68f0d1181350debf7a63"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -120,13 +120,13 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:adc956b06e1582e426faa1d59fa1cf956"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the actual dimension of the matrix.  <a href="#adc956b06e1582e426faa1d59fa1cf956">More...</a><br /></td></tr>
 <tr class="separator:adc956b06e1582e426faa1d59fa1cf956"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a149a8855000bd591b518ca1600c95c45"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a149a8855000bd591b518ca1600c95c45">getlogicaldimension</a> (this)</td></tr>
-<tr class="memdesc:a149a8855000bd591b518ca1600c95c45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the logical dimension of the matrix.  <a href="#a149a8855000bd591b518ca1600c95c45">More...</a><br /></td></tr>
+<tr class="memdesc:a149a8855000bd591b518ca1600c95c45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the logical dimension of the matrix. Includes padding.  <a href="#a149a8855000bd591b518ca1600c95c45">More...</a><br /></td></tr>
 <tr class="separator:a149a8855000bd591b518ca1600c95c45"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2d4895521e0e27a9d090d6d4266ba1d0"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a2d4895521e0e27a9d090d6d4266ba1d0">printmatrixinformation</a> (this)</td></tr>
-<tr class="memdesc:a2d4895521e0e27a9d090d6d4266ba1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out information about a distributed sparse matrix.  <a href="#a2d4895521e0e27a9d090d6d4266ba1d0">More...</a><br /></td></tr>
+<tr class="memdesc:a2d4895521e0e27a9d090d6d4266ba1d0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out information about a distributed sparse matrix. Sparsity, and load balancing information.  <a href="#a2d4895521e0e27a9d090d6d4266ba1d0">More...</a><br /></td></tr>
 <tr class="separator:a2d4895521e0e27a9d090d6d4266ba1d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ade3a86212bc069959f2366086036accd"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#ade3a86212bc069959f2366086036accd">printdistributedsparsematrix</a> (this, file_name_in)</td></tr>
-<tr class="memdesc:ade3a86212bc069959f2366086036accd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out a distributed sparse matrix.  <a href="#ade3a86212bc069959f2366086036accd">More...</a><br /></td></tr>
+<tr class="memdesc:ade3a86212bc069959f2366086036accd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out a distributed sparse matrix. This is a serial print routine, and should probably only be used for debug purposes.  <a href="#ade3a86212bc069959f2366086036accd">More...</a><br /></td></tr>
 <tr class="separator:ade3a86212bc069959f2366086036accd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5b63320c17d96f67b0c9af191d8a0927"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacedistributedsparsematrixmodule.html#a5b63320c17d96f67b0c9af191d8a0927">filterdistributedsparsematrix</a> (this, threshold)</td></tr>
 <tr class="memdesc:a5b63320c17d96f67b0c9af191d8a0927"><td class="mdescLeft">&#160;</td><td class="mdescRight">A utility routine that filters a sparse matrix. All (absolute) values below the threshold are set to zero.  <a href="#a5b63320c17d96f67b0c9af191d8a0927">More...</a><br /></td></tr>
@@ -193,7 +193,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">subroutine, public distributedsparsematrixmodule::constructfrombinary </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>)&#160;</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
         </tr>
         <tr>
@@ -210,7 +210,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Construct a distributed sparse matrix from a binary file in parallel. </p>
+<p>Construct a distributed sparse matrix from a binary file in parallel. Faster than text, so this is good for check pointing. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">this</td><td>the file being constructed. </td></tr>
@@ -230,7 +230,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">subroutine, public distributedsparsematrixmodule::constructfrommatrixmarket </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>)&#160;</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>), intent(inout)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
         </tr>
         <tr>
@@ -247,7 +247,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Construct distributed sparse matrix from a matrix market file in parallel. </p>
+<p>Construct distributed sparse matrix from a matrix market file in parallel. Read <a class="el" href="citelist.html#CITEREF_boisvert1996matrix">[1]</a> for the details. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[out]</td><td class="paramname">this</td><td>the file being constructed. </td></tr>
@@ -314,7 +314,7 @@ Functions/Subroutines</h2></td></tr>
 <p>Destruct a distributed sparse matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the matrix to destruct </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the matrix to destruct. </td></tr>
   </table>
   </dd>
 </dl>
@@ -391,8 +391,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="acfe62c786b900828604b43dde3641916"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acfe62c786b900828604b43dde3641916">&#9670;&nbsp;</a></span>fillfromtripletlist()</h2>
+<a id="abde8662744552f9ad8035956bd711b68"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abde8662744552f9ad8035956bd711b68">&#9670;&nbsp;</a></span>fillfromtripletlist()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -407,7 +407,13 @@ Functions/Subroutines</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">type(tripletlist_t)&#160;</td>
-          <td class="paramname"><em>triplet_list</em>&#160;</td>
+          <td class="paramname"><em>triplet_list</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">logical, intent(in), optional&#160;</td>
+          <td class="paramname"><em>preduplicated_in</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -422,6 +428,7 @@ Functions/Subroutines</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the matrix to fill. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">triplet_list</td><td>the triplet list of values. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">preduplicated_in</td><td>if lists are preduplicated across slices set this to true (optional, default=False). </td></tr>
   </table>
   </dd>
 </dl>
@@ -552,7 +559,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Get the logical dimension of the matrix. </p>
+<p>Get the logical dimension of the matrix. Includes padding. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix. </td></tr>
@@ -755,7 +762,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Print out a distributed sparse matrix. </p>
+<p>Print out a distributed sparse matrix. This is a serial print routine, and should probably only be used for debug purposes. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to print. </td></tr>
@@ -782,7 +789,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Print out information about a distributed sparse matrix. </p>
+<p>Print out information about a distributed sparse matrix. Sparsity, and load balancing information. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to print information about. </td></tr>
@@ -838,7 +845,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">subroutine, public distributedsparsematrixmodule::writetobinary </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>)&#160;</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>), intent(in)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
         </tr>
         <tr>
@@ -855,7 +862,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Save a distributed sparse matrix to a file. </p>
+<p>Save a distributed sparse matrix to a binary file. Faster than text, so this is good for check pointing. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the Matrix to write. </td></tr>
@@ -875,7 +882,7 @@ Functions/Subroutines</h2></td></tr>
         <tr>
           <td class="memname">subroutine, public distributedsparsematrixmodule::writetomatrixmarket </td>
           <td>(</td>
-          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>)&#160;</td>
+          <td class="paramtype">type(<a class="el" href="structdistributedsparsematrixmodule_1_1distributedsparsematrix__t.html">distributedsparsematrix_t</a>), intent(in)&#160;</td>
           <td class="paramname"><em>this</em>, </td>
         </tr>
         <tr>
@@ -892,7 +899,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Write a distributed sparse matrix to a matrix market file. </p>
+<p>Write a distributed sparse matrix to a matrix market file. Read <a class="el" href="citelist.html#CITEREF_boisvert1996matrix">[1]</a> for the details. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the Matrix to write. </td></tr>

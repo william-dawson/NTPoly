@@ -86,7 +86,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a693b57cb68927787bc27cde10c889964"><td class="mdescLeft">&#160;</td><td class="mdescRight">Product = sum(MatA[ij]*MatB[ij])  <a href="#a693b57cb68927787bc27cde10c889964">More...</a><br /></td></tr>
 <tr class="separator:a693b57cb68927787bc27cde10c889964"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a347924cc21787b95dcfd5aca64bd244f"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixalgebramodule.html#a347924cc21787b95dcfd5aca64bd244f">gemm</a> (matA, matB, matC, IsATransposed_in, IsBTransposed_in, alpha_in, beta_in, threshold_in, blocked_memory_pool_in)</td></tr>
-<tr class="memdesc:a347924cc21787b95dcfd5aca64bd244f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Multiply two matrices together, and add to the third. C := alpha*matA*op( matB ) + beta*matC This version is not really linear scaling, but it should be fast enough. Basically, we create a big buffer region of zeros so that we can accumulate in O(1) time. Then we scan over the buffer region and search for filled values. For small enough matrices this is fine, but it definitely isn't optimal.  <a href="#a347924cc21787b95dcfd5aca64bd244f">More...</a><br /></td></tr>
+<tr class="memdesc:a347924cc21787b95dcfd5aca64bd244f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Multiply two matrices together, and add to the third. C := alpha*matA*op( matB ) + beta*matC.  <a href="#a347924cc21787b95dcfd5aca64bd244f">More...</a><br /></td></tr>
 <tr class="separator:a347924cc21787b95dcfd5aca64bd244f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0e16e9a6cf8cf4048103a4679d504bad"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixalgebramodule.html#a0e16e9a6cf8cf4048103a4679d504bad">sparsematrixnorm</a> (this, norm_per_column)</td></tr>
 <tr class="memdesc:a0e16e9a6cf8cf4048103a4679d504bad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the norm of a sparse matrix along the columns.  <a href="#a0e16e9a6cf8cf4048103a4679d504bad">More...</a><br /></td></tr>
@@ -204,7 +204,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Multiply two matrices together, and add to the third. C := alpha*matA*op( matB ) + beta*matC This version is not really linear scaling, but it should be fast enough. Basically, we create a big buffer region of zeros so that we can accumulate in O(1) time. Then we scan over the buffer region and search for filled values. For small enough matrices this is fine, but it definitely isn't optimal. </p>
+<p>Multiply two matrices together, and add to the third. C := alpha*matA*op( matB ) + beta*matC. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
@@ -265,12 +265,11 @@ Functions/Subroutines</h2></td></tr>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">matA</td><td>Matrix A. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">matB</td><td>Matrix B. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">alpha_in</td><td>multiplier. Optional, default is 1.0 </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">threshold_in</td><td>for flushing values to zero. Default value is 0.0. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">alpha_in</td><td>multiplier (optional, default=1.0) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">threshold_in</td><td>for flushing values to zero. (Optional, default=0). </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="todo"><dt><b><a class="el" href="todo.html#_todo000005">Todo:</a></b></dt><dd>I don't like this hack where I have to check if MatrixB is allocated. </dd></dl>
 
 </div>
 </div>

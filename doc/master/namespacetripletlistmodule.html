@@ -69,7 +69,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A Module For Storing Lists of triplets. Contains both a methods for sorting lists.  
+<p>A Module For Storing Lists of triplets.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -107,9 +107,12 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a65fd2c9869ba45c55da7ea55aeac3303"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule.html#a65fd2c9869ba45c55da7ea55aeac3303">gettripletlistsize</a> (triplet_list)</td></tr>
 <tr class="memdesc:a65fd2c9869ba45c55da7ea55aeac3303"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of entries in a triplet list.  <a href="#a65fd2c9869ba45c55da7ea55aeac3303">More...</a><br /></td></tr>
 <tr class="separator:a65fd2c9869ba45c55da7ea55aeac3303"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bd710b6e337e39d060f8bd3d165e039"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule.html#a7bd710b6e337e39d060f8bd3d165e039">redistributetripletlists</a> (triplet_lists, comm, local_data_out)</td></tr>
+<tr class="memdesc:a7bd710b6e337e39d060f8bd3d165e039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Redistribute some triplet lists amongst a set of processors. Takes in a list of triplet lists, one list for each processor. Then the all to all redistribution is performed along the given communicator.  <a href="#a7bd710b6e337e39d060f8bd3d165e039">More...</a><br /></td></tr>
+<tr class="separator:a7bd710b6e337e39d060f8bd3d165e039"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A Module For Storing Lists of triplets. Contains both a methods for sorting lists. </p>
+<div class="textblock"><p>A Module For Storing Lists of triplets. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="a3d50bd056f19e8dc563af35437aa981d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3d50bd056f19e8dc563af35437aa981d">&#9670;&nbsp;</a></span>appendtotripletlist()</h2>
@@ -178,7 +181,7 @@ Functions/Subroutines</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the triplet list to construct. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">size_in</td><td>the length of the triplet list. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">size_in</td><td>the length of the triplet list (optional, default=0). </td></tr>
   </table>
   </dd>
 </dl>
@@ -246,7 +249,7 @@ Functions/Subroutines</h2></td></tr>
 <p>Get the value of a triplet at a particular index. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the triplet list to get teh value from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the triplet list to get the value from. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">index</td><td>the index from which to get the triplet. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">triplet_value</td><td>the extracted triplet value. </td></tr>
   </table>
@@ -279,6 +282,50 @@ Functions/Subroutines</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>list_size the number of entries in the triplet list. </dd></dl>
+
+</div>
+</div>
+<a id="a7bd710b6e337e39d060f8bd3d165e039"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bd710b6e337e39d060f8bd3d165e039">&#9670;&nbsp;</a></span>redistributetripletlists()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">subroutine, public tripletlistmodule::redistributetripletlists </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structtripletlistmodule_1_1tripletlist__t.html">tripletlist_t</a>), dimension(:), intent(in)&#160;</td>
+          <td class="paramname"><em>triplet_lists</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(inout)&#160;</td>
+          <td class="paramname"><em>comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structtripletlistmodule_1_1tripletlist__t.html">tripletlist_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>local_data_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Redistribute some triplet lists amongst a set of processors. Takes in a list of triplet lists, one list for each processor. Then the all to all redistribution is performed along the given communicator. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">triplet_lists</td><td>a list of triplet lists, one for each process. </td></tr>
+    <tr><td class="paramdir">[in,out]</td><td class="paramname">comm</td><td>the mpi communicator to redistribute along. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">local_data_out</td><td>the resulting local triplet list. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

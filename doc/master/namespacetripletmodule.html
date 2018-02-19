@@ -70,7 +70,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>A Module For Storing Triplets of Integer, Integer, Double. Contains a class Triplet and a means to compare them.  
+<p>A Module For Storing Triplets of Integer, Integer, Double.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
@@ -88,7 +88,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a02e554b468a45a911ded5540abd21904"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the values of a triplet.  <a href="#a02e554b468a45a911ded5540abd21904">More...</a><br /></td></tr>
 <tr class="separator:a02e554b468a45a911ded5540abd21904"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2433d889e3e30b20811a73e4c71dbc17"><td class="memItemLeft" align="right" valign="top">pure logical function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletmodule.html#a2433d889e3e30b20811a73e4c71dbc17">comparetriplets</a> (tripA, tripB)</td></tr>
-<tr class="memdesc:a2433d889e3e30b20811a73e4c71dbc17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two triplets based on their index values. Returns A &lt; B. Used for sorting.  <a href="#a2433d889e3e30b20811a73e4c71dbc17">More...</a><br /></td></tr>
+<tr class="memdesc:a2433d889e3e30b20811a73e4c71dbc17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compare two triplets based on their index values, first by column and second by row. Returns A &lt; B. Used for sorting.  <a href="#a2433d889e3e30b20811a73e4c71dbc17">More...</a><br /></td></tr>
 <tr class="separator:a2433d889e3e30b20811a73e4c71dbc17"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada26ca82b9051ca8d6eb4c65ef0c8c1f"><td class="memItemLeft" align="right" valign="top">integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletmodule.html#ada26ca82b9051ca8d6eb4c65ef0c8c1f">getmpitriplettype</a> ()</td></tr>
 <tr class="memdesc:ada26ca82b9051ca8d6eb4c65ef0c8c1f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Returns an MPI Derived Data Type For A Triplet. We statically store this derived type so that we don't have to recreate it every time this function is called. Thus this functional call should add very little overhead.  <a href="#ada26ca82b9051ca8d6eb4c65ef0c8c1f">More...</a><br /></td></tr>
@@ -102,7 +102,7 @@ logical&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="n
 <tr class="separator:af3ba76880cfd75c5a7d78a5081612d54"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A Module For Storing Triplets of Integer, Integer, Double. Contains a class Triplet and a means to compare them. </p>
+<div class="textblock"><p>A Module For Storing Triplets of Integer, Integer, Double. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
 <a id="a2433d889e3e30b20811a73e4c71dbc17"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2433d889e3e30b20811a73e4c71dbc17">&#9670;&nbsp;</a></span>comparetriplets()</h2>
@@ -130,7 +130,7 @@ logical&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="n
       </table>
 </div><div class="memdoc">
 
-<p>Compare two triplets based on their index values. Returns A &lt; B. Used for sorting. </p>
+<p>Compare two triplets based on their index values, first by column and second by row. Returns A &lt; B. Used for sorting. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">tripA</td><td>first triplet. </td></tr>

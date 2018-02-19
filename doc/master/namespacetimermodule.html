@@ -74,7 +74,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a861190193cc8ac2b2fc168b5d90389a5"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetimermodule.html#a861190193cc8ac2b2fc168b5d90389a5">registertimer</a> (timer_name)</td></tr>
-<tr class="memdesc:a861190193cc8ac2b2fc168b5d90389a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a timer with the timer module. Call this before using that timer. Basically this adds a timer with that name to the dictionary.  <a href="#a861190193cc8ac2b2fc168b5d90389a5">More...</a><br /></td></tr>
+<tr class="memdesc:a861190193cc8ac2b2fc168b5d90389a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a timer with the timer module. Call this before using that timer.  <a href="#a861190193cc8ac2b2fc168b5d90389a5">More...</a><br /></td></tr>
 <tr class="separator:a861190193cc8ac2b2fc168b5d90389a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad0dedd4f6ec19d57e5aef23a763c20ac"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetimermodule.html#ad0dedd4f6ec19d57e5aef23a763c20ac">starttimer</a> (timer_name)</td></tr>
 <tr class="memdesc:ad0dedd4f6ec19d57e5aef23a763c20ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start the clock running for a given timer.  <a href="#ad0dedd4f6ec19d57e5aef23a763c20ac">More...</a><br /></td></tr>
@@ -87,11 +87,11 @@ Functions/Subroutines</h2></td></tr>
 <tr class="separator:ad6b98054ee0ba8b13a410d0e0365e140"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa110c8634074fa8d9a30c24bc34eda5"><td class="memItemLeft" align="right" valign="top"><a id="afa110c8634074fa8d9a30c24bc34eda5"></a>
 subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetimermodule.html#afa110c8634074fa8d9a30c24bc34eda5">printalltimers</a> ()</td></tr>
-<tr class="memdesc:afa110c8634074fa8d9a30c24bc34eda5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out the elapsed time for each timer. <br /></td></tr>
+<tr class="memdesc:afa110c8634074fa8d9a30c24bc34eda5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out the elapsed time for each timer on this process. <br /></td></tr>
 <tr class="separator:afa110c8634074fa8d9a30c24bc34eda5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a18eac0d8ba2fb10b62d7c9944c0987e7"><td class="memItemLeft" align="right" valign="top"><a id="a18eac0d8ba2fb10b62d7c9944c0987e7"></a>
 subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetimermodule.html#a18eac0d8ba2fb10b62d7c9944c0987e7">printalltimersdistributed</a> ()</td></tr>
-<tr class="memdesc:a18eac0d8ba2fb10b62d7c9944c0987e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out the elapsed time for each timer. <br /></td></tr>
+<tr class="memdesc:a18eac0d8ba2fb10b62d7c9944c0987e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out the elapsed time for each timer based on the max value across processes. <br /></td></tr>
 <tr class="separator:a18eac0d8ba2fb10b62d7c9944c0987e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -139,7 +139,7 @@ subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="
       </table>
 </div><div class="memdoc">
 
-<p>Register a timer with the timer module. Call this before using that timer. Basically this adds a timer with that name to the dictionary. </p>
+<p>Register a timer with the timer module. Call this before using that timer. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">timer_name</td><td>name of the timer. </td></tr>

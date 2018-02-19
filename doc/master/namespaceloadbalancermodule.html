@@ -73,18 +73,18 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:afa2d5f9260135361bba85d73f6649fd5"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceloadbalancermodule.html#afa2d5f9260135361bba85d73f6649fd5">permutematrix</a> (mat_in, mat_out, permutation, memorypool_in)</td></tr>
-<tr class="memdesc:afa2d5f9260135361bba85d73f6649fd5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a permutation to a matrix.  <a href="#afa2d5f9260135361bba85d73f6649fd5">More...</a><br /></td></tr>
-<tr class="separator:afa2d5f9260135361bba85d73f6649fd5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa344e2b9a7904616c4556bc3f7a9bb5a"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceloadbalancermodule.html#aa344e2b9a7904616c4556bc3f7a9bb5a">undopermutematrix</a> (mat_in, mat_out, permutation, memorypool_in)</td></tr>
-<tr class="memdesc:aa344e2b9a7904616c4556bc3f7a9bb5a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo a permutation applied to a matrix.  <a href="#aa344e2b9a7904616c4556bc3f7a9bb5a">More...</a><br /></td></tr>
-<tr class="separator:aa344e2b9a7904616c4556bc3f7a9bb5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf65648a981bee377cb325473256ff7b"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceloadbalancermodule.html#aaf65648a981bee377cb325473256ff7b">permutematrix</a> (mat, mat_out, permutation, memorypool_in)</td></tr>
+<tr class="memdesc:aaf65648a981bee377cb325473256ff7b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply a permutation to a matrix.  <a href="#aaf65648a981bee377cb325473256ff7b">More...</a><br /></td></tr>
+<tr class="separator:aaf65648a981bee377cb325473256ff7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0beae7910dc7a3e885594c709a45b886"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceloadbalancermodule.html#a0beae7910dc7a3e885594c709a45b886">undopermutematrix</a> (mat, mat_out, permutation, memorypool_in)</td></tr>
+<tr class="memdesc:a0beae7910dc7a3e885594c709a45b886"><td class="mdescLeft">&#160;</td><td class="mdescRight">Undo a permutation applied to a matrix.  <a href="#a0beae7910dc7a3e885594c709a45b886">More...</a><br /></td></tr>
+<tr class="separator:a0beae7910dc7a3e885594c709a45b886"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Module for load balancing the matrix multiplication calculation. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="afa2d5f9260135361bba85d73f6649fd5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa2d5f9260135361bba85d73f6649fd5">&#9670;&nbsp;</a></span>permutematrix()</h2>
+<a id="aaf65648a981bee377cb325473256ff7b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf65648a981bee377cb325473256ff7b">&#9670;&nbsp;</a></span>permutematrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -93,7 +93,7 @@ Functions/Subroutines</h2></td></tr>
           <td class="memname">subroutine, public loadbalancermodule::permutematrix </td>
           <td>(</td>
           <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
-          <td class="paramname"><em>mat_in</em>, </td>
+          <td class="paramname"><em>mat</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -124,7 +124,7 @@ Functions/Subroutines</h2></td></tr>
 <p>Apply a permutation to a matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mat_in</td><td>matrix to permute. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">mat</td><td>matrix to permute. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">mat_out</td><td>permuted matrix. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">permutation</td><td>to apply. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">memorypool_in</td><td>memory pool to use. Optional. </td></tr>
@@ -134,8 +134,8 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="aa344e2b9a7904616c4556bc3f7a9bb5a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa344e2b9a7904616c4556bc3f7a9bb5a">&#9670;&nbsp;</a></span>undopermutematrix()</h2>
+<a id="a0beae7910dc7a3e885594c709a45b886"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0beae7910dc7a3e885594c709a45b886">&#9670;&nbsp;</a></span>undopermutematrix()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -144,7 +144,7 @@ Functions/Subroutines</h2></td></tr>
           <td class="memname">subroutine, public loadbalancermodule::undopermutematrix </td>
           <td>(</td>
           <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
-          <td class="paramname"><em>mat_in</em>, </td>
+          <td class="paramname"><em>mat</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -175,7 +175,7 @@ Functions/Subroutines</h2></td></tr>
 <p>Undo a permutation applied to a matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">mat_in</td><td>matrix to undo permutation of. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">mat</td><td>matrix to undo permutation of. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">mat_out</td><td>unpermuted matrix. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">permutation</td><td>to remove. </td></tr>
     <tr><td class="paramdir">[in,out]</td><td class="paramname">memorypool_in</td><td>memory pool to use. Optional. </td></tr>

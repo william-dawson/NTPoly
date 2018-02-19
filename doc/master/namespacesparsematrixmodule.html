@@ -93,7 +93,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a32b3ae65c813eba65e4e93d839eb8e88"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a sparse matrix from a <b>SORTED</b> triplet list. The triplet list must be sorted to efficiently fill in the matrix. This constructor assumes <b>you</b> have already sorted the triplet list.  <a href="#a32b3ae65c813eba65e4e93d839eb8e88">More...</a><br /></td></tr>
 <tr class="separator:a32b3ae65c813eba65e4e93d839eb8e88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5cfb7d3909100046866c5a0ce81bac84"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a5cfb7d3909100046866c5a0ce81bac84">destructsparsematrix</a> (this)</td></tr>
-<tr class="memdesc:a5cfb7d3909100046866c5a0ce81bac84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly destruct a sparse matrix. This will always check if arrays are actually allocated, so you can feel free to destruct a matrix even if it has no data.  <a href="#a5cfb7d3909100046866c5a0ce81bac84">More...</a><br /></td></tr>
+<tr class="memdesc:a5cfb7d3909100046866c5a0ce81bac84"><td class="mdescLeft">&#160;</td><td class="mdescRight">Explicitly destruct a sparse matrix.  <a href="#a5cfb7d3909100046866c5a0ce81bac84">More...</a><br /></td></tr>
 <tr class="separator:a5cfb7d3909100046866c5a0ce81bac84"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a997657c01bb95d81d4656ab4be711dc6"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a997657c01bb95d81d4656ab4be711dc6">copysparsematrix</a> (matA, matB)</td></tr>
 <tr class="memdesc:a997657c01bb95d81d4656ab4be711dc6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Copy a sparse matrix in a safe way.  <a href="#a997657c01bb95d81d4656ab4be711dc6">More...</a><br /></td></tr>
@@ -117,7 +117,7 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memdesc:a9982e6e020366bdba866eb814b943ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a triplet list from a matrix.  <a href="#a9982e6e020366bdba866eb814b943ae4">More...</a><br /></td></tr>
 <tr class="separator:a9982e6e020366bdba866eb814b943ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d8e78f04a9343b732748a7e9719a8fb"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a4d8e78f04a9343b732748a7e9719a8fb">printsparsematrix</a> (this, file_name_in)</td></tr>
-<tr class="memdesc:a4d8e78f04a9343b732748a7e9719a8fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out a sparse matrix. We first create a triplet list, and then call the print triplet list function.  <a href="#a4d8e78f04a9343b732748a7e9719a8fb">More...</a><br /></td></tr>
+<tr class="memdesc:a4d8e78f04a9343b732748a7e9719a8fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print out a sparse matrix.  <a href="#a4d8e78f04a9343b732748a7e9719a8fb">More...</a><br /></td></tr>
 <tr class="separator:a4d8e78f04a9343b732748a7e9719a8fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -389,7 +389,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Explicitly destruct a sparse matrix. This will always check if arrays are actually allocated, so you can feel free to destruct a matrix even if it has no data. </p>
+<p>Explicitly destruct a sparse matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">this</td><td>the matrix to free up </td></tr>
@@ -516,7 +516,7 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Print out a sparse matrix. We first create a triplet list, and then call the print triplet list function. </p>
+<p>Print out a sparse matrix. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to be printed. </td></tr>

@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.14"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>NTPoly: inversesolversmodule Module Reference</title>
+<title>NTPoly: geometryoptimizationmodule Module Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -64,42 +64,54 @@ $(function() {
   <div class="summary">
 <a href="#func-members">Functions/Subroutines</a>  </div>
   <div class="headertitle">
-<div class="title">inversesolversmodule Module Reference</div>  </div>
+<div class="title">geometryoptimizationmodule Module Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
-<p>A Module For Computing The Inverse of a Matrix.  
+<p>A Module For Geometry Optimization.  
 <a href="#details">More...</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:a7c50e19c6a0af81a1f3680d8a7fb3e72"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceinversesolversmodule.html#a7c50e19c6a0af81a1f3680d8a7fb3e72">invert</a> (Mat1, InverseMat, solver_parameters_in)</td></tr>
-<tr class="memdesc:a7c50e19c6a0af81a1f3680d8a7fb3e72"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse of a matrix. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[10]</a>.  <a href="#a7c50e19c6a0af81a1f3680d8a7fb3e72">More...</a><br /></td></tr>
-<tr class="separator:a7c50e19c6a0af81a1f3680d8a7fb3e72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab741954eeef069967e95ffd02b7e97eb"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespaceinversesolversmodule.html#ab741954eeef069967e95ffd02b7e97eb">pseudoinverse</a> (Mat1, InverseMat, solver_parameters_in)</td></tr>
-<tr class="memdesc:ab741954eeef069967e95ffd02b7e97eb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the pseudoinverse of a matrix. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[10]</a>. We just change the convergence criteria.  <a href="#ab741954eeef069967e95ffd02b7e97eb">More...</a><br /></td></tr>
-<tr class="separator:ab741954eeef069967e95ffd02b7e97eb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a224c9c1e9455f140db3e6d296e38afd7"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegeometryoptimizationmodule.html#a224c9c1e9455f140db3e6d296e38afd7">purificationextrapolate</a> (PreviousDensity, Overlap, nel, NewDensity, solver_parameters_in)</td></tr>
+<tr class="memdesc:a224c9c1e9455f140db3e6d296e38afd7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new guess at the Density Matrix after updating the geometry. Based on the purification algorithm in <a class="el" href="citelist.html#CITEREF_niklasson2010trace">[7]</a> .  <a href="#a224c9c1e9455f140db3e6d296e38afd7">More...</a><br /></td></tr>
+<tr class="separator:a224c9c1e9455f140db3e6d296e38afd7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a9e0658079cbbd6aa5b913629fe0731"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacegeometryoptimizationmodule.html#a2a9e0658079cbbd6aa5b913629fe0731">lowdinextrapolate</a> (PreviousDensity, OldOverlap, NewOverlap, NewDensity, solver_parameters_in)</td></tr>
+<tr class="memdesc:a2a9e0658079cbbd6aa5b913629fe0731"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new guess at the Density Matrix after updating the geometry. Based on the lowdin algorithm in <a class="el" href="citelist.html#CITEREF_exner2002comparison">[3]</a> .  <a href="#a2a9e0658079cbbd6aa5b913629fe0731">More...</a><br /></td></tr>
+<tr class="separator:a2a9e0658079cbbd6aa5b913629fe0731"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>A Module For Computing The Inverse of a Matrix. </p>
+<div class="textblock"><p>A Module For Geometry Optimization. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="a7c50e19c6a0af81a1f3680d8a7fb3e72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7c50e19c6a0af81a1f3680d8a7fb3e72">&#9670;&nbsp;</a></span>invert()</h2>
+<a id="a2a9e0658079cbbd6aa5b913629fe0731"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a9e0658079cbbd6aa5b913629fe0731">&#9670;&nbsp;</a></span>lowdinextrapolate()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine, public inversesolversmodule::invert </td>
+          <td class="memname">subroutine, public geometryoptimizationmodule::lowdinextrapolate </td>
           <td>(</td>
           <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
-          <td class="paramname"><em>Mat1</em>, </td>
+          <td class="paramname"><em>PreviousDensity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
+          <td class="paramname"><em>OldOverlap</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
+          <td class="paramname"><em>NewOverlap</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">type(distributedsparsematrix_t), intent(inout)&#160;</td>
-          <td class="paramname"><em>InverseMat</em>, </td>
+          <td class="paramname"><em>NewDensity</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -115,11 +127,13 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Compute the inverse of a matrix. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[10]</a>. </p>
+<p>Create a new guess at the Density Matrix after updating the geometry. Based on the lowdin algorithm in <a class="el" href="citelist.html#CITEREF_exner2002comparison">[3]</a> . </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Mat1</td><td>Matrix 1. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">InverseMat</td><td>= Mat1^-1. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">PreviousDensity</td><td>to extrapolate from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">OldOverlap</td><td>the overlap matrix of the old geometry. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">NewOverlap</td><td>the overlap matrix of the new geometry. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">NewDensity</td><td>the extrapolated density. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver </td></tr>
   </table>
   </dd>
@@ -127,23 +141,35 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
-<a id="ab741954eeef069967e95ffd02b7e97eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab741954eeef069967e95ffd02b7e97eb">&#9670;&nbsp;</a></span>pseudoinverse()</h2>
+<a id="a224c9c1e9455f140db3e6d296e38afd7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a224c9c1e9455f140db3e6d296e38afd7">&#9670;&nbsp;</a></span>purificationextrapolate()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">subroutine, public inversesolversmodule::pseudoinverse </td>
+          <td class="memname">subroutine, public geometryoptimizationmodule::purificationextrapolate </td>
           <td>(</td>
           <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
-          <td class="paramname"><em>Mat1</em>, </td>
+          <td class="paramname"><em>PreviousDensity</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(distributedsparsematrix_t), intent(in)&#160;</td>
+          <td class="paramname"><em>Overlap</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>nel</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">type(distributedsparsematrix_t), intent(inout)&#160;</td>
-          <td class="paramname"><em>InverseMat</em>, </td>
+          <td class="paramname"><em>NewDensity</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -159,11 +185,13 @@ Functions/Subroutines</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Compute the pseudoinverse of a matrix. An implementation of Hotelling's method <a class="el" href="citelist.html#CITEREF_palser1998canonical">[10]</a>. We just change the convergence criteria. </p>
+<p>Create a new guess at the Density Matrix after updating the geometry. Based on the purification algorithm in <a class="el" href="citelist.html#CITEREF_niklasson2010trace">[7]</a> . </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">Mat1</td><td>Matrix 1. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">InverseMat</td><td>= Mat1^-1. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">PreviousDensity</td><td>to extrapolate from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">Overlap</td><td>the overlap matrix of the new geometry. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">nel</td><td>the number of electrons. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">NewDensity</td><td>the extrapolated density. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver </td></tr>
   </table>
   </dd>
