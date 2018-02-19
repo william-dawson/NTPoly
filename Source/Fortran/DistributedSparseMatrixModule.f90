@@ -598,10 +598,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! where each triplet is stored, as long as global coordinates are given.
   !! @param[inout] this the matrix to fill.
   !! @param[in] triplet_list the triplet list of values.
-  SUBROUTINE FillFromTripletList(this,triplet_list)
+  !! @param[in] preduplicated_in (optional) if lists are preduplicated across
+  !! slices set this to true.
+  SUBROUTINE FillFromTripletList(this,triplet_list,preduplicated_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t) :: this
     TYPE(TripletList_t) :: triplet_list
+    LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !! Local Data
     TYPE(Permutation_t) :: basic_permutation
     TYPE(TripletList_t) :: sorted_triplet_list
@@ -622,21 +625,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Now we can just construct a local matrix.
     CALL ConstructFromTripletList(local_matrix,sorted_triplet_list, &
          & this%local_rows, this%local_columns)
-
     !! And reduce over the Z dimension. This can be accomplished by
     !! summing up.
-    CALL GatherSizes(local_matrix,between_slice_comm,gather_helper)
-    DO WHILE(.NOT. TestSizeRequest(gather_helper))
-    END DO
-    CALL GatherAndSumData(local_matrix,between_slice_comm,gather_helper)
-    DO WHILE(.NOT. TestOuterRequest(gather_helper))
-    END DO
-    DO WHILE(.NOT. TestInnerRequest(gather_helper))
-    END DO
-    DO WHILE(.NOT. TestDataRequest(gather_helper))
-    END DO
-    CALL GatherAndSumCleanUp(local_matrix, gathered_matrix, threshold, &
-         & gather_helper)
+    IF (.NOT. PRESENT(preduplicated_in) .OR. .NOT. preduplicated_in) THEN
+       CALL GatherSizes(local_matrix,between_slice_comm,gather_helper)
+       DO WHILE(.NOT. TestSizeRequest(gather_helper))
+       END DO
+       CALL GatherAndSumData(local_matrix,between_slice_comm,gather_helper)
+       DO WHILE(.NOT. TestOuterRequest(gather_helper))
+       END DO
+       DO WHILE(.NOT. TestInnerRequest(gather_helper))
+       END DO
+       DO WHILE(.NOT. TestDataRequest(gather_helper))
+       END DO
+       CALL GatherAndSumCleanUp(local_matrix, gathered_matrix, threshold, &
+            & gather_helper)
+    END IF
 
     CALL SplitToLocalBlocks(this, gathered_matrix)
     CALL StopTimer("FillFromTriplet")
