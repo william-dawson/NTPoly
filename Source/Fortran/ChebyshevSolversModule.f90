@@ -33,8 +33,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] degree of the polynomial.
   PURE SUBROUTINE ConstructChebyshevPolynomial(this, degree)
     !! Parameters
-    TYPE(ChebyshevPolynomial_t), INTENT(inout) :: this
-    INTEGER, INTENT(in) :: degree
+    TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
+    INTEGER, INTENT(IN) :: degree
 
     ALLOCATE(this%coefficients(degree))
     this%coefficients = 0
@@ -44,7 +44,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the polynomial to destruct.
   PURE SUBROUTINE DestructChebyshevPolynomial(this)
     !! Parameters
-    TYPE(ChebyshevPolynomial_t), INTENT(inout) :: this
+    TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
     IF (ALLOCATED(this%coefficients)) THEN
        DEALLOCATE(this%coefficients)
     END IF
@@ -56,9 +56,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] coefficient value.
   SUBROUTINE SetChebyshevCoefficient(this, degree, coefficient)
     !! Parameters
-    TYPE(ChebyshevPolynomial_t), INTENT(inout) :: this
-    INTEGER, INTENT(in) :: degree
-    REAL(NTREAL), INTENT(in) :: coefficient
+    TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
+    INTEGER, INTENT(IN) :: degree
+    REAL(NTREAL), INTENT(IN) :: coefficient
 
     this%coefficients(degree) = coefficient
   END SUBROUTINE SetChebyshevCoefficient
@@ -67,14 +67,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! This method uses the standard Chebyshev Polynomial expansion.
   !! @param[in] InputMat the input matrix
   !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in] poly polynomial to compute.
+  !! @param[in] poly the Chebyshev polynomial to compute.
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ChebyshevCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    TYPE(ChebyshevPolynomial_t), INTENT(in) :: poly
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
@@ -178,7 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! version of the first method in \cite liang2003improved .
   !! @param[in]  InputMat the input matrix
   !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in]  poly polynomial to compute.
+  !! @param[in]  poly the Chebyshev polynomial to compute.
   !! @param[in]  solver_parameters_in parameters for the solver (optional).
   SUBROUTINE FactorizedChebyshevCompute(InputMat, OutputMat, poly, &
        & solver_parameters_in)
@@ -292,17 +292,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] T_Powers the precomputed Chebyshev polynomials.
   !! @param[in] poly polynomial coefficients.
   !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in] depth_in the depth of recursion.
-  !! @param[in] solver_parameters_in parameters for the solver.
+  !! @param[inout] pool the memory pool.
+  !! @param[in] depth the depth of recursion.
+  !! @param[in] solver_parameters parameters for the solver.
   RECURSIVE SUBROUTINE ComputeRecursive(T_Powers, poly, OutputMat, pool, &
        & depth, solver_parameters)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), DIMENSION(:), INTENT(in) :: T_Powers
-    TYPE(ChebyshevPolynomial_t), INTENT(in) :: poly
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(DistributedSparseMatrix_t), DIMENSION(:), INTENT(IN) :: T_Powers
+    TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(in) :: depth
-    TYPE(FixedSolverParameters_t), INTENT(in) :: solver_parameters
-    TYPE(DistributedMatrixMemoryPool_t), INTENT(inout) :: pool
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(DistributedMatrixMemoryPool_t), INTENT(INOUT) :: pool
     !! Local Data
     INTEGER :: coefficient_midpoint
     INTEGER :: left_length, right_length
@@ -359,4 +360,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
   END SUBROUTINE ComputeRecursive
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ChebyshevSolversModule

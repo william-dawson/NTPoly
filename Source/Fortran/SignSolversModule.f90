@@ -56,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the polar decomposition of a matrix Mat1 = U*H.
   !! @param[in] Mat1 the input matrix.
   !! @param[out] Umat the unitary polar factor.
-  !! @param[out] Hmat (optional) the hermitian matrix factor.
+  !! @param[out] Hmat the hermitian matrix factor (optional).
   !! @param[in] solver_parameters_in optional parameters for the routine.
   SUBROUTINE PolarDecomposition(Mat1, Umat, Hmat, solver_parameters_in)
     !! Parameters
@@ -98,6 +98,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE PolarDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This is the implementation routine for both the sign function and
+  !! polar decomposition.
   SUBROUTINE CoreComputation(Mat1, OutMat, solver_parameters, needs_transpose)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Mat1

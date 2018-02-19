@@ -36,8 +36,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] sparse_matrix the matrix to associate it with.
   PURE SUBROUTINE Start(this,sparse_matrix)
     !! Parameters
-    TYPE(SparseMatrixIterator_t), INTENT(inout) :: this
-    TYPE(SparseMatrix_t), INTENT(in) :: sparse_matrix
+    TYPE(SparseMatrixIterator_t), INTENT(INOUT) :: this
+    TYPE(SparseMatrix_t), INTENT(IN) :: sparse_matrix
 
     !! Set Inner Representation
     this%outer_counter = 1
@@ -57,13 +57,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Gets the next element in a sparse matrix.
   !! @param[inout] this the sparse matrix iterator.
   !! @param[in] sparse_matrix the sparse matrix associated with the iterator.
-  !! @todo it's probably a pain to have to pass the sparse matrix here. But
-  !! Fortran's requirement that everything that is pointed to has the TARGET
-  !! attribute is problematic.
   PURE SUBROUTINE Next(this,sparse_matrix)
     !! Parameters
-    TYPE(SparseMatrixIterator_t), INTENT(inout) :: this
-    TYPE(SparseMatrix_t), INTENT(in) :: sparse_matrix
+    TYPE(SparseMatrixIterator_t), INTENT(INOUT) :: this
+    TYPE(SparseMatrix_t), INTENT(IN) :: sparse_matrix
 
     !! Update Inner Representation
     this%total_counter = this%total_counter + 1

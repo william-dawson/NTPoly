@@ -29,15 +29,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE AddSparseVectors(inner_index_a,values_a,inner_index_b, &
        & values_b,inner_index_c,values_c,total_values_c, alpha_in, threshold_in)
     !! Parameters
-    INTEGER, DIMENSION(:), INTENT(in)  :: inner_index_a
-    INTEGER, DIMENSION(:), INTENT(in)  :: inner_index_b
-    INTEGER, DIMENSION(:), INTENT(out) :: inner_index_c
-    REAL(NTREAL), DIMENSION(:), INTENT(in)    :: values_a
-    REAL(NTREAL), DIMENSION(:), INTENT(in)    :: values_b
-    REAL(NTREAL), DIMENSION(:), INTENT(out) :: values_c
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: alpha_in
-    REAL(NTREAL), OPTIONAL, INTENT(in) :: threshold_in
-    INTEGER, INTENT(out) :: total_values_c
+    INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
+    INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
+    INTEGER, DIMENSION(:), INTENT(OUT) :: inner_index_c
+    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_a
+    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_b
+    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: values_c
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
+    INTEGER, INTENT(OUT) :: total_values_c
     !! Local Data
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: threshold
@@ -120,10 +120,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE FUNCTION DotSparseVectors(inner_index_a,values_a,inner_index_b, &
        & values_b) RESULT(product)
     !! Parameters
-    INTEGER, DIMENSION(:), INTENT(in)  :: inner_index_a
-    INTEGER, DIMENSION(:), INTENT(in)  :: inner_index_b
-    REAL(NTREAL), DIMENSION(:), INTENT(in)    :: values_a
-    REAL(NTREAL), DIMENSION(:), INTENT(in)    :: values_b
+    INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
+    INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
+    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_a
+    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_b
     REAL(NTREAL) :: product
     !! Temporary Variables
     INTEGER :: working_index_a, working_index_b
@@ -166,13 +166,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE PairwiseMultiplyVectors(inner_index_a,values_a,inner_index_b, &
        & values_b,inner_index_c,values_c,total_values_c)
     !! Parameters
-    INTEGER, DIMENSION(:), INTENT(in)  :: inner_index_a
-    INTEGER, DIMENSION(:), INTENT(in)  :: inner_index_b
-    INTEGER, DIMENSION(:), INTENT(out) :: inner_index_c
-    REAL(NTREAL), DIMENSION(:), INTENT(in)    :: values_a
-    REAL(NTREAL), DIMENSION(:), INTENT(in)    :: values_b
-    REAL(NTREAL), DIMENSION(:), INTENT(out) :: values_c
-    INTEGER, INTENT(out) :: total_values_c
+    INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
+    INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
+    INTEGER, DIMENSION(:), INTENT(OUT) :: inner_index_c
+    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_a
+    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_b
+    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: values_c
+    INTEGER, INTENT(OUT) :: total_values_c
     !! Temporary Variables
     INTEGER :: working_index_a, working_index_b
     REAL(NTREAL) :: working_value_a, working_value_b

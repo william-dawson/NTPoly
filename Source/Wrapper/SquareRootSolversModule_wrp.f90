@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Wraps the overlap solvers module for calling from other languages.
+!> Wraps the square root solvers module for calling from other languages.
 MODULE SquareRootSolversModule_wrp
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
@@ -14,14 +14,11 @@ MODULE SquareRootSolversModule_wrp
   PUBLIC :: InverseSquareRoot_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
-  !! @param[in]  ih_Mat1 Matrix 1.
-  !! @param[out] ih_InverseSquareRootMat = Mat1^-1/2.
-  !! @param[in]  ih_solver_parameters parameters for the solver
   SUBROUTINE InverseSquareRoot_wrp(ih_Mat1, ih_InverseSquareRootMat, &
        & ih_solver_parameters) bind(c,name="InverseSquareRoot_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_Mat1(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_InverseSquareRootMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseSquareRootMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
     TYPE(DistributedSparseMatrix_wrp) :: h_InverseSquareRootMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
@@ -36,14 +33,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE InverseSquareRoot_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root of a matrix.
-  !! @param[in]  ih_Mat1 Matrix 1.
-  !! @param[out] ih_SquareRootMat = Mat1^-1/2.
-  !! @param[in]  ih_solver_parameters parameters for the solver
   SUBROUTINE SquareRoot_wrp(ih_Mat1, ih_SquareRootMat, ih_solver_parameters) &
        & bind(c,name="SquareRoot_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_Mat1(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_SquareRootMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_SquareRootMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
     TYPE(DistributedSparseMatrix_wrp) :: h_SquareRootMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters

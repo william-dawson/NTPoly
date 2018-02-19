@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> This (currently under construction) module allows one to convert
-!! a sparse matrix to a dense matrix. It also supports dense the dense
-!! versions of core matrix routines. This module will be used in situations
-!! where matrices become too dense for good sparse matrix performance.
+!> This module allows one to convert a sparse matrix to a dense matrix. It also
+!! supports dense the dense versions of core matrix routines. This module is
+!! used in situations where matrices become too dense for good sparse matrix
+!! performance.
 MODULE DenseMatrixModule
   USE DataTypesModule
   USE SparseMatrixModule
@@ -16,8 +16,8 @@ MODULE DenseMatrixModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
-  !! @param[inout] dense_matrix a preallocated
-  PURE SUBROUTINE ConstructDenseFromSparse(sparse_matrix,dense_matrix)
+  !! @param[inout] dense_matrix output. Must be preallocated.
+  PURE SUBROUTINE ConstructDenseFromSparse(sparse_matrix, dense_matrix)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: sparse_matrix
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: dense_matrix
@@ -46,8 +46,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a dense matrix to a sparse matrix.
   !! @param[in] dense_matrix to convert.
-  !! @param[out] sparse_matrix to build.
-  !! @param[in] threshold value for pruning.
+  !! @param[out] sparse_matrix output matrix.
+  !! @param[in] threshold value for pruning values to zero.
   PURE SUBROUTINE ConstructSparseFromDense(dense_matrix,sparse_matrix,threshold)
     !! Parameters
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: dense_matrix
@@ -80,7 +80,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
   !! @param[in] MatA the first matrix.
   !! @param[in] MatB the second matrix.
-  !! @param[inout] MatC = MatA*MatB. Preallocated.
+  !! @param[inout] MatC = MatA*MatB. MatC must be preallocated.
   PURE SUBROUTINE MultiplyDense(MatA,MatB,MatC)
     !! Parameters
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: MatA

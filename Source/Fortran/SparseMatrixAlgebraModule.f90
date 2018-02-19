@@ -43,9 +43,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! This will utilize the sparse vector addition routine.
   !! @param[in] matA Matrix A.
   !! @param[in,out] matB Matrix B.
-  !! @param[in] alpha_in multiplier. Optional, default is 1.0
-  !! @param[in] threshold_in for flushing values to zero. Default value is 0.0.
-  !! @todo I don't like this hack where I have to check if MatrixB is allocated.
+  !! @param[in] alpha_in multiplier (optional, default=1.0)
+  !! @param[in] threshold_in for flushing values to zero. (Optional, default=0).
   PURE SUBROUTINE IncrementSparseMatrix(matA, matB, alpha_in, threshold_in)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN)  :: matA
@@ -203,11 +202,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !! C := alpha*matA*op( matB ) + beta*matC
-  !! This version is not really linear scaling, but it should be fast enough.
-  !! Basically, we create a big buffer region of zeros so that we can accumulate
-  !! in O(1) time. Then we scan over the buffer region and search for filled
-  !! values. For small enough matrices this is fine, but it definitely isn't
-  !! optimal.
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @param[out] matC = alpha*matA*op( matB ) + beta*matC.

@@ -10,7 +10,6 @@ MODULE MatrixMemoryPoolModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the matrix memory pool data type.
   TYPE, PUBLIC :: MatrixMemoryPool_wrp
-     !> Actual data.
      TYPE(MatrixMemoryPool_t), POINTER :: data
   END TYPE MatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -18,9 +17,6 @@ MODULE MatrixMemoryPoolModule_wrp
   PUBLIC :: DestructMatrixMemoryPool_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Matrix Memory Pool constructor.
-  !> @param[out] ih_this handle to a constructed Matrix Memory Pool object.
-  !> @param[in] columns number of columns in the matrix.
-  !> @param[in] rows number of rows in the matrix.
   SUBROUTINE ConstructMatrixMemoryPool_wrp(ih_this, columns, rows) &
        & bind(c,name="ConstructMatrixMemoryPool_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
@@ -34,7 +30,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the destructor for a matrix memory pool
-  !> @param[inout] ih_this the matrix being destructed.
   PURE SUBROUTINE DestructMatrixMemoryPool_wrp(ih_this) &
        & bind(c,name="DestructMatrixMemoryPool_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)

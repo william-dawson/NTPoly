@@ -20,7 +20,7 @@ public:
   //! Max iterations to perform.
   //!\param new_value
   void SetMaxIterations(int new_value);
-  //! Where to have a verbose calculation.
+  //! Whether to have a verbose calculation.
   //!\param new_value
   void SetVerbosity(bool new_value);
   //! Threshold for flushing small values.

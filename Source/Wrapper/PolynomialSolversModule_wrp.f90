@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Wraps the overlap solvers module for calling from other languages.
+!> Wraps the polynomial solvers module for calling from other languages.
 MODULE PolynomialSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE DistributedSparseMatrixModule_wrp, ONLY : &
@@ -15,7 +15,6 @@ MODULE PolynomialSolversModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the polynomial data type.
   TYPE, PUBLIC :: Polynomial_wrp
-     !> Actual data.
      TYPE(Polynomial_t), POINTER :: DATA
   END TYPE Polynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -28,12 +27,10 @@ MODULE PolynomialSolversModule_wrp
   PUBLIC :: PatersonStockmeyerCompute_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the empty polynomial constructor.
-  !! @param[out] ih_this handle to the polynomial being created.
-  !! @param[in] degree the degree of the polynomial.
   PURE SUBROUTINE ConstructPolynomial_wrp(ih_this, degree) &
        & bind(c,name="ConstructPolynomial_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: degree
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: degree
     TYPE(Polynomial_wrp) :: h_this
 
     ALLOCATE(h_this%data)
@@ -42,10 +39,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
-  !! @param[inout] ih_this handle to the polynomial to free up.
   PURE SUBROUTINE DestructPolynomial_wrp(ih_this) &
        & bind(c,name="DestructPolynomial_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Polynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -54,14 +50,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set coefficient of a polynomial.
-  !! @param[inout] ih_this handle to the polynomial to set.
-  !! @param[in] degree for which to set the coefficient.
-  !! @param[in] coefficient value.
   SUBROUTINE SetCoefficient_wrp(ih_this, degree, coefficient) &
        & bind(c,name="SetCoefficient_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: degree
-    REAL(NTREAL), INTENT(in) :: coefficient
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: degree
+    REAL(NTREAL), INTENT(IN) :: coefficient
     TYPE(Polynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -69,16 +62,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetCoefficient_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Horner's Method.
-  !! @param[in] ih_InputMat the input matrix
-  !! @param[out] ih_OutputMat = poly(InputMat)
-  !! @param[in] ih_polynomial polynomial to compute.
-  !! @param[in] ih_solver_parameters parameters for the solver (optional).
   SUBROUTINE HornerCompute_wrp(ih_InputMat, ih_OutputMat, ih_polynomial, &
        & ih_solver_parameters) bind(c,name="HornerCompute_wrp")
-    INTEGER(kind=c_int), INTENT(in)    :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_polynomial(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_polynomial(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(Polynomial_wrp)              :: h_polynomial
@@ -94,17 +83,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE HornerCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
-  !! @param[in] ih_InputMat the input matrix
-  !! @param[out] ih_OutputMat = poly(InputMat)
-  !! @param[in] ih_polynomial polynomial to compute.
-  !! @param[in] ih_solver_parameters parameters for the solver (optional).
   SUBROUTINE PatersonStockmeyerCompute_wrp(ih_InputMat, ih_OutputMat, &
        & ih_polynomial, ih_solver_parameters) &
        & bind(c,name="PatersonStockmeyerCompute_wrp")
-    INTEGER(kind=c_int), INTENT(in)    :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_polynomial(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_polynomial(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(Polynomial_wrp)              :: h_polynomial

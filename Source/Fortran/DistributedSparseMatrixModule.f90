@@ -113,8 +113,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSparseMatrix(zeromatrix)
   END SUBROUTINE ConstructEmptyDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Destruct a distributed sparse matrix
-  !! @param[in,out] this the matrix to destruct
+  !> Destruct a distributed sparse matrix.
+  !! @param[inout] this the matrix to destruct.
   PURE SUBROUTINE DestructDistributedSparseMatrix(this)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
@@ -145,11 +145,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
+  !! Read \cite boisvert1996matrix for the details.
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
   SUBROUTINE ConstructFromMatrixMarket(this, file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
@@ -306,11 +307,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructFromMatrixMarket
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
+  !! Faster than text, so this is good for check pointing.
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
   SUBROUTINE ConstructFromBinary(this, file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! File Handles
     INTEGER :: mpi_file_handler
@@ -376,12 +378,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(triplet_list)
   END SUBROUTINE ConstructFromBinary
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Save a distributed sparse matrix to a file.
+  !> Save a distributed sparse matrix to a binary file.
+  !! Faster than text, so this is good for check pointing.
   !! @param[in] this the Matrix to write.
   !! @param[in] file_name name of the file to write to.
   SUBROUTINE WriteToBinary(this,file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     TYPE(TripletList_t) :: triplet_list
@@ -462,11 +465,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteToBinary
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write a distributed sparse matrix to a matrix market file.
+  !! Read \cite boisvert1996matrix for the details.
   !! @param[in] this the Matrix to write.
   !! @param[in] file_name name of the file to write to.
   SUBROUTINE WriteToMatrixMarket(this,file_name)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
     !! Local MPI Variables
@@ -598,8 +602,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! where each triplet is stored, as long as global coordinates are given.
   !! @param[inout] this the matrix to fill.
   !! @param[in] triplet_list the triplet list of values.
-  !! @param[in] preduplicated_in (optional) if lists are preduplicated across
-  !! slices set this to true.
+  !! @param[in] preduplicated_in if lists are preduplicated across
+  !! slices set this to true (optional, default=False).
   SUBROUTINE FillFromTripletList(this,triplet_list,preduplicated_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t) :: this
@@ -611,7 +615,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: local_matrix
     TYPE(SparseMatrix_t) :: gathered_matrix
     TYPE(GatherHelper_t) :: gather_helper
-    REAL(ntreal), PARAMETER :: threshold = 0.0
+    REAL(NTREAL), PARAMETER :: threshold = 0.0
 
     CALL StartTimer("FillFromTriplet")
     !! First we redistribute the triplet list to get all the local data
@@ -773,7 +777,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Data is returned with absolute coordinates.
   !! @param[in] this the distributed sparse matrix.
   !! @param[inout] triplet_list the list to fill.
-  PURE SUBROUTINE GetTripletList(this,triplet_list)
+  PURE SUBROUTINE GetTripletList(this, triplet_list)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
@@ -971,6 +975,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetActualDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the logical dimension of the matrix.
+  !! Includes padding.
   !! @param[in] this the matrix.
   !! @result dimension of the matrix;
   PURE FUNCTION GetLogicalDimension(this) RESULT(DIMENSION)
@@ -981,6 +986,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetLogicalDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out information about a distributed sparse matrix.
+  !! Sparsity, and load balancing information.
   !! @param[in] this the matrix to print information about.
   SUBROUTINE PrintMatrixInformation(this)
     !! Parameters
@@ -1001,6 +1007,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintMatrixInformation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a distributed sparse matrix.
+  !! This is a serial print routine, and should probably only be used for debug
+  !! purposes.
   !! @param[in] this the matrix to print.
   !! @param[in] file_name_in optionally, you can pass a file to print to.
   SUBROUTINE PrintDistributedSparseMatrix(this, file_name_in)
@@ -1286,8 +1294,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     lcm = block_multiplier*num_process_slices* &
          & num_process_columns*num_process_rows
-    !lcm = ComputeLCM(ComputeLCM(ComputeLCM(num_process_rows, &
-    !      & num_process_columns),num_process_slices),block_multiplier)
 
     size_ratio = matrix_dim/lcm
     IF (size_ratio * lcm .EQ. matrix_dim) THEN

@@ -14,14 +14,11 @@ MODULE InverseSolversModule_wrp
   PUBLIC :: PseudoInverse_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
-  !! @param[in]  ih_Mat1 Matrix 1.
-  !! @param[out] ih_InverseMat = Mat1^-1.
-  !! @param[in]  ih_solver_parameters parameters for the solver
   SUBROUTINE Invert_wrp(ih_Mat1, ih_InverseMat, ih_solver_parameters) &
        & bind(c,name="Invert_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_Mat1(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_InverseMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
     TYPE(DistributedSparseMatrix_wrp) :: h_InverseMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
@@ -34,14 +31,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Invert_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
-  !! @param[in]  ih_Mat1 Matrix 1.
-  !! @param[out] ih_InverseMat = Mat1^-1.
-  !! @param[in]  ih_solver_parameters parameters for the solver
   SUBROUTINE PseudoInverse_wrp(ih_Mat1, ih_InverseMat, ih_solver_parameters) &
        & bind(c,name="PseudoInverse_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_Mat1(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_InverseMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
     TYPE(DistributedSparseMatrix_wrp) :: h_InverseMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters

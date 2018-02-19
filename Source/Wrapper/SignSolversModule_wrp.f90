@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Wraps the overlap solvers module for calling from other languages.
+!> Wraps the sign solvers module for calling from other languages.
 MODULE SignSolversModule_wrp
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
@@ -14,14 +14,11 @@ MODULE SignSolversModule_wrp
   PUBLIC :: PolarDecomposition_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix sign function.
-  !! @param[in] ih_Mat1 the input matrix.
-  !! @param[out] ih_SignMat the sign of Mat1.
-  !! @param[in]  ih_solver_parameters parameters for the solver.
   SUBROUTINE SignFunction_wrp(ih_Mat1, ih_SignMat, ih_solver_parameters) &
        & bind(c,name="SignFunction_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_Mat1(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_SignMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_SignMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
     TYPE(DistributedSparseMatrix_wrp) :: h_SignMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
@@ -34,16 +31,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SignFunction_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the polar decomposition of a matrix Mat1 = U*H.
-  !! @param[in] ih_Mat1 the input matrix.
-  !! @param[out] ih_Umat the unitary polar factor.
-  !! @param[out] ih_Hmat the hermitian matrix factor.
-  !! @param[in]  ih_solver_parameters parameters for the solver.
   SUBROUTINE PolarDecomposition_wrp(ih_Mat1, ih_Umat, ih_Hmat, &
        & ih_solver_parameters) bind(c,name="PolarDecomposition_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_Mat1(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_Umat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_Hmat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_Umat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_Hmat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
     TYPE(DistributedSparseMatrix_wrp) :: h_Umat
     TYPE(DistributedSparseMatrix_wrp) :: h_Hmat

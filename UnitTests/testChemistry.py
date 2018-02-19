@@ -10,7 +10,7 @@ from scipy.io import mmread
 from scipy.linalg import eigh
 import os
 from mpi4py import MPI
-# MPI globa communicator
+# MPI global communicator
 comm = MPI.COMM_WORLD
 
 from Helpers import THRESHOLD, EXTRAPTHRESHOLD

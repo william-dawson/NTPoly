@@ -54,10 +54,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE InverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root or inverse square root of a matrix.
-  !! Based on the Newton-Schultz algorithm presented in:
-  !! Jansík, Branislav, Stinne Høst, Poul Jørgensen, Jeppe Olsen, and
-  !! Trygve Helgaker. "Linear-scaling symmetric square-root decomposition of the
-  !! overlap matrix." The Journal of chemical physics 126, no. 12 (2007): 124104.
+  !! Based on the Newton-Schultz algorithm presented in: \cite jansik2007linear
   !! @param[in] Mat1 Matrix 1.
   !! @param[out] InverseSquareRootMat = Mat1^-1/2.
   !! @param[in] solver_parameters_in parameters for the solver

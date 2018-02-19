@@ -184,8 +184,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructFromTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
-  !! This will always check if arrays are actually allocated, so you can feel
-  !! free to destruct a matrix even if it has no data.
   !! @param[inout] this the matrix to free up
   PURE SUBROUTINE DestructSparseMatrix(this)
     !! Parameters
@@ -439,8 +437,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a sparse matrix.
-  !! We first create a triplet list, and then call the print triplet list
-  !! function.
   !! @param[in] this the matrix to be printed.
   !! @param[in] file_name_in optionally, you can pass a file to print to.
   SUBROUTINE PrintSparseMatrix(this, file_name_in)

@@ -34,9 +34,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponential(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(FixedSolverParameters_t) :: sub_solver_parameters
@@ -161,14 +161,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a pade approximation.
+  !! Be warned, the pade method can result in a lot of intermediate fill.
   !! @param[in] InputMat the input matrix
   !! @param[out] OutputMat = exp(InputMat)
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponentialPade(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
@@ -289,14 +290,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeExponentialPade
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a taylor series expansion.
+  !! This is only really useful if you have a very small spectrum, because
+  !! quite a bit of scaling is required.
   !! @param[in] InputMat the input matrix
   !! @param[out] OutputMat = exp(InputMat)
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponentialTaylor(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
@@ -389,7 +392,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
   !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = exp(InputMat)
+  !! @param[out] OutputMat = log(InputMat)
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithm(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
@@ -549,9 +552,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithmTaylor(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters

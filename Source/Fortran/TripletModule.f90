@@ -1,6 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Triplets of Integer, Integer, Double.
-!! Contains a class Triplet and a means to compare them.
 MODULE TripletModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
   USE ErrorModule
@@ -37,10 +36,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] point_value the value at that point.
   PURE SUBROUTINE SetTriplet(this,index_column,index_row,point_value)
     !! Parameters
-    TYPE(Triplet_t), INTENT(inout)       :: this
-    INTEGER, INTENT(in)                  :: index_column
-    INTEGER, INTENT(in)                  :: index_row
-    REAL(NTREAL), INTENT(in)   :: point_value
+    TYPE(Triplet_t), INTENT(INOUT)       :: this
+    INTEGER, INTENT(IN)                  :: index_column
+    INTEGER, INTENT(IN)                  :: index_row
+    REAL(NTREAL), INTENT(IN)   :: point_value
 
     this%index_column = index_column
     this%index_row    = index_row
@@ -54,24 +53,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] point_value actual stored value.
   PURE SUBROUTINE GetTripletValues(this,index_column,index_row,point_value)
     !! Parameters
-    TYPE(Triplet_t), INTENT(in)           :: this
-    INTEGER, INTENT(out)                  :: index_column
-    INTEGER, INTENT(out)                  :: index_row
-    REAL(NTREAL), INTENT(out)   :: point_value
+    TYPE(Triplet_t), INTENT(IN)           :: this
+    INTEGER, INTENT(OUT)                  :: index_column
+    INTEGER, INTENT(OUT)                  :: index_row
+    REAL(NTREAL), INTENT(OUT)   :: point_value
 
     index_column = this%index_column
     index_row    = this%index_row
     point_value  = this%point_value
   END SUBROUTINE GetTripletValues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compare two triplets based on their index values. Returns A < B.
+  !> Compare two triplets based on their index values, first by column and
+  !! second by row. Returns A < B.
   !! Used for sorting.
   !! @param[in] tripA first triplet.
   !! @param[in] tripB second triplet.
   !! @return A < B.
   PURE FUNCTION CompareTriplets(tripA, tripB) RESULT(islessthan)
     !! Parameters
-    TYPE(Triplet_t), INTENT(in) :: tripA, tripB
+    TYPE(Triplet_t), INTENT(IN) :: tripA, tripB
     LOGICAL :: islessthan
 
     IF (tripA%index_column .GT. tripB%index_column) THEN

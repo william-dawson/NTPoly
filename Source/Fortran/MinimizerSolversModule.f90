@@ -25,18 +25,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] InverseSquareRoot of the overlap matrix.
   !! @param[in] nel the number of electrons.
   !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] chemical_potential_out the chemical potential calculated.
-  !! @param[in] solver_parameters_in parameters for the solver
-  !! @todo chemical potential doesn't work.
+  !! @param[out] chemical_potential_out the chemical potential (optional).
+  !! @param[in] solver_parameters_in parameters for the solver.
   SUBROUTINE ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Hamiltonian, &
-         & InverseSquareRoot
-    INTEGER, INTENT(in) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: Density
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InverseSquareRoot
+    INTEGER, INTENT(IN) :: nel
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters

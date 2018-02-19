@@ -23,7 +23,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @param[out] this a constructed Matrix Memory Pool object.
   PURE SUBROUTINE ConstructDistributedMatrixMemoryPool(this)
     !! Parameters
-    TYPE(DistributedMatrixMemoryPool_t), INTENT(out) :: this
+    TYPE(DistributedMatrixMemoryPool_t), INTENT(INOUT) :: this
 
     !! Allocate
     CALL DestructDistributedMatrixMemoryPool(this)
@@ -34,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @param[out] this Distributed Matrix Memory Pool object to destroy.
   PURE SUBROUTINE DestructDistributedMatrixMemoryPool(this)
     !! Parameters
-    TYPE(DistributedMatrixMemoryPool_t), INTENT(out) :: this
+    TYPE(DistributedMatrixMemoryPool_t), INTENT(INOUT) :: this
     !! Local Data
     INTEGER :: row_counter, column_counter
 
@@ -54,10 +54,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! handle the given parameters.
   !> @param[in] this the memory pool to check.
   !> @return true if the memory pool is valid.
-  PURE FUNCTION CheckDistributedMemoryPoolValidity(this) &
-       & RESULT(isvalid)
+  PURE FUNCTION CheckDistributedMemoryPoolValidity(this) RESULT(isvalid)
     !! Parameters
-    TYPE(DistributedMatrixMemoryPool_t), INTENT(in) :: this
+    TYPE(DistributedMatrixMemoryPool_t), INTENT(IN) :: this
     LOGICAL :: isvalid
 
     isvalid = .TRUE.

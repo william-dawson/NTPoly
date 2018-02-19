@@ -1,6 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Lists of triplets.
-!! Contains both a methods for sorting lists.
 MODULE TripletListModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE MatrixMarketModule
@@ -32,7 +31,7 @@ MODULE TripletListModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
-  !! @param[in] size_in the length of the triplet list.
+  !! @param[in] size_in the length of the triplet list (optional, default=0).
   PURE SUBROUTINE ConstructTripletList(this,size_in)
     !! Parameters
     TYPE(TripletList_t), INTENT(INOUT) :: this
@@ -129,7 +128,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetTripletAt
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
-  !! @param[in] this the triplet list to get teh value from.
+  !! @param[in] this the triplet list to get the value from.
   !! @param[in] index the index from which to get the triplet.
   !! @param[out] triplet_value the extracted triplet value.
   PURE SUBROUTINE GetTripletAt(this,index,triplet_value)

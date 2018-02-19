@@ -56,15 +56,15 @@ MODULE MatrixGatherModule
   PUBLIC :: TestInnerRequest
   PUBLIC :: TestDataRequest
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> First we gather the sizes of the data to be sent.
+  !> The first routine to call, gathers the sizes of the data to be sent.
   !! @param[in] matrix to send.
   !! @param[inout] communicator to send along.
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherSizes(matrix, communicator, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)      :: matrix
-    INTEGER, INTENT(inout)              :: communicator
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    INTEGER, INTENT(INOUT)              :: communicator
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: grid_error
 
@@ -77,17 +77,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & helper%size_request, grid_error)
   END SUBROUTINE GatherSizes
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Next we gather the data.
+  !> Second function to call, will gather the data and align it one matrix
+  !! next to another.
   !! @param[in] matrix to send.
   !! @param[inout] communicator to send along.
   !! @param[inout] gathered_matrix the matrix we are gathering.
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherAndComposeData(matrix,communicator,gathered_matrix,helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)      :: matrix
-    INTEGER, INTENT(inout)              :: communicator
-    TYPE(SparseMatrix_t), INTENT(inout)   :: gathered_matrix
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    INTEGER, INTENT(INOUT)              :: communicator
+    TYPE(SparseMatrix_t), INTENT(INOUT)   :: gathered_matrix
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: grid_error
     INTEGER :: counter
@@ -124,15 +125,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & grid_error)
   END SUBROUTINE GatherAndComposeData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Finally we finish setting up the matrices are communication is done.
+  !> Third functiont o call, finishes setting up the matrices.
   !! @param[in] matrix to send.
   !! @param[in] gathered_matrix matrix we are gathering.
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE GatherAndComposeCleanup(matrix, gathered_matrix, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)      :: matrix
-    TYPE(SparseMatrix_t), INTENT(inout)   :: gathered_matrix
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    TYPE(SparseMatrix_t), INTENT(INOUT)   :: gathered_matrix
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: counter, inner_counter
     INTEGER :: temp_offset
@@ -150,15 +151,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(helper%displacement)
   END SUBROUTINE GatherAndComposeCleanup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Next we gather the data.
+  !> Second routine to call for gathering and summing up the data.
   !! @param[in] matrix to send.
   !! @param[inout] communicator to send along.
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherAndSumData(matrix,communicator,helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)      :: matrix
-    INTEGER, INTENT(inout)              :: communicator
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    INTEGER, INTENT(INOUT)              :: communicator
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: grid_error
     INTEGER :: counter
@@ -193,17 +194,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & communicator, helper%outer_request, grid_error)
   END SUBROUTINE GatherAndSumData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Finally we sum up the matrices are communication is done.
+  !> Finally routine to sum up the matrices.
   !! @param[in] matrix to send.
   !! @param[inout] gathered_matrix the matrix being gathered.
   !! @param[in] threshold the threshold for flushing values.
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE GatherAndSumCleanup(matrix,gathered_matrix, threshold, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(in)      :: matrix
-    TYPE(SparseMatrix_t), INTENT(inout)   :: gathered_matrix
-    REAL(NTREAL), INTENT(in) :: threshold
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    TYPE(SparseMatrix_t), INTENT(INOUT)   :: gathered_matrix
+    REAL(NTREAL), INTENT(IN) :: threshold
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     TYPE(SparseMatrix_t) :: temporary_matrix
     INTEGER :: counter
@@ -249,7 +250,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestSizeRequest(helper) RESULT(request_completed)
     !! Parameters
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%size_request, request_completed, &
@@ -261,7 +262,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestOuterRequest(helper) RESULT(request_completed)
     !! Parameters
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%outer_request, request_completed, &
@@ -273,7 +274,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestInnerRequest(helper) RESULT(request_completed)
     !! Parameters
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%inner_request, request_completed, &
@@ -285,7 +286,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestDataRequest(helper) RESULT(request_completed)
     !! Parameters
-    TYPE(GatherHelper_t), INTENT(inout) :: helper
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%data_request, request_completed, &
