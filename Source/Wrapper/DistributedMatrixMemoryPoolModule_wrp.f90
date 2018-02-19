@@ -11,7 +11,6 @@ MODULE DistributedMatrixMemoryPoolModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrapper for the distributed matrix memory pool type
   TYPE, PUBLIC :: DistributedMatrixMemoryPool_wrp
-     !> Actual data.
      TYPE(DistributedMatrixMemoryPool_t), POINTER :: data
   END TYPE DistributedMatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -19,7 +18,6 @@ MODULE DistributedMatrixMemoryPoolModule_wrp
   PUBLIC :: DestructDistributedMatrixMemoryPool_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
-  !> @param[out] ih_this to a constructed Matrix Memory Pool object.
   PURE SUBROUTINE ConstructDistributedMatrixMemoryPool_wrp(ih_this) &
        & bind(c,name="ConstructDistributedMatrixMemoryPool_wrp")
     !! Parameters
@@ -32,7 +30,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructDistributedMatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
-  !! @param[inout] ih_this handle to the permutation to destruct.
   PURE SUBROUTINE DestructDistributedMatrixMemoryPool_wrp(ih_this) &
        & bind(c,name="DestructDistributedMatrixMemoryPool_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)

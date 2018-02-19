@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Wraps the overlap solvers module for calling from other languages.
+!> Wraps the root solvers module for calling from other languages.
 MODULE RootSolversModule_wrp
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
@@ -14,16 +14,12 @@ MODULE RootSolversModule_wrp
   PUBLIC :: ComputeInverseRoot_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general matrix root.
-  !! @param[in]  ih_InputMat the input matrix.
-  !! @param[out] ih_OutputMat = InputMat^-1/root.
-  !! @param[in]  root which root to compute.
-  !! @param[in]  ih_solver_parameters parameters for the solver.
   SUBROUTINE ComputeRoot_wrp(ih_InputMat, ih_OutputMat, &
        & root, ih_solver_parameters) bind(c,name="ComputeRoot_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: root
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: root
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
@@ -37,16 +33,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeRoot_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general inverse matrix root.
-  !! @param[in]  ih_InputMat the input matrix.
-  !! @param[out] ih_OutputMat = InputMat^-1/root.
-  !! @param[in]  root which root to compute.
-  !! @param[in]  ih_solver_parameters parameters for the solver.
   SUBROUTINE ComputeInverseRoot_wrp(ih_InputMat, ih_OutputMat, &
        & root, ih_solver_parameters) bind(c,name="ComputeInverseRoot_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: root
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: root
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters

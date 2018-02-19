@@ -10,11 +10,6 @@ MODULE ProcessGridModule_wrp
   PUBLIC :: ConstructProcessGrid_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
-  !> @param[in] world_comm_ a global communicator to split.
-  !> @param[in] process_rows_ number of rows.
-  !> @param[in] process_columns_ number of columns.
-  !> @param[in] process_slices_ number of slices.
-  !> @param[in] be_verbose verbosity.
   SUBROUTINE ConstructProcessGrid_wrp(world_comm_, process_rows_, &
        & process_columns_, process_slices_, be_verbose) &
        & bind(c,name="ConstructProcessGrid_wrp")
@@ -28,7 +23,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.
-  !! @return slice number of the current process.
   FUNCTION GetMySlice_wrp() RESULT(return_val) bind(c,name="GetMySlice_wrp")
     !! Parameters
     INTEGER(kind=c_int) :: return_val
@@ -36,7 +30,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMySlice_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the column of the current process.
-  !! @return column number of the current process.
   FUNCTION GetMyColumn_wrp() RESULT(return_val) bind(c,name="GetMyColumn_wrp")
     !! Parameters
     INTEGER(kind=c_int) :: return_val
@@ -44,7 +37,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMyColumn_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the row of the current process.
-  !! @return row number of the current process.
   FUNCTION GetMyRow_wrp() RESULT(return_val) bind(c,name="GetMyRow_wrp")
     !! Parameters
     INTEGER(kind=c_int) :: return_val

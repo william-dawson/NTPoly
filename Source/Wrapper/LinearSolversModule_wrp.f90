@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Wraps the matrix inversion module for calling from other languages.
+!> Wraps the linear solvers module for calling from other languages.
 MODULE LinearSolversModule_wrp
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
@@ -13,16 +13,12 @@ MODULE LinearSolversModule_wrp
   PUBLIC :: CGSolver_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Solve the matrix equation AX = B using conjugate gradient.
-  !! @param[in] ih_AMat the matrix A, must be symmetric, positive definite.
-  !! @param[out] ih_XMat the solved for matrix X.
-  !! @param[in] ih_BMat the right hand side.
-  !! @param[in] ih_solver_parameters parameters for the solver
   SUBROUTINE CGSolver_wrp(ih_AMat, ih_XMat, ih_BMat, ih_solver_parameters) &
        & bind(c,name="CGSolver_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_AMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_XMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_BMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_AMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_XMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_BMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_AMat
     TYPE(DistributedSparseMatrix_wrp) :: h_XMat
     TYPE(DistributedSparseMatrix_wrp) :: h_BMat

@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Wraps the overlap solvers module for calling from other languages.
+!> Wraps the exponential solvers module for calling from other languages.
 MODULE ExponentialSolversModule_wrp
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
@@ -16,14 +16,11 @@ MODULE ExponentialSolversModule_wrp
   PUBLIC :: ComputeLogarithm_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix.
-  !! @param[in] ih_InputMat the input matrix
-  !! @param[out] ih_OutputMat = exp(ih_InputMat)
-  !! @param[in] ih_solver_parameters parameters for the solver.
   SUBROUTINE ComputeExponential_wrp(ih_InputMat, ih_OutputMat, &
        & ih_solver_parameters) bind(c,name="ComputeExponential_wrp")
-    INTEGER(kind=c_int), INTENT(in)    :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
@@ -36,15 +33,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_solver_parameters%data)
   END SUBROUTINE ComputeExponential_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the exponential of a matrix.
-  !! @param[in] ih_InputMat the input matrix
-  !! @param[out] ih_OutputMat = exp(ih_InputMat)
-  !! @param[in] ih_solver_parameters parameters for the solver.
+  !> Compute the exponential of a matrix with the pade approximation.
   SUBROUTINE ComputeExponentialPade_wrp(ih_InputMat, ih_OutputMat, &
        & ih_solver_parameters) bind(c,name="ComputeExponentialPade_wrp")
-    INTEGER(kind=c_int), INTENT(in)    :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
@@ -58,14 +52,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeExponentialPade_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
-  !! @param[in] ih_InputMat the input matrix
-  !! @param[out] ih_OutputMat = log(ih_InputMat)
-  !! @param[in] ih_solver_parameters parameters for the solver.
   SUBROUTINE ComputeLogarithm_wrp(ih_InputMat, ih_OutputMat, &
        & ih_solver_parameters) bind(c,name="ComputeLogarithm_wrp")
-    INTEGER(kind=c_int), INTENT(in)    :: ih_InputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_OutputMat(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in)    :: ih_solver_parameters(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
     TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
     TYPE(FixedSolverParameters_wrp) :: h_solver_parameters

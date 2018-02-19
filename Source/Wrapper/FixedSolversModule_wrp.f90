@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A wrapper for the chemistry solver parameters.
+!> A wrapper for the fixed solver parameters.
 MODULE FixedSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
@@ -10,9 +10,8 @@ MODULE FixedSolversModule_wrp
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A wrapper for the sparse matrix data type.
+  !> A wrapper for the fixed solver parameters data type.
   TYPE, PUBLIC :: FixedSolverParameters_wrp
-     !> Actual data.
      TYPE(FixedSolverParameters_t), POINTER :: data
   END TYPE FixedSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -23,8 +22,7 @@ MODULE FixedSolversModule_wrp
   PUBLIC :: SetFixedBeVerbose_wrp
   PUBLIC :: SetFixedLoadBalance_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct the chemistry solver parameters.
-  !! @param[inout] ih_this the solver parameter.
+  !> Construct the fixed solver parameters.
   PURE SUBROUTINE ConstructFixedSolverParameters_wrp(ih_this) &
        & bind(c,name="ConstructFixedSolverParameters_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
@@ -35,8 +33,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructFixedSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Destruct a chemistry solver parameter type.
-  !! @param[inout] ih_this the object to destruct.
+  !> Destruct a fixed solver parameter type.
   PURE SUBROUTINE DestructFixedSolverParameters_wrp(ih_this) &
        & bind(c,name="DestructFixedSolverParameters_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
@@ -48,8 +45,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructFixedSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the threshold.
-  !! @param[inout] ih_this handle to this.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetFixedThreshold_wrp(ih_this,new_value) &
        & bind(c,name="SetFixedThreshold_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
@@ -61,8 +56,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetFixedThreshold_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the verbosity.
-  !! @param[inout] ih_this handle to this.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetFixedBeVerbose_wrp(ih_this,new_value) &
        & bind(c,name="SetFixedBeVerbose_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
@@ -74,8 +67,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetFixedBeVerbose_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the load balancing permutation.
-  !! @param[inout] ih_this handle to this.
-  !! @param[in] ih_new_value to set it to.
   PURE SUBROUTINE SetFixedLoadBalance_wrp(ih_this,ih_new_value) &
        & bind(c,name="SetFixedLoadBalance_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)

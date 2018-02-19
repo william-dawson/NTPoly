@@ -16,16 +16,12 @@ MODULE LoadBalancerModule_wrp
   PUBLIC :: UndoPermuteMatrix_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Apply a permutation to a matrix.
-  !! @param[in] ih_mat_in matrix to permute.
-  !! @param[out] ih_mat_out permuted matrix.
-  !! @param[in] ih_permutation to apply.
-  !! @param[inout] ih_memorypool memory pool to use.
   SUBROUTINE PermuteMatrix_wrp(ih_mat_in, ih_mat_out, ih_permutation, &
        & ih_memorypool) bind(c, name="PermuteMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_mat_in(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_mat_out(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_permutation(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_memorypool(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_mat_in(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat_out(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_memorypool(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_mat_in
     TYPE(DistributedSparseMatrix_wrp) :: h_mat_out
     TYPE(Permutation_wrp) :: h_permutation
@@ -41,16 +37,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PermuteMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Undo a permutation applied to a matrix.
-  !! @param[in] ih_mat_in matrix to undo permutation of.
-  !! @param[out] ih_mat_out unpermuted matrix.
-  !! @param[in] ih_permutation to remove.
-  !! @param[inout] ih_memorypool memory pool to use. Optional.
   SUBROUTINE UndoPermuteMatrix_wrp(ih_mat_in, ih_mat_out, ih_permutation, &
        & ih_memorypool) bind(c, name="UndoPermuteMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_mat_in(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_mat_out(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_permutation(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_memorypool(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_mat_in(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat_out(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_memorypool(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_mat_in
     TYPE(DistributedSparseMatrix_wrp) :: h_mat_out
     TYPE(Permutation_wrp) :: h_permutation

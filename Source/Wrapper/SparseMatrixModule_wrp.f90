@@ -16,7 +16,6 @@ MODULE SparseMatrixModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: SparseMatrix_wrp
-     !> Actual data.
      TYPE(SparseMatrix_t), POINTER :: DATA
   END TYPE SparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -33,31 +32,12 @@ MODULE SparseMatrixModule_wrp
   PUBLIC :: PrintSparseMatrixF_wrp
   PUBLIC :: MatrixToTripletList_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! !> Wrap the empty sparse matrix constructor.
-  ! !! @param[out] ih_this handle to the matrix being created.
-  ! !! @param[in] columns number of matrix columns.
-  ! !! @param[in] rows number of matrix rows.
-  ! PURE SUBROUTINE ConstructEmptySparseMatrix_wrp(ih_this, columns, rows) &
-  !      & bind(c,name="ConstructEmptySparseMatrix_wrp")
-  !   INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-  !   INTEGER(kind=c_int), INTENT(in) :: columns
-  !   INTEGER(kind=c_int), INTENT(in) :: rows
-  !   TYPE(SparseMatrix_wrp) :: h_this
-  !
-  !   ALLOCATE(h_this%data)
-  !   CALL ConstructEmptySparseMatrix(h_this%data,columns,rows)
-  !   ih_this = TRANSFER(h_this,ih_this)
-  ! END SUBROUTINE ConstructEmptySparseMatrix_wrp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
-  !! @param[out] ih_this the matrix being constructed.
-  !! @param[in] file_name name of the file.
-  !! @param[in] name_size the number of characters in the file name.
   SUBROUTINE ConstructSparseMatrixFromFile_wrp(ih_this, file_name, name_size) &
        & bind(c,name="ConstructSparseMatrixFromFile_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(in) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(in) :: name_size
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(kind=c_int), INTENT(IN) :: name_size
     TYPE(SparseMatrix_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -73,16 +53,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructSparseMatrixFromFile_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
-  !! @param[inout] ih_this handle to the matrix being constructed
-  !! @param[in] ih_triplet_list handle to a sorted list of triplet values
-  !! @param[in] rows number of matrix rows
-  !! @param[in] columns number of matrix columns
   PURE SUBROUTINE ConstructFromTripletList_wrp(ih_this, ih_triplet_list, &
        & rows, columns) bind(c,name="ConstructFromTripletList_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: ih_triplet_list(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: columns
-    INTEGER(kind=c_int), INTENT(in) :: rows
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: columns
+    INTEGER(kind=c_int), INTENT(IN) :: rows
     !! Local Data
     TYPE(SparseMatrix_wrp) :: h_this
     TYPE(TripletList_wrp)  :: h_triplet_list
@@ -95,14 +71,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructFromTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix with zero values in it.
-  !! @param[inout] ih_this handle to the matrix being constructed
-  !! @param[in] rows number of matrix rows
-  !! @param[in] columns number of matrix columns
   PURE SUBROUTINE ConstructZeroSparseMatrix_wrp(ih_this, &
        & rows, columns) bind(c,name="ConstructZeroSparseMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: columns
-    INTEGER(kind=c_int), INTENT(in) :: rows
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: columns
+    INTEGER(kind=c_int), INTENT(IN) :: rows
     !! Local Data
     TYPE(SparseMatrix_wrp) :: h_this
 
@@ -112,7 +85,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructZeroSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
-  !! @param[inout] ih_this handle to the matrix to free up.
   PURE SUBROUTINE DestructSparseMatrix_wrp(ih_this) &
        & bind(c,name="DestructSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
@@ -125,12 +97,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the copy a sparse matrix routine.
-  !! @param[in] ih_matA handle to the matrix to copy
-  !! @param[inout] ih_matB matB = matA
   PURE SUBROUTINE CopySparseMatrix_wrp(ih_matA, ih_matB) &
        & bind(c,name="CopySparseMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_matB(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     TYPE(SparseMatrix_wrp) :: h_matA
     TYPE(SparseMatrix_wrp) :: h_matB
 
@@ -140,12 +110,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopySparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
-  !! @param[in] ih_this handle to the matrix.
-  !! @param[out] rows the number of rows.
-  PURE SUBROUTINE GetRows_wrp(ih_this, rows) &
-       & bind(c,name="GetRows_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(out) :: rows
+  PURE SUBROUTINE GetRows_wrp(ih_this, rows) bind(c,name="GetRows_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(OUT) :: rows
     TYPE(SparseMatrix_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -153,12 +120,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetRows_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
-  !! @param[in] ih_this handle to the matrix.
-  !! @param[out] columns the number of columns.
-  PURE SUBROUTINE GetColumns_wrp(ih_this, columns) &
-       & bind(c,name="GetColumns_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(out) :: columns
+  PURE SUBROUTINE GetColumns_wrp(ih_this, columns) bind(c,name="GetColumns_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(OUT) :: columns
     TYPE(SparseMatrix_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -166,12 +130,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetColumns_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
-  !! @param[in] ih_matA handle to the matrix to be transposed.
-  !! @param[inout] ih_matAT handle to the the input matrix transposed.
   PURE SUBROUTINE TransposeSparseMatrix_wrp(ih_matA, ih_matAT) &
        & bind(c,name="TransposeSparseMatrix_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(inout) :: ih_matAT(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matAT(SIZE_wrp)
     TYPE(SparseMatrix_wrp) :: h_matA
     TYPE(SparseMatrix_wrp) :: h_matAT
 
@@ -181,14 +143,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
-  !! @param[in] ih_this the matrix to be printed.
-  !! @param[in] file_name optionally, you can pass a file to print to.
-  !! @param[in] name_size the number of characters in the file name.
   SUBROUTINE PrintSparseMatrixF_wrp(ih_this, file_name, name_size) &
        & bind(c,name="PrintSparseMatrixF_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(in) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(in) :: name_size
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(kind=c_int), INTENT(IN) :: name_size
     TYPE(SparseMatrix_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -203,7 +162,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintSparseMatrixF_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
-  !! @param[in] ih_this the matrix to be printed.
   SUBROUTINE PrintSparseMatrix_wrp(ih_this) &
        & bind(c,name="PrintSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(in) :: ih_this(SIZE_wrp)
@@ -214,12 +172,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the routine that constructs a triplet list from a matrix.
-  !! @param[in] ih_this handle to the matrix to construct the triplet list from
-  !! @param[out] ih_triplet_list handle to the triplet list we created.
   SUBROUTINE MatrixToTripletList_wrp(ih_this, ih_triplet_list) &
        & bind(c,name="MatrixToTripletList_wrp")
-    INTEGER(kind=c_int), INTENT(in) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(out)   :: ih_triplet_list(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(OUT)   :: ih_triplet_list(SIZE_wrp)
     TYPE(SparseMatrix_wrp) :: h_this
     TYPE(TripletList_wrp)  :: h_triplet_list
 

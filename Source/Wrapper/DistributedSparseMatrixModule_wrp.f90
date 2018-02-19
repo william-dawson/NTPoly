@@ -13,9 +13,8 @@ MODULE DistributedSparseMatrixModule_wrp
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A wrapper for the sparse matrix data type.
+  !> A wrapper for the distributed sparse matrix data type.
   TYPE, PUBLIC :: DistributedSparseMatrix_wrp
-     !> Actual data.
      TYPE(DistributedSparseMatrix_t), POINTER :: DATA
   END TYPE DistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -43,8 +42,6 @@ MODULE DistributedSparseMatrixModule_wrp
   PUBLIC :: TransposeDistributedSparseMatrix_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
-  !! @param[inout] ih_this the matrix to be constructed.
-  !! @param[in] matrix_dim the dimension of the full matrix.
   PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix_wrp(ih_this,matrix_dim) &
        & bind(c,name="ConstructEmptyDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -57,9 +54,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructEmptyDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
-  !! @param[out] ih_this the file being constructed.
-  !! @param[in] file_name name of the file to read.
-  !! @param[in] name_size the number of characters in the file name.
   SUBROUTINE ConstructFromMatrixMarket_wrp(ih_this,file_name,name_size) &
        & bind(c,name="ConstructFromMatrixMarket_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -80,9 +74,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructFromMatrixMarket_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
-  !! @param[out] ih_this the file being constructed.
-  !! @param[in] file_name name of the file to read.
-  !! @param[in] name_size the number of characters in the file name.
   SUBROUTINE ConstructFromBinary_wrp(ih_this,file_name,name_size) &
        & bind(c,name="ConstructFromBinary_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -103,8 +94,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructFromBinary_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
-  !! @param[in] ih_matA matrix to copy
-  !! @param[inout] ih_matB = matA
   PURE SUBROUTINE CopyDistributedSparseMatrix_wrp(ih_matA,ih_matB) &
        & bind(c,name="CopyDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
@@ -118,7 +107,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix
-  !! @param[in,out] ih_this the matrix to destruct
   PURE SUBROUTINE DestructDistributedSparseMatrix_wrp(ih_this) &
        & bind(c,name="DestructDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -131,9 +119,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a file.
-  !! @param[in] ih_this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
-  !! @param[in] name_size the number of characters in the file name.
   SUBROUTINE WriteToBinary_wrp(ih_this,file_name,name_size) &
        & bind(c,name="WriteToBinary_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -153,9 +138,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteToBinary_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a matrix market file.
-  !! @param[in] ih_this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
-  !! @param[in] name_size the number of characters in the file name.
   SUBROUTINE WriteToMatrixMarket_wrp(ih_this,file_name,name_size) &
        & bind(c,name="WriteToMatrixMarket_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -175,8 +157,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteToMatrixMarket_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists.
-  !! @param[inout] ih_this the matrix being filled.
-  !! @param[in] ih_triplet_list the triplet list of values.
   SUBROUTINE FillFromTripletList_wrp(ih_this, ih_triplet_list) &
        & bind(c,name="FillFromTripletList_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -190,7 +170,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillFromTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
-  !! @param[inout] ih_this the matrix being filled.
   PURE SUBROUTINE FillDistributedIdentity_wrp(ih_this) &
        & bind(c,name="FillDistributedIdentity_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -201,9 +180,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillDistributedIdentity_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation matrix.
-  !! @param[inout] ih_this the matrix being filled.
-  !! @param[in] ih_permutation the perumutation to fill with.
-  !! @param[in] permute_rows whether to permute rows or columns.
   SUBROUTINE FillDistributedPermutation_wrp(ih_this, ih_permutation, &
        & permute_rows) bind(c,name="FillDistributedPermutation_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -220,8 +196,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillDistributedPermutation_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Actual Dimension accessor.
-  !! @param[in] ih_this handle to the matrix.
-  !! @param[out] mat_dimension the size of the matrix.
   PURE SUBROUTINE GetActualDimension_wrp(ih_this, mat_dimension) &
        & bind(c,name="GetActualDimension_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -233,8 +207,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetActualDimension_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Logical Dimension accessor.
-  !! @param[in] ih_this handle to the matrix.
-  !! @param[out] mat_dimension the size of the matrix.
   PURE SUBROUTINE GetLogicalDimension_wrp(ih_this, mat_dimension) &
        & bind(c,name="GetLogicalDimension_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -246,8 +218,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetLogicalDimension_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
-  !! @param[in] ih_this the distributed sparse matrix.
-  !! @param[inout] ih_triplet_list the list to fill.
   PURE SUBROUTINE GetTripletList_wrp(ih_this, ih_triplet_list) &
        & bind(c,name="GetTripletList_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -260,16 +230,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetTripletList(h_this%data,h_triplet_list%data)
   END SUBROUTINE GetTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Extract an arbitrary block of a matrix into a triplet list. Block is
-  !! defined by the row/column start/end values.
-  !! This is slower than GetTripletList, because communication is required.
-  !! Data is returned with absolute coordinates.
-  !! @param[in] ih_this the distributed sparse matrix.
-  !! @param[inout] ih_triplet_list the list to fill.
-  !! @param[in] start_row the starting row for data to store on this process.
-  !! @param[in] end_row the ending row for data to store on this process
-  !! @param[in] start_column the starting col for data to store on this process.
-  !! @param[in] end_column the ending col for data to store on this process
+  !> Extract an arbitrary block of a matrix into a triplet list.
   SUBROUTINE GetMatrixBlock_wrp(ih_this, ih_triplet_list, start_row, &
        & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -286,10 +247,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixBlock_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
-  !! @param[in] ih_matA Matrix A
-  !! @param[in,out] ih_matB Matrix B
-  !! @param[in] alpha_in multiplier.
-  !! @param[in] threshold_in for flushing values to zero.
   SUBROUTINE IncrementDistributedSparseMatrix_wrp(ih_matA, ih_matB,&
        & alpha_in,threshold_in) &
        & bind(c,name="IncrementDistributedSparseMatrix_wrp")
@@ -307,9 +264,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(matA,matB)
-  !! @param[in] ih_matA Matrix A
-  !! @param[in] ih_matB Matrix B
-  !! @result product dot product of the two matrices
   FUNCTION DotDistributedSparseMatrix_wrp(ih_matA, ih_matB) RESULT(product)&
        & bind(c,name="DotDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
@@ -323,11 +277,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     product = DotDistributedSparseMatrix(h_matA%data, h_matB%data)
   END FUNCTION DotDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Elementwise multiplication. C_ij = A_ij * B_ij. Also known as a Hadamard
-  !! product.
-  !! @param[in] ih_matA Matrix A
-  !! @param[in] ih_matB Matrix B
-  !! @param[out] ih_matC = matA*matB
+  !> Elementwise multiplication.
   SUBROUTINE DistributedPairwiseMultiply_wrp(ih_matA, ih_matB, ih_matC) &
        & bind(c,name="DistributedPairwiseMultiply_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
@@ -345,14 +295,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DistributedPairwiseMultiply_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
-  !! @param[in] ih_matA Matrix A
-  !! @param[in] ih_matB Matrix B
-  !! @param[out] ih_matC = alpha*matA*matB + beta*matC
-  !! @param[in] alpha_in scales the multiplication
-  !! @param[in] beta_in scales matrix we sum on to
-  !! @param[in] threshold_in for flushing values to zero.
-  !! @param[inout] ih_memory_pool_in a memory pool that can be used for the
-  !! calculation.
   SUBROUTINE DistributedGemm_wrp(ih_matA, ih_matB, ih_matC, alpha_in, &
        & beta_in, threshold_in, ih_memory_pool_in) &
        & bind(c,name="DistributedGemm_wrp")
@@ -378,8 +320,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DistributedGemm_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
-  !! @param[inout] ih_this Matrix to scale.
-  !! @param[in] constant scale factor.
   SUBROUTINE ScaleDistributedSparseMatrix_wrp(ih_this, constant) &
        & bind(c,name="ScaleDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -391,8 +331,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleDistributedSparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a distributed sparse matrix along the rows.
-  !! @param[in] ih_this the matrix to compute the norm of.
-  !! @return the norm value of the full distributed sparse matrix.
   FUNCTION DistributedSparseNorm_wrp(ih_this) &
        & bind(c,name="DistributedSparseNorm_wrp") RESULT(norm_value)
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -404,8 +342,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION DistributedSparseNorm_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
-  !! @param[in] ih_this the matrix to compute the norm of.
-  !! @return the trace value of the full distributed sparse matrix.
   FUNCTION Trace_wrp(ih_this) &
        & bind(c,name="Trace_wrp") RESULT(trace_value)
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
@@ -417,8 +353,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION Trace_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix.
-  !! @param[in] ih_matA handle to matrix to transpose.
-  !! @param[inout] ih_transmat handle to the matrix transposed.
   SUBROUTINE TransposeDistributedSparseMatrix_wrp(ih_matA,ih_transmat) &
        & bind(c,name="TransposeDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)

@@ -10,7 +10,6 @@ MODULE TripletModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the triplet data type.
   TYPE, PUBLIC :: Triplet_wrp
-     !> Actual data.
      TYPE(Triplet_t), POINTER :: DATA
   END TYPE Triplet_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -18,13 +17,9 @@ MODULE TripletModule_wrp
   PUBLIC :: GetTripletValues_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
-  !! @param[inout] ih_this handle to the triplet to set the values of.
-  !! @param[in] index_column the column value.
-  !! @param[in] index_row the row value.
-  !! @param[in] point_value the value at that point.
   PURE SUBROUTINE SetTriplet_wrp(ih_this,index_column,index_row,point_value) &
        & bind(c,name="SetTriplet_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index_column
     INTEGER(kind=c_int), INTENT(IN)    :: index_row
     REAL(NTREAL), INTENT(IN) :: point_value
@@ -35,16 +30,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetTriplet_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the values of a triplet.
-  !! @param[in] ih_this the triplet to extract the values of.
-  !! @param[out] index_column column value.
-  !! @param[out] index_row row value.
-  !! @param[out] point_value actual stored value.
   PURE SUBROUTINE GetTripletValues_wrp(ih_this,index_column,index_row, &
        & point_value) bind(c,name="GetTripletValues_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(out)    :: index_column
-    INTEGER(kind=c_int), INTENT(out)    :: index_row
-    REAL(NTREAL), INTENT(out) :: point_value
+    INTEGER(kind=c_int), INTENT(OUT)    :: index_column
+    INTEGER(kind=c_int), INTENT(OUT)    :: index_row
+    REAL(NTREAL), INTENT(OUT) :: point_value
     TYPE(Triplet_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
