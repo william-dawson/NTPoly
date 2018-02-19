@@ -133,7 +133,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat = InputMat^-1/root.
   !! @param[in] root which root to compute.
   !! @param[in] solver_parameters_in parameters for the solver (optional).
-  !! @todo the inverse cube root.
   SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
