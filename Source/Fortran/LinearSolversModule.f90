@@ -243,11 +243,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL MPI_Allreduce(MPI_IN_PLACE, local_dot, 1, MPINTREAL, MPI_SUM, &
                & row_comm, grid_error)
           IF (j .GE. AMat%start_column .AND. j .LT. AMat%end_column) THEN
-            local_dot = dense_a(local_row_j, local_column_j) - local_dot
-            insert_value = SQRT(local_dot)
-            inverse_factor = 1.0/insert_value
-            CALL AppendValue(l_scratch, local_column_j, local_row_j, &
-                 & insert_value, insert_ptr)
+             local_dot = dense_a(local_row_j, local_column_j) - local_dot
+             insert_value = SQRT(local_dot)
+             inverse_factor = 1.0/insert_value
+             CALL AppendValue(l_scratch, local_column_j, local_row_j, &
+                  & insert_value, insert_ptr)
           END IF
           root = column_rank
        ELSE
@@ -271,9 +271,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL MPI_Allreduce(MPI_IN_PLACE, local_dot, 1, MPINTREAL, MPI_SUM, &
                & row_comm, grid_error)
           IF (j .GE. AMat%start_column .AND. j .LT. AMat%end_column) THEN
-            local_dot = dense_a(local_row_i, local_column_j) - local_dot
-            insert_value = inverse_factor*local_dot
-            CALL AppendValue(l_scratch,local_column_j,local_row_i,insert_value,insert_ptr)
+             local_dot = dense_a(local_row_i, local_column_j) - local_dot
+             insert_value = inverse_factor*local_dot
+             CALL AppendValue(l_scratch,local_column_j,local_row_i,insert_value,insert_ptr)
           END IF
        END DO
     END DO
@@ -317,16 +317,48 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] AMat the matrix A, must be symmetric, positive definite.
   !! @param[out] LMat the matrix computed.
   !! @param[in] rank_in the target rank of the matrix.
-  !! @param[out] rank_out the actual computed rank, if no target rank is
-  !! specified
   !! @param[in] solver_parameters_in parameters for the solver
-  SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, solver_parameters_in)
+  SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
+       & solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    INTEGER, INTENT(IN), OPTIONAL :: rank_in
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
+    !! For Pivoting
+    INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
+    INTEGER :: counter
+    !! Local Variables
+    TYPE(TripletList_t) :: local_triplets
+    TYPE(SparseMatrix_t) :: sparse_a, l_scratch, l_finished
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    !! Variables describing local matrix rows
+    INTEGER :: local_row_j
+    INTEGER :: local_row_i
+    INTEGER :: local_column_j
+    TYPE(SparseMatrix_t) :: row_j
+    TYPE(SparseMatrix_t) :: row_i
+    !! Temporary Variables
+    REAL(NTREAL) :: local_dot
+    REAL(NTREAL) :: global_dot
+    REAL(NTREAL) :: insert_value
+    REAL(NTREAL) :: inverse_factor
+    INTEGER :: i, j, counter
+    INTEGER :: insert_ptr
+    INTEGER :: root
+
+    !! Construct the pivot vector
+    ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))
+    DO counter = 1, AMat%actual_matrix_dimension
+      pivot_vector(counter) = counter
+    END DO
+
+
+
+    !! Cleanup
+    DEALLOCATE(pivot_vector)
   END SUBROUTINE PivotedCholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Helper routine to append a value to a sparse matrix.

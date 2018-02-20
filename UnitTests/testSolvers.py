@@ -777,6 +777,43 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_pivotedcholesky(self):
+        '''Test subroutine that computes the pivoted cholesky decomposition.'''
+        # Starting Matrix
+        temp_mat = scipy.sparse.rand(self.matrix_dimension,
+                                     self.matrix_dimension,
+                                     density=1.0)
+        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
+        # Symmetric Positive Definite
+        matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
+
+        # First construct a low rank approximate, then reconstruct.
+        L = cholesky(matrix1.todense(), lower=True)
+        rank = int(self.matrix_dimension / 2)
+        Llow = L[:, :rank]
+        matrix1 = Llow.dot(Llow.T)
+
+        self.CheckMat = csr_matrix(matrix1)
+        if self.my_rank == 0:
+            scipy.io.mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        A = nt.DistributedSparseMatrix(self.input_file, False)
+        L = nt.DistributedSparseMatrix(A.GetActualDimension())
+        LT = nt.DistributedSparseMatrix(A.GetActualDimension())
+        LLT = nt.DistributedSparseMatrix(A.GetActualDimension())
+        memory_pool = nt.DistributedMatrixMemoryPool()
+
+        nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank,
+                                                      self.fixed_solver_parameters)
+        LT.Transpose(L)
+        LLT.Gemm(L, LT, memory_pool)
+
+        LLT.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
 
     def test_polarfunction(self):
         '''Test our ability to compute the matrix polar decomposition.'''

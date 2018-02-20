@@ -29,6 +29,16 @@ public:
   CholeskyDecomposition(const DistributedSparseMatrix &AMat,
                         DistributedSparseMatrix &LMat,
                         const FixedSolverParameters &solver_parameters);
+  //! Compute The Cholesky Decomposition of a Symmetric Positive Semi-Definite
+  //! matrix.
+  //!\param AMat the matrix A, must be symmetric, positive definite.
+  //!\param LMat the matrix computed.
+  //!\param rank the target rank
+  //!\param solver_parameters parameters for the solver
+  static void
+  PivotedCholeskyDecomposition(const DistributedSparseMatrix &AMat,
+                               DistributedSparseMatrix &LMat, int rank,
+                               const FixedSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

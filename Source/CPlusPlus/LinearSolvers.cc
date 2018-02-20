@@ -20,4 +20,10 @@ void LinearSolvers::CholeskyDecomposition(
     const FixedSolverParameters &solver_parameters) {
   CholeskyDecomposition_wrp(GetIH(AMat), GetIH(LMat), GetIH(solver_parameters));
 }
+void LinearSolvers::PivotedCholeskyDecomposition(
+    const DistributedSparseMatrix &AMat, DistributedSparseMatrix &LMat,
+    int rank, const FixedSolverParameters &solver_parameters) {
+  PivotedCholeskyDecomposition_wrp(GetIH(AMat), GetIH(LMat), &rank,
+                                   GetIH(solver_parameters));
+}
 } // namespace NTPoly

@@ -1,3 +1,3 @@
-# If you want to define a test form your branch, do it like this.
+# If you want to define a test for your branch, do it like this.
 
-BRANCHTEST="testDistributedSparseMatrix.TestDistributedMatrix"
+BRANCHTEST="testDistributedSparseMatrix.TestDistributedMatrix.test_read"
