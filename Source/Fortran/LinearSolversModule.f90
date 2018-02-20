@@ -14,6 +14,7 @@ MODULE LinearSolversModule
   USE ProcessGridModule
   USE SparseMatrixAlgebraModule
   USE SparseMatrixModule
+  USE SparseVectorModule
   USE TimerModule
   USE TripletListModule
   USE mpi
@@ -198,6 +199,232 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
+    TYPE(SparseMatrix_t) :: sparse_a
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
+    !! For Extracting To Global
+    TYPE(TripletList_t) :: local_triplets
+    TYPE(Triplet_t) :: temp
+    !! Temporary Variables
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
+    INTEGER :: recv_num_values
+    INTEGER :: II, JJ, local_JJ, local_II, local_row
+    REAL(NTREAL) :: dot_value, AJJ, insert_value, inverse_factor
+    INTEGER :: root
+
+    !! First get the local matrix in a dense recommendation for quick lookup
+    CALL MergeLocalBlocks(AMat, sparse_a)
+    ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
+    dense_a = 0
+    CALL ConstructDenseFromSparse(sparse_a, dense_a)
+
+    !! Allocate space for L
+    ALLOCATE(values_per_column_l(sparse_a%columns))
+    ALLOCATE(index_l(sparse_a%rows, sparse_a%columns))
+    ALLOCATE(values_l(sparse_a%rows, sparse_a%columns))
+    values_per_column_l = 0
+
+    !! Allocate space for a received column
+    ALLOCATE(recv_index(sparse_a%rows))
+    ALLOCATE(recv_values(sparse_a%rows))
+
+    !! Main Loop
+    DO JJ = 1, AMat%actual_matrix_dimension
+       local_JJ = JJ - AMat%start_column + 1
+       !! Dot Column JJ with Column JJ, Insert Value into L[J,J]
+       inverse_factor = 0
+       root = 0
+       IF (JJ .GE. AMat%start_column .AND. JJ .LT. AMat%end_column) THEN
+          dot_value = DotHelper(values_per_column_l(local_JJ), &
+               & index_l(:,local_JJ), values_l(:,local_JJ), &
+               & values_per_column_l(local_JJ), index_l(:,local_JJ), &
+               & values_l(:,local_JJ), column_comm)
+          IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+             local_row = JJ - AMat%start_row + 1
+             AJJ = dense_a(local_row, local_JJ)
+             insert_value = SQRT(AJJ - dot_value)
+             inverse_factor = 1.0/insert_value
+             !! Insert
+             CALL AppendToVector(values_per_column_l(local_JJ), &
+                  & index_l(:,local_JJ), values_l(:, local_JJ), local_row, &
+                  & insert_value)
+          END IF
+          root = row_rank
+       END IF
+       !! Broadcast column JJ, and Inverse Factor
+       CALL MPI_Allreduce(MPI_IN_PLACE, row_rank, 1, MPI_INTEGER, MPI_SUM, &
+            & row_comm, grid_error)
+       CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
+            & row_rank, row_comm)
+       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
+            & within_slice_comm, grid_error)
+
+       !! Loop over other columns
+       DO II = JJ + 1, AMat%actual_matrix_dimension
+          IF (II .GE. AMat%start_column .AND. II .LT. AMat%end_column) THEN
+             local_II = II - AMat%start_column + 1
+             dot_value = DotHelper(recv_num_values, recv_index, recv_values, &
+                  values_per_column_l(local_II), index_l(:,local_II), &
+                  & values_l(:,local_II), column_comm)
+             IF (II .GE. AMat%start_row .AND. II .LT. AMat%end_row) THEN
+                local_row = II - AMat%start_row + 1
+                insert_value = inverse_factor * &
+                     & (dense_a(local_row, local_II) - dot_value)
+                CALL AppendToVector(values_per_column_l(local_II), &
+                     & index_l(:,local_II), values_l(:, local_II), local_row, &
+                     & insert_value)
+             END IF
+          END IF
+       END DO
+    END DO
+
+    !! Extract The Result
+    CALL ConstructTripletList(local_triplets)
+    DO JJ = 1, SUM(values_per_column_l)
+       !! note transpose
+       temp%index_row = JJ + AMat%start_column - 1
+       DO II = 1, values_per_column_l(JJ)
+          !! note transpose
+          temp%index_column = index_l(II,JJ) + AMat%start_row - 1
+          temp%point_value = values_l(II,JJ)
+          CALL AppendToTripletList(local_triplets, temp)
+       END DO
+    END DO
+
+    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+         & AMat%actual_matrix_dimension)
+    CALL FillFromTripletList(LMat, local_triplets)
+
+    !! Cleanup
+    CALL DestructTripletList(local_triplets)
+    DEALLOCATE(dense_a)
+    DEALLOCATE(values_per_column_l)
+    DEALLOCATE(index_l)
+    DEALLOCATE(values_l)
+    DEALLOCATE(recv_index)
+    DEALLOCATE(recv_values)
+    CALL DestructSparseMatrix(sparse_a)
+  END SUBROUTINE CholeskyDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.
+  !! Pass it either a maximum rank and maximum error tolerance to check against
+  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
+  !! @param[out] LMat the matrix computed.
+  !! @param[in] rank_in the target rank of the matrix.
+  !! @param[in] solver_parameters_in parameters for the solver
+  SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
+       & solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    INTEGER, INTENT(IN), OPTIONAL :: rank_in
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+    !! For Pivoting
+    INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
+    !! Temporary
+    INTEGER :: i, j, counter
+
+    !! Construct the pivot vector
+    ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))
+    DO counter = 1, AMat%actual_matrix_dimension
+       pivot_vector(counter) = counter
+    END DO
+
+
+
+    !! Cleanup
+    DEALLOCATE(pivot_vector)
+  END SUBROUTINE PivotedCholeskyDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Helper routine which computes sparse dot products across processors
+  FUNCTION DotHelper(num_values_i, indices_i, values_i, num_values_j, &
+       & indices_j, values_j, comm) RESULT(value)
+    !! Parameters
+    INTEGER, INTENT(IN) :: num_values_i, num_values_j
+    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i, indices_j
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i, values_j
+    INTEGER, INTENT(INOUT) :: comm
+    REAL(NTREAL) :: value
+    !! Local Variables
+    INTEGER :: err
+
+    !! Local Dot
+    value = DotSparseVectors(indices_i(:num_values_i), &
+         & values_i(:num_values_i), indices_j(:num_values_j), &
+         & values_j(:num_values_j))
+
+    !! Reduce Over Processes
+    CALL MPI_Allreduce(MPI_IN_PLACE, value, 1, MPINTREAL, MPI_SUM, comm, err)
+
+  END FUNCTION DotHelper
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A helper routine to broadcast a sparse vector
+  SUBROUTINE BroadcastVector(num_values, index, values, root, comm)
+    !! Parameters
+    INTEGER, INTENT(INOUT) :: num_values
+    INTEGER, DIMENSION(:), INTENT(INOUT) :: index
+    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
+    INTEGER, INTENT(IN) :: root
+    INTEGER, INTENT(INOUT) :: comm
+    !! Local
+    INTEGER :: rank
+    INTEGER :: err
+
+    CALL MPI_Bcast(num_values, 1, MPI_INT, root, comm, err)
+    CALL MPI_Bcast(INDEX(:num_values), num_values, MPI_INT, root, comm, err)
+    CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
+
+  END SUBROUTINE BroadcastVector
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A helper routine to insert a value into a sparse vector.
+  PURE SUBROUTINE AppendToVector(values_per, indices, values, insert_row, &
+       & insert_value)
+    !! Parameters
+    INTEGER, INTENT(INOUT) :: values_per
+    INTEGER, DIMENSION(:), INTENT(INOUT) :: indices
+    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
+    INTEGER, INTENT(IN) :: insert_row
+    REAL(NTREAL), INTENT(IN) :: insert_value
+
+    indices(values_per) = insert_row
+    values(values_per) = insert_value
+    values_per = values_per + 1
+  END SUBROUTINE AppendToVector
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Helper routine to append a value to a sparse matrix.
+  SUBROUTINE AppendValue(matrix, column, row, value, insert_ptr)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    INTEGER, INTENT(IN) :: column
+    INTEGER, INTENT(IN) :: row
+    REAL(NTREAL), INTENT(IN) :: value
+    INTEGER, INTENT(INOUT) :: insert_ptr
+
+    insert_ptr = insert_ptr + 1
+    matrix%outer_index(column+1:) = matrix%outer_index(column+1) + 1
+    matrix%inner_index(insert_ptr) = row
+    matrix%values(insert_ptr) = value
+  END SUBROUTINE AppendValue
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
+  !! This is a really naive implementation, that might be worth visiting.
+  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
+  !! @param[out] LMat the matrix computed.
+  !! @param[in] solver_parameters_in parameters for the solver
+  SUBROUTINE TempCholeskyDecomposition(AMat, LMat, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+    !! Local Variables
     TYPE(TripletList_t) :: local_triplets
     TYPE(SparseMatrix_t) :: sparse_a, l_scratch, l_finished
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
@@ -310,69 +537,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSparseMatrix(sparse_a)
     CALL DestructSparseMatrix(l_scratch)
     CALL DestructSparseMatrix(l_finished)
-  END SUBROUTINE CholeskyDecomposition
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.
-  !! Pass it either a maximum rank and maximum error tolerance to check against
-  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
-  !! @param[out] LMat the matrix computed.
-  !! @param[in] rank_in the target rank of the matrix.
-  !! @param[in] solver_parameters_in parameters for the solver
-  SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
-       & solver_parameters_in)
-    !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
-    INTEGER, INTENT(IN), OPTIONAL :: rank_in
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
-    !! Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
-    !! For Pivoting
-    INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
-    INTEGER :: counter
-    !! Local Variables
-    TYPE(TripletList_t) :: local_triplets
-    TYPE(SparseMatrix_t) :: sparse_a, l_scratch, l_finished
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
-    !! Variables describing local matrix rows
-    INTEGER :: local_row_j
-    INTEGER :: local_row_i
-    INTEGER :: local_column_j
-    TYPE(SparseMatrix_t) :: row_j
-    TYPE(SparseMatrix_t) :: row_i
-    !! Temporary Variables
-    REAL(NTREAL) :: local_dot
-    REAL(NTREAL) :: global_dot
-    REAL(NTREAL) :: insert_value
-    REAL(NTREAL) :: inverse_factor
-    INTEGER :: i, j, counter
-    INTEGER :: insert_ptr
-    INTEGER :: root
-
-    !! Construct the pivot vector
-    ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))
-    DO counter = 1, AMat%actual_matrix_dimension
-      pivot_vector(counter) = counter
-    END DO
-
-
-
-    !! Cleanup
-    DEALLOCATE(pivot_vector)
-  END SUBROUTINE PivotedCholeskyDecomposition
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Helper routine to append a value to a sparse matrix.
-  SUBROUTINE AppendValue(matrix, column, row, value, insert_ptr)
-    !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
-    INTEGER, INTENT(IN) :: column
-    INTEGER, INTENT(IN) :: row
-    REAL(NTREAL), INTENT(IN) :: value
-    INTEGER, INTENT(INOUT) :: insert_ptr
-
-    insert_ptr = insert_ptr + 1
-    matrix%outer_index(column+1:) = matrix%outer_index(column+1) + 1
-    matrix%inner_index(insert_ptr) = row
-    matrix%values(insert_ptr) = value
-  END SUBROUTINE AppendValue
+  END SUBROUTINE TempCholeskyDecomposition
 END MODULE LinearSolversModule
