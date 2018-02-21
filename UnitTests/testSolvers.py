@@ -68,7 +68,7 @@ class TestSolvers(unittest.TestCase):
             ResultMat = mmread(result_file)
             normval = abs(norm(self.CheckMat - ResultMat))
             relative_error = normval / norm(self.CheckMat)
-            print("Norm:", normval)
+            print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
         global_norm = comm.bcast(normval, root=0)
         global_error = comm.bcast(relative_error, root=0)

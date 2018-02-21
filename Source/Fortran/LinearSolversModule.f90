@@ -212,8 +212,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
     INTEGER :: recv_num_values
     INTEGER :: II, JJ, local_JJ, local_II, local_row
-    REAL(NTREAL) :: dot_value, Aval, insert_value, inverse_factor
+    REAL(NTREAL) :: Aval, insert_value, inverse_factor
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
     INTEGER :: root
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = FixedSolverParameters_t()
+    END IF
 
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
@@ -230,6 +238,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Allocate space for a received column
     ALLOCATE(recv_index(sparse_a%rows))
     ALLOCATE(recv_values(sparse_a%rows))
+    ALLOCATE(dot_values(sparse_a%columns))
 
     !! Main Loop
     DO JJ = 1, AMat%actual_matrix_dimension
@@ -238,14 +247,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        inverse_factor = 0
        root = 0
        IF (JJ .GE. AMat%start_column .AND. JJ .LT. AMat%end_column) THEN
-          dot_value = DotHelper(values_per_column_l(local_JJ), &
+          CALL DotAllHelper(values_per_column_l(local_JJ), &
                & index_l(:,local_JJ), values_l(:,local_JJ), &
-               & values_per_column_l(local_JJ), index_l(:,local_JJ), &
-               & values_l(:,local_JJ), column_comm)
+               & values_per_column_l(local_JJ:local_JJ), &
+               & index_l(:,local_JJ:local_JJ), values_l(:,local_JJ:local_JJ), &
+               & dot_values(1:1), column_comm)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              local_row = JJ - AMat%start_row + 1
              Aval = dense_a(local_row, local_JJ)
-             insert_value = SQRT(Aval - dot_value)
+             insert_value = SQRT(Aval - dot_values(1))
              inverse_factor = 1.0/insert_value
              !! Insert
              CALL AppendToVector(values_per_column_l(local_JJ), &
@@ -267,19 +277,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & within_slice_comm, grid_error)
 
        !! Loop over other columns
+       CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
+            & values_per_column_l, index_l, values_l, dot_values, column_comm)
        DO II = JJ + 1, AMat%actual_matrix_dimension
           IF (II .GE. AMat%start_column .AND. II .LT. AMat%end_column) THEN
              local_II = II - AMat%start_column + 1
-             dot_value = DotHelper(recv_num_values, recv_index, recv_values, &
-                  values_per_column_l(local_II), index_l(:,local_II), &
-                  & values_l(:,local_II), column_comm)
              IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
                 local_row = JJ - AMat%start_row + 1
                 Aval = dense_a(local_row, local_II)
-                insert_value = inverse_factor * (Aval - dot_value)
-                CALL AppendToVector(values_per_column_l(local_II), &
-                     & index_l(:,local_II), values_l(:, local_II), local_row, &
-                     & insert_value)
+                insert_value = inverse_factor * (Aval - dot_values(local_II))
+                IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
+                  CALL AppendToVector(values_per_column_l(local_II), &
+                       & index_l(:,local_II), values_l(:, local_II), &
+                       & local_row, insert_value)
+                END IF
              END IF
           END IF
        END DO
@@ -288,16 +299,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Extract The Result
     CALL ConstructTripletList(local_triplets)
     IF (my_slice .EQ. 0) THEN
-      DO JJ = 1, sparse_a%columns
-         !! note transpose
-         temp%index_row = JJ + AMat%start_column - 1
-         DO II = 1, values_per_column_l(JJ)
-            !! note transpose
-            temp%index_column = index_l(II,JJ) + AMat%start_row - 1
-            temp%point_value = values_l(II,JJ)
-            CALL AppendToTripletList(local_triplets, temp)
-         END DO
-      END DO
+       DO JJ = 1, sparse_a%columns
+          !! note transpose
+          temp%index_row = JJ + AMat%start_column - 1
+          DO II = 1, values_per_column_l(JJ)
+             !! note transpose
+             temp%index_column = index_l(II,JJ) + AMat%start_row - 1
+             temp%point_value = values_l(II,JJ)
+             CALL AppendToTripletList(local_triplets, temp)
+          END DO
+       END DO
     END IF
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
          & AMat%actual_matrix_dimension)
@@ -311,6 +322,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(values_l)
     DEALLOCATE(recv_index)
     DEALLOCATE(recv_values)
+    DEALLOCATE(dot_values)
     CALL DestructSparseMatrix(sparse_a)
   END SUBROUTINE CholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -332,7 +344,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Pivoting
     INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
     !! Temporary
-    INTEGER :: i, j, counter
+    INTEGER :: counter
 
     !! Construct the pivot vector
     ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))
@@ -346,27 +358,45 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(pivot_vector)
   END SUBROUTINE PivotedCholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Helper routine which computes sparse dot products across processors
-  FUNCTION DotHelper(num_values_i, indices_i, values_i, num_values_j, &
-       & indices_j, values_j, comm) RESULT(value)
+  !> Helper routine which computes sparse dot products across processors.
+  !! Computes the dot product of one vector with several others.
+  !! @param[in] num_values_i the length of vector i.
+  !! @param[in] indices_i the index value of the sparse vector i.
+  !! @param[in] values_i the values of the sparse vector i.
+  !! @param[in] num_values_j an array with the length of vectors j.
+  !! @param[in] indices_j the indices of the vectors j.
+  !! @param[in] values_j the values of the vectors j.
+  !! @param[out] out_values the dot product values for each vector j.
+  !! @param[in] comm the communicator to reduce along.
+  SUBROUTINE DotAllHelper(num_values_i, indices_i, values_i, num_values_j, &
+       & indices_j, values_j, out_values, comm)
     !! Parameters
-    INTEGER, INTENT(IN) :: num_values_i, num_values_j
-    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i, indices_j
-    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i, values_j
+    INTEGER, INTENT(IN) :: num_values_i
+    INTEGER, DIMENSION(:), INTENT(IN) :: num_values_j
+    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: indices_j
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
+    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values_j
+    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
     INTEGER, INTENT(INOUT) :: comm
-    REAL(NTREAL) :: value
     !! Local Variables
     INTEGER :: err
+    INTEGER :: counter
+    INTEGER :: inner_len_j
 
     !! Local Dot
-    value = DotSparseVectors(indices_i(:num_values_i), &
-         & values_i(:num_values_i), indices_j(:num_values_j), &
-         & values_j(:num_values_j))
+    DO counter = 1, SIZE(num_values_j)
+       inner_len_j = num_values_j(counter)
+       out_values(counter) = DotSparseVectors(indices_i(:num_values_i), &
+            & values_i(:num_values_i), indices_j(:inner_len_j, counter), &
+            & values_j(:inner_len_j, counter))
+    END DO
 
     !! Reduce Over Processes
-    CALL MPI_Allreduce(MPI_IN_PLACE, value, 1, MPINTREAL, MPI_SUM, comm, err)
+    CALL MPI_Allreduce(MPI_IN_PLACE, out_values, SIZE(num_values_j), &
+         & MPINTREAL, MPI_SUM, comm, err)
 
-  END FUNCTION DotHelper
+  END SUBROUTINE DotAllHelper
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
   SUBROUTINE BroadcastVector(num_values, indices, values, root, comm)
@@ -377,7 +407,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: root
     INTEGER, INTENT(INOUT) :: comm
     !! Local
-    INTEGER :: rank
     INTEGER :: err
 
     CALL MPI_Bcast(num_values, 1, MPI_INT, root, comm, err)
@@ -400,147 +429,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     indices(values_per) = insert_row
     values(values_per) = insert_value
   END SUBROUTINE AppendToVector
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Helper routine to append a value to a sparse matrix.
-  SUBROUTINE AppendValue(matrix, column, row, value, insert_ptr)
-    !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
-    INTEGER, INTENT(IN) :: column
-    INTEGER, INTENT(IN) :: row
-    REAL(NTREAL), INTENT(IN) :: value
-    INTEGER, INTENT(INOUT) :: insert_ptr
-
-    insert_ptr = insert_ptr + 1
-    matrix%outer_index(column+1:) = matrix%outer_index(column+1) + 1
-    matrix%inner_index(insert_ptr) = row
-    matrix%values(insert_ptr) = value
-  END SUBROUTINE AppendValue
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
-  !! This is a really naive implementation, that might be worth visiting.
-  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
-  !! @param[out] LMat the matrix computed.
-  !! @param[in] solver_parameters_in parameters for the solver
-  SUBROUTINE TempCholeskyDecomposition(AMat, LMat, solver_parameters_in)
-    !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
-    !! Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
-    !! Local Variables
-    TYPE(TripletList_t) :: local_triplets
-    TYPE(SparseMatrix_t) :: sparse_a, l_scratch, l_finished
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
-    !! Variables describing local matrix rows
-    INTEGER :: local_row_j
-    INTEGER :: local_row_i
-    INTEGER :: local_column_j
-    TYPE(SparseMatrix_t) :: row_j
-    TYPE(SparseMatrix_t) :: row_i
-    !! Temporary Variables
-    REAL(NTREAL) :: local_dot
-    REAL(NTREAL) :: global_dot
-    REAL(NTREAL) :: insert_value
-    REAL(NTREAL) :: inverse_factor
-    INTEGER :: i, j, counter
-    INTEGER :: insert_ptr
-    INTEGER :: root
-
-    !! First get the local matrix in a dense recommendation for quick lookup
-    CALL MergeLocalBlocks(AMat, sparse_a)
-    ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
-    dense_a = 0
-    CALL ConstructDenseFromSparse(sparse_a, dense_a)
-
-    !! Make scratch space for the local matrix L
-    CALL ConstructZeroSparseMatrix(l_scratch, sparse_a%rows, sparse_a%columns)
-    DEALLOCATE(l_scratch%inner_index)
-    DEALLOCATE(l_scratch%values)
-    ALLOCATE(l_scratch%inner_index(l_scratch%rows*l_scratch%columns))
-    l_scratch%inner_index = 0
-    ALLOCATE(l_scratch%values(l_scratch%rows*l_scratch%columns))
-    l_scratch%values = 0
-    insert_ptr = 0
-
-    !! Main Loop Over Rows
-    DO j = 1, AMat%actual_matrix_dimension
-       !! Diagonal Part
-       local_row_j = j - AMat%start_row + 1
-       local_column_j = j - AMat%start_column + 1
-       IF (j .GE. AMat%start_row .AND. j .LT. AMat%end_row) THEN
-          CALL ExtractRow(l_scratch, local_row_j, row_j)
-          local_dot = DotSparseMatrix(row_j, row_j)
-          CALL MPI_Allreduce(MPI_IN_PLACE, local_dot, 1, MPINTREAL, MPI_SUM, &
-               & row_comm, grid_error)
-          IF (j .GE. AMat%start_column .AND. j .LT. AMat%end_column) THEN
-             local_dot = dense_a(local_row_j, local_column_j) - local_dot
-             insert_value = SQRT(local_dot)
-             inverse_factor = 1.0/insert_value
-             CALL AppendValue(l_scratch, local_column_j, local_row_j, &
-                  & insert_value, insert_ptr)
-          END IF
-          root = column_rank
-       ELSE
-          inverse_factor = 0
-          root = 0
-       END IF
-       !! Broadcast Row J
-       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
-            & column_comm, grid_error)
-       CALL BroadcastMatrix(row_j, column_comm, root)
-       !! Broadcast Inverse Factor
-       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
-            & column_comm, grid_error)
-       !! Compute Dot Products
-       DO i = j+1, AMat%actual_matrix_dimension
-          IF (i .LT. AMat%start_row .OR. i .GE. AMat%end_row) CYCLE
-          !! Extract Row I
-          local_row_i = i - AMat%start_row + 1
-          CALL ExtractRow(l_scratch, local_row_i, row_i)
-          local_dot = DotSparseMatrix(row_i, row_j)
-          CALL MPI_Allreduce(MPI_IN_PLACE, local_dot, 1, MPINTREAL, MPI_SUM, &
-               & row_comm, grid_error)
-          IF (j .GE. AMat%start_column .AND. j .LT. AMat%end_column) THEN
-             local_dot = dense_a(local_row_i, local_column_j) - local_dot
-             insert_value = inverse_factor*local_dot
-             CALL AppendValue(l_scratch,local_column_j,local_row_i,insert_value,insert_ptr)
-          END IF
-       END DO
-    END DO
-
-    !! Trim extra memory off the scratch space
-    CALL ConstructZeroSparseMatrix(l_finished, sparse_a%rows, sparse_a%columns)
-    DEALLOCATE(l_finished%inner_index)
-    DEALLOCATE(l_finished%values)
-    ALLOCATE(l_finished%inner_index(insert_ptr))
-    ALLOCATE(l_finished%values(insert_ptr))
-    l_finished%outer_index = l_scratch%outer_index
-    l_finished%inner_index = l_scratch%inner_index(:insert_ptr)
-    l_finished%values = l_scratch%values(:insert_ptr)
-
-    !! Finish by building the global L matrix
-    IF (my_slice .EQ. 0) THEN
-       CALL MatrixToTripletList(l_finished, local_triplets)
-       DO counter = 1, local_triplets%CurrentSize
-          local_triplets%data(counter)%index_row = &
-               & local_triplets%data(counter)%index_row + AMat%start_row - 1
-          local_triplets%data(counter)%index_column = &
-               & local_triplets%data(counter)%index_column + AMat%start_column - 1
-       END DO
-    ELSE
-       CALL ConstructTripletList(local_triplets)
-    END IF
-    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
-         & AMat%actual_matrix_dimension)
-    CALL FillFromTripletList(LMat, local_triplets)
-
-    !! Cleanup
-    DEALLOCATE(dense_a)
-    CALL DestructTripletList(local_triplets)
-    CALL DestructSparseMatrix(sparse_a)
-    CALL DestructSparseMatrix(l_scratch)
-    CALL DestructSparseMatrix(l_finished)
-  END SUBROUTINE TempCholeskyDecomposition
 END MODULE LinearSolversModule
