@@ -212,7 +212,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
     INTEGER :: recv_num_values
     INTEGER :: II, JJ, local_JJ, local_II, local_row
-    REAL(NTREAL) :: dot_value, AJJ, insert_value, inverse_factor
+    REAL(NTREAL) :: dot_value, Aval, insert_value, inverse_factor
     INTEGER :: root
 
     !! First get the local matrix in a dense recommendation for quick lookup
@@ -244,8 +244,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & values_l(:,local_JJ), column_comm)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              local_row = JJ - AMat%start_row + 1
-             AJJ = dense_a(local_row, local_JJ)
-             insert_value = SQRT(AJJ - dot_value)
+             Aval = dense_a(local_row, local_JJ)
+             insert_value = SQRT(Aval - dot_value)
              inverse_factor = 1.0/insert_value
              !! Insert
              CALL AppendToVector(values_per_column_l(local_JJ), &
@@ -253,12 +253,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & insert_value)
           END IF
           root = row_rank
+          !! Extract column J for sending later
+          recv_num_values = values_per_column_l(local_JJ)
+          recv_index(:recv_num_values) = index_l(:recv_num_values,local_JJ)
+          recv_values(:recv_num_values) = values_l(:recv_num_values, local_JJ)
        END IF
        !! Broadcast column JJ, and Inverse Factor
-       CALL MPI_Allreduce(MPI_IN_PLACE, row_rank, 1, MPI_INTEGER, MPI_SUM, &
+       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
             & row_comm, grid_error)
        CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
-            & row_rank, row_comm)
+            & root, row_comm)
        CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
             & within_slice_comm, grid_error)
 
@@ -269,10 +273,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              dot_value = DotHelper(recv_num_values, recv_index, recv_values, &
                   values_per_column_l(local_II), index_l(:,local_II), &
                   & values_l(:,local_II), column_comm)
-             IF (II .GE. AMat%start_row .AND. II .LT. AMat%end_row) THEN
-                local_row = II - AMat%start_row + 1
-                insert_value = inverse_factor * &
-                     & (dense_a(local_row, local_II) - dot_value)
+             IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+                local_row = JJ - AMat%start_row + 1
+                Aval = dense_a(local_row, local_II)
+                insert_value = inverse_factor * (Aval - dot_value)
                 CALL AppendToVector(values_per_column_l(local_II), &
                      & index_l(:,local_II), values_l(:, local_II), local_row, &
                      & insert_value)
@@ -283,17 +287,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract The Result
     CALL ConstructTripletList(local_triplets)
-    DO JJ = 1, SUM(values_per_column_l)
-       !! note transpose
-       temp%index_row = JJ + AMat%start_column - 1
-       DO II = 1, values_per_column_l(JJ)
-          !! note transpose
-          temp%index_column = index_l(II,JJ) + AMat%start_row - 1
-          temp%point_value = values_l(II,JJ)
-          CALL AppendToTripletList(local_triplets, temp)
-       END DO
-    END DO
-
+    IF (my_slice .EQ. 0) THEN
+      DO JJ = 1, sparse_a%columns
+         !! note transpose
+         temp%index_row = JJ + AMat%start_column - 1
+         DO II = 1, values_per_column_l(JJ)
+            !! note transpose
+            temp%index_column = index_l(II,JJ) + AMat%start_row - 1
+            temp%point_value = values_l(II,JJ)
+            CALL AppendToTripletList(local_triplets, temp)
+         END DO
+      END DO
+    END IF
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
          & AMat%actual_matrix_dimension)
     CALL FillFromTripletList(LMat, local_triplets)
@@ -364,10 +369,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION DotHelper
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
-  SUBROUTINE BroadcastVector(num_values, index, values, root, comm)
+  SUBROUTINE BroadcastVector(num_values, indices, values, root, comm)
     !! Parameters
     INTEGER, INTENT(INOUT) :: num_values
-    INTEGER, DIMENSION(:), INTENT(INOUT) :: index
+    INTEGER, DIMENSION(:), INTENT(INOUT) :: indices
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
     INTEGER, INTENT(IN) :: root
     INTEGER, INTENT(INOUT) :: comm
@@ -376,7 +381,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: err
 
     CALL MPI_Bcast(num_values, 1, MPI_INT, root, comm, err)
-    CALL MPI_Bcast(INDEX(:num_values), num_values, MPI_INT, root, comm, err)
+    CALL MPI_Bcast(indices(:num_values), num_values, MPI_INT, root, comm, err)
     CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
 
   END SUBROUTINE BroadcastVector
@@ -391,9 +396,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: insert_row
     REAL(NTREAL), INTENT(IN) :: insert_value
 
+    values_per = values_per + 1
     indices(values_per) = insert_row
     values(values_per) = insert_value
-    values_per = values_per + 1
   END SUBROUTINE AppendToVector
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Helper routine to append a value to a sparse matrix.
