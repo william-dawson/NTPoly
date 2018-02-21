@@ -242,11 +242,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Main Loop
     DO JJ = 1, AMat%actual_matrix_dimension
-       local_JJ = JJ - AMat%start_column + 1
        !! Dot Column JJ with Column JJ, Insert Value into L[J,J]
        inverse_factor = 0
        root = 0
        IF (JJ .GE. AMat%start_column .AND. JJ .LT. AMat%end_column) THEN
+          local_JJ = JJ - AMat%start_column + 1
           CALL DotAllHelper(values_per_column_l(local_JJ), &
                & index_l(:,local_JJ), values_l(:,local_JJ), &
                & values_per_column_l(local_JJ:local_JJ), &
@@ -279,21 +279,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Loop over other columns
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
             & values_per_column_l, index_l, values_l, dot_values, column_comm)
-       DO II = JJ + 1, AMat%actual_matrix_dimension
-          IF (II .GE. AMat%start_column .AND. II .LT. AMat%end_column) THEN
+       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+          DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
              local_II = II - AMat%start_column + 1
-             IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-                local_row = JJ - AMat%start_row + 1
-                Aval = dense_a(local_row, local_II)
-                insert_value = inverse_factor * (Aval - dot_values(local_II))
-                IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
-                  CALL AppendToVector(values_per_column_l(local_II), &
-                       & index_l(:,local_II), values_l(:, local_II), &
-                       & local_row, insert_value)
-                END IF
+             local_row = JJ - AMat%start_row + 1
+             Aval = dense_a(local_row, local_II)
+             insert_value = inverse_factor * (Aval - dot_values(local_II))
+             IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
+                CALL AppendToVector(values_per_column_l(local_II), &
+                     & index_l(:,local_II), values_l(:, local_II), &
+                     & local_row, insert_value)
              END IF
-          END IF
-       END DO
+          END DO
+       END IF
     END DO
 
     !! Extract The Result
@@ -343,19 +341,166 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! For Pivoting
     INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
-    !! Temporary
-    INTEGER :: counter
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
+    INTEGER :: num_local_diags
+    !! Local Variables
+    TYPE(SparseMatrix_t) :: sparse_a
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
+    !! For Extracting To Global
+    TYPE(TripletList_t) :: local_triplets
+    TYPE(Triplet_t) :: temp
+    !! Temporary Variables
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
+    INTEGER :: recv_num_values
+    INTEGER :: II, JJ, local_JJ, local_II, local_row
+    REAL(NTREAL) :: Aval, insert_value, inverse_factor
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
+    REAL(NTREAL) :: diag_correction
+    INTEGER :: root
+    INTEGER :: fill_counter
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = FixedSolverParameters_t()
+    END IF
 
     !! Construct the pivot vector
     ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))
-    DO counter = 1, AMat%actual_matrix_dimension
-       pivot_vector(counter) = counter
+    DO JJ = 1, AMat%actual_matrix_dimension
+       pivot_vector(JJ) = JJ
     END DO
 
+    !! First get the local matrix in a dense recommendation for quick lookup
+    CALL MergeLocalBlocks(AMat, sparse_a)
+    ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
+    dense_a = 0
+    CALL ConstructDenseFromSparse(sparse_a, dense_a)
 
+    !! Construct the vector holding the accumulated diagonal values
+    num_local_diags = 0
+    DO JJ = AMat%start_column, AMat%end_column - 1
+       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+          num_local_diags = num_local_diags + 1
+       END IF
+    END DO
+    CALL MPI_Allreduce(MPI_IN_PLACE, num_local_diags, 1, MPI_INTEGER, MPI_SUM, &
+         & column_comm, grid_error)
+    ALLOCATE(diag(num_local_diags))
+    fill_counter = 0
+    DO JJ = AMat%start_column, AMat%end_column - 1
+       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+          fill_counter = fill_counter + 1
+          local_JJ = JJ - AMat%start_column + 1
+          local_II = JJ - AMat%start_row + 1
+          diag(fill_counter) = dense_a(local_II, local_JJ)
+       END IF
+    END DO
+    !! Duplicate the diagonal entries along the process column (across rows)
+    CALL MPI_Bcast(diag, num_local_diags, MPINTREAL, root, column_comm, &
+         & grid_error)
+
+    !! Allocate space for L
+    ALLOCATE(values_per_column_l(sparse_a%columns))
+    ALLOCATE(index_l(sparse_a%rows, sparse_a%columns))
+    ALLOCATE(values_l(sparse_a%rows, sparse_a%columns))
+    values_per_column_l = 0
+
+    !! Allocate space for a received column
+    ALLOCATE(recv_index(sparse_a%rows))
+    ALLOCATE(recv_values(sparse_a%rows))
+    ALLOCATE(dot_values(sparse_a%columns))
+
+    !! Main Loop
+    DO JJ = 1, rank_in
+       !! Dot Column JJ with Column JJ, Insert Value into L[J,J]
+       inverse_factor = 0
+       root = 0
+       IF (JJ .GE. AMat%start_column .AND. JJ .LT. AMat%end_column) THEN
+          local_JJ = JJ - AMat%start_column + 1
+          CALL DotAllHelper(values_per_column_l(local_JJ), &
+               & index_l(:,local_JJ), values_l(:,local_JJ), &
+               & values_per_column_l(local_JJ:local_JJ), &
+               & index_l(:,local_JJ:local_JJ), values_l(:,local_JJ:local_JJ), &
+               & dot_values(1:1), column_comm)
+          IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+             local_row = JJ - AMat%start_row + 1
+             Aval = dense_a(local_row, local_JJ)
+             insert_value = SQRT(diag(MIN(local_row, local_JJ)))
+             insert_value = SQRT(Aval - dot_values(1))
+             inverse_factor = 1.0/insert_value
+             !! Insert
+             CALL AppendToVector(values_per_column_l(local_JJ), &
+                  & index_l(:,local_JJ), values_l(:, local_JJ), local_row, &
+                  & insert_value)
+          END IF
+          root = row_rank
+          !! Extract column J for sending later
+          recv_num_values = values_per_column_l(local_JJ)
+          recv_index(:recv_num_values) = index_l(:recv_num_values,local_JJ)
+          recv_values(:recv_num_values) = values_l(:recv_num_values, local_JJ)
+       END IF
+       !! Broadcast column JJ, and Inverse Factor
+       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
+            & row_comm, grid_error)
+       CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
+            & root, row_comm)
+       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
+            & within_slice_comm, grid_error)
+
+       !! Loop over other columns
+       CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
+            & values_per_column_l, index_l, values_l, dot_values, column_comm)
+       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+          DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
+             local_II = II - AMat%start_column + 1
+             local_row = JJ - AMat%start_row + 1
+             Aval = dense_a(local_row, local_II)
+             insert_value = inverse_factor * (Aval - dot_values(local_II))
+             IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
+                CALL AppendToVector(values_per_column_l(local_II), &
+                     & index_l(:,local_II), values_l(:, local_II), &
+                     & local_row, insert_value)
+             END IF
+          END DO
+       END IF
+    END DO
+
+    !! Extract The Result
+    CALL ConstructTripletList(local_triplets)
+    IF (my_slice .EQ. 0) THEN
+       DO JJ = 1, sparse_a%columns
+          !! note transpose
+          temp%index_row = JJ + AMat%start_column - 1
+          DO II = 1, values_per_column_l(JJ)
+             !! note transpose
+             temp%index_column = index_l(II,JJ) + AMat%start_row - 1
+             temp%point_value = values_l(II,JJ)
+             CALL AppendToTripletList(local_triplets, temp)
+          END DO
+       END DO
+    END IF
+    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+         & AMat%actual_matrix_dimension)
+    CALL FillFromTripletList(LMat, local_triplets)
 
     !! Cleanup
     DEALLOCATE(pivot_vector)
+    DEALLOCATE(diag)
+    CALL DestructTripletList(local_triplets)
+    DEALLOCATE(dense_a)
+    DEALLOCATE(values_per_column_l)
+    DEALLOCATE(index_l)
+    DEALLOCATE(values_l)
+    DEALLOCATE(recv_index)
+    DEALLOCATE(recv_values)
+    DEALLOCATE(dot_values)
+    CALL DestructSparseMatrix(sparse_a)
   END SUBROUTINE PivotedCholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Helper routine which computes sparse dot products across processors.
@@ -385,12 +530,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: inner_len_j
 
     !! Local Dot
+    !$omp parallel private(inner_len_j)
+    !$omp do
     DO counter = 1, SIZE(num_values_j)
        inner_len_j = num_values_j(counter)
        out_values(counter) = DotSparseVectors(indices_i(:num_values_i), &
             & values_i(:num_values_i), indices_j(:inner_len_j, counter), &
             & values_j(:inner_len_j, counter))
     END DO
+    !$omp end do
+    !$omp end parallel
 
     !! Reduce Over Processes
     CALL MPI_Allreduce(MPI_IN_PLACE, out_values, SIZE(num_values_j), &

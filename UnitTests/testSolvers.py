@@ -789,7 +789,7 @@ class TestSolvers(unittest.TestCase):
 
         # First construct a low rank approximate, then reconstruct.
         L = cholesky(matrix1.todense(), lower=True)
-        rank = int(self.matrix_dimension / 2)
+        rank = int(self.matrix_dimension)
         Llow = L[:, :rank]
         matrix1 = Llow.dot(Llow.T)
 

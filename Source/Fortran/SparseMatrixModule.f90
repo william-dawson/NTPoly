@@ -243,11 +243,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: row_number
     TYPE(SparseMatrix_t), INTENT(INOUT) :: row_out
-    !! Local variables
-    INTEGER :: number_of_values
-    INTEGER :: start_index
-    INTEGER :: counter
-    TYPE(SparseMatrix_t) :: temp, temp_c
     !! Temporary Variables
     INTEGER :: values_found
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: value_buffer
