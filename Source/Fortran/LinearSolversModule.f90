@@ -204,9 +204,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
-    !! For Extracting To Global
-    TYPE(TripletList_t) :: local_triplets
-    TYPE(Triplet_t) :: temp
     !! Temporary Variables
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
@@ -294,26 +291,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
 
-    !! Extract The Result
-    CALL ConstructTripletList(local_triplets)
-    IF (my_slice .EQ. 0) THEN
-       DO JJ = 1, sparse_a%columns
-          !! note transpose
-          temp%index_row = JJ + AMat%start_column - 1
-          DO II = 1, values_per_column_l(JJ)
-             !! note transpose
-             temp%index_column = index_l(II,JJ) + AMat%start_row - 1
-             temp%point_value = values_l(II,JJ)
-             CALL AppendToTripletList(local_triplets, temp)
-          END DO
-       END DO
-    END IF
+    !! Unpack
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
          & AMat%actual_matrix_dimension)
-    CALL FillFromTripletList(LMat, local_triplets)
+    CALL UnpackCholesky(values_per_column_l, index_l, values_l, LMat)
 
     !! Cleanup
-    CALL DestructTripletList(local_triplets)
     DEALLOCATE(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
@@ -342,16 +325,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Pivoting
     INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
-    INTEGER :: num_local_diags
     !! Local Variables
     TYPE(SparseMatrix_t) :: sparse_a
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
-    !! For Extracting To Global
-    TYPE(TripletList_t) :: local_triplets
-    TYPE(Triplet_t) :: temp
     !! Temporary Variables
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
@@ -359,9 +338,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II, JJ, local_JJ, local_II, local_row
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
-    REAL(NTREAL) :: diag_correction
+    INTEGER :: num_diag_corrections
+    INTEGER, DIMENSION(:), ALLOCATABLE :: diag_correction_index
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag_correction_values
     INTEGER :: root
     INTEGER :: fill_counter
+    INTEGER, DIMENSION(num_process_rows) :: diags_per_proc
+    INTEGER, DIMENSION(num_process_rows) :: diag_displ
+    REAL(NTREAL) :: max_diag
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -383,27 +367,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
 
     !! Construct the vector holding the accumulated diagonal values
-    num_local_diags = 0
-    DO JJ = AMat%start_column, AMat%end_column - 1
-       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-          num_local_diags = num_local_diags + 1
-       END IF
-    END DO
-    CALL MPI_Allreduce(MPI_IN_PLACE, num_local_diags, 1, MPI_INTEGER, MPI_SUM, &
-         & column_comm, grid_error)
-    ALLOCATE(diag(num_local_diags))
+    ALLOCATE(diag(sparse_a%columns))
+    diag = 0
     fill_counter = 0
     DO JJ = AMat%start_column, AMat%end_column - 1
        IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-          fill_counter = fill_counter + 1
           local_JJ = JJ - AMat%start_column + 1
           local_II = JJ - AMat%start_row + 1
-          diag(fill_counter) = dense_a(local_II, local_JJ)
+          diag(local_JJ) = dense_a(local_II, local_JJ)
+          fill_counter = fill_counter + 1
        END IF
     END DO
+    diags_per_proc(my_row+1) = fill_counter
     !! Duplicate the diagonal entries along the process column (across rows)
-    CALL MPI_Bcast(diag, num_local_diags, MPINTREAL, root, column_comm, &
-         & grid_error)
+    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, diags_per_proc, 1, &
+         & MPI_INTEGER, column_comm, grid_error)
+    diag_displ(1) = 0
+    DO II = 2, num_process_rows
+       diag_displ(II) = diag_displ(II-1) + diags_per_proc(II-1)
+    END DO
+    CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(my_row+1), MPINTREAL, &
+         & diag, diags_per_proc, diag_displ, MPINTREAL, column_comm, grid_error)
 
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))
@@ -415,9 +399,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(recv_index(sparse_a%rows))
     ALLOCATE(recv_values(sparse_a%rows))
     ALLOCATE(dot_values(sparse_a%columns))
-
+    ALLOCATE(diag_correction_index(sparse_a%columns))
+    ALLOCATE(diag_correction_values(sparse_a%columns))
     !! Main Loop
     DO JJ = 1, rank_in
+       !! Pick a pivot vector
        !! Dot Column JJ with Column JJ, Insert Value into L[J,J]
        inverse_factor = 0
        root = 0
@@ -430,9 +416,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & dot_values(1:1), column_comm)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              local_row = JJ - AMat%start_row + 1
-             Aval = dense_a(local_row, local_JJ)
-             insert_value = SQRT(diag(MIN(local_row, local_JJ)))
-             insert_value = SQRT(Aval - dot_values(1))
+             insert_value = SQRT(diag(local_JJ))
              inverse_factor = 1.0/insert_value
              !! Insert
              CALL AppendToVector(values_per_column_l(local_JJ), &
@@ -456,43 +440,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Loop over other columns
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
             & values_per_column_l, index_l, values_l, dot_values, column_comm)
+       num_diag_corrections = 0
+       root = 0
        IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+          root = column_rank
           DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
              local_II = II - AMat%start_column + 1
              local_row = JJ - AMat%start_row + 1
              Aval = dense_a(local_row, local_II)
              insert_value = inverse_factor * (Aval - dot_values(local_II))
-             IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
+             IF (ABS(insert_value) .GT. solver_parameters%threshold .OR. .TRUE.) THEN
                 CALL AppendToVector(values_per_column_l(local_II), &
                      & index_l(:,local_II), values_l(:, local_II), &
                      & local_row, insert_value)
+                num_diag_corrections = num_diag_corrections + 1
+                diag_correction_index(num_diag_corrections) = local_II
+                diag_correction_values(num_diag_corrections) = insert_value
              END IF
           END DO
        END IF
+       !! Correct the diagonal vector
+       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
+            & column_comm, grid_error)
+       CALL BroadcastVector(num_diag_corrections, diag_correction_index, &
+            & diag_correction_values, root, column_comm)
+       DO II = 1, num_diag_corrections
+          diag(diag_correction_index(II)) = diag(diag_correction_index(II)) - &
+               & diag_correction_values(II)**2
+       END DO
     END DO
 
-    !! Extract The Result
-    CALL ConstructTripletList(local_triplets)
-    IF (my_slice .EQ. 0) THEN
-       DO JJ = 1, sparse_a%columns
-          !! note transpose
-          temp%index_row = JJ + AMat%start_column - 1
-          DO II = 1, values_per_column_l(JJ)
-             !! note transpose
-             temp%index_column = index_l(II,JJ) + AMat%start_row - 1
-             temp%point_value = values_l(II,JJ)
-             CALL AppendToTripletList(local_triplets, temp)
-          END DO
-       END DO
-    END IF
+    !! Unpack
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
          & AMat%actual_matrix_dimension)
-    CALL FillFromTripletList(LMat, local_triplets)
+    CALL UnpackCholesky(values_per_column_l, index_l, values_l, LMat)
 
     !! Cleanup
     DEALLOCATE(pivot_vector)
     DEALLOCATE(diag)
-    CALL DestructTripletList(local_triplets)
     DEALLOCATE(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
@@ -500,8 +485,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(recv_index)
     DEALLOCATE(recv_values)
     DEALLOCATE(dot_values)
+    DEALLOCATE(diag_correction_index)
+    DEALLOCATE(diag_correction_values)
     CALL DestructSparseMatrix(sparse_a)
   END SUBROUTINE PivotedCholeskyDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE UnpackCholesky(values_per_column, index, values, LMat)
+    !! Parameters
+    INTEGER, DIMENSION(:), INTENT(IN) :: values_per_column
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: index
+    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    !! Local Variables
+    INTEGER :: local_columns
+    TYPE(TripletList_t) :: local_triplets
+    TYPE(Triplet_t) :: temp
+    INTEGER :: II, JJ
+
+    local_columns = LMat%local_columns
+
+    CALL ConstructTripletList(local_triplets)
+    IF (my_slice .EQ. 0) THEN
+       DO JJ = 1, local_columns
+          !! note transpose
+          temp%index_row = JJ + LMat%start_column - 1
+          DO II = 1, values_per_column(JJ)
+             !! note transpose
+             temp%index_column = index(II,JJ) + LMat%start_row - 1
+             temp%point_value = values(II,JJ)
+             CALL AppendToTripletList(local_triplets, temp)
+          END DO
+       END DO
+    END IF
+    CALL FillFromTripletList(LMat, local_triplets)
+
+    !! Cleanup
+    CALL DestructTripletList(local_triplets)
+  END SUBROUTINE UnpackCholesky
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Helper routine which computes sparse dot products across processors.
   !! Computes the dot product of one vector with several others.

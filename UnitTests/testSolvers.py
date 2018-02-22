@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 17
+    matrix_dimension = 4
 
     @classmethod
     def setUpClass(self):
@@ -782,7 +782,7 @@ class TestSolvers(unittest.TestCase):
         # Starting Matrix
         temp_mat = scipy.sparse.rand(self.matrix_dimension,
                                      self.matrix_dimension,
-                                     density=1.0)
+                                     density=1.0, random_state=2)
         temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
         # Symmetric Positive Definite
         matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
@@ -792,6 +792,10 @@ class TestSolvers(unittest.TestCase):
         rank = int(self.matrix_dimension)
         Llow = L[:, :rank]
         matrix1 = Llow.dot(Llow.T)
+
+        if self.my_rank == 0:
+            print()
+            print(matrix1)
 
         self.CheckMat = csr_matrix(matrix1)
         if self.my_rank == 0:
