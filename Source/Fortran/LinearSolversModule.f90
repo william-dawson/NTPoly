@@ -330,9 +330,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: sparse_a
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    !! For Storing The Results
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
+    INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_pi
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_pi
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_pi
     !! Temporary Variables
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
@@ -395,6 +399,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(index_l(sparse_a%rows, sparse_a%columns))
     ALLOCATE(values_l(sparse_a%rows, sparse_a%columns))
     values_per_column_l = 0
+    ALLOCATE(values_per_column_pi(sparse_a%columns))
+    ALLOCATE(index_pi(sparse_a%rows, sparse_a%columns))
+    ALLOCATE(values_pi(sparse_a%rows, sparse_a%columns))
+    values_per_column_pi = 0
 
     !! Allocate space for a received column
     ALLOCATE(recv_index(sparse_a%rows))
@@ -437,7 +445,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
             & row_comm, grid_error)
 
+       !! Compute Dot Products
+       !! Unlike normal cholesky, we need to pack for sending first
+       fill_counter = 0
+       DO II = JJ + 1, AMat%actual_matrix_dimension
+          pi_i = pivot_vector(II)
+          local_pi_i = pi_i - AMat%start_column + 1
+          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
+            fill_counter = fill_counter + 1
+            values_per_column_pi(fill_counter) = values_per_column_l(local_pi_i)
+            index_pi(:,fill_counter) = index_l(:,local_pi_i)
+            values_pi(:,fill_counter) = values_l(:,local_pi_i)
+          END IF
+       END DO
+       CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
+            & values_per_column_pi(:fill_counter), index_pi(:,:fill_counter), &
+            & values_pi(:,:fill_counter), dot_values(:fill_counter), &
+            & column_comm)
+
        !! Loop over other columns
+       fill_counter = 0
        DO II = JJ + 1, AMat%actual_matrix_dimension
           pi_i = pivot_vector(II)
           local_pi_i = pi_i - AMat%start_column + 1
@@ -451,11 +478,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              END IF
              CALL MPI_Allreduce(MPI_IN_PLACE, Aval, 1, MPINTREAL, MPI_SUM, &
                   & column_comm, grid_error)
-             CALL DotOneHelper(recv_num_values,recv_index,recv_values, &
-                  & values_per_column_l(local_pi_i), index_l(:,local_pi_i), &
-                  & values_l(:,local_pi_i),insert_value,column_comm)
              !! Insert Into L
-             insert_value = inverse_factor * (Aval - insert_value)
+             fill_counter = fill_counter + 1
+             insert_value = inverse_factor * (Aval - dot_values(fill_counter))
              IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
                 CALL AppendToVector(values_per_column_l(local_pi_i), &
                      & index_l(:,local_pi_i), values_l(:, local_pi_i), &
@@ -481,6 +506,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
     DEALLOCATE(values_l)
+    DEALLOCATE(values_per_column_pi)
+    DEALLOCATE(index_pi)
+    DEALLOCATE(values_pi)
     DEALLOCATE(recv_index)
     DEALLOCATE(recv_values)
     DEALLOCATE(dot_values)
