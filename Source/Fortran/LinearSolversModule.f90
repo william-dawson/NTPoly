@@ -487,20 +487,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Compute Dot Products
        !! Unlike normal cholesky, we need to pack for sending first
-       fill_counter = 0
+       !$omp parallel private(II, num_val, local_pi_i)
+       !$omp do
        DO II = 1, num_local_pivots
-          pi_i = local_pivots(II)
-          local_pi_i = pi_i - AMat%start_column + 1
-          fill_counter = fill_counter + 1
+          local_pi_i = local_pivots(II) - AMat%start_column + 1
           num_val = values_per_column_l(local_pi_i)
-          values_per_column_pi(fill_counter) = num_val
-          index_pi(:num_val,fill_counter) = index_l(:num_val,local_pi_i)
-          values_pi(:num_val,fill_counter) = values_l(:num_val,local_pi_i)
+          values_per_column_pi(II) = num_val
+          index_pi(:num_val,II) = index_l(:num_val,local_pi_i)
+          values_pi(:num_val,II) = values_l(:num_val,local_pi_i)
        END DO
+       !$omp end do
+       !$omp end parallel
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
-            & values_per_column_pi(:fill_counter), index_pi(:,:fill_counter), &
-            & values_pi(:,:fill_counter), dot_values(:fill_counter), &
-            & column_comm)
+            & values_per_column_pi(:num_local_pivots), &
+            & index_pi(:,:num_local_pivots), values_pi(:,:num_local_pivots), &
+            & dot_values(:num_local_pivots), column_comm)
 
        !! Broadcast AMat[:,pi_j]
        fill_counter = 0
@@ -525,9 +526,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           pi_i = local_pivots(II)
           local_pi_i = pi_i - AMat%start_column + 1
           !! Insert Into L
-          fill_counter = fill_counter + 1
-          Aval = a_buf(fill_counter)
-          insert_value = inverse_factor * (Aval - dot_values(fill_counter))
+          Aval = a_buf(II)
+          insert_value = inverse_factor * (Aval - dot_values(II))
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              CALL AppendToVector(values_per_column_l(local_pi_i), &
                   & index_l(:,local_pi_i), values_l(:, local_pi_i), &
