@@ -337,10 +337,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_pi
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_pi
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_pi
-    !! Temporary Variables
+    !! Broadcasted Column
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
     INTEGER :: recv_num_values
+    !! Temporary Variables
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: a_buf
     INTEGER :: II, JJ, local_JJ, local_II
     INTEGER :: local_pi_i, local_pi_j
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
@@ -403,6 +405,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(index_pi(sparse_a%rows, sparse_a%columns))
     ALLOCATE(values_pi(sparse_a%rows, sparse_a%columns))
     values_per_column_pi = 0
+    ALLOCATE(a_buf(sparse_a%columns))
 
     !! Allocate space for a received column
     ALLOCATE(recv_index(sparse_a%rows))
@@ -452,10 +455,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           pi_i = pivot_vector(II)
           local_pi_i = pi_i - AMat%start_column + 1
           IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
-            fill_counter = fill_counter + 1
-            values_per_column_pi(fill_counter) = values_per_column_l(local_pi_i)
-            index_pi(:,fill_counter) = index_l(:,local_pi_i)
-            values_pi(:,fill_counter) = values_l(:,local_pi_i)
+             fill_counter = fill_counter + 1
+             values_per_column_pi(fill_counter) = values_per_column_l(local_pi_i)
+             index_pi(:,fill_counter) = index_l(:,local_pi_i)
+             values_pi(:,fill_counter) = values_l(:,local_pi_i)
           END IF
        END DO
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
@@ -463,29 +466,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & values_pi(:,:fill_counter), dot_values(:fill_counter), &
             & column_comm)
 
+       !! Broadcast AMat[:,pi_j]
+       fill_counter = 0
+       local_pi_j = pi_j - AMat%start_row + 1
+       a_buf = 0
+       DO II = JJ + 1, AMat%actual_matrix_dimension
+          pi_i = pivot_vector(II)
+          local_pi_i = pi_i - AMat%start_column + 1
+          IF (pi_i .GE. AMat%start_column .AND. &
+               & pi_i .LT. AMat%end_column .AND. &
+               & pi_j .GE. AMat%start_row .AND. &
+               & pi_j .LT. AMat%end_row) THEN
+             fill_counter = fill_counter + 1
+             a_buf(fill_counter) = dense_a(local_pi_j,local_pi_i)
+          END IF
+       END DO
+       CALL MPI_Allreduce(MPI_IN_PLACE, a_buf, sparse_a%columns, MPINTREAL, &
+            & MPI_SUM, column_comm, grid_error)
+
        !! Loop over other columns
        fill_counter = 0
        DO II = JJ + 1, AMat%actual_matrix_dimension
           pi_i = pivot_vector(II)
           local_pi_i = pi_i - AMat%start_column + 1
           IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
-             !! Get A Value
-             IF (pi_j .GE. AMat%start_row .AND. pi_j .LT. AMat%end_row) THEN
-                local_pi_j = pi_j - AMat%start_row + 1
-                Aval = dense_a(local_pi_j,local_pi_i)
-             ELSE
-                Aval = 0
-             END IF
-             CALL MPI_Allreduce(MPI_IN_PLACE, Aval, 1, MPINTREAL, MPI_SUM, &
-                  & column_comm, grid_error)
              !! Insert Into L
              fill_counter = fill_counter + 1
+             Aval = a_buf(fill_counter)
              insert_value = inverse_factor * (Aval - dot_values(fill_counter))
              IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
                 CALL AppendToVector(values_per_column_l(local_pi_i), &
                      & index_l(:,local_pi_i), values_l(:, local_pi_i), &
-                     & local_JJ, &
-                     & insert_value)
+                     & local_JJ, insert_value)
              END IF
              !! Update Diagonal Array
              diag(local_pi_i) = diag(local_pi_i) - insert_value**2
@@ -514,6 +526,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(dot_values)
     DEALLOCATE(diag_correction_index)
     DEALLOCATE(diag_correction_values)
+    DEALLOCATE(a_buf)
     CALL DestructSparseMatrix(sparse_a)
   END SUBROUTINE PivotedCholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -593,31 +606,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPINTREAL, MPI_SUM, comm, err)
 
   END SUBROUTINE DotAllHelper
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE DotOneHelper(num_values_i, indices_i, values_i, num_values_j, &
-       & indices_j, values_j, out_values, comm)
-    !! Parameters
-    INTEGER, INTENT(IN) :: num_values_i
-    INTEGER, INTENT(IN) :: num_values_j
-    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
-    INTEGER, DIMENSION(:), INTENT(IN) :: indices_j
-    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
-    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_j
-    REAL(NTREAL), INTENT(OUT) :: out_values
-    INTEGER, INTENT(INOUT) :: comm
-    !! Local Variables
-    INTEGER :: err
-
-    !! Local Dot
-    out_values = DotSparseVectors(indices_i(:num_values_i), &
-         & values_i(:num_values_i), indices_j(:num_values_j), &
-         & values_j(:num_values_j))
-
-    !! Reduce Over Processes
-    CALL MPI_Allreduce(MPI_IN_PLACE, out_values, 1, &
-         & MPINTREAL, MPI_SUM, comm, err)
-
-  END SUBROUTINE DotOneHelper
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
   SUBROUTINE BroadcastVector(num_values, indices, values, root, comm)
