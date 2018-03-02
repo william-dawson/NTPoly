@@ -346,9 +346,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
-    INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_pi
-    INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_pi
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_pi
     !! Broadcasted Column
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
@@ -360,7 +357,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: a_buf
     INTEGER :: II, JJ, local_JJ, local_II
     INTEGER :: local_pi_i, local_pi_j
-    INTEGER :: num_val
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
     INTEGER, DIMENSION(:), ALLOCATABLE :: diag_correction_index
@@ -427,10 +423,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(index_l(sparse_a%rows, sparse_a%columns))
     ALLOCATE(values_l(sparse_a%rows, sparse_a%columns))
     values_per_column_l = 0
-    ALLOCATE(values_per_column_pi(sparse_a%columns))
-    ALLOCATE(index_pi(sparse_a%rows, sparse_a%columns))
-    ALLOCATE(values_pi(sparse_a%rows, sparse_a%columns))
-    values_per_column_pi = 0
     ALLOCATE(a_buf(sparse_a%columns))
 
     !! Allocate space for a received column
@@ -481,26 +473,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           pi_i = pivot_vector(II)
           IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
              num_local_pivots = num_local_pivots + 1
-             local_pivots(num_local_pivots) = pi_i
+             local_pivots(num_local_pivots) = pi_i - AMat%start_column + 1
           END IF
        END DO
 
        !! Compute Dot Products
-       !! Unlike normal cholesky, we need to pack for sending first
-       !$omp parallel private(II, num_val, local_pi_i)
-       !$omp do
-       DO II = 1, num_local_pivots
-          local_pi_i = local_pivots(II) - AMat%start_column + 1
-          num_val = values_per_column_l(local_pi_i)
-          values_per_column_pi(II) = num_val
-          index_pi(:num_val,II) = index_l(:num_val,local_pi_i)
-          values_pi(:num_val,II) = values_l(:num_val,local_pi_i)
-       END DO
-       !$omp end do
-       !$omp end parallel
-       CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
-            & values_per_column_pi(:num_local_pivots), &
-            & index_pi(:,:num_local_pivots), values_pi(:,:num_local_pivots), &
+       CALL DotAllPivoted(recv_num_values, recv_index, recv_values, &
+            & values_per_column_l, &
+            & index_l(:,:), values_l(:,:), &
+            & local_pivots, num_local_pivots, &
             & dot_values(:num_local_pivots), column_comm)
 
        !! Broadcast AMat[:,pi_j]
@@ -510,8 +491,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (pi_j .GE. AMat%start_row .AND. pi_j .LT. AMat%end_row) THEN
           root = column_rank
           DO II = 1, num_local_pivots
-             pi_i = local_pivots(II)
-             local_pi_i = pi_i - AMat%start_column + 1
+             local_pi_i = local_pivots(II)
              fill_counter = fill_counter + 1
              a_buf(fill_counter) = dense_a(local_pi_j,local_pi_i)
           END DO
@@ -523,8 +503,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Loop over other columns
        fill_counter = 0
        DO II = 1, num_local_pivots
-          pi_i = local_pivots(II)
-          local_pi_i = pi_i - AMat%start_column + 1
+          local_pi_i = local_pivots(II)
           !! Insert Into L
           Aval = a_buf(II)
           insert_value = inverse_factor * (Aval - dot_values(II))
@@ -556,9 +535,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
     DEALLOCATE(values_l)
-    DEALLOCATE(values_per_column_pi)
-    DEALLOCATE(index_pi)
-    DEALLOCATE(values_pi)
     DEALLOCATE(recv_index)
     DEALLOCATE(recv_values)
     DEALLOCATE(dot_values)
@@ -644,6 +620,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPINTREAL, MPI_SUM, comm, err)
 
   END SUBROUTINE DotAllHelper
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE DotAllPivoted(num_values_i, indices_i, values_i, num_values_j, &
+       & indices_j, values_j, pivot_vector, num_local_pivots, out_values, comm)
+    !! Parameters
+    INTEGER, INTENT(IN) :: num_values_i
+    INTEGER, DIMENSION(:), INTENT(IN) :: num_values_j
+    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
+    INTEGER, DIMENSION(:,:), INTENT(IN) :: indices_j
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
+    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values_j
+    INTEGER, DIMENSION(:), INTENT(IN) :: pivot_vector
+    INTEGER, INTENT(IN) :: num_local_pivots
+    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
+    INTEGER, INTENT(INOUT) :: comm
+    !! Local Variables
+    INTEGER :: err
+    INTEGER :: counter
+    INTEGER :: inner_len_j
+    INTEGER :: local_pi_i
+
+    !! Local Dot
+    !$omp parallel private(inner_len_j, local_pi_i)
+    !$omp do
+    DO counter = 1, num_local_pivots
+       local_pi_i = pivot_vector(counter)
+       inner_len_j = num_values_j(local_pi_i)
+       out_values(counter) = DotSparseVectors(indices_i(:num_values_i), &
+            & values_i(:num_values_i), indices_j(:inner_len_j, local_pi_i), &
+            & values_j(:inner_len_j, local_pi_i))
+    END DO
+    !$omp end do
+    !$omp end parallel
+
+    !! Reduce Over Processes
+    CALL MPI_Allreduce(MPI_IN_PLACE, out_values, SIZE(num_values_j), &
+         & MPINTREAL, MPI_SUM, comm, err)
+
+  END SUBROUTINE DotAllPivoted
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
   SUBROUTINE BroadcastVector(num_values, indices, values, root, comm)
