@@ -491,7 +491,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Broadcast AMat[:,pi_j]
        fill_counter = 0
        local_pi_j = pi_j - AMat%start_row + 1
-       a_buf = 0
+       root = 0
        DO II = JJ + 1, AMat%actual_matrix_dimension
           pi_i = pivot_vector(II)
           local_pi_i = pi_i - AMat%start_column + 1
@@ -501,10 +501,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & pi_j .LT. AMat%end_row) THEN
              fill_counter = fill_counter + 1
              a_buf(fill_counter) = dense_a(local_pi_j,local_pi_i)
+             root = column_rank
           END IF
        END DO
-       CALL MPI_Allreduce(MPI_IN_PLACE, a_buf, sparse_a%columns, MPINTREAL, &
-            & MPI_SUM, column_comm, grid_error)
+       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
+            & column_comm, grid_error)
+       CALL BroadcastARow(fill_counter,a_buf,root,column_comm)
 
        !! Loop over other columns
        fill_counter = 0
@@ -649,6 +651,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
 
   END SUBROUTINE BroadcastVector
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A helper routine to broadcast a row of A.
+  SUBROUTINE BroadcastARow(num_values, values, root, comm)
+    !! Parameters
+    INTEGER, INTENT(INOUT) :: num_values
+    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
+    INTEGER, INTENT(IN) :: root
+    INTEGER, INTENT(INOUT) :: comm
+    !! Local
+    INTEGER :: err
+
+    CALL MPI_Bcast(num_values, 1, MPI_INT, root, comm, err)
+    CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
+
+  END SUBROUTINE BroadcastARow
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to insert a value into a sparse vector.
   PURE SUBROUTINE AppendToVector(values_per, indices, values, insert_row, &
