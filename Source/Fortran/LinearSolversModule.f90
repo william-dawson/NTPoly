@@ -211,7 +211,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II, JJ, local_JJ, local_II, local_row
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
-    INTEGER :: root
+    INTEGER, DIMENSION(:), ALLOCATABLE :: col_root_lookup
+    INTEGER :: col_root
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -234,6 +235,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     dense_a = 0
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
 
+    !! Root Lookups
+    ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
+    CALL ConstructRankLookup(AMat, col_root_lookup=col_root_lookup)
+
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))
     ALLOCATE(index_l(sparse_a%rows, sparse_a%columns))
@@ -249,7 +254,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO JJ = 1, AMat%actual_matrix_dimension
        !! Dot Column JJ with Column JJ, Insert Value into L[J,J]
        inverse_factor = 0
-       root = 0
        IF (JJ .GE. AMat%start_column .AND. JJ .LT. AMat%end_column) THEN
           local_JJ = JJ - AMat%start_column + 1
           CALL DotAllHelper(values_per_column_l(local_JJ), &
@@ -267,17 +271,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & index_l(:,local_JJ), values_l(:, local_JJ), local_row, &
                   & insert_value)
           END IF
-          root = row_rank
           !! Extract column J for sending later
           recv_num_values = values_per_column_l(local_JJ)
           recv_index(:recv_num_values) = index_l(:recv_num_values,local_JJ)
           recv_values(:recv_num_values) = values_l(:recv_num_values, local_JJ)
        END IF
+       col_root = col_root_lookup(JJ)
+
        !! Broadcast column JJ, and Inverse Factor
-       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
-            & row_comm, grid_error)
        CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
-            & root, row_comm)
+            & col_root, row_comm)
        CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
             & within_slice_comm, grid_error)
 
@@ -316,6 +319,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(recv_index)
     DEALLOCATE(recv_values)
     DEALLOCATE(dot_values)
+    DEALLOCATE(col_root_lookup)
     CALL DestructSparseMatrix(sparse_a)
   END SUBROUTINE CholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -356,20 +360,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Root Lookups
     INTEGER, DIMENSION(:), ALLOCATABLE :: row_root_lookup
     INTEGER, DIMENSION(:), ALLOCATABLE :: col_root_lookup
-    INTEGER, DIMENSION(num_process_rows) :: rows_per_proc
-    INTEGER, DIMENSION(num_process_columns) :: cols_per_proc
-    INTEGER, DIMENSION(num_process_rows) :: displ_rows_per_proc
-    INTEGER, DIMENSION(num_process_columns) :: displ_cols_per_proc
     !! Temporary Variables
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: a_buf
-    INTEGER :: II, JJ, local_JJ, local_II
+    INTEGER :: II, JJ, local_JJ
     INTEGER :: local_pi_i, local_pi_j
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
     INTEGER :: row_root, col_root
-    INTEGER :: fill_counter
-    INTEGER, DIMENSION(num_process_rows) :: diags_per_proc
-    INTEGER, DIMENSION(num_process_rows) :: diag_displ
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -393,6 +390,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO JJ = 1, AMat%actual_matrix_dimension
        pivot_vector(JJ) = JJ
     END DO
+    ALLOCATE(local_pivots(sparse_a%columns))
 
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
@@ -400,58 +398,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     dense_a = 0
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
 
-    !! Construct the vector holding the accumulated diagonal values
+    !! Extract the diagonal
     ALLOCATE(diag(sparse_a%columns))
-    diag = 0
-    fill_counter = 0
-    DO JJ = AMat%start_column, AMat%end_column - 1
-       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-          local_JJ = JJ - AMat%start_column + 1
-          local_II = JJ - AMat%start_row + 1
-          diag(local_JJ) = dense_a(local_II, local_JJ)
-          fill_counter = fill_counter + 1
-       END IF
-    END DO
-    diags_per_proc(my_row+1) = fill_counter
-    !! Duplicate the diagonal entries along the process column (across rows)
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, diags_per_proc, 1, &
-         & MPI_INTEGER, column_comm, grid_error)
-    diag_displ(1) = 0
-    DO II = 2, num_process_rows
-       diag_displ(II) = diag_displ(II-1) + diags_per_proc(II-1)
-    END DO
-    CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(my_row+1), MPINTREAL, &
-         & diag, diags_per_proc, diag_displ, MPINTREAL, column_comm, grid_error)
+    CALL ConstructDiag(AMat, dense_a, diag)
 
     !! Root Lookups
     ALLOCATE(row_root_lookup(AMat%logical_matrix_dimension))
-    row_root_lookup = 0
     ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
-    col_root_lookup = 0
-    rows_per_proc(my_row+1) = AMat%local_rows
-    cols_per_proc(my_column+1) = AMat%local_columns
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, rows_per_proc, 1, &
-         & MPI_INTEGER, column_comm, grid_error)
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
-         & MPI_INTEGER, row_comm, grid_error)
-    displ_rows_per_proc(1) = 0
-    DO II = 2, num_process_rows
-       displ_rows_per_proc(II) = displ_rows_per_proc(II-1) + rows_per_proc(II-1)
-    END DO
-    displ_cols_per_proc(1) = 0
-    DO II = 2, num_process_columns
-       displ_cols_per_proc(II) = displ_cols_per_proc(II-1) + cols_per_proc(II-1)
-    END DO
-    row_root_lookup(AMat%start_row:AMat%end_row - 1) = column_rank
-    col_root_lookup(AMat%start_column:AMat%end_column - 1) = row_rank
-    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_rows, MPI_INTEGER, &
-         & row_root_lookup, rows_per_proc, displ_rows_per_proc, MPI_INTEGER, &
-         & column_comm, grid_error)
-    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
-         & col_root_lookup, cols_per_proc, displ_cols_per_proc, MPI_INTEGER, &
-         & row_comm, grid_error)
-     WRITE(*,*) "::", row_root_lookup
-     WRITE(*,*) ",,", num_process_rows, num_process_columns
+    CALL ConstructRankLookup(AMat, row_root_lookup, col_root_lookup)
 
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))
@@ -464,7 +418,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(recv_index(sparse_a%rows))
     ALLOCATE(recv_values(sparse_a%rows))
     ALLOCATE(dot_values(sparse_a%columns))
-    ALLOCATE(local_pivots(sparse_a%columns))
+
     !! Main Loop
     DO JJ = 1, rank_in
        !! Pick a pivot vector
@@ -488,18 +442,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           inverse_factor = 1.0/insert_value
           !! Insert
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-             IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
-                CALL AppendToVector(values_per_column_l(local_pi_j), &
-                     & index_l(:,local_pi_j), values_l(:, local_pi_j), &
-                     & local_JJ, insert_value)
-             END IF
+             CALL AppendToVector(values_per_column_l(local_pi_j), &
+                  & index_l(:,local_pi_j), values_l(:, local_pi_j), &
+                  & local_JJ, insert_value)
           END IF
           !! Extract column J for sending later
           recv_num_values = values_per_column_l(local_pi_j)
           recv_index(:recv_num_values) = index_l(:recv_num_values,local_pi_j)
           recv_values(:recv_num_values) = values_l(:recv_num_values, local_pi_j)
-       ELSE
-          inverse_factor = 0
        END IF
        col_root = col_root_lookup(pi_j)
 
@@ -768,4 +718,80 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     pivot_vector(index) = pivot_vector(start_index)
     pivot_vector(start_index) = swap
   END SUBROUTINE GetPivot
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct the vector holding the accumulated diagonal values
+  SUBROUTINE ConstructDiag(AMat, dense_a, diag)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: dense_a
+    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
+    !! Local Variables
+    INTEGER :: fill_counter
+    INTEGER :: II, JJ, local_JJ, local_II
+    INTEGER, DIMENSION(num_process_rows) :: diags_per_proc
+    INTEGER, DIMENSION(num_process_rows) :: diag_displ
+
+    diag = 0
+    fill_counter = 0
+    DO JJ = AMat%start_column, AMat%end_column - 1
+       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+          local_JJ = JJ - AMat%start_column + 1
+          local_II = JJ - AMat%start_row + 1
+          diag(local_JJ) = dense_a(local_II, local_JJ)
+          fill_counter = fill_counter + 1
+       END IF
+    END DO
+    diags_per_proc(my_row+1) = fill_counter
+    !! Duplicate the diagonal entries along the process column (across rows)
+    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, diags_per_proc, 1, &
+         & MPI_INTEGER, column_comm, grid_error)
+    diag_displ(1) = 0
+    DO II = 2, num_process_rows
+       diag_displ(II) = diag_displ(II-1) + diags_per_proc(II-1)
+    END DO
+    CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(my_row+1), MPINTREAL, &
+         & diag, diags_per_proc, diag_displ, MPINTREAL, column_comm, grid_error)
+  END SUBROUTINE ConstructDiag
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ConstructRankLookup(AMat, row_root_lookup, col_root_lookup)
+    !! Root Lookups
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    INTEGER, DIMENSION(:), INTENT(INOUT), OPTIONAL :: row_root_lookup
+    INTEGER, DIMENSION(:), INTENT(INOUT), OPTIONAL :: col_root_lookup
+    !! Local Variables
+    INTEGER, DIMENSION(num_process_rows) :: rows_per_proc
+    INTEGER, DIMENSION(num_process_columns) :: cols_per_proc
+    INTEGER, DIMENSION(num_process_rows) :: d_rows_per_proc
+    INTEGER, DIMENSION(num_process_columns) :: d_cols_per_proc
+    INTEGER :: II
+
+    IF (PRESENT(row_root_lookup)) THEN
+       rows_per_proc(my_row+1) = AMat%local_rows
+       CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, rows_per_proc, 1, &
+            & MPI_INTEGER, column_comm, grid_error)
+       d_rows_per_proc(1) = 0
+       DO II = 2, num_process_rows
+          d_rows_per_proc(II) = d_rows_per_proc(II-1) + rows_per_proc(II-1)
+       END DO
+       row_root_lookup(AMat%start_row:AMat%end_row - 1) = column_rank
+       CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_rows, MPI_INTEGER, &
+            & row_root_lookup, rows_per_proc, d_rows_per_proc, MPI_INTEGER, &
+            & column_comm, grid_error)
+    END IF
+
+    IF (PRESENT(col_root_lookup)) THEN
+       cols_per_proc(my_column+1) = AMat%local_columns
+       CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
+            & MPI_INTEGER, row_comm, grid_error)
+       d_cols_per_proc(1) = 0
+       DO II = 2, num_process_columns
+          d_cols_per_proc(II) = d_cols_per_proc(II-1) + cols_per_proc(II-1)
+       END DO
+       col_root_lookup(AMat%start_column:AMat%end_column - 1) = row_rank
+       CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
+            & col_root_lookup, cols_per_proc, d_cols_per_proc, MPI_INTEGER, &
+            & row_comm, grid_error)
+    END IF
+
+  END SUBROUTINE ConstructRankLookup
 END MODULE LinearSolversModule
