@@ -357,6 +357,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: a_buf
     INTEGER :: II, JJ, local_JJ, local_II
     INTEGER :: local_pi_i, local_pi_j
+    INTEGER :: num_val
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
     INTEGER, DIMENSION(:), ALLOCATABLE :: diag_correction_index
@@ -478,9 +479,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           local_pi_i = pi_i - AMat%start_column + 1
           IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
              fill_counter = fill_counter + 1
-             values_per_column_pi(fill_counter) = values_per_column_l(local_pi_i)
-             index_pi(:,fill_counter) = index_l(:,local_pi_i)
-             values_pi(:,fill_counter) = values_l(:,local_pi_i)
+             num_val = values_per_column_l(local_pi_i)
+             values_per_column_pi(fill_counter) = num_val
+             index_pi(:num_val,fill_counter) = index_l(:num_val,local_pi_i)
+             values_pi(:num_val,fill_counter) = values_l(:num_val,local_pi_i)
           END IF
        END DO
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
