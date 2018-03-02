@@ -353,15 +353,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Which pivots to treat locally
     INTEGER, DIMENSION(:), ALLOCATABLE :: local_pivots
     INTEGER :: num_local_pivots
+    !! Root Lookups
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_root_lookup
+    INTEGER, DIMENSION(:), ALLOCATABLE :: col_root_lookup
+    INTEGER, DIMENSION(num_process_rows) :: rows_per_proc
+    INTEGER, DIMENSION(num_process_columns) :: cols_per_proc
+    INTEGER, DIMENSION(num_process_rows) :: displ_rows_per_proc
+    INTEGER, DIMENSION(num_process_columns) :: displ_cols_per_proc
     !! Temporary Variables
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: a_buf
     INTEGER :: II, JJ, local_JJ, local_II
     INTEGER :: local_pi_i, local_pi_j
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
-    INTEGER, DIMENSION(:), ALLOCATABLE :: diag_correction_index
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag_correction_values
-    INTEGER :: root
+    INTEGER :: row_root, col_root
     INTEGER :: fill_counter
     INTEGER, DIMENSION(num_process_rows) :: diags_per_proc
     INTEGER, DIMENSION(num_process_rows) :: diag_displ
@@ -418,6 +423,36 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(my_row+1), MPINTREAL, &
          & diag, diags_per_proc, diag_displ, MPINTREAL, column_comm, grid_error)
 
+    !! Root Lookups
+    ALLOCATE(row_root_lookup(AMat%logical_matrix_dimension))
+    row_root_lookup = 0
+    ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
+    col_root_lookup = 0
+    rows_per_proc(my_row+1) = AMat%local_rows
+    cols_per_proc(my_column+1) = AMat%local_columns
+    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, rows_per_proc, 1, &
+         & MPI_INTEGER, column_comm, grid_error)
+    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
+         & MPI_INTEGER, row_comm, grid_error)
+    displ_rows_per_proc(1) = 0
+    DO II = 2, num_process_rows
+       displ_rows_per_proc(II) = displ_rows_per_proc(II-1) + rows_per_proc(II-1)
+    END DO
+    displ_cols_per_proc(1) = 0
+    DO II = 2, num_process_columns
+       displ_cols_per_proc(II) = displ_cols_per_proc(II-1) + cols_per_proc(II-1)
+    END DO
+    row_root_lookup(AMat%start_row:AMat%end_row - 1) = column_rank
+    col_root_lookup(AMat%start_column:AMat%end_column - 1) = row_rank
+    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_rows, MPI_INTEGER, &
+         & row_root_lookup, rows_per_proc, displ_rows_per_proc, MPI_INTEGER, &
+         & column_comm, grid_error)
+    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
+         & col_root_lookup, cols_per_proc, displ_cols_per_proc, MPI_INTEGER, &
+         & row_comm, grid_error)
+     WRITE(*,*) "::", row_root_lookup
+     WRITE(*,*) ",,", num_process_rows, num_process_columns
+
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))
     ALLOCATE(index_l(sparse_a%rows, sparse_a%columns))
@@ -429,17 +464,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(recv_index(sparse_a%rows))
     ALLOCATE(recv_values(sparse_a%rows))
     ALLOCATE(dot_values(sparse_a%columns))
-    ALLOCATE(diag_correction_index(sparse_a%columns))
-    ALLOCATE(diag_correction_values(sparse_a%columns))
     ALLOCATE(local_pivots(sparse_a%columns))
     !! Main Loop
     DO JJ = 1, rank_in
        !! Pick a pivot vector
        local_JJ  = JJ - AMat%start_row + 1
        CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, pivot_value)
+
+       !! Determine local pivots
+       num_local_pivots = 0
+       DO II = JJ + 1, AMat%actual_matrix_dimension
+          pi_i = pivot_vector(II)
+          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
+             num_local_pivots = num_local_pivots + 1
+             local_pivots(num_local_pivots) = pi_i - AMat%start_column + 1
+          END IF
+       END DO
+
        !! l[pi[j],j] = sqrt(d[pi[j]])
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
-          root = row_rank
           local_pi_j = pi_j - AMat%start_column + 1
           insert_value = SQRT(diag(local_pi_j))
           inverse_factor = 1.0/insert_value
@@ -456,57 +499,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           recv_index(:recv_num_values) = index_l(:recv_num_values,local_pi_j)
           recv_values(:recv_num_values) = values_l(:recv_num_values, local_pi_j)
        ELSE
-          root = 0
           inverse_factor = 0
        END IF
-       !! Broadcast column JJ, and Inverse Factor
-       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
-            & row_comm, grid_error)
-       CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
-            & root, row_comm)
-       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
-            & row_comm, grid_error)
+       col_root = col_root_lookup(pi_j)
 
-       !! Determine local pivots
-       num_local_pivots = 0
-       DO II = JJ + 1, AMat%actual_matrix_dimension
-          pi_i = pivot_vector(II)
-          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
-             num_local_pivots = num_local_pivots + 1
-             local_pivots(num_local_pivots) = pi_i - AMat%start_column + 1
-          END IF
-       END DO
+       !! Compute A Buffer AMat[:,pi_j]
+       local_pi_j = pi_j - AMat%start_row + 1
+       IF (pi_j .GE. AMat%start_row .AND. pi_j .LT. AMat%end_row) THEN
+          DO II = 1, num_local_pivots
+             local_pi_i = local_pivots(II)
+             a_buf(II) = dense_a(local_pi_j,local_pi_i)
+          END DO
+       END IF
+       row_root = row_root_lookup(pi_j)
+
+       !! Broadcast column JJ, and Inverse Factor
+       CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
+            & col_root, row_comm)
+       CALL MPI_Bcast(inverse_factor, 1, MPINTREAL, col_root, row_comm, &
+            & grid_error)
+
+       !! Broadcast A values
+       CALL BroadcastARow(num_local_pivots,a_buf,row_root,column_comm)
 
        !! Compute Dot Products
        CALL DotAllPivoted(recv_num_values, recv_index, recv_values, &
-            & values_per_column_l, &
-            & index_l(:,:), values_l(:,:), &
-            & local_pivots, num_local_pivots, &
-            & dot_values(:num_local_pivots), column_comm)
-
-       !! Broadcast AMat[:,pi_j]
-       fill_counter = 0
-       local_pi_j = pi_j - AMat%start_row + 1
-       root = 0
-       IF (pi_j .GE. AMat%start_row .AND. pi_j .LT. AMat%end_row) THEN
-          root = column_rank
-          DO II = 1, num_local_pivots
-             local_pi_i = local_pivots(II)
-             fill_counter = fill_counter + 1
-             a_buf(fill_counter) = dense_a(local_pi_j,local_pi_i)
-          END DO
-       END IF
-       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
-            & column_comm, grid_error)
-       CALL BroadcastARow(fill_counter,a_buf,root,column_comm)
+            & values_per_column_l, index_l, values_l, local_pivots, &
+            & num_local_pivots, dot_values, column_comm)
 
        !! Loop over other columns
-       fill_counter = 0
        DO II = 1, num_local_pivots
-          local_pi_i = local_pivots(II)
           !! Insert Into L
           Aval = a_buf(II)
           insert_value = inverse_factor * (Aval - dot_values(II))
+          local_pi_i = local_pivots(II)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              CALL AppendToVector(values_per_column_l(local_pi_i), &
                   & index_l(:,local_pi_i), values_l(:, local_pi_i), &
@@ -538,9 +564,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(recv_index)
     DEALLOCATE(recv_values)
     DEALLOCATE(dot_values)
-    DEALLOCATE(diag_correction_index)
-    DEALLOCATE(diag_correction_values)
     DEALLOCATE(a_buf)
+    DEALLOCATE(row_root_lookup)
+    DEALLOCATE(col_root_lookup)
     CALL DestructSparseMatrix(sparse_a)
   END SUBROUTINE PivotedCholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
