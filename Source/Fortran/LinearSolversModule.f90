@@ -353,6 +353,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
     INTEGER :: recv_num_values
+    !! Which pivots to treat locally
+    INTEGER, DIMENSION(:), ALLOCATABLE :: local_pivots
+    INTEGER :: num_local_pivots
     !! Temporary Variables
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: a_buf
     INTEGER :: II, JJ, local_JJ, local_II
@@ -379,7 +382,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", &
-             & text_value_in="Pivoted Cholesky Decomposition")
+            & text_value_in="Pivoted Cholesky Decomposition")
        CALL WriteElement(key="Target_Rank", int_value_in=rank_in)
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
@@ -436,6 +439,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(dot_values(sparse_a%columns))
     ALLOCATE(diag_correction_index(sparse_a%columns))
     ALLOCATE(diag_correction_values(sparse_a%columns))
+    ALLOCATE(local_pivots(sparse_a%columns))
     !! Main Loop
     DO JJ = 1, rank_in
        !! Pick a pivot vector
@@ -471,19 +475,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
             & row_comm, grid_error)
 
+       !! Determine local pivots
+       num_local_pivots = 0
+       DO II = JJ + 1, AMat%actual_matrix_dimension
+          pi_i = pivot_vector(II)
+          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
+             num_local_pivots = num_local_pivots + 1
+             local_pivots(num_local_pivots) = pi_i
+          END IF
+       END DO
+
        !! Compute Dot Products
        !! Unlike normal cholesky, we need to pack for sending first
        fill_counter = 0
-       DO II = JJ + 1, AMat%actual_matrix_dimension
-          pi_i = pivot_vector(II)
+       DO II = 1, num_local_pivots
+          pi_i = local_pivots(II)
           local_pi_i = pi_i - AMat%start_column + 1
-          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
-             fill_counter = fill_counter + 1
-             num_val = values_per_column_l(local_pi_i)
-             values_per_column_pi(fill_counter) = num_val
-             index_pi(:num_val,fill_counter) = index_l(:num_val,local_pi_i)
-             values_pi(:num_val,fill_counter) = values_l(:num_val,local_pi_i)
-          END IF
+          fill_counter = fill_counter + 1
+          num_val = values_per_column_l(local_pi_i)
+          values_per_column_pi(fill_counter) = num_val
+          index_pi(:num_val,fill_counter) = index_l(:num_val,local_pi_i)
+          values_pi(:num_val,fill_counter) = values_l(:num_val,local_pi_i)
        END DO
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
             & values_per_column_pi(:fill_counter), index_pi(:,:fill_counter), &
@@ -494,40 +506,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        fill_counter = 0
        local_pi_j = pi_j - AMat%start_row + 1
        root = 0
-       DO II = JJ + 1, AMat%actual_matrix_dimension
-          pi_i = pivot_vector(II)
-          local_pi_i = pi_i - AMat%start_column + 1
-          IF (pi_i .GE. AMat%start_column .AND. &
-               & pi_i .LT. AMat%end_column .AND. &
-               & pi_j .GE. AMat%start_row .AND. &
-               & pi_j .LT. AMat%end_row) THEN
+       IF (pi_j .GE. AMat%start_row .AND. pi_j .LT. AMat%end_row) THEN
+          root = column_rank
+          DO II = 1, num_local_pivots
+             pi_i = local_pivots(II)
+             local_pi_i = pi_i - AMat%start_column + 1
              fill_counter = fill_counter + 1
              a_buf(fill_counter) = dense_a(local_pi_j,local_pi_i)
-             root = column_rank
-          END IF
-       END DO
+          END DO
+       END IF
        CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
             & column_comm, grid_error)
        CALL BroadcastARow(fill_counter,a_buf,root,column_comm)
 
        !! Loop over other columns
        fill_counter = 0
-       DO II = JJ + 1, AMat%actual_matrix_dimension
-          pi_i = pivot_vector(II)
+       DO II = 1, num_local_pivots
+          pi_i = local_pivots(II)
           local_pi_i = pi_i - AMat%start_column + 1
-          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
-             !! Insert Into L
-             fill_counter = fill_counter + 1
-             Aval = a_buf(fill_counter)
-             insert_value = inverse_factor * (Aval - dot_values(fill_counter))
-             IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-                CALL AppendToVector(values_per_column_l(local_pi_i), &
-                     & index_l(:,local_pi_i), values_l(:, local_pi_i), &
-                     & local_JJ, insert_value)
-             END IF
-             !! Update Diagonal Array
-             diag(local_pi_i) = diag(local_pi_i) - insert_value**2
+          !! Insert Into L
+          fill_counter = fill_counter + 1
+          Aval = a_buf(fill_counter)
+          insert_value = inverse_factor * (Aval - dot_values(fill_counter))
+          IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+             CALL AppendToVector(values_per_column_l(local_pi_i), &
+                  & index_l(:,local_pi_i), values_l(:, local_pi_i), &
+                  & local_JJ, insert_value)
           END IF
+          !! Update Diagonal Array
+          diag(local_pi_i) = diag(local_pi_i) - insert_value**2
        END DO
 
     END DO
@@ -542,6 +549,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintMatrixInformation(LMat)
        CALL ExitSubLog
     END IF
+    DEALLOCATE(local_pivots)
     DEALLOCATE(pivot_vector)
     DEALLOCATE(diag)
     DEALLOCATE(dense_a)
