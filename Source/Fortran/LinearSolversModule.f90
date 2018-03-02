@@ -220,6 +220,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters_t()
     END IF
 
+    !! Print out parameters
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Linear Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="Cholesky Decomposition")
+       CALL PrintFixedSolverParameters(solver_parameters)
+    END IF
+
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
     ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
@@ -297,6 +305,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL UnpackCholesky(values_per_column_l, index_l, values_l, LMat)
 
     !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL PrintMatrixInformation(LMat)
+       CALL ExitSubLog
+    END IF
     DEALLOCATE(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
@@ -318,7 +330,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
-    INTEGER, INTENT(IN), OPTIONAL :: rank_in
+    INTEGER, INTENT(IN) :: rank_in
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
@@ -359,6 +371,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = solver_parameters_in
     ELSE
        solver_parameters = FixedSolverParameters_t()
+    END IF
+
+    !! Print out parameters
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Linear Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", &
+             & text_value_in="Pivoted Cholesky Decomposition")
+       CALL WriteElement(key="Target_Rank", int_value_in=rank_in)
+       CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
     !! Construct the pivot vector
@@ -512,6 +534,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL UnpackCholesky(values_per_column_l, index_l, values_l, LMat)
 
     !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL PrintMatrixInformation(LMat)
+       CALL ExitSubLog
+    END IF
     DEALLOCATE(pivot_vector)
     DEALLOCATE(diag)
     DEALLOCATE(dense_a)
