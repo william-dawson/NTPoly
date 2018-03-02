@@ -15,6 +15,7 @@ from scipy.sparse.linalg import norm, inv, eigsh
 from numpy import zeros, sqrt, power, \
     sign, exp, log, sin, cos, linspace, diag, dot
 from numpy.linalg import eigh
+import numpy
 from random import random
 import os
 from numpy.polynomial.chebyshev import chebfit, chebval
@@ -39,7 +40,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 4
+    matrix_dimension = 6
 
     @classmethod
     def setUpClass(self):
@@ -780,22 +781,21 @@ class TestSolvers(unittest.TestCase):
     def test_pivotedcholesky(self):
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
         # Starting Matrix
-        temp_mat = scipy.sparse.rand(self.matrix_dimension,
-                                     self.matrix_dimension,
-                                     density=1.0, random_state=2)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
+        # temp_mat = scipy.sparse.rand(self.matrix_dimension,
+        #                              self.matrix_dimension,
+        #                              density=1.0, random_state=2)
+        # temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
+        # rand2 = 10*rand(self.matrix_dimension, self.matrix_dimension,
+        #              density=0.1)
+        # temp_mat = temp_mat + rand2 + rand2.T
         # Symmetric Positive Definite
-        matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
-
-        # First construct a low rank approximate, then reconstruct.
-        L = cholesky(matrix1.todense(), lower=True)
-        rank = int(self.matrix_dimension)
-        Llow = L[:, :rank]
-        matrix1 = Llow.dot(Llow.T)
+        # matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
+        matrix1 = mmread(os.environ["GEOMD2"])
+        rank = 5
 
         if self.my_rank == 0:
             print()
-            print(matrix1)
+            print(matrix1.todense())
 
         self.CheckMat = csr_matrix(matrix1)
         if self.my_rank == 0:

@@ -325,6 +325,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Pivoting
     INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
+    REAL(NTREAL) :: pivot_value
+    INTEGER :: pi_i, pi_j
     !! Local Variables
     TYPE(SparseMatrix_t) :: sparse_a
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
@@ -335,17 +337,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_values
     INTEGER :: recv_num_values
-    INTEGER :: II, JJ, local_JJ, local_II, local_row
+    INTEGER :: II, JJ, local_JJ, local_II
+    INTEGER :: local_pi_i, local_pi_j
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
-    INTEGER :: num_diag_corrections
     INTEGER, DIMENSION(:), ALLOCATABLE :: diag_correction_index
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag_correction_values
     INTEGER :: root
     INTEGER :: fill_counter
     INTEGER, DIMENSION(num_process_rows) :: diags_per_proc
     INTEGER, DIMENSION(num_process_rows) :: diag_displ
-    REAL(NTREAL) :: max_diag
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -404,30 +405,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Main Loop
     DO JJ = 1, rank_in
        !! Pick a pivot vector
-       !! Dot Column JJ with Column JJ, Insert Value into L[J,J]
-       inverse_factor = 0
-       root = 0
-       IF (JJ .GE. AMat%start_column .AND. JJ .LT. AMat%end_column) THEN
-          local_JJ = JJ - AMat%start_column + 1
-          CALL DotAllHelper(values_per_column_l(local_JJ), &
-               & index_l(:,local_JJ), values_l(:,local_JJ), &
-               & values_per_column_l(local_JJ:local_JJ), &
-               & index_l(:,local_JJ:local_JJ), values_l(:,local_JJ:local_JJ), &
-               & dot_values(1:1), column_comm)
-          IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-             local_row = JJ - AMat%start_row + 1
-             insert_value = SQRT(diag(local_JJ))
-             inverse_factor = 1.0/insert_value
-             !! Insert
-             CALL AppendToVector(values_per_column_l(local_JJ), &
-                  & index_l(:,local_JJ), values_l(:, local_JJ), local_row, &
-                  & insert_value)
-          END IF
+       local_JJ  = JJ - AMat%start_row + 1
+       CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, pivot_value)
+       !! l[pi[j],j] = sqrt(d[pi[j]])
+       IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
           root = row_rank
+          local_pi_j = pi_j - AMat%start_column + 1
+          insert_value = SQRT(diag(local_pi_j))
+          inverse_factor = 1.0/insert_value
+          !! Insert
+          IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+             IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
+                CALL AppendToVector(values_per_column_l(local_pi_j), &
+                     & index_l(:,local_pi_j), values_l(:, local_pi_j), &
+                     & local_JJ, insert_value)
+             END IF
+          END IF
           !! Extract column J for sending later
-          recv_num_values = values_per_column_l(local_JJ)
-          recv_index(:recv_num_values) = index_l(:recv_num_values,local_JJ)
-          recv_values(:recv_num_values) = values_l(:recv_num_values, local_JJ)
+          recv_num_values = values_per_column_l(local_pi_j)
+          recv_index(:recv_num_values) = index_l(:recv_num_values,local_pi_j)
+          recv_values(:recv_num_values) = values_l(:recv_num_values, local_pi_j)
+       ELSE
+          root = 0
+          inverse_factor = 0
        END IF
        !! Broadcast column JJ, and Inverse Factor
        CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
@@ -435,39 +435,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
             & root, row_comm)
        CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
-            & within_slice_comm, grid_error)
+            & row_comm, grid_error)
 
        !! Loop over other columns
-       CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
-            & values_per_column_l, index_l, values_l, dot_values, column_comm)
-       num_diag_corrections = 0
-       root = 0
-       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-          root = column_rank
-          DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
-             local_II = II - AMat%start_column + 1
-             local_row = JJ - AMat%start_row + 1
-             Aval = dense_a(local_row, local_II)
-             insert_value = inverse_factor * (Aval - dot_values(local_II))
-             IF (ABS(insert_value) .GT. solver_parameters%threshold .OR. .TRUE.) THEN
-                CALL AppendToVector(values_per_column_l(local_II), &
-                     & index_l(:,local_II), values_l(:, local_II), &
-                     & local_row, insert_value)
-                num_diag_corrections = num_diag_corrections + 1
-                diag_correction_index(num_diag_corrections) = local_II
-                diag_correction_values(num_diag_corrections) = insert_value
+       DO II = JJ + 1, AMat%actual_matrix_dimension
+          pi_i = pivot_vector(II)
+          local_pi_i = pi_i - AMat%start_column + 1
+          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
+             !! Get A Value
+             IF (pi_j .GE. AMat%start_row .AND. pi_j .LT. AMat%end_row) THEN
+                local_pi_j = pi_j - AMat%start_row + 1
+                Aval = dense_a(local_pi_j,local_pi_i)
+             ELSE
+                Aval = 0
              END IF
-          END DO
-       END IF
-       !! Correct the diagonal vector
-       CALL MPI_Allreduce(MPI_IN_PLACE, root, 1, MPI_INTEGER, MPI_SUM, &
-            & column_comm, grid_error)
-       CALL BroadcastVector(num_diag_corrections, diag_correction_index, &
-            & diag_correction_values, root, column_comm)
-       DO II = 1, num_diag_corrections
-          diag(diag_correction_index(II)) = diag(diag_correction_index(II)) - &
-               & diag_correction_values(II)**2
+             CALL MPI_Allreduce(MPI_IN_PLACE, Aval, 1, MPINTREAL, MPI_SUM, &
+                  & column_comm, grid_error)
+             CALL DotOneHelper(recv_num_values,recv_index,recv_values, &
+                  & values_per_column_l(local_pi_i), index_l(:,local_pi_i), &
+                  & values_l(:,local_pi_i),insert_value,column_comm)
+             !! Insert Into L
+             insert_value = inverse_factor * (Aval - insert_value)
+             IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+                CALL AppendToVector(values_per_column_l(local_pi_i), &
+                     & index_l(:,local_pi_i), values_l(:, local_pi_i), &
+                     & local_JJ, &
+                     & insert_value)
+             END IF
+             !! Update Diagonal Array
+             diag(local_pi_i) = diag(local_pi_i) - insert_value**2
+          END IF
        END DO
+
     END DO
 
     !! Unpack
@@ -511,7 +510,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           temp%index_row = JJ + LMat%start_column - 1
           DO II = 1, values_per_column(JJ)
              !! note transpose
-             temp%index_column = index(II,JJ) + LMat%start_row - 1
+             temp%index_column = INDEX(II,JJ) + LMat%start_row - 1
              temp%point_value = values(II,JJ)
              CALL AppendToTripletList(local_triplets, temp)
           END DO
@@ -567,6 +566,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE DotAllHelper
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE DotOneHelper(num_values_i, indices_i, values_i, num_values_j, &
+       & indices_j, values_j, out_values, comm)
+    !! Parameters
+    INTEGER, INTENT(IN) :: num_values_i
+    INTEGER, INTENT(IN) :: num_values_j
+    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
+    INTEGER, DIMENSION(:), INTENT(IN) :: indices_j
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_j
+    REAL(NTREAL), INTENT(OUT) :: out_values
+    INTEGER, INTENT(INOUT) :: comm
+    !! Local Variables
+    INTEGER :: err
+
+    !! Local Dot
+    out_values = DotSparseVectors(indices_i(:num_values_i), &
+         & values_i(:num_values_i), indices_j(:num_values_j), &
+         & values_j(:num_values_j))
+
+    !! Reduce Over Processes
+    CALL MPI_Allreduce(MPI_IN_PLACE, out_values, 1, &
+         & MPINTREAL, MPI_SUM, comm, err)
+
+  END SUBROUTINE DotOneHelper
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
   SUBROUTINE BroadcastVector(num_values, indices, values, root, comm)
     !! Parameters
@@ -598,4 +622,41 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     indices(values_per) = insert_row
     values(values_per) = insert_value
   END SUBROUTINE AppendToVector
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE GetPivot(AMat, start_index, pivot_vector, diag, index, value)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
+    INTEGER, INTENT(IN) :: start_index
+    INTEGER, INTENT(OUT) :: index
+    REAL(NTREAL), INTENT(OUT) :: value
+    !! Local Variables
+    REAL(NTREAL) :: temp_diag
+    DOUBLE PRECISION, DIMENSION(2) :: max_diag
+    INTEGER :: pind
+    INTEGER :: II
+    INTEGER :: swap
+
+    max_diag = [0, 0]
+    DO II = start_index, AMat%actual_matrix_dimension
+       pind = pivot_vector(II)
+       IF (pind .GE. AMat%start_column .AND. pind .LT. AMat%end_column) THEN
+          temp_diag = diag(pind - AMat%start_column + 1)
+          IF (temp_diag .GT. max_diag(1)) THEN
+             max_diag(1) = temp_diag
+             max_diag(2) = II
+          END IF
+       END IF
+    END DO
+    CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
+         & MPI_MAXLOC, row_comm, grid_error)
+
+    value = max_diag(1)
+    index = INT(max_diag(2))
+
+    swap = pivot_vector(index)
+    pivot_vector(index) = pivot_vector(start_index)
+    pivot_vector(start_index) = swap
+  END SUBROUTINE GetPivot
 END MODULE LinearSolversModule
