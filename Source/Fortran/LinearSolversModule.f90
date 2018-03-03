@@ -130,9 +130,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute the Step Size
        CALL DistributedGemm(ABalanced, PMat, QMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       !  top = DotDistributedSparseMatrix(RMat,RMat)
-       !  bottom = DotDistributedSparseMatrix(PMat,QMat)
-       !  step_size = top/bottom
+            
        CALL TransposeDistributedSparseMatrix(RMat,RMatT)
        CALL DistributedGemm(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)

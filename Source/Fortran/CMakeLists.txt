@@ -7,6 +7,7 @@ set(Fsrc
     DistributedSparseMatrixModule.f90
     DistributedSparseMatrixAlgebraModule.f90
     EigenBoundsModule.f90
+    EigenSolversModule.f90
     ErrorModule.f90
     ExponentialSolversModule.f90
     FixedSolversModule.f90

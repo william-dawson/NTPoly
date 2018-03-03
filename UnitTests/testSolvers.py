@@ -855,6 +855,31 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_eigendecomposition(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
+                        density=1.0)
+        matrix1 = csr_matrix(temp_mat)
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+        self.CheckMat = csr_matrix(vecs)
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        v_matrix = nt.DistributedSparseMatrix(
+            input_matrix.GetActualDimension())
+        nt.EigenSolvers.EigenDecomposition(input_matrix, v_matrix,
+                                                 self.iterative_solver_parameters)
+        v_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
 
 if __name__ == '__main__':
     unittest.main()

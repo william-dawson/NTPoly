@@ -4,6 +4,7 @@ set(Csrc
     DistributedSparseMatrix.cc DistributedSparseMatrix.h
     DistributedMatrixMemoryPool.cc DistributedMatrixMemoryPool.h
     EigenBounds.cc EigenBounds.h
+    EigenSolvers.cc EigenSolvers.h
     ExponentialSolvers.cc ExponentialSolvers.h
     FixedSolversParameters.cc FixedSolversParameters.h
     GeometryOptimization.cc GeometryOptimization.h
