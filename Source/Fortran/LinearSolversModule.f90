@@ -341,8 +341,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Pivoting
     INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
-    REAL(NTREAL) :: pivot_value
-    INTEGER :: pi_i, pi_j
+    INTEGER :: pi_j
     !! Local Variables
     TYPE(SparseMatrix_t) :: sparse_a
     TYPE(SparseMatrix_t) :: acol
@@ -422,23 +421,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(dot_values(sparse_a%columns))
 
     !! Pregather the full column of A.
-    CALL GatherMatrixColumn(sparse_a,acol)
+    CALL GatherMatrixColumn(sparse_a, acol)
 
     !! Main Loop
     DO JJ = 1, rank_in
        !! Pick a pivot vector
        local_JJ  = JJ - AMat%start_row + 1
-       CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, pivot_value)
-
-       !! Determine local pivots
-       num_local_pivots = 0
-       DO II = JJ + 1, AMat%actual_matrix_dimension
-          pi_i = pivot_vector(II)
-          IF (pi_i .GE. AMat%start_column .AND. pi_i .LT. AMat%end_column) THEN
-             num_local_pivots = num_local_pivots + 1
-             local_pivots(num_local_pivots) = pi_i - AMat%start_column + 1
-          END IF
-       END DO
+       CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, local_pivots, &
+            & num_local_pivots)
 
        !! l[pi[j],j] = sqrt(d[pi[j]])
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
@@ -668,14 +658,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     values(values_per) = insert_value
   END SUBROUTINE AppendToVector
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE GetPivot(AMat, start_index, pivot_vector, diag, index, value)
+  SUBROUTINE GetPivot(AMat, start_index, pivot_vector, diag, index, &
+       & local_pivots, num_local_pivots)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
     INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
     INTEGER, INTENT(IN) :: start_index
     INTEGER, INTENT(OUT) :: index
-    REAL(NTREAL), INTENT(OUT) :: value
+    INTEGER, DIMENSION(:), INTENT(INOUT) :: local_pivots
+    INTEGER, INTENT(OUT) :: num_local_pivots
     !! Local Variables
     REAL(NTREAL) :: temp_diag
     DOUBLE PRECISION, DIMENSION(2) :: max_diag
@@ -697,12 +689,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
          & MPI_MAXLOC, row_comm, grid_error)
 
-    value = max_diag(1)
     index = INT(max_diag(2))
 
     swap = pivot_vector(index)
     pivot_vector(index) = pivot_vector(start_index)
     pivot_vector(start_index) = swap
+
+    !! Determine local pivots
+    num_local_pivots = 0
+    DO II = start_index + 1, AMat%actual_matrix_dimension
+       pind = pivot_vector(II)
+       IF (pind .GE. AMat%start_column .AND. pind .LT. AMat%end_column) THEN
+          num_local_pivots = num_local_pivots + 1
+          local_pivots(num_local_pivots) = pind - AMat%start_column + 1
+       END IF
+    END DO
   END SUBROUTINE GetPivot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the vector holding the accumulated diagonal values
