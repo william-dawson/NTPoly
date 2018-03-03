@@ -40,7 +40,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 6
+    matrix_dimension = 4
 
     @classmethod
     def setUpClass(self):
@@ -54,7 +54,7 @@ class TestSolvers(unittest.TestCase):
         '''Set up all of the tests.'''
         # Rank of the current process.
         self.my_rank = comm.Get_rank()
-        # Parmaeters for iterative solvers.
+        # Parameters for iterative solvers.
         self.iterative_solver_parameters = nt.IterativeSolverParameters()
         # Parameters for fixed solvers.
         self.fixed_solver_parameters = nt.FixedSolverParameters()
@@ -859,23 +859,24 @@ class TestSolvers(unittest.TestCase):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        matrix1 = csr_matrix(temp_mat)
+                        density=1.0, random_state=2)
+        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+        print(matrix1.todense())
 
         # Check Matrix
         vals, vecs = eigh(matrix1.todense())
-        self.CheckMat = csr_matrix(vecs)
+        self.CheckMat = csr_matrix(diag(vals))
         if self.my_rank == 0:
             mmwrite(self.input_file, csr_matrix(matrix1))
         comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        v_matrix = nt.DistributedSparseMatrix(
-            input_matrix.GetActualDimension())
-        nt.EigenSolvers.EigenDecomposition(input_matrix, v_matrix,
-                                                 self.iterative_solver_parameters)
-        v_matrix.WriteToMatrixMarket(result_file)
+        vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        nt.EigenSolvers.EigenDecomposition(input_matrix, vec_matrix, val_matrix,
+                                           self.iterative_solver_parameters)
+        val_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
         self.check_result()

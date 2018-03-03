@@ -616,6 +616,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: gathered_matrix
     TYPE(GatherHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0
+    LOGICAL :: preduplicated
+
+    IF (.NOT. PRESENT(preduplicated_in)) THEN
+      preduplicated = .FALSE.
+    ELSE
+      preduplicated = preduplicated_in
+    END IF
 
     CALL StartTimer("FillFromTriplet")
     !! First we redistribute the triplet list to get all the local data
@@ -644,9 +651,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
        CALL GatherAndSumCleanUp(local_matrix, gathered_matrix, threshold, &
             & gather_helper)
+       CALL SplitToLocalBlocks(this, gathered_matrix)
+    ELSE
+       CALL SplitToLocalBlocks(this, local_matrix)
     END IF
-
-    CALL SplitToLocalBlocks(this, gathered_matrix)
     CALL StopTimer("FillFromTriplet")
 
     CALL DestructSparseMatrix(local_matrix)
