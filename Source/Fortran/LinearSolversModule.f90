@@ -390,13 +390,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO JJ = 1, AMat%actual_matrix_dimension
        pivot_vector(JJ) = JJ
     END DO
-    ALLOCATE(local_pivots(sparse_a%columns))
 
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
     ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
     dense_a = 0
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
+    ALLOCATE(local_pivots(sparse_a%columns))
 
     !! Extract the diagonal
     ALLOCATE(diag(sparse_a%columns))
