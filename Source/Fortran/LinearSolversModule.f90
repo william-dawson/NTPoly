@@ -470,10 +470,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           local_pi_i = local_pivots(II)
           Aval = a_buf(local_pi_i)
           insert_value = inverse_factor * (Aval - dot_values(II))
-          IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-             CALL AppendToVector(values_per_column_l(local_pi_i), &
-                  & index_l(:,local_pi_i), values_l(:, local_pi_i), &
-                  & local_JJ, insert_value)
+          IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
+             IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
+                CALL AppendToVector(values_per_column_l(local_pi_i), &
+                     & index_l(:,local_pi_i), values_l(:, local_pi_i), &
+                     & local_JJ, insert_value)
+             END IF
           END IF
           !! Update Diagonal Array
           diag(local_pi_i) = diag(local_pi_i) - insert_value**2
@@ -675,6 +677,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
     INTEGER :: swap
 
+    !! Search for the maximum pivot
     max_diag = [0, 0]
     DO II = start_index, AMat%actual_matrix_dimension
        pind = pivot_vector(II)
@@ -688,7 +691,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
          & MPI_MAXLOC, row_comm, grid_error)
-
     index = INT(max_diag(2))
 
     swap = pivot_vector(index)
