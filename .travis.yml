@@ -19,6 +19,7 @@ before_install:
   - sudo make install >/dev/null 2>&1
   - cd ../
   - sudo ldconfig
+  - sudo apt-get install libblas-dev liblapack-dev
   - sudo apt-get install python-dev
   - sudo apt-get install doxygen
   - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
