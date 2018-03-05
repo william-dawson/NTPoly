@@ -45,7 +45,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     TYPE(FixedSolverParameters_t) :: fixed_param
     TYPE(IterativeSolverParameters_t) :: it_param
-    TYPE(Permutation_t) :: default_perm
     INTEGER :: num_values
     !! Local
     TYPE(DistributedSparseMatrix_t) :: eigenvectorsT, TempMat
@@ -166,7 +165,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters, &
        & it_param, fixed_param)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
@@ -422,7 +421,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] eigenvecotrs the eigenvectors of the matrix
   SUBROUTINE BaseCase(this, fixed_param, eigenvectors)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     !! Local Data
@@ -438,17 +437,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Gather on a single processor
     CALL GetTripletList(this, triplet_list)
-    ALLOCATE(send_list(slice_size))
+    ALLOCATE(send_list(this%process_grid%slice_size))
     CALL ConstructTripletList(send_list(1), triplet_list%CurrentSize)
-    DO counter = 2, slice_size
+    DO counter = 2, this%process_grid%slice_size
        CALL ConstructTripletList(send_list(counter))
     END DO
     list_size = triplet_list%CurrentSize
     send_list(1)%data(:list_size) = triplet_list%data(:list_size)
     CALL DestructTripletList(triplet_list)
-    CALL RedistributeTripletLists(send_list, within_slice_comm, triplet_list)
+    CALL RedistributeTripletLists(send_list, &
+         & this%process_grid%within_slice_comm, triplet_list)
 
-    IF (within_slice_rank .EQ. 0) THEN
+    IF (this%process_grid%within_slice_rank .EQ. 0) THEN
        !! Pack To A Dense Matrix
        CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
        CALL ConstructFromTripletList(sparse, sorted_triplet_list, mat_dim, &
@@ -481,7 +481,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructTripletList(triplet_list)
-    DO counter = 1, slice_size
+    DO counter = 1, this%process_grid%slice_size
        CALL DestructTripletList(send_list(counter))
     END DO
     DEALLOCATE(send_list)

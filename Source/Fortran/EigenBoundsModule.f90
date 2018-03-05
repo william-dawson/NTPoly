@@ -33,6 +33,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Counters/Temporary
     INTEGER :: counter
     INTEGER :: local_column
+    INTEGER :: ierr
 
     !! Allocate Space For Result
     ALLOCATE(per_column_min(this%local_columns))
@@ -61,17 +62,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Sum Along Columns
     CALL MPI_Allreduce(MPI_IN_PLACE,per_column_min,SIZE(per_column_min), &
-         & MPINTREAL,MPI_SUM,column_comm,grid_error)
+         & MPINTREAL,MPI_SUM,this%process_grid%column_comm,ierr)
     CALL MPI_Allreduce(MPI_IN_PLACE,per_column_max,SIZE(per_column_max), &
-         & MPINTREAL,MPI_SUM,column_comm,grid_error)
+         & MPINTREAL,MPI_SUM,this%process_grid%column_comm,ierr)
 
     min_value = MINVAL(per_column_min)
     max_value = MAXVAL(per_column_max)
 
     CALL MPI_Allreduce(MPI_IN_PLACE,min_value,1,MPINTREAL,MPI_MIN, &
-         & row_comm, grid_error)
+         & this%process_grid%row_comm, ierr)
     CALL MPI_Allreduce(MPI_IN_PLACE,max_value,1,MPINTREAL,MPI_MAX, &
-         & row_comm, grid_error)
+         & this%process_grid%row_comm, ierr)
 
     CALL DestructTripletList(triplet_list)
     DEALLOCATE(per_column_min)
@@ -108,7 +109,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters%max_iterations = 10
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Power Bounds Solver")
        CALL EnterSubLog
        CALL PrintIterativeSolverParameters(solver_parameters)
@@ -122,7 +123,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Guess Vector
     CALL ConstructTripletList(temp_list)
-    IF (global_rank .EQ. 0) THEN
+    IF (this%process_grid%global_rank .EQ. 0) THEN
        temp_triplet%index_row = 1
        temp_triplet%index_column = 1
        temp_triplet%point_value = 1.0
@@ -131,7 +132,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillFromTripletList(vector,temp_list)
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF

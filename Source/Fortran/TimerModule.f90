@@ -2,7 +2,7 @@
 !> A module to do timings.
 MODULE TimerModule
   USE LoggingModule
-  USE ProcessGridModule
+  USE ProcessGridModule, ONLY : global_grid
   USE mpi
   IMPLICIT NONE
   PRIVATE
@@ -59,7 +59,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: timer_position
     DOUBLE PRECISION :: temp_time
 
-    !call MPI_Barrier(global_comm,grid_error)
     temp_time = MPI_WTIME()
     timer_position = GetTimerPosition(timer_name)
     IF (timer_position > 0) THEN
@@ -77,7 +76,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DOUBLE PRECISION :: temp_elapsed_time
     DOUBLE PRECISION :: temp_start_time
 
-    !call MPI_Barrier(global_comm,grid_error)
     timer_position = GetTimerPosition(timer_name)
     IF (timer_position > 0) THEN
        temp_elapsed_time = MPI_WTIME()
@@ -126,23 +124,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER          :: timer_position
     DOUBLE PRECISION :: elapsed
     DOUBLE PRECISION :: max_time
+    INTEGER          :: ierr
 
-    IF (IsRoot()) THEN
-      CALL WriteHeader("Timers")
-      CALL EnterSubLog
-    END IF
+    CALL WriteHeader("Timers")
+    CALL EnterSubLog
+
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        elapsed = elapsed_times(timer_position)
-       CALL MPI_Allreduce(elapsed,max_time,1,MPI_DOUBLE,MPI_MAX,global_comm, &
-            & grid_error)
-       IF (IsRoot()) THEN
-          CALL WriteListElement(key=timer_list(timer_position), &
-               & float_value_in=max_time)
-       END IF
+       CALL MPI_Allreduce(elapsed, max_time, 1, MPI_DOUBLE ,MPI_MAX, &
+            & global_grid%global_comm, ierr)
+       CALL WriteListElement(key=timer_list(timer_position), &
+            & float_value_in=max_time)
     END DO
-    IF (IsRoot()) THEN
-      CALL ExitSubLog
-    END IF
+
+    CALL ExitSubLog
   END SUBROUTINE PrintAllTimersDistributed
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Figure out the position in the timer list where timer_name is.

@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping the distributed sparse matrix memory pool.
 MODULE DistributedMatrixMemoryPoolModule_wrp
+  USE DistributedSparseMatrixModule_wrp, ONLY : DistributedSparseMatrix_wrp
   USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
        & ConstructDistributedMatrixMemoryPool, &
        & DestructDistributedMatrixMemoryPool
@@ -18,14 +19,18 @@ MODULE DistributedMatrixMemoryPoolModule_wrp
   PUBLIC :: DestructDistributedMatrixMemoryPool_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
-  PURE SUBROUTINE ConstructDistributedMatrixMemoryPool_wrp(ih_this) &
+  PURE SUBROUTINE ConstructDistributedMatrixMemoryPool_wrp(ih_this, ih_matrix) &
        & bind(c,name="ConstructDistributedMatrixMemoryPool_wrp")
     !! Parameters
     INTEGER(kind=c_int), INTENT(out) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(in) :: ih_matrix(SIZE_wrp)
     TYPE(DistributedMatrixMemoryPool_wrp) :: h_this
+    TYPE(DistributedSparseMatrix_wrp) :: h_matrix
+
+    h_matrix = TRANSFER(ih_matrix,h_matrix)
 
     ALLOCATE(h_this%data)
-    CALL ConstructDistributedMatrixMemoryPool(h_this%data)
+    CALL ConstructDistributedMatrixMemoryPool(h_this%data, h_matrix%data)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructDistributedMatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -12,7 +12,7 @@ class DistributedSparseMatrix;
 class DistributedMatrixMemoryPool {
 public:
   // Standard constructor.
-  DistributedMatrixMemoryPool();
+  DistributedMatrixMemoryPool(const DistributedSparseMatrix &Matrix);
   // Standard destructor.
   ~DistributedMatrixMemoryPool();
 

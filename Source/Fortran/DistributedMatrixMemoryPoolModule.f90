@@ -2,9 +2,9 @@
 !> A module for handling scratch memory for distributed matrix multiplication.
 MODULE DistributedMatrixMemoryPoolModule
   USE ErrorModule
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
        & DestructMatrixMemoryPool
-  USE ProcessGridModule, ONLY : number_of_blocks_columns, number_of_blocks_rows
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -21,13 +21,16 @@ MODULE DistributedMatrixMemoryPoolModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
   !> @param[out] this a constructed Matrix Memory Pool object.
-  PURE SUBROUTINE ConstructDistributedMatrixMemoryPool(this)
+  !! @param[in] matrix the associated distributed sparse matrix.
+  PURE SUBROUTINE ConstructDistributedMatrixMemoryPool(this, matrix)
     !! Parameters
     TYPE(DistributedMatrixMemoryPool_t), INTENT(INOUT) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
 
     !! Allocate
     CALL DestructDistributedMatrixMemoryPool(this)
-    ALLOCATE(this%grid(number_of_blocks_columns,number_of_blocks_rows))
+    ALLOCATE(this%grid(matrix%process_grid%number_of_blocks_columns, &
+         & matrix%process_grid%number_of_blocks_rows))
   END SUBROUTINE ConstructDistributedMatrixMemoryPool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Distributed Matrix Memory Pool object.

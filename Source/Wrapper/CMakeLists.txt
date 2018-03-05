@@ -1,6 +1,7 @@
 set(Wsrc
     ChebyshevSolversModule_wrp.f90
     DensityMatrixSolversModule_wrp.f90
+    DistributedSparseMatrixAlgebraModule_wrp.f90
     DistributedSparseMatrixModule_wrp.f90
     DistributedMatrixMemoryPoolModule_wrp.f90
     EigenBoundsModule_wrp.f90

@@ -172,7 +172,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("Load Balance")
 
     !! Cleanup
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructDistributedSparseMatrix(TempMat)
@@ -211,6 +211,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
     INTEGER, DIMENSION(:), ALLOCATABLE :: col_root_lookup
     INTEGER :: col_root
+    INTEGER :: ierr
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -227,6 +228,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
+    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+         & AMat%actual_matrix_dimension)
+
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
     ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
@@ -235,7 +239,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Root Lookups
     ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
-    CALL ConstructRankLookup(AMat, col_root_lookup=col_root_lookup)
+    CALL ConstructRankLookup(AMat, LMat%process_grid, &
+         & col_root_lookup=col_root_lookup)
 
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))
@@ -258,7 +263,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & index_l(:,local_JJ), values_l(:,local_JJ), &
                & values_per_column_l(local_JJ:local_JJ), &
                & index_l(:,local_JJ:local_JJ), values_l(:,local_JJ:local_JJ), &
-               & dot_values(1:1), column_comm)
+               & dot_values(1:1), LMat%process_grid%column_comm)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              local_row = JJ - AMat%start_row + 1
              Aval = dense_a(local_row, local_JJ)
@@ -278,13 +283,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Broadcast column JJ, and Inverse Factor
        CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
-            & col_root, row_comm)
+            & col_root, LMat%process_grid%row_comm)
        CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
-            & within_slice_comm, grid_error)
+            & LMat%process_grid%within_slice_comm, ierr)
 
        !! Loop over other columns
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
-            & values_per_column_l, index_l, values_l, dot_values, column_comm)
+            & values_per_column_l, index_l, values_l, dot_values, &
+            & LMat%process_grid%column_comm)
        IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
           DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
              local_II = II - AMat%start_column + 1
@@ -301,8 +307,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Unpack
-    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
-         & AMat%actual_matrix_dimension)
     CALL UnpackCholesky(values_per_column_l, index_l, values_l, LMat)
 
     !! Cleanup
@@ -364,6 +368,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: Aval, insert_value, inverse_factor
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: dot_values
     INTEGER :: col_root
+    INTEGER :: ierr
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -382,6 +387,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
+    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+         & AMat%actual_matrix_dimension)
+
     !! Construct the pivot vector
     ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))
     DO JJ = 1, AMat%actual_matrix_dimension
@@ -397,11 +405,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract the diagonal
     ALLOCATE(diag(sparse_a%columns))
-    CALL ConstructDiag(AMat, dense_a, diag)
+    CALL ConstructDiag(AMat, Lmat%process_grid, dense_a, diag)
 
     !! Root Lookups
     ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
-    CALL ConstructRankLookup(AMat, col_root_lookup)
+    CALL ConstructRankLookup(AMat, LMat%process_grid, col_root_lookup)
 
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))
@@ -419,14 +427,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(dot_values(sparse_a%columns))
 
     !! Pregather the full column of A.
-    CALL GatherMatrixColumn(sparse_a, acol)
+    CALL GatherMatrixColumn(sparse_a, acol, LMat%process_grid)
 
     !! Main Loop
     DO JJ = 1, rank_in
        !! Pick a pivot vector
        local_JJ  = JJ - AMat%start_row + 1
-       CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, insert_value, local_pivots, &
-            & num_local_pivots)
+       CALL GetPivot(AMat, LMat%process_grid, JJ, pivot_vector, diag, pi_j, &
+            & insert_value, local_pivots, num_local_pivots)
 
        !! l[pi[j],j] = sqrt(d[pi[j]])
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
@@ -448,9 +456,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Broadcast column JJ, and Inverse Factor
        CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
-            & col_root, row_comm)
-       CALL MPI_Bcast(inverse_factor, 1, MPINTREAL, col_root, row_comm, &
-            & grid_error)
+            & col_root, LMat%process_grid%row_comm)
+       CALL MPI_Bcast(inverse_factor, 1, MPINTREAL, col_root, &
+            & LMat%process_grid%row_comm, ierr)
 
        !! Extract the row of A to a dense matrix for easy lookup
        DO II = MAX(acol%outer_index(pi_j),1), acol%outer_index(pi_j+1)
@@ -460,7 +468,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Dot Products
        CALL DotAllPivoted(recv_num_values, recv_index, recv_values, &
             & values_per_column_l, index_l, values_l, local_pivots, &
-            & num_local_pivots, dot_values, column_comm)
+            & num_local_pivots, dot_values, LMat%process_grid%column_comm)
 
        !! Loop over other columns
        DO II = 1, num_local_pivots
@@ -487,8 +495,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Unpack
-    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
-         & AMat%actual_matrix_dimension)
     CALL UnpackCholesky(values_per_column_l, index_l, values_l, LMat)
 
     !! Cleanup
@@ -526,7 +532,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     local_columns = LMat%local_columns
 
     CALL ConstructTripletList(local_triplets)
-    IF (my_slice .EQ. 0) THEN
+    IF (LMat%process_grid%my_slice .EQ. 0) THEN
        DO JJ = 1, local_columns
           !! note transpose
           temp%index_row = JJ + LMat%start_column - 1
@@ -658,10 +664,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     values(values_per) = insert_value
   END SUBROUTINE AppendToVector
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE GetPivot(AMat, start_index, pivot_vector, diag, index, value, &
-       & local_pivots, num_local_pivots)
+  SUBROUTINE GetPivot(AMat, process_grid, start_index, pivot_vector, diag, &
+       & index, value, local_pivots, num_local_pivots)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
     INTEGER, INTENT(IN) :: start_index
@@ -675,6 +682,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: pind
     INTEGER :: II
     INTEGER :: swap
+    INTEGER :: ierr
 
     !! Search for the maximum pivot
     max_diag = [0, 0]
@@ -689,7 +697,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
-         & MPI_MAXLOC, row_comm, grid_error)
+         & MPI_MAXLOC, process_grid%row_comm, ierr)
     index = INT(max_diag(2))
     value = max_diag(1)
 
@@ -711,16 +719,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetPivot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the vector holding the accumulated diagonal values
-  SUBROUTINE ConstructDiag(AMat, dense_a, diag)
+  SUBROUTINE ConstructDiag(AMat, process_grid, dense_a, diag)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: dense_a
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
     !! Local Variables
     INTEGER :: fill_counter
     INTEGER :: II, JJ, local_JJ, local_II
-    INTEGER, DIMENSION(num_process_rows) :: diags_per_proc
-    INTEGER, DIMENSION(num_process_rows) :: diag_displ
+    INTEGER, DIMENSION(process_grid%num_process_rows) :: diags_per_proc
+    INTEGER, DIMENSION(process_grid%num_process_rows) :: diag_displ
+    INTEGER :: ierr
 
     diag = 0
     fill_counter = 0
@@ -732,48 +742,52 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           fill_counter = fill_counter + 1
        END IF
     END DO
-    diags_per_proc(my_row+1) = fill_counter
+    diags_per_proc(process_grid%my_row+1) = fill_counter
     !! Duplicate the diagonal entries along the process column (across rows)
     CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, diags_per_proc, 1, &
-         & MPI_INTEGER, column_comm, grid_error)
+         & MPI_INTEGER, process_grid%column_comm, ierr)
     diag_displ(1) = 0
-    DO II = 2, num_process_rows
+    DO II = 2, process_grid%num_process_rows
        diag_displ(II) = diag_displ(II-1) + diags_per_proc(II-1)
     END DO
-    CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(my_row+1), MPINTREAL, &
-         & diag, diags_per_proc, diag_displ, MPINTREAL, column_comm, grid_error)
+    CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(process_grid%my_row+1), &
+         & MPINTREAL, diag, diags_per_proc, diag_displ, MPINTREAL, &
+         & process_grid%column_comm, ierr)
   END SUBROUTINE ConstructDiag
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ConstructRankLookup(AMat, col_root_lookup)
+  SUBROUTINE ConstructRankLookup(AMat, process_grid, col_root_lookup)
     !! Root Lookups
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     INTEGER, DIMENSION(:), INTENT(INOUT) :: col_root_lookup
     !! Local Variables
-    INTEGER, DIMENSION(num_process_columns) :: cols_per_proc
-    INTEGER, DIMENSION(num_process_columns) :: d_cols_per_proc
+    INTEGER, DIMENSION(process_grid%num_process_columns) :: cols_per_proc
+    INTEGER, DIMENSION(process_grid%num_process_columns) :: d_cols_per_proc
     INTEGER :: II
+    INTEGER :: ierr
 
-    cols_per_proc(my_column+1) = AMat%local_columns
+    cols_per_proc(process_grid%my_column+1) = AMat%local_columns
     CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
-         & MPI_INTEGER, row_comm, grid_error)
+         & MPI_INTEGER, process_grid%row_comm, ierr)
     d_cols_per_proc(1) = 0
-    DO II = 2, num_process_columns
+    DO II = 2, process_grid%num_process_columns
        d_cols_per_proc(II) = d_cols_per_proc(II-1) + cols_per_proc(II-1)
     END DO
-    col_root_lookup(AMat%start_column:AMat%end_column - 1) = row_rank
+    col_root_lookup(AMat%start_column:AMat%end_column - 1) = process_grid%row_rank
     CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
          & col_root_lookup, cols_per_proc, d_cols_per_proc, MPI_INTEGER, &
-         & row_comm, grid_error)
+         & process_grid%row_comm, ierr)
 
   END SUBROUTINE ConstructRankLookup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine that gathers the matrices in the same column into one.
   !! @param[in] local_matrix the local matrix on each process.
   !! @param[out] column_matrix the final result.
-  SUBROUTINE GatherMatrixColumn(local_matrix, column_matrix)
+  SUBROUTINE GatherMatrixColumn(local_matrix, column_matrix, process_grid)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: local_matrix
     TYPE(SparseMatrix_t), INTENT(INOUT) :: column_matrix
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     !! Local Variables
     TYPE(GatherHelper_t) :: gather_helper
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
@@ -781,14 +795,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_err
 
     CALL TransposeSparseMatrix(local_matrix, local_matrixT)
-    CALL GatherSizes(local_matrixT, column_comm, gather_helper)
+    CALL GatherSizes(local_matrixT, process_grid%column_comm, gather_helper)
     CALL MPI_Wait(gather_helper%size_request, mpi_status, mpi_err)
-    CALL GatherAndComposeData(local_matrixT, column_comm, column_matrix, &
-         & gather_helper)
+    CALL GatherAndComposeData(local_matrixT, process_grid%column_comm, &
+         & column_matrix, gather_helper)
     CALL MPI_Wait(gather_helper%outer_request,mpi_status,mpi_err)
     CALL MPI_Wait(gather_helper%inner_request,mpi_status,mpi_err)
     CALL MPI_Wait(gather_helper%data_request,mpi_status,mpi_err)
-    CALL GatherAndComposeCleanup(local_matrixT, column_matrix, gather_helper)
+    CALL GatherAndComposeCleanup(local_matrixT, column_matrix, &
+         & gather_helper)
 
     CALL DestructSparseMatrix(local_matrixT)
   END SUBROUTINE GatherMatrixColumn

@@ -10,14 +10,15 @@ MODULE DistributedSparseMatrixModule
        & TestInnerRequest, TestDataRequest
   USE MatrixMarketModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
-  USE ProcessGridModule, ONLY : grid_error, IsRoot, RootID, total_processors,&
-       & num_process_slices, num_process_rows, num_process_columns, &
-       & slice_size, my_slice, my_row, my_column, global_rank,&
-       & within_slice_rank, between_slice_rank, row_rank, column_rank, &
-       & global_comm, within_slice_comm, row_comm, column_comm, &
-       & between_slice_comm, &
-       & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
-       & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
+  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot
+  ! USE ProcessGridModule, ONLY : grid_error, IsRoot, RootID, total_processors,&
+  !      & num_process_slices, num_process_rows, num_process_columns, &
+  !      & slice_size, my_slice, my_row, my_column, global_rank,&
+  !      & within_slice_rank, between_slice_rank, row_rank, column_rank, &
+  !      & global_comm, within_slice_comm, row_comm, column_comm, &
+  !      & between_slice_comm, &
+  !      & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
+  !      & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
@@ -49,6 +50,7 @@ MODULE DistributedSparseMatrixModule
      INTEGER :: end_row !< last row stored locally is less than this.
      INTEGER :: local_columns !< number of local columns.
      INTEGER :: local_rows !< number of local rows.
+     TYPE(ProcessGrid_t) :: process_grid !< process grid to operate on
   END TYPE DistributedSparseMatrix_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Constructors/Destructors
@@ -91,23 +93,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructDistributedSparseMatrix(this)
 
+    !! Process Grid
+    this%process_grid = global_grid
+
     !! Matrix Dimensions
     this%actual_matrix_dimension = matrix_dim_
-    this%logical_matrix_dimension = CalculateScaledDimension(matrix_dim_, &
-         & block_multiplier)
+    this%logical_matrix_dimension = CalculateScaledDimension(this, matrix_dim_)
 
     !! Full Local Data Size Description
-    this%local_rows = this%logical_matrix_dimension/num_process_rows
-    this%local_columns = this%logical_matrix_dimension/num_process_columns
+    this%local_rows = &
+         & this%logical_matrix_dimension/this%process_grid%num_process_rows
+    this%local_columns = &
+         & this%logical_matrix_dimension/this%process_grid%num_process_columns
 
     !! Which Block Does This Process Hold?
-    this%start_row = this%local_rows * my_row + 1
+    this%start_row = this%local_rows * this%process_grid%my_row + 1
     this%end_row   = this%start_row + this%local_rows
-    this%start_column = this%local_columns * my_column + 1
+    this%start_column = this%local_columns * this%process_grid%my_column + 1
     this%end_column   = this%start_column + this%local_columns
 
     !! Build local storage
-    ALLOCATE(this%local_data(number_of_blocks_columns,number_of_blocks_rows))
+    ALLOCATE(this%local_data(this%process_grid%number_of_blocks_columns, &
+         & this%process_grid%number_of_blocks_rows))
     CALL ConstructZeroSparseMatrix(zeromatrix,this%local_rows,this%local_columns)
     CALL SplitToLocalBlocks(this, zeromatrix)
     CALL DestructSparseMatrix(zeromatrix)
@@ -122,8 +129,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: row_counter, column_counter
 
     IF (ALLOCATED(this%local_data)) THEN
-       DO row_counter = 1, number_of_blocks_rows
-          DO column_counter = 1, number_of_blocks_columns
+       DO row_counter = 1, this%process_grid%number_of_blocks_rows
+          DO column_counter = 1, this%process_grid%number_of_blocks_columns
              CALL DestructSparseMatrix( &
                   & this%local_data(column_counter,row_counter))
           END DO
@@ -181,11 +188,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: full_buffer_counter
     LOGICAL :: end_of_buffer
     LOGICAL :: error_occured
+    INTEGER :: ierr
+
+    this%process_grid = global_grid
 
     !! Setup Involves Just The Root Opening And Reading Parameter Data
     CALL StartTimer("MPI Read Text")
     bytes_per_character = sizeof(temp_char)
-    IF (IsRoot()) THEN
+    IF (IsRoot(this%process_grid)) THEN
        header_length = 0
        local_file_handler = 16
        OPEN(local_file_handler, file=file_name, status="old")
@@ -210,30 +220,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Broadcast Parameters
-    CALL MPI_Bcast(matrix_rows,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(matrix_columns,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(total_values,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(header_length,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(sparsity_type,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(data_type,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(pattern_type,1,MPI_INT,RootID,global_comm,grid_error)
+    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(total_values, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(header_length, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(sparsity_type, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(data_type, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(pattern_type, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
 
     !! Build Local Storage
     CALL ConstructEmptyDistributedSparseMatrix(this,matrix_rows)
 
     !! Global read
-    CALL MPI_File_open(global_comm,file_name,MPI_MODE_RDONLY,&
-         & MPI_INFO_NULL,mpi_file_handler,grid_error)
-    CALL MPI_File_get_size(mpi_file_handler,total_file_size,grid_error)
+    CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
+         & MPI_INFO_NULL,mpi_file_handler,ierr)
+    CALL MPI_File_get_size(mpi_file_handler,total_file_size,ierr)
 
     !! Compute Offsets And Data Size
     local_data_size = (total_file_size - bytes_per_character*header_length)/&
-         total_processors
+         & this%process_grid%total_processors
     IF (local_data_size .LT. 2*MAX_LINE_LENGTH) THEN
        local_data_size = 2*MAX_LINE_LENGTH
     END IF
     local_offset = bytes_per_character*header_length + &
-         local_data_size*global_rank
+         local_data_size*this%process_grid%global_rank
 
     !! Check if this processor has any work to do, and set the appropriate
     !! buffer size. We also add some buffer space, so you can read beyond
@@ -254,10 +271,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Do Actual Reading
     CALL MPI_File_read_at_all(mpi_file_handler,local_offset,mpi_input_buffer, &
-         & INT(local_data_size_plus_buffer),MPI_CHARACTER,mpi_status,grid_error)
+         & INT(local_data_size_plus_buffer),MPI_CHARACTER,mpi_status,ierr)
 
     !! Trim Off The Half Read Line At The Start
-    IF (.NOT. global_rank .EQ. RootID) THEN
+    IF (.NOT. this%process_grid%global_rank .EQ. this%process_grid%RootID) THEN
        full_buffer_counter = INDEX(mpi_input_buffer,new_line('A')) + 1
     ELSE
        full_buffer_counter = 1
@@ -285,7 +302,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
           IF (full_buffer_counter + current_line_length .GE. &
                & local_data_size+2) THEN
-             IF (.NOT. global_rank .EQ. total_processors-1) THEN
+             IF (.NOT. this%process_grid%global_rank .EQ. &
+                  & this%process_grid%total_processors-1) THEN
                 end_of_buffer = .TRUE.
              END IF
           END IF
@@ -294,9 +312,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Cleanup
-    CALL MPI_File_close(mpi_file_handler,grid_error)
+    CALL MPI_File_close(mpi_file_handler,ierr)
     CALL StopTimer("MPI Read Text")
-    CALL MPI_Barrier(global_comm,grid_error)
+    CALL MPI_Barrier(this%process_grid%global_comm,ierr)
 
     !! Redistribute The Matrix
     CALL SymmetrizeTripletList(triplet_list, pattern_type)
@@ -327,37 +345,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: triplet_mpi_type
     !! Temporary variables
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
+    INTEGER :: ierr
+
+    this%process_grid = global_grid
 
     CALL StartTimer("MPI Read Binary")
-    CALL MPI_Type_extent(MPI_INT,bytes_per_int,grid_error)
-    CALL MPI_Type_extent(MPINTREAL,bytes_per_double,grid_error)
+    CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
+    CALL MPI_Type_extent(MPINTREAL,bytes_per_double,ierr)
 
-    CALL MPI_File_open(global_comm,file_name,MPI_MODE_RDONLY, &
-         & MPI_INFO_NULL,mpi_file_handler,grid_error)
+    CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
+         & MPI_INFO_NULL,mpi_file_handler,ierr)
 
     !! Get The Matrix Parameters
-    IF (IsRoot()) THEN
+    IF (IsRoot(this%process_grid)) THEN
        local_offset = 0
        CALL MPI_File_read_at(mpi_file_handler, local_offset, &
-            & matrix_information, 3, MPI_INT, mpi_status, grid_error)
+            & matrix_information, 3, MPI_INT, mpi_status, ierr)
        matrix_rows = matrix_information(1)
        matrix_columns = matrix_information(2)
        total_values = matrix_information(3)
     END IF
 
     !! Broadcast Parameters
-    CALL MPI_Bcast(matrix_rows,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(matrix_columns,1,MPI_INT,RootID,global_comm,grid_error)
-    CALL MPI_Bcast(total_values,1,MPI_INT,RootID,global_comm,grid_error)
+    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(total_values, 1, MPI_INT ,this%process_grid%RootID, &
+         & this%process_grid%global_comm, ierr)
 
     !! Build Local Storage
     CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows)
 
     !! Compute Offset
-    local_triplets = total_values/total_processors
-    local_offset = local_triplets * (global_rank)
+    local_triplets = total_values/this%process_grid%total_processors
+    local_offset = local_triplets * (this%process_grid%global_rank)
     header_size = 3 * bytes_per_int
-    IF (global_rank .EQ. total_processors - 1) THEN
+    IF (this%process_grid%global_rank .EQ. &
+         & this%process_grid%total_processors - 1) THEN
        local_triplets = INT(total_values) - INT(local_offset)
     END IF
     local_offset = local_offset*(bytes_per_int*2+bytes_per_double) + header_size
@@ -366,10 +391,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Do The Actual Reading
     triplet_mpi_type = GetMPITripletType()
     CALL MPI_File_set_view(mpi_file_handler,local_offset,triplet_mpi_type,&
-         & triplet_mpi_type,"native",MPI_INFO_NULL,grid_error)
+         & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
     CALL MPI_File_read_all(mpi_file_handler,triplet_list%data,local_triplets,&
-         & triplet_mpi_type,mpi_status,grid_error)
-    CALL MPI_File_close(mpi_file_handler,grid_error)
+         & triplet_mpi_type,mpi_status,ierr)
+    CALL MPI_File_close(mpi_file_handler,ierr)
     CALL StopTimer("MPI Read Binary")
 
     CALL FillFromTripletList(this,triplet_list)
@@ -404,6 +429,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(KIND=MPI_OFFSET_KIND) :: zero_offset = 0
     INTEGER :: counter
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -414,18 +440,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     local_data_size = SIZE(merged_local_data%values)*(bytes_per_int*2 + &
          & bytes_per_double*1)
     header_size = bytes_per_int*3
-    ALLOCATE(local_values_buffer(slice_size))
+    ALLOCATE(local_values_buffer(this%process_grid%slice_size))
     CALL MPI_Allgather(SIZE(merged_local_data%values),1,MPI_INT,&
-         & local_values_buffer,1,MPI_INT,within_slice_comm,grid_error)
+         & local_values_buffer,1,MPI_INT,&
+         & this%process_grid%within_slice_comm,ierr)
     write_offset = 0
     write_offset = write_offset + header_size
-    DO counter = 1,within_slice_rank
+    DO counter = 1,this%process_grid%within_slice_rank
        write_offset = write_offset + &
             & local_values_buffer(counter)*(bytes_per_int*2+bytes_per_double*1)
     END DO
 
     !! Write The File
-    IF (between_slice_rank .EQ. 0) THEN
+    IF (this%process_grid%between_slice_rank .EQ. 0) THEN
        !! Create Special MPI Type
        triplet_mpi_type = GetMPITripletType()
 
@@ -437,30 +464,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           triplet_list%data(counter)%index_column = &
                & triplet_list%data(counter)%index_column + this%start_column - 1
        END DO
-       CALL MPI_File_open(within_slice_comm,file_name,&
+       CALL MPI_File_open(this%process_grid%within_slice_comm,file_name,&
             & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
-            & mpi_file_handler, grid_error)
+            & mpi_file_handler, ierr)
        !! Write Header
-       IF (within_slice_rank .EQ. 0) THEN
+       IF (this%process_grid%within_slice_rank .EQ. 0) THEN
           header_buffer(1) = this%actual_matrix_dimension
           header_buffer(2) = this%actual_matrix_dimension
           header_buffer(3) = SUM(local_values_buffer)
           CALL MPI_File_write_at(mpi_file_handler,zero_offset,header_buffer,3,&
-               & MPI_INT,mpi_status,grid_error)
+               & MPI_INT,mpi_status,ierr)
        END IF
        !! Write The Rest
        CALL MPI_File_set_view(mpi_file_handler,write_offset,triplet_mpi_type,&
-            & triplet_mpi_type,"native",MPI_INFO_NULL,grid_error)
+            & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
        CALL MPI_File_write(mpi_file_handler,triplet_list%data, &
             & triplet_list%CurrentSize, triplet_mpi_type,MPI_STATUS_IGNORE, &
-            & grid_error)
+            & ierr)
 
        !! Cleanup
-       CALL MPI_File_close(mpi_file_handler,grid_error)
+       CALL MPI_File_close(mpi_file_handler,ierr)
        CALL DestructTripletList(triplet_list)
     END IF
     DEALLOCATE(local_values_buffer)
-    CALL MPI_Barrier(global_comm,grid_error)
+    CALL MPI_Barrier(this%process_grid%global_comm,ierr)
     CALL DestructSparseMatrix(merged_local_data)
   END SUBROUTINE WriteToBinary
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -498,6 +525,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: bytes_per_character
     CHARACTER(len=1) :: temp_char
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -559,42 +587,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Figure out the offset sizes
-    ALLOCATE(local_values_buffer(slice_size))
+    ALLOCATE(local_values_buffer(this%process_grid%slice_size))
     CALL MPI_Allgather(triplet_list_string_length,1,MPI_INT,&
-         & local_values_buffer,1,MPI_INT,within_slice_comm,grid_error)
+         & local_values_buffer,1,MPI_INT,this%process_grid%within_slice_comm,&
+         & ierr)
     write_offset = 0
     write_offset = write_offset + header_size
-    DO counter = 1,within_slice_rank
+    DO counter = 1,this%process_grid%within_slice_rank
        write_offset = write_offset + &
             & local_values_buffer(counter)
     END DO
 
     !! Global Write
-    IF (between_slice_rank .EQ. 0) THEN
-       CALL MPI_File_open(within_slice_comm,file_name, &
+    IF (this%process_grid%between_slice_rank .EQ. 0) THEN
+       CALL MPI_File_open(this%process_grid%within_slice_comm,file_name, &
             & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
-            & mpi_file_handler,grid_error)
-       CALL MPI_File_set_size(mpi_file_handler,zero_size,grid_error)
+            & mpi_file_handler,ierr)
+       CALL MPI_File_set_size(mpi_file_handler,zero_size,ierr)
        !! Write Header
-       IF (within_slice_rank .EQ. 0) THEN
+       IF (this%process_grid%within_slice_rank .EQ. 0) THEN
           header_offset = 0
           CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line1, &
-               & LEN(header_line1), MPI_CHARACTER,mpi_status,grid_error)
+               & LEN(header_line1), MPI_CHARACTER,mpi_status,ierr)
           header_offset = header_offset + LEN(header_line1)
           CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line2, &
-               & LEN(header_line2), MPI_CHARACTER,mpi_status,grid_error)
+               & LEN(header_line2), MPI_CHARACTER,mpi_status,ierr)
        END IF
        !! Write Local Data
        CALL MPI_File_set_view(mpi_file_handler,write_offset,MPI_CHARACTER,&
-            & MPI_CHARACTER,"native",MPI_INFO_NULL,grid_error)
+            & MPI_CHARACTER,"native",MPI_INFO_NULL,ierr)
        CALL MPI_File_write(mpi_file_handler,write_buffer, &
             & triplet_list_string_length,&
-            & MPI_CHARACTER,MPI_STATUS_IGNORE,grid_error)
+            & MPI_CHARACTER,MPI_STATUS_IGNORE,ierr)
 
        !! Cleanup
-       CALL MPI_File_close(mpi_file_handler,grid_error)
+       CALL MPI_File_close(mpi_file_handler,ierr)
     END IF
-    CALL MPI_Barrier(global_comm,grid_error)
+    CALL MPI_Barrier(this%process_grid%global_comm,ierr)
   END SUBROUTINE WriteToMatrixMarket
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
@@ -619,9 +648,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: preduplicated
 
     IF (.NOT. PRESENT(preduplicated_in)) THEN
-      preduplicated = .FALSE.
+       preduplicated = .FALSE.
     ELSE
-      preduplicated = preduplicated_in
+       preduplicated = preduplicated_in
     END IF
 
     CALL StartTimer("FillFromTriplet")
@@ -639,10 +668,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! And reduce over the Z dimension. This can be accomplished by
     !! summing up.
     IF (.NOT. PRESENT(preduplicated_in) .OR. .NOT. preduplicated_in) THEN
-       CALL GatherSizes(local_matrix,between_slice_comm,gather_helper)
+       CALL GatherSizes(local_matrix, this%process_grid%between_slice_comm,&
+            & gather_helper)
        DO WHILE(.NOT. TestSizeRequest(gather_helper))
        END DO
-       CALL GatherAndSumData(local_matrix,between_slice_comm,gather_helper)
+       CALL GatherAndSumData(local_matrix, &
+            & this%process_grid%between_slice_comm, gather_helper)
        DO WHILE(.NOT. TestOuterRequest(gather_helper))
        END DO
        DO WHILE(.NOT. TestInnerRequest(gather_helper))
@@ -844,34 +875,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     INTEGER :: counter, p_counter
     TYPE(Triplet_t) :: temp_triplet
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
     CALL MatrixToTripletList(merged_local_data, local_triplet_list)
 
     !! Share the start row/column information across processes
-    ALLOCATE(row_start_list(slice_size))
-    ALLOCATE(column_start_list(slice_size))
-    ALLOCATE(row_end_list(slice_size))
-    ALLOCATE(column_end_list(slice_size))
+    ALLOCATE(row_start_list(this%process_grid%slice_size))
+    ALLOCATE(column_start_list(this%process_grid%slice_size))
+    ALLOCATE(row_end_list(this%process_grid%slice_size))
+    ALLOCATE(column_end_list(this%process_grid%slice_size))
     CALL MPI_Allgather(start_row, 1, MPI_INT, row_start_list, 1, MPI_INT, &
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
     CALL MPI_Allgather(start_column, 1, MPI_INT, column_start_list, 1, MPI_INT,&
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
     CALL MPI_Allgather(end_row, 1, MPI_INT, row_end_list, 1, MPI_INT, &
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
     CALL MPI_Allgather(end_column, 1, MPI_INT, column_end_list, 1, MPI_INT,&
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
 
     !! Count The Number of Elements To Send To Each Process
-    ALLOCATE(send_per_proc(slice_size))
+    ALLOCATE(send_per_proc(this%process_grid%slice_size))
     send_per_proc = 0
     DO counter = 1, local_triplet_list%CurrentSize
        CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
        temp_triplet%index_row = temp_triplet%index_row + this%start_row - 1
        temp_triplet%index_column = temp_triplet%index_column + &
             & this%start_column - 1
-       DO p_counter = 1, slice_size
+       DO p_counter = 1, this%process_grid%slice_size
           IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
                & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
                & temp_triplet%index_column .GE. column_start_list(p_counter) .AND. &
@@ -882,9 +914,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END DO
     !! Compute send buffer offsets
-    ALLOCATE(send_buffer_offsets(slice_size))
+    ALLOCATE(send_buffer_offsets(this%process_grid%slice_size))
     send_buffer_offsets(1) = 1
-    DO counter = 2, slice_size
+    DO counter = 2, this%process_grid%slice_size
        send_buffer_offsets(counter) = send_buffer_offsets(counter-1) + &
             & send_per_proc(counter-1)
     END DO
@@ -898,7 +930,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_triplet%index_row = temp_triplet%index_row + this%start_row - 1
        temp_triplet%index_column = temp_triplet%index_column + &
             & this%start_column - 1
-       DO p_counter = 1, slice_size
+       DO p_counter = 1, this%process_grid%slice_size
           IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
                & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
                & temp_triplet%index_column .GE. column_start_list(p_counter) .AND. &
@@ -917,18 +949,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Reset send buffer offsets. But since we're using MPI now, use zero
     !! based indexing.
     send_buffer_offsets(1) = 0
-    DO counter = 2, slice_size
+    DO counter = 2, this%process_grid%slice_size
        send_buffer_offsets(counter) = send_buffer_offsets(counter-1) + &
             & send_per_proc(counter-1)
     END DO
 
     !! Build a receive buffer
-    ALLOCATE(recv_per_proc(slice_size))
+    ALLOCATE(recv_per_proc(this%process_grid%slice_size))
     CALL MPI_Alltoall(send_per_proc, 1, MPI_INT, recv_per_proc, 1, MPI_INT, &
-         & within_slice_comm, grid_error)
-    ALLOCATE(recv_buffer_offsets(slice_size))
+         & this%process_grid%within_slice_comm, ierr)
+    ALLOCATE(recv_buffer_offsets(this%process_grid%slice_size))
     recv_buffer_offsets(1) = 0
-    DO counter = 2, slice_size
+    DO counter = 2, this%process_grid%slice_size
        recv_buffer_offsets(counter) = recv_buffer_offsets(counter-1) + &
             & recv_per_proc(counter-1)
     END DO
@@ -939,13 +971,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Send
     CALL MPI_Alltoallv(send_buffer_row, send_per_proc, send_buffer_offsets, &
          & MPI_INT, recv_buffer_row, recv_per_proc, recv_buffer_offsets, &
-         & MPI_INT, within_slice_comm, grid_error)
+         & MPI_INT, this%process_grid%within_slice_comm, ierr)
     CALL MPI_Alltoallv(send_buffer_col, send_per_proc, send_buffer_offsets, &
          & MPI_INT, recv_buffer_col, recv_per_proc, recv_buffer_offsets, &
-         & MPI_INT, within_slice_comm, grid_error)
+         & MPI_INT, this%process_grid%within_slice_comm, ierr)
     CALL MPI_Alltoallv(send_buffer_val, send_per_proc, send_buffer_offsets, &
          & MPINTREAL, recv_buffer_val, recv_per_proc, recv_buffer_offsets, &
-         & MPINTREAL, within_slice_comm, grid_error)
+         & MPINTREAL, this%process_grid%within_slice_comm, ierr)
 
     !! Convert receive buffer to triplet list
     CALL ConstructTripletList(triplet_list, size_in=SUM(recv_per_proc))
@@ -1034,37 +1066,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: merged_columns
     TYPE(SparseMatrix_t) :: merged_columnsT
     TYPE(SparseMatrix_t) :: full_gathered
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
 
     !! Merge Columns
-    CALL TransposeSparseMatrix(merged_local_data,merged_local_dataT)
-    CALL GatherSizes(merged_local_dataT, column_comm, column_helper)
-    CALL MPI_Wait(column_helper%size_request,mpi_status,grid_error)
-    CALL GatherAndComposeData(merged_local_dataT,column_comm,merged_columns, &
+    CALL TransposeSparseMatrix(merged_local_data, merged_local_dataT)
+    CALL GatherSizes(merged_local_dataT, this%process_grid%column_comm, column_helper)
+    CALL MPI_Wait(column_helper%size_request ,mpi_status,ierr)
+    CALL GatherAndComposeData(merged_local_dataT, &
+         & this%process_grid%column_comm,merged_columns, &
          & column_helper)
-    CALL MPI_Wait(column_helper%outer_request,mpi_status,grid_error)
-    CALL MPI_Wait(column_helper%inner_request,mpi_status,grid_error)
-    CALL MPI_Wait(column_helper%data_request,mpi_status,grid_error)
+    CALL MPI_Wait(column_helper%outer_request,mpi_status,ierr)
+    CALL MPI_Wait(column_helper%inner_request,mpi_status,ierr)
+    CALL MPI_Wait(column_helper%data_request,mpi_status,ierr)
     CALL GatherAndComposeCleanup(merged_local_dataT,merged_columns, &
          & column_helper)
 
     !! Merge Rows
     CALL TransposeSparseMatrix(merged_columns,merged_columnsT)
-    CALL GatherSizes(merged_columnsT, row_comm, row_helper)
-    CALL MPI_Wait(row_helper%size_request,mpi_status,grid_error)
-    CALL GatherAndComposeData(merged_columnsT,row_comm,full_gathered,row_helper)
-    CALL MPI_Wait(row_helper%outer_request,mpi_status,grid_error)
-    CALL MPI_Wait(row_helper%inner_request,mpi_status,grid_error)
-    CALL MPI_Wait(row_helper%data_request,mpi_status,grid_error)
+    CALL GatherSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
+    CALL MPI_Wait(row_helper%size_request,mpi_status,ierr)
+    CALL GatherAndComposeData(merged_columnsT, this%process_grid%row_comm, &
+         & full_gathered,row_helper)
+    CALL MPI_Wait(row_helper%outer_request,mpi_status,ierr)
+    CALL MPI_Wait(row_helper%inner_request,mpi_status,ierr)
+    CALL MPI_Wait(row_helper%data_request,mpi_status,ierr)
     CALL GatherAndComposeCleanup(merged_columnsT,full_gathered,row_helper)
 
     !! Make these changes so that it prints the logical rows/columns
     full_gathered%rows = this%actual_matrix_dimension
     full_gathered%columns = this%actual_matrix_dimension
 
-    IF (IsRoot()) THEN
+    IF (IsRoot(this%process_grid)) THEN
        IF (PRESENT(file_name_in)) THEN
           CALL PrintSparseMatrix(full_gathered, file_name_in)
        ELSE
@@ -1120,13 +1155,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: local_size
     REAL(NTREAL) :: temp_size
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
 
     local_size = SIZE(merged_local_data%values)
     CALL MPI_Allreduce(local_size,temp_size,1,MPINTREAL,MPI_SUM,&
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
 
     total_size = INT(temp_size,kind=c_long)
 
@@ -1147,15 +1183,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: local_size
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
 
     local_size = SIZE(merged_local_data%values)
     CALL MPI_Allreduce(local_size,max_size,1,MPI_INT,MPI_MAX,&
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
     CALL MPI_Allreduce(local_size,min_size,1,MPI_INT,MPI_MIN,&
-         & within_slice_comm, grid_error)
+         & this%process_grid%within_slice_comm, ierr)
 
     CALL DestructSparseMatrix(merged_local_data)
   END SUBROUTINE GetLoadBalance
@@ -1176,7 +1213,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructTripletList(new_list)
     CALL GetTripletList(AMat,triplet_list)
     DO counter=1,triplet_list%CurrentSize
-       IF (MOD(counter, num_process_slices) .EQ. my_slice) THEN
+       IF (MOD(counter, AMat%process_grid%num_process_slices) .EQ. &
+            & AMat%process_grid%my_slice) THEN
           CALL GetTripletAt(triplet_list,counter,temporary)
           temporary_t%index_row = temporary%index_column
           temporary_t%index_column = temporary%index_row
@@ -1217,7 +1255,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: column_lookup
     INTEGER, DIMENSION(:), ALLOCATABLE :: location_list_within_slice
     TYPE(TripletList_t) :: gathered_list
-    TYPE(TripletList_t), DIMENSION(slice_size) :: send_triplet_lists
+    TYPE(TripletList_t), DIMENSION(this%process_grid%slice_size) :: send_triplet_lists
     !! Temporary Values
     INTEGER :: row_size, column_size
     INTEGER :: temp_row, temp_column
@@ -1230,11 +1268,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! First we need to figure out where our local elements go
     ALLOCATE(row_lookup(SIZE(index_lookup)))
     ALLOCATE(column_lookup(SIZE(index_lookup)))
-    row_size = SIZE(index_lookup)/num_process_rows
+    row_size = SIZE(index_lookup)/this%process_grid%num_process_rows
     DO counter = LBOUND(index_lookup,1), UBOUND(index_lookup,1)
        row_lookup(index_lookup(counter)) = (counter-1)/(row_size)
     END DO
-    column_size = SIZE(index_lookup)/num_process_columns
+    column_size = SIZE(index_lookup)/this%process_grid%num_process_columns
     DO counter = LBOUND(index_lookup,1), UBOUND(index_lookup,1)
        column_lookup(index_lookup(counter)) = (counter-1)/(column_size)
     END DO
@@ -1244,11 +1282,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_column = &
             & column_lookup(initial_triplet_list%data(counter)%index_column)
        location_list_within_slice(counter) = &
-            & temp_column+temp_row*num_process_columns
+            & temp_column+temp_row*this%process_grid%num_process_columns
     END DO
 
     !! Build A Send Buffer
-    DO counter = 1, slice_size
+    DO counter = 1, this%process_grid%slice_size
        CALL ConstructTripletList(send_triplet_lists(counter))
     END DO
     DO counter = 1, initial_triplet_list%CurrentSize
@@ -1258,8 +1296,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Actual Send
-    CALL RedistributeTripletLists(send_triplet_lists, within_slice_comm, &
-         & gathered_list)
+    CALL RedistributeTripletLists(send_triplet_lists, &
+         & this%process_grid%within_slice_comm, gathered_list)
 
     !! Adjust Indices to Local
     DO counter = 1, gathered_list%CurrentSize
@@ -1274,8 +1312,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & sorted_triplet_list)
 
     !! Cleanup
-    DO counter = 1, slice_size
-      CALL DestructTripletList(send_triplet_lists(counter))
+    DO counter = 1, this%process_grid%slice_size
+       CALL DestructTripletList(send_triplet_lists(counter))
     END DO
     DEALLOCATE(row_lookup)
     DEALLOCATE(column_lookup)
@@ -1290,18 +1328,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return a new dimension which includes padding.
   !! @todo write a more optimal algorithm using either plain brute force,
   !! or a prime factor based algorithm.
-  PURE FUNCTION CalculateScaledDimension(matrix_dim, block_multiplier) &
+  PURE FUNCTION CalculateScaledDimension(this, matrix_dim) &
        & RESULT(scaled_dim)
     !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: matrix_dim
-    INTEGER, INTENT(IN) :: block_multiplier
     INTEGER :: scaled_dim
     !! Local Data
     INTEGER :: size_ratio
     INTEGER :: lcm
 
-    lcm = block_multiplier*num_process_slices* &
-         & num_process_columns*num_process_rows
+    lcm = this%process_grid%block_multiplier* &
+         & this%process_grid%num_process_slices* &
+         & this%process_grid%num_process_columns* &
+         & this%process_grid%num_process_rows
 
     size_ratio = matrix_dim/lcm
     IF (size_ratio * lcm .EQ. matrix_dim) THEN
@@ -1325,28 +1365,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: column_counter, row_counter
 
     !! First Split By Columns
-    ALLOCATE(column_split(number_of_blocks_columns))
-    ALLOCATE(row_split(number_of_blocks_rows))
+    ALLOCATE(column_split(this%process_grid%number_of_blocks_columns))
+    ALLOCATE(row_split(this%process_grid%number_of_blocks_rows))
     CALL SplitSparseMatrixColumns(matrix_to_split, &
-         & number_of_blocks_columns, column_split)
+         & this%process_grid%number_of_blocks_columns, column_split)
 
     !! Now Split By Rows
-    DO column_counter=1,number_of_blocks_columns
+    DO column_counter=1,this%process_grid%number_of_blocks_columns
        CALL TransposeSparseMatrix(column_split(column_counter),tempmat)
-       CALL SplitSparseMatrixColumns(tempmat, number_of_blocks_rows, &
-            & row_split)
+       CALL SplitSparseMatrixColumns(tempmat, &
+            & this%process_grid%number_of_blocks_rows, row_split)
        !! And put back in the right place
-       DO row_counter=1,number_of_blocks_rows
+       DO row_counter=1,this%process_grid%number_of_blocks_rows
           CALL TransposeSparseMatrix(row_split(row_counter), &
                & this%local_data(column_counter,row_counter))
        END DO
     END DO
 
     CALL DestructSparseMatrix(tempmat)
-    DO column_counter=1,number_of_blocks_columns
+    DO column_counter=1,this%process_grid%number_of_blocks_columns
        CALL DestructSparseMatrix(column_split(column_counter))
     END DO
-    DO row_counter=1,number_of_blocks_rows
+    DO row_counter=1,this%process_grid%number_of_blocks_rows
        CALL DestructSparseMatrix(row_split(row_counter))
     END DO
     DEALLOCATE(row_split)
@@ -1365,9 +1405,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: tempmat
     INTEGER :: row_counter
 
-    ALLOCATE(rows_of_merged(number_of_blocks_rows))
+    ALLOCATE(rows_of_merged(this%process_grid%number_of_blocks_rows))
 
-    DO row_counter = 1, number_of_blocks_rows
+    DO row_counter = 1, this%process_grid%number_of_blocks_rows
        CALL ComposeSparseMatrixColumns(this%local_data(:,row_counter), tempmat)
        CALL TransposeSparseMatrix(tempmat,rows_of_merged(row_counter))
     END DO
@@ -1377,7 +1417,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructSparseMatrix(tempmat)
-    DO row_counter=1,number_of_blocks_rows
+    DO row_counter=1, this%process_grid%number_of_blocks_rows
        CALL DestructSparseMatrix(rows_of_merged(row_counter))
     END DO
     DEALLOCATE(rows_of_merged)

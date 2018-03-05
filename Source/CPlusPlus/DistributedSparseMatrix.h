@@ -119,6 +119,7 @@ private:
   friend class LoadBalancer;
   friend class SolverBase;
   friend class TripletList;
+  friend class DistributedMatrixMemoryPool;
 };
 } // namespace NTPoly
 #endif

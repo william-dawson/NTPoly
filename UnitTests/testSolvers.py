@@ -819,7 +819,7 @@ class TestSolvers(unittest.TestCase):
         L = nt.DistributedSparseMatrix(A.GetActualDimension())
         LT = nt.DistributedSparseMatrix(A.GetActualDimension())
         LLT = nt.DistributedSparseMatrix(A.GetActualDimension())
-        memory_pool = nt.DistributedMatrixMemoryPool()
+        memory_pool = nt.DistributedMatrixMemoryPool(A)
 
         nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank,
                                                       self.fixed_solver_parameters)

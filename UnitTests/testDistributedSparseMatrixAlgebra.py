@@ -194,7 +194,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
                 ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
             ntmatrix3 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
-            memory_pool = nt.DistributedMatrixMemoryPool()
+            memory_pool = nt.DistributedMatrixMemoryPool(ntmatrix1)
             ntmatrix3.Gemm(ntmatrix1, ntmatrix2, memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -224,7 +224,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
                 ntmatrix1.GetActualDimension())
             temp_matrix = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
-            memory_pool = nt.DistributedMatrixMemoryPool()
+            memory_pool = nt.DistributedMatrixMemoryPool(ntmatrix1)
             permutation = nt.Permutation(ntmatrix1.GetLogicalDimension())
 
             permutation.SetReversePermutation()

@@ -11,11 +11,11 @@ MODULE DistributedSparseMatrixAlgebraModule
        & GatherAndComposeData, GatherAndComposeCleanup, GatherAndSumData, &
        & GatherAndSumCleanup, TestSizeRequest, TestOuterRequest, &
        & TestInnerRequest, TestDataRequest
-  USE ProcessGridModule, ONLY : grid_error,&
-       & num_process_slices, my_slice, &
-       & within_slice_comm, row_comm, column_comm, between_slice_comm, &
-       & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
-       & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
+  ! USE ProcessGridModule, ONLY : grid_error,&
+  !      & num_process_slices, my_slice, &
+  !      & within_slice_comm, row_comm, column_comm, between_slice_comm, &
+  !      & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
+  !      & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
   USE SparseMatrixAlgebraModule, ONLY : &
        & DotSparseMatrix, PairwiseMultiplySparseMatrix, &
        & SparseMatrixNorm, ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
@@ -54,6 +54,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Counters/Temporary
     INTEGER :: inner_counter, outer_counter
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -70,9 +71,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL MPI_Allreduce(MPI_IN_PLACE,column_sigma_contribution,&
          & merged_local_data%columns,MPINTREAL,MPI_SUM, &
-         & column_comm, grid_error)
+         & this%process_grid%column_comm, ierr)
     CALL MPI_Allreduce(MAXVAL(column_sigma_contribution),sigma_value,1, &
-         & MPINTREAL,MPI_MAX,row_comm,grid_error)
+         & MPINTREAL,MPI_MAX, this%process_grid%row_comm, ierr)
     sigma_value = 1.0d+0/(sigma_value**2)
 
     DEALLOCATE(column_sigma_contribution)
@@ -153,8 +154,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     !! The threshhold needs to be smaller if we're doing a sliced version
     !! because you might flush a value that would be kept in the summed version.
-    IF (num_process_slices .GT. 1) THEN
-       working_threshold = threshold/(num_process_slices*1000)
+    IF (matA%process_grid%num_process_slices .GT. 1) THEN
+       working_threshold = threshold/(matA%process_grid%num_process_slices*1000)
     ELSE
        working_threshold = threshold
     END IF
@@ -163,53 +164,58 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyDistributedSparseMatrix(matAB, &
          & matA%actual_matrix_dimension)
 
-    ALLOCATE(AdjacentABlocks(number_of_blocks_columns/num_process_slices, &
-         & number_of_blocks_rows))
-    ALLOCATE(LocalRowContribution(number_of_blocks_rows))
-    ALLOCATE(GatheredRowContribution(number_of_blocks_rows))
-    ALLOCATE(GatheredRowContributionT(number_of_blocks_rows))
+    ALLOCATE(AdjacentABlocks(matAB%process_grid%number_of_blocks_columns/&
+         & matAB%process_grid%num_process_slices, &
+         & matAB%process_grid%number_of_blocks_rows))
+    ALLOCATE(LocalRowContribution(matAB%process_grid%number_of_blocks_rows))
+    ALLOCATE(GatheredRowContribution(matAB%process_grid%number_of_blocks_rows))
+    ALLOCATE(GatheredRowContributionT(matAB%process_grid%number_of_blocks_rows))
 
-    ALLOCATE(TransposedBBlocks(number_of_blocks_columns, &
-         & number_of_blocks_rows/num_process_slices))
-    ALLOCATE(LocalColumnContribution(number_of_blocks_columns))
-    ALLOCATE(GatheredColumnContribution(number_of_blocks_columns))
-    ALLOCATE(SliceContribution(number_of_blocks_columns, &
-         & number_of_blocks_rows))
+    ALLOCATE(TransposedBBlocks(matAB%process_grid%number_of_blocks_columns, &
+         & matAB%process_grid%number_of_blocks_rows/&
+         & matAB%process_grid%num_process_slices))
+    ALLOCATE(LocalColumnContribution(&
+         & matAB%process_grid%number_of_blocks_columns))
+    ALLOCATE(GatheredColumnContribution(&
+         & matAB%process_grid%number_of_blocks_columns))
+    ALLOCATE(SliceContribution(matAB%process_grid%number_of_blocks_columns, &
+         & matAB%process_grid%number_of_blocks_rows))
 
     !! Helpers
-    ALLOCATE(row_helper(number_of_blocks_rows))
-    ALLOCATE(column_helper(number_of_blocks_columns))
-    ALLOCATE(slice_helper(number_of_blocks_columns, &
-         & number_of_blocks_rows))
+    ALLOCATE(row_helper(matAB%process_grid%number_of_blocks_rows))
+    ALLOCATE(column_helper(matAB%process_grid%number_of_blocks_columns))
+    ALLOCATE(slice_helper(matAB%process_grid%number_of_blocks_columns, &
+         & matAB%process_grid%number_of_blocks_rows))
 
     !! Construct the task queues
-    ALLOCATE(ATasks(number_of_blocks_rows))
-    DO row_counter=1,number_of_blocks_rows
+    ALLOCATE(ATasks(matAB%process_grid%number_of_blocks_rows))
+    DO row_counter=1,matAB%process_grid%number_of_blocks_rows
        ATasks(row_counter) = LocalGatherA
     END DO
-    ALLOCATE(BTasks(number_of_blocks_columns))
-    DO column_counter=1,number_of_blocks_columns
+    ALLOCATE(BTasks(matAB%process_grid%number_of_blocks_columns))
+    DO column_counter=1,matAB%process_grid%number_of_blocks_columns
        BTasks(column_counter) = LocalGatherB
     END DO
-    ALLOCATE(ABTasks(number_of_blocks_columns,number_of_blocks_rows))
-    DO row_counter=1,number_of_blocks_rows
-       DO column_counter=1,number_of_blocks_columns
+    ALLOCATE(ABTasks(matAB%process_grid%number_of_blocks_columns, &
+         & matAB%process_grid%number_of_blocks_rows))
+    DO row_counter=1,matAB%process_grid%number_of_blocks_rows
+       DO column_counter=1,matAB%process_grid%number_of_blocks_columns
           ABTasks(column_counter,row_counter) = AwaitingAB
        END DO
     END DO
 
     !! Setup A Tasks
-    duplicate_start_column = my_slice+1
-    duplicate_offset_column = num_process_slices
+    duplicate_start_column = matAB%process_grid%my_slice+1
+    duplicate_offset_column = matAB%process_grid%num_process_slices
 
     !! Setup B Tasks
-    duplicate_start_row = my_slice+1
-    duplicate_offset_row = num_process_slices
+    duplicate_start_row = matAB%process_grid%my_slice+1
+    duplicate_offset_row = matAB%process_grid%num_process_slices
 
     !! Setup AB Tasks
     IF (PRESENT(memory_pool_in)) THEN
        IF (.NOT. CheckDistributedMemoryPoolValidity(memory_pool_in)) THEN
-          CALL ConstructDistributedMatrixMemoryPool(memory_pool_in)
+          CALL ConstructDistributedMatrixMemoryPool(memory_pool_in, matAB)
        END IF
     END IF
 
@@ -222,7 +228,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO WHILE (ATasks_completed .LT. SIZE(ATasks) .OR. &
          & BTasks_completed .LT. SIZE(BTasks) .OR. &
          & ABTasks_completed .LT. SIZE(ABTasks))
-       DO row_counter=1,number_of_blocks_rows
+       DO row_counter=1, matAB%process_grid%number_of_blocks_rows
           SELECT CASE (ATasks(row_counter))
           CASE(LocalGatherA)
              ATasks(row_counter) = TaskRunningA
@@ -230,7 +236,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !$omp& firstprivate(row_counter)
              !! First Align The Data We're Working With
              DO inner_column_counter=1, &
-                  & number_of_blocks_columns/num_process_slices
+                  & matAB%process_grid%number_of_blocks_columns/ &
+                  & matAB%process_grid%num_process_slices
                 CALL CopySparseMatrix(matA%local_data(duplicate_start_column+ &
                      & duplicate_offset_column*(inner_column_counter-1), &
                      & row_counter), &
@@ -244,12 +251,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CASE(SendSizeA)
              !! Then Start A Global Gather
              CALL GatherSizes(LocalRowContribution(row_counter), &
-                  & blocked_row_comm(row_counter), row_helper(row_counter))
+                  & matAB%process_grid%blocked_row_comm(row_counter), &
+                  & row_helper(row_counter))
              ATasks(row_counter) = ComposeA
           CASE(ComposeA)
              IF (TestSizeRequest(row_helper(row_counter))) THEN
                 CALL GatherAndComposeData(LocalRowContribution(row_counter), &
-                     & blocked_row_comm(row_counter), &
+                     & matAB%process_grid%blocked_row_comm(row_counter), &
                      & GatheredRowContribution(row_counter), &
                      & row_helper(row_counter))
                 ATasks(row_counter) = WaitOuterA
@@ -282,14 +290,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END SELECT
        END DO
        !! B Tasks
-       DO column_counter=1,number_of_blocks_columns
+       DO column_counter=1,matAB%process_grid%number_of_blocks_columns
           SELECT CASE (BTasks(column_counter))
           CASE(LocalGatherB)
              BTasks(column_counter) = TaskRunningB
              !$omp task default(shared), private(inner_row_counter), &
              !$omp& firstprivate(column_counter)
              !! First Transpose The Data We're Working With
-             DO inner_row_counter=1,number_of_blocks_rows/num_process_slices
+             DO inner_row_counter=1, matAB%process_grid%number_of_blocks_rows/&
+                  & matAB%process_grid%num_process_slices
                 CALL TransposeSparseMatrix(matB%local_data(column_counter, &
                      & duplicate_start_row+ &
                      & duplicate_offset_row*(inner_row_counter-1)), &
@@ -304,14 +313,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CASE(SendSizeB)
              !! Then A Global Gather
              CALL GatherSizes(LocalColumnContribution(column_counter), &
-                  & blocked_column_comm(column_counter), &
+                  & matAB%process_grid%blocked_column_comm(column_counter), &
                   & column_helper(column_counter))
              BTasks(column_counter) = LocalComposeB
           CASE(LocalComposeB)
              IF (TestSizeRequest(column_helper(column_counter))) THEN
                 CALL GatherAndComposeData( &
                      & LocalColumnContribution(column_counter),&
-                     & blocked_column_comm(column_counter), &
+                     & matAB%process_grid%blocked_column_comm(column_counter), &
                      & GatheredColumnContribution(column_counter), &
                      & column_helper(column_counter))
                 BTasks(column_counter) = WaitOuterB
@@ -343,8 +352,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END SELECT
        END DO
        !! AB Tasks
-       DO row_counter=1,number_of_blocks_rows
-          DO column_counter=1,number_of_blocks_columns
+       DO row_counter=1,matAB%process_grid%number_of_blocks_rows
+          DO column_counter=1,matAB%process_grid%number_of_blocks_columns
              SELECT CASE(ABTasks(column_counter,row_counter))
              CASE (AwaitingAB)
                 IF (ATasks(row_counter) .EQ. FinishedA .AND. &
@@ -374,14 +383,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 !$omp end task
              CASE(SendSizeAB)
                 CALL GatherSizes(SliceContribution(column_counter,row_counter), &
-                     & blocked_between_slice_comm(column_counter,row_counter), &
+                     & matAB%process_grid%blocked_between_slice_comm&
+                     & (column_counter,row_counter), &
                      & slice_helper(column_counter,row_counter))
                 ABTasks(column_counter,row_counter) = GatherAndSumAB
              CASE (GatherAndSumAB)
                 IF (TestSizeRequest(slice_helper(column_counter,row_counter))) THEN
                    CALL GatherAndSumData( &
                         & SliceContribution(column_counter,row_counter), &
-                        & blocked_between_slice_comm(column_counter,row_counter), &
+                        & matAB%process_grid%blocked_between_slice_comm&
+                        & (column_counter,row_counter), &
                         & slice_helper(column_counter,row_counter))
                    ABTasks(column_counter,row_counter) = WaitOuterAB
                 END IF
@@ -432,8 +443,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(slice_helper)
 
     !! Deallocate Buffers From A
-    DO row_counter=1,number_of_blocks_rows
-       DO inner_column_counter=1,number_of_blocks_columns/num_process_slices
+    DO row_counter=1,matAB%process_grid%number_of_blocks_rows
+       DO inner_column_counter=1,matAB%process_grid%number_of_blocks_columns/&
+            & matAB%process_grid%num_process_slices
           CALL DestructSparseMatrix(AdjacentABlocks(inner_column_counter, &
                & row_counter))
        END DO
@@ -444,8 +456,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(LocalRowContribution)
     DEALLOCATE(GatheredRowContribution)
     !! Deallocate Buffers From B
-    DO column_counter=1,number_of_blocks_columns
-       DO inner_row_counter=1,number_of_blocks_rows/num_process_slices
+    DO column_counter=1,matAB%process_grid%number_of_blocks_columns
+       DO inner_row_counter=1,matAB%process_grid%number_of_blocks_rows/&
+            & matAB%process_grid%num_process_slices
           CALL DestructSparseMatrix(TransposedBBlocks(column_counter, &
                & inner_row_counter))
        END DO
@@ -454,17 +467,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(TransposedBBlocks)
     DEALLOCATE(LocalColumnContribution)
     !! Deallocate Buffers From Multiplying The Block
-    DO row_counter=1,number_of_blocks_rows
+    DO row_counter=1,matAB%process_grid%number_of_blocks_rows
        CALL DestructSparseMatrix(GatheredRowContributionT(row_counter))
     END DO
-    DO column_counter=1,number_of_blocks_columns
+    DO column_counter=1,matAB%process_grid%number_of_blocks_columns
        CALL DestructSparseMatrix(GatheredColumnContribution(column_counter))
     END DO
     DEALLOCATE(GatheredRowContributionT)
     DEALLOCATE(GatheredColumnContribution)
     !! Deallocate Buffers From Sum
-    DO row_counter=1,number_of_blocks_rows
-       DO column_counter=1,number_of_blocks_columns
+    DO row_counter=1,matAB%process_grid%number_of_blocks_rows
+       DO column_counter=1,matAB%process_grid%number_of_blocks_columns
           CALL DestructSparseMatrix(SliceContribution(column_counter,row_counter))
        END DO
     END DO
@@ -474,27 +487,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DistributedGemm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the elements in a matrix into a single value.
-  !! @param[in] matA Matrix A.
+  !! @param[in] this matrix to compute.
   !! @result sum the sum of all elements.
-  FUNCTION DistributedGrandSum(matA) RESULT(sum)
+  FUNCTION DistributedGrandSum(this) RESULT(sum)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: matA
+    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: this
     REAL(NTREAL) :: sum
     !! Local Data
     INTEGER :: row_counter, column_counter
     REAL(NTREAL) :: temp
+    INTEGER :: ierr
 
     sum = 0
-    DO row_counter = 1, number_of_blocks_rows
-       DO column_counter = 1, number_of_blocks_columns
-          temp = SparseMatrixGrandSum(matA%local_data(column_counter,row_counter))
+    DO row_counter = 1, this%process_grid%number_of_blocks_rows
+       DO column_counter = 1, this%process_grid%number_of_blocks_columns
+          temp = SparseMatrixGrandSum( &
+               & this%local_data(column_counter,row_counter))
           sum = sum + temp
        END DO
     END DO
 
     !! Sum Among Process Slice
     CALL MPI_Allreduce(MPI_IN_PLACE, sum, 1, MPINTREAL, &
-         & MPI_SUM, within_slice_comm, grid_error)
+         & MPI_SUM, this%process_grid%within_slice_comm, ierr)
   END FUNCTION DistributedGrandSum
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication. C_ij = A_ij * B_ij.
@@ -515,8 +530,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !$omp parallel
     !$omp do collapse(2)
-    DO row_counter = 1, number_of_blocks_rows
-       DO column_counter = 1, number_of_blocks_columns
+    DO row_counter = 1, matA%process_grid%number_of_blocks_rows
+       DO column_counter = 1, matA%process_grid%number_of_blocks_columns
           CALL PairwiseMultiplySparseMatrix( &
                & matA%local_data(column_counter,row_counter), &
                & matB%local_data(column_counter,row_counter), &
@@ -537,6 +552,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: local_norm
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -544,12 +560,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Sum Along Columns
     CALL SparseMatrixNorm(merged_local_data,local_norm)
     CALL MPI_Allreduce(MPI_IN_PLACE,local_norm,SIZE(local_norm), &
-         & MPINTREAL, MPI_SUM,column_comm,grid_error)
+         & MPINTREAL, MPI_SUM, this%process_grid%column_comm, ierr)
 
     !! Find Max Value Amonst Columns
     norm_value = MAXVAL(local_norm)
     CALL MPI_Allreduce(MPI_IN_PLACE,norm_value,1,MPINTREAL,MPI_MAX, &
-         & row_comm, grid_error)
+         & this%process_grid%row_comm, ierr)
 
     CALL DestructSparseMatrix(merged_local_data)
     DEALLOCATE(local_norm)
@@ -605,9 +621,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !$omp parallel
     !$omp do collapse(2)
-    DO row_counter = 1, number_of_blocks_rows
-       DO column_counter = 1, number_of_blocks_columns
-          CALL IncrementSparseMatrix(matA%local_data(column_counter,row_counter),&
+    DO row_counter = 1, matA%process_grid%number_of_blocks_rows
+       DO column_counter = 1, matA%process_grid%number_of_blocks_columns
+          CALL IncrementSparseMatrix( &
+               & matA%local_data(column_counter,row_counter),&
                & matB%local_data(column_counter,row_counter), alpha, threshold)
        END DO
     END DO
@@ -627,8 +644,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !$omp parallel
     !$omp do collapse(2)
-    DO row_counter = 1, number_of_blocks_rows
-       DO column_counter = 1, number_of_blocks_columns
+    DO row_counter = 1, this%process_grid%number_of_blocks_rows
+       DO column_counter = 1, this%process_grid%number_of_blocks_columns
           CALL ScaleSparseMatrix(this%local_data(column_counter,row_counter), &
                & constant)
        END DO
@@ -649,6 +666,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Counters/Temporary
     INTEGER :: counter
     TYPE(SparseMatrix_t) :: merged_local_data
+    INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -665,7 +683,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Sum Among Process Slice
     CALL MPI_Allreduce(MPI_IN_PLACE, trace_value, 1, MPINTREAL, &
-         & MPI_SUM, within_slice_comm,grid_error)
+         & MPI_SUM, this%process_grid%within_slice_comm, ierr)
 
     CALL DestructSparseMatrix(merged_local_data)
   END FUNCTION Trace
