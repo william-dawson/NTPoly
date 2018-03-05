@@ -11,14 +11,6 @@ MODULE DistributedSparseMatrixModule
   USE MatrixMarketModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot
-  ! USE ProcessGridModule, ONLY : grid_error, IsRoot, RootID, total_processors,&
-  !      & num_process_slices, num_process_rows, num_process_columns, &
-  !      & slice_size, my_slice, my_row, my_column, global_rank,&
-  !      & within_slice_rank, between_slice_rank, row_rank, column_rank, &
-  !      & global_comm, within_slice_comm, row_comm, column_comm, &
-  !      & between_slice_comm, &
-  !      & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
-  !      & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
@@ -84,17 +76,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   !! @param[out] this the matrix to be constructed.
   !! @param[in] matrix_dim_ the dimension of the full matrix.
-  PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix(this, matrix_dim_)
+  !! @param[in] process_grid a process grid to host the matrix (optional).
+  PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix(this, matrix_dim_, &
+    & process_grid_)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     INTEGER, INTENT(IN)           :: matrix_dim_
+    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_
     !! Local Variables
     TYPE(SparseMatrix_t) :: zeromatrix
 
     CALL DestructDistributedSparseMatrix(this)
 
     !! Process Grid
-    this%process_grid = global_grid
+    IF (PRESENT(process_grid_)) THEN
+      this%process_grid = process_grid_
+    ELSE
+      this%process_grid = global_grid
+    END IF
 
     !! Matrix Dimensions
     this%actual_matrix_dimension = matrix_dim_
@@ -155,10 +154,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Read \cite boisvert1996matrix for the details.
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
-  SUBROUTINE ConstructFromMatrixMarket(this, file_name)
+  !! @param[in] process_grid a process grid to host the matrix (optional).
+  SUBROUTINE ConstructFromMatrixMarket(this, file_name, process_grid_)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
+    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
     INTEGER :: local_file_handler
@@ -190,7 +191,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: error_occured
     INTEGER :: ierr
 
-    this%process_grid = global_grid
+    IF (PRESENT(process_grid_)) THEN
+      this%process_grid = process_grid_
+    ELSE
+      this%process_grid = global_grid
+    END IF
 
     !! Setup Involves Just The Root Opening And Reading Parameter Data
     CALL StartTimer("MPI Read Text")
@@ -328,9 +333,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Faster than text, so this is good for check pointing.
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
-  SUBROUTINE ConstructFromBinary(this, file_name)
+  !! @param[in] process_grid a process grid to host the matrix (optional).
+  SUBROUTINE ConstructFromBinary(this, file_name, process_grid_)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
+    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! File Handles
     INTEGER :: mpi_file_handler
@@ -347,7 +354,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
 
-    this%process_grid = global_grid
+    IF (PRESENT(process_grid_)) THEN
+      this%process_grid = process_grid_
+    ELSE
+      this%process_grid = global_grid
+    END IF
 
     CALL StartTimer("MPI Read Binary")
     CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
