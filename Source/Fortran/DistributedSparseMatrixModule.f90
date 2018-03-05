@@ -1011,6 +1011,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteListElement(key="min_size", int_value_in=min_size)
     CALL WriteListElement(key="max_size", int_value_in=max_size)
     CALL ExitSubLog
+    CALL WriteElement(key="Dimension",int_value_in=this%actual_matrix_dimension)
     CALL WriteElement(key="Sparsity", float_value_in=sparsity)
   END SUBROUTINE PrintMatrixInformation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

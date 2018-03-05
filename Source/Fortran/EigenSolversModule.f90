@@ -21,7 +21,7 @@ MODULE EigenSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTEGER, PARAMETER :: BASESIZE = 128
+  INTEGER, PARAMETER :: BASESIZE = 2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
   PUBLIC :: SingularValueDecomposition
@@ -43,7 +43,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
-    TYPE(FixedSolverParameters_t) :: f_solver_parameters
+    TYPE(FixedSolverParameters_t) :: fixed_param
+    TYPE(IterativeSolverParameters_t) :: it_param
     TYPE(Permutation_t) :: default_perm
     INTEGER :: num_values
     !! Local
@@ -70,22 +71,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup the solver parameters
-    ! solver_parameters%be_verbose = .FALSE.
-    CALL ConstructDefaultPermutation(default_perm,this%logical_matrix_dimension)
-    CALL SetIterativeLoadBalance(solver_parameters, default_perm)
-    CALL ConvertIterativeToFixed(solver_parameters, f_solver_parameters)
+    it_param = IterativeSolverParameters_t(&
+         & converge_diff_in = solver_parameters%converge_diff, &
+         & threshold_in = solver_parameters%threshold, &
+         & max_iterations_in = solver_parameters%max_iterations)
+    CALL ConvertIterativeToFixed(it_param, fixed_param)
 
     !! Rotate so that we are only computing the target number of values
     IF (num_values .LT. this%actual_matrix_dimension) THEN
        CALL ReduceDimension(this, num_values, solver_parameters, &
-            & f_solver_parameters, ReducedMat)
+            & fixed_param, ReducedMat)
     ELSE
        CALL CopyDistributedSparseMatrix(this, ReducedMat)
     END IF
 
     !! Actual Solve
-    CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters, &
-         & f_solver_parameters)
+    CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters, it_param, &
+         & fixed_param)
     CALL TransposeDistributedSparseMatrix(eigenvectors, eigenvectorsT)
     CALL DistributedGemm(eigenvectorsT, ReducedMat, TempMat, &
          & threshold_in=solver_parameters%threshold)
@@ -145,7 +147,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the left singular vectors
     CALL DistributedGemm(UMat, right_vectors, left_vectors, &
-        & threshold_in=solver_parameters%threshold)
+         & threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     IF (solver_parameters%be_verbose) THEN
@@ -161,10 +163,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
   !! @param[in] it_parameters parameters for the iterative solvers.
   !! @param[in] it_parameters parameters for the fixed solvers.
-  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, it_param, fixed_param)
+  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters, &
+       & it_param, fixed_param)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Variables - matrices
@@ -182,6 +186,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     mat_dim = this%actual_matrix_dimension
     CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim)
     CALL FillDistributedIdentity(Identity)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteListElement(key="Iteration_Size", int_value_in=mat_dim)
+       CALL EnterSubLog
+       CALL PrintMatrixInformation(this)
+       CALL ExitSubLog
+    END IF
 
     !! Base Case
     IF (mat_dim .LE. BASESIZE) THEN
@@ -227,8 +238,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StartTimer("Corner")
        CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
        CALL StopTimer("Corner")
-       CALL EigenRecursive(LeftMat,LeftVectors,it_param,fixed_param)
-       CALL EigenRecursive(RightMat,RightVectors,it_param,fixed_param)
+       CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
+            & fixed_param)
+       CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
+            & fixed_param)
 
        !! Recombine
        CALL StartTimer("Recombine")
@@ -428,7 +441,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(send_list(slice_size))
     CALL ConstructTripletList(send_list(1), triplet_list%CurrentSize)
     DO counter = 2, slice_size
-      CALL ConstructTripletList(send_list(counter))
+       CALL ConstructTripletList(send_list(counter))
     END DO
     list_size = triplet_list%CurrentSize
     send_list(1)%data(:list_size) = triplet_list%data(:list_size)
@@ -436,32 +449,32 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL RedistributeTripletLists(send_list, within_slice_comm, triplet_list)
 
     IF (within_slice_rank .EQ. 0) THEN
-      !! Pack To A Dense Matrix
-      CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
-      CALL ConstructFromTripletList(sparse, sorted_triplet_list, mat_dim, &
-           & mat_dim)
-      ALLOCATE(dense(mat_dim, mat_dim))
-      CALL ConstructDenseFromSparse(sparse, dense)
+       !! Pack To A Dense Matrix
+       CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
+       CALL ConstructFromTripletList(sparse, sorted_triplet_list, mat_dim, &
+            & mat_dim)
+       ALLOCATE(dense(mat_dim, mat_dim))
+       CALL ConstructDenseFromSparse(sparse, dense)
 
-      !! Solve With LAPACK
-      ALLOCATE(dense_eig(mat_dim, mat_dim))
-      CALL DenseEigenSolve(dense, dense_eig)
+       !! Solve With LAPACK
+       ALLOCATE(dense_eig(mat_dim, mat_dim))
+       CALL DenseEigenSolve(dense, dense_eig)
 
-      !! Convert to a distributed sparse matrix
-      CALL ConstructTripletList(triplet_list)
-      DO II = 1, mat_dim
-        temp_triplet%index_row = II
-        DO JJ = 1, mat_dim
-          temp_triplet%index_column = JJ
-          temp_triplet%point_value = dense_eig(II,JJ)
-          IF (ABS(temp_triplet%point_value) .GT. fixed_param%threshold) THEN
-            CALL AppendToTripletList(triplet_list, temp_triplet)
-          END IF
-        END DO
-      END DO
+       !! Convert to a distributed sparse matrix
+       CALL ConstructTripletList(triplet_list)
+       DO II = 1, mat_dim
+          temp_triplet%index_row = II
+          DO JJ = 1, mat_dim
+             temp_triplet%index_column = JJ
+             temp_triplet%point_value = dense_eig(II,JJ)
+             IF (ABS(temp_triplet%point_value) .GT. fixed_param%threshold) THEN
+                CALL AppendToTripletList(triplet_list, temp_triplet)
+             END IF
+          END DO
+       END DO
 
-      DEALLOCATE(dense)
-      DEALLOCATE(dense_eig)
+       DEALLOCATE(dense)
+       DEALLOCATE(dense_eig)
     END IF
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim)
     CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
