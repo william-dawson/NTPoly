@@ -9,7 +9,6 @@ MODULE TrigonometrySolversModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE TimerModule
   USE mpi
   IMPLICIT NONE

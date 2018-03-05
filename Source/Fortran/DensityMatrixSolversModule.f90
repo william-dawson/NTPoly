@@ -9,7 +9,6 @@ MODULE DensityMatrixSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE

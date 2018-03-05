@@ -11,7 +11,6 @@ MODULE RootSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE PolynomialSolversModule
   USE SquareRootSolversModule
   USE TimerModule

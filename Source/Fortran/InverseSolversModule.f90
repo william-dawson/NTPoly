@@ -8,7 +8,6 @@ MODULE InverseSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE TimerModule
   USE mpi
   IMPLICIT NONE
@@ -49,7 +48,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
        CALL WriteCitation("palser1998canonical")
@@ -89,7 +88,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(InverseMat,sigma)
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
@@ -186,7 +185,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
        CALL WriteCitation("palser1998canonical")
@@ -224,7 +223,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(InverseMat,sigma)
 
     !! Iterate
-    IF (solver_parameters%be_verbose .AND. IsRoot()) THEN
+    IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF

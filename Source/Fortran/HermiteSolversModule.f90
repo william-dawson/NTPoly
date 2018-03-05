@@ -9,7 +9,6 @@ MODULE HermiteSolversModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE

@@ -9,7 +9,6 @@ MODULE GeometryOptimizationModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE SquareRootSolversModule
   USE TimerModule
   USE MPI

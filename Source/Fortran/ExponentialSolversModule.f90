@@ -13,7 +13,6 @@ MODULE ExponentialSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE ParameterConverterModule
-  USE ProcessGridModule
   USE RootSolversModule
   USE SquareRootSolversModule
   USE TimerModule

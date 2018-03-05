@@ -8,7 +8,6 @@ MODULE MinimizerSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ProcessGridModule
   USE TimerModule
   USE mpi
   IMPLICIT NONE
