@@ -767,6 +767,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ConstructRankLookup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A helper routine that gathers the matrices in the same column into one.
+  !! @param[in] local_matrix the local matrix on each process.
+  !! @param[out] column_matrix the final result.
   SUBROUTINE GatherMatrixColumn(local_matrix, column_matrix)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: local_matrix

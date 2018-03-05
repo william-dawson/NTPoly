@@ -1051,7 +1051,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Merge Rows
     CALL TransposeSparseMatrix(merged_columns,merged_columnsT)
-    !call GatherAllAndCompose(merged_columnsT, row_comm, full_gathered)
     CALL GatherSizes(merged_columnsT, row_comm, row_helper)
     CALL MPI_Wait(row_helper%size_request,mpi_status,grid_error)
     CALL GatherAndComposeData(merged_columnsT,row_comm,full_gathered,row_helper)

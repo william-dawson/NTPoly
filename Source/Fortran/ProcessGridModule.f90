@@ -16,7 +16,7 @@ MODULE ProcessGridModule
   INTEGER, PUBLIC :: num_process_rows !< number of rows in the grid.
   INTEGER, PUBLIC :: num_process_columns !< number of columns in the grid.
   INTEGER, PUBLIC :: num_process_slices !< number of 2D slices in the grid.
-  INTEGER, PUBLIC :: slice_size !< the slice of a 2D slice.
+  INTEGER, PUBLIC :: slice_size !< the size of a 2D slice.
   !! Identiy current process
   INTEGER, PUBLIC :: my_slice !< which slice is the current process in.
   INTEGER, PUBLIC :: my_row !< which row is the current process in.

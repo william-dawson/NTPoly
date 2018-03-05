@@ -13,6 +13,7 @@ MODULE DenseMatrixModule
   PUBLIC :: ConstructDenseFromSparse
   PUBLIC :: ConstructSparseFromDense
   PUBLIC :: MultiplyDense
+  PUBLIC :: DenseEigenSolve
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
@@ -89,4 +90,66 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     MatC = MATMUL(MatA,MatB)
   END SUBROUTINE MultiplyDense
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the eigenvectors of a dense matrix.
+  !! @param[in] mat the matrix.
+  !! @param[out] eigenvectors the eigenvectors. Must be preallocated.
+  SUBROUTINE DenseEigenSolve(mat, eigenvectors)
+    !! Parameters
+    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: mat
+    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: eigenvectors
+    !! Local variables
+    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
+    INTEGER :: N, LDA
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: A
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
+    INTEGER :: LWORK
+    DOUBLE PRECISION :: TEMP
+    INTEGER :: INFO
+    !! Temporary variables
+    INTEGER :: II, JJ, counter
+
+    N = SIZE(mat,DIM=1)
+    LDA = N
+
+    !! Allocations
+    ALLOCATE(A(N*N))
+    ALLOCATE(W(N))
+
+    !! Store as an upper triangular matrix
+    A = 0
+    counter = 1
+    DO II = 1, N
+      DO JJ = 1, N
+        A(counter) = mat(II,JJ)
+        counter = counter + 1
+      END DO
+    END DO
+
+    !! Determine the scratch space size
+    LWORK = -1
+    CALL DSYEV(JOB, UPLO, N, A, LDA, W, TEMP, LWORK, INFO)
+    N = LDA
+    LWORK = INT(TEMP)
+    ALLOCATE(WORK(LWORK))
+
+    !! Run Lapack For Real
+    CALL DSYEV(JOB, UPLO, N, A, LDA, W, WORK, LWORK, INFO)
+
+    !! Unpack
+    counter = 1
+    DO II = 1, N
+      DO JJ = 1, N
+        eigenvectors(JJ,II) = A(counter)
+        counter = counter + 1
+      END DO
+    END DO
+
+    !! Cleanup
+    DEALLOCATE(A)
+    DEALLOCATE(W)
+    DEALLOCATE(Work)
+
+  END SUBROUTINE DenseEigenSolve
 END MODULE DenseMatrixModule

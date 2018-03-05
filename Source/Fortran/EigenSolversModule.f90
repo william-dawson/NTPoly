@@ -2,6 +2,7 @@
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
   USE DataTypesModule
+  USE DenseMatrixModule
   USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE DensityMatrixSolversModule
@@ -11,11 +12,15 @@ MODULE EigenSolversModule
   USE LoggingModule
   USE ParameterConverterModule
   USE PermutationModule
+  USE ProcessGridModule
   USE SignSolversModule
+  USE SparseMatrixModule
   USE TripletListModule
   USE TripletModule
   IMPLICIT NONE
   PRIVATE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTEGER, PARAMETER :: BASESIZE = 128
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
   PUBLIC :: SingularValueDecomposition
@@ -178,8 +183,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillDistributedIdentity(Identity)
 
     !! Base Case
-    IF (mat_dim .EQ. 1) THEN
-       CALL CopyDistributedSparseMatrix(Identity, eigenvectors)
+    IF (mat_dim .LE. BASESIZE) THEN
+       CALL BaseCase(this, fixed_param, eigenvectors)
     ELSE
        !! Setup
        left_dim = mat_dim/2
@@ -331,6 +336,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ExtractCorner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> When we want to only compute the first n eigenvalues of a matrix, this
+  !! routine will project out the higher eigenvalues.
+  !! @param[in] this the starting matrix.
+  !! @param[in] dim the number of eigenvalues ot keep.
+  !! @param[in] it_param the iterative solver parameters.
+  !! @param[in] fixed_param the fixed solver parameters.
+  !! @param[out] ReducedMat a dimxdim matrix with the same first n eigenvalues
+  !! as the first.
   SUBROUTINE ReduceDimension(this, dim, it_param, fixed_param, ReducedMat)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
@@ -374,4 +387,76 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(TempMat)
     CALL DestructDistributedSparseMatrix(VAV)
   END SUBROUTINE ReduceDimension
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The base case: use lapack to solve
+  !! @param[in] this the matrix to compute
+  !! @param[in] fixed_param the solve parameters.
+  !! @param[out] eigenvecotrs the eigenvectors of the matrix
+  SUBROUTINE BaseCase(this, fixed_param, eigenvectors)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    !! Local Data
+    TYPE(TripletList_t) :: triplet_list, sorted_triplet_list
+    TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(Triplet_t) :: temp_triplet
+    TYPE(SparseMatrix_t) :: sparse
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense, dense_eig
+    INTEGER :: counter, II, JJ, list_size
+    INTEGER :: mat_dim
+
+    mat_dim = this%actual_matrix_dimension
+
+    !! Gather on a single processor
+    CALL GetTripletList(this, triplet_list)
+    ALLOCATE(send_list(slice_size))
+    CALL ConstructTripletList(send_list(1), triplet_list%CurrentSize)
+    DO counter = 2, slice_size
+      CALL ConstructTripletList(send_list(counter))
+    END DO
+    list_size = triplet_list%CurrentSize
+    send_list(1)%data(:list_size) = triplet_list%data(:list_size)
+    CALL DestructTripletList(triplet_list)
+    CALL RedistributeTripletLists(send_list, within_slice_comm, triplet_list)
+
+    IF (within_slice_rank .EQ. 0) THEN
+      !! Pack To A Dense Matrix
+      CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
+      CALL ConstructFromTripletList(sparse, sorted_triplet_list, mat_dim, &
+           & mat_dim)
+      ALLOCATE(dense(mat_dim, mat_dim))
+      CALL ConstructDenseFromSparse(sparse, dense)
+
+      !! Solve With LAPACK
+      ALLOCATE(dense_eig(mat_dim, mat_dim))
+      CALL DenseEigenSolve(dense, dense_eig)
+
+      !! Convert to a distributed sparse matrix
+      CALL ConstructTripletList(triplet_list)
+      DO II = 1, mat_dim
+        temp_triplet%index_row = II
+        DO JJ = 1, mat_dim
+          temp_triplet%index_column = JJ
+          temp_triplet%point_value = dense_eig(II,JJ)
+          IF (ABS(temp_triplet%point_value) .GT. fixed_param%threshold) THEN
+            CALL AppendToTripletList(triplet_list, temp_triplet)
+          END IF
+        END DO
+      END DO
+
+      DEALLOCATE(dense)
+      DEALLOCATE(dense_eig)
+    END IF
+    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim)
+    CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
+
+    !! Cleanup
+    CALL DestructTripletList(triplet_list)
+    DO counter = 1, slice_size
+       CALL DestructTripletList(send_list(counter))
+    END DO
+    DEALLOCATE(send_list)
+  END SUBROUTINE BaseCase
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenSolversModule

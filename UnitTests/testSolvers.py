@@ -41,7 +41,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 7
+    matrix_dimension = 17
 
     @classmethod
     def setUpClass(self):
@@ -68,8 +68,6 @@ class TestSolvers(unittest.TestCase):
         relative_error = 0
         if (self.my_rank == 0):
             ResultMat = mmread(result_file)
-            print(ResultMat.todense())
-            print(self.CheckMat.todense())
             normval = abs(norm(self.CheckMat - ResultMat))
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
@@ -873,7 +871,7 @@ class TestSolvers(unittest.TestCase):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
+                        density=1.0, random_state=2)
         matrix1 = csr_matrix(temp_mat + temp_mat.T)
 
         # Check Matrix
