@@ -13,8 +13,9 @@ from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
 from scipy.sparse.linalg import norm, inv, eigsh
 from numpy import zeros, sqrt, power, \
-    sign, exp, log, sin, cos, linspace, diag, dot
-from numpy.linalg import eigh
+    sign, exp, log, sin, cos, linspace, diag, dot, sort
+from numpy.linalg import eigh, svd
+from numpy.linalg import norm as densenorm
 import numpy
 from random import random
 import os
@@ -68,6 +69,21 @@ class TestSolvers(unittest.TestCase):
         if (self.my_rank == 0):
             ResultMat = mmread(result_file)
             normval = abs(norm(self.CheckMat - ResultMat))
+            relative_error = normval / norm(self.CheckMat)
+            print("\nNorm:", normval)
+            print("Relative_Error:", relative_error)
+        global_norm = comm.bcast(normval, root=0)
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
+
+    def check_diag(self):
+        '''Compare two diagonal matrices.'''
+        normval = 0
+        relative_error = 0
+        if (self.my_rank == 0):
+            ResultMat = sort(diag(mmread(result_file).todense()))
+            CheckDiag = sort(diag(self.CheckMat.todense()))
+            normval = abs(densenorm(CheckDiag - ResultMat))
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
@@ -878,6 +894,36 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
 
         self.check_result()
+
+    def test_svd(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
+                        density=1.0)
+        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+
+        # Check Matrix
+        u, s, vh = svd(matrix1.todense())
+        self.CheckMat = csr_matrix(diag(s))
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
+        left_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        right_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        nt.EigenSolvers.SingularValueDecompostion(input_matrix, left_matrix,
+                                                  right_matrix, val_matrix,
+                                                  self.iterative_solver_parameters)
+        val_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_diag()
 
 
 if __name__ == '__main__':

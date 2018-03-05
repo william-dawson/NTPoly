@@ -28,7 +28,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] nel the number of electrons.
   !! @param[out] Density the density matrix computed by this routine.
   !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional)
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters

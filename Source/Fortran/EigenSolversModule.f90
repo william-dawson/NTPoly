@@ -11,15 +11,20 @@ MODULE EigenSolversModule
   USE LoggingModule
   USE ParameterConverterModule
   USE PermutationModule
+  USE SignSolversModule
   USE TripletListModule
   USE TripletModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
-  ! PUBLIC :: SingularValueDecompostion
+  PUBLIC :: SingularValueDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvalues and eigenvectors of a matrix.
+  !! @param[in] this the matrix to decompose.
+  !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
+  !! @param[out] eigenvalues a diagonal matrix containing the eigenvalues.
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE EigenDecomposition(this, eigenvectors, eigenvalues, &
        & solver_parameters_in)
     !! Parameters
@@ -73,6 +78,64 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(TempMat)
   END SUBROUTINE EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the singular values and singular vectors of a matrix.
+  !! @param[in] this the matrix to decompose.
+  !! @param[out] left_vectors a matrix containing the left singular vectors.
+  !! @param[out] right_vectors a matrix containing the right singular vectors.
+  !! @param[out] singularvalues a diagonal matrix containing the singularvalues.
+  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  SUBROUTINE SingularValueDecomposition(this, left_vectors, &
+       & right_vectors, singularvalues, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: left_vectors
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: right_vectors
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: singularvalues
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    !! Local Variables
+    TYPE(DistributedSparseMatrix_t) :: UMat, HMat
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Singular Value Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="Recursive")
+       CALL PrintIterativeSolverParameters(solver_parameters)
+    END IF
+
+    !! First compute the polar decomposition of the matrix.
+    CALL PolarDecomposition(this, UMat, HMat, solver_parameters)
+
+    !! Compute the eigen decomposition of the hermitian matrix
+    CALL EigenDecomposition(HMat,right_vectors,singularvalues,solver_parameters)
+
+    !! Compute the left singular vectors
+    CALL DistributedGemm(UMat, right_vectors, left_vectors, &
+        & threshold_in=solver_parameters%threshold)
+
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    CALL DestructDistributedSparseMatrix(UMat)
+    CALL DestructDistributedSparseMatrix(HMat)
+  END SUBROUTINE SingularValueDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The recursive workhorse routine for the eigendecompositon.
+  !! @param[in] this the matrix to decompose.
+  !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
+  !! @param[in] it_parameters parameters for the iterative solvers.
+  !! @param[in] it_parameters parameters for the fixed solvers.
   RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, it_param, fixed_param)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
@@ -156,6 +219,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE EigenRecursive
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Given two matrices, this stacks one on the left and right. The offsets
+  !! describe how to shift the values of the right mat.
+  !! @param[in] LeftMat the matrix on the left.
+  !! @param[in] RightMat the matrix on the right.
+  !! @param[in] column_offset how many columns over to shift
+  !! @param[in] row_offset how many rows over to shift
+  !! @param[out] Combined the stacked matrix.
   SUBROUTINE StackMatrices(LeftMat,RightMat,column_offset,row_offset,Combined)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: LeftMat, RightMat
@@ -195,6 +265,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE StackMatrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extract the top left and the bottom right corners of a matrix.
+  !! @param[in] this the matrix to extract from.
+  !! @param[in] left_dim the dimension of the left corner.
+  !! @param[in] right_dim the dimension of the right corner.
+  !! @param[out] LeftMat the top left corner matrix.
+  !! @param[out] RightMat the bottom right corner matirx.
   SUBROUTINE ExtractCorner(this, left_dim, right_dim, LeftMat, RightMat)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this

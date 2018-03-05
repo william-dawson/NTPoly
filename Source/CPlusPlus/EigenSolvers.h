@@ -16,6 +16,13 @@ public:
                      DistributedSparseMatrix &eigenvectors,
                      DistributedSparseMatrix &eigenvalues,
                      const IterativeSolverParameters &solver_parameters);
+  //! Compute the singularvalues and singularvectors of a matrix
+  static void
+  SingularValueDecompostion(const DistributedSparseMatrix &matrix,
+                            DistributedSparseMatrix &leftvectors,
+                            DistributedSparseMatrix &rightvectors,
+                            DistributedSparseMatrix &singularvalues,
+                            const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif
