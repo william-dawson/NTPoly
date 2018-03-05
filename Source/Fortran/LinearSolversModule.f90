@@ -130,7 +130,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute the Step Size
        CALL DistributedGemm(ABalanced, PMat, QMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-            
+
        CALL TransposeDistributedSparseMatrix(RMat,RMatT)
        CALL DistributedGemm(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
@@ -425,13 +425,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO JJ = 1, rank_in
        !! Pick a pivot vector
        local_JJ  = JJ - AMat%start_row + 1
-       CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, local_pivots, &
+       CALL GetPivot(AMat, JJ, pivot_vector, diag, pi_j, insert_value, local_pivots, &
             & num_local_pivots)
 
        !! l[pi[j],j] = sqrt(d[pi[j]])
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
           local_pi_j = pi_j - AMat%start_column + 1
-          insert_value = SQRT(diag(local_pi_j))
+          insert_value = SQRT(insert_value)
+          WRITE(*,*) "INSERT:", insert_value, "into:", local_pi_j, local_JJ
           inverse_factor = 1.0/insert_value
           !! Insert
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
@@ -658,7 +659,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     values(values_per) = insert_value
   END SUBROUTINE AppendToVector
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE GetPivot(AMat, start_index, pivot_vector, diag, index, &
+  SUBROUTINE GetPivot(AMat, start_index, pivot_vector, diag, index, value, &
        & local_pivots, num_local_pivots)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
@@ -666,6 +667,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
     INTEGER, INTENT(IN) :: start_index
     INTEGER, INTENT(OUT) :: index
+    REAL(NTREAL), INTENT(OUT) :: value
     INTEGER, DIMENSION(:), INTENT(INOUT) :: local_pivots
     INTEGER, INTENT(OUT) :: num_local_pivots
     !! Local Variables
@@ -690,10 +692,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
          & MPI_MAXLOC, row_comm, grid_error)
     index = INT(max_diag(2))
+    value = max_diag(1)
 
     swap = pivot_vector(index)
     pivot_vector(index) = pivot_vector(start_index)
     pivot_vector(start_index) = swap
+
+    index = swap
 
     !! Determine local pivots
     num_local_pivots = 0

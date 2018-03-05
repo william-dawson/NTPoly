@@ -790,8 +790,8 @@ class TestSolvers(unittest.TestCase):
         # temp_mat = temp_mat + rand2 + rand2.T
         # Symmetric Positive Definite
         # matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
-        matrix1 = mmread(os.environ["GEOMD2"])
-        rank = 5
+        matrix1 = mmread(os.environ["CholTest"])
+        rank = 2
 
         if self.my_rank == 0:
             print()

@@ -44,9 +44,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DistributedGemm(eigenvectorsT, this, TempMat)
     CALL DistributedGemm(TempMat, eigenvectors, eigenvalues)
 
-    CALL PrintDistributedSparseMatrix(eigenvectors)
-    CALL PrintDistributedSparseMatrix(eigenvalues)
-
     CALL DestructDistributedSparseMatrix(eigenvectorsT)
     CALL DestructDistributedSparseMatrix(TempMat)
   END SUBROUTINE EigenDecomposition
