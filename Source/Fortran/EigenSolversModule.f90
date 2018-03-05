@@ -15,6 +15,7 @@ MODULE EigenSolversModule
   USE ProcessGridModule
   USE SignSolversModule
   USE SparseMatrixModule
+  USE TimerModule
   USE TripletListModule
   USE TripletModule
   IMPLICIT NONE
@@ -69,7 +70,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup the solver parameters
-    solver_parameters%be_verbose = .FALSE.
+    ! solver_parameters%be_verbose = .FALSE.
     CALL ConstructDefaultPermutation(default_perm,this%logical_matrix_dimension)
     CALL SetIterativeLoadBalance(solver_parameters, default_perm)
     CALL ConvertIterativeToFixed(solver_parameters, f_solver_parameters)
@@ -184,46 +185,60 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Base Case
     IF (mat_dim .LE. BASESIZE) THEN
+       CALL StartTimer("Base Case")
        CALL BaseCase(this, fixed_param, eigenvectors)
+       CALL StopTimer("Base Case")
     ELSE
        !! Setup
        left_dim = mat_dim/2
        right_dim = mat_dim - left_dim
 
        !! Purify
+       CALL StartTimer("Purify")
        CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=it_param)
        CALL CopyDistributedSparseMatrix(Identity, PHoleMat)
        CALL IncrementDistributedSparseMatrix(PMat, PHoleMat, &
             & alpha_in=REAL(-1.0,NTREAL), threshold_in=it_param%threshold)
+       CALL StopTimer("Purify")
 
        !! Compute Eigenvectors of the Density Matrix
+       CALL StartTimer("Cholesky")
        CALL PivotedCholeskyDecomposition(PMat, PVec, left_dim, &
             & solver_parameters_in=fixed_param)
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
             & solver_parameters_in=fixed_param)
+       CALL StopTimer("Cholesky")
        CALL ConstructEmptyDistributedSparseMatrix(StackV, &
             & this%actual_matrix_dimension)
+       CALL StartTimer("Stack")
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
+       CALL StopTimer("Stack")
 
        !! Rotate to the divided subspace
+       CALL StartTimer("Rotate")
        CALL DistributedGemm(this, StackV, TempMat, &
             & threshold_in=it_param%threshold)
        CALL TransposeDistributedSparseMatrix(StackV, StackVT)
        CALL DistributedGemm(StackVT, TempMat, VAV, &
             & threshold_in=it_param%threshold)
+       CALL StopTimer("Rotate")
 
        !! Iterate Recursively
+       CALL StartTimer("Corner")
        CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
+       CALL StopTimer("Corner")
        CALL EigenRecursive(LeftMat,LeftVectors,it_param,fixed_param)
        CALL EigenRecursive(RightMat,RightVectors,it_param,fixed_param)
 
        !! Recombine
+       CALL StartTimer("Recombine")
        CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
             & this%actual_matrix_dimension)
        CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
             & TempMat)
        CALL DistributedGemm(StackV, TempMat, eigenvectors, &
             & threshold_in=it_param%threshold)
+       CALL StopTimer("Recombine")
 
        !! Cleanup
        CALL DestructDistributedSparseMatrix(PMat)
