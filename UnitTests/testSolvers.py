@@ -68,6 +68,8 @@ class TestSolvers(unittest.TestCase):
         relative_error = 0
         if (self.my_rank == 0):
             ResultMat = mmread(result_file)
+            print(ResultMat.todense())
+            print(self.CheckMat.todense())
             normval = abs(norm(self.CheckMat - ResultMat))
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
@@ -889,6 +891,37 @@ class TestSolvers(unittest.TestCase):
         vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
         val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
         nt.EigenSolvers.EigenDecomposition(input_matrix, vec_matrix, val_matrix,
+                                           self.matrix_dimension,
+                                           self.iterative_solver_parameters)
+        val_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_eigendecompositionhalf(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
+                        density=1.0)
+        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+        valshalf = vals[:int(self.matrix_dimension/2)]
+        self.CheckMat = csr_matrix(diag(valshalf))
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
+        vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        nt.EigenSolvers.EigenDecomposition(input_matrix, vec_matrix, val_matrix,
+                                           int(self.matrix_dimension/2),
                                            self.iterative_solver_parameters)
         val_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()

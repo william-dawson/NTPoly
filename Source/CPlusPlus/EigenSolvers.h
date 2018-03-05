@@ -15,6 +15,7 @@ public:
   EigenDecomposition(const DistributedSparseMatrix &matrix,
                      DistributedSparseMatrix &eigenvectors,
                      DistributedSparseMatrix &eigenvalues,
+                     int num_values,
                      const IterativeSolverParameters &solver_parameters);
   //! Compute the singularvalues and singularvectors of a matrix
   static void

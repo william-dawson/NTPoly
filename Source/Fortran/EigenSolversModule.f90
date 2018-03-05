@@ -24,27 +24,36 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to decompose.
   !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
   !! @param[out] eigenvalues a diagonal matrix containing the eigenvalues.
+  !! @param[in] num_values_in the number of eigenvalues to compute (optional).
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE EigenDecomposition(this, eigenvectors, eigenvalues, &
-       & solver_parameters_in)
+       & num_values_in, solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvalues
+    INTEGER, INTENT(IN), OPTIONAL :: num_values_in
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     TYPE(FixedSolverParameters_t) :: f_solver_parameters
     TYPE(Permutation_t) :: default_perm
+    INTEGER :: num_values
     !! Local
     TYPE(DistributedSparseMatrix_t) :: eigenvectorsT, TempMat
+    TYPE(DistributedSparseMatrix_t) :: ReducedMat
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
        solver_parameters = IterativeSolverParameters_t()
+    END IF
+    IF (PRESENT(num_values_in)) THEN
+       num_values = num_values_in
+    ELSE
+       num_values = this%actual_matrix_dimension
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -60,11 +69,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SetIterativeLoadBalance(solver_parameters, default_perm)
     CALL ConvertIterativeToFixed(solver_parameters, f_solver_parameters)
 
+    !! Rotate so that we are only computing the target number of values
+    IF (num_values .LT. this%actual_matrix_dimension) THEN
+       CALL ReduceDimension(this, num_values, solver_parameters, &
+            & f_solver_parameters, ReducedMat)
+    ELSE
+       CALL CopyDistributedSparseMatrix(this, ReducedMat)
+    END IF
+
     !! Actual Solve
-    CALL EigenRecursive(this, eigenvectors, solver_parameters, &
+    CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters, &
          & f_solver_parameters)
     CALL TransposeDistributedSparseMatrix(eigenvectors, eigenvectorsT)
-    CALL DistributedGemm(eigenvectorsT, this, TempMat, &
+    CALL DistributedGemm(eigenvectorsT, ReducedMat, TempMat, &
          & threshold_in=solver_parameters%threshold)
     CALL DistributedGemm(TempMat, eigenvectors, eigenvalues, &
          & threshold_in=solver_parameters%threshold)
@@ -76,6 +93,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructDistributedSparseMatrix(eigenvectorsT)
     CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructDistributedSparseMatrix(ReducedMat)
   END SUBROUTINE EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the singular values and singular vectors of a matrix.
@@ -116,7 +134,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL PolarDecomposition(this, UMat, HMat, solver_parameters)
 
     !! Compute the eigen decomposition of the hermitian matrix
-    CALL EigenDecomposition(HMat,right_vectors,singularvalues,solver_parameters)
+    CALL EigenDecomposition(HMat, right_vectors, singularvalues, &
+         & solver_parameters_in=solver_parameters)
 
     !! Compute the left singular vectors
     CALL DistributedGemm(UMat, right_vectors, left_vectors, &
@@ -312,4 +331,47 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ExtractCorner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ReduceDimension(this, dim, it_param, fixed_param, ReducedMat)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    INTEGER, INTENT(IN) :: dim
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: ReducedMat
+    TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
+    !! Local Variables - matrices
+    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(DistributedSparseMatrix_t) :: PMat
+    TYPE(DistributedSparseMatrix_t) :: PVec, PVecT
+    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(DistributedSparseMatrix_t) :: VAV
+
+    !! Compute Identity Matrix
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & this%actual_matrix_dimension)
+    CALL FillDistributedIdentity(Identity)
+
+    !! Purify
+    CALL TRS2(this, Identity, dim*2, PMat, solver_parameters_in=it_param)
+
+    !! Compute Eigenvectors of the Density Matrix
+    CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
+         & solver_parameters_in=fixed_param)
+
+    !! Rotate to the divided subspace
+    CALL DistributedGemm(this, PVec, TempMat, &
+         & threshold_in=it_param%threshold)
+    CALL TransposeDistributedSparseMatrix(PVec, PVecT)
+    CALL DistributedGemm(PVecT, TempMat, VAV, &
+         & threshold_in=it_param%threshold)
+
+    !! Extract
+    CALL ExtractCorner(VAV, dim, dim, ReducedMat, TempMat)
+
+    CALL DestructDistributedSparseMatrix(Identity)
+    CALL DestructDistributedSparseMatrix(PMat)
+    CALL DestructDistributedSparseMatrix(PVec)
+    CALL DestructDistributedSparseMatrix(PVecT)
+    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructDistributedSparseMatrix(VAV)
+  END SUBROUTINE ReduceDimension
 END MODULE EigenSolversModule
