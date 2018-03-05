@@ -8,7 +8,9 @@ MODULE EigenSolversModule
   USE FixedSolversModule
   USE IterativeSolversModule
   USE LinearSolversModule
+  USE LoggingModule
   USE ParameterConverterModule
+  USE PermutationModule
   USE TripletListModule
   USE TripletModule
   IMPLICIT NONE
@@ -28,6 +30,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(FixedSolverParameters_t) :: f_solver_parameters
+    TYPE(Permutation_t) :: default_perm
     !! Local
     TYPE(DistributedSparseMatrix_t) :: eigenvectorsT, TempMat
 
@@ -37,22 +41,44 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        solver_parameters = IterativeSolverParameters_t()
     END IF
-    solver_parameters%be_verbose = .FALSE.
 
-    CALL EigenRecursive(this, eigenvectors, solver_parameters)
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Eigen Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="recursive")
+       CALL PrintIterativeSolverParameters(solver_parameters)
+    END IF
+
+    !! Setup the solver parameters
+    solver_parameters%be_verbose = .FALSE.
+    CALL ConstructDefaultPermutation(default_perm,this%logical_matrix_dimension)
+    CALL SetIterativeLoadBalance(solver_parameters, default_perm)
+    CALL ConvertIterativeToFixed(solver_parameters, f_solver_parameters)
+
+    !! Actual Solve
+    CALL EigenRecursive(this, eigenvectors, solver_parameters, &
+         & f_solver_parameters)
     CALL TransposeDistributedSparseMatrix(eigenvectors, eigenvectorsT)
-    CALL DistributedGemm(eigenvectorsT, this, TempMat)
-    CALL DistributedGemm(TempMat, eigenvectors, eigenvalues)
+    CALL DistributedGemm(eigenvectorsT, this, TempMat, &
+         & threshold_in=solver_parameters%threshold)
+    CALL DistributedGemm(TempMat, eigenvectors, eigenvalues, &
+         & threshold_in=solver_parameters%threshold)
+
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
 
     CALL DestructDistributedSparseMatrix(eigenvectorsT)
     CALL DestructDistributedSparseMatrix(TempMat)
   END SUBROUTINE EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters)
+  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, it_param, fixed_param)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Variables - matrices
     TYPE(DistributedSparseMatrix_t) :: Identity
     TYPE(DistributedSparseMatrix_t) :: PMat, PHoleMat
@@ -64,8 +90,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: LeftVectors, RightVectors
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim
-    !! Local Variables - Temporary
-    TYPE(FixedSolverParameters_t) :: f_solver_parameters
 
     mat_dim = this%actual_matrix_dimension
     CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim)
@@ -80,38 +104,39 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        right_dim = mat_dim - left_dim
 
        !! Purify
-       CALL TRS2(this, Identity, left_dim*2, PMat, &
-            & solver_parameters_in=solver_parameters)
+       CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=it_param)
        CALL CopyDistributedSparseMatrix(Identity, PHoleMat)
        CALL IncrementDistributedSparseMatrix(PMat, PHoleMat, &
-            & alpha_in=REAL(-1.0,NTREAL))
+            & alpha_in=REAL(-1.0,NTREAL), threshold_in=it_param%threshold)
 
        !! Compute Eigenvectors of the Density Matrix
-       CALL ConvertIterativeToFixed(solver_parameters, f_solver_parameters)
        CALL PivotedCholeskyDecomposition(PMat, PVec, left_dim, &
-            & solver_parameters_in=f_solver_parameters)
+            & solver_parameters_in=fixed_param)
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
-            & solver_parameters_in=f_solver_parameters)
+            & solver_parameters_in=fixed_param)
        CALL ConstructEmptyDistributedSparseMatrix(StackV, &
             & this%actual_matrix_dimension)
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
 
        !! Rotate to the divided subspace
-       CALL DistributedGemm(this, StackV, TempMat)
+       CALL DistributedGemm(this, StackV, TempMat, &
+            & threshold_in=it_param%threshold)
        CALL TransposeDistributedSparseMatrix(StackV, StackVT)
-       CALL DistributedGemm(StackVT, TempMat, VAV)
+       CALL DistributedGemm(StackVT, TempMat, VAV, &
+            & threshold_in=it_param%threshold)
 
        !! Iterate Recursively
        CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
-       CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters)
-       CALL EigenRecursive(RightMat,RightVectors,solver_parameters)
+       CALL EigenRecursive(LeftMat,LeftVectors,it_param,fixed_param)
+       CALL EigenRecursive(RightMat,RightVectors,it_param,fixed_param)
 
        !! Recombine
        CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
             & this%actual_matrix_dimension)
        CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
             & TempMat)
-       CALL DistributedGemm(StackV, TempMat, eigenvectors)
+       CALL DistributedGemm(StackV, TempMat, eigenvectors, &
+            & threshold_in=it_param%threshold)
 
        !! Cleanup
        CALL DestructDistributedSparseMatrix(PMat)

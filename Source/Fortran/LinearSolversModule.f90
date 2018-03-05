@@ -432,7 +432,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
           local_pi_j = pi_j - AMat%start_column + 1
           insert_value = SQRT(insert_value)
-          WRITE(*,*) "INSERT:", insert_value, "into:", local_pi_j, local_JJ
           inverse_factor = 1.0/insert_value
           !! Insert
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN

@@ -40,7 +40,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 4
+    matrix_dimension = 7
 
     @classmethod
     def setUpClass(self):
@@ -793,10 +793,6 @@ class TestSolvers(unittest.TestCase):
         matrix1 = mmread(os.environ["CholTest"])
         rank = 2
 
-        if self.my_rank == 0:
-            print()
-            print(matrix1.todense())
-
         self.CheckMat = csr_matrix(matrix1)
         if self.my_rank == 0:
             scipy.io.mmwrite(self.input_file, csr_matrix(matrix1))
@@ -859,9 +855,8 @@ class TestSolvers(unittest.TestCase):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0, random_state=2)
+                        density=1.0)
         matrix1 = csr_matrix(temp_mat + temp_mat.T)
-        print(matrix1.todense())
 
         # Check Matrix
         vals, vecs = eigh(matrix1.todense())
@@ -872,6 +867,9 @@ class TestSolvers(unittest.TestCase):
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
         vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
         val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
         nt.EigenSolvers.EigenDecomposition(input_matrix, vec_matrix, val_matrix,
