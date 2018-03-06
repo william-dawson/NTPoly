@@ -77,17 +77,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(Density, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(X_k, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(X_k2, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -286,21 +286,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(Density, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(X_k, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(X_k2, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Fx_right, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Gx_right, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & Hamiltonian%actual_matrix_dimension)
+         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -528,15 +528,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension, &
+         & Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
-         & matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(DDH, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(D2DH, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension)
+         & matrix_dimension, Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(DDH, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(D2DH, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension, &
+         & Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -759,15 +766,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension, &
+         & Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
-         & matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(DDH, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(D2DH, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension)
+         & matrix_dimension, Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(DDH, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(D2DH, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension, &
+         & Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.

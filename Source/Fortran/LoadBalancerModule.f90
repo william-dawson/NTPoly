@@ -26,16 +26,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: PermuteRows, PermuteColumns
     TYPE(DistributedSparseMatrix_t) :: Temp
 
+    !! Build Permutation Matrices
     CALL ConstructEmptyDistributedSparseMatrix(PermuteRows, &
-         & mat%actual_matrix_dimension)
+         & mat%actual_matrix_dimension, mat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(PermuteColumns, &
-         & mat%actual_matrix_dimension)
+         & mat%actual_matrix_dimension, mat%process_grid)
     CALL FillDistributedPermutation(PermuteRows, permutation%index_lookup, &
          & permuterows=.TRUE.)
     CALL FillDistributedPermutation(PermuteColumns, permutation%index_lookup, &
          & permuterows=.FALSE.)
     CALL ConstructEmptyDistributedSparseMatrix(Temp, &
-         mat%actual_matrix_dimension)
+         mat%actual_matrix_dimension, mat%process_grid)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
@@ -70,15 +71,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Build Permutation Matrices
     CALL ConstructEmptyDistributedSparseMatrix(PermuteRows, &
-         & mat%actual_matrix_dimension)
+         & mat%actual_matrix_dimension, mat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(PermuteColumns, &
-         mat%actual_matrix_dimension)
+         mat%actual_matrix_dimension, mat%process_grid)
     CALL FillDistributedPermutation(PermuteRows, permutation%index_lookup, &
          & permuterows=.TRUE.)
     CALL FillDistributedPermutation(PermuteColumns, permutation%index_lookup, &
          & permuterows=.FALSE.)
     CALL ConstructEmptyDistributedSparseMatrix(Temp, &
-         & mat%actual_matrix_dimension)
+         & mat%actual_matrix_dimension, mat%process_grid)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN

@@ -55,17 +55,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintIterativeSolverParameters(solver_parameters)
     END IF
 
-    !! Construct All The Necessary Matrices
+    !! Construct All The Necessary Matrice
     CALL ConstructEmptyDistributedSparseMatrix(InverseMat, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(BalancedMat1, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step
@@ -194,15 +194,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(InverseMat, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(BalancedMat1, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step

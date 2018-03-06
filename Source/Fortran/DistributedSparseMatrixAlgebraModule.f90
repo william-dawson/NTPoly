@@ -11,11 +11,6 @@ MODULE DistributedSparseMatrixAlgebraModule
        & GatherAndComposeData, GatherAndComposeCleanup, GatherAndSumData, &
        & GatherAndSumCleanup, TestSizeRequest, TestOuterRequest, &
        & TestInnerRequest, TestDataRequest
-  ! USE ProcessGridModule, ONLY : grid_error,&
-  !      & num_process_slices, my_slice, &
-  !      & within_slice_comm, row_comm, column_comm, between_slice_comm, &
-  !      & blocked_column_comm, blocked_row_comm, blocked_between_slice_comm, &
-  !      & number_of_blocks_rows, number_of_blocks_columns, block_multiplier
   USE SparseMatrixAlgebraModule, ONLY : &
        & DotSparseMatrix, PairwiseMultiplySparseMatrix, &
        & SparseMatrixNorm, ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
@@ -162,7 +157,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct The Temporary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(matAB, &
-         & matA%actual_matrix_dimension)
+         & matA%actual_matrix_dimension,  matA%process_grid)
 
     ALLOCATE(AdjacentABlocks(matAB%process_grid%number_of_blocks_columns/&
          & matAB%process_grid%num_process_slices, &
@@ -526,7 +521,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: row_counter, column_counter
 
     CALL ConstructEmptyDistributedSparseMatrix(matC, &
-         & matA%actual_matrix_dimension)
+         & matA%actual_matrix_dimension, matA%process_grid)
 
     !$omp parallel
     !$omp do collapse(2)

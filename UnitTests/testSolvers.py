@@ -867,7 +867,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_eigendecomposition(self):
+    def a_test_eigendecomposition(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
@@ -896,7 +896,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_eigendecompositionhalf(self):
+    def a_test_eigendecompositionhalf(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
@@ -926,7 +926,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_svd(self):
+    def a_test_svd(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,

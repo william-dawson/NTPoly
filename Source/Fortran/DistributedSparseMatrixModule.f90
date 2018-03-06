@@ -10,7 +10,8 @@ MODULE DistributedSparseMatrixModule
        & TestInnerRequest, TestDataRequest
   USE MatrixMarketModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
-  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot
+  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
+       & SplitProcessGrid
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
@@ -72,27 +73,28 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: FilterDistributedSparseMatrix
   PUBLIC :: MergeLocalBlocks
   PUBLIC :: TransposeDistributedSparseMatrix
+  PUBLIC :: CommSplitDistributedSparseMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   !! @param[out] this the matrix to be constructed.
   !! @param[in] matrix_dim_ the dimension of the full matrix.
   !! @param[in] process_grid a process grid to host the matrix (optional).
   PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix(this, matrix_dim_, &
-    & process_grid_)
+       & process_grid_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     INTEGER, INTENT(IN)           :: matrix_dim_
-    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_
+    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !! Local Variables
     TYPE(SparseMatrix_t) :: zeromatrix
 
     CALL DestructDistributedSparseMatrix(this)
 
     !! Process Grid
-    IF (PRESENT(process_grid_)) THEN
-      this%process_grid = process_grid_
+    IF (PRESENT(process_grid_in)) THEN
+       this%process_grid = process_grid_in
     ELSE
-      this%process_grid = global_grid
+       this%process_grid = global_grid
     END IF
 
     !! Matrix Dimensions
@@ -155,11 +157,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
   !! @param[in] process_grid a process grid to host the matrix (optional).
-  SUBROUTINE ConstructFromMatrixMarket(this, file_name, process_grid_)
+  SUBROUTINE ConstructFromMatrixMarket(this, file_name, process_grid_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
-    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_
+    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
     INTEGER :: local_file_handler
@@ -191,10 +193,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: error_occured
     INTEGER :: ierr
 
-    IF (PRESENT(process_grid_)) THEN
-      this%process_grid = process_grid_
+    IF (PRESENT(process_grid_in)) THEN
+       this%process_grid = process_grid_in
     ELSE
-      this%process_grid = global_grid
+       this%process_grid = global_grid
     END IF
 
     !! Setup Involves Just The Root Opening And Reading Parameter Data
@@ -241,7 +243,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%global_comm, ierr)
 
     !! Build Local Storage
-    CALL ConstructEmptyDistributedSparseMatrix(this,matrix_rows)
+    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows, &
+         & this%process_grid)
 
     !! Global read
     CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
@@ -334,10 +337,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
   !! @param[in] process_grid a process grid to host the matrix (optional).
-  SUBROUTINE ConstructFromBinary(this, file_name, process_grid_)
+  SUBROUTINE ConstructFromBinary(this, file_name, process_grid_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_
+    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! File Handles
     INTEGER :: mpi_file_handler
@@ -354,10 +357,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
 
-    IF (PRESENT(process_grid_)) THEN
-      this%process_grid = process_grid_
+    IF (PRESENT(process_grid_in)) THEN
+       this%process_grid = process_grid_in
     ELSE
-      this%process_grid = global_grid
+       this%process_grid = global_grid
     END IF
 
     CALL StartTimer("MPI Read Binary")
@@ -386,7 +389,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%global_comm, ierr)
 
     !! Build Local Storage
-    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows)
+    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows, &
+         & this%process_grid)
 
     !! Compute Offset
     local_triplets = total_values/this%process_grid%total_processors
@@ -1138,6 +1142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_t) :: temporary
     INTEGER :: counter
     INTEGER :: size_temp
+    TYPE(ProcessGrid_t) :: grid_temp
 
     CALL GetTripletList(this,triplet_list)
     CALL ConstructTripletList(new_list)
@@ -1148,8 +1153,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     size_temp = this%actual_matrix_dimension
+    grid_temp = this%process_grid
     CALL DestructDistributedSparseMatrix(this)
-    CALL ConstructEmptyDistributedSparseMatrix(this,size_temp)
+    CALL ConstructEmptyDistributedSparseMatrix(this,size_temp,grid_temp)
     CALL FillFromTripletList(this,new_list)
   END SUBROUTINE FilterDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1236,11 +1242,83 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructDistributedSparseMatrix(TransMat)
     CALL ConstructEmptyDistributedSparseMatrix(TransMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL FillFromTripletList(TransMat,new_list)
     CALL DestructTripletList(new_list)
     CALL DestructTripletList(triplet_list)
   END SUBROUTINE TransposeDistributedSparseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Split the current communicator, and give each group a complete copy of this
+  !! @param[in] this the matrix to split.
+  !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
+  SUBROUTINE CommSplitDistributedSparseMatrix(this, split_mat, my_color)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: split_mat
+    INTEGER, INTENT(OUT) :: my_color
+    !! For Grid Splitting
+    TYPE(ProcessGrid_t) :: new_grid
+    LOGICAL :: split_slice
+    INTEGER :: between_grid_comm
+    INTEGER :: between_grid_size
+    !! For Data Redistribution
+    TYPE(TripletList_t) :: full_list, new_list
+    TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
+    INTEGER :: fsize
+    INTEGER :: counter
+    INTEGER :: ierr
+
+    !! Split The Grid
+    CALL SplitProcessGrid(this%process_grid, new_grid, my_color, split_slice, &
+         & between_grid_comm)
+
+    !! Copy The Data Across New Process Grids. Unnecessary if we just split
+    !! by slices.
+    IF (.NOT. split_slice) THEN
+       CALL MPI_COMM_SIZE(between_grid_comm, between_grid_size, ierr)
+
+       !! Build Send Lists
+       CALL GetTripletList(this,full_list)
+       fsize = full_list%CurrentSize
+       ALLOCATE(send_list(between_grid_size))
+       IF (my_color .EQ. 0) THEN
+          !! The smaller process grid only needs to send to process 2
+          CALL ConstructTripletList(send_list(1))
+          CALL ConstructTripletList(send_list(2), full_list%CurrentSize)
+          send_list(2)%data(:fsize) = full_list%data(:fsize)
+          DO counter = 3, between_grid_size
+             CALL ConstructTripletList(send_list(counter))
+          END DO
+       ELSE
+         !! The larger process grid only needs to send to process 1
+         CALL ConstructTripletList(send_list(1), full_list%CurrentSize)
+         send_list(1)%data(:fsize) = full_list%data(:fsize)
+         DO counter = 2, between_grid_size
+            CALL ConstructTripletList(send_list(counter))
+         END DO
+       END IF
+       CALL RedistributeTripletLists(send_list, between_grid_comm, new_list)
+    END IF
+
+    !! Create The New Matrix
+    CALL ConstructEmptyDistributedSparseMatrix(split_mat, &
+         & this%actual_matrix_dimension, process_grid_in=new_grid)
+    IF (.NOT. split_slice) THEN
+       CALL FillFromTripletList(split_mat, new_list, preduplicated_in=.TRUE.)
+    ELSE
+       CALL FillFromTripletList(split_mat, full_list, preduplicated_in=.TRUE.)
+    END IF
+
+    !! Cleanup
+    CALL DestructTripletList(full_list)
+    CALL DestructTripletList(new_list)
+    IF (ALLOCATED(send_list)) THEN
+      DO counter = 1, between_grid_size
+        CALL DestructTripletList(send_list(counter))
+      END DO
+    END IF
+
+  END SUBROUTINE CommSplitDistributedSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Redistribute the data in a matrix based on row, column list
   !! This will redistribute the data so that the local data are entries in

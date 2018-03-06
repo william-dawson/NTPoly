@@ -70,20 +70,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup all the matrices
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL FillDistributedIdentity(Identity)
     CALL ConstructEmptyDistributedSparseMatrix(ABalanced, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(BBalanced, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(RMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(PMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(QMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! Load Balancing Step
     CALL StartTimer("Load Balance")
@@ -229,7 +229,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
@@ -388,7 +388,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     CALL ConstructEmptyDistributedSparseMatrix(LMat, &
-         & AMat%actual_matrix_dimension)
+         & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! Construct the pivot vector
     ALLOCATE(pivot_vector(AMat%actual_matrix_dimension))

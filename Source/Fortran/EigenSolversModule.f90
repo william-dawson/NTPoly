@@ -35,7 +35,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE EigenDecomposition(this, eigenvectors, eigenvalues, &
        & num_values_in, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvalues
     INTEGER, INTENT(IN), OPTIONAL :: num_values_in
@@ -179,11 +179,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedSparseMatrix_t) :: LeftMat, RightMat
     TYPE(DistributedSparseMatrix_t) :: LeftVectors, RightVectors
+    TYPE(DistributedSparseMatrix_t) :: SubMat, SubVec
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim
+    INTEGER :: color
 
     mat_dim = this%actual_matrix_dimension
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim, &
+         & process_grid_in=this%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     IF (solver_parameters%be_verbose) THEN
@@ -219,7 +222,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters_in=fixed_param)
        CALL StopTimer("Cholesky")
        CALL ConstructEmptyDistributedSparseMatrix(StackV, &
-            & this%actual_matrix_dimension)
+            & this%actual_matrix_dimension, process_grid_in=this%process_grid)
        CALL StartTimer("Stack")
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
        CALL StopTimer("Stack")
@@ -234,25 +237,33 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StopTimer("Rotate")
 
        !! Iterate Recursively
-       CALL StartTimer("Corner")
-       CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
-       CALL StopTimer("Corner")
-       CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
+       ! CALL StartTimer("Corner")
+       ! CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
+       ! CALL StopTimer("Corner")
+       ! CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
+       !      & fixed_param)
+       ! CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
+       !      & fixed_param)
+       ! CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+       !      & this%actual_matrix_dimension)
+       ! CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
+       !      & TempMat)
+       CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color)
+       CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
             & fixed_param)
-       CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
-            & fixed_param)
+       CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+            & this%actual_matrix_dimension, process_grid_in=this%process_grid)
+       CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
 
        !! Recombine
        CALL StartTimer("Recombine")
-       CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-            & this%actual_matrix_dimension)
-       CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
-            & TempMat)
        CALL DistributedGemm(StackV, TempMat, eigenvectors, &
             & threshold_in=it_param%threshold)
        CALL StopTimer("Recombine")
 
        !! Cleanup
+       CALL DestructDistributedSparseMatrix(SubMat)
+       CALL DestructDistributedSparseMatrix(SubVec)
        CALL DestructDistributedSparseMatrix(PMat)
        CALL DestructDistributedSparseMatrix(PHoleMat)
        CALL DestructDistributedSparseMatrix(PVec)
@@ -316,6 +327,37 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE StackMatrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
+    INTEGER, INTENT(IN) :: column_offset, row_offset
+    INTEGER, INTENT(IN) :: color
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: FullMat
+    !! Local Variables
+    TYPE(TripletList_t) :: sub_triplets
+    INTEGER :: counter
+
+    !! Basic Triplet Lists
+    CALL GetTripletList(SubMat, sub_triplets)
+
+    !! Adjust right triplets
+    IF (color .EQ. 1) THEN
+       DO counter = 1, sub_triplets%CurrentSize
+          sub_triplets%data(counter)%index_column = &
+               & sub_triplets%data(counter)%index_column  + column_offset
+          sub_triplets%data(counter)%index_row = &
+               & sub_triplets%data(counter)%index_row  + row_offset
+       END DO
+    END IF
+
+    !! Combine
+    CALL FillFromTripletList(FullMat, sub_triplets, .TRUE.)
+
+    !! Cleanup
+    CALL DestructTripletList(sub_triplets)
+
+  END SUBROUTINE StackMatricesS
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract the top left and the bottom right corners of a matrix.
   !! @param[in] this the matrix to extract from.
   !! @param[in] left_dim the dimension of the left corner.
@@ -352,8 +394,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Fill
-    CALL ConstructEmptyDistributedSparseMatrix(LeftMat, left_dim)
-    CALL ConstructEmptyDistributedSparseMatrix(RightMat, right_dim)
+    CALL ConstructEmptyDistributedSparseMatrix(LeftMat, left_dim, &
+         & this%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(RightMat, right_dim, &
+         & this%process_grid)
     CALL FillFromTripletList(LeftMat, left_triplets, .TRUE.)
     CALL FillFromTripletList(RightMat, right_triplets, .TRUE.)
 
@@ -362,6 +406,55 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(right_triplets)
 
   END SUBROUTINE ExtractCorner
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
+    INTEGER, INTENT(IN) :: left_dim, right_dim
+    INTEGER, INTENT(OUT) :: color
+    !! Local Data
+    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(TripletList_t) :: full_triplets, extracted_triplets
+    TYPE(Triplet_t) :: temp_triplet
+    INTEGER :: counter
+
+    !! First Duplicate Across Process Grids
+    CALL CommSplitDistributedSparseMatrix(this, TempMat, color)
+
+    !! Extract The Corner
+    CALL GetTripletList(SubMat, full_triplets)
+
+    !! Extract Triplets
+    DO counter = 1, full_triplets%CurrentSize
+       CALL GetTripletAt(full_triplets, counter, temp_triplet)
+       IF (temp_triplet%index_row .LE. left_dim .AND. &
+            & temp_triplet%index_column .LE. left_dim .AND. color .EQ. 0) THEN
+          CALL AppendToTripletList(extracted_triplets, temp_triplet)
+       ELSE IF (temp_triplet%index_row .GT. left_dim .AND. &
+            & temp_triplet%index_column .GT. left_dim .AND. color .EQ. 1) THEN
+          temp_triplet%index_row = temp_triplet%index_row - left_dim
+          temp_triplet%index_column = temp_triplet%index_column - left_dim
+          CALL AppendToTripletList(extracted_triplets, temp_triplet)
+       END IF
+    END DO
+
+    !! Fill
+    IF (color .EQ. 0) THEN
+       CALL ConstructEmptyDistributedSparseMatrix(SubMat, left_dim, &
+            & process_grid_in=TempMat%process_grid)
+    ELSE
+       CALL ConstructEmptyDistributedSparseMatrix(SubMat, right_dim, &
+            & process_grid_in=TempMat%process_grid)
+    END IF
+    CALL FillFromTripletList(SubMat,extracted_triplets,preduplicated_in=.TRUE.)
+
+    !! Cleanup
+    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructTripletList(full_triplets)
+    CALL DestructTripletList(extracted_triplets)
+
+  END SUBROUTINE ExtractCornerS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> When we want to only compute the first n eigenvalues of a matrix, this
   !! routine will project out the higher eigenvalues.
@@ -373,7 +466,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! as the first.
   SUBROUTINE ReduceDimension(this, dim, it_param, fixed_param, ReducedMat)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: dim
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: ReducedMat
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
@@ -387,7 +480,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute Identity Matrix
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & this%actual_matrix_dimension)
+         & this%actual_matrix_dimension, process_grid_in=this%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Purify
@@ -476,7 +569,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        DEALLOCATE(dense)
        DEALLOCATE(dense_eig)
     END IF
-    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim)
+    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
+         & process_grid_in=this%process_grid)
     CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
     !! Cleanup

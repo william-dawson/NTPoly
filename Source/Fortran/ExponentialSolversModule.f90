@@ -71,7 +71,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
 
     !! Scale the matrix
     CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
@@ -204,7 +204,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Scale the matrix
@@ -347,7 +347,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
 
     CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(OutputMat)
 
     !! Load Balancing Step
@@ -435,7 +435,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Copy to a temporary matrix for scaling.
@@ -606,7 +606,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Setup Matrices

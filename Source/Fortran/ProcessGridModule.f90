@@ -54,6 +54,7 @@ MODULE ProcessGridModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid
   PUBLIC :: IsRoot
+  PUBLIC :: SplitProcessGrid
   !! Accessors for grid information
   PUBLIC :: GetMySlice
   PUBLIC :: GetMyRow
@@ -225,6 +226,82 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE ConstructNewProcessGrid
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Given a process grid, this splits it into two grids of even size
+  SUBROUTINE SplitProcessGrid(original_grid, new_grid, my_color, split_slice, &
+    & between_grid_comm)
+    !! Parameters
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: original_grid
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
+    INTEGER, INTENT(OUT) :: my_color
+    LOGICAL, INTENT(OUT) :: split_slice
+    INTEGER, INTENT(OUT) :: between_grid_comm
+    !! Local Variables - new grid
+    INTEGER :: new_comm
+    INTEGER :: rows, cols, slices
+    INTEGER :: midpoint
+    !! For Between Comm
+    INTEGER :: between_color, between_rank
+    INTEGER :: left_grid_size
+    !! Temporary
+    INTEGER :: ierr
+
+    !! First preferentially try to split along slices
+    split_slice = .FALSE.
+    IF (original_grid%num_process_slices .GT. 1) THEN
+       midpoint = original_grid%num_process_slices/2
+       cols = original_grid%num_process_columns
+       rows = original_grid%num_process_rows
+       IF (original_grid%my_slice .LE. midpoint) THEN
+          my_color = 0
+          slices = midpoint
+       ELSE
+          my_color = 1
+          slices = original_grid%num_process_slices - midpoint
+       END IF
+       split_slice = .TRUE.
+       left_grid_size = midpoint*cols*rows
+    !! Next try to split the bigger direction
+    ELSE IF (original_grid%num_process_rows .GT. &
+         & original_grid%num_process_columns) THEN
+       midpoint = original_grid%num_process_rows/2
+       cols = original_grid%num_process_columns
+       slices = 1
+       IF (original_grid%my_row .LE. midpoint) THEN
+          my_color = 0
+          rows = midpoint
+       ELSE
+          my_color = 1
+          rows = original_grid%num_process_rows - midpoint
+       END IF
+       left_grid_size = midpoint*cols*slices
+    !! Default Case
+    ELSE
+       midpoint = original_grid%num_process_columns/2
+       slices = 1
+       rows = original_grid%num_process_rows
+       IF (original_grid%my_column .LE. midpoint) THEN
+          my_color = 0
+          cols = midpoint
+       ELSE
+          my_color = 1
+          cols = original_grid%num_process_columns - midpoint
+       END IF
+       left_grid_size = midpoint*slices*rows
+    END IF
+
+    !! Construct
+    CALL MPI_COMM_SPLIT(original_grid%global_comm, my_color, &
+         & original_grid%global_rank, new_comm, ierr)
+    CALL ConstructNewProcessGrid(new_grid, new_comm, rows, cols, slices)
+
+    !! For sending data between grids
+    between_color = MOD(new_grid%global_rank, left_grid_size)
+    between_rank = new_grid%global_rank / left_grid_size
+    CALL MPI_COMM_SPLIT(original_grid%global_comm, between_color, &
+         & between_rank, between_grid_comm, ierr)
+
+  END SUBROUTINE SplitProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Check if the current process is the root process.
   !! @return true if the current process is root.

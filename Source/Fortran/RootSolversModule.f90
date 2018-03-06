@@ -249,7 +249,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup the Matrices
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Load Balancing Step
@@ -268,11 +268,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(FthrtMat)
 
     CALL ConstructEmptyDistributedSparseMatrix(IntermediateMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(IntermediateMatP, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
 
     outer_counter = 1
     IF (solver_parameters%be_verbose) THEN

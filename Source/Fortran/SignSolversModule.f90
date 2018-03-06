@@ -9,6 +9,7 @@ MODULE SignSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
+  USE ProcessGridModule, ONLY: ProcessGrid_t
   USE TimerModule
   USE mpi
   IMPLICIT NONE
@@ -123,11 +124,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Load Balancing Step

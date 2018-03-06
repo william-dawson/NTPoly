@@ -103,17 +103,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(X_k, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(SquareRootMat, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(InverseSquareRootMat, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(T_k, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Temp, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & Mat1%actual_matrix_dimension)
+         & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the lambda scaling value.

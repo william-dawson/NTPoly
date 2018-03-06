@@ -77,17 +77,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     matrix_dimension = Hamiltonian%actual_matrix_dimension
-    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension, &
+         & Hamiltonian%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
-         & matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(P_k, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(G_k, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(G_kplusone, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(H_k, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat2, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Gradient, matrix_dimension)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension)
+         & matrix_dimension, Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(P_k, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(G_k, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(G_kplusone, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(H_k, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(TempMat2, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(Gradient, matrix_dimension, &
+         & Hamiltonian%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension, &
+         & Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.

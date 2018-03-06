@@ -106,7 +106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Initial values for matrices
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
     CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
 
@@ -219,7 +219,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Initial values for matrices
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
     CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
 

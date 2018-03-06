@@ -35,7 +35,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Shift
     CALL CopyDistributedSparseMatrix(InputMat,ShiftedMat)
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         InputMat%actual_matrix_dimension)
+         InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
     CALL IncrementDistributedSparseMatrix(IdentityMat,ShiftedMat, &
          & alpha_in=REAL(-1.0*PI/2.0,NTREAL))
@@ -119,10 +119,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
     CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(OutputMat)
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Load Balancing Step
@@ -239,9 +239,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
     CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
     !! Load Balancing Step

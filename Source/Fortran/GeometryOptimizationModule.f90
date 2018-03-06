@@ -69,13 +69,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyDistributedSparseMatrix(NewDensity, &
-         & PreviousDensity%actual_matrix_dimension)
+         & PreviousDensity%actual_matrix_dimension, &
+         & PreviousDensity%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingDensity, &
-         & PreviousDensity%actual_matrix_dimension)
+         & PreviousDensity%actual_matrix_dimension, &
+         & PreviousDensity%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(WorkingOverlap, &
-         & PreviousDensity%actual_matrix_dimension)
+         & PreviousDensity%actual_matrix_dimension, &
+         & PreviousDensity%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & PreviousDensity%actual_matrix_dimension)
+         & PreviousDensity%actual_matrix_dimension, &
+         & PreviousDensity%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.

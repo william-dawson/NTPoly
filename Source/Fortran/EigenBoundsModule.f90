@@ -117,9 +117,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Diagonal matrices serve as vectors.
     CALL ConstructEmptyDistributedSparseMatrix(vector, &
-         & this%actual_matrix_dimension)
+         & this%actual_matrix_dimension, this%process_grid)
     CALL ConstructEmptyDistributedSparseMatrix(vector2, &
-         & this%actual_matrix_dimension)
+         & this%actual_matrix_dimension, this%process_grid)
 
     !! Guess Vector
     CALL ConstructTripletList(temp_list)

@@ -101,9 +101,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
-    CALL ConstructEmptyDistributedSparseMatrix(Temporary, InputMat%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temporary, &
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
 
     !! Load Balancing Step
@@ -198,12 +200,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Initial values for matrices
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Create the X Powers
     CALL ConstructEmptyDistributedSparseMatrix(x_powers(1), &
-         & InputMat%actual_matrix_dimension)
+         & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(x_powers(1))
     DO counter=1,s_value+1-1
        CALL DistributedGemm(InputMat,x_powers(counter-1+1),x_powers(counter+1))
