@@ -1251,16 +1251,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split the current communicator, and give each group a complete copy of this
   !! @param[in] this the matrix to split.
   !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
-  SUBROUTINE CommSplitDistributedSparseMatrix(this, split_mat, my_color)
+  SUBROUTINE CommSplitDistributedSparseMatrix(this, split_mat, my_color, &
+    & split_slice)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: split_mat
     INTEGER, INTENT(OUT) :: my_color
+    LOGICAL, INTENT(OUT) :: split_slice
     !! For Grid Splitting
     TYPE(ProcessGrid_t) :: new_grid
-    LOGICAL :: split_slice
     INTEGER :: between_grid_comm
     INTEGER :: between_grid_size
+    INTEGER :: between_grid_rank
     !! For Data Redistribution
     TYPE(TripletList_t) :: full_list, new_list
     TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
@@ -1268,54 +1270,64 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     INTEGER :: ierr
 
-    !! Split The Grid
-    CALL SplitProcessGrid(this%process_grid, new_grid, my_color, split_slice, &
-         & between_grid_comm)
-
-    !! Copy The Data Across New Process Grids. Unnecessary if we just split
-    !! by slices.
-    IF (.NOT. split_slice) THEN
-       CALL MPI_COMM_SIZE(between_grid_comm, between_grid_size, ierr)
-
-       !! Build Send Lists
-       CALL GetTripletList(this,full_list)
-       fsize = full_list%CurrentSize
-       ALLOCATE(send_list(between_grid_size))
-       IF (my_color .EQ. 0) THEN
-          !! The smaller process grid only needs to send to process 2
-          CALL ConstructTripletList(send_list(1))
-          CALL ConstructTripletList(send_list(2), full_list%CurrentSize)
-          send_list(2)%data(:fsize) = full_list%data(:fsize)
-          DO counter = 3, between_grid_size
-             CALL ConstructTripletList(send_list(counter))
-          END DO
-       ELSE
-         !! The larger process grid only needs to send to process 1
-         CALL ConstructTripletList(send_list(1), full_list%CurrentSize)
-         send_list(1)%data(:fsize) = full_list%data(:fsize)
-         DO counter = 2, between_grid_size
-            CALL ConstructTripletList(send_list(counter))
-         END DO
-       END IF
-       CALL RedistributeTripletLists(send_list, between_grid_comm, new_list)
-    END IF
-
-    !! Create The New Matrix
-    CALL ConstructEmptyDistributedSparseMatrix(split_mat, &
-         & this%actual_matrix_dimension, process_grid_in=new_grid)
-    IF (.NOT. split_slice) THEN
-       CALL FillFromTripletList(split_mat, new_list, preduplicated_in=.TRUE.)
+    IF (this%process_grid%total_processors .EQ. 1) THEN
+       CALL CopyDistributedSparseMatrix(this, split_mat)
+       my_color = 0
+       split_slice = .TRUE.
     ELSE
-       CALL FillFromTripletList(split_mat, full_list, preduplicated_in=.TRUE.)
-    END IF
+       !! Split The Grid
+       CALL SplitProcessGrid(this%process_grid, new_grid, my_color, &
+            & split_slice, between_grid_comm)
 
-    !! Cleanup
-    CALL DestructTripletList(full_list)
-    CALL DestructTripletList(new_list)
-    IF (ALLOCATED(send_list)) THEN
-      DO counter = 1, between_grid_size
-        CALL DestructTripletList(send_list(counter))
-      END DO
+       !! Copy The Data Across New Process Grids. Unnecessary if we just split
+       !! by slices.
+       CALL GetTripletList(this,full_list)
+       IF (.NOT. split_slice) THEN
+          CALL MPI_COMM_SIZE(between_grid_comm, between_grid_size, ierr)
+          CALL MPI_COMM_RANK(between_grid_comm, between_grid_rank, ierr)
+
+          !! Build Send Lists
+          fsize = full_list%CurrentSize
+          ALLOCATE(send_list(between_grid_size))
+          IF (my_color .EQ. 0) THEN
+             !! The smaller process grid only needs to send to process 2
+             CALL ConstructTripletList(send_list(1))
+             CALL ConstructTripletList(send_list(2), full_list%CurrentSize)
+             send_list(2)%data(:fsize) = full_list%data(:fsize)
+             DO counter = 3, between_grid_size
+                CALL ConstructTripletList(send_list(counter))
+             END DO
+          ELSE
+             !! The larger process grid only needs to send to process 1
+             CALL ConstructTripletList(send_list(1), full_list%CurrentSize)
+             send_list(1)%data(:fsize) = full_list%data(:fsize)
+             DO counter = 2, between_grid_size
+                CALL ConstructTripletList(send_list(counter))
+             END DO
+          END IF
+          CALL ConstructTripletList(send_list(between_grid_rank+1), &
+               & full_list%CurrentSize)
+          send_list(between_grid_rank+1)%data(:fsize) = full_list%data(:fsize)
+          CALL RedistributeTripletLists(send_list, between_grid_comm, new_list)
+       END IF
+
+       !! Create The New Matrix
+       CALL ConstructEmptyDistributedSparseMatrix(split_mat, &
+            & this%actual_matrix_dimension, process_grid_in=new_grid)
+       IF (.NOT. split_slice) THEN
+          CALL FillFromTripletList(split_mat, new_list, .TRUE.)
+       ELSE
+          CALL FillFromTripletList(split_mat, full_list, .TRUE.)
+       END IF
+
+       !! Cleanup
+       CALL DestructTripletList(full_list)
+       CALL DestructTripletList(new_list)
+       IF (ALLOCATED(send_list)) THEN
+          DO counter = 1, between_grid_size
+             CALL DestructTripletList(send_list(counter))
+          END DO
+       END IF
     END IF
 
   END SUBROUTINE CommSplitDistributedSparseMatrix

@@ -246,13 +246,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     INTEGER :: ierr
 
-    !! First preferentially try to split along slices
     split_slice = .FALSE.
-    IF (original_grid%num_process_slices .GT. 1) THEN
+    !! Handle base case
+    IF (original_grid%total_processors .EQ. 1) THEN
+       rows = 1
+       cols = 1
+       slices = 1
+       my_color = 0
+    !! First preferentially try to split along slices
+    ELSE IF (original_grid%num_process_slices .GT. 1) THEN
        midpoint = original_grid%num_process_slices/2
        cols = original_grid%num_process_columns
        rows = original_grid%num_process_rows
-       IF (original_grid%my_slice .LE. midpoint) THEN
+       IF (original_grid%my_slice .LT. midpoint) THEN
           my_color = 0
           slices = midpoint
        ELSE
@@ -267,7 +273,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        midpoint = original_grid%num_process_rows/2
        cols = original_grid%num_process_columns
        slices = 1
-       IF (original_grid%my_row .LE. midpoint) THEN
+       IF (original_grid%my_row .LT. midpoint) THEN
           my_color = 0
           rows = midpoint
        ELSE
@@ -280,7 +286,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        midpoint = original_grid%num_process_columns/2
        slices = 1
        rows = original_grid%num_process_rows
-       IF (original_grid%my_column .LE. midpoint) THEN
+       IF (original_grid%my_column .LT. midpoint) THEN
           my_color = 0
           cols = midpoint
        ELSE
@@ -297,7 +303,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! For sending data between grids
     between_color = MOD(new_grid%global_rank, left_grid_size)
-    between_rank = new_grid%global_rank / left_grid_size
+    IF (left_grid_size .GT. 0) THEN
+      between_rank = new_grid%global_rank / left_grid_size
+    ELSE
+      between_rank = 0
+    END IF
     CALL MPI_COMM_SPLIT(original_grid%global_comm, between_color, &
          & between_rank, between_grid_comm, ierr)
 

@@ -41,7 +41,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 17
+    matrix_dimension = 3
 
     @classmethod
     def setUpClass(self):
@@ -867,7 +867,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def a_test_eigendecomposition(self):
+    def test_eigendecomposition(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,

@@ -21,7 +21,7 @@ MODULE EigenSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTEGER, PARAMETER :: BASESIZE = 2
+  INTEGER, PARAMETER :: BASESIZE = 1
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
   PUBLIC :: SingularValueDecomposition
@@ -183,6 +183,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim
     INTEGER :: color
+    LOGICAL :: split_slice
 
     mat_dim = this%actual_matrix_dimension
     CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim, &
@@ -237,23 +238,29 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StopTimer("Rotate")
 
        !! Iterate Recursively
-       ! CALL StartTimer("Corner")
-       ! CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
-       ! CALL StopTimer("Corner")
-       ! CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
-       !      & fixed_param)
-       ! CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
-       !      & fixed_param)
-       ! CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-       !      & this%actual_matrix_dimension)
-       ! CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
-       !      & TempMat)
-       CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color)
-       CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
-            & fixed_param)
-       CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-            & this%actual_matrix_dimension, process_grid_in=this%process_grid)
-       CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
+       WRITE(*,*) "Recursive Branch"
+       IF (this%process_grid%total_processors .GT. 1) THEN
+          WRITE(*,*) "ExtractS"
+          CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color, &
+               & split_slice)
+          CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
+               & fixed_param)
+          CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+               & this%actual_matrix_dimension, process_grid_in=this%process_grid)
+          WRITE(*,*) "StackS"
+          CALL StackMatricesS(SubVec, left_dim, left_dim, color, split_slice, &
+               & TempMat)
+       ELSE
+          CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
+          CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
+               & fixed_param)
+          CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
+               & fixed_param)
+          CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+               & this%actual_matrix_dimension, this%process_grid)
+          CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
+               & TempMat)
+       END IF
 
        !! Recombine
        CALL StartTimer("Recombine")
@@ -327,11 +334,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE StackMatrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
+  SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, &
+    & split_slice, FullMat)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
     INTEGER, INTENT(IN) :: column_offset, row_offset
     INTEGER, INTENT(IN) :: color
+    LOGICAL, INTENT(IN) :: split_slice
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: FullMat
     !! Local Variables
     TYPE(TripletList_t) :: sub_triplets
@@ -351,7 +360,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Combine
-    CALL FillFromTripletList(FullMat, sub_triplets, .TRUE.)
+    IF (split_slice) THEN
+       CALL FillFromTripletList(FullMat, sub_triplets, .FALSE.)
+
+    ELSE
+       CALL FillFromTripletList(FullMat, sub_triplets, .TRUE.)
+    END IF
 
     !! Cleanup
     CALL DestructTripletList(sub_triplets)
@@ -407,10 +421,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ExtractCorner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color)
+  SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color, &
+    & split_slice)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
+    LOGICAL, INTENT(OUT) :: split_slice
     INTEGER, INTENT(IN) :: left_dim, right_dim
     INTEGER, INTENT(OUT) :: color
     !! Local Data
@@ -420,12 +436,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! First Duplicate Across Process Grids
-    CALL CommSplitDistributedSparseMatrix(this, TempMat, color)
+    CALL PrintDistributedSparseMatrix(this)
+    CALL CommSplitDistributedSparseMatrix(this, TempMat, color, split_slice)
+    CALL MPI_barrier(global_grid%global_comm, global_grid%grid_error)
+    IF (global_grid%global_rank .EQ. 0) THEN
+      CALL PrintDistributedSparseMatrix(TempMat)
+    END IF
+    CALL MPI_barrier(global_grid%global_comm, global_grid%grid_error)
+    IF (global_grid%global_rank .EQ. 1) THEN
+      CALL PrintDistributedSparseMatrix(TempMat)
+    END IF
+    CALL MPI_barrier(global_grid%global_comm, global_grid%grid_error)
 
     !! Extract The Corner
-    CALL GetTripletList(SubMat, full_triplets)
+    CALL GetTripletList(this, full_triplets)
 
     !! Extract Triplets
+    CALL ConstructTripletList(extracted_triplets)
     DO counter = 1, full_triplets%CurrentSize
        CALL GetTripletAt(full_triplets, counter, temp_triplet)
        IF (temp_triplet%index_row .LE. left_dim .AND. &
