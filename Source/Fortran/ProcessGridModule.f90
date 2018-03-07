@@ -55,6 +55,8 @@ MODULE ProcessGridModule
   PUBLIC :: ConstructProcessGrid
   PUBLIC :: IsRoot
   PUBLIC :: SplitProcessGrid
+  PUBLIC :: CopyProcessGrid
+  PUBLIC :: DestructProcessGrid
   !! Accessors for grid information
   PUBLIC :: GetMySlice
   PUBLIC :: GetMyRow
@@ -227,9 +229,48 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ConstructNewProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopyProcessGrid(old_grid, new_grid)
+    !! Parameters
+    TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
+
+    !! Safe Copy
+    CALL DestructProcessGrid(new_grid)
+
+    !! Allocate Blocks
+    ALLOCATE(new_grid%blocked_row_comm(old_grid%number_of_blocks_rows))
+    ALLOCATE(new_grid%blocked_column_comm(old_grid%number_of_blocks_columns))
+    ALLOCATE(new_grid%blocked_within_slice_comm(&
+         & old_grid%number_of_blocks_columns, old_grid%number_of_blocks_rows))
+    ALLOCATE(new_grid%blocked_between_slice_comm( &
+         & old_grid%number_of_blocks_columns, old_grid%number_of_blocks_rows))
+
+    new_grid = old_grid
+  END SUBROUTINE CopyProcessGrid
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE DestructProcessGrid(grid)
+    !! Parameters
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
+
+    !! Deallocate Blocks
+    IF (ALLOCATED(grid%blocked_row_comm)) THEN
+       DEALLOCATE(grid%blocked_row_comm)
+    END IF
+    IF (ALLOCATED(grid%blocked_column_comm)) THEN
+       DEALLOCATE(grid%blocked_column_comm)
+    END IF
+    IF (ALLOCATED(grid%blocked_within_slice_comm)) THEN
+       DEALLOCATE(grid%blocked_within_slice_comm)
+    END IF
+    IF (ALLOCATED(grid%blocked_between_slice_comm)) THEN
+       DEALLOCATE(grid%blocked_between_slice_comm)
+    END IF
+
+  END SUBROUTINE DestructProcessGrid
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a process grid, this splits it into two grids of even size
   SUBROUTINE SplitProcessGrid(old_grid, new_grid, my_color, split_slice, &
-    & between_grid_comm)
+       & between_grid_comm)
     !! Parameters
     TYPE(ProcessGrid_t), INTENT(INOUT) :: old_grid
     TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
@@ -254,7 +295,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        slices = 1
        my_color = 0
        between_rank = 0
-    !! First preferentially try to split along slices
+       !! First preferentially try to split along slices
     ELSE IF (old_grid%num_process_slices .GT. 1) THEN
        midpoint = old_grid%num_process_slices/2
        cols = old_grid%num_process_columns
@@ -269,7 +310,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        between_rank = old_grid%my_slice
        split_slice = .TRUE.
        left_grid_size = midpoint*cols*rows
-    !! Next try to split the bigger direction
+       !! Next try to split the bigger direction
     ELSE IF (old_grid%num_process_rows .GT. old_grid%num_process_columns) THEN
        midpoint = old_grid%num_process_rows/2
        cols = old_grid%num_process_columns
@@ -283,7 +324,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        between_rank = old_grid%my_row
        left_grid_size = midpoint*cols*slices
-    !! Default Case
+       !! Default Case
     ELSE
        midpoint = old_grid%num_process_columns/2
        slices = 1

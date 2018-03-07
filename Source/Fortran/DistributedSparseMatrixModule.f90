@@ -11,7 +11,7 @@ MODULE DistributedSparseMatrixModule
   USE MatrixMarketModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
-       & SplitProcessGrid
+       & SplitProcessGrid, CopyProcessGrid
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
@@ -92,9 +92,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Process Grid
     IF (PRESENT(process_grid_in)) THEN
-       this%process_grid = process_grid_in
+       CALL CopyProcessGrid(process_grid_in, this%process_grid)
     ELSE
-       this%process_grid = global_grid
+       CALL CopyProcessGrid(global_grid, this%process_grid)
     END IF
 
     !! Matrix Dimensions
@@ -156,12 +156,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Read \cite boisvert1996matrix for the details.
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
-  !! @param[in] process_grid a process grid to host the matrix (optional).
-  SUBROUTINE ConstructFromMatrixMarket(this, file_name, process_grid_in)
+  SUBROUTINE ConstructFromMatrixMarket(this, file_name)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
     INTEGER :: local_file_handler
@@ -193,16 +191,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: error_occured
     INTEGER :: ierr
 
-    IF (PRESENT(process_grid_in)) THEN
-       this%process_grid = process_grid_in
-    ELSE
-       this%process_grid = global_grid
-    END IF
-
     !! Setup Involves Just The Root Opening And Reading Parameter Data
     CALL StartTimer("MPI Read Text")
     bytes_per_character = sizeof(temp_char)
-    IF (IsRoot(this%process_grid)) THEN
+    IF (IsRoot(global_grid)) THEN
        header_length = 0
        local_file_handler = 16
        OPEN(local_file_handler, file=file_name, status="old")
@@ -227,24 +219,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Broadcast Parameters
-    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(total_values, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(header_length, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(sparsity_type, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(data_type, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(pattern_type, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(total_values, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(header_length, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(sparsity_type, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(data_type, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(pattern_type, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
 
     !! Build Local Storage
-    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows, &
-         & this%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows, global_grid)
 
     !! Global read
     CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
@@ -336,11 +327,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Faster than text, so this is good for check pointing.
   !! @param[out] this the file being constructed.
   !! @param[in] file_name name of the file to read.
-  !! @param[in] process_grid a process grid to host the matrix (optional).
-  SUBROUTINE ConstructFromBinary(this, file_name, process_grid_in)
+  SUBROUTINE ConstructFromBinary(this, file_name)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! File Handles
     INTEGER :: mpi_file_handler
@@ -357,21 +346,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
 
-    IF (PRESENT(process_grid_in)) THEN
-       this%process_grid = process_grid_in
-    ELSE
-       this%process_grid = global_grid
-    END IF
-
     CALL StartTimer("MPI Read Binary")
     CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
     CALL MPI_Type_extent(MPINTREAL,bytes_per_double,ierr)
 
-    CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
+    CALL MPI_File_open(global_grid%global_comm,file_name,MPI_MODE_RDONLY,&
          & MPI_INFO_NULL,mpi_file_handler,ierr)
 
     !! Get The Matrix Parameters
-    IF (IsRoot(this%process_grid)) THEN
+    IF (IsRoot(global_grid)) THEN
        local_offset = 0
        CALL MPI_File_read_at(mpi_file_handler, local_offset, &
             & matrix_information, 3, MPI_INT, mpi_status, ierr)
@@ -381,16 +364,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Broadcast Parameters
-    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
-    CALL MPI_Bcast(total_values, 1, MPI_INT ,this%process_grid%RootID, &
-         & this%process_grid%global_comm, ierr)
+    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, global_grid%RootID, &
+         & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(total_values, 1, MPI_INT ,global_grid%RootID, &
+         & global_grid%global_comm, ierr)
 
     !! Build Local Storage
-    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows, &
-         & this%process_grid)
+    CALL ConstructEmptyDistributedSparseMatrix(this, matrix_rows, global_grid)
 
     !! Compute Offset
     local_triplets = total_values/this%process_grid%total_processors
