@@ -358,14 +358,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & sub_triplets%data(counter)%index_row  + row_offset
        END DO
     END IF
+    IF (SubMat%process_grid%my_slice .GT. 0) THEN
+      CALL ConstructTripletList(sub_triplets)
+    END IF
 
     !! Combine
-    IF (split_slice) THEN
-       CALL FillFromTripletList(FullMat, sub_triplets, .FALSE.)
-
-    ELSE
-       CALL FillFromTripletList(FullMat, sub_triplets, .TRUE.)
-    END IF
+    CALL FillFromTripletList(FullMat, sub_triplets, .FALSE.)
 
     !! Cleanup
     CALL DestructTripletList(sub_triplets)
@@ -437,6 +435,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! First Duplicate Across Process Grids
     CALL CommSplitDistributedSparseMatrix(this, TempMat, color, split_slice)
+    ! WRITE(*,*) global_grid%global_rank, color, split_slice
+    ! CALL MPI_BARRIER(global_grid%global_comm, global_grid%grid_error)
+    ! IF (global_grid%global_rank .EQ. 0) THEN
+    !   CALL PrintDistributedSparseMatrix(TempMat)
+    ! END IF
+    ! CALL MPI_BARRIER(global_grid%global_comm, global_grid%grid_error)
+    ! IF (global_grid%global_rank .EQ. 1 .OR. global_grid%global_rank .EQ. 2) THEN
+    !   CALL PrintDistributedSparseMatrix(TempMat)
+    ! END IF
 
     !! Extract The Corner
     CALL GetTripletList(TempMat, full_triplets)
