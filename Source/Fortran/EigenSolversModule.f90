@@ -436,20 +436,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! First Duplicate Across Process Grids
-    CALL PrintDistributedSparseMatrix(this)
     CALL CommSplitDistributedSparseMatrix(this, TempMat, color, split_slice)
-    CALL MPI_barrier(global_grid%global_comm, global_grid%grid_error)
-    IF (global_grid%global_rank .EQ. 0) THEN
-      CALL PrintDistributedSparseMatrix(TempMat)
-    END IF
-    CALL MPI_barrier(global_grid%global_comm, global_grid%grid_error)
-    IF (global_grid%global_rank .EQ. 1) THEN
-      CALL PrintDistributedSparseMatrix(TempMat)
-    END IF
-    CALL MPI_barrier(global_grid%global_comm, global_grid%grid_error)
 
     !! Extract The Corner
-    CALL GetTripletList(this, full_triplets)
+    CALL GetTripletList(TempMat, full_triplets)
 
     !! Extract Triplets
     CALL ConstructTripletList(extracted_triplets)
