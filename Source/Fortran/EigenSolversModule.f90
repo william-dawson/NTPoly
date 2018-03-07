@@ -409,6 +409,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructTripletList(left_triplets)
+    CALL DestructTripletList(combined_triplets)
     CALL DestructTripletList(right_triplets)
 
   END SUBROUTINE ExtractCorner
@@ -583,7 +584,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
     !! Cleanup
+    CALL DestructSparseMatrix(sparse)
     CALL DestructTripletList(triplet_list)
+    CALL DestructTripletList(sorted_triplet_list)
     DO counter = 1, this%process_grid%slice_size
        CALL DestructTripletList(send_list(counter))
     END DO
