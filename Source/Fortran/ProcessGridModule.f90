@@ -228,10 +228,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructNewProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a process grid, this splits it into two grids of even size
-  SUBROUTINE SplitProcessGrid(original_grid, new_grid, my_color, split_slice, &
+  SUBROUTINE SplitProcessGrid(old_grid, new_grid, my_color, split_slice, &
     & between_grid_comm)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: original_grid
+    TYPE(ProcessGrid_t), INTENT(INOUT) :: old_grid
     TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
     INTEGER, INTENT(OUT) :: my_color
     LOGICAL, INTENT(OUT) :: split_slice
@@ -248,68 +248,66 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     split_slice = .FALSE.
     !! Handle base case
-    IF (original_grid%total_processors .EQ. 1) THEN
+    IF (old_grid%total_processors .EQ. 1) THEN
        rows = 1
        cols = 1
        slices = 1
        my_color = 0
+       between_rank = 0
     !! First preferentially try to split along slices
-    ELSE IF (original_grid%num_process_slices .GT. 1) THEN
-       midpoint = original_grid%num_process_slices/2
-       cols = original_grid%num_process_columns
-       rows = original_grid%num_process_rows
-       IF (original_grid%my_slice .LT. midpoint) THEN
+    ELSE IF (old_grid%num_process_slices .GT. 1) THEN
+       midpoint = old_grid%num_process_slices/2
+       cols = old_grid%num_process_columns
+       rows = old_grid%num_process_rows
+       IF (old_grid%my_slice .LT. midpoint) THEN
           my_color = 0
           slices = midpoint
        ELSE
           my_color = 1
-          slices = original_grid%num_process_slices - midpoint
+          slices = old_grid%num_process_slices - midpoint
        END IF
+       between_rank = old_grid%my_slice
        split_slice = .TRUE.
        left_grid_size = midpoint*cols*rows
     !! Next try to split the bigger direction
-    ELSE IF (original_grid%num_process_rows .GT. &
-         & original_grid%num_process_columns) THEN
-       midpoint = original_grid%num_process_rows/2
-       cols = original_grid%num_process_columns
+    ELSE IF (old_grid%num_process_rows .GT. old_grid%num_process_columns) THEN
+       midpoint = old_grid%num_process_rows/2
+       cols = old_grid%num_process_columns
        slices = 1
-       IF (original_grid%my_row .LT. midpoint) THEN
+       IF (old_grid%my_row .LT. midpoint) THEN
           my_color = 0
           rows = midpoint
        ELSE
           my_color = 1
-          rows = original_grid%num_process_rows - midpoint
+          rows = old_grid%num_process_rows - midpoint
        END IF
+       between_rank = old_grid%my_row
        left_grid_size = midpoint*cols*slices
     !! Default Case
     ELSE
-       midpoint = original_grid%num_process_columns/2
+       midpoint = old_grid%num_process_columns/2
        slices = 1
-       rows = original_grid%num_process_rows
-       IF (original_grid%my_column .LT. midpoint) THEN
+       rows = old_grid%num_process_rows
+       IF (old_grid%my_column .LT. midpoint) THEN
           my_color = 0
           cols = midpoint
        ELSE
           my_color = 1
-          cols = original_grid%num_process_columns - midpoint
+          cols = old_grid%num_process_columns - midpoint
        END IF
+       between_rank = old_grid%my_column
        left_grid_size = midpoint*slices*rows
     END IF
 
     !! Construct
-    CALL MPI_COMM_SPLIT(original_grid%global_comm, my_color, &
-         & original_grid%global_rank, new_comm, ierr)
+    CALL MPI_COMM_SPLIT(old_grid%global_comm, my_color, old_grid%global_rank, &
+         & new_comm, ierr)
     CALL ConstructNewProcessGrid(new_grid, new_comm, rows, cols, slices)
 
     !! For sending data between grids
     between_color = MOD(new_grid%global_rank, left_grid_size)
-    IF (left_grid_size .GT. 0) THEN
-      between_rank = new_grid%global_rank / left_grid_size
-    ELSE
-      between_rank = 0
-    END IF
-    CALL MPI_COMM_SPLIT(original_grid%global_comm, between_color, &
-         & between_rank, between_grid_comm, ierr)
+    CALL MPI_COMM_SPLIT(old_grid%global_comm, between_color, between_rank, &
+         & between_grid_comm, ierr)
 
   END SUBROUTINE SplitProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

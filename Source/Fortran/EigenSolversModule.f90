@@ -238,18 +238,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StopTimer("Rotate")
 
        !! Iterate Recursively
-       WRITE(*,*) "Recursive Branch"
        IF (this%process_grid%total_processors .GT. 1) THEN
-          WRITE(*,*) "ExtractS"
           CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color, &
                & split_slice)
           CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
                & fixed_param)
           CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
-               & this%actual_matrix_dimension, process_grid_in=this%process_grid)
-          WRITE(*,*) "StackS"
-          CALL StackMatricesS(SubVec, left_dim, left_dim, color, split_slice, &
-               & TempMat)
+               & this%actual_matrix_dimension, this%process_grid)
+          CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
        ELSE
           CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
           CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
@@ -334,13 +330,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE StackMatrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, &
-    & split_slice, FullMat)
+  SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
     INTEGER, INTENT(IN) :: column_offset, row_offset
     INTEGER, INTENT(IN) :: color
-    LOGICAL, INTENT(IN) :: split_slice
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: FullMat
     !! Local Variables
     TYPE(TripletList_t) :: sub_triplets
@@ -435,15 +429,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! First Duplicate Across Process Grids
     CALL CommSplitDistributedSparseMatrix(this, TempMat, color, split_slice)
-    ! WRITE(*,*) global_grid%global_rank, color, split_slice
-    ! CALL MPI_BARRIER(global_grid%global_comm, global_grid%grid_error)
-    ! IF (global_grid%global_rank .EQ. 0) THEN
-    !   CALL PrintDistributedSparseMatrix(TempMat)
-    ! END IF
-    ! CALL MPI_BARRIER(global_grid%global_comm, global_grid%grid_error)
-    ! IF (global_grid%global_rank .EQ. 1 .OR. global_grid%global_rank .EQ. 2) THEN
-    !   CALL PrintDistributedSparseMatrix(TempMat)
-    ! END IF
 
     !! Extract The Corner
     CALL GetTripletList(TempMat, full_triplets)

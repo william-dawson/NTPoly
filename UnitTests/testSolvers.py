@@ -41,7 +41,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 3
+    matrix_dimension = 17
 
     @classmethod
     def setUpClass(self):
