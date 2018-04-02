@@ -2,7 +2,7 @@
 !> A module for wrapping the sparse matrix data type.
 MODULE SparseMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : DenseEigenDecomposition, DenseSchurDecomposition
+  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
   USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructZeroSparseMatrix, &
        & ConstructEmptySparseMatrix, ConstructSparseMatrixFromFile, &
@@ -35,7 +35,6 @@ MODULE SparseMatrixModule_wrp
   PUBLIC :: PrintSparseMatrixF_wrp
   PUBLIC :: MatrixToTripletList_wrp
   PUBLIC :: DenseEigenDecomposition_wrp
-  PUBLIC :: DenseSchurDecomposition_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   SUBROUTINE ConstructSparseMatrixFromFile_wrp(ih_this, file_name, name_size) &
@@ -244,20 +243,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DenseEigenDecomposition(h_matA%data,h_matV%data, threshold)
   END SUBROUTINE DenseEigenDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Wrap the dense schur decomposition routine.
-  PURE SUBROUTINE DenseSchurDecomposition_wrp(ih_matA, ih_matT, ih_matV, &
-       & threshold) bind(c,name="DenseSchurDecomposition_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matT(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matV(SIZE_wrp)
-    REAL(NTREAL), INTENT(IN) :: threshold
-    TYPE(SparseMatrix_wrp) :: h_matA
-    TYPE(SparseMatrix_wrp) :: h_matV
-    TYPE(SparseMatrix_wrp) :: h_matT
-
-    h_matA  = TRANSFER(ih_matA,h_matA)
-    h_matV = TRANSFER(ih_matV,h_matV)
-    h_matT = TRANSFER(ih_matT,h_matT)
-    CALL DenseSchurDecomposition(h_matA%data,h_matT%data,h_matV%data,threshold)
-  END SUBROUTINE DenseSchurDecomposition_wrp
 END MODULE SparseMatrixModule_wrp

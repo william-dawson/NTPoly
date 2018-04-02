@@ -79,8 +79,6 @@ public:
 
 public:
   void EigenDecomposition(NTPoly::SparseMatrix &MatV, double threshold);
-  void SchurDecomposition(NTPoly::SparseMatrix &MatT,
-                          NTPoly::SparseMatrix &MatV, double threshold);
 
 public:
   //! Transpose a sparse matrix.

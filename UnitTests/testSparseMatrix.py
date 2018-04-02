@@ -7,9 +7,11 @@ import scipy
 from numpy import sum, multiply
 import scipy.sparse
 from random import uniform, randint
-from scipy.linalg import eigh, schur
+from scipy.linalg import eigh
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
+from numpy import diag
+from numpy.linalg import norm as normd
 
 from scipy.io import mmwrite, mmread
 import os
@@ -53,6 +55,7 @@ class TestLocalMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(2, 4, 1.0))
         self.parameters.append(TestParameters(4, 4, 0.2))
         self.parameters.append(TestParameters(8, 8, 1.0))
+        self.parameters.append(TestParameters(256, 256, 1.0))
 
     def test_read(self):
         '''Test our ability to read and write matrices.'''
@@ -241,30 +244,6 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
-    def test_schur(self):
-        '''Test the dense schur decomposition'''
-        for param in self.parameters:
-            matrix1 = random(param.rows, param.columns, param.sparsity,
-                             format="csr")
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            CheckMatT, CheckMatZ = schur(matrix1)
-
-            ntmatrix = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
-            T = nt.SparseMatrix(ntmatrix1.GetColumns(), ntmatrix1.GetColumns())
-            Z = nt.SparseMatrix(ntmatrix2.GetColumns(), ntmatrix1.GetRows())
-
-            ntmatrix.SchurDecomposition(T, Z, THRESHOLD)
-            T.WriteToMatrixMarket(self.scratch_dir + "/tmat.mtx")
-            Z.WriteToMatrixMarket(self.scratch_dir + "/zmat.mtx")
-
-            ResultT = mmread(self.scratch_dir + "/tmat.mtx")
-            ResultZ = mmread(self.scratch_dir + "/zmat.mtx")
-            normvalt = abs(norm(CheckMatT - ResultT))
-            nromvalz = abs(norm(CheckMatZ - ResultZ))
-
-            self.assertLessEqual(normvalt, THRESHOLD)
-            self.assertLessEqual(normvalz, THRESHOLD)
-
     def test_eigendecomposition(self):
         '''Test the dense eigen decomposition'''
         for param in self.parameters:
@@ -281,9 +260,9 @@ class TestLocalMatrix(unittest.TestCase):
             V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
 
             ResultV = mmread(self.scratch_dir + "/vmat.mtx")
-            CheckD = CheckV.T.dot(matrix1).dot(CheckV)
-            ResultD = ResultV.T.dot(matrix1).dot(ResultV)
-            normvalv = abs(norm(CheckD - ResultD))
+            CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+            normvalv = abs(normd(CheckD - ResultD))
 
             self.assertLessEqual(normvalv, THRESHOLD)
 

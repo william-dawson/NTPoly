@@ -14,7 +14,6 @@ MODULE DenseMatrixModule
   PUBLIC :: ConstructSparseFromDense
   PUBLIC :: MultiplyDense
   PUBLIC :: DenseEigenDecomposition
-  PUBLIC :: DenseSchurDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
@@ -91,55 +90,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     MatC = MATMUL(MatA,MatB)
   END SUBROUTINE MultiplyDense
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the Schur decomposition of a matrix.
-  !! Wraps a standard dense linear algebra routine.
-  !! @param[in] MatA the matrix to decompose
-  !! @param[inout] MatT the upper triangular matrix of eigenvalues.
-  !! @param[inout] MatZ the orthogonal matrix of eigenvectors.
-  !! @param[in] threshold value for pruning values to zero.
-  PURE SUBROUTINE DenseSchurDecomposition(MatA,MatT,MatZ,threshold)
-    !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: MatA
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatT
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatZ
-    REAL(NTREAL), INTENT(IN) :: threshold
-    !! Dense Versions
-    REAL(8), DIMENSION(:,:), ALLOCATABLE :: DMatA
-    REAL(8), DIMENSION(:,:), ALLOCATABLE :: DMatT
-    REAL(8), DIMENSION(:,:), ALLOCATABLE :: DMatZ
-    !! LAPACK Variables
-    CHARACTER :: JOBVS
-    CHARACTER :: SORT
-    LOGICAL, EXTERNAL :: SELECT
-    INTEGER :: N
-    INTEGER :: LDA
-
-    !! Convert Input To Dense
-    ALLOCATE(DMatA(MatA%rows, MatA%columns))
-    DMatA = 0
-    ALLOCATE(DMatZ(MatA%rows, MatA%columns))
-    DMatZ = 0
-    CALL ConstructDenseFromSparse(MatA,DMatA)
-
-    !! Setup for LAPACK
-    JOBVS = 'V'
-    SORT = 'S'
-    N = MatA%columns
-    LDA = 1
-
-    !! Call LAPACK
-
-    !! Convert Output To Sparse
-    CALL ConstructSparseFromDense(DMatA,MatT,threshold)
-    CALL ConstructSparseFromDense(DMatZ,MatZ,threshold)
-
-    !! Cleanup
-    DEALLOCATE(DMatA)
-    DEALLOCATE(DMatT)
-    DEALLOCATE(DMatZ)
-
-  END SUBROUTINE DenseSchurDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
   !! Wraps a standard dense linear algebra routine.

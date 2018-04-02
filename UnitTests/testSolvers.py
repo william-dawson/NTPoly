@@ -15,6 +15,7 @@ from scipy.sparse.linalg import norm, inv, eigsh
 from numpy import zeros, sqrt, power, \
     sign, exp, log, sin, cos, linspace, diag, dot
 from numpy.linalg import eigh
+from numpy.linalg import norm as normd
 from random import random
 import os
 from numpy.polynomial.chebyshev import chebfit, chebval
@@ -781,6 +782,29 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check_u)
         u_matrix.WriteToMatrixMarket(result_file)
         self.check_result()
+
+    def test_eigendecomposition(self):
+        '''Test the dense eigen decomposition'''
+        matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
+                       density=1.0)
+        matrix1 = csr_matrix(matrix1 + matrix1.T)
+        mmwrite(self.input_file, matrix1)
+        w, vdense = eigh(matrix1.todense())
+        CheckV = csr_matrix(vdense)
+
+        ntmatrix = nt.DistributedSparseMatrix(self.input_file)
+        V = nt.DistributedSparseMatrix(self.matrix_dimension)
+
+        nt.EigenBounds.EigenDecomposition(
+            ntmatrix, V, self.fixed_solver_parameters)
+        V.WriteToMatrixMarket(result_file)
+
+        ResultV = mmread(result_file)
+        CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
+        ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+        normvalv = abs(normd(CheckD - ResultD))
+
+        self.assertLessEqual(normvalv, THRESHOLD)
 
 
 if __name__ == '__main__':

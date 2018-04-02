@@ -5,6 +5,7 @@ MODULE EigenBoundsModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
+  USE FixedSolversModule
   USE IterativeSolversModule
   USE LoggingModule
   USE ProcessGridModule
@@ -16,6 +17,7 @@ MODULE EigenBoundsModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: GershgorinBounds
   PUBLIC :: PowerBounds
+  PUBLIC :: DistributedEigenDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
   !! Uses Gershgorin's theorem.
@@ -184,4 +186,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(vector2)
     CALL DestructDistributedSparseMatrix(TempMat)
   END SUBROUTINE PowerBounds
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the eigenvectors of a matrix using Jacobi's method.
+  !! @param[in] this the matrix to compute the eigenvectors of.
+  !! @param[out] eigenvectors the eigenvectors of the matrix
+  !! @param[inout] solver_parameters_in solver parameters (optional).
+  SUBROUTINE DistributedEigenDecomposition(this,eigenvectors,solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(FixedSolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = FixedSolverParameters_t()
+    END IF
+
+  END SUBROUTINE DistributedEigenDecomposition
 END MODULE EigenBoundsModule
