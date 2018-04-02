@@ -77,6 +77,7 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: GetSize
   PUBLIC :: FilterDistributedSparseMatrix
   PUBLIC :: MergeLocalBlocks
+  PUBLIC :: SplitToLocalBlocks
   PUBLIC :: TransposeDistributedSparseMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.

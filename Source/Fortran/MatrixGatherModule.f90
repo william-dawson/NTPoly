@@ -48,8 +48,13 @@ MODULE MatrixGatherModule
   PUBLIC :: GatherAndComposeData
   PUBLIC :: GatherAndComposeCleanup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: GatherAndListData
+  PUBLIC :: GatherAndListCleanup
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: GatherAndSumData
   PUBLIC :: GatherAndSumCleanup
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: BroadcastMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: TestSizeRequest
   PUBLIC :: TestOuterRequest
@@ -125,7 +130,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & grid_error)
   END SUBROUTINE GatherAndComposeData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Third functiont o call, finishes setting up the matrices.
+  !> Third function to call, finishes setting up the matrices.
   !! @param[in] matrix to send.
   !! @param[in] gathered_matrix matrix we are gathering.
   !! @param[inout] helper a helper associated with this gather.
@@ -150,6 +155,89 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(helper%values_per_process)
     DEALLOCATE(helper%displacement)
   END SUBROUTINE GatherAndComposeCleanup
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Second routine we gather the data into a list.
+  !! @param[in] matrix to send.
+  !! @param[inout] communicator to send along.
+  !! @param[inout] gathered_matrix_list the matrix we are gathering.
+  !! @param[inout] helper a helper associated with this gather.
+  SUBROUTINE GatherAndListData(matrix,communicator,helper)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    INTEGER, INTENT(INOUT)              :: communicator
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
+    !! Local Data
+    INTEGER :: grid_error
+    INTEGER :: counter
+    INTEGER :: list_total_values, list_outer_indices
+
+    ALLOCATE(helper%displacement(helper%comm_size))
+
+    !! Build Displacement List
+    helper%displacement(1) = 0
+    DO counter = 2, SIZE(helper%displacement)
+       helper%displacement(counter) = helper%displacement(counter-1) + &
+            & helper%values_per_process(counter-1)
+    END DO
+
+    !! Build Storage
+    list_total_values = SUM(helper%values_per_process)
+    list_outer_indices = (matrix%columns+1)*helper%comm_size
+    ALLOCATE(helper%value_buffer(list_total_values))
+    ALLOCATE(helper%inner_index_buffer(list_total_values))
+    ALLOCATE(helper%outer_index_buffer(list_outer_indices+1))
+
+    !! MPI Calls
+    CALL MPI_IAllGatherv(matrix%values,SIZE(matrix%values),MPINTREAL,&
+         & helper%value_buffer, helper%values_per_process, helper%displacement,&
+         & MPINTREAL, communicator, helper%data_request, grid_error)
+    CALL MPI_IAllGatherv(matrix%inner_index,SIZE(matrix%values),MPI_INT, &
+         & helper%inner_index_buffer, helper%values_per_process, &
+         & helper%displacement, MPI_INT, communicator, helper%inner_request, &
+         & grid_error)
+    CALL MPI_IAllGather(matrix%outer_index, matrix%columns+1,&
+         & MPI_INT, helper%outer_index_buffer, matrix%columns+1, MPI_INT, &
+         & communicator, helper%outer_request, grid_error)
+  END SUBROUTINE GatherAndListData
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Third a routine to cleanup the list builder.
+  !! @param[in] matrix to send.
+  !! @param[inout] gathered_matrix the matrix being gathered.
+  !! @param[inout] helper a helper associated with this gather.
+  PURE SUBROUTINE GatherAndListCleanup(matrix, matrix_list, helper)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: matrix
+    TYPE(SparseMatrix_t), DIMENSION(:), INTENT(INOUT) :: matrix_list
+    TYPE(GatherHelper_t), INTENT(INOUT) :: helper
+    !! Local Data
+    TYPE(SparseMatrix_t) :: temporary_matrix
+    INTEGER :: counter
+    INTEGER :: temporary_total_values
+
+    !! Sum
+    DO counter = 1, helper%comm_size
+       temporary_total_values = helper%values_per_process(counter)
+       ALLOCATE(temporary_matrix%values(temporary_total_values))
+       ALLOCATE(temporary_matrix%inner_index(temporary_total_values))
+       temporary_matrix%values = helper%value_buffer( &
+            & helper%displacement(counter)+1: &
+            & helper%displacement(counter) + helper%values_per_process(counter))
+       temporary_matrix%inner_index = helper%inner_index_buffer( &
+            & helper%displacement(counter)+1: &
+            & helper%displacement(counter) + helper%values_per_process(counter))
+       temporary_matrix%outer_index = helper%outer_index_buffer(&
+            & (matrix%columns+1)*(counter-1)+1:(matrix%columns+1)*(counter))
+       CALL CopySparseMatrix(temporary_matrix, matrix_list(counter))
+       DEALLOCATE(temporary_matrix%values)
+       DEALLOCATE(temporary_matrix%inner_index)
+    END DO
+    CALL DestructSparseMatrix(temporary_matrix)
+    DEALLOCATE(helper%value_buffer)
+    DEALLOCATE(helper%inner_index_buffer)
+    DEALLOCATE(helper%outer_index_buffer)
+    DEALLOCATE(helper%values_per_process)
+    DEALLOCATE(helper%displacement)
+  END SUBROUTINE GatherAndListCleanup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine to call for gathering and summing up the data.
   !! @param[in] matrix to send.
@@ -232,7 +320,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & threshold_in=threshold)
        ELSE
           CALL IncrementSparseMatrix(temporary_matrix,gathered_matrix,&
-               & threshold_in=real(0.0,NTREAL))
+               & threshold_in=REAL(0.0,NTREAL))
        END IF
        DEALLOCATE(temporary_matrix%values)
        DEALLOCATE(temporary_matrix%inner_index)
@@ -244,6 +332,48 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(helper%values_per_process)
     DEALLOCATE(helper%displacement)
   END SUBROUTINE GatherAndSumCleanup
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Broadcast a matrix from the root process across the communicator.
+  !! @param[inout] matrix to broadcast.
+  !! @param[in] comm the communicator to broadcast along.
+  !! @param[in] root the root process which holds the matrix.
+  SUBROUTINE BroadcastMatrix(matrix, comm, root)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: root
+    !! Local Data
+    INTEGER :: rank
+    !! Matrix Buffer
+    INTEGER :: matrows, matcolumns
+    INTEGER :: nnz
+    INTEGER :: ierr
+
+    CALL MPI_COMM_RANK(comm, rank, ierr)
+
+    !! Matrix Size
+    IF (rank .EQ. root) THEN
+       matrows = matrix%rows
+       matcolumns = matrix%columns
+       nnz = matrix%outer_index(matrix%columns+1)
+    END IF
+    CALL MPI_Bcast(matrows, 1, MPI_INT, root, comm, ierr)
+    CALL MPI_Bcast(matcolumns, 1, MPI_INT, root, comm, ierr)
+    CALL MPI_Bcast(nnz, 1, MPI_INT, root, comm, ierr)
+    IF (rank .NE. root) THEN
+       CALL ConstructZeroSparseMatrix(matrix, matrows, matcolumns)
+       DEALLOCATE(matrix%inner_index)
+       DEALLOCATE(matrix%values)
+       ALLOCATE(matrix%inner_index(nnz))
+       ALLOCATE(matrix%values(nnz))
+    END IF
+
+    !! Gather Matrix Data
+    CALL MPI_Bcast(matrix%outer_index, matcolumns+1, MPI_INT, &
+         & root, comm, ierr)
+    CALL MPI_Bcast(matrix%inner_index, nnz, MPI_INT, root, comm, ierr)
+    CALL MPI_Bcast(matrix%values, nnz, MPINTREAL, root, comm, ierr)
+  END SUBROUTINE BroadcastMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.
   !! @param[in] helper the gatherer helper structure.

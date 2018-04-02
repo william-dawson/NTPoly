@@ -2,14 +2,17 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule
+  USE DenseMatrixModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
   USE FixedSolversModule
   USE IterativeSolversModule
   USE LoggingModule
+  USE MatrixGatherModule
   USE ProcessGridModule
   USE SparseMatrixModule
+  USE SparseMatrixAlgebraModule
   USE TripletListModule
   USE MPI
   IMPLICIT NONE
@@ -191,7 +194,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to compute the eigenvectors of.
   !! @param[out] eigenvectors the eigenvectors of the matrix
   !! @param[inout] solver_parameters_in solver parameters (optional).
-  SUBROUTINE DistributedEigenDecomposition(this,eigenvectors,solver_parameters_in)
+  SUBROUTINE DistributedEigenDecomposition(this, eigenvectors, &
+       & solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
@@ -199,6 +203,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
+    !! Local Variables
+    TYPE(SparseMatrix_t) :: local_a, local_v, local_p
+    TYPE(SparseMatrix_t) :: temp, temp2
+    TYPE(SparseMatrix_t), DIMENSION(4) :: send_block, recv_block
+    !! Temporary Variables
+    INTEGER :: iteration
+    INTEGER :: block_counter
+    INTEGER :: root_row, root_column
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -207,5 +219,116 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = FixedSolverParameters_t()
     END IF
 
+    !! Setup
+    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
+         & this%actual_matrix_dimension)
+    CALL FillDistributedIdentity(eigenvectors)
+    CALL MergeLocalBlocks(eigenvectors, local_v)
+    CALL MergeLocalBlocks(this, local_a)
+    root_row = my_row
+    root_column = my_column
+
+    !! Main Loop
+    DO iteration = 1, 2
+       DO block_counter = 1, 1
+          !! Compute the eigenvectors of a local block
+          IF (my_row .EQ. my_column) THEN
+             CALL DenseEigenDecomposition(local_a, local_p, &
+                  & solver_parameters%threshold)
+          END IF
+
+          !! Broadcast P
+          CALL BroadcastMatrix(local_p, row_comm, root_row)
+          CALL BroadcastMatrix(local_p, column_comm, root_column)
+
+          !! Multiply Blocks
+          CALL Gemm(local_a, local_p, temp, &
+               & threshold_in=solver_parameters%threshold)
+          CALL TransposeSparseMatrix(local_p, temp2)
+          CALL Gemm(temp2, temp, local_a, &
+               & threshold_in=solver_parameters%threshold)
+          CALL Gemm(local_v, local_p, temp, &
+               & threshold_in=solver_parameters%threshold)
+          CALL CopySparseMatrix(temp, local_v)
+
+          !! Exchange Blocks
+          ! CALL SplitFour(local_a, send_block)
+          ! IF (my_row .EQ. my_column .AND. my_row .EQ. 1) THEN
+          !   CALL CopyDistributedSparseMatrix(send_block(1),recv_block(1))
+          ! END IF
+          ! CALL MergeFour(recv_block, local_a)
+       END DO
+    END DO
+
+    !! Compute Full Matrix
+    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, this%actual_matrix_dimension)
+    CALL SplitToLocalBlocks(eigenvectors, local_v)
+
+    !! Cleanup
+    CALL DestructSparseMatrix(temp)
+    CALL DestructSparseMatrix(temp2)
+    CALL DestructSparseMatrix(local_v)
+    CALL DestructSparseMatrix(local_a)
+    CALL DestructSparseMatrix(local_p)
+    CALL DestructSparseMatrix(send_block(1))
+    CALL DestructSparseMatrix(send_block(2))
+    CALL DestructSparseMatrix(send_block(3))
+    CALL DestructSparseMatrix(send_block(4))
+    CALL DestructSparseMatrix(recv_block(1))
+    CALL DestructSparseMatrix(recv_block(2))
+    CALL DestructSparseMatrix(recv_block(3))
+    CALL DestructSparseMatrix(recv_block(4))
+
   END SUBROUTINE DistributedEigenDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PURE SUBROUTINE SplitFour(matrix, matrix_array)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: matrix
+    TYPE(SparseMatrix_t), DIMENSION(4), INTENT(INOUT) :: matrix_array
+    !! Local
+    TYPE(SparseMatrix_t) :: temp
+    TYPE(SparseMatrix_t), DIMENSION(2) :: temp_rows
+    TYPE(SparseMatrix_t), DIMENSION(2) :: temp_columns
+
+    CALL SplitSparseMatrixColumns(matrix, 2, temp_columns)
+
+    CALL TransposeSparseMatrix(temp_columns(1), temp)
+    CALL SplitSparseMatrixColumns(temp, 2, temp_rows)
+    CALL TransposeSparseMatrix(temp_rows(1), matrix_array(1))
+    CALL TransposeSparseMatrix(temp_rows(2), matrix_array(3))
+
+    CALL TransposeSparseMatrix(temp_columns(2), temp)
+    CALL SplitSparseMatrixColumns(temp, 2, temp_rows)
+    CALL TransposeSparseMatrix(temp_rows(1), matrix_array(2))
+    CALL TransposeSparseMatrix(temp_rows(2), matrix_array(4))
+
+    !! Cleanup
+    CALL DestructSparseMatrix(temp_rows(1))
+    CALL DestructSparseMatrix(temp_rows(2))
+    CALL DestructSparseMatrix(temp_columns(1))
+    CALL DestructSparseMatrix(temp_columns(2))
+  END SUBROUTINE SplitFour
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PURE SUBROUTINE MergeFour(matrix_array, matrix)
+    !! Parameters
+    TYPE(SparseMatrix_t), DIMENSION(4), INTENT(IN) :: matrix_array
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    !! Local
+    TYPE(SparseMatrix_t) :: temp
+    TYPE(SparseMatrix_t), DIMENSION(2) :: temp_rows
+
+    CALL ComposeSparseMatrixColumns(matrix_array(1:2), temp)
+    CALL TransposeSparseMatrix(temp, temp_rows(1))
+
+    CALL ComposeSparseMatrixColumns(matrix_array(3:4), temp)
+    CALL TransposeSparseMatrix(temp, temp_rows(2))
+
+    CALL ComposeSparseMatrixColumns(temp_rows, temp)
+    CALL TransposeSparseMatrix(temp, matrix)
+
+    !! Cleanup
+    CALL DestructSparseMatrix(temp)
+    CALL DestructSparseMatrix(temp_rows(1))
+    CALL DestructSparseMatrix(temp_rows(2))
+  END SUBROUTINE MergeFour
 END MODULE EigenBoundsModule
