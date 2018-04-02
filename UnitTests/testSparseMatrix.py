@@ -7,6 +7,7 @@ import scipy
 from numpy import sum, multiply
 import scipy.sparse
 from random import uniform, randint
+from scipy.linalg import eigh, schur
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
 
@@ -240,6 +241,52 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
+    def test_schur(self):
+        '''Test the dense schur decomposition'''
+        for param in self.parameters:
+            matrix1 = random(param.rows, param.columns, param.sparsity,
+                             format="csr")
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            CheckMatT, CheckMatZ = schur(matrix1)
+
+            ntmatrix = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            T = nt.SparseMatrix(ntmatrix1.GetColumns(), ntmatrix1.GetColumns())
+            Z = nt.SparseMatrix(ntmatrix2.GetColumns(), ntmatrix1.GetRows())
+
+            ntmatrix.SchurDecomposition(T, Z, THRESHOLD)
+            T.WriteToMatrixMarket(self.scratch_dir + "/tmat.mtx")
+            Z.WriteToMatrixMarket(self.scratch_dir + "/zmat.mtx")
+
+            ResultT = mmread(self.scratch_dir + "/tmat.mtx")
+            ResultZ = mmread(self.scratch_dir + "/zmat.mtx")
+            normvalt = abs(norm(CheckMatT - ResultT))
+            nromvalz = abs(norm(CheckMatZ - ResultZ))
+
+            self.assertLessEqual(normvalt, THRESHOLD)
+            self.assertLessEqual(normvalz, THRESHOLD)
+
+    def test_eigendecomposition(self):
+        '''Test the dense eigen decomposition'''
+        for param in self.parameters:
+            matrix1 = random(param.rows, param.rows, 1.0, format="csr")
+            matrix1 = matrix1 + matrix1.T
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            w, vdense = eigh(matrix1.todense())
+            CheckV = csr_matrix(vdense)
+
+            ntmatrix = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            V = nt.SparseMatrix(ntmatrix.GetColumns(), ntmatrix.GetColumns())
+
+            ntmatrix.EigenDecomposition(V, THRESHOLD)
+            V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
+
+            ResultV = mmread(self.scratch_dir + "/vmat.mtx")
+            CheckD = CheckV.T.dot(matrix1).dot(CheckV)
+            ResultD = ResultV.T.dot(matrix1).dot(ResultV)
+            normvalv = abs(norm(CheckD - ResultD))
+
+            self.assertLessEqual(normvalv, THRESHOLD)
+
     def test_get_row(self):
         '''Test function that extracts a row from the matrix'''
         for param in self.parameters:
@@ -248,7 +295,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = random(param.rows, param.columns,
                              param.sparsity, format="csr")
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            row_num = randint(0,param.rows-1)
+            row_num = randint(0, param.rows - 1)
             CheckMat = matrix1[row_num, :]
 
             ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
@@ -268,7 +315,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = random(param.rows, param.columns,
                              param.sparsity, format="csr")
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            column_num = randint(0,param.columns-1)
+            column_num = randint(0, param.columns - 1)
             CheckMat = matrix1[:, column_num]
 
             ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")

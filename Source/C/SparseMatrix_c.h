@@ -30,5 +30,8 @@ void PrintSparseMatrixF_wrp(const int *ih_this, const char *file_name,
                             const int *name_size);
 void MatrixToTripletList_wrp(const int *ih_this, int *ih_triplet_list);
 void DestructSparseMatrix_wrp(int *ih_this);
-
+void DenseEigenDecomposition_wrp(const int *ih_this, int *ih_matV,
+                                 const double *threshold);
+void DenseSchurDecomposition_wrp(const int *ih_this, int *ih_matT, int *ih_matV,
+                                 const double *threshold);
 #endif

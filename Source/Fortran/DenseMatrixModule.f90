@@ -13,6 +13,8 @@ MODULE DenseMatrixModule
   PUBLIC :: ConstructDenseFromSparse
   PUBLIC :: ConstructSparseFromDense
   PUBLIC :: MultiplyDense
+  PUBLIC :: DenseEigenDecomposition
+  PUBLIC :: DenseSchurDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
@@ -89,4 +91,133 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     MatC = MATMUL(MatA,MatB)
   END SUBROUTINE MultiplyDense
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the Schur decomposition of a matrix.
+  !! Wraps a standard dense linear algebra routine.
+  !! @param[in] MatA the matrix to decompose
+  !! @param[inout] MatT the upper triangular matrix of eigenvalues.
+  !! @param[inout] MatZ the orthogonal matrix of eigenvectors.
+  !! @param[in] threshold value for pruning values to zero.
+  PURE SUBROUTINE DenseSchurDecomposition(MatA,MatT,MatZ,threshold)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: MatA
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatT
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatZ
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !! Dense Versions
+    REAL(8), DIMENSION(:,:), ALLOCATABLE :: DMatA
+    REAL(8), DIMENSION(:,:), ALLOCATABLE :: DMatT
+    REAL(8), DIMENSION(:,:), ALLOCATABLE :: DMatZ
+    !! LAPACK Variables
+    CHARACTER :: JOBVS
+    CHARACTER :: SORT
+    LOGICAL, EXTERNAL :: SELECT
+    INTEGER :: N
+    INTEGER :: LDA
+
+    !! Convert Input To Dense
+    ALLOCATE(DMatA(MatA%rows, MatA%columns))
+    DMatA = 0
+    ALLOCATE(DMatZ(MatA%rows, MatA%columns))
+    DMatZ = 0
+    CALL ConstructDenseFromSparse(MatA,DMatA)
+
+    !! Setup for LAPACK
+    JOBVS = 'V'
+    SORT = 'S'
+    N = MatA%columns
+    LDA = 1
+
+    !! Call LAPACK
+
+    !! Convert Output To Sparse
+    CALL ConstructSparseFromDense(DMatA,MatT,threshold)
+    CALL ConstructSparseFromDense(DMatZ,MatZ,threshold)
+
+    !! Cleanup
+    DEALLOCATE(DMatA)
+    DEALLOCATE(DMatT)
+    DEALLOCATE(DMatZ)
+
+  END SUBROUTINE DenseSchurDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the eigenvectors of a dense matrix.
+  !! Wraps a standard dense linear algebra routine.
+  !! @param[in] MatA the matrix to decompose.
+  !! @param[out] MatV the eigenvectors.
+  !! @param[in] threshold for pruning values to zero.
+  SUBROUTINE DenseEigenDecomposition(MatA, MatV, threshold)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(In) :: MatA
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatV
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !! Local Matrices
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatA
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatV
+    !! Local variables
+    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
+    INTEGER :: N, LDA
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: A
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
+    INTEGER :: LWORK
+    DOUBLE PRECISION :: TEMP
+    INTEGER :: INFO
+    !! Temporary variables
+    INTEGER :: II, JJ, counter
+
+    !! Convert Input To Dense
+    ALLOCATE(DMatA(MatA%rows, MatA%columns))
+    DMatA = 0
+    ALLOCATE(DMatV(MatA%rows, MatA%columns))
+    DMatV = 0
+    CALL ConstructDenseFromSparse(MatA,DMatA)
+
+    N = SIZE(DMatA,DIM=1)
+    LDA = N
+
+    !! Allocations
+    ALLOCATE(A(N*N))
+    ALLOCATE(W(N))
+
+    !! Store as an upper triangular matrix
+    A = 0
+    counter = 1
+    DO II = 1, N
+       DO JJ = 1, N
+          A(counter) = DMatA(II,JJ)
+          counter = counter + 1
+       END DO
+    END DO
+
+    !! Determine the scratch space size
+    LWORK = -1
+    CALL DSYEV(JOB, UPLO, N, A, LDA, W, TEMP, LWORK, INFO)
+    N = LDA
+    LWORK = INT(TEMP)
+    ALLOCATE(WORK(LWORK))
+
+    !! Run Lapack For Real
+    CALL DSYEV(JOB, UPLO, N, A, LDA, W, WORK, LWORK, INFO)
+
+    !! Unpack
+    counter = 1
+    DO II = 1, N
+       DO JJ = 1, N
+          DMatV(JJ,II) = A(counter)
+          counter = counter + 1
+       END DO
+    END DO
+
+    !! Convert Output To Sparse
+    CALL ConstructSparseFromDense(DMatV,MatV,threshold)
+
+    !! Cleanup
+    DEALLOCATE(DMatA)
+    DEALLOCATE(DMatV)
+    DEALLOCATE(A)
+    DEALLOCATE(W)
+    DEALLOCATE(Work)
+
+  END SUBROUTINE DenseEigenDecomposition
 END MODULE DenseMatrixModule
