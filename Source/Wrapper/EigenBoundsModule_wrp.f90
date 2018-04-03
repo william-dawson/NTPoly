@@ -4,8 +4,7 @@ MODULE EigenBoundsModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
-  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds, &
-       & DistributedEigenDecomposition
+  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -15,7 +14,6 @@ MODULE EigenBoundsModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: GershgorinBounds_wrp
   PUBLIC :: PowerBounds_wrp
-  PUBLIC :: DistributedEigenDecomposition_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
   SUBROUTINE GershgorinBounds_wrp(ih_this, min_value,max_value) &
@@ -44,22 +42,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL PowerBounds(h_this%data, max_value, h_solver_parameters%data)
   END SUBROUTINE PowerBounds_wrp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the eigenvectors of a distributed matrix.
-  SUBROUTINE DistributedEigenDecomposition_wrp(ih_this, ih_eigenvectors, &
-       & ih_solver_parameters) bind(c,name="DistributedEigenDecomposition_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: ih_eigenvectors(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
-    TYPE(DistributedSparseMatrix_wrp) :: h_eigenvectors
-    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
-
-    h_this = TRANSFER(ih_this, h_this)
-    h_eigenvectors = TRANSFER(ih_eigenvectors, h_eigenvectors)
-    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
-
-    CALL DistributedEigenDecomposition(h_this%data, h_eigenvectors%data, &
-         & h_solver_parameters%data)
-  END SUBROUTINE DistributedEigenDecomposition_wrp
 END MODULE EigenBoundsModule_wrp

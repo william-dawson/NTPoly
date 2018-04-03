@@ -30,30 +30,30 @@ MODULE MatrixSwapModule
   PUBLIC :: TestSwapDataRequest
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Swap size information about matrices.
-  SUBROUTINE SwapMatrixSizes(inmat, partner_rank, comm, helper, tag)
+  SUBROUTINE SwapMatrixSizes(inmat, rank, comm, helper, send_tag, recv_tag)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: inmat
-    INTEGER, INTENT(IN) :: partner_rank
+    INTEGER, INTENT(IN) :: rank
     INTEGER, INTENT(INOUT) :: comm
     TYPE(SwapHelper_t), INTENT(INOUT) :: helper
-    INTEGER, INTENT(IN) :: tag
+    INTEGER, INTENT(IN) :: send_tag, recv_tag
     !! Local Data
     INTEGER :: ierr
 
-    CALL MPI_Isend(inmat%values, 1, MPI_INTEGER, partner_rank, tag, comm, &
+    CALL MPI_Isend(SIZE(inmat%values), 1, MPI_INTEGER, rank, send_tag, comm, &
          & helper%size_request(1), ierr)
-    CALL MPI_Irecv(helper%num_values, 1, MPI_INTEGER, partner_rank, tag, comm, &
+    CALL MPI_Irecv(helper%num_values, 1, MPI_INTEGER, rank, recv_tag, comm, &
          & helper%size_request(2), ierr)
   END SUBROUTINE SwapMatrixSizes
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Swap data contained in matrices.
-  SUBROUTINE SwapMatrixData(inmat, outmat, partner_rank, comm, helper, tag)
+  SUBROUTINE SwapMatrixData(inmat,outmat,rank,comm,helper,send_tag,recv_tag)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: inmat
     TYPE(SparseMatrix_t), INTENT(INOUT) :: outmat
-    INTEGER, INTENT(IN) :: partner_rank
+    INTEGER, INTENT(IN) :: rank
     TYPE(SwapHelper_t), INTENT(INOUT) :: helper
-    INTEGER, INTENT(IN) :: tag
+    INTEGER, INTENT(IN) :: send_tag, recv_tag
     INTEGER :: comm
     !! Local Data
     INTEGER :: ierr
@@ -66,18 +66,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Send/Recv the data
     CALL MPI_Isend(inmat%values, SIZE(inmat%values), MPINTREAL, &
-         & partner_rank, tag, comm, helper%data_request(1), ierr)
+         & rank, send_tag, comm, helper%data_request(1), ierr)
     CALL MPI_Isend(inmat%inner_index, SIZE(inmat%values), MPI_INT, &
-         & partner_rank, tag, comm, helper%inner_request(1), ierr)
+         & rank, send_tag, comm, helper%inner_request(1), ierr)
     CALL MPI_Isend(inmat%outer_index, inmat%columns+1, MPI_INT, &
-         & partner_rank, tag, comm, helper%outer_request(1), ierr)
+         & rank, send_tag, comm, helper%outer_request(1), ierr)
 
     CALL MPI_Irecv(outmat%values, helper%num_values, MPINTREAL, &
-         & partner_rank, tag, comm, helper%data_request(2), ierr)
+         & rank, recv_tag, comm, helper%data_request(2), ierr)
     CALL MPI_Irecv(outmat%inner_index, helper%num_values, MPI_INT, &
-         & partner_rank, tag, comm, helper%inner_request(2), ierr)
+         & rank, recv_tag, comm, helper%inner_request(2), ierr)
     CALL MPI_Irecv(outmat%outer_index, inmat%columns+1, MPI_INT, &
-         & partner_rank, tag, comm, helper%outer_request(2), ierr)
+         & rank, recv_tag, comm, helper%outer_request(2), ierr)
 
   END SUBROUTINE SwapMatrixData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
