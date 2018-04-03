@@ -40,7 +40,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 32
+    matrix_dimension = 4
 
     @classmethod
     def setUpClass(self):
@@ -788,7 +788,8 @@ class TestSolvers(unittest.TestCase):
         matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
                        density=1.0)
         matrix1 = csr_matrix(matrix1 + matrix1.T)
-        mmwrite(self.input_file, matrix1)
+        if (self.my_rank == 0):
+            mmwrite(self.input_file, matrix1)
         w, vdense = eigh(matrix1.todense())
         CheckV = csr_matrix(vdense)
 
@@ -799,12 +800,20 @@ class TestSolvers(unittest.TestCase):
             ntmatrix, V, self.fixed_solver_parameters)
         V.WriteToMatrixMarket(result_file)
 
-        ResultV = mmread(result_file)
-        CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
-        ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
-        normvalv = abs(normd(CheckD - ResultD))
+        normval = 0
+        relative_error = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file)
+            CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+            normval = abs(normd(CheckD - ResultD))
+            relative_error = normval / normd(CheckD)
+            print("Norm:", normval)
+            print("Relative_Error:", relative_error)
 
-        self.assertLessEqual(normvalv, THRESHOLD)
+        global_norm = comm.bcast(normval, root=0)
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
 
 
 if __name__ == '__main__':
