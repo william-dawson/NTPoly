@@ -211,6 +211,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: iteration
     INTEGER :: block_counter
     INTEGER :: root_row, root_column
+    INTEGER :: send1, send2, send3, send4
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -227,6 +228,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MergeLocalBlocks(this, local_a)
     root_row = my_row
     root_column = my_column
+
+    !! Determine exchange partners
+    CALL ComputeSendPairs(send1, send2, send3, send4)
 
     !! Main Loop
     DO iteration = 1, 2
@@ -252,7 +256,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL CopySparseMatrix(temp, local_v)
 
           !! Exchange Blocks
-          ! CALL SplitFour(local_a, send_block)
+          CALL SplitFour(local_a, send_block)
           ! IF (my_row .EQ. my_column .AND. my_row .EQ. 1) THEN
           !   CALL CopyDistributedSparseMatrix(send_block(1),recv_block(1))
           ! END IF
@@ -331,4 +335,56 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSparseMatrix(temp_rows(1))
     CALL DestructSparseMatrix(temp_rows(2))
   END SUBROUTINE MergeFour
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PURE SUBROUTINE ComputeSendPairs(send1, send2, send3, send4)
+    !! Parameters
+    INTEGER, INTENT(OUT) :: send1, send2, send3, send4
+    !! Local Data
+    INTEGER, DIMENSION(num_process_columns) :: iarray, iarray2
+    INTEGER, DIMENSION(num_process_rows) :: jarray, jarray2
+    !! Temporary
+    INTEGER :: counter
+    INTEGER :: block1, block2
+
+    IF (num_process_rows .EQ. num_process_columns .AND. &
+         & num_process_rows .EQ. 1) THEN
+       send1 = 0
+       send2 = 0
+       send3 = 0
+       send4 = 0
+    ELSE
+       !! Initialize array
+       DO counter = 1, num_process_rows
+          jarray(counter) = counter -1
+       END DO
+       DO counter = 1, num_process_columns
+          iarray(counter) = counter - 1
+       END DO
+
+       !! Rotate values
+       iarray2(2) = jarray(1)
+       DO counter = 3, num_process_columns
+          iarray2(counter) = iarray(counter-1)
+       END DO
+       jarray2(num_process_rows) = iarray(num_process_columns)
+       DO counter = 1, num_process_rows - 1
+          jarray2(counter) = jarray(counter+1)
+       END DO
+
+       !! Divide by 2 to compute the process ID
+       DO counter = 1, num_process_columns
+          iarray2(counter) = iarray2(counter)/2
+       END DO
+       DO counter = 1, num_process_rows
+          jarray(counter) = jarray2(counter)/2
+       END DO
+
+       !! Extract send row and column
+       send1 = iarray(my_column+1) + jarray(my_row+1)*num_process_columns
+       send2 = iarray(my_column+2) + jarray(my_row+1)*num_process_columns
+       send3 = iarray(my_column+1) + jarray(my_row+2)*num_process_columns
+       send4 = iarray(my_column+2) + jarray(my_row+2)*num_process_columns
+    END IF
+
+  END SUBROUTINE ComputeSendPairs
 END MODULE EigenBoundsModule
