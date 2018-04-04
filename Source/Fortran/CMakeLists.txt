@@ -23,7 +23,7 @@ set(Fsrc
     MatrixGatherModule.f90
     MatrixMarketModule.f90
     MatrixMemoryPoolModule.f90
-    MatrixSwapModule.f90
+    MatrixSendRecvModule.f90
     MinimizerSolversModule.f90
     ParameterConverterModule.f90
     PermutationModule.f90

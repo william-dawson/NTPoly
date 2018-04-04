@@ -796,6 +796,7 @@ class TestSolvers(unittest.TestCase):
         ntmatrix = nt.DistributedSparseMatrix(self.input_file)
         V = nt.DistributedSparseMatrix(self.matrix_dimension)
 
+        print()
         nt.EigenBounds.EigenDecomposition(
             ntmatrix, V, self.fixed_solver_parameters)
         V.WriteToMatrixMarket(result_file)
