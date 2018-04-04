@@ -29,7 +29,7 @@ public:
   static void
   EigenDecomposition(const DistributedSparseMatrix &matrix,
                      DistributedSparseMatrix &eigenvectors,
-                     const FixedSolverParameters &solver_parameters);
+                     const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

@@ -40,7 +40,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 4
+    matrix_dimension = 8
 
     @classmethod
     def setUpClass(self):
@@ -798,7 +798,7 @@ class TestSolvers(unittest.TestCase):
 
         print()
         nt.EigenBounds.EigenDecomposition(
-            ntmatrix, V, self.fixed_solver_parameters)
+            ntmatrix, V, self.iterative_solver_parameters)
         V.WriteToMatrixMarket(result_file)
 
         normval = 0

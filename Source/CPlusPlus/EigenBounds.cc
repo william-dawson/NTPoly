@@ -22,7 +22,7 @@ void EigenBounds::PowerBounds(
 void EigenBounds::EigenDecomposition(
     const DistributedSparseMatrix &matrix,
     DistributedSparseMatrix &eigenvectors,
-    const FixedSolverParameters &solver_parameters) {
+    const IterativeSolverParameters &solver_parameters) {
   DistributedEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
                                     GetIH(solver_parameters));
 }
