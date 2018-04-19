@@ -245,9 +245,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: row_number
     TYPE(SparseMatrix_t), INTENT(INOUT) :: row_out
     !! Local variables
-    INTEGER :: number_of_values
-    INTEGER :: start_index
-    INTEGER :: counter
     TYPE(SparseMatrix_t) :: temp, temp_c
 
     CALL TransposeSparseMatrix(this,temp)
@@ -406,10 +403,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(num_blocks) :: block_sizes
     INTEGER, DIMENSION(num_blocks+1) :: block_offsets
     INTEGER :: split_divisor
-    !! Counters
-    INTEGER :: split_counter
-    !! Temporary variables
-    INTEGER :: loffset, lcolumns, linner_offset, total_values
 
     !! Handle trivial case
     IF (num_blocks .EQ. 1) THEN
