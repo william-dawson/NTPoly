@@ -3,6 +3,9 @@ FIND_PACKAGE(SWIG 3.0)
 
 if (SWIG_FOUND)
   # Determine python path using python's distutils module
+  if(NOT DEFINED PYTHON_EXECUTABLE)
+    find_package(PythonInterp REQUIRED)
+  endif()
   execute_process(
       COMMAND ${PYTHON_EXECUTABLE} -c
       "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
