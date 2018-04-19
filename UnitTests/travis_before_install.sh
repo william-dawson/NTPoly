@@ -16,6 +16,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
+  brew install gcc
   brew install python3
   brew install open-mpi
   brew install doxygen
@@ -33,9 +34,9 @@ else
   cd ../
 fi
 
-sudo pip install scipy --upgrade
-sudo pip install numpy --upgrade
-sudo pip install mpi4py --upgrade
+sudo pip3 install scipy --upgrade
+sudo pip3 install numpy --upgrade
+sudo pip3 install mpi4py --upgrade
 test -n $CC  && unset CC
 test -n $FCC  && unset FCC
 test -n $CXX && unset CXX
