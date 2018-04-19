@@ -22,9 +22,9 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install open-mpi
   brew install doxygen
   brew install cmake
-  sudo pip3 install scipy --upgrade
-  sudo pip3 install numpy --upgrade
-  sudo pip3 install mpi4py --upgrade
+  sudo pip3 install scipy --upgrade --no-cache-dir
+  sudo pip3 install numpy --upgrade --no-cache-dir
+  sudo pip3 install mpi4py --upgrade --no-cache-dir
 else
   sudo ldconfig
   sudo apt-get install python-dev
