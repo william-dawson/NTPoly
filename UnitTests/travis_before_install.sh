@@ -10,6 +10,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   python install python3
   brew install doxygen
   brew install cmake
+  brew install pip
 else
   sudo ldconfig
   sudo apt-get install python-dev
