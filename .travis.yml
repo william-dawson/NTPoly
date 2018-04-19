@@ -22,19 +22,15 @@ matrix:
 cache:
   pip: true
   directories:
-    - openmpi-2.1.1
+    - openmpi-3.0.1
 
 before_install:
   - bash UnitTests/travis_before_install.sh
 
 script:
   - cd Build
-  - if [[ "$TRAVIS_OS_NAME" == "LINUX" ]]; |
-    cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..; |
-    fi
-  - if [[ "$TRAVIS_OS_NAME" == "OSX" ]]; |
-    cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake ..; |
-    fi
+  - if [[ "$TRAVIS_OS_NAME" == "LINUX" ]]; cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..; fi
+  - if [[ "$TRAVIS_OS_NAME" == "OSX" ]]; cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake ..; fi
   - make
   - travis_wait 30 make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log

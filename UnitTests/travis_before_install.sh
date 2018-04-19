@@ -1,5 +1,5 @@
 
-if [[ "$TRAVIS_OS_NAME" == "OSX" ]]; then
+if [[ "$TESTOS" == "OSX" ]]; then
   brew install gcc;
 else
   sudo apt-get install gfortran;
@@ -9,7 +9,7 @@ cd openmpi-3.0.1
 sudo make install >/dev/null 2>&1
 cd ../
 sudo ldconfig
-if [[ "$TRAVIS_OS_NAME" == "OSX" ]]; then
+if [[ "$TESTOS" == "OSX" ]]; then
   python install python3;
   brew install doxygen;
 else
