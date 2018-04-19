@@ -20,6 +20,7 @@ before_install:
   - cd ../
   - sudo ldconfig
   - sudo apt-get install python-dev
+  - python UnitTests/getpypath.py
   - sudo apt-get install doxygen
   - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
   - tar xvf swig-3.0.12.tar.gz >/dev/null
