@@ -29,11 +29,7 @@ before_install:
 
 script:
   - cd Build
-  - 'if [[ "$TESTOS" == "LINUX" ]]; then
-        cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake .. ;
-     else
-        cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake .. ;
-     fi'
+  - bash UnitTests/travis_run_cmake.sh
   - make
   - travis_wait 30 make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log
