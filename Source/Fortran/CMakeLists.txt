@@ -40,3 +40,5 @@ set(Fsrc
 )
 
 add_library(NTPoly STATIC ${Fsrc})
+install(TARGETS NTPoly
+        ARCHIVE DESTINATION lib)

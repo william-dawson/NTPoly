@@ -278,10 +278,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ELSE
           temp_substring = mpi_input_buffer( &
                & full_buffer_counter:full_buffer_counter+current_line_length-1)
-          READ(temp_substring(:current_line_length-1),*) &
-               & temp_triplet%index_row, temp_triplet%index_column, &
-               & temp_triplet%point_value
-          CALL AppendToTripletList(triplet_list, temp_triplet)
+          IF (current_line_length .GT. 1) THEN
+             READ(temp_substring(:current_line_length-1),*) &
+                  & temp_triplet%index_row, temp_triplet%index_column, &
+                  & temp_triplet%point_value
+             CALL AppendToTripletList(triplet_list, temp_triplet)
+          END IF
 
           IF (full_buffer_counter + current_line_length .GE. &
                & local_data_size+2) THEN
@@ -1267,7 +1269,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     DO counter = 1, slice_size
-      CALL DestructTripletList(send_triplet_lists(counter))
+       CALL DestructTripletList(send_triplet_lists(counter))
     END DO
     DEALLOCATE(row_lookup)
     DEALLOCATE(column_lookup)
