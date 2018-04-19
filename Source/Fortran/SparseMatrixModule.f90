@@ -35,6 +35,7 @@ MODULE SparseMatrixModule
   PUBLIC :: ExtractColumn
   !! Helper routines
   PUBLIC :: SplitSparseMatrixColumns
+  PUBLIC :: SplitSparseMatrixColumnsCustom
   PUBLIC :: ComposeSparseMatrixColumns
   PUBLIC :: TransposeSparseMatrix
   PUBLIC :: PrintSparseMatrix
@@ -244,9 +245,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: row_number
     TYPE(SparseMatrix_t), INTENT(INOUT) :: row_out
     !! Local variables
-    INTEGER :: number_of_values
-    INTEGER :: start_index
-    INTEGER :: counter
     TYPE(SparseMatrix_t) :: temp, temp_c
 
     CALL TransposeSparseMatrix(this,temp)
@@ -282,8 +280,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     column_out%outer_index(1) = 0
     column_out%outer_index(2) = number_of_values
     DO counter=1, number_of_values
-      column_out%inner_index(counter) = this%inner_index(start_index+counter)
-      column_out%values(counter) = this%values(start_index+counter)
+       column_out%inner_index(counter) = this%inner_index(start_index+counter)
+       column_out%values(counter) = this%values(start_index+counter)
     END DO
   END SUBROUTINE ExtractColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -405,10 +403,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(num_blocks) :: block_sizes
     INTEGER, DIMENSION(num_blocks+1) :: block_offsets
     INTEGER :: split_divisor
-    !! Counters
-    INTEGER :: split_counter
-    !! Temporary variables
-    INTEGER :: loffset, lcolumns, linner_offset, total_values
 
     !! Handle trivial case
     IF (num_blocks .EQ. 1) THEN
@@ -421,44 +415,70 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        block_sizes = split_divisor
        !! Handle an uneven split
        block_sizes(num_blocks) = this%columns - split_divisor*(num_blocks-1)
-       !! Offsets
-       block_offsets(1) = 1
-       DO split_counter = 2, num_blocks+1
-          block_offsets(split_counter) = block_offsets(split_counter-1) + &
-               & block_sizes(split_counter-1)
-       END DO
 
-       !! Split up the columns
-       DO split_counter = 1, num_blocks
-          !! Temporary variables
-          loffset = block_offsets(split_counter)
-          lcolumns = block_sizes(split_counter)
-          linner_offset = this%outer_index(loffset)+1
-          !! Construct
-          CALL ConstructEmptySparseMatrix(split_list(split_counter), &
-               & columns=lcolumns, rows=this%rows)
-          !! Copy Outer Index
-          split_list(split_counter)%outer_index =        &
-               & this%outer_index(loffset:loffset+lcolumns)
-          split_list(split_counter)%outer_index =        &
-               & split_list(split_counter)%outer_index -    &
-               & split_list(split_counter)%outer_index(1)
-          total_values = split_list(split_counter)%outer_index(lcolumns+1)
-          !! Copy Inner Indices and Values
-          IF (total_values .GT. 0) THEN
-             ALLOCATE(split_list(split_counter)%inner_index(total_values))
-             split_list(split_counter)%inner_index = &
-                  & this%inner_index(linner_offset:linner_offset+total_values-1)
-             ALLOCATE(split_list(split_counter)%values(total_values))
-             split_list(split_counter)%values = &
-                  & this%values(linner_offset:linner_offset+total_values-1)
-          END IF
-       END DO
+       CALL SplitSparseMatrixColumnsCustom(this, num_blocks, block_sizes, &
+            & split_list)
     END IF
     IF (PRESENT(block_offsets_out)) THEN
        block_offsets_out = block_offsets
     END IF
   END SUBROUTINE SplitSparseMatrixColumns
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Take a matrix, and split into into small blocks based on the specified
+  !! offsets. This is different than SplitSparseMatrixColumns in that for
+  !! this function you can specify your own block sizes, whereas the other
+  !! routine tries to evenly split the matrix.
+  !! @param[in] this matrix to perform this operation on.
+  !! @param[out] block_offsets the offsets used for splitting.
+  !! @param[out] split_list 1D array of blocks.
+  PURE SUBROUTINE SplitSparseMatrixColumnsCustom(this, num_blocks, block_sizes,&
+       & split_list)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    INTEGER, INTENT(IN) :: num_blocks
+    INTEGER, DIMENSION(num_blocks), INTENT(IN) :: block_sizes
+    TYPE(SparseMatrix_t), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
+    !! Local Data
+    INTEGER, DIMENSION(num_blocks+1) :: block_offsets
+    !! Counters
+    INTEGER :: split_counter
+    !! Temporary variables
+    INTEGER :: loffset, lcolumns, linner_offset, total_values
+
+    !! Compute Offsets
+    block_offsets(1) = 1
+    DO split_counter = 2, num_blocks+1
+       block_offsets(split_counter) = block_offsets(split_counter-1) + &
+            & block_sizes(split_counter-1)
+    END DO
+
+    !! Split up the columns
+    DO split_counter = 1, num_blocks
+       !! Temporary variables
+       loffset = block_offsets(split_counter)
+       lcolumns = block_sizes(split_counter)
+       linner_offset = this%outer_index(loffset)+1
+       !! Construct
+       CALL ConstructEmptySparseMatrix(split_list(split_counter), &
+            & columns=lcolumns, rows=this%rows)
+       !! Copy Outer Index
+       split_list(split_counter)%outer_index =        &
+            & this%outer_index(loffset:loffset+lcolumns)
+       split_list(split_counter)%outer_index =        &
+            & split_list(split_counter)%outer_index -    &
+            & split_list(split_counter)%outer_index(1)
+       total_values = split_list(split_counter)%outer_index(lcolumns+1)
+       !! Copy Inner Indices and Values
+       IF (total_values .GT. 0) THEN
+          ALLOCATE(split_list(split_counter)%inner_index(total_values))
+          split_list(split_counter)%inner_index = &
+               & this%inner_index(linner_offset:linner_offset+total_values-1)
+          ALLOCATE(split_list(split_counter)%values(total_values))
+          split_list(split_counter)%values = &
+               & this%values(linner_offset:linner_offset+total_values-1)
+       END IF
+    END DO
+  END SUBROUTINE SplitSparseMatrixColumnsCustom
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list from a matrix.
   !! @param[in] this the matrix to construct the triplet list from.
