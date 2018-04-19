@@ -2,7 +2,7 @@
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
 fi
-travis_wait bash UnitTests/travis_build_mpi.sh
+bash UnitTests/travis_build_mpi.sh
 cd openmpi-3.0.1
 sudo make install >/dev/null 2>&1
 cd ../

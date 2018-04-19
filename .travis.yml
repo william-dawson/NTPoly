@@ -25,7 +25,7 @@ cache:
     - openmpi-3.0.1
 
 before_install:
-  - bash UnitTests/travis_before_install.sh
+  - travis_wait bash UnitTests/travis_before_install.sh
 
 script:
   - cd Build
