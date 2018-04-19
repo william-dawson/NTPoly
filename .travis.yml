@@ -32,7 +32,7 @@ script:
   - cd Build
   - bash ../UnitTests/travis_run_cmake.sh
   - make
-  - make test > test_result.txt
+  - make test
   - tail -n 13 Testing/Temporary/LastTest.log
   - cd ../UnitTests/
   - bash travis_check_examples.sh
