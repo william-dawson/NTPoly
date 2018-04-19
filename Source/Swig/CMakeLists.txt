@@ -7,7 +7,7 @@ if (SWIG_FOUND)
       COMMAND ${PYTHON_EXECUTABLE} -c
       "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
       OUTPUT_VARIABLE PYTHON_INCLUDE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-
+  MESSAGE("Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
   INCLUDE(${SWIG_USE_FILE})
 
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
