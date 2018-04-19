@@ -16,11 +16,10 @@ if [[ "$TESTOS" == "LINUX" ]]; then
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
+  brew install python3
   brew install open-mpi
-  python install python3
   brew install doxygen
   brew install cmake
-  brew install pip
 else
   sudo ldconfig
   sudo apt-get install python-dev
