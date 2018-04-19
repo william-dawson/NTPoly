@@ -29,8 +29,8 @@ before_install:
 
 script:
   - cd Build
-  - if [[ "$TRAVIS_OS_NAME" == "LINUX" ]]; cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..; fi
-  - if [[ "$TRAVIS_OS_NAME" == "OSX" ]]; cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake ..; fi
+  - if [[ "$TESTOS" == "LINUX" ]]; cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..; fi
+  - if [[ "$TESTOS" == "OSX" ]]; cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake ..; fi
   - make
   - travis_wait 30 make test > test_result.txt
   - tail -n 13 Testing/Temporary/LastTest.log

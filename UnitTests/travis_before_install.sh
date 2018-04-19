@@ -1,20 +1,19 @@
 
-if [[ "$TESTOS" == "OSX" ]]; then
-  brew install gcc;
-else
-  sudo apt-get install gfortran;
+if [[ "$TESTOS" == "LINUX" ]]; then
+  sudo apt-get install gfortran
 fi
 travis_wait bash UnitTests/travis_build_mpi.sh
 cd openmpi-3.0.1
 sudo make install >/dev/null 2>&1
 cd ../
-sudo ldconfig
 if [[ "$TESTOS" == "OSX" ]]; then
-  python install python3;
-  brew install doxygen;
+  python install python3
+  brew install doxygen
+  brew install cmake
 else
-  sudo apt-get install python-dev;
-  sudo apt-get install doxygen;
+  sudo ldconfig
+  sudo apt-get install python-dev
+  sudo apt-get install doxygen
 fi
 wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
 tar xvf swig-3.0.12.tar.gz >/dev/null
