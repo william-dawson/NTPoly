@@ -34,6 +34,7 @@ var searchData=
   ['sparsematrixgrandsum',['sparsematrixgrandsum',['../namespacesparsematrixalgebramodule.html#a9b654d27c6c937f62764fda69464f155',1,'sparsematrixalgebramodule']]],
   ['sparsematrixnorm',['sparsematrixnorm',['../namespacesparsematrixalgebramodule.html#a0e16e9a6cf8cf4048103a4679d504bad',1,'sparsematrixalgebramodule']]],
   ['splitsparsematrixcolumns',['splitsparsematrixcolumns',['../namespacesparsematrixmodule.html#ae61f53ced7964009373539135ffd004e',1,'sparsematrixmodule']]],
+  ['splitsparsematrixcolumnscustom',['splitsparsematrixcolumnscustom',['../namespacesparsematrixmodule.html#ac21337f276234aa63c05d6833b44c378',1,'sparsematrixmodule']]],
   ['squareroot',['SquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#a9d0ec95baa12312caba21236bde75b80',1,'NTPoly::SquareRootSolvers::SquareRoot()'],['../namespacesquarerootsolversmodule.html#a6eeabe3f427493766cbdeaa8a141e72b',1,'squarerootsolversmodule::squareroot()']]],
   ['start',['start',['../namespacesparsematrixiteratormodule.html#af9596d835fc23ff4cf80f8cbef7de5e6',1,'sparsematrixiteratormodule']]],
   ['starttimer',['starttimer',['../namespacetimermodule.html#ad0dedd4f6ec19d57e5aef23a763c20ac',1,'timermodule']]],

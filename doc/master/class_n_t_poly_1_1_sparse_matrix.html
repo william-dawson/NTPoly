@@ -96,6 +96,10 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#a33f05d9edb249dea1047863446cf5b92">GetColumns</a> () const</td></tr>
 <tr class="memdesc:a33f05d9edb249dea1047863446cf5b92"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of columns in a matrix. <br /></td></tr>
 <tr class="separator:a33f05d9edb249dea1047863446cf5b92"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae89d48f3949da314184cfd66670c9130"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#ae89d48f3949da314184cfd66670c9130">ExtractRow</a> (int row_number, <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html">SparseMatrix</a> &amp;row_out) const</td></tr>
+<tr class="separator:ae89d48f3949da314184cfd66670c9130"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9380a4d3e0c846edd13ff0b3db049f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#ab9380a4d3e0c846edd13ff0b3db049f5">ExtractColumn</a> (int column_number, <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html">SparseMatrix</a> &amp;column_out) const</td></tr>
+<tr class="separator:ab9380a4d3e0c846edd13ff0b3db049f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab302cf3b7f0cfff62e40ca467dcbea73"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#ab302cf3b7f0cfff62e40ca467dcbea73">Scale</a> (double constant)</td></tr>
 <tr class="separator:ab302cf3b7f0cfff62e40ca467dcbea73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae659c420ec2c6eb950bbf2f045d8ad9b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html#ae659c420ec2c6eb950bbf2f045d8ad9b">Increment</a> (const <a class="el" href="class_n_t_poly_1_1_sparse_matrix.html">NTPoly::SparseMatrix</a> &amp;matB, double alpha, double threshold)</td></tr>
@@ -274,6 +278,78 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>the dot product of this and matB. </dd></dl>
+
+</div>
+</div>
+<a id="ab9380a4d3e0c846edd13ff0b3db049f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9380a4d3e0c846edd13ff0b3db049f5">&#9670;&nbsp;</a></span>ExtractColumn()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::SparseMatrix::ExtractColumn </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>column_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html">SparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>column_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extract a column from the matrix into the compressed vector representation. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the matrix to extract from. </td></tr>
+    <tr><td class="paramname">column_number</td><td>the column to extract </td></tr>
+    <tr><td class="paramname">column_out</td><td>the matrix representing that column </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae89d48f3949da314184cfd66670c9130"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae89d48f3949da314184cfd66670c9130">&#9670;&nbsp;</a></span>ExtractRow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::SparseMatrix::ExtractRow </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>row_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_sparse_matrix.html">SparseMatrix</a> &amp;&#160;</td>
+          <td class="paramname"><em>row_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Extract a row from the matrix into the compressed vector representation. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">this</td><td>the matrix to extract from. </td></tr>
+    <tr><td class="paramname">row_number</td><td>the row to extract </td></tr>
+    <tr><td class="paramname">row_out</td><td>the matrix representing that row </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

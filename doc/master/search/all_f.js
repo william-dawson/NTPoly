@@ -47,6 +47,7 @@ var searchData=
   ['sparsematrixnorm',['sparsematrixnorm',['../namespacesparsematrixalgebramodule.html#a0e16e9a6cf8cf4048103a4679d504bad',1,'sparsematrixalgebramodule']]],
   ['sparsevectormodule',['sparsevectormodule',['../namespacesparsevectormodule.html',1,'']]],
   ['splitsparsematrixcolumns',['splitsparsematrixcolumns',['../namespacesparsematrixmodule.html#ae61f53ced7964009373539135ffd004e',1,'sparsematrixmodule']]],
+  ['splitsparsematrixcolumnscustom',['splitsparsematrixcolumnscustom',['../namespacesparsematrixmodule.html#ac21337f276234aa63c05d6833b44c378',1,'sparsematrixmodule']]],
   ['squareroot',['SquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#a9d0ec95baa12312caba21236bde75b80',1,'NTPoly::SquareRootSolvers::SquareRoot()'],['../namespacesquarerootsolversmodule.html#a6eeabe3f427493766cbdeaa8a141e72b',1,'squarerootsolversmodule::squareroot()']]],
   ['squarerootsolvers',['SquareRootSolvers',['../class_n_t_poly_1_1_square_root_solvers.html',1,'NTPoly']]],
   ['squarerootsolversmodule',['squarerootsolversmodule',['../namespacesquarerootsolversmodule.html',1,'']]],

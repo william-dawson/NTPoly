@@ -104,6 +104,12 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a42409a427e0ba40ea1e2c59b4c5d9669"><td class="memItemLeft" align="right" valign="top">pure integer function, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a42409a427e0ba40ea1e2c59b4c5d9669">getcolumns</a> (this)</td></tr>
 <tr class="memdesc:a42409a427e0ba40ea1e2c59b4c5d9669"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of columns of a matrix.  <a href="#a42409a427e0ba40ea1e2c59b4c5d9669">More...</a><br /></td></tr>
 <tr class="separator:a42409a427e0ba40ea1e2c59b4c5d9669"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a99410be5adb26923d40409e0e2f9a695"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a99410be5adb26923d40409e0e2f9a695">extractrow</a> (this, row_number, row_out)</td></tr>
+<tr class="memdesc:a99410be5adb26923d40409e0e2f9a695"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract a row from the matrix into the compressed vector representation.  <a href="#a99410be5adb26923d40409e0e2f9a695">More...</a><br /></td></tr>
+<tr class="separator:a99410be5adb26923d40409e0e2f9a695"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa3f2666e3b3032d614d4c1b4e17637d6"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#aa3f2666e3b3032d614d4c1b4e17637d6">extractcolumn</a> (this, column_number, column_out)</td></tr>
+<tr class="memdesc:aa3f2666e3b3032d614d4c1b4e17637d6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Extract a column from the matrix into the compressed vector representation.  <a href="#aa3f2666e3b3032d614d4c1b4e17637d6">More...</a><br /></td></tr>
+<tr class="separator:aa3f2666e3b3032d614d4c1b4e17637d6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22099ebd7c19ede253a13f671cec0c5d"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a22099ebd7c19ede253a13f671cec0c5d">transposesparsematrix</a> (this, matT)</td></tr>
 <tr class="memdesc:a22099ebd7c19ede253a13f671cec0c5d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transpose a sparse matrix and return it in a separate matrix. The current implementation has you go from matrix to triplet list, triplet list to transposed triplet list. The triplet list must then be sorted and then the return matrix is constructed.  <a href="#a22099ebd7c19ede253a13f671cec0c5d">More...</a><br /></td></tr>
 <tr class="separator:a22099ebd7c19ede253a13f671cec0c5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -113,6 +119,9 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:ae61f53ced7964009373539135ffd004e"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#ae61f53ced7964009373539135ffd004e">splitsparsematrixcolumns</a> (this, num_blocks, split_list, block_offsets_out)</td></tr>
 <tr class="memdesc:ae61f53ced7964009373539135ffd004e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a matrix, and split into into small blocks.  <a href="#ae61f53ced7964009373539135ffd004e">More...</a><br /></td></tr>
 <tr class="separator:ae61f53ced7964009373539135ffd004e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac21337f276234aa63c05d6833b44c378"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#ac21337f276234aa63c05d6833b44c378">splitsparsematrixcolumnscustom</a> (this, num_blocks, block_sizes, split_list)</td></tr>
+<tr class="memdesc:ac21337f276234aa63c05d6833b44c378"><td class="mdescLeft">&#160;</td><td class="mdescRight">Take a matrix, and split into into small blocks based on the specified offsets. This is different than SplitSparseMatrixColumns in that for this function you can specify your own block sizes, whereas the other routine tries to evenly split the matrix.  <a href="#ac21337f276234aa63c05d6833b44c378">More...</a><br /></td></tr>
+<tr class="separator:ac21337f276234aa63c05d6833b44c378"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9982e6e020366bdba866eb814b943ae4"><td class="memItemLeft" align="right" valign="top">pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesparsematrixmodule.html#a9982e6e020366bdba866eb814b943ae4">matrixtotripletlist</a> (this, triplet_list)</td></tr>
 <tr class="memdesc:a9982e6e020366bdba866eb814b943ae4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a triplet list from a matrix.  <a href="#a9982e6e020366bdba866eb814b943ae4">More...</a><br /></td></tr>
 <tr class="separator:a9982e6e020366bdba866eb814b943ae4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -399,6 +408,94 @@ Functions/Subroutines</h2></td></tr>
 
 </div>
 </div>
+<a id="aa3f2666e3b3032d614d4c1b4e17637d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa3f2666e3b3032d614d4c1b4e17637d6">&#9670;&nbsp;</a></span>extractcolumn()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public sparsematrixmodule::extractcolumn </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>column_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>column_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extract a column from the matrix into the compressed vector representation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to extract from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">column_number</td><td>the row to extract </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">column_out</td><td>the matrix representing that row </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a99410be5adb26923d40409e0e2f9a695"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a99410be5adb26923d40409e0e2f9a695">&#9670;&nbsp;</a></span>extractrow()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public sparsematrixmodule::extractrow </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>row_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(inout)&#160;</td>
+          <td class="paramname"><em>row_out</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Extract a row from the matrix into the compressed vector representation. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>the matrix to extract from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">row_number</td><td>the row to extract </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">row_out</td><td>the matrix representing that row </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a42409a427e0ba40ea1e2c59b4c5d9669"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a42409a427e0ba40ea1e2c59b4c5d9669">&#9670;&nbsp;</a></span>getcolumns()</h2>
 
@@ -572,6 +669,56 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">num_blocks</td><td>number of blocks to split into. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">split_list</td><td>1D array of blocks. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">block_offsets_out</td><td>the offsets used for splitting. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ac21337f276234aa63c05d6833b44c378"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac21337f276234aa63c05d6833b44c378">&#9670;&nbsp;</a></span>splitsparsematrixcolumnscustom()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">pure subroutine, public sparsematrixmodule::splitsparsematrixcolumnscustom </td>
+          <td>(</td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), intent(in)&#160;</td>
+          <td class="paramname"><em>this</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in)&#160;</td>
+          <td class="paramname"><em>num_blocks</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, dimension(num_blocks), intent(in)&#160;</td>
+          <td class="paramname"><em>block_sizes</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">type(<a class="el" href="structsparsematrixmodule_1_1sparsematrix__t.html">sparsematrix_t</a>), dimension(num_blocks), intent(inout)&#160;</td>
+          <td class="paramname"><em>split_list</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Take a matrix, and split into into small blocks based on the specified offsets. This is different than SplitSparseMatrixColumns in that for this function you can specify your own block sizes, whereas the other routine tries to evenly split the matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">this</td><td>matrix to perform this operation on. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">block_offsets</td><td>the offsets used for splitting. </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">split_list</td><td>1D array of blocks. </td></tr>
   </table>
   </dd>
 </dl>
