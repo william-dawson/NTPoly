@@ -49,6 +49,9 @@ if __name__ == "__main__":
     build_command = [x for x in build_command.split() if x != "\\"]
     run_command = [x for x in run_command.split() if x != "\\"]
 
+    print(build_command)
+    print(run_command)
+
     os.chdir(check_directory)
     if check_command != "run-python":
         check = call(build_command)

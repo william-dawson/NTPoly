@@ -18,7 +18,7 @@ fi
 if [[ "$TESTOS" == "OSX" ]]; then
   brew install gcc
   brew link --overwrite gcc
-  brew upgrade python
+  # brew upgrade python
   brew install open-mpi
   brew install doxygen
   brew install cmake
