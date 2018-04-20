@@ -7,14 +7,17 @@ from subprocess import call
 import os
 
 
-def parse_command(fin):
+def parse_command(fin, num_commands=1):
     '''Keep parsing a command until a blank line is reached.'''
-    return_string = ""
-    temp_string = fin.readline()
-    while(temp_string != '\n'):
-        return_string = return_string + temp_string
+    ret_strings = []
+    for i in range(0, num_commands):
+        return_string = ""
         temp_string = fin.readline()
-    return return_string
+        while(temp_string != '\n'):
+            return_string = return_string + temp_string
+            temp_string = fin.readline()
+        ret_strings.append(return_string)
+    return ret_strings
 
 
 ##########################################################################
@@ -22,8 +25,10 @@ if __name__ == "__main__":
     check_directory = argv[1]
     check_command = argv[2]
 
-    build_command = ""
-    run_command = ""
+    env_var = os.environ.copy()
+
+    build_commands = []
+    run_commands = []
     with open(check_directory + "/ReadMe.md", 'r') as fin:
         while True:
             line = fin.readline()
@@ -31,42 +36,34 @@ if __name__ == "__main__":
                 break
             if check_command == "run-fortran":
                 if line == "Fortran Build Instructions:\n":
-                    build_command = parse_command(fin)
+                    build_commands = parse_command(fin)
                 if line == "And then run with:\n":
-                    run_command = parse_command(fin)
+                    run_commands = parse_command(fin)
             elif check_command == "run-c++":
                 if line == "C++ Build Instructions:\n":
-                    build_command = parse_command(fin)
+                    build_commands = parse_command(fin, 2)
                 if line == "And then run with:\n":
-                    run_command = parse_command(fin)
+                    run_commands = parse_command(fin)
                 pass
             elif check_command == "run-python":
-                if line == "Setup python environment:\n":
-                    build_command = parse_command(fin)
+                env_var["PYTHONPATH"] = "../../Build/python"
                 if line == "Run with python:\n":
-                    run_command = parse_command(fin)
+                    run_commands = parse_command(fin)
 
-    build_command = [x for x in build_command.split() if x != "\\"]
-    run_command = [x for x in run_command.split() if x != "\\"]
-
-    print(build_command)
-    print(run_command)
+    for i in range(0, len(build_commands)):
+        build_commands[i] = [x for x in build_commands[i].split() if x != "\\"]
+    for i in range(0, len(run_commands)):
+        run_commands[i] = [x for x in run_commands[i].split() if x != "\\"]
 
     os.chdir(check_directory)
-    if check_command != "run-python":
-        check = call(build_command)
+    for bc in build_commands:
+        check = call(bc)
         if check != 0:
             print("Build Error")
             exit(-1)
-        check = call(run_command)
+    for rc in run_commands:
+        rc = " ".join(rc)
+        check = call(rc, shell=True, env=env_var)
         if check != 0:
             print("Run Error")
-            exit(-1)
-    else:
-        env_var = os.environ.copy()
-        env_var["PYTHONPATH"] = "../../Build/python"
-        run_command = " ".join(run_command)
-        check = call(run_command, shell=True, env=env_var)
-        if check != 0:
-            print("Python Error")
             exit(-1)
