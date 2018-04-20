@@ -20,7 +20,12 @@ NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of .cmake files which have example configurations
 on popular systems. You should copy one of these files, and create your own
 mymachine.cmake file. Then, cd into the Build directory, and type:
-> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake ..
+> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake \
+-DCMAKE_BUILD_TYPE=Release ..
+
+By default, NTPoly is built for release mode. You can also specify debug mode:
+> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake \
+-DCMAKE_BUILD_TYPE=Debug ..
 
 After that you can build using:
 > make
