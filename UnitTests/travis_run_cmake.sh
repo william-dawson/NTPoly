@@ -5,6 +5,6 @@ else
     cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake .. ;
   else
     cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake \
-          -DFORTRAN_ONLY=YES.. ;
+          -DFORTRAN_ONLY=YES .. ;
   fi
 fi
