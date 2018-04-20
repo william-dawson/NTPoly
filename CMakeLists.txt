@@ -8,7 +8,9 @@ find_package(MPI REQUIRED)
 
 ################################################################################
 ## Testing
-enable_testing()
+if (NOT FORTRAN_ONLY)
+  enable_testing()
+endif()
 
 ################################################################################
 ## Output Locations
@@ -28,10 +30,31 @@ add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
 
 ################################################################################
 ## Toolchain File
-set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS})
-set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS})
+#if(CMAKE_BUILD_TYPE MATCHES Debug)
+#  set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
+#  set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
+#elseif(CMAKE_BUILD_TYPE MATCHES Release)
+#  set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
+#  set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
+#else()
+#  set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS_RELEASE})
+#  set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS_RELEASE})
+#endif()
+
+set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
+set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
+set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
+set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
+
+if (NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS_RELEASE})
+  set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS_RELEASE})
+endif()
 
 ################################################################################
 ## Get at the source files
 subdirs(Source)
-subdirs(UnitTests)
+
+if (NOT FORTRAN_ONLY)
+  subdirs(UnitTests)
+endif()

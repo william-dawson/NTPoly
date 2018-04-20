@@ -26,6 +26,7 @@ mpif90 main.f90 -o example \
 C++ Build Instructions:
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
+
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
 
@@ -34,8 +35,8 @@ C++ compiler, and link with the fortran compiler using the flags:
 -qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++).
 
 And then run with:
-mpirun -np 4 ./example \
---process_rows 2 --process_columns 2 --process_slices 1 \
+mpirun -np 1 ./example \
+--process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-4 \
 --number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
@@ -44,8 +45,8 @@ Setup python environment:
 export PYTHONPATH=../../Build/python
 
 Run with python:
-mpirun -np 4 python main.py \
---process_rows 2 --process_columns 2 --process_slices 1 \
+mpirun -np 1 python main.py \
+--process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-4 \
 --number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx

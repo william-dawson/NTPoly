@@ -10,6 +10,7 @@ set(CMAKE_Fortran_COMPILER mpif90)
 set(CMAKE_CXX_COMPILER mpicxx)
 set(PYTHON_EXECUTABLE python3)
 
+# Determine Python Library Path
 execute_process(
     COMMAND ${PYTHON_EXECUTABLE} -c
 "
@@ -18,7 +19,11 @@ path=get_python_lib(standard_lib=True)+\"/../../Python\"
 print(path)"
     OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-set(CXX_TOOLCHAINFLAGS "-O3 -openmp -lgomp")
-set(F_TOOLCHAINFLAGS "-O3 -cpp -fopenmp")
+# Release Suggestions
+set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -framework Accelerate -lgomp")
+set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
+
 # Debug suggestions
-#set(F_TOOLCHAINFLAGS "-fbounds-check -O0 -cpp -fopenmp -Wall -DPURE=")
+set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -framework Accelerate")
+set(F_TOOLCHAINFLAGS_DEBUG
+  "-fbounds-check -O0 -fexternal-blas -framework Accelerate -cpp -Wall -DPURE=")
