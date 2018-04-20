@@ -1,6 +1,4 @@
 ################################################################################
-FIND_PACKAGE(SWIG 3.0)
-
 if (SWIG_FOUND)
   # Determine python path using python's distutils module
   if(NOT DEFINED PYTHON_EXECUTABLE)
@@ -34,4 +32,6 @@ if (SWIG_FOUND)
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
     LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python
   )
+else()
+  MESSAGE("Swig not found! No python bindings will be generated.")
 endif()

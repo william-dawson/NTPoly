@@ -16,6 +16,20 @@ repository. We of course recommend that you download a
 [release version](https://github.com/william-dawson/NTPoly/releases)
 to get started.
 
+Installing NTPoly requires the following software:
+* A Fortran Compiler.
+* An MPI Installation (MPI-3 Standard+).
+* CMake (Version 3.2+).
+
+The following optional software can greatly enhance the NTPoly experience:
+* A C++ Compiler (Optional): for building C++ bindings.
+* Doxygen (Optional): for building documentation.
+* Python (Optional, 2.7+): for testing.
+* MPI4PY (Optional): for testing.
+* SciPy (Optional): for testing.
+* NumPy (Optional): for testing.
+* SWIG (Optional, 3.0+): for building the Python bindings.
+
 NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of `.cmake` files which have example configurations
 on popular systems. You should copy one of these files, and create your own

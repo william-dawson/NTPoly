@@ -14,7 +14,15 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX"
+      env: TESTOS="LINUX" TESTEXAMPLES=1
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" FORTRAN_ONLY=1
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" SKIPDOXYGEN=1 SKIPSWIG=1
     - os: osx
       sudo: required
       env: TESTOS="OSX"
