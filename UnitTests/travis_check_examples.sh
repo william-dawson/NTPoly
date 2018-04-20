@@ -1,4 +1,6 @@
-if [[ "$TESTOS" == "LINUX" ]]; then
+if [ -z ${TESTEXAMPLES+x} ]; then
+  echo "Skipping examples"
+else
   python testBuildInstructions.py ../Examples/GraphTheory/ run-fortran
   python testBuildInstructions.py ../Examples/GraphTheory/ run-c++
   python testBuildInstructions.py ../Examples/GraphTheory/ run-python

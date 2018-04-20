@@ -14,10 +14,18 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX"
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST=1
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" FORTRAN_ONLY=1 SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
     - os: osx
       sudo: required
-      env: TESTOS="OSX"
+      env: TESTOS="OSX" MAKETEST=1
 
 cache:
   pip: true
@@ -32,6 +40,6 @@ script:
   - cd Build
   - bash ../UnitTests/travis_run_cmake.sh
   - make
-  - make test
+  - if [ "$MAKETEST" = 1 ]; then make test; fi
   - cd ../UnitTests/
   - bash travis_check_examples.sh

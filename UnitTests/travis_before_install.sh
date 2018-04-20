@@ -28,18 +28,22 @@ if [[ "$TESTOS" == "OSX" ]]; then
 else
   sudo ldconfig
   sudo apt-get install python-dev
-  sudo apt-get install doxygen
-  if [ -f "swig-3.0.12/README" ]; then
-    echo "Using cached swig";
-  else
-    wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz;
-    tar xvf swig-3.0.12.tar.gz >/dev/null;
+  if [[ -z ${SKIPDOXYGEN+x} ]]; then
+    sudo apt-get install doxygen
   fi
-  cd swig-3.0.12;
-  ./configure >/dev/null 2>&1;
-  make >/dev/null 2>&1;
-  sudo make install >/dev/null 2>&1
-  cd ../
+  if [[ -z ${SKIPSWIG+x} ]] ; then
+    if [ -f "swig-3.0.12/README" ]; then
+      echo "Using cached swig";
+    else
+      wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz;
+      tar xvf swig-3.0.12.tar.gz >/dev/null;
+    fi
+    cd swig-3.0.12;
+    ./configure >/dev/null 2>&1;
+    make >/dev/null 2>&1;
+    sudo make install >/dev/null 2>&1
+    cd ../
+  fi
   sudo pip install scipy --upgrade
   sudo pip install numpy --upgrade
   sudo pip install mpi4py --upgrade

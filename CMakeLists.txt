@@ -4,12 +4,19 @@ cmake_minimum_required (VERSION 3.2)
 project(NTPoly)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_language(Fortran)
+
+################################################################################
+## Packages
 find_package(MPI REQUIRED)
+find_package(Doxygen)
+find_package(SWIG 3.0)
 
 ################################################################################
 ## Testing
 if (NOT FORTRAN_ONLY)
   enable_testing()
+else()
+  MESSAGE("Fortran only! No local testing will be generated.")
 endif()
 
 ################################################################################
@@ -23,24 +30,15 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
 
 ################################################################################
 ## Documentation
-find_package(Doxygen REQUIRED)
-configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
-               ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
-add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
+if (DOXYGEN_FOUND)
+  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
+                 ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
+  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
+else()
+  MESSAGE("Doxygen not found! No documentation will be generated.")
+endif()
 
 ################################################################################
-## Toolchain File
-#if(CMAKE_BUILD_TYPE MATCHES Debug)
-#  set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
-#  set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
-#elseif(CMAKE_BUILD_TYPE MATCHES Release)
-#  set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
-#  set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
-#else()
-#  set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS_RELEASE})
-#  set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS_RELEASE})
-#endif()
-
 set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
 set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
