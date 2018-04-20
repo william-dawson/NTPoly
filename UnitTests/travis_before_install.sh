@@ -18,14 +18,13 @@ fi
 if [[ "$TESTOS" == "OSX" ]]; then
   brew install gcc
   brew link --overwrite gcc
-  sudo easy_install pip
   brew install open-mpi
   brew install doxygen
   brew install cmake
   brew install swig
-  sudo pip install scipy --upgrade --no-cache-dir
-  sudo pip install numpy --upgrade --no-cache-dir
-  sudo pip install mpi4py --upgrade --no-cache-dir
+  sudo pip2 install scipy --upgrade --no-cache-dir
+  sudo pip2 install numpy --upgrade --no-cache-dir
+  sudo pip2 install mpi4py --upgrade --no-cache-dir
 else
   sudo ldconfig
   sudo apt-get install python-dev
