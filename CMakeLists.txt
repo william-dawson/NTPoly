@@ -8,7 +8,9 @@ find_package(MPI REQUIRED)
 
 ################################################################################
 ## Testing
-enable_testing()
+if (NOT FORTRAN_ONLY)
+  enable_testing()
+endif()
 
 ################################################################################
 ## Output Locations
@@ -52,4 +54,7 @@ endif()
 ################################################################################
 ## Get at the source files
 subdirs(Source)
-subdirs(UnitTests)
+
+if (NOT FORTRAN_ONLY)
+  subdirs(UnitTests)
+endif()

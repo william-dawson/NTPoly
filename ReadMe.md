@@ -20,12 +20,14 @@ NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of .cmake files which have example configurations
 on popular systems. You should copy one of these files, and create your own
 mymachine.cmake file. Then, cd into the Build directory, and type:
-> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake \
--DCMAKE_BUILD_TYPE=Release ..
+> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake ..
 
-By default, NTPoly is built for release mode. You can also specify debug mode:
-> cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake \
--DCMAKE_BUILD_TYPE=Debug ..
+There are a few options you can pass to CMake to modify the build. You can set
+`-DCMAKE_BUILD_TYPE=Debug` for debugging purposes. You can set the install
+directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir` You can
+also set `-DFORTRAN_ONLY=YES` if you want to only build the Fortran interface.
+Note that with just the Fortran interface, it is not possible to perform local
+tests.
 
 After that you can build using:
 > make
