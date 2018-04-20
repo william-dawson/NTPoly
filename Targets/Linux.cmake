@@ -7,7 +7,7 @@ set(CMAKE_CXX_COMPILER mpicxx)
 
 # Release suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -lgomp -fPIC")
-set(F_TOOLCHAINFLAGS "-O3 -cpp -openmp -fPIC")
+set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -openmp -fPIC")
 
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -openmp -fPIC")
