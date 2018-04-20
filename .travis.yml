@@ -18,7 +18,7 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" FORTRAN_ONLY=1
+      env: TESTOS="LINUX" FORTRAN_ONLY=1 SKIPDOXYGEN=1 SKIPSWIG=1
     - os: linux
       sudo: required
       dist: trusty

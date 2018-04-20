@@ -28,10 +28,10 @@ if [[ "$TESTOS" == "OSX" ]]; then
 else
   sudo ldconfig
   sudo apt-get install python-dev
-  if ! [[ -z ${SKIPDOXYGEN+x} ]]; then
+  if [[ -z ${SKIPDOXYGEN+x} ]]; then
     sudo apt-get install doxygen
   fi
-  if ! [[ -z ${SKIPSWIG+x} ]] ; then
+  if [[ -z ${SKIPSWIG+x} ]] ; then
     if [ -f "swig-3.0.12/README" ]; then
       echo "Using cached swig";
     else
