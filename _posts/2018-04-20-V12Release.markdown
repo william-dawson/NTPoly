@@ -1,0 +1,13 @@
+---
+layout: post
+title:  "Release of Version 1.2"
+date:   2018-04-20 11:00:00 +0900
+categories: blog update
+---
+
+A new release of NTPoly (1.2) is now available. The release is available on
+the [download](/NTPoly/downloads) page. Apart from minor bug corrections and
+feature enhancements, the main modification for version 1.2 were simplifications
+to the build process. This was an essentially step for helping integrate
+NTPoly into other library's build systems, so I decided to release these
+modifications as a new release.
