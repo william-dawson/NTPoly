@@ -64,3 +64,6 @@ add_test(CurrentTest122 ${BASH_PROGRAM} ${CurrentTestScript} 1 2 2 4)
 add_test(CurrentTest222 ${BASH_PROGRAM} ${CurrentTestScript} 2 2 2 8)
 add_test(CurrentTest321 ${BASH_PROGRAM} ${CurrentTestScript} 3 2 1 6)
 add_test(CurrentTest213 ${BASH_PROGRAM} ${CurrentTestScript} 2 1 3 6)
+
+
+add_test(CurrentTest441 ${BASH_PROGRAM} ${CurrentTestScript} 4 4 1 16)
