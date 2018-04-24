@@ -28,7 +28,8 @@ MODULE DistributedSparseMatrixModule
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
-       & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists
+       & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
+       & ShiftTripletList
   USE iso_c_binding
   USE MPI
   IMPLICIT NONE
@@ -433,12 +434,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL MatrixToTripletList(merged_local_data, triplet_list)
        !! Absolute Positions
-       DO counter = 1, triplet_list%CurrentSize
-          triplet_list%data(counter)%index_row = &
-               & triplet_list%data(counter)%index_row + this%start_row - 1
-          triplet_list%data(counter)%index_column = &
-               & triplet_list%data(counter)%index_column + this%start_column - 1
-       END DO
+       CALL ShiftTripletList(triplet_list, this%start_row - 1, &
+            & this%start_column - 1)
        CALL MPI_File_open(within_slice_comm,file_name,&
             & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
             & mpi_file_handler, grid_error)
@@ -527,12 +524,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixToTripletList(merged_local_data, triplet_list)
 
     !! Absolute Positions
-    DO counter = 1, triplet_list%CurrentSize
-       triplet_list%data(counter)%index_row = &
-            & triplet_list%data(counter)%index_row + this%start_row - 1
-       triplet_list%data(counter)%index_column = &
-            & triplet_list%data(counter)%index_column + this%start_column - 1
-    END DO
+    CALL ShiftTripletList(triplet_list, this%start_row - 1, &
+         & this%start_column - 1)
 
     !! Figure out the length of the string for storing.
     triplet_list_string_length = 0
@@ -791,12 +784,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MergeLocalBlocks(this, merged_local_data)
 
     CALL MatrixToTripletList(merged_local_data, triplet_list)
-    DO counter=1, triplet_list%CurrentSize
-       triplet_list%data(counter)%index_column = &
-            & triplet_list%data(counter)%index_column + this%start_column - 1
-       triplet_list%data(counter)%index_row = &
-            & triplet_list%data(counter)%index_row + this%start_row - 1
-    END DO
+    CALL ShiftTripletList(triplet_list, this%start_row - 1, &
+         & this%start_column - 1)
   END SUBROUTINE GetTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list. Block is
