@@ -55,7 +55,7 @@ class TestLocalMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(2, 4, 1.0))
         self.parameters.append(TestParameters(4, 4, 0.2))
         self.parameters.append(TestParameters(8, 8, 1.0))
-        self.parameters.append(TestParameters(256, 256, 1.0))
+        # self.parameters.append(TestParameters(256, 256, 1.0))
 
     def test_read(self):
         '''Test our ability to read and write matrices.'''
