@@ -49,17 +49,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters_t()
     END IF
 
+    !! Initialize the eigenvectors to the identity.
+    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
+         & this%actual_matrix_dimension)
+    CALL FillDistributedIdentity(eigenvectors)
+
     !! Extract to local dense blocks
     CALL GetLocalBlocks(this, ABlocks)
-    num_blocks = SIZE(ABlocks, DIM=1)
+    CALL GetLocalBlocks(eigenvectors, VBlocks)
 
     !! Cleanup
-    DO row_counter = 1, num_blocks
-       DO column_counter = 1, num_blocks
-          CALL DestructSparseMatrix(ABlocks(row_counter, column_counter))
-       END DO
-    END DO
-    DEALLOCATE(ABlocks)
 
   END SUBROUTINE DistributedEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -97,26 +96,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     end_row = (my_row+1)*block_rows*block_dimension
     start_column = my_column*block_columns*block_dimension + 1
     end_column = (my_column+1)*block_columns*block_dimension
-
     CALL GetMatrixBlock(distributed_matrix, triplet_list, start_row, end_row+1,&
          & start_column, end_column+1)
-    DO II = 1, triplet_list%CurrentSize
-       triplet_list%data(II)%index_row = triplet_list%data(II)%index_row &
-            & - start_row + 1
-       triplet_list%data(II)%index_column = triplet_list%data(II)%index_column &
-            & - start_column + 1
-    END DO
+    CALL ShiftTripletList(triplet_list, (-start_row + 1), (-start_column + 1))
     CALL ConstructFromTripletList(local_matrix, triplet_list, &
          & end_row - start_row + 1, end_column - start_column + 1)
 
     !! Split To Blocks
     ALLOCATE(ABlocks(block_rows, block_columns))
-
-    DO II = 1, block_rows
-       DO JJ = 1, block_columns
-          ! CALL ConstructABlocks(II,JJ)
-       END DO
-    END DO
+    CALL SplitSparseMatrix(local_matrix, block_rows, block_columns, ABlocks)
 
   END SUBROUTINE GetLocalBlocks
   ! !> Compute the eigenvectors of a matrix using Jacobi's method.
