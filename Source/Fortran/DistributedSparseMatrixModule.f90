@@ -21,7 +21,7 @@ MODULE DistributedSparseMatrixModule
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
-       & TransposeSparseMatrix, ComposeSparseMatrixColumns, PrintSparseMatrix, &
+       & TransposeSparseMatrix, ComposeSparseMatrix, PrintSparseMatrix, &
        & MatrixToTripletList, SplitSparseMatrix
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
@@ -1312,26 +1312,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(SparseMatrix_t), INTENT(INOUT) :: merged_matrix
-    !! Local Data
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: rows_of_merged
-    TYPE(SparseMatrix_t) :: tempmat
-    INTEGER :: row_counter
 
-    ALLOCATE(rows_of_merged(number_of_blocks_rows))
+    CALL ComposeSparseMatrix(this%local_data, number_of_blocks_rows, &
+         & number_of_blocks_columns, merged_matrix)
 
-    DO row_counter = 1, number_of_blocks_rows
-       CALL ComposeSparseMatrixColumns(this%local_data(:,row_counter), tempmat)
-       CALL TransposeSparseMatrix(tempmat,rows_of_merged(row_counter))
-    END DO
-
-    CALL ComposeSparseMatrixColumns(rows_of_merged,tempmat)
-    CALL TransposeSparseMatrix(tempmat,merged_matrix)
-
-    !! Cleanup
-    CALL DestructSparseMatrix(tempmat)
-    DO row_counter=1,number_of_blocks_rows
-       CALL DestructSparseMatrix(rows_of_merged(row_counter))
-    END DO
-    DEALLOCATE(rows_of_merged)
   END SUBROUTINE MergeLocalBlocks
 END MODULE DistributedSparseMatrixModule

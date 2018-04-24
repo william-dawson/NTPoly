@@ -36,6 +36,7 @@ MODULE SparseMatrixModule
   !! Routines for splitting and composing
   PUBLIC :: SplitSparseMatrix
   PUBLIC :: SplitSparseMatrixColumns
+  PUBLIC :: ComposeSparseMatrix
   PUBLIC :: ComposeSparseMatrixColumns
   !! ETC
   PUBLIC :: TransposeSparseMatrix
@@ -332,6 +333,42 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(sorted_triplet_list)
   END SUBROUTINE TransposeSparseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Create a big matrix from an array of matrices by putting them one next
+  !! to another.
+  !! @param[in] mat_array 2d array of matrices to compose.
+  !! @param[in] block_rows the number of rows of the array of blocks.
+  !! @param[in] block_columns the number of columns of the array of blocks.
+  !! @param[out] out_matrix the composed matrix.
+  PURE SUBROUTINE ComposeSparseMatrix(mat_array, block_rows, block_columns, &
+       & out_matrix)
+    !! Parameters
+    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
+         & mat_array
+    INTEGER, INTENT(IN) :: block_rows, block_columns
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
+    !! Local Data
+    TYPE(SparseMatrix_t), DIMENSION(block_rows) :: rows_of_merged
+    TYPE(SparseMatrix_t) :: Temp
+    INTEGER :: row_counter
+
+    !! First compose the rows
+    DO row_counter = 1, block_rows
+       CALL ComposeSparseMatrixColumns(mat_array(:,row_counter), Temp)
+       CALL TransposeSparseMatrix(Temp, rows_of_merged(row_counter))
+    END DO
+
+    !! Next compose the columns
+    CALL ComposeSparseMatrixColumns(rows_of_merged, Temp)
+    CALL TransposeSparseMatrix(Temp, out_matrix)
+
+    !! Cleanup
+    CALL DestructSparseMatrix(Temp)
+    DO row_counter=1, block_rows
+       CALL DestructSparseMatrix(rows_of_merged(row_counter))
+    END DO
+
+  END SUBROUTINE ComposeSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
   !! the first matrix are followed by the columns of the matrices in the list.
