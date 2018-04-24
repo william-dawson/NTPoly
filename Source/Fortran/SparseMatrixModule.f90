@@ -33,10 +33,11 @@ MODULE SparseMatrixModule
   PUBLIC :: GetColumns
   PUBLIC :: ExtractRow
   PUBLIC :: ExtractColumn
-  !! Helper routines
+  !! Routines for splitting and composing
+  PUBLIC :: SplitSparseMatrix
   PUBLIC :: SplitSparseMatrixColumns
-  PUBLIC :: SplitSparseMatrixColumnsCustom
   PUBLIC :: ComposeSparseMatrixColumns
+  !! ETC
   PUBLIC :: TransposeSparseMatrix
   PUBLIC :: PrintSparseMatrix
   PUBLIC :: MatrixToTripletList
@@ -387,51 +388,80 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ComposeSparseMatrixColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Take a matrix, and split into into small blocks.
-  !! @param[in] this matrix to perform this operation on.
-  !! @param[in] num_blocks number of blocks to split into.
-  !! @param[out] split_list 1D array of blocks.
-  !! @param[out] block_offsets_out the offsets used for splitting.
-  PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, split_list, &
-       & block_offsets_out)
+  !> Split a sparse matrix into an array of sparse matrices.
+  !! @param[in] this the matrix to split.
+  !! @param[in] block_rows number of rows to split the matrix into.
+  !! @param[in] block_columns number of columns to split the matrix into.
+  !! @param[out] split_array a COLUMNxROW array for the output to go into.
+  PURE SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
+       & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: this
-    INTEGER, INTENT(IN) :: num_blocks
-    TYPE(SparseMatrix_t), DIMENSION(num_blocks), INTENT(OUT) :: split_list
-    INTEGER, DIMENSION(num_blocks+1), INTENT(OUT), OPTIONAL :: block_offsets_out
+    INTEGER, INTENT(IN) :: block_rows, block_columns
+    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), &
+         & INTENT(INOUT) :: split_array
+    INTEGER, DIMENSION(block_rows), INTENT(IN), OPTIONAL :: block_size_row_in
+    INTEGER, DIMENSION(block_columns), INTENT(IN), OPTIONAL :: &
+         & block_size_column_in
     !! Local Data
-    INTEGER, DIMENSION(num_blocks) :: block_sizes
-    INTEGER, DIMENSION(num_blocks+1) :: block_offsets
-    INTEGER :: split_divisor
+    INTEGER, DIMENSION(block_rows) :: block_size_row
+    INTEGER, DIMENSION(block_columns) :: block_size_column
+    !! Temporary Variables
+    TYPE(SparseMatrix_t), DIMENSION(block_columns) :: column_split
+    TYPE(SparseMatrix_t), DIMENSION(block_rows) :: row_split
+    TYPE(SparseMatrix_t) :: Temp
+    INTEGER :: divisor_row, divisor_column
+    INTEGER :: II, JJ
 
-    !! Handle trivial case
-    IF (num_blocks .EQ. 1) THEN
-       CALL CopySparseMatrix(this,split_list(1))
-       block_offsets(1) = 1
-       block_offsets(2) = this%columns+1
+    !! Calculate the split sizes
+    IF (PRESENT(block_size_row_in)) THEN
+       block_size_row = block_size_row_in
     ELSE
-       !! Compute the sizes of each block
-       split_divisor = this%columns/num_blocks
-       block_sizes = split_divisor
-       !! Handle an uneven split
-       block_sizes(num_blocks) = this%columns - split_divisor*(num_blocks-1)
+       divisor_row = this%rows/block_rows
+       block_size_row = divisor_row
+       block_size_row(block_rows) = this%rows - divisor_row*(block_rows-1)
+    END IF
+    IF (PRESENT(block_size_column_in)) THEN
+       block_size_column = block_size_column_in
+    ELSE
+       divisor_column = this%columns/block_columns
+       block_size_column = divisor_column
+       block_size_column(block_columns) = this%columns - &
+            & divisor_column*(block_columns-1)
+    END IF
 
-       CALL SplitSparseMatrixColumnsCustom(this, num_blocks, block_sizes, &
-            & split_list)
-    END IF
-    IF (PRESENT(block_offsets_out)) THEN
-       block_offsets_out = block_offsets
-    END IF
-  END SUBROUTINE SplitSparseMatrixColumns
+    !! First split by columns which is easy with the CSR format
+    CALL SplitSparseMatrixColumns(this, block_columns, block_size_column, &
+         & column_split)
+
+    !! Now Split By Rows
+    DO JJ = 1, block_columns
+       CALL TransposeSparseMatrix(column_split(JJ), Temp)
+       CALL SplitSparseMatrixColumns(Temp, block_rows, block_size_row, &
+            & row_split)
+       !! Copy into output array
+       DO II = 1, block_rows
+          CALL TransposeSparseMatrix(row_split(II), split_array(JJ,II))
+       END DO
+    END DO
+
+    !! Cleanup
+    CALL DestructSparseMatrix(Temp)
+    DO II = 1, block_rows
+       CALL DestructSparseMatrix(row_split(II))
+    END DO
+    DO II = 1, block_columns
+       CALL DestructSparseMatrix(column_split(II))
+    END DO
+
+  END SUBROUTINE SplitSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Take a matrix, and split into into small blocks based on the specified
-  !! offsets. This is different than SplitSparseMatrixColumns in that for
-  !! this function you can specify your own block sizes, whereas the other
-  !! routine tries to evenly split the matrix.
+  !> Split a matrix into into small blocks based on the specified offsets.
   !! @param[in] this matrix to perform this operation on.
+  !! @param[in] num_blocks number of blocks to split into
   !! @param[out] block_offsets the offsets used for splitting.
   !! @param[out] split_list 1D array of blocks.
-  PURE SUBROUTINE SplitSparseMatrixColumnsCustom(this, num_blocks, block_sizes,&
+  PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, block_sizes, &
        & split_list)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: this
@@ -478,7 +508,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & this%values(linner_offset:linner_offset+total_values-1)
        END IF
     END DO
-  END SUBROUTINE SplitSparseMatrixColumnsCustom
+  END SUBROUTINE SplitSparseMatrixColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list from a matrix.
   !! @param[in] this the matrix to construct the triplet list from.
