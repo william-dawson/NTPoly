@@ -21,9 +21,8 @@ MODULE DistributedSparseMatrixModule
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
-       & TransposeSparseMatrix, SplitSparseMatrixColumns, &
-       & ComposeSparseMatrixColumns, PrintSparseMatrix, &
-       & MatrixToTripletList
+       & TransposeSparseMatrix, ComposeSparseMatrixColumns, PrintSparseMatrix, &
+       & MatrixToTripletList, SplitSparseMatrix
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
@@ -778,7 +777,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
     !! Local Data
     TYPE(SparseMatrix_t) :: merged_local_data
-    INTEGER :: counter
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
@@ -1301,39 +1299,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(SparseMatrix_t), INTENT(IN) :: matrix_to_split
-    !! Local Data
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: column_split
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: row_split
-    TYPE(SparseMatrix_t) :: tempmat
-    INTEGER :: column_counter, row_counter
 
-    !! First Split By Columns
-    ALLOCATE(column_split(number_of_blocks_columns))
-    ALLOCATE(row_split(number_of_blocks_rows))
-    CALL SplitSparseMatrixColumns(matrix_to_split, &
-         & number_of_blocks_columns, column_split)
+    CALL SplitSparseMatrix(matrix_to_split, number_of_blocks_rows, &
+         & number_of_blocks_columns, this%local_data)
 
-    !! Now Split By Rows
-    DO column_counter=1,number_of_blocks_columns
-       CALL TransposeSparseMatrix(column_split(column_counter),tempmat)
-       CALL SplitSparseMatrixColumns(tempmat, number_of_blocks_rows, &
-            & row_split)
-       !! And put back in the right place
-       DO row_counter=1,number_of_blocks_rows
-          CALL TransposeSparseMatrix(row_split(row_counter), &
-               & this%local_data(column_counter,row_counter))
-       END DO
-    END DO
-
-    CALL DestructSparseMatrix(tempmat)
-    DO column_counter=1,number_of_blocks_columns
-       CALL DestructSparseMatrix(column_split(column_counter))
-    END DO
-    DO row_counter=1,number_of_blocks_rows
-       CALL DestructSparseMatrix(row_split(row_counter))
-    END DO
-    DEALLOCATE(row_split)
-    DEALLOCATE(column_split)
   END SUBROUTINE SplitToLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Merge together the local matrix blocks into one big matrix.
