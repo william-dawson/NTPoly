@@ -19,13 +19,17 @@ MODULE EigenSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: DistributedEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! TYPE, PRIVATE :: JacobiHelper_t
-  !    INTEGER, DIMENSION(4) :: send_dest_array
-  !    INTEGER, DIMENSION(4) :: recv_src_array
-  !    INTEGER, DIMENSION(4) :: send_tag_array
-  !    INTEGER, DIMENSION(4) :: recv_tag_array
-  ! END TYPE JacobiHelper_t
-  TYPE, PRIVATE :: JacobiBlocking_t
+  TYPE, PRIVATE :: JacobiData_t
+     !! Process Information
+     !> Total processors involved in the calculation
+     INTEGER :: num_processes
+     !> Rank within the 1D process communicator.
+     INTEGER :: rank
+     !> A communicator for performing the calculation on.
+     INTEGER :: communicator
+     !! Blocking Information
+     INTEGER :: block_start
+     INTEGER :: block_end
      INTEGER :: block_dimension
      INTEGER :: block_rows
      INTEGER :: block_columns
@@ -33,7 +37,22 @@ MODULE EigenSolversModule
      INTEGER :: columns
      INTEGER :: start_row
      INTEGER :: start_column
-  END TYPE JacobiBlocking_t
+     !! For Inter Process Swaps
+     INTEGER :: send_left_partner
+     INTEGER :: send_right_partner
+     INTEGER :: send_left_tag
+     INTEGER :: send_right_tag
+     INTEGER :: recv_left_partner
+     INTEGER :: recv_right_partner
+     INTEGER :: recv_left_tag
+     INTEGER :: recv_right_tag
+     !! For Keeping Track of Sweeps
+     INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_row
+     INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_column
+     INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
+     INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
+     INTEGER, DIMENSION(:), ALLOCATABLE :: music_swap
+  END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DistributedEigenDecomposition(this, eigenvectors, &
        & solver_parameters_in)
@@ -45,9 +64,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Blocking
-    TYPE(JacobiBlocking_t) :: block_info
     TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2) :: ABlocks
     TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2) :: VBlocks
+    TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
     REAL(NTREAL) :: norm_value
     INTEGER :: counter, iteration
@@ -59,8 +78,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = IterativeSolverParameters_t()
     END IF
 
-    !! Block Data
-    CALL ComputeBlocking(block_info, this%actual_matrix_dimension)
+    !! Setup Communication
+    CALL InitializeJacobi(jacobi_data, this)
 
     !! Initialize the eigenvectors to the identity.
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
@@ -68,8 +87,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillDistributedIdentity(eigenvectors)
 
     !! Extract to local dense blocks
-    CALL GetLocalBlocks(this, block_info, ABlocks)
-    CALL GetLocalBlocks(eigenvectors, block_info, VBlocks)
+    CALL GetLocalBlocks(this, jacobi_data, ABlocks)
+    CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
 
     ! DO iteration = 1, solver_parameters%max_iterations
     DO iteration = 1, 2
@@ -81,7 +100,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Loop Over One Jacobi Sweep
-       CALL JacobiSweep(ABlocks, VBlocks, solver_parameters%threshold)
+       CALL JacobiSweep(ABlocks, VBlocks, jacobi_data, &
+            & solver_parameters%threshold)
 
        !! Compute Norm Value
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
@@ -90,39 +110,119 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Convert to global matrix
-    CALL FillGlobalMatrix(VBlocks, block_info, eigenvectors)
+    CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
 
     !! Cleanup
-    DO counter = 1, slice_size*2
+    DO counter = 1, jacobi_data%num_processes*2
        CALL DestructSparseMatrix(ABlocks(1,counter))
        CALL DestructSparseMatrix(ABlocks(2,counter))
        CALL DestructSparseMatrix(VBlocks(1,counter))
        CALL DestructSparseMatrix(VBlocks(2,counter))
     END DO
+    CALL CleanupJacobi(jacobi_data)
 
   END SUBROUTINE DistributedEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ComputeBlocking(blockinfo, matrix_dimension)
+  SUBROUTINE InitializeJacobi(jdata, matrix)
     !! Parameters
-    TYPE(JacobiBlocking_t), INTENT(INOUT) :: blockinfo
+    TYPE(JacobiData_t), INTENT(OUT) :: jdata
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
+    !! Local Variables
     INTEGER :: matrix_dimension
+    INTEGER :: iteration
+    INTEGER :: ierr
 
-    !! Fill
-    blockinfo%block_rows = slice_size*2
-    blockinfo%block_columns = 2
-    blockinfo%block_dimension = &
-         & CEILING(matrix_dimension/(1.0*blockinfo%block_rows))
-    blockinfo%rows = blockinfo%block_dimension * blockinfo%block_rows
-    blockinfo%columns = blockinfo%block_dimension * blockinfo%block_columns
-    blockinfo%start_column = blockinfo%columns * within_slice_rank + 1
-    blockinfo%start_row = 1
+    !! Copy The Process Grid Information
+    jdata%num_processes = slice_size
+    jdata%rank = within_slice_rank
+    CALL MPI_Comm_dup(within_slice_comm, jdata%communicator, ierr)
+    jdata%block_start = (jdata%rank) * 2 + 1
+    jdata%block_end = jdata%block_start + 1
 
-  END SUBROUTINE ComputeBlocking
+    !! Initialize the Music Arrays
+    ALLOCATE(jdata%initial_music_row(jdata%num_processes))
+    ALLOCATE(jdata%initial_music_column(jdata%num_processes))
+    ALLOCATE(jdata%music_row(jdata%num_processes))
+    ALLOCATE(jdata%music_column(jdata%num_processes))
+    DO iteration = 1, slice_size
+       jdata%music_row(iteration) = (iteration-1)*2 + 1
+       jdata%initial_music_row = jdata%music_row
+       jdata%music_column(iteration) = (iteration-1)*2 + 2
+       jdata%initial_music_column = jdata%music_column
+    END DO
+
+    !! Determine swap partners for music by doing one rotation, then undoing
+    CALL RotateMusic(jdata)
+    ALLOCATE(jdata%music_swap(2*jdata%num_processes))
+    DO iteration = 1, jdata%num_processes
+       jdata%music_swap(2*iteration-1) = jdata%music_row(iteration)
+       jdata%music_swap(2*iteration) = jdata%music_column(iteration)
+    END DO
+    jdata%music_row = jdata%initial_music_row
+    jdata%music_column = jdata%initial_music_column
+
+    !! Determine Send Partners
+    jdata%send_left_partner = jdata%rank + 1
+    jdata%send_left_tag = 1
+    IF (jdata%rank .EQ. 0) THEN
+       jdata%send_left_partner = 0
+    ELSE IF (jdata%rank .EQ. jdata%num_processes - 1) THEN
+       jdata%send_left_partner = slice_size - 1
+       jdata%send_left_tag = 2
+    END IF
+    jdata%send_right_partner = jdata%rank - 1
+    jdata%send_right_tag = 2
+    IF (jdata%num_processes .EQ. 1) THEN
+       jdata%send_right_partner = 0
+       jdata%send_right_tag = 2
+    ELSE IF (jdata%rank .EQ. 0) THEN
+       jdata%send_right_partner = jdata%rank + 1
+       jdata%send_right_tag = 1
+    END IF
+
+    !! Determine Recv Partners
+    jdata%recv_left_partner = jdata%rank - 1
+    jdata%recv_left_tag = 1
+    IF (jdata%rank .EQ. 0) THEN
+       jdata%recv_left_partner = 0
+    END IF
+    jdata%recv_right_partner = jdata%rank + 1
+    jdata%recv_right_tag = 2
+    IF (jdata%rank .EQ. jdata%num_processes - 1) THEN
+       jdata%recv_right_partner = jdata%num_processes - 1
+    END IF
+
+    !! Compute the Blocking
+    matrix_dimension = matrix%actual_matrix_dimension
+    jdata%block_rows = jdata%num_processes*2
+    jdata%block_columns = 2
+    jdata%block_dimension = CEILING(matrix_dimension/(1.0*jdata%block_rows))
+    jdata%rows = jdata%block_dimension * jdata%block_rows
+    jdata%columns = jdata%block_dimension * jdata%block_columns
+    jdata%start_column = jdata%columns * within_slice_rank + 1
+    jdata%start_row = 1
+
+  END SUBROUTINE InitializeJacobi
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE GetLocalBlocks(distributed, blockinfo, local)
+  SUBROUTINE CleanupJacobi(jacobi_data)
+    !! Parameters
+    TYPE(JacobiData_t), INTENT(INOUT) :: jacobi_data
+    !! Local Variables
+    INTEGER :: ierr
+
+    CALL MPI_Comm_free(jacobi_data%communicator, ierr)
+
+    DEALLOCATE(jacobi_data%initial_music_row)
+    DEALLOCATE(jacobi_data%initial_music_column)
+    DEALLOCATE(jacobi_data%music_row)
+    DEALLOCATE(jacobi_data%music_column)
+
+  END SUBROUTINE CleanupJacobi
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE GetLocalBlocks(distributed, jdata, local)
     !! Parameters
     TYPE(DistributedSparseMatrix_t) :: distributed
-    TYPE(JacobiBlocking_t), INTENT(INOUT) :: blockinfo
+    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     TYPE(SparseMatrix_t), DIMENSION(:,:) :: local
     !! Local Variables
     TYPE(TripletList_t) :: local_triplets
@@ -135,28 +235,28 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Get The Local Triplets
     CALL GetTripletList(distributed, local_triplets)
-    DO counter = 1, slice_size
+    DO counter = 1, jdata%num_processes
        CALL ConstructTripletList(send_triplets(counter))
     END DO
     DO counter = 1, local_triplets%CurrentSize
        CALL GetTripletAt(local_triplets, counter, temp_triplet)
-       insert = (temp_triplet%index_column - 1) / blockinfo%columns + 1
+       insert = (temp_triplet%index_column - 1) / jdata%columns + 1
        CALL AppendToTripletList(send_triplets(insert), temp_triplet)
     END DO
     CALL RedistributeTripletLists(send_triplets, within_slice_comm, &
          & received_triplets)
-    CALL ShiftTripletList(received_triplets, 0, -(blockinfo%start_column - 1))
-    CALL SortTripletList(received_triplets, blockinfo%columns, sorted_triplets)
-    CALL ConstructFromTripletList(local_mat, sorted_triplets, &
-         & blockinfo%rows, blockinfo%columns)
+    CALL ShiftTripletList(received_triplets, 0, -(jdata%start_column - 1))
+    CALL SortTripletList(received_triplets, jdata%columns, sorted_triplets)
+    CALL ConstructFromTripletList(local_mat, sorted_triplets, jdata%rows, &
+         & jdata%columns)
 
     !! Split To Blocks
-    CALL SplitSparseMatrix(local_mat, blockinfo%block_rows, &
-         & blockinfo%block_columns, local)
+    CALL SplitSparseMatrix(local_mat, jdata%block_rows, jdata%block_columns, &
+         & local)
 
     !! Cleanup
     CALL DestructTripletList(local_triplets)
-    DO counter = 1, slice_size
+    DO counter = 1, jdata%num_processes
        CALL DestructTripletList(send_triplets(counter))
     END DO
     CALL DestructTripletList(received_triplets)
@@ -164,21 +264,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSparseMatrix(local_mat)
   END SUBROUTINE GetLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE FillGlobalMatrix(local, blockinfo, global)
+  SUBROUTINE FillGlobalMatrix(local, jdata, global)
     !! Parameters
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(IN) :: local
-    TYPE(JacobiBlocking_t), INTENT(IN) :: blockinfo
+    TYPE(JacobiData_t), INTENT(IN) :: jdata
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: global
     !! Local Variables
     TYPE(SparseMatrix_t) :: TempMat
     TYPE(TripletList_t) :: triplet_list
 
     !! Get A Global Triplet List and Fill
-    CALL ComposeSparseMatrix(local, blockinfo%block_rows, &
-         & blockinfo%block_columns, TempMat)
-    CALL MatrixToTripletList(TempMat,triplet_list)
-    CALL ShiftTripletList(triplet_list, blockinfo%start_row - 1, &
-         & blockinfo%start_column - 1)
+    CALL ComposeSparseMatrix(local, jdata%block_rows, jdata%block_columns, &
+         & TempMat)
+    CALL MatrixToTripletList(TempMat, triplet_list)
+    CALL ShiftTripletList(triplet_list, jdata%start_row - 1, &
+         & jdata%start_column - 1)
 
     CALL FillFromTripletList(global, triplet_list)
 
@@ -188,641 +288,342 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE FillGlobalMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE JacobiSweep(ABlocks, VBlocks, threshold)
+  SUBROUTINE JacobiSweep(ABlocks, VBlocks, jdata, threshold)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2), INTENT(INOUT) :: ABlocks
-    TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2), INTENT(INOUT) :: VBlocks
+    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: VBlocks
+    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
-    TYPE(SparseMatrix_t), DIMENSION(2,2) :: TargetBlockA
     TYPE(SparseMatrix_t) :: TargetA
-    TYPE(SparseMatrix_t) :: TargetV
-    TYPE(SparseMatrix_t), DIMENSION(2,2) :: TargetBlockV
-    TYPE(SparseMatrix_t), DIMENSION(2,2) :: TargetBlockVT
+    TYPE(SparseMatrix_t) :: TargetV, TargetVT
     INTEGER :: iteration
-    !! For Keeping Track of Rotation
-    INTEGER, DIMENSION(slice_size) :: music_row
-    INTEGER, DIMENSION(slice_size) :: music_column
-
-    !! Initialize MUSIC arrays to keep track of rotations
-    DO iteration = 1, slice_size
-       music_row(iteration) = (iteration-1)*2 + 1
-       music_column(iteration) = (iteration-1)*2 + 2
-    END DO
 
     !! Loop Over Processors
-    DO iteration = 1, slice_size
+    DO iteration = 1, jdata%num_processes
        !! Construct A Block To Diagonalize
-       CALL CopySparseMatrix(ABlocks(1,music_row(within_slice_rank+1)), &
-            & TargetBlockA(1,1))
-       CALL CopySparseMatrix(ABlocks(1,music_column(within_slice_rank+1)), &
-            & TargetBlockA(1,2))
-       CALL CopySparseMatrix(ABlocks(2,music_row(within_slice_rank+1)), &
-            & TargetBlockA(2,1))
-       CALL CopySparseMatrix(ABlocks(2,music_column(within_slice_rank+1)), &
-            & TargetBlockA(2,2))
-       CALL ComposeSparseMatrix(ABlocks,2,2,TargetA)
+       CALL ComposeSparseMatrix(ABlocks(:,jdata%block_start:jdata%block_end), &
+            & 2, 2, TargetA)
 
        !! Diagonalize
        CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
-       CALL SplitSparseMatrix(TargetV, 2, 2, TargetBlockV)
 
        !! Rotation Along Row
-       CALL TransposeSparseMatrix(TargetBlockV(1,1),TargetBlockVT(1,1))
-       CALL TransposeSparseMatrix(TargetBlockV(1,2),TargetBlockVT(1,2))
-       CALL TransposeSparseMatrix(TargetBlockV(2,1),TargetBlockVT(2,1))
-       CALL TransposeSparseMatrix(TargetBlockV(2,2),TargetBlockVT(2,2))
+       CALL TransposeSparseMatrix(TargetV, TargetVT)
+       CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
 
-       !! Rotation Along Columns
-
+       ! !! Rotation Along Columns
+       CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
+       CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
        !! Swap Blocks
-       CALL SwapBlocks(ABlocks)
+
+       IF (global_rank .EQ. 0) THEN
+          WRITE(*,*) "RANK 0"
+          CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
+          CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
+          CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
+          CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
+          WRITE(*,*)
+       END IF
+
+       CALL SwapBlocks(ABlocks, jdata)
+
+       IF (global_rank .EQ. 0) THEN
+          WRITE(*,*) "RANK 0"
+          CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
+          CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
+          CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
+          CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
+          WRITE(*,*)
+       END IF
 
        !! Rotate Music Blocks
-       CALL RotateMusic(music_row, music_column, slice_size)
+       CALL RotateMusic(jdata)
     END DO
+
+    CALL MPI_Barrier(global_comm, grid_error)
+    ! IF (global_rank .EQ. 1) THEN
+    !    WRITE(*,*) "RANK 1"
+    !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
+    !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
+    !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
+    !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
+    !    WRITE(*,*)
+    ! END IF
+    ! CALL MPI_Barrier(global_comm, grid_error)
 
   END SUBROUTINE JacobiSweep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE RotateMusic(music_row, music_column, num_pairs)
+  SUBROUTINE RotateMusic(jdata)
     !! Parameters
-    INTEGER, DIMENSION(num_pairs), INTENT(INOUT) :: music_row
-    INTEGER, DIMENSION(num_pairs), INTENT(INOUT) :: music_column
-    INTEGER, INTENT(IN) :: num_pairs
+    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     !! Copies of Music
-    INTEGER, DIMENSION(num_pairs) :: music_row_orig
-    INTEGER, DIMENSION(num_pairs) :: music_column_orig
+    INTEGER, DIMENSION(jdata%num_processes) :: music_row_orig
+    INTEGER, DIMENSION(jdata%num_processes) :: music_column_orig
     !! Local Variables
     INTEGER :: counter
+    INTEGER :: num_pairs
+
+    !! For convenience
+    num_pairs = jdata%num_processes
 
     !! Make Copies
-    music_row_orig = music_row
-    music_column_orig = music_column
+    music_row_orig = jdata%music_row
+    music_column_orig = jdata%music_column
 
     !! Rotate Bottom Half
-    music_column(num_pairs) = music_row_orig(num_pairs)
+    jdata%music_column(num_pairs) = music_row_orig(num_pairs)
     DO counter = 1, num_pairs - 1
-       music_column(counter) = music_column_orig(counter+1)
+       jdata%music_column(counter) = music_column_orig(counter+1)
     END DO
 
     !! Rotate Top Half
     IF(num_pairs .GT. 1) THEN
-       music_row(2) = music_column_orig(1)
+       jdata%music_row(2) = music_column_orig(1)
     END IF
     DO counter = 3, num_pairs
-       music_row(counter) = music_row_orig(counter-1)
+       jdata%music_row(counter) = music_row_orig(counter-1)
     END DO
 
   END SUBROUTINE RotateMusic
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SwapBlocks(ABlocks)
+  SUBROUTINE SwapBlocks(ABlocks, jdata)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2), INTENT(INOUT) :: ABlocks
+    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     !! Local Matrices
     TYPE(SparseMatrix_t) :: SendLeft, RecvLeft
     TYPE(SparseMatrix_t) :: SendRight, RecvRight
-    INTEGER :: left_partner, right_partner
-    INTEGER :: left_tag, right_tag
+    TYPE(SparseMatrix_t), DIMENSION(jdata%block_columns,jdata%block_rows) :: &
+         & TempABlocks
     !! For Sending Data
+    TYPE(SendRecvHelper_t) :: send_left_helper
+    TYPE(SendRecvHelper_t) :: send_right_helper
+    TYPE(SendRecvHelper_t) :: recv_left_helper
+    TYPE(SendRecvHelper_t) :: recv_right_helper
+    !! Temporary Variables
+    INTEGER :: completed
+    INTEGER :: send_left_stage
+    INTEGER :: recv_left_stage
+    INTEGER :: send_right_stage
+    INTEGER :: recv_right_stage
+    INTEGER, PARAMETER :: total_to_complete = 4
+    INTEGER :: counter
+    integer :: index
 
-    !! Determine Swap Partners
-    left_partner = within_slice_rank + 1
-    left_tag = 1
-    IF (within_slice_rank .EQ. 1) THEN
-       left_partner = 1
-    ELSE IF (within_slice_rank .EQ. slice_size) THEN
-       left_partner = slice_size
-       left_tag = 2
-    END IF
-    right_partner = within_slice_rank - 1
-    right_tag = 2
-    IF (within_slice_rank .EQ. 1) THEN
-       right_partner = within_slice_rank + 1
-       right_tag = 1
-    END IF
+    !! Swap Rows
+    DO counter = 1, jdata%block_rows
+      CALL CopySparseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
+      CALL CopySparseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
+    END DO
+    DO counter = 1, jdata%block_rows
+      index = jdata%music_swap(counter)
+      CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
+      CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
+    END DO
+    DO counter = 1, jdata%block_rows
+      CALL DestructSparseMatrix(TempABlocks(1,counter))
+      CALL DestructSparseMatrix(TempABlocks(2,counter))
+    END DO
 
     !! Build matrices to swap
-    CALL ComposeSparseMatrix(ABlocks(1,:),slice_size*2,1,SendLeft)
-    CALL ComposeSparseMatrix(ABlocks(2,:),slice_size*2,1,SendRight)
+    CALL ComposeSparseMatrix(ABlocks(1,:),jdata%block_rows,1,SendLeft)
+    CALL ComposeSparseMatrix(ABlocks(2,:),jdata%block_rows,1,SendRight)
 
-    !! Perform Swaps
+    !! Perform Column Swaps
+    send_left_stage = 0
+    send_right_stage = 0
+    recv_left_stage = 0
+    recv_right_stage = 0
+
+    DO WHILE (completed .LT. total_to_complete)
+       !! Send Left Matrix
+       SELECT CASE(send_left_stage)
+       CASE(0) !! Send Sizes
+          CALL SendMatrixSizes(SendLeft, jdata%send_left_partner, &
+               & jdata%communicator, send_left_helper, &
+               & jdata%send_left_tag)
+          send_left_stage = send_left_stage + 1
+       CASE(1) !! Test Send Sizes
+          IF (TestSendRecvSizeRequest(send_left_helper)) THEN
+             CALL SendMatrixData(SendLeft, jdata%send_left_partner, &
+                  & jdata%communicator, send_left_helper, &
+                  & jdata%send_left_tag)
+             send_left_stage = send_left_stage + 1
+          END IF
+       CASE(2) !! Test Send Outer
+          IF (TestSendRecvOuterRequest(send_left_helper)) THEN
+             send_left_stage = send_left_stage + 1
+          END IF
+       CASE(3) !! Test Send Inner
+          IF (TestSendRecvInnerRequest(send_left_helper)) THEN
+             send_left_stage = send_left_stage + 1
+          END IF
+       CASE(4) !! Test Send Data
+          IF (TestSendRecvDataRequest(send_left_helper)) THEN
+             send_left_stage = send_left_stage + 1
+             completed = completed + 1
+          END IF
+       END SELECT
+       !! Receive Left Matrix
+       SELECT CASE(recv_left_stage)
+       CASE(0) !! Receive Sizes
+          CALL RecvMatrixSizes(RecvLeft, jdata%recv_left_partner, &
+               & jdata%communicator, recv_left_helper, &
+               & jdata%recv_left_tag)
+          recv_left_stage = recv_left_stage + 1
+       CASE(1) !! Test Receive Sizes
+          IF (TestSendRecvSizeRequest(recv_left_helper)) THEN
+             CALL RecvMatrixData(RecvLeft, jdata%recv_left_partner, &
+                  & jdata%communicator, recv_left_helper, &
+                  & jdata%recv_left_tag)
+             recv_left_stage = recv_left_stage + 1
+          END IF
+       CASE(2) !! Test Receive Outer
+          IF (TestSendRecvOuterRequest(recv_left_helper)) THEN
+             recv_left_stage = recv_left_stage + 1
+          END IF
+       CASE(3) !! Test Receive Inner
+          IF (TestSendRecvInnerRequest(recv_left_helper)) THEN
+             recv_left_stage = recv_left_stage + 1
+          END IF
+       CASE(4) !! Test Receive Data
+          IF (TestSendRecvDataRequest(recv_left_helper)) THEN
+             recv_left_stage = recv_left_stage + 1
+             completed = completed + 1
+          END IF
+       END SELECT
+       !! Send Right Matrix
+       SELECT CASE(send_right_stage)
+       CASE(0) !! Send Sizes
+          CALL SendMatrixSizes(SendRight, jdata%send_right_partner, &
+               & jdata%communicator, send_right_helper, &
+               & jdata%send_right_tag)
+          send_right_stage = send_right_stage + 1
+       CASE(1) !! Test Send Sizes
+          IF (TestSendRecvSizeRequest(send_right_helper)) THEN
+             CALL SendMatrixData(SendRight, jdata%send_right_partner, &
+                  & jdata%communicator, send_right_helper, &
+                  & jdata%send_right_tag)
+             send_right_stage = send_right_stage + 1
+          END IF
+       CASE(2) !! Test Send Outer
+          IF (TestSendRecvOuterRequest(send_right_helper)) THEN
+             send_right_stage = send_right_stage + 1
+          END IF
+       CASE(3) !! Test Send Inner
+          IF (TestSendRecvInnerRequest(send_right_helper)) THEN
+             send_right_stage = send_right_stage + 1
+          END IF
+       CASE(4) !! Test Send Data
+          IF (TestSendRecvDataRequest(send_right_helper)) THEN
+             send_right_stage = send_right_stage + 1
+             completed = completed + 1
+          END IF
+       END SELECT
+       !! Receive Right Matrix
+       SELECT CASE(recv_right_stage)
+       CASE(0) !! Receive Sizes
+          CALL RecvMatrixSizes(RecvRight, jdata%recv_right_partner, &
+               & jdata%communicator, recv_right_helper, &
+               & jdata%recv_right_tag)
+          recv_right_stage = recv_right_stage + 1
+       CASE(1) !! Test Receive Sizes
+          IF (TestSendRecvSizeRequest(recv_right_helper)) THEN
+             CALL RecvMatrixData(RecvRight, jdata%recv_right_partner, &
+                  & jdata%communicator, recv_right_helper, &
+                  & jdata%recv_right_tag)
+             recv_right_stage = recv_right_stage + 1
+          END IF
+       CASE(2) !! Test Receive Outer
+          IF (TestSendRecvOuterRequest(recv_right_helper)) THEN
+             recv_right_stage = recv_right_stage + 1
+          END IF
+       CASE(3) !! Test Receive Inner
+          IF (TestSendRecvInnerRequest(recv_right_helper)) THEN
+             recv_right_stage = recv_right_stage + 1
+          END IF
+       CASE(4) !! Test Receive Data
+          IF (TestSendRecvDataRequest(recv_right_helper)) THEN
+             recv_right_stage = recv_right_stage + 1
+             completed = completed + 1
+          END IF
+       END SELECT
+    END DO
 
   END SUBROUTINE SwapBlocks
-  ! !> Compute the eigenvectors of a matrix using Jacobi's method.
-  ! !! @param[in] this the matrix to compute the eigenvectors of.
-  ! !! @param[out] eigenvectors the eigenvectors of the matrix
-  ! !! @param[inout] solver_parameters_in solver parameters (optional).
-  ! SUBROUTINE DistributedEigenDecomposition(this, eigenvectors, &
-  !      & solver_parameters_in)
-  !   !! Parameters
-  !   TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
-  !   TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-  !   TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
-  !        & solver_parameters_in
-  !   !! Handling Optional Parameters
-  !   TYPE(IterativeSolverParameters_t) :: solver_parameters
-  !   !! Local Variables
-  !   TYPE(DistributedSparseMatrix_t) :: last_a, full_a
-  !   TYPE(SparseMatrix_t) :: local_a, local_v
-  !   TYPE(SparseMatrix_t) :: local_p_l, local_p_m
-  !   TYPE(SparseMatrix_t) :: temp, temp2
-  !   TYPE(JacobiHelper_t) :: helper
-  !   !! Temporary Variables
-  !   INTEGER :: iteration
-  !   INTEGER :: block_counter
-  !   INTEGER :: root_row, root_column
-  !   INTEGER :: num_blocks
-  !   REAL(NTREAL) :: norm_value
-  !   INTEGER :: II
-  !
-  !   !! Optional Parameters
-  !   IF (PRESENT(solver_parameters_in)) THEN
-  !      solver_parameters = solver_parameters_in
-  !   ELSE
-  !      solver_parameters = IterativeSolverParameters_t()
-  !   END IF
-  !
-  !   CALL PrintDistributedSparseMatrix(this)
-  !
-  !   !! Setup
-  !   CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
-  !        & this%actual_matrix_dimension)
-  !   CALL ConstructEmptyDistributedSparseMatrix(last_a, &
-  !        & this%actual_matrix_dimension)
-  !   CALL ConstructEmptyDistributedSparseMatrix(full_a, &
-  !        & this%actual_matrix_dimension)
-  !   CALL FillDistributedIdentity(eigenvectors)
-  !   CALL GetLocalMatrix(eigenvectors, local_v)
-  !   CALL GetLocalMatrix(this, local_a)
-  !   root_row = my_row
-  !   root_column = my_column
-  !
-  !   !! Determine exchange partners
-  !   num_blocks = num_process_rows*2
-  !   CALL ComputeSendPairs(helper, num_blocks)
-  !
-  !   ! CALL MPI_Barrier(global_comm, grid_error)
-  !   ! DO II = 1, slice_size
-  !   !    IF (within_slice_rank + 1 .EQ. II) THEN
-  !   !       WRITE(*,*) "Rank", II, "Start"
-  !   !       CALL PrintSparseMatrix(local_a)
-  !   !    END IF
-  !   !    CALL MPI_Barrier(global_comm, grid_error)
-  !   ! END DO
-  !
-  !   !! Main Loop
-  !   ! DO iteration = 1, solver_parameters%max_iterations
-  !   DO iteration = 1, 2
-  !      IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
-  !         CALL WriteListElement(key="Round", int_value_in=iteration-1)
-  !         CALL EnterSubLog
-  !         CALL WriteListElement(key="Convergence", float_value_in=norm_value)
-  !         CALL ExitSubLog
-  !      END IF
-  !      ! DO II = 1, slice_size
-  !      !   IF (within_slice_rank + 1 .EQ. II) THEN
-  !      !     WRITE(*,*) "Rank", II, "In"
-  !      !     CALL PrintSparseMatrix(local_a)
-  !      !   END IF
-  !      !   CALL MPI_Barrier(global_comm, grid_error)
-  !      ! END DO
-  !      ! DO block_counter = 1, num_blocks
-  !      DO block_counter = 1, num_blocks - 1
-  !         !! Compute the eigenvectors of a local block
-  !         IF (my_row .EQ. my_column) THEN
-  !            CALL DenseEigenDecomposition(local_a, local_p_l, &
-  !                 & solver_parameters%threshold)
-  !            ! CALL CopySparseMatrix(local_p_l, local_p_m)
-  !         END IF
-  !
-  !         !! Broadcast P
-  !         ! CALL BroadcastMatrix(local_p_m, row_comm, root_column)
-  !         CALL BroadcastMatrix(local_p_l, row_comm, root_row)
-  !
-  !         !! Multiply Blocks
-  !         CALL TransposeSparseMatrix(local_p_l, temp)
-  !         CALL Gemm(temp, local_a, temp2, &
-  !              & threshold_in=solver_parameters%threshold)
-  !         CALL Gemm(temp2, local_p_l, local_a, &
-  !              & threshold_in=solver_parameters%threshold)
-  !         ! CALL Gemm(local_v, local_p_m, temp, &
-  !         !      & threshold_in=solver_parameters%threshold)
-  !         ! CALL CopySparseMatrix(temp, local_v)
-  !
-  !         ! CALL MPI_Barrier(global_comm, grid_error)
-  !         ! DO II = 1, slice_size
-  !         !   IF (within_slice_rank + 1 .EQ. II) THEN
-  !         !     WRITE(*,*) "Rank", II, "Exit"
-  !         !     CALL PrintSparseMatrix(local_a)
-  !         !   END IF
-  !         !   CALL MPI_Barrier(global_comm, grid_error)
-  !         ! END DO
-  !
-  !         CALL FillGlobalMatrix(local_a, full_a)
-  !         CALL PrintDistributedSparseMatrix(full_a)
-  !
-  !         !! Exchange Blocks
-  !         CALL SwapBlocks(local_a, helper)
-  !
-  !         CALL FillGlobalMatrix(local_a, full_a)
-  !         CALL PrintDistributedSparseMatrix(full_a)
-  !      END DO
-  !
-  !      !! Compute Norm Value
-  !      ! IF (norm_value .LE. solver_parameters%converge_diff) THEN
-  !      !    EXIT
-  !      ! END IF
-  !   END DO
-  !
-  !   CALL FillGlobalMatrix(local_v, eigenvectors)
-  !   ! CALL FillGlobalMatrix(local_a, full_a)
-  !   ! CALL PrintDistributedSparseMatrix(full_a)
-  !
-  !   !! Cleanup
-  !   CALL DestructSparseMatrix(temp)
-  !   CALL DestructSparseMatrix(temp2)
-  !   CALL DestructSparseMatrix(local_v)
-  !   CALL DestructSparseMatrix(local_a)
-  !   CALL DestructSparseMatrix(local_p_m)
-  !   CALL DestructSparseMatrix(local_p_l)
-  !   CALL DestructDistributedSparseMatrix(last_a)
-  !   CALL DestructDistributedSparseMatrix(full_a)
-  !
-  ! END SUBROUTINE DistributedEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! SUBROUTINE GetLocalMatrix(distributed_matrix, local_matrix)
-  !   !! Parameters
-  !   TYPE(DistributedSparseMatrix_t), INTENT(IN) :: distributed_matrix
-  !   TYPE(SparseMatrix_t), INTENT(INOUT) :: local_matrix
-  !   !! Local Variables
-  !   TYPE(TripletList_t) :: triplet_list
-  !   INTEGER :: start_row, end_row
-  !   INTEGER :: start_column, end_column
-  !   INTEGER :: rows, columns
-  !   INTEGER :: row_ratio, col_ratio
-  !   INTEGER :: II
-  !
-  !   row_ratio = (distributed_matrix%actual_matrix_dimension/num_process_rows)
-  !   col_ratio = (distributed_matrix%actual_matrix_dimension/num_process_columns)
-  !   start_row = my_row*row_ratio + 1
-  !   end_row = (my_row+1)*row_ratio
-  !   end_row = MIN(distributed_matrix%actual_matrix_dimension, end_row)
-  !   start_column = my_column*col_ratio + 1
-  !   end_column = (my_column+1)*col_ratio
-  !   end_column = MIN(distributed_matrix%actual_matrix_dimension, end_column)
-  !
-  !   rows = end_row - start_row + 1
-  !   columns = end_column - start_column + 1
-  !
-  !   CALL GetMatrixBlock(distributed_matrix, triplet_list, start_row, end_row+1, &
-  !        & start_column, end_column+1)
-  !   DO II = 1, triplet_list%CurrentSize
-  !      triplet_list%data(II)%index_row = triplet_list%data(II)%index_row &
-  !           & - start_row + 1
-  !      triplet_list%data(II)%index_column = triplet_list%data(II)%index_column &
-  !           & - start_column + 1
-  !   END DO
-  !   CALL ConstructFromTripletList(local_matrix, triplet_list, rows, columns)
-  ! END SUBROUTINE GetLocalMatrix
+  SUBROUTINE ApplyToColumns(TargetV, ABlocks, jdata, threshold)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: TargetV
+    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(JacobiData_t), INTENT(IN) :: jdata
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !! Local Variables
+    TYPE(SparseMatrix_t), DIMENSION(2,2) :: TargetVBlocks
+    !! Temporary
+    TYPE(SparseMatrix_t) :: TempMat
+    INTEGER :: counter, ind
+
+    !! Split Into Blocks
+    CALL SplitSparseMatrix(TargetV, 2, 2, TargetVBlocks)
+
+    DO counter = 1, jdata%num_processes
+       ind = (counter-1)*2 + 1
+       CALL CopySparseMatrix(ABlocks(1,ind), TempMat)
+       CALL Gemm(TempMat, TargetVBlocks(1,1), ABlocks(1,ind), &
+            & threshold_in=threshold)
+       CALL CopySparseMatrix(ABlocks(2,ind), TempMat)
+       CALL Gemm(TempMat, TargetVBlocks(2,1), ABlocks(2,ind), &
+            & threshold_in=threshold)
+       CALL CopySparseMatrix(ABlocks(1,ind+1), TempMat)
+       CALL Gemm(TempMat, TargetVBlocks(1,2), ABlocks(1,ind+1), &
+            & threshold_in=threshold)
+       CALL CopySparseMatrix(ABlocks(2,ind+1), TempMat)
+       CALL Gemm(TempMat, TargetVBlocks(2,2), ABlocks(2,ind+1), &
+            & threshold_in=threshold)
+    END DO
+
+  END SUBROUTINE ApplyToColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! PURE SUBROUTINE SplitFour(matrix, matrix_array)
-  !   !! Parameters
-  !   TYPE(SparseMatrix_t), INTENT(IN) :: matrix
-  !   TYPE(SparseMatrix_t), DIMENSION(4), INTENT(INOUT) :: matrix_array
-  !   !! Local
-  !   TYPE(SparseMatrix_t) :: temp
-  !   TYPE(SparseMatrix_t), DIMENSION(2) :: temp_rows
-  !   TYPE(SparseMatrix_t), DIMENSION(2) :: temp_columns
-  !
-  !   CALL SplitSparseMatrixColumns(matrix, 2, temp_columns)
-  !
-  !   CALL TransposeSparseMatrix(temp_columns(1), temp)
-  !   CALL SplitSparseMatrixColumns(temp, 2, temp_rows)
-  !   CALL TransposeSparseMatrix(temp_rows(1), matrix_array(1))
-  !   CALL TransposeSparseMatrix(temp_rows(2), matrix_array(3))
-  !
-  !   CALL TransposeSparseMatrix(temp_columns(2), temp)
-  !   CALL SplitSparseMatrixColumns(temp, 2, temp_rows)
-  !   CALL TransposeSparseMatrix(temp_rows(1), matrix_array(2))
-  !   CALL TransposeSparseMatrix(temp_rows(2), matrix_array(4))
-  !
-  !   !! Cleanup
-  !   CALL DestructSparseMatrix(temp_rows(1))
-  !   CALL DestructSparseMatrix(temp_rows(2))
-  !   CALL DestructSparseMatrix(temp_columns(1))
-  !   CALL DestructSparseMatrix(temp_columns(2))
-  ! END SUBROUTINE SplitFour
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! PURE SUBROUTINE MergeFour(matrix_array, matrix)
-  !   !! Parameters
-  !   TYPE(SparseMatrix_t), DIMENSION(4), INTENT(IN) :: matrix_array
-  !   TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
-  !   !! Local
-  !   TYPE(SparseMatrix_t) :: temp
-  !   TYPE(SparseMatrix_t), DIMENSION(2) :: temp_rows
-  !
-  !   CALL ComposeSparseMatrixColumns(matrix_array(1:2), temp)
-  !   CALL TransposeSparseMatrix(temp, temp_rows(1))
-  !
-  !   CALL ComposeSparseMatrixColumns(matrix_array(3:4), temp)
-  !   CALL TransposeSparseMatrix(temp, temp_rows(2))
-  !
-  !   CALL ComposeSparseMatrixColumns(temp_rows, temp)
-  !   CALL TransposeSparseMatrix(temp, matrix)
-  !
-  !   !! Cleanup
-  !   CALL DestructSparseMatrix(temp)
-  !   CALL DestructSparseMatrix(temp_rows(1))
-  !   CALL DestructSparseMatrix(temp_rows(2))
-  ! END SUBROUTINE MergeFour
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! PURE SUBROUTINE ComputeSendPairs(helper, num_blocks)
-  !   !! Parameters
-  !   TYPE(JacobiHelper_t), INTENT(OUT) :: helper
-  !   INTEGER :: num_blocks
-  !   !! Local Data
-  !   INTEGER, DIMENSION(num_blocks/2) :: iarray, iarray2
-  !   INTEGER, DIMENSION(num_blocks/2) :: jarray, jarray2
-  !   INTEGER, DIMENSION(num_blocks) :: full_array
-  !   !! Temporary
-  !   INTEGER :: counter
-  !
-  !   helper%send_tag_array = [1, 2, 3, 4]
-  !
-  !   IF (num_blocks .EQ. 2) THEN
-  !      helper%send_dest_array = 0
-  !      helper%recv_src_array = 0
-  !      helper%recv_tag_array = [1, 2, 3, 4]
-  !   ELSE
-  !      !! Initialize array
-  !      DO counter = 1, num_blocks/2
-  !         jarray(counter) = 2 + 2*(counter-1)
-  !      END DO
-  !      DO counter = 1, num_blocks/2
-  !         iarray(counter) = 1 + 2*(counter-1)
-  !      END DO
-  !
-  !      !! Compute the send source array
-  !      iarray2(1) = 1
-  !      iarray2(num_blocks/2) = jarray(num_blocks/2)
-  !      DO counter = 2, num_blocks/2 - 1
-  !         iarray2(counter) = iarray(counter+1)
-  !      END DO
-  !      jarray2(1) = iarray(2)
-  !      DO counter = 2, num_blocks/2
-  !         jarray2(counter) = jarray(counter-1)
-  !      END DO
-  !
-  !      !! Merge Lists Together
-  !      DO counter = 1, num_blocks/2
-  !         full_array((counter-1)*2 + 1) = iarray2(counter)
-  !         full_array((counter-1)*2 + 2) = jarray2(counter)
-  !      END DO
-  !
-  !      !! Minus 1, divide by 2 to compute the process ID
-  !      DO counter = 1, num_blocks
-  !         full_array(counter) = (full_array(counter) - 1)/2
-  !      END DO
-  !
-  !      !! Extract within slice rank
-  !      helper%send_dest_array(1) = full_array(2*my_column+1) + &
-  !           & full_array(2*my_row+1)*num_process_columns
-  !      helper%send_dest_array(2) = full_array(2*my_column+2) + &
-  !           & full_array(2*my_row+1)*num_process_columns
-  !      helper%send_dest_array(3) = full_array(2*my_column+1) + &
-  !           & full_array(2*my_row+2)*num_process_columns
-  !      helper%send_dest_array(4) = full_array(2*my_column+2) + &
-  !           & full_array(2*my_row+2)*num_process_columns
-  !
-  !      !! Compute the recv source array
-  !      !! Rotate values
-  !      iarray2(1) = 1
-  !      iarray2(2) = jarray(1)
-  !      DO counter = 3, num_blocks/2
-  !         iarray2(counter) = iarray(counter-1)
-  !      END DO
-  !      jarray2(num_process_rows) = iarray(num_process_columns)
-  !      DO counter = 1, num_blocks/2 - 1
-  !         jarray2(counter) = jarray(counter+1)
-  !      END DO
-  !
-  !      !! Merge Lists Together
-  !      DO counter = 1, num_blocks/2
-  !         full_array((counter-1)*2 + 1) = iarray2(counter)
-  !         full_array((counter-1)*2 + 2) = jarray2(counter)
-  !      END DO
-  !
-  !      !! Minus 1, divide by 2 to compute the process ID
-  !      DO counter = 1, num_blocks
-  !         full_array(counter) = (full_array(counter) - 1)/2
-  !      END DO
-  !
-  !      !! Extract within slice rank
-  !      helper%recv_src_array(1) = full_array(2*my_column+1) + &
-  !           & full_array(2*my_row+1)*num_process_columns
-  !      helper%recv_src_array(2) = full_array(2*my_column+2) + &
-  !           & full_array(2*my_row+1)*num_process_columns
-  !      helper%recv_src_array(3) = full_array(2*my_column+1) + &
-  !           & full_array(2*my_row+2)*num_process_columns
-  !      helper%recv_src_array(4) = full_array(2*my_column+2) + &
-  !           & full_array(2*my_row+2)*num_process_columns
-  !
-  !      !! Compute receive tag values. First base case.
-  !      helper%recv_tag_array = [1, 2, 3, 4]
-  !      !! Next full row edge cases.
-  !      IF (my_row .EQ. 1) THEN
-  !         helper%recv_tag_array = [3, 4, 3, 4]
-  !      ELSE IF (my_column .EQ. 1) THEN
-  !         helper%recv_tag_array = [2, 2, 4, 4]
-  !      ELSE IF (my_row .EQ. num_process_rows - 1) THEN
-  !         helper%recv_tag_array = [1, 2, 1, 2]
-  !      ELSE IF (my_column .EQ. num_process_columns - 1) THEN
-  !         helper%recv_tag_array = [1, 1, 3, 3]
-  !      END IF
-  !      !! Finally, individual edge cases.
-  !      IF (my_row .EQ. 1 .AND. my_column .EQ. 1) THEN
-  !         helper%recv_tag_array = 4
-  !      ELSE IF (my_row .EQ. 1 .AND. my_column .EQ. num_process_columns - 1) THEN
-  !         helper%recv_tag_array = 3
-  !      ELSE IF (my_column .EQ. 1 .AND. my_row .EQ. num_process_rows - 1) THEN
-  !         helper%recv_tag_array = 2
-  !      ELSE IF (my_column .EQ. num_process_columns - 1 .AND. &
-  !           & my_row .EQ. num_process_rows - 1) THEN
-  !         helper%recv_tag_array = 1
-  !      END IF
-  !      !! There's also an extra edge case for just 2x2 process grid
-  !      IF (num_blocks .EQ. 4) THEN
-  !         IF (my_row .EQ. 1 .AND. my_column .EQ. 0) THEN
-  !            helper%recv_tag_array = [3, 4, 1, 2]
-  !         ELSE IF (my_row .EQ. 0 .AND. my_column .EQ. 1) THEN
-  !            helper%recv_tag_array = [2, 1, 4, 3]
-  !         ELSE IF (my_row .EQ. 1 .AND. my_column .EQ. 1) THEN
-  !            helper%recv_tag_array = [4, 3, 2, 1]
-  !         END IF
-  !      END IF
-  !
-  !   END IF
-  !
-  ! END SUBROUTINE ComputeSendPairs
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! SUBROUTINE SwapBlocks(matrix, jacobi_helper)
-  !   !! Parameters
-  !   TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
-  !   TYPE(JacobiHelper_t), INTENT(IN) :: jacobi_helper
-  !   !! Local Data
-  !   TYPE(SparseMatrix_t), DIMENSION(4) :: send_block, recv_block
-  !   TYPE(SendRecvHelper_t), DIMENSION(4) :: send_helper, recv_helper
-  !   INTEGER, DIMENSION(4) :: send_stage, recv_stage
-  !   INTEGER, DIMENSION(4) :: send_finished, recv_finished
-  !   LOGICAL :: completed
-  !   INTEGER :: II
-  !
-  !   ! CALL MPI_Barrier(global_comm, grid_error)
-  !   ! DO II = 1, slice_size
-  !   !   IF (within_slice_rank + 1 .EQ. II) THEN
-  !   !     WRITE(*,*) "Rank", II, "Enter"
-  !   !     CALL PrintSparseMatrix(matrix)
-  !   !   END IF
-  !   !   CALL MPI_Barrier(global_comm, grid_error)
-  !   ! END DO
-  !
-  !   CALL SplitFour(matrix, send_block)
-  !
-  !   send_finished = 0
-  !   recv_finished = 0
-  !   send_stage = 0
-  !   recv_stage = 0
-  !   DO WHILE(SUM(send_finished) + SUM(recv_finished) < 8)
-  !      DO II=1,4
-  !         !! Send Data
-  !         SELECT CASE (send_stage(II))
-  !         CASE(0) !! Exchange Sizes
-  !            CALL SendMatrixSizes(send_block(II), &
-  !                 & jacobi_helper%send_dest_array(II), within_slice_comm, &
-  !                 & send_helper(II), jacobi_helper%send_tag_array(II))
-  !            send_stage(II) = send_stage(II) + 1
-  !         CASE(1) !! Check For Send Size Completition
-  !            completed = TestSendRecvSizeRequest(send_helper(II))
-  !            IF (completed) send_stage(II) = send_stage(II) + 1
-  !         CASE(2) !! Send Data
-  !            CALL SendMatrixData(send_block(II), &
-  !                 & jacobi_helper%send_dest_array(II), within_slice_comm, &
-  !                 & send_helper(II), jacobi_helper%send_tag_array(II))
-  !            send_stage(II) = send_stage(II) + 1
-  !         CASE(3) !! Check for outer completion
-  !            completed = TestSendRecvOuterRequest(send_helper(II))
-  !            IF (completed) send_stage(II) = send_stage(II) + 1
-  !         CASE(4) !! Check for inner completion
-  !            completed = TestSendRecvInnerRequest(send_helper(II))
-  !            IF (completed) send_stage(II) = send_stage(II) + 1
-  !         CASE(5) !! Check for inner completion
-  !            completed = TestSendRecvDataRequest(send_helper(II))
-  !            IF (completed) send_stage(II) = send_stage(II) + 1
-  !         CASE(6) !! Finished
-  !            send_finished(II) = 1
-  !         END SELECT
-  !         !! Receive Data
-  !         SELECT CASE (recv_stage(II))
-  !         CASE(0) !! Exchange Sizes
-  !            CALL RecvMatrixSizes(recv_block(II), &
-  !                 & jacobi_helper%recv_src_array(II), within_slice_comm, &
-  !                 & recv_helper(II), jacobi_helper%recv_tag_array(II))
-  !            recv_stage(II) = recv_stage(II) + 1
-  !         CASE(1) !! Check For Recv Size Completition
-  !            completed = TestSendRecvSizeRequest(recv_helper(II))
-  !            IF (completed) recv_stage(II) = recv_stage(II) + 1
-  !         CASE(2) !! Exchange Data
-  !            CALL RecvMatrixData(recv_block(II), &
-  !                 & jacobi_helper%recv_src_array(II), within_slice_comm, &
-  !                 & recv_helper(II), jacobi_helper%recv_tag_array(II))
-  !            recv_stage(II) = recv_stage(II) + 1
-  !         CASE(3) !! Check for outer completion
-  !            completed = TestSendRecvOuterRequest(recv_helper(II))
-  !            IF (completed) recv_stage(II) = recv_stage(II) + 1
-  !         CASE(4) !! Check for inner completion
-  !            completed = TestSendRecvInnerRequest(recv_helper(II))
-  !            IF (completed) recv_stage(II) = recv_stage(II) + 1
-  !         CASE(5) !! Check for inner completion
-  !            completed = TestSendRecvDataRequest(recv_helper(II))
-  !            IF (completed) recv_stage(II) = recv_stage(II) + 1
-  !         CASE(6) !! Finished
-  !            recv_finished(II) = 1
-  !         END SELECT
-  !      END DO
-  !   END DO
-  !   CALL MergeFour(recv_block, matrix)
-  !
-  !   ! CALL MPI_Barrier(global_comm, grid_error)
-  !   ! DO II = 1, slice_size
-  !   !   IF (within_slice_rank + 1 .EQ. II) THEN
-  !   !     WRITE(*,*) "Rank", II, "Exit"
-  !   !     CALL PrintSparseMatrix(matrix)
-  !   !   END IF
-  !   !   CALL MPI_Barrier(global_comm, grid_error)
-  !   ! END DO
-  !
-  !   !! Cleanup
-  !   CALL DestructSparseMatrix(send_block(1))
-  !   CALL DestructSparseMatrix(send_block(2))
-  !   CALL DestructSparseMatrix(send_block(3))
-  !   CALL DestructSparseMatrix(send_block(4))
-  !   CALL DestructSparseMatrix(recv_block(1))
-  !   CALL DestructSparseMatrix(recv_block(2))
-  !   CALL DestructSparseMatrix(recv_block(3))
-  !   CALL DestructSparseMatrix(recv_block(4))
-  ! END SUBROUTINE SwapBlocks
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ! SUBROUTINE FillGlobalMatrix(local, block_rows, block_columns, start_row, &
-  !   & start_column, global)
-  !   !! Parameters
-  !   TYPE(SparseMatrix_t), INTENT(IN) :: local
-  !   INTEGER, INTENT(IN) :: block_rows, block_columns
-  !   INTEGER, INTENT(IN) :: start_row, start_column
-  !   TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: global
-  !   !! Local Variables
-  !   TYPE(SparseMatrix_t) :: tempmat
-  !   TYPE(TripletList_t) :: triplet_list
-  !
-  !   !! Get A Global Triplet List and Fill
-  !   CALL ComposeSparseMatrix(local, block_rows, block_columns, temp)
-  !   CALL MatrixToTripletList(tempmat,triplet_list)
-  !   CALL ShiftTripletList(triplet_list, start_row - 1, start_column - 1)
-  !
-  !   CALL FillFromTripletList(global, triplet_list)
-  !
-  !   !! Cleanup
-  !   CALL DestructSparseMatrix(tempmat)
-  !   CALL DestructTripletList(triplet_list)
-  !
-  ! END SUBROUTINE FillGlobalMatrix
-  ! SUBROUTINE FillGlobalMatrix(local, global)
-  !   !! Parameters
-  !   TYPE(SparseMatrix_t), INTENT(IN) :: local
-  !   TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: global
-  !   !! Local Variables
-  !   TYPE(TripletList_t) :: triplet_list
-  !   INTEGER :: start_row, start_column
-  !   INTEGER :: row_ratio, col_ratio
-  !   INTEGER :: II
-  !
-  !   CALL MatrixToTripletList(local, triplet_list)
-  !
-  !   !! Compute Offsets
-  !   row_ratio = (global%actual_matrix_dimension/num_process_rows)
-  !   col_ratio = (global%actual_matrix_dimension/num_process_columns)
-  !   start_row = my_row*row_ratio + 1
-  !   start_column = my_column*col_ratio + 1
-  !
-  !   !! Adjust Indices
-  !   DO II = 1, triplet_list%CurrentSize
-  !      triplet_list%data(II)%index_row = triplet_list%data(II)%index_row + &
-  !           & start_row - 1
-  !      triplet_list%data(II)%index_column = &
-  !           & triplet_list%data(II)%index_column + start_column - 1
-  !   END DO
-  !
-  !   CALL FillFromTripletList(global, triplet_list)
-  !
-  ! END SUBROUTINE FillGlobalMatrix
+  SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata, threshold)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: TargetV
+    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !! Local Variables
+    TYPE(SparseMatrix_t), DIMENSION(2,jdata%block_rows) :: RecvBlocks
+    !! Temporary
+    INTEGER :: counter
+    TYPE(SparseMatrix_t) :: TempMat
+    INTEGER :: ind
+
+    !! Fill the Receive Blocks Vector with The Local Data
+    CALL SplitSparseMatrix(TargetV, 2, 2, &
+         & RecvBlocks(:,jdata%block_start:jdata%block_end))
+
+    !! Broadcast
+    DO counter = 1, jdata%num_processes
+       ind = (counter-1)*2 + 1
+       CALL BroadcastMatrix(RecvBlocks(1,ind), jdata%communicator, counter-1)
+       CALL CopySparseMatrix(ABlocks(1,ind), TempMat)
+       CALL Gemm(RecvBlocks(1,ind), TempMat, ABlocks(1,ind), &
+            & threshold_in=threshold)
+       CALL BroadcastMatrix(RecvBlocks(2,ind), jdata%communicator, counter-1)
+       CALL CopySparseMatrix(ABlocks(2,ind), TempMat)
+       CALL Gemm(RecvBlocks(2,ind), TempMat, ABlocks(2,ind), &
+            & threshold_in=threshold)
+       CALL BroadcastMatrix(RecvBlocks(1,ind+1), jdata%communicator, counter-1)
+       CALL CopySparseMatrix(ABlocks(1,ind+1), TempMat)
+       CALL Gemm(RecvBlocks(1,ind+1), TempMat, ABlocks(1,ind+1), &
+            & threshold_in=threshold)
+       CALL BroadcastMatrix(RecvBlocks(2,ind+1), jdata%communicator, counter-1)
+       CALL CopySparseMatrix(ABlocks(2,ind+1), TempMat)
+       CALL Gemm(RecvBlocks(2,ind+1), TempMat, ABlocks(2,ind+1), &
+            & threshold_in=threshold)
+    END DO
+
+  END SUBROUTINE ApplyToRows
 END MODULE EigenSolversModule
