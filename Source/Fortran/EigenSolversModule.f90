@@ -66,6 +66,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Blocking
     TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: ABlocks
     TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: VBlocks
+    TYPE(SparseMatrix_t) :: local_v
+    TYPE(SparseMatrix_t) :: last_v
     TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
     REAL(NTREAL) :: norm_value
@@ -91,9 +93,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetLocalBlocks(this, jacobi_data, ABlocks)
     ALLOCATE(VBlocks(2,slice_size*2))
     CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
+    CALL ComposeSparseMatrix(VBlocks, jacobi_data%block_rows, &
+         & jacobi_data%block_columns, local_v)
 
     ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 4
+    DO iteration = 1, 2
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -106,14 +110,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%threshold)
 
        !! Compute Norm Value
-       ! IF (norm_value .LE. solver_parameters%converge_diff) THEN
-       !    EXIT
-       ! END IF
+       CALL CopySparseMatrix(local_v, last_v)
+       CALL ComposeSparseMatrix(VBlocks, jacobi_data%block_rows, &
+            & jacobi_data%block_columns, local_v)
+       CALL IncrementSparseMatrix(local_v,last_v,alpha_in=REAL(-1.0,NTREAL), &
+            & threshold_in=solver_parameters%threshold)
+       norm_value = SparseMatrixNorm(last_v)
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
     END DO
 
     !! Convert to global matrix
     CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
-    CALL PrintDIstributedSparseMatrix(eigenvectors)
 
     !! Cleanup
     DO counter = 1, jacobi_data%num_processes*2
@@ -315,29 +324,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: iteration
 
     !! Loop Over Processors
-    DO iteration = 1, jdata%num_processes
-       !! Construct A Block To Diagonalize
-       CALL ComposeSparseMatrix(ABlocks(:,jdata%block_start:jdata%block_end), &
-            & 2, 2, TargetA)
-
-       !! Diagonalize
-       CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
-
-       !! Rotation Along Row
-       CALL TransposeSparseMatrix(TargetV, TargetVT)
-       CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
-
-       !! Rotation Along Columns
-       CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
-       CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
-
-       ! IF (global_rank .EQ. 0) THEN
-       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
-       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
-       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
-       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
-       !    WRITE(*,*)
-       ! END IF
+    DO iteration = 1, jdata%num_processes*2 - 1
+       ! !! Construct A Block To Diagonalize
+       ! CALL ComposeSparseMatrix(ABlocks(:,jdata%block_start:jdata%block_end), &
+       !      & 2, 2, TargetA)
+       !
+       ! !! Diagonalize
+       ! CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
+       !
+       ! !! Rotation Along Row
+       ! CALL TransposeSparseMatrix(TargetV, TargetVT)
+       ! CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
+       !
+       ! !! Rotation Along Columns
+       ! CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
+       ! CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
        !! Swap Blocks
        CALL SwapBlocks(ABlocks, jdata)

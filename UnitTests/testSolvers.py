@@ -786,7 +786,7 @@ class TestSolvers(unittest.TestCase):
         u_matrix.WriteToMatrixMarket(result_file)
         self.check_result()
 
-    def test_eigendecomposition(self):
+    def a_test_eigendecomposition(self):
         '''Test the dense eigen decomposition'''
         matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
                        density=1.0, random_state=1)
