@@ -93,7 +93,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
 
     ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 1
+    DO iteration = 1, 4
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -106,13 +106,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%threshold)
 
        !! Compute Norm Value
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
-          EXIT
-       END IF
+       ! IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       !    EXIT
+       ! END IF
     END DO
 
     !! Convert to global matrix
     CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
+    CALL PrintDIstributedSparseMatrix(eigenvectors)
 
     !! Cleanup
     DO counter = 1, jacobi_data%num_processes*2
@@ -311,7 +312,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TargetA
     TYPE(SparseMatrix_t) :: TargetV, TargetVT
-    TYPE(SparseMatrix_t) :: temp1, temp2
     INTEGER :: iteration
 
     !! Loop Over Processors
@@ -331,10 +331,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
-       ! CALL Gemm(TargetVT, TargetA, temp1)
-       ! CALL Gemm(temp1, TargetV, temp2)
-       ! CALL PrintSparseMatrix(temp2)
-
        ! IF (global_rank .EQ. 0) THEN
        !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
        !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
@@ -344,28 +340,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ! END IF
 
        !! Swap Blocks
-
-       ! IF (global_rank .EQ. 0) THEN
-       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
-       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
-       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
-       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
-       !    WRITE(*,*)
-       ! END IF
-
-       ! CALL SwapBlocks(ABlocks, jdata)
-
-       ! IF (global_rank .EQ. 0) THEN
-       !    WRITE(*,*) "RANK 0"
-       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
-       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
-       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
-       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
-       !    WRITE(*,*)
-       ! END IF
+       CALL SwapBlocks(ABlocks, jdata)
 
        !! Rotate Music Blocks
-       ! CALL RotateMusic(jdata)
+       CALL RotateMusic(jdata)
     END DO
 
 
@@ -438,6 +416,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, PARAMETER :: total_to_complete = 4
     INTEGER :: counter
     INTEGER :: index
+    INTEGER :: ierr
 
     !! Swap Rows
     DO counter = 1, jdata%block_rows
@@ -448,10 +427,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        index = jdata%music_swap(counter)
        CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
        CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
-    END DO
-    DO counter = 1, jdata%block_rows
-       CALL DestructSparseMatrix(TempABlocks(1,counter))
-       CALL DestructSparseMatrix(TempABlocks(2,counter))
     END DO
 
     !! Build matrices to swap
@@ -464,6 +439,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     recv_left_stage = 0
     recv_right_stage = 0
 
+    completed = 0
     DO WHILE (completed .LT. total_to_complete)
        !! Send Left Matrix
        SELECT CASE(send_left_stage)
@@ -578,6 +554,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END SELECT
     END DO
+    CALL MPI_Barrier(jdata%communicator, ierr)
+
+    CALL SplitSparseMatrix(RecvLeft,jdata%block_rows,1,ABlocks(1,:))
+    CALL SplitSparseMatrix(RecvRight,jdata%block_rows,1,ABlocks(2,:))
+
+    !! Cleanup
+    DO counter = 1, jdata%block_rows
+       CALL DestructSparseMatrix(TempABlocks(1,counter))
+       CALL DestructSparseMatrix(TempABlocks(2,counter))
+    END DO
+    CALL DestructSparseMatrix(SendLeft)
+    CALL DestructSparseMatrix(SendRight)
+    CALL DestructSparseMatrix(RecvLeft)
+    CALL DestructSparseMatrix(RecvRight)
 
   END SUBROUTINE SwapBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

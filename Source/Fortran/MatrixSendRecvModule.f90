@@ -107,7 +107,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     outmat%outer_index(1) = 0
 
     !! Receive the data
-
     CALL MPI_Irecv(outmat%values, helper%matrix_data(1), MPINTREAL, &
          & rank, recv_tag, comm, helper%data_request, ierr)
     CALL MPI_Irecv(outmat%inner_index, helper%matrix_data(1), MPI_INT, &
