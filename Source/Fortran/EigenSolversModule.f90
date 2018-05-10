@@ -64,8 +64,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Blocking
-    TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2) :: ABlocks
-    TYPE(SparseMatrix_t), DIMENSION(2,slice_size*2) :: VBlocks
+    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: ABlocks
+    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: VBlocks
     TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
     REAL(NTREAL) :: norm_value
@@ -87,11 +87,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillDistributedIdentity(eigenvectors)
 
     !! Extract to local dense blocks
+    ALLOCATE(ABlocks(2,slice_size*2))
     CALL GetLocalBlocks(this, jacobi_data, ABlocks)
+    ALLOCATE(VBlocks(2,slice_size*2))
     CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
 
     ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 2
+    DO iteration = 1, 1
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -119,13 +121,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DestructSparseMatrix(VBlocks(1,counter))
        CALL DestructSparseMatrix(VBlocks(2,counter))
     END DO
+
+    DEALLOCATE(ABlocks)
+    DEALLOCATE(VBlocks)
+
     CALL CleanupJacobi(jacobi_data)
 
   END SUBROUTINE DistributedEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE InitializeJacobi(jdata, matrix)
     !! Parameters
-    TYPE(JacobiData_t), INTENT(OUT) :: jdata
+    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
     !! Local Variables
     INTEGER :: matrix_dimension
@@ -212,10 +218,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL MPI_Comm_free(jacobi_data%communicator, ierr)
 
-    DEALLOCATE(jacobi_data%initial_music_row)
-    DEALLOCATE(jacobi_data%initial_music_column)
-    DEALLOCATE(jacobi_data%music_row)
-    DEALLOCATE(jacobi_data%music_column)
+    IF (ALLOCATED(jacobi_data%initial_music_row)) THEN
+       DEALLOCATE(jacobi_data%initial_music_row)
+    END IF
+    IF (ALLOCATED(jacobi_data%initial_music_column)) THEN
+       DEALLOCATE(jacobi_data%initial_music_column)
+    END IF
+    IF (ALLOCATED(jacobi_data%music_row)) THEN
+       DEALLOCATE(jacobi_data%music_row)
+    END IF
+    IF (ALLOCATED(jacobi_data%music_column)) THEN
+       DEALLOCATE(jacobi_data%music_column)
+    END IF
 
   END SUBROUTINE CleanupJacobi
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -297,6 +311,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TargetA
     TYPE(SparseMatrix_t) :: TargetV, TargetVT
+    TYPE(SparseMatrix_t) :: temp1, temp2
     INTEGER :: iteration
 
     !! Loop Over Processors
@@ -312,39 +327,51 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL TransposeSparseMatrix(TargetV, TargetVT)
        CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
 
-       ! !! Rotation Along Columns
+       !! Rotation Along Columns
        CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
+       ! CALL Gemm(TargetVT, TargetA, temp1)
+       ! CALL Gemm(temp1, TargetV, temp2)
+       ! CALL PrintSparseMatrix(temp2)
+
+       ! IF (global_rank .EQ. 0) THEN
+       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
+       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
+       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
+       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
+       !    WRITE(*,*)
+       ! END IF
+
        !! Swap Blocks
 
-       IF (global_rank .EQ. 0) THEN
-          WRITE(*,*) "RANK 0"
-          CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
-          CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
-          CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
-          CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
-          WRITE(*,*)
-       END IF
+       ! IF (global_rank .EQ. 0) THEN
+       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
+       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
+       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
+       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
+       !    WRITE(*,*)
+       ! END IF
 
-       CALL SwapBlocks(ABlocks, jdata)
+       ! CALL SwapBlocks(ABlocks, jdata)
 
-       IF (global_rank .EQ. 0) THEN
-          WRITE(*,*) "RANK 0"
-          CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
-          CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
-          CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
-          CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
-          WRITE(*,*)
-       END IF
+       ! IF (global_rank .EQ. 0) THEN
+       !    WRITE(*,*) "RANK 0"
+       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
+       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
+       !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
+       !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
+       !    WRITE(*,*)
+       ! END IF
 
        !! Rotate Music Blocks
-       CALL RotateMusic(jdata)
+       ! CALL RotateMusic(jdata)
     END DO
 
-    CALL MPI_Barrier(global_comm, grid_error)
+
+    ! CALL MPI_Barrier(global_comm, grid_error)
     ! IF (global_rank .EQ. 1) THEN
-    !    WRITE(*,*) "RANK 1"
+    !    ! WRITE(*,*) "RANK 1"
     !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
     !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
     !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
@@ -410,21 +437,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: recv_right_stage
     INTEGER, PARAMETER :: total_to_complete = 4
     INTEGER :: counter
-    integer :: index
+    INTEGER :: index
 
     !! Swap Rows
     DO counter = 1, jdata%block_rows
-      CALL CopySparseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
-      CALL CopySparseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
+       CALL CopySparseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
+       CALL CopySparseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
     END DO
     DO counter = 1, jdata%block_rows
-      index = jdata%music_swap(counter)
-      CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
-      CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
+       index = jdata%music_swap(counter)
+       CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
+       CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
     END DO
     DO counter = 1, jdata%block_rows
-      CALL DestructSparseMatrix(TempABlocks(1,counter))
-      CALL DestructSparseMatrix(TempABlocks(2,counter))
+       CALL DestructSparseMatrix(TempABlocks(1,counter))
+       CALL DestructSparseMatrix(TempABlocks(2,counter))
     END DO
 
     !! Build matrices to swap
@@ -560,70 +587,50 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(IN) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
-    !! Local Variables
-    TYPE(SparseMatrix_t), DIMENSION(2,2) :: TargetVBlocks
     !! Temporary
-    TYPE(SparseMatrix_t) :: TempMat
+    TYPE(SparseMatrix_t) :: AMat, TempMat
     INTEGER :: counter, ind
-
-    !! Split Into Blocks
-    CALL SplitSparseMatrix(TargetV, 2, 2, TargetVBlocks)
 
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
-       CALL CopySparseMatrix(ABlocks(1,ind), TempMat)
-       CALL Gemm(TempMat, TargetVBlocks(1,1), ABlocks(1,ind), &
-            & threshold_in=threshold)
-       CALL CopySparseMatrix(ABlocks(2,ind), TempMat)
-       CALL Gemm(TempMat, TargetVBlocks(2,1), ABlocks(2,ind), &
-            & threshold_in=threshold)
-       CALL CopySparseMatrix(ABlocks(1,ind+1), TempMat)
-       CALL Gemm(TempMat, TargetVBlocks(1,2), ABlocks(1,ind+1), &
-            & threshold_in=threshold)
-       CALL CopySparseMatrix(ABlocks(2,ind+1), TempMat)
-       CALL Gemm(TempMat, TargetVBlocks(2,2), ABlocks(2,ind+1), &
-            & threshold_in=threshold)
+       CALL ComposeSparseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
+       CALL Gemm(AMat, TargetV, TempMat, threshold_in=threshold)
+       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1))
     END DO
+
+    CALL DestructSparseMatrix(AMat)
+    CALL DestructSparseMatrix(TempMat)
 
   END SUBROUTINE ApplyToColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata, threshold)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: TargetV
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: TargetV
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
-    !! Local Variables
-    TYPE(SparseMatrix_t), DIMENSION(2,jdata%block_rows) :: RecvBlocks
     !! Temporary
     INTEGER :: counter
     TYPE(SparseMatrix_t) :: TempMat
+    TYPE(SparseMatrix_t) :: RecvMat
+    TYPE(SparseMatrix_t) :: AMat
     INTEGER :: ind
 
-    !! Fill the Receive Blocks Vector with The Local Data
-    CALL SplitSparseMatrix(TargetV, 2, 2, &
-         & RecvBlocks(:,jdata%block_start:jdata%block_end))
-
-    !! Broadcast
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
-       CALL BroadcastMatrix(RecvBlocks(1,ind), jdata%communicator, counter-1)
-       CALL CopySparseMatrix(ABlocks(1,ind), TempMat)
-       CALL Gemm(RecvBlocks(1,ind), TempMat, ABlocks(1,ind), &
-            & threshold_in=threshold)
-       CALL BroadcastMatrix(RecvBlocks(2,ind), jdata%communicator, counter-1)
-       CALL CopySparseMatrix(ABlocks(2,ind), TempMat)
-       CALL Gemm(RecvBlocks(2,ind), TempMat, ABlocks(2,ind), &
-            & threshold_in=threshold)
-       CALL BroadcastMatrix(RecvBlocks(1,ind+1), jdata%communicator, counter-1)
-       CALL CopySparseMatrix(ABlocks(1,ind+1), TempMat)
-       CALL Gemm(RecvBlocks(1,ind+1), TempMat, ABlocks(1,ind+1), &
-            & threshold_in=threshold)
-       CALL BroadcastMatrix(RecvBlocks(2,ind+1), jdata%communicator, counter-1)
-       CALL CopySparseMatrix(ABlocks(2,ind+1), TempMat)
-       CALL Gemm(RecvBlocks(2,ind+1), TempMat, ABlocks(2,ind+1), &
-            & threshold_in=threshold)
+       IF (jdata%rank .EQ. counter-1) THEN
+          CALL CopySparseMatrix(TargetV, RecvMat)
+       END IF
+       CALL BroadcastMatrix(RecvMat, jdata%communicator, counter - 1)
+
+       CALL ComposeSparseMatrix(ABlocks(:,ind:ind+1), 2, 2, AMat)
+       CALL Gemm(RecvMat, AMat, TempMat, threshold_in=threshold)
+       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1))
+       CALL DestructSparseMatrix(AMat)
     END DO
+
+    CALL DestructSparseMatrix(RecvMat)
+    CALL DestructSparseMatrix(TempMat)
 
   END SUBROUTINE ApplyToRows
 END MODULE EigenSolversModule

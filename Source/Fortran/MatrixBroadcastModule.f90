@@ -32,6 +32,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        matrows = matrix%rows
        matcolumns = matrix%columns
        nnz = matrix%outer_index(matrix%columns+1)
+    ELSE
+       CALL DestructSparseMatrix(matrix)
     END IF
     CALL MPI_Bcast(matrows, 1, MPI_INT, root, comm, ierr)
     CALL MPI_Bcast(matcolumns, 1, MPI_INT, root, comm, ierr)
