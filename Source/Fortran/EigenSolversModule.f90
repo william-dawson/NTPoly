@@ -47,10 +47,10 @@ MODULE EigenSolversModule
      INTEGER :: recv_left_tag
      INTEGER :: recv_right_tag
      !! For Keeping Track of Sweeps
-     INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_row
-     INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_column
-     INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
-     INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
+     ! INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_row
+     ! INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_column
+     ! INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
+     ! INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
      INTEGER, DIMENSION(:), ALLOCATABLE :: music_swap
   END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -116,6 +116,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementSparseMatrix(local_v,last_v,alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold)
        norm_value = SparseMatrixNorm(last_v)
+
+       !! Test early exit
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
@@ -147,6 +149,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: matrix_dimension
     INTEGER :: iteration
     INTEGER :: ierr
+    !! Music Data
+    INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
 
     !! Copy The Process Grid Information
     jdata%num_processes = slice_size
@@ -156,26 +161,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     jdata%block_end = jdata%block_start + 1
 
     !! Initialize the Music Arrays
-    ALLOCATE(jdata%initial_music_row(jdata%num_processes))
-    ALLOCATE(jdata%initial_music_column(jdata%num_processes))
-    ALLOCATE(jdata%music_row(jdata%num_processes))
-    ALLOCATE(jdata%music_column(jdata%num_processes))
+    ALLOCATE(music_row(jdata%num_processes))
+    ALLOCATE(music_column(jdata%num_processes))
     DO iteration = 1, slice_size
-       jdata%music_row(iteration) = (iteration-1)*2 + 1
-       jdata%initial_music_row = jdata%music_row
-       jdata%music_column(iteration) = (iteration-1)*2 + 2
-       jdata%initial_music_column = jdata%music_column
+       music_row(iteration) = (iteration-1)*2 + 1
+       music_column(iteration) = (iteration-1)*2 + 2
     END DO
 
-    !! Determine swap partners for music by doing one rotation, then undoing
-    CALL RotateMusic(jdata)
+    !! Determine swap partners for music by doing one rotation
+    CALL RotateMusic(jdata, music_row, music_column)
     ALLOCATE(jdata%music_swap(2*jdata%num_processes))
     DO iteration = 1, jdata%num_processes
-       jdata%music_swap(2*iteration-1) = jdata%music_row(iteration)
-       jdata%music_swap(2*iteration) = jdata%music_column(iteration)
+       jdata%music_swap(2*iteration-1) = music_row(iteration)
+       jdata%music_swap(2*iteration) = music_column(iteration)
     END DO
-    jdata%music_row = jdata%initial_music_row
-    jdata%music_column = jdata%initial_music_column
 
     !! Determine Send Partners
     jdata%send_left_partner = jdata%rank + 1
@@ -218,6 +217,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     jdata%start_column = jdata%columns * within_slice_rank + 1
     jdata%start_row = 1
 
+    !! Cleanup
+    DEALLOCATE(music_row)
+    DEALLOCATE(music_column)
+
   END SUBROUTINE InitializeJacobi
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE CleanupJacobi(jacobi_data)
@@ -228,17 +231,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL MPI_Comm_free(jacobi_data%communicator, ierr)
 
-    IF (ALLOCATED(jacobi_data%initial_music_row)) THEN
-       DEALLOCATE(jacobi_data%initial_music_row)
-    END IF
-    IF (ALLOCATED(jacobi_data%initial_music_column)) THEN
-       DEALLOCATE(jacobi_data%initial_music_column)
-    END IF
-    IF (ALLOCATED(jacobi_data%music_row)) THEN
-       DEALLOCATE(jacobi_data%music_row)
-    END IF
-    IF (ALLOCATED(jacobi_data%music_column)) THEN
-       DEALLOCATE(jacobi_data%music_column)
+    IF (ALLOCATED(jacobi_data%music_swap)) THEN
+      DEALLOCATE(jacobi_data%music_swap)
     END IF
 
   END SUBROUTINE CleanupJacobi
@@ -325,26 +319,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
-       ! !! Construct A Block To Diagonalize
-       ! CALL ComposeSparseMatrix(ABlocks(:,jdata%block_start:jdata%block_end), &
-       !      & 2, 2, TargetA)
-       !
-       ! !! Diagonalize
-       ! CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
-       !
-       ! !! Rotation Along Row
-       ! CALL TransposeSparseMatrix(TargetV, TargetVT)
-       ! CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
-       !
-       ! !! Rotation Along Columns
-       ! CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
-       ! CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
+       !! Construct A Block To Diagonalize
+       CALL ComposeSparseMatrix(ABlocks(:,jdata%block_start:jdata%block_end), &
+            & 2, 2, TargetA)
+
+       !! Diagonalize
+       CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
+
+       !! Rotation Along Row
+       CALL TransposeSparseMatrix(TargetV, TargetVT)
+       CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
+
+       !! Rotation Along Columns
+       CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
+       CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
        !! Swap Blocks
        CALL SwapBlocks(ABlocks, jdata)
-
-       !! Rotate Music Blocks
-       CALL RotateMusic(jdata)
     END DO
 
 
@@ -361,9 +352,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE JacobiSweep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE RotateMusic(jdata)
+  SUBROUTINE RotateMusic(jdata, music_row, music_column)
     !! Parameters
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
+    INTEGER, DIMENSION(jdata%num_processes) :: music_row
+    INTEGER, DIMENSION(jdata%num_processes) :: music_column
     !! Copies of Music
     INTEGER, DIMENSION(jdata%num_processes) :: music_row_orig
     INTEGER, DIMENSION(jdata%num_processes) :: music_column_orig
@@ -375,21 +368,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     num_pairs = jdata%num_processes
 
     !! Make Copies
-    music_row_orig = jdata%music_row
-    music_column_orig = jdata%music_column
+    music_row_orig = music_row
+    music_column_orig = music_column
 
     !! Rotate Bottom Half
-    jdata%music_column(num_pairs) = music_row_orig(num_pairs)
+    music_column(num_pairs) = music_row_orig(num_pairs)
     DO counter = 1, num_pairs - 1
-       jdata%music_column(counter) = music_column_orig(counter+1)
+       music_column(counter) = music_column_orig(counter+1)
     END DO
 
     !! Rotate Top Half
     IF(num_pairs .GT. 1) THEN
-       jdata%music_row(2) = music_column_orig(1)
+       music_row(2) = music_column_orig(1)
     END IF
     DO counter = 3, num_pairs
-       jdata%music_row(counter) = music_row_orig(counter-1)
+       music_row(counter) = music_row_orig(counter-1)
     END DO
 
   END SUBROUTINE RotateMusic
