@@ -232,7 +232,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Comm_free(jacobi_data%communicator, ierr)
 
     IF (ALLOCATED(jacobi_data%music_swap)) THEN
-      DEALLOCATE(jacobi_data%music_swap)
+       DEALLOCATE(jacobi_data%music_swap)
     END IF
 
   END SUBROUTINE CleanupJacobi
@@ -336,8 +336,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Swap Blocks
        CALL SwapBlocks(ABlocks, jdata)
+       
     END DO
-
 
     ! CALL MPI_Barrier(global_comm, grid_error)
     ! IF (global_rank .EQ. 1) THEN
@@ -364,26 +364,29 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     INTEGER :: num_pairs
 
-    !! For convenience
-    num_pairs = jdata%num_processes
+    !! No swapping if there is just one processes
+    IF (jdata%num_processes .GT. 1) THEN
+       !! For convenience
+       num_pairs = jdata%num_processes
 
-    !! Make Copies
-    music_row_orig = music_row
-    music_column_orig = music_column
+       !! Make Copies
+       music_row_orig = music_row
+       music_column_orig = music_column
 
-    !! Rotate Bottom Half
-    music_column(num_pairs) = music_row_orig(num_pairs)
-    DO counter = 1, num_pairs - 1
-       music_column(counter) = music_column_orig(counter+1)
-    END DO
+       !! Rotate Bottom Half
+       music_column(num_pairs) = music_row_orig(num_pairs)
+       DO counter = 1, num_pairs - 1
+          music_column(counter) = music_column_orig(counter+1)
+       END DO
 
-    !! Rotate Top Half
-    IF(num_pairs .GT. 1) THEN
-       music_row(2) = music_column_orig(1)
+       !! Rotate Top Half
+       IF(num_pairs .GT. 1) THEN
+          music_row(2) = music_column_orig(1)
+       END IF
+       DO counter = 3, num_pairs
+          music_row(counter) = music_row_orig(counter-1)
+       END DO
     END IF
-    DO counter = 3, num_pairs
-       music_row(counter) = music_row_orig(counter-1)
-    END DO
 
   END SUBROUTINE RotateMusic
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
