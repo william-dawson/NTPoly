@@ -9,7 +9,7 @@ from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
 from scipy.sparse.linalg import norm, inv, eigsh
 from numpy import zeros, sqrt, power, \
-    sign, exp, log, sin, cos, linspace, diag, dot
+    sign, exp, log, sin, cos, linspace, diag, dot, array
 from numpy.linalg import eigh
 from numpy.linalg import norm as normd
 from random import random
@@ -790,7 +790,11 @@ class TestSolvers(unittest.TestCase):
         '''Test the dense eigen decomposition'''
         matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
                        density=1.0, random_state=1)
-        matrix1 = csr_matrix(matrix1 + matrix1.T)
+        matrix1 = array([[11, 12, 13, 14],
+                         [12, 22, 23, 24],
+                         [13, 23, 33, 34],
+                         [14, 24, 34, 44]])
+        matrix1 = 0.5*csr_matrix(matrix1 + matrix1.T)
         if (self.my_rank == 0):
             print(matrix1)
             mmwrite(self.input_file, matrix1)

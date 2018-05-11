@@ -46,12 +46,10 @@ MODULE EigenSolversModule
      INTEGER :: recv_right_partner
      INTEGER :: recv_left_tag
      INTEGER :: recv_right_tag
-     !! For Keeping Track of Sweeps
-     ! INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_row
-     ! INTEGER, DIMENSION(:), ALLOCATABLE :: initial_music_column
-     ! INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
-     ! INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
+     !! For Computing Sweeps
      INTEGER, DIMENSION(:), ALLOCATABLE :: music_swap
+     !! Temp
+     INTEGER :: matdim
   END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DistributedEigenDecomposition(this, eigenvectors, &
@@ -96,8 +94,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComposeSparseMatrix(VBlocks, jacobi_data%block_rows, &
          & jacobi_data%block_columns, local_v)
 
+    ! CALL FillGlobalMatrix(ABlocks, jacobi_data, eigenvectors)
+
     ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 2
+    DO iteration = 1, 10
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -118,9 +118,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = SparseMatrixNorm(last_v)
 
        !! Test early exit
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
-          EXIT
-       END IF
+       ! IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       !    EXIT
+       ! END IF
     END DO
 
     !! Convert to global matrix
@@ -152,6 +152,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Music Data
     INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
+
+    jdata%matdim = matrix%actual_matrix_dimension
 
     !! Copy The Process Grid Information
     jdata%num_processes = slice_size
@@ -290,6 +292,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TempMat
     TYPE(TripletList_t) :: triplet_list
+    INTEGER :: counter
 
     !! Get A Global Triplet List and Fill
     CALL ComposeSparseMatrix(local, jdata%block_rows, jdata%block_columns, &
@@ -315,7 +318,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TargetA
     TYPE(SparseMatrix_t) :: TargetV, TargetVT
+    TYPE(DistributedSparseMatrix_t) :: printmat
     INTEGER :: iteration
+
+    CALL ConstructEmptyDistributedSparseMatrix(printmat, jdata%matdim)
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
@@ -325,6 +331,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Diagonalize
        CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
+       ! CALL MPI_Barrier(global_comm, grid_error)
+       ! IF (global_rank .EQ. 0) THEN
+       !   CALL PrintSparseMatrix(TargetA)
+       !   CALL PrintSparseMatrix(TargetV)
+       !   WRITE(*,*) "-------------------"
+       ! END IF
+       ! CALL MPI_Barrier(global_comm, grid_error)
+       ! IF (global_rank .EQ. 1) THEN
+       !   CALL PrintSparseMatrix(TargetA)
+       !   CALL PrintSparseMatrix(TargetV)
+       !   WRITE(*,*) "-------------------"
+       ! END IF
+       ! CALL MPI_Barrier(global_comm, grid_error)
 
        !! Rotation Along Row
        CALL TransposeSparseMatrix(TargetV, TargetVT)
@@ -335,8 +354,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
        !! Swap Blocks
-       CALL SwapBlocks(ABlocks, jdata)
-       
+       ! CALL FillGlobalMatrix(ABlocks, jdata, printmat)
+       ! CALL PrintDistributedSparseMatrix(printmat)
+       ! CALL SwapBlocks(ABlocks, jdata)
+
     END DO
 
     ! CALL MPI_Barrier(global_comm, grid_error)
