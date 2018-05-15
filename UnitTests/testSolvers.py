@@ -799,6 +799,8 @@ class TestSolvers(unittest.TestCase):
             print(matrix1)
             mmwrite(self.input_file, matrix1)
         w, vdense = eigh(matrix1.todense())
+        if (self.my_rank == 0):
+            print(w)
         CheckV = csr_matrix(vdense)
 
         ntmatrix = nt.DistributedSparseMatrix(self.input_file)

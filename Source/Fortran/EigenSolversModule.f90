@@ -70,8 +70,6 @@ MODULE EigenSolversModule
      !> After the sweeps are finished, this swaps the data back to the original
      !! permutation.
      TYPE(SwapData_t) :: final_swap
-     !> @todo remove this
-     INTEGER :: matdim
   END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DistributedEigenDecomposition(this, eigenvectors, &
@@ -119,7 +117,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! CALL FillGlobalMatrix(ABlocks, jacobi_data, eigenvectors)
 
     ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 1
+    DO iteration = 1, 4
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -140,11 +138,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = SparseMatrixNorm(last_v)
 
        !! Test early exit
-       ! IF (norm_value .LE. solver_parameters%converge_diff) THEN
-       !    EXIT
-       ! END IF
-       CALL FillGlobalMatrix(ABlocks, jacobi_data, eigenvectors)
-       CALL PrintDistributedSparseMatrix(eigenvectors)
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
     END DO
 
     !! Convert to global matrix
@@ -177,9 +173,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     INTEGER :: counter
     INTEGER :: stage_counter
-
-    !! @todo delete this line
-    jdata%matdim = matrix%actual_matrix_dimension
 
     !! Copy The Process Grid Information
     jdata%num_processes = slice_size
@@ -241,21 +234,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        jdata%phase_array(stage_counter) = 3
        stage_counter = stage_counter+1
        CALL ComputePartners(jdata, jdata%right_swap, swap_temp, swap1)
-
        DO counter = jdata%num_processes+1, 2*jdata%num_processes-3
           CALL RotateMusic(jdata,swap1,3)
           jdata%phase_array(stage_counter) = 3
           stage_counter = stage_counter+1
        END DO
+    END IF
+
+    IF (jdata%num_processes .GT. 1) THEN
        CALL ComputePartners(jdata, jdata%final_swap, swap1, swap0)
        jdata%phase_array(stage_counter) = 4
     END IF
-
-    WRITE(*,*) jdata%rank, ":", &
-         jdata%left_swap%send_left_tag, jdata%left_swap%send_left_partner, &
-         jdata%left_swap%send_right_tag, jdata%left_swap%send_right_partner, &
-         jdata%left_swap%recv_left_tag, jdata%left_swap%recv_left_partner, &
-         jdata%left_swap%recv_right_tag, jdata%left_swap%recv_right_partner
 
     !! Cleanup
     DEALLOCATE(swap0)
@@ -369,10 +358,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TargetA
     TYPE(SparseMatrix_t) :: TargetV, TargetVT
-    TYPE(DistributedSparseMatrix_t) :: printmat
     INTEGER :: iteration
-
-    CALL ConstructEmptyDistributedSparseMatrix(printmat, jdata%matdim)
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
@@ -382,19 +368,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Diagonalize
        CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
-       ! CALL MPI_Barrier(global_comm, grid_error)
-       ! IF (global_rank .EQ. 0) THEN
-       !   CALL PrintSparseMatrix(TargetA)
-       !   CALL PrintSparseMatrix(TargetV)
-       !   WRITE(*,*) "-------------------"
-       ! END IF
-       ! CALL MPI_Barrier(global_comm, grid_error)
-       ! IF (global_rank .EQ. 1) THEN
-       !   CALL PrintSparseMatrix(TargetA)
-       !   CALL PrintSparseMatrix(TargetV)
-       !   WRITE(*,*) "-------------------"
-       ! END IF
-       ! CALL MPI_Barrier(global_comm, grid_error)
 
        !! Rotation Along Row
        CALL TransposeSparseMatrix(TargetV, TargetVT)
@@ -405,32 +378,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
 
        !! Swap Blocks
-       ! CALL FillGlobalMatrix(ABlocks, jdata, printmat)
-       ! CALL PrintDistributedSparseMatrix(printmat)
        IF (jdata%num_processes .GT. 1) THEN
           IF (jdata%phase_array(iteration) .EQ. 1) THEN
              CALL SwapBlocks(ABlocks, jdata, jdata%left_swap)
+             CALL SwapBlocks(VBlocks, jdata, jdata%left_swap)
           ELSE IF (jdata%phase_array(iteration) .EQ. 2) THEN
              CALL SwapBlocks(ABlocks, jdata, jdata%mid_swap)
+             CALL SwapBlocks(VBlocks, jdata, jdata%mid_swap)
           ELSE IF (jdata%phase_array(iteration) .EQ. 3) THEN
              CALL SwapBlocks(ABlocks, jdata, jdata%right_swap)
+             CALL SwapBlocks(VBlocks, jdata, jdata%right_swap)
           ELSE
              CALL SwapBlocks(ABlocks, jdata, jdata%final_swap)
+             CALL SwapBlocks(VBlocks, jdata, jdata%final_swap)
           END IF
        END IF
 
     END DO
-
-    ! CALL MPI_Barrier(global_comm, grid_error)
-    ! IF (global_rank .EQ. 1) THEN
-    !    ! WRITE(*,*) "RANK 1"
-    !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_start))
-    !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_start))
-    !    CALL PrintSparseMatrix(ABlocks(1,jdata%block_end))
-    !    CALL PrintSparseMatrix(ABlocks(2,jdata%block_end))
-    !    WRITE(*,*)
-    ! END IF
-    ! CALL MPI_Barrier(global_comm, grid_error)
 
   END SUBROUTINE JacobiSweep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -588,7 +552,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Fill In The Swap Data Array For Local Permutation
     DO outer_counter = 1, 2*jdata%num_processes
        DO inner_counter = 1, 2*jdata%num_processes
-          IF (perm_before(outer_counter) .EQ. perm_after(inner_counter)) THEN
+          IF (perm_after(outer_counter) .EQ. perm_before(inner_counter)) THEN
              swap_data%swap_array(outer_counter) = inner_counter
              EXIT
           END IF
