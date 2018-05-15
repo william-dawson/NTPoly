@@ -19,6 +19,27 @@ MODULE EigenSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: DistributedEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  TYPE, PRIVATE :: SwapData_t
+     !> Which process to send the left matrix to.
+     INTEGER :: send_left_partner
+     !> Which process to send the right matrix to.
+     INTEGER :: send_right_partner
+     !> A tag to identify where the left matrix is sent to.
+     INTEGER :: send_left_tag
+     !> A tag to identify where the right matrix is sent to.
+     INTEGER :: send_right_tag
+     !> Which process to receive the left matrix from.
+     INTEGER :: recv_left_partner
+     !> Which process to receive the right matrix from.
+     INTEGER :: recv_right_partner
+     !> A tag to identify the left matrix being received.
+     INTEGER :: recv_left_tag
+     !> A tag to identify the right matrix being received.
+     INTEGER :: recv_right_tag
+     !> A full list of the permutation that needs to be performed at each step.
+     INTEGER, DIMENSION(:), ALLOCATABLE :: swap_array
+  END TYPE SwapData_t
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TYPE, PRIVATE :: JacobiData_t
      !! Process Information
      !> Total processors involved in the calculation
@@ -38,17 +59,18 @@ MODULE EigenSolversModule
      INTEGER :: start_row
      INTEGER :: start_column
      !! For Inter Process Swaps
-     INTEGER :: send_left_partner
-     INTEGER :: send_right_partner
-     INTEGER :: send_left_tag
-     INTEGER :: send_right_tag
-     INTEGER :: recv_left_partner
-     INTEGER :: recv_right_partner
-     INTEGER :: recv_left_tag
-     INTEGER :: recv_right_tag
-     !! For Computing Sweeps
-     INTEGER, DIMENSION(:), ALLOCATABLE :: music_swap
-     !! Temp
+     INTEGER, DIMENSION(:), ALLOCATABLE :: phase_array
+     !> During the first num_proc rounds
+     TYPE(SwapData_t) :: left_swap
+     !> After round num_proc+1, we need to do a special swap to maintain the
+     !! correct within process order.
+     TYPE(SwapData_t) :: mid_swap
+     !> In the last num_proc+2->end rounds, we change direction when sending.
+     TYPE(SwapData_t) :: right_swap
+     !> After the sweeps are finished, this swaps the data back to the original
+     !! permutation.
+     TYPE(SwapData_t) :: final_swap
+     !> @todo remove this
      INTEGER :: matdim
   END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -97,7 +119,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! CALL FillGlobalMatrix(ABlocks, jacobi_data, eigenvectors)
 
     ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 10
+    DO iteration = 1, 1
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -121,6 +143,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ! IF (norm_value .LE. solver_parameters%converge_diff) THEN
        !    EXIT
        ! END IF
+       CALL FillGlobalMatrix(ABlocks, jacobi_data, eigenvectors)
+       CALL PrintDistributedSparseMatrix(eigenvectors)
     END DO
 
     !! Convert to global matrix
@@ -147,12 +171,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
     !! Local Variables
     INTEGER :: matrix_dimension
-    INTEGER :: iteration
     INTEGER :: ierr
     !! Music Data
-    INTEGER, DIMENSION(:), ALLOCATABLE :: music_row
-    INTEGER, DIMENSION(:), ALLOCATABLE :: music_column
+    INTEGER, DIMENSION(:), ALLOCATABLE :: swap0, swap1, swap_temp
+    !! Temporary
+    INTEGER :: counter
+    INTEGER :: stage_counter
 
+    !! @todo delete this line
     jdata%matdim = matrix%actual_matrix_dimension
 
     !! Copy The Process Grid Information
@@ -161,53 +187,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Comm_dup(within_slice_comm, jdata%communicator, ierr)
     jdata%block_start = (jdata%rank) * 2 + 1
     jdata%block_end = jdata%block_start + 1
-
-    !! Initialize the Music Arrays
-    ALLOCATE(music_row(jdata%num_processes))
-    ALLOCATE(music_column(jdata%num_processes))
-    DO iteration = 1, slice_size
-       music_row(iteration) = (iteration-1)*2 + 1
-       music_column(iteration) = (iteration-1)*2 + 2
-    END DO
-
-    !! Determine swap partners for music by doing one rotation
-    CALL RotateMusic(jdata, music_row, music_column)
-    ALLOCATE(jdata%music_swap(2*jdata%num_processes))
-    DO iteration = 1, jdata%num_processes
-       jdata%music_swap(2*iteration-1) = music_row(iteration)
-       jdata%music_swap(2*iteration) = music_column(iteration)
-    END DO
-
-    !! Determine Send Partners
-    jdata%send_left_partner = jdata%rank + 1
-    jdata%send_left_tag = 1
-    IF (jdata%rank .EQ. 0) THEN
-       jdata%send_left_partner = 0
-    ELSE IF (jdata%rank .EQ. jdata%num_processes - 1) THEN
-       jdata%send_left_partner = slice_size - 1
-       jdata%send_left_tag = 2
-    END IF
-    jdata%send_right_partner = jdata%rank - 1
-    jdata%send_right_tag = 2
-    IF (jdata%num_processes .EQ. 1) THEN
-       jdata%send_right_partner = 0
-       jdata%send_right_tag = 2
-    ELSE IF (jdata%rank .EQ. 0) THEN
-       jdata%send_right_partner = jdata%rank + 1
-       jdata%send_right_tag = 1
-    END IF
-
-    !! Determine Recv Partners
-    jdata%recv_left_partner = jdata%rank - 1
-    jdata%recv_left_tag = 1
-    IF (jdata%rank .EQ. 0) THEN
-       jdata%recv_left_partner = 0
-    END IF
-    jdata%recv_right_partner = jdata%rank + 1
-    jdata%recv_right_tag = 2
-    IF (jdata%rank .EQ. jdata%num_processes - 1) THEN
-       jdata%recv_right_partner = jdata%num_processes - 1
-    END IF
 
     !! Compute the Blocking
     matrix_dimension = matrix%actual_matrix_dimension
@@ -219,22 +198,95 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     jdata%start_column = jdata%columns * within_slice_rank + 1
     jdata%start_row = 1
 
+    !! Determine Send Partners.
+    ALLOCATE(jdata%phase_array(2*jdata%num_processes-1))
+    ALLOCATE(jdata%left_swap%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%mid_swap%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%right_swap%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%final_swap%swap_array(2*jdata%num_processes))
+    !! First we create the default permutation.
+    ALLOCATE(swap0(2*jdata%num_processes))
+    ALLOCATE(swap1(2*jdata%num_processes))
+    ALLOCATE(swap_temp(2*jdata%num_processes))
+    DO counter = 1, 2*jdata%num_processes
+       swap0(counter) = counter
+    END DO
+
+    !! Second perform rotations to compute the permutation arrays
+    stage_counter = 1
+    swap_temp = swap0
+    swap1 = swap0
+    CALL RotateMusic(jdata,swap1,1)
+    jdata%phase_array(stage_counter) = 1
+    stage_counter = stage_counter+1
+    CALL ComputePartners(jdata, jdata%left_swap, swap_temp, swap1)
+
+    DO counter = 2, jdata%num_processes-1
+       CALL RotateMusic(jdata,swap1,1)
+       jdata%phase_array(stage_counter) = 1
+       stage_counter = stage_counter+1
+    END DO
+
+    IF (jdata%num_processes .GT. 1) THEN
+       swap_temp = swap1
+       CALL RotateMusic(jdata,swap1,2)
+       jdata%phase_array(stage_counter) = 2
+       stage_counter = stage_counter+1
+       CALL ComputePartners(jdata, jdata%mid_swap, swap_temp, swap1)
+    END IF
+
+    IF (jdata%num_processes .GT. 2) THEN
+       swap_temp = swap1
+       CALL RotateMusic(jdata,swap1,3)
+       jdata%phase_array(stage_counter) = 3
+       stage_counter = stage_counter+1
+       CALL ComputePartners(jdata, jdata%right_swap, swap_temp, swap1)
+
+       DO counter = jdata%num_processes+1, 2*jdata%num_processes-3
+          CALL RotateMusic(jdata,swap1,3)
+          jdata%phase_array(stage_counter) = 3
+          stage_counter = stage_counter+1
+       END DO
+       CALL ComputePartners(jdata, jdata%final_swap, swap1, swap0)
+       jdata%phase_array(stage_counter) = 4
+    END IF
+
+    WRITE(*,*) jdata%rank, ":", &
+         jdata%left_swap%send_left_tag, jdata%left_swap%send_left_partner, &
+         jdata%left_swap%send_right_tag, jdata%left_swap%send_right_partner, &
+         jdata%left_swap%recv_left_tag, jdata%left_swap%recv_left_partner, &
+         jdata%left_swap%recv_right_tag, jdata%left_swap%recv_right_partner
+
     !! Cleanup
-    DEALLOCATE(music_row)
-    DEALLOCATE(music_column)
+    DEALLOCATE(swap0)
+    DEALLOCATE(swap1)
+    DEALLOCATE(swap_temp)
 
   END SUBROUTINE InitializeJacobi
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Destruct the jacobi data data structure.
+  !! @param[inout] jacobi_data the jacobi data.
   SUBROUTINE CleanupJacobi(jacobi_data)
     !! Parameters
     TYPE(JacobiData_t), INTENT(INOUT) :: jacobi_data
     !! Local Variables
     INTEGER :: ierr
 
+    !! MPI Cleanup
     CALL MPI_Comm_free(jacobi_data%communicator, ierr)
 
-    IF (ALLOCATED(jacobi_data%music_swap)) THEN
-       DEALLOCATE(jacobi_data%music_swap)
+    !! Memory Deallocation
+    IF (ALLOCATED(jacobi_data%left_swap%swap_array)) THEN
+       DEALLOCATE(jacobi_data%left_swap%swap_array)
+    END IF
+    IF (ALLOCATED(jacobi_data%mid_swap%swap_array)) THEN
+       DEALLOCATE(jacobi_data%mid_swap%swap_array)
+    END IF
+    IF (ALLOCATED(jacobi_data%right_swap%swap_array)) THEN
+       DEALLOCATE(jacobi_data%right_swap%swap_array)
+    END IF
+    IF (ALLOCATED(jacobi_data%final_swap%swap_array)) THEN
+       DEALLOCATE(jacobi_data%final_swap%swap_array)
     END IF
 
   END SUBROUTINE CleanupJacobi
@@ -292,7 +344,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TempMat
     TYPE(TripletList_t) :: triplet_list
-    INTEGER :: counter
 
     !! Get A Global Triplet List and Fill
     CALL ComposeSparseMatrix(local, jdata%block_rows, jdata%block_columns, &
@@ -356,7 +407,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Swap Blocks
        ! CALL FillGlobalMatrix(ABlocks, jdata, printmat)
        ! CALL PrintDistributedSparseMatrix(printmat)
-       ! CALL SwapBlocks(ABlocks, jdata)
+       IF (jdata%num_processes .GT. 1) THEN
+          IF (jdata%phase_array(iteration) .EQ. 1) THEN
+             CALL SwapBlocks(ABlocks, jdata, jdata%left_swap)
+          ELSE IF (jdata%phase_array(iteration) .EQ. 2) THEN
+             CALL SwapBlocks(ABlocks, jdata, jdata%mid_swap)
+          ELSE IF (jdata%phase_array(iteration) .EQ. 3) THEN
+             CALL SwapBlocks(ABlocks, jdata, jdata%right_swap)
+          ELSE
+             CALL SwapBlocks(ABlocks, jdata, jdata%final_swap)
+          END IF
+       END IF
 
     END DO
 
@@ -373,48 +434,174 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE JacobiSweep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE RotateMusic(jdata, music_row, music_column)
+  !> Determine the next permutation of rows and columns in a round robin fashion
+  !! Based on the music algorithm of \cite{golub2012matrix}.
+  !! @param[in] jdata the jacobi data structure.
+  !! @param[in] perm_order the current permutation of rows and columns.
+  !! @param[in] phase either 1, 2, 3, 4 based on the rotation required.
+  PURE SUBROUTINE RotateMusic(jdata, perm_order, phase)
     !! Parameters
-    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
+    TYPE(JacobiData_t), INTENT(IN) :: jdata
+    INTEGER, DIMENSION(2*jdata%num_processes), INTENT(INOUT) :: perm_order
+    INTEGER, INTENT(IN) :: phase
+    !! Copies of Music
     INTEGER, DIMENSION(jdata%num_processes) :: music_row
     INTEGER, DIMENSION(jdata%num_processes) :: music_column
-    !! Copies of Music
     INTEGER, DIMENSION(jdata%num_processes) :: music_row_orig
     INTEGER, DIMENSION(jdata%num_processes) :: music_column_orig
     !! Local Variables
     INTEGER :: counter
     INTEGER :: num_pairs
+    INTEGER :: ind
+
+    !! For convenience
+    num_pairs = jdata%num_processes
+
+    !! First split the permutation order into rows and columns.
+    DO counter = 1, num_pairs
+       ind = (counter-1)*2 + 1
+       music_row(counter) = perm_order(ind)
+       music_column(counter) = perm_order(ind+1)
+    END DO
+
+    !! Make Copies
+    music_row_orig = music_row
+    music_column_orig = music_column
 
     !! No swapping if there is just one processes
-    IF (jdata%num_processes .GT. 1) THEN
-       !! For convenience
-       num_pairs = jdata%num_processes
+    IF (num_pairs .GT. 1) THEN
+       IF (phase .EQ. 1) THEN
+          !! Rotate Bottom Half
+          DO counter = 1, num_pairs - 1
+             music_column(counter) = music_column_orig(counter+1)
+          END DO
+          music_column(num_pairs) = music_row_orig(num_pairs)
 
-       !! Make Copies
-       music_row_orig = music_row
-       music_column_orig = music_column
-
-       !! Rotate Bottom Half
-       music_column(num_pairs) = music_row_orig(num_pairs)
-       DO counter = 1, num_pairs - 1
-          music_column(counter) = music_column_orig(counter+1)
-       END DO
-
-       !! Rotate Top Half
-       IF(num_pairs .GT. 1) THEN
+          !! Rotate Top Half
+          music_row(1) = music_row_orig(1)
           music_row(2) = music_column_orig(1)
+          DO counter = 3, num_pairs
+             music_row(counter) = music_row_orig(counter-1)
+          END DO
+       ELSE IF (phase .EQ. 2) THEN
+          !! Rotate The Bottom Half
+          music_column(1) = music_column_orig(2)
+          music_column(2) = music_column_orig(1)
+          DO counter = 3, num_pairs
+             music_column(counter) = music_row_orig(counter-1)
+          END DO
+
+          !! Rotate The Top Half
+          music_row(1) = music_row_orig(1)
+          DO counter = 2, num_pairs - 1
+             music_row(counter) = music_column_orig(counter+1)
+          END DO
+          music_row(num_pairs) = music_row_orig(num_pairs)
+       ELSE IF (phase .EQ. 3) THEN
+          !! Rotate Bottom Half
+          music_column(1) = music_row_orig(2)
+          DO counter = 2, num_pairs
+             music_column(counter) = music_column_orig(counter-1)
+          END DO
+
+          !! Rotate Top Half
+          music_row(1) = music_row_orig(1)
+          DO counter = 2, num_pairs - 1
+             music_row(counter) = music_row_orig(counter+1)
+          END DO
+          music_row(num_pairs) = music_column_orig(num_pairs)
+       ELSE IF (phase .EQ. 4) THEN
+          !! Rotate Bottom Half
+          DO counter = 1, num_pairs-1
+             music_column(counter) = music_row_orig(counter+1)
+          END DO
+          music_column(num_pairs) = music_column_orig(num_pairs)
+
+          !! Rotate
+          music_row(1) = music_row_orig(1)
+          DO counter = 2, num_pairs
+             music_row(counter) = music_column_orig(counter-1)
+          END DO
        END IF
-       DO counter = 3, num_pairs
-          music_row(counter) = music_row_orig(counter-1)
-       END DO
     END IF
+
+    !! Go from split rows and columns to one big list of pairs.
+    DO counter = 1, num_pairs
+       ind = (counter-1)*2 + 1
+       perm_order(ind) = music_row(counter)
+       perm_order(ind+1) = music_column(counter)
+    END DO
 
   END SUBROUTINE RotateMusic
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SwapBlocks(ABlocks, jdata)
+  !> Given a before and after picture of a permutation, this computes the send
+  !! partners required to get this calculation done.
+  !! @param[in] jdata the full jacobi_data structure
+  !! @param[inout] swap_data a data structure to hold the swap information.
+  !! @param[in] perm_before permutation before the swap is done.
+  !! @param[in] perm_after permutation after the swap is done.
+  PURE SUBROUTINE ComputePartners(jdata, swap_data, perm_before, perm_after)
+    !! Parameters
+    TYPE(JacobiData_t), INTENT(IN) :: jdata
+    TYPE(SwapData_t), INTENT(INOUT) :: swap_data
+    INTEGER, DIMENSION(:), INTENT(IN) :: perm_before
+    INTEGER, DIMENSION(:), INTENT(IN) :: perm_after
+    !! Local Variables
+    INTEGER :: send_row
+    INTEGER :: send_col
+    INTEGER :: recv_row
+    INTEGER :: recv_col
+    !! Temporary
+    INTEGER :: counter
+    INTEGER :: inner_counter, outer_counter
+    INTEGER :: ind
+
+    !! For simplicitly we extract these into variables
+    ind = jdata%rank * 2 + 1
+    send_row = perm_before(ind)
+    send_col = perm_before(ind+1)
+    recv_row = perm_after(ind)
+    recv_col = perm_after(ind+1)
+
+    !! Now determine the rank and tag for each of these
+    DO counter = 1, 2*jdata%num_processes
+       !! Send
+       IF (perm_after(counter) .EQ. send_row) THEN
+          swap_data%send_left_partner = (counter-1)/jdata%block_columns
+          swap_data%send_left_tag = MOD((counter-1), jdata%block_columns)+1
+       END IF
+       IF (perm_after(counter) .EQ. send_col) THEN
+          swap_data%send_right_partner = (counter-1)/jdata%block_columns
+          swap_data%send_right_tag = MOD((counter-1), jdata%block_columns)+1
+       END IF
+       !! Receive
+       IF (perm_before(counter) .EQ. recv_row) THEN
+          swap_data%recv_left_partner = (counter-1)/jdata%block_columns
+       END IF
+       IF (perm_before(counter) .EQ. recv_col) THEN
+          swap_data%recv_right_partner = (counter-1)/jdata%block_columns
+       END IF
+    END DO
+    swap_data%recv_left_tag = 1
+    swap_data%recv_right_tag = 2
+
+    !! Fill In The Swap Data Array For Local Permutation
+    DO outer_counter = 1, 2*jdata%num_processes
+       DO inner_counter = 1, 2*jdata%num_processes
+          IF (perm_before(outer_counter) .EQ. perm_after(inner_counter)) THEN
+             swap_data%swap_array(outer_counter) = inner_counter
+             EXIT
+          END IF
+       END DO
+    END DO
+
+  END SUBROUTINE ComputePartners
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE SwapBlocks(ABlocks, jdata, swap_data)
     !! Parameters
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
+    TYPE(SwapData_t), INTENT(IN) :: swap_data
     !! Local Matrices
     TYPE(SparseMatrix_t) :: SendLeft, RecvLeft
     TYPE(SparseMatrix_t) :: SendRight, RecvRight
@@ -442,7 +629,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopySparseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
     END DO
     DO counter = 1, jdata%block_rows
-       index = jdata%music_swap(counter)
+       index = swap_data%swap_array(counter)
        CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
        CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
     END DO
@@ -462,15 +649,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Send Left Matrix
        SELECT CASE(send_left_stage)
        CASE(0) !! Send Sizes
-          CALL SendMatrixSizes(SendLeft, jdata%send_left_partner, &
+          CALL SendMatrixSizes(SendLeft, swap_data%send_left_partner, &
                & jdata%communicator, send_left_helper, &
-               & jdata%send_left_tag)
+               & swap_data%send_left_tag)
           send_left_stage = send_left_stage + 1
        CASE(1) !! Test Send Sizes
           IF (TestSendRecvSizeRequest(send_left_helper)) THEN
-             CALL SendMatrixData(SendLeft, jdata%send_left_partner, &
+             CALL SendMatrixData(SendLeft, swap_data%send_left_partner, &
                   & jdata%communicator, send_left_helper, &
-                  & jdata%send_left_tag)
+                  & swap_data%send_left_tag)
              send_left_stage = send_left_stage + 1
           END IF
        CASE(2) !! Test Send Outer
@@ -490,15 +677,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Receive Left Matrix
        SELECT CASE(recv_left_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvMatrixSizes(RecvLeft, jdata%recv_left_partner, &
+          CALL RecvMatrixSizes(RecvLeft, swap_data%recv_left_partner, &
                & jdata%communicator, recv_left_helper, &
-               & jdata%recv_left_tag)
+               & swap_data%recv_left_tag)
           recv_left_stage = recv_left_stage + 1
        CASE(1) !! Test Receive Sizes
           IF (TestSendRecvSizeRequest(recv_left_helper)) THEN
-             CALL RecvMatrixData(RecvLeft, jdata%recv_left_partner, &
+             CALL RecvMatrixData(RecvLeft, swap_data%recv_left_partner, &
                   & jdata%communicator, recv_left_helper, &
-                  & jdata%recv_left_tag)
+                  & swap_data%recv_left_tag)
              recv_left_stage = recv_left_stage + 1
           END IF
        CASE(2) !! Test Receive Outer
@@ -518,15 +705,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Send Right Matrix
        SELECT CASE(send_right_stage)
        CASE(0) !! Send Sizes
-          CALL SendMatrixSizes(SendRight, jdata%send_right_partner, &
+          CALL SendMatrixSizes(SendRight, swap_data%send_right_partner, &
                & jdata%communicator, send_right_helper, &
-               & jdata%send_right_tag)
+               & swap_data%send_right_tag)
           send_right_stage = send_right_stage + 1
        CASE(1) !! Test Send Sizes
           IF (TestSendRecvSizeRequest(send_right_helper)) THEN
-             CALL SendMatrixData(SendRight, jdata%send_right_partner, &
+             CALL SendMatrixData(SendRight, swap_data%send_right_partner, &
                   & jdata%communicator, send_right_helper, &
-                  & jdata%send_right_tag)
+                  & swap_data%send_right_tag)
              send_right_stage = send_right_stage + 1
           END IF
        CASE(2) !! Test Send Outer
@@ -546,15 +733,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Receive Right Matrix
        SELECT CASE(recv_right_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvMatrixSizes(RecvRight, jdata%recv_right_partner, &
+          CALL RecvMatrixSizes(RecvRight, swap_data%recv_right_partner, &
                & jdata%communicator, recv_right_helper, &
-               & jdata%recv_right_tag)
+               & swap_data%recv_right_tag)
           recv_right_stage = recv_right_stage + 1
        CASE(1) !! Test Receive Sizes
           IF (TestSendRecvSizeRequest(recv_right_helper)) THEN
-             CALL RecvMatrixData(RecvRight, jdata%recv_right_partner, &
+             CALL RecvMatrixData(RecvRight, swap_data%recv_right_partner, &
                   & jdata%communicator, recv_right_helper, &
-                  & jdata%recv_right_tag)
+                  & swap_data%recv_right_tag)
              recv_right_stage = recv_right_stage + 1
           END IF
        CASE(2) !! Test Receive Outer

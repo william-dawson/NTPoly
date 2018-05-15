@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 4
+    matrix_dimension = 8
 
     @classmethod
     def setUpClass(self):
@@ -790,10 +790,10 @@ class TestSolvers(unittest.TestCase):
         '''Test the dense eigen decomposition'''
         matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
                        density=1.0, random_state=1)
-        matrix1 = array([[11, 12, 13, 14],
-                         [12, 22, 23, 24],
-                         [13, 23, 33, 34],
-                         [14, 24, 34, 44]])
+        # matrix1 = array([[11, 12, 13, 14],
+        #                  [12, 22, 23, 24],
+        #                  [13, 23, 33, 34],
+        #                  [14, 24, 34, 44]])
         matrix1 = 0.5*csr_matrix(matrix1 + matrix1.T)
         if (self.my_rank == 0):
             print(matrix1)
