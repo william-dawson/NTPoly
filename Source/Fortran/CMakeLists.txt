@@ -15,6 +15,7 @@ set(Fsrc
     GeometryOptimizationModule.f90
     HermiteSolversModule.f90
     InverseSolversModule.f90
+    JacobiEigenSolverModule.f90
     IterativeSolversModule.f90
     LinearSolversModule.f90
     LoadBalancerModule.f90

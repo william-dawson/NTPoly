@@ -32,6 +32,11 @@ MODULE MatrixSendRecvModule
   PUBLIC :: TestSendRecvDataRequest
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Send size information about matrices.
+  !! @param[in] inmat the matrix to send.
+  !! @param[in] rank the rank of the current process.
+  !! @param[inout] comm the communicator to perform sends along.
+  !! @param[inout] helper the send-receive helper data structure.
+  !! @param[in] send_tag a tag to identify this message.
   SUBROUTINE SendMatrixSizes(inmat, rank, comm, helper, send_tag)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: inmat
@@ -52,6 +57,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SendMatrixSizes
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Receive size information about matrices.
+  !! @param[inout] outmat the matrix to receive.
+  !! @param[in] rank the rank of the current process.
+  !! @param[inout] comm the communicator to perform sends along.
+  !! @param[inout] helper the send-receive helper data structure.
+  !! @param[in] recv_tag a tag to identify this message.
   SUBROUTINE RecvMatrixSizes(outmat, rank, comm, helper, recv_tag)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(INOUT) :: outmat
@@ -68,6 +78,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE RecvMatrixSizes
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Send data contained in matrices.
+  !! @param[in] inmat the matrix to send.
+  !! @param[in] rank the rank of the current process.
+  !! @param[inout] comm the communicator to perform sends along.
+  !! @param[inout] helper the send-receive helper data structure.
+  !! @param[in] send_tag a tag to identify this message.
   SUBROUTINE SendMatrixData(inmat,rank,comm,helper,send_tag)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: inmat
@@ -89,6 +104,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SendMatrixData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Receive data contained in matrices.
+  !! @param[inout] outmat the matrix to receive.
+  !! @param[in] rank the rank of the current process.
+  !! @param[inout] comm the communicator to perform sends along.
+  !! @param[inout] helper the send-receive helper data structure.
+  !! @param[in] recv_tag a tag to identify this message.
   SUBROUTINE RecvMatrixData(outmat,rank,comm,helper,recv_tag)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(INOUT) :: outmat
