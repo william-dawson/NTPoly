@@ -458,19 +458,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL MatrixToTripletList(merged_local_data, triplet_list)
        !! Absolute Positions
-<<<<<<< HEAD
-       DO counter = 1, triplet_list%CurrentSize
-          triplet_list%data(counter)%index_row = &
-               & triplet_list%data(counter)%index_row + this%start_row - 1
-          triplet_list%data(counter)%index_column = &
-               & triplet_list%data(counter)%index_column + this%start_column - 1
-       END DO
-       CALL MPI_File_open(this%process_grid%within_slice_comm,file_name,&
-=======
        CALL ShiftTripletList(triplet_list, this%start_row - 1, &
             & this%start_column - 1)
-       CALL MPI_File_open(within_slice_comm,file_name,&
->>>>>>> Eigensolver
+       CALL MPI_File_open(this%process_grid%within_slice_comm,file_name,&
             & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
             & mpi_file_handler, ierr)
        !! Write Header
@@ -1442,8 +1432,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(SparseMatrix_t), INTENT(IN) :: matrix_to_split
 
-    CALL SplitSparseMatrix(matrix_to_split, number_of_blocks_rows, &
-         & number_of_blocks_columns, this%local_data)
+    CALL SplitSparseMatrix(matrix_to_split, &
+         & this%process_grid%number_of_blocks_rows, &
+         & this%process_grid%number_of_blocks_columns, this%local_data)
 
   END SUBROUTINE SplitToLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1455,8 +1446,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(SparseMatrix_t), INTENT(INOUT) :: merged_matrix
 
-    CALL ComposeSparseMatrix(this%local_data, number_of_blocks_rows, &
-         & number_of_blocks_columns, merged_matrix)
+    CALL ComposeSparseMatrix(this%local_data, &
+         & this%process_grid%number_of_blocks_rows, &
+         & this%process_grid%number_of_blocks_columns, merged_matrix)
 
   END SUBROUTINE MergeLocalBlocks
 END MODULE DistributedSparseMatrixModule

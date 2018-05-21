@@ -103,9 +103,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillDistributedIdentity(eigenvectors)
 
     !! Extract to local dense blocks
-    ALLOCATE(ABlocks(2,slice_size*2))
+    ALLOCATE(ABlocks(2,jacobi_data%block_rows))
     CALL GetLocalBlocks(this, jacobi_data, ABlocks)
-    ALLOCATE(VBlocks(2,slice_size*2))
+    ALLOCATE(VBlocks(2,jacobi_data%block_rows))
     CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
     CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
          & jacobi_data%block_columns, local_a)
@@ -168,9 +168,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: stage_counter
 
     !! Copy The Process Grid Information
-    jdata%num_processes = slice_size
-    jdata%rank = within_slice_rank
-    CALL MPI_Comm_dup(within_slice_comm, jdata%communicator, ierr)
+    CALL MPI_Comm_dup(matrix%process_grid%within_slice_comm, &
+         & jdata%communicator, ierr)
+    CALL MPI_Comm_size(jdata%communicator, jdata%num_processes, ierr)
+    CALL MPI_Comm_rank(jdata%communicator, jdata%rank, ierr)
     jdata%block_start = (jdata%rank) * 2 + 1
     jdata%block_end = jdata%block_start + 1
 
@@ -187,7 +188,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        jdata%columns = matrix%actual_matrix_dimension - &
             & jdata%column_divisor*(jdata%num_processes-1)
     END IF
-    jdata%start_column = jdata%column_divisor * within_slice_rank + 1
+    jdata%start_column = jdata%column_divisor * jdata%rank + 1
     jdata%start_row = 1
 
     !! Determine Send Partners.
@@ -286,10 +287,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), DIMENSION(:,:) :: local
     !! Local Variables
     TYPE(TripletList_t) :: local_triplets
-    TYPE(TripletList_t), DIMENSION(slice_size) :: send_triplets
+    TYPE(TripletList_t), DIMENSION(jdata%num_processes) :: send_triplets
     TYPE(TripletList_t) :: received_triplets, sorted_triplets
     !! Some Blocking Information
-    INTEGER, DIMENSION(slice_size*2) :: divisor
+    INTEGER, DIMENSION(jdata%block_rows) :: divisor
     INTEGER, DIMENSION(2) :: local_divide
     !! Temporary
     TYPE(Triplet_t) :: temp_triplet
@@ -299,7 +300,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Get The Local Triplets
     CALL ConstructTripletList(local_triplets)
-    IF (between_slice_rank .EQ. 0) THEN
+    IF (distributed%process_grid%between_slice_rank .EQ. 0) THEN
        CALL GetTripletList(distributed, local_triplets)
     END IF
     DO counter = 1, jdata%num_processes
@@ -313,8 +314,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL AppendToTripletList(send_triplets(insert), temp_triplet)
     END DO
-    CALL RedistributeTripletLists(send_triplets, within_slice_comm, &
-         & received_triplets)
+    CALL RedistributeTripletLists(send_triplets, &
+         & distributed%process_grid%within_slice_comm, received_triplets)
     CALL ShiftTripletList(received_triplets, 0, -(jdata%start_column - 1))
     CALL SortTripletList(received_triplets, jdata%columns, sorted_triplets)
     CALL ConstructFromTripletList(local_mat, sorted_triplets, jdata%rows, &
