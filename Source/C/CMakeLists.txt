@@ -28,3 +28,5 @@ set(Csrc
     Triplet_c.h
     Wrapper.h
 )
+
+install(DIRECTORY . DESTINATION include)

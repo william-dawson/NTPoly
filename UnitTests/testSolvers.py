@@ -2,32 +2,30 @@
 A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
-
 import warnings
-warnings.filterwarnings(action="ignore", module="scipy",
-                        message="^internal gelsd")
-
 import scipy
 from scipy.linalg import pinv, funm, polar, cholesky
 from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
 from scipy.sparse.linalg import norm, inv, eigsh
 from numpy import zeros, sqrt, power, \
-    sign, exp, log, sin, cos, linspace, diag, dot, sort
+    sign, exp, log, sin, cos, linspace, diag, dot, array, sort
 from numpy.linalg import eigh, svd
-from numpy.linalg import norm as densenorm
-import numpy
+from numpy.linalg import norm as normd
 from random import random
 import os
 from numpy.polynomial.chebyshev import chebfit, chebval
 from numpy.polynomial.hermite import hermfit, hermval
 from mpi4py import MPI
-# MPI global communicator.
-comm = MPI.COMM_WORLD
-
 from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
+
+
+# MPI global communicator.
+comm = MPI.COMM_WORLD
+warnings.filterwarnings(action="ignore", module="scipy",
+                        message="^internal gelsd")
 
 
 class TestSolvers(unittest.TestCase):
@@ -41,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 17
+    matrix_dimension = 128
 
     @classmethod
     def setUpClass(self):
@@ -184,8 +182,9 @@ class TestSolvers(unittest.TestCase):
         permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.iterative_solver_parameters.SetLoadBalance(permutation)
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix, inverse_matrix,
-                                               self.iterative_solver_parameters)
+        nt.SquareRootSolvers.InverseSquareRoot(
+            overlap_matrix, inverse_matrix,
+            self.iterative_solver_parameters)
         inverse_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -375,8 +374,9 @@ class TestSolvers(unittest.TestCase):
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.iterative_solver_parameters.SetLoadBalance(permutation)
-        nt.ExponentialSolvers.ComputeExponentialPade(input_matrix, exp_matrix,
-                                                     self.iterative_solver_parameters)
+        nt.ExponentialSolvers.ComputeExponentialPade(
+            input_matrix, exp_matrix,
+            self.iterative_solver_parameters)
         exp_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -715,8 +715,9 @@ class TestSolvers(unittest.TestCase):
         # Result Matrix
         max_value = 0.0
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        max_value = nt.EigenBounds.PowerBounds(input_matrix,
-                                               self.iterative_solver_parameters)
+        max_value = nt.EigenBounds.PowerBounds(
+            input_matrix,
+            self.iterative_solver_parameters)
         comm.barrier()
 
         vals, vec = eigsh(temp_mat, which="LM", k=1)
@@ -854,8 +855,9 @@ class TestSolvers(unittest.TestCase):
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.iterative_solver_parameters.SetLoadBalance(permutation)
-        nt.SignSolvers.ComputePolarDecomposition(input_matrix, u_matrix, h_matrix,
-                                                 self.iterative_solver_parameters)
+        nt.SignSolvers.ComputePolarDecomposition(
+            input_matrix, u_matrix, h_matrix,
+            self.iterative_solver_parameters)
         h_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -867,7 +869,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_eigendecomposition(self):
+    def test_splittingeigendecomposition(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
         temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
@@ -888,9 +890,40 @@ class TestSolvers(unittest.TestCase):
         self.iterative_solver_parameters.SetLoadBalance(permutation)
         vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
         val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
-        nt.EigenSolvers.EigenDecomposition(input_matrix, vec_matrix, val_matrix,
-                                           self.matrix_dimension,
-                                           self.iterative_solver_parameters)
+        nt.EigenSolvers.SplittingEigenDecomposition(input_matrix, vec_matrix,
+                                                    val_matrix,
+                                                    self.matrix_dimension,
+                                                    self.iterative_solver_parameters)
+        val_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_denseeigendecomposition(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
+                        density=1.0, random_state=2)
+        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+        self.CheckMat = csr_matrix(diag(vals))
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.iterative_solver_parameters.SetLoadBalance(permutation)
+        vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
+        nt.EigenSolvers.DenseEigenDecomposition(input_matrix, vec_matrix,
+                                                val_matrix,
+                                                self.matrix_dimension,
+                                                self.iterative_solver_parameters)
         val_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -905,7 +938,7 @@ class TestSolvers(unittest.TestCase):
 
         # Check Matrix
         vals, vecs = eigh(matrix1.todense())
-        valshalf = vals[:int(self.matrix_dimension/2)]
+        valshalf = vals[:int(self.matrix_dimension / 2)]
         self.CheckMat = csr_matrix(diag(valshalf))
         if self.my_rank == 0:
             mmwrite(self.input_file, csr_matrix(matrix1))
@@ -918,9 +951,10 @@ class TestSolvers(unittest.TestCase):
         self.iterative_solver_parameters.SetLoadBalance(permutation)
         vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
         val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
-        nt.EigenSolvers.EigenDecomposition(input_matrix, vec_matrix, val_matrix,
-                                           int(self.matrix_dimension/2),
-                                           self.iterative_solver_parameters)
+        nt.EigenSolvers.SplittingEigenDecomposition(input_matrix, vec_matrix,
+                                                    val_matrix,
+                                                    int(self.matrix_dimension / 2),
+                                                    self.iterative_solver_parameters)
         val_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 

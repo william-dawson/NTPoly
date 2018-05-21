@@ -2,6 +2,7 @@
 !> A module for wrapping the sparse matrix data type.
 MODULE SparseMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
+  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
   USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructZeroSparseMatrix, &
        & ConstructEmptySparseMatrix, ConstructSparseMatrixFromFile, &
@@ -20,7 +21,6 @@ MODULE SparseMatrixModule_wrp
      TYPE(SparseMatrix_t), POINTER :: DATA
   END TYPE SparseMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !!PUBLIC :: ConstructEmptySparseMatrix_wrp
   PUBLIC :: ConstructSparseMatrixFromFile_wrp
   PUBLIC :: ConstructFromTripletList_wrp
   PUBLIC :: ConstructZeroSparseMatrix_wrp
@@ -34,6 +34,7 @@ MODULE SparseMatrixModule_wrp
   PUBLIC :: PrintSparseMatrix_wrp
   PUBLIC :: PrintSparseMatrixF_wrp
   PUBLIC :: MatrixToTripletList_wrp
+  PUBLIC :: DenseEigenDecomposition_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   SUBROUTINE ConstructSparseMatrixFromFile_wrp(ih_this, file_name, name_size) &
@@ -227,4 +228,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the dense eigendecompsition routine.
+  PURE SUBROUTINE DenseEigenDecomposition_wrp(ih_matA, ih_matV, threshold) &
+       & bind(c,name="DenseEigenDecomposition_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matV(SIZE_wrp)
+    REAL(NTREAL), INTENT(IN) :: threshold
+    TYPE(SparseMatrix_wrp) :: h_matA
+    TYPE(SparseMatrix_wrp) :: h_matV
+
+    h_matA  = TRANSFER(ih_matA,h_matA)
+    h_matV = TRANSFER(ih_matV,h_matV)
+    CALL DenseEigenDecomposition(h_matA%data,h_matV%data, threshold)
+  END SUBROUTINE DenseEigenDecomposition_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SparseMatrixModule_wrp

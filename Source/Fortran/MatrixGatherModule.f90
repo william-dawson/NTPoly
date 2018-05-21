@@ -199,7 +199,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_INT, helper%outer_index_buffer, matrix%columns+1, MPI_INT, &
          & communicator, helper%outer_request, grid_error)
   END SUBROUTINE GatherAndListData
-  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third a routine to cleanup the list builder.
   !! @param[in] matrix to send.
   !! @param[inout] gathered_matrix the matrix being gathered.

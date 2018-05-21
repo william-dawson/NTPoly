@@ -5,6 +5,7 @@ MODULE EigenBoundsModule_wrp
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
   USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
+  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int

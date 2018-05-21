@@ -52,6 +52,7 @@ mpif90 main.f90 -o example \
 C++ Build Instructions:
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
+
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
   -llapack

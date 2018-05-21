@@ -7,8 +7,11 @@ import scipy
 from numpy import sum, multiply
 import scipy.sparse
 from random import uniform, randint
+from scipy.linalg import eigh
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
+from numpy import diag
+from numpy.linalg import norm as normd
 
 from scipy.io import mmwrite, mmread
 import os
@@ -52,6 +55,7 @@ class TestLocalMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(2, 4, 1.0))
         self.parameters.append(TestParameters(4, 4, 0.2))
         self.parameters.append(TestParameters(8, 8, 1.0))
+        # self.parameters.append(TestParameters(256, 256, 1.0))
 
     def test_read(self):
         '''Test our ability to read and write matrices.'''
@@ -240,6 +244,28 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
+    def test_eigendecomposition(self):
+        '''Test the dense eigen decomposition'''
+        for param in self.parameters:
+            matrix1 = random(param.rows, param.rows, 1.0, format="csr")
+            matrix1 = matrix1 + matrix1.T
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            w, vdense = eigh(matrix1.todense())
+            CheckV = csr_matrix(vdense)
+
+            ntmatrix = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            V = nt.SparseMatrix(ntmatrix.GetColumns(), ntmatrix.GetColumns())
+
+            ntmatrix.EigenDecomposition(V, THRESHOLD)
+            V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
+
+            ResultV = mmread(self.scratch_dir + "/vmat.mtx")
+            CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+            normvalv = abs(normd(CheckD - ResultD))
+
+            self.assertLessEqual(normvalv, THRESHOLD)
+
     def test_get_row(self):
         '''Test function that extracts a row from the matrix'''
         for param in self.parameters:
@@ -248,7 +274,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = random(param.rows, param.columns,
                              param.sparsity, format="csr")
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            row_num = randint(0,param.rows-1)
+            row_num = randint(0, param.rows - 1)
             CheckMat = matrix1[row_num, :]
 
             ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
@@ -268,7 +294,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = random(param.rows, param.columns,
                              param.sparsity, format="csr")
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            column_num = randint(0,param.columns-1)
+            column_num = randint(0, param.columns - 1)
             CheckMat = matrix1[:, column_num]
 
             ntmatrix1 = nt.SparseMatrix(self.scratch_dir + "/matrix1.mtx")

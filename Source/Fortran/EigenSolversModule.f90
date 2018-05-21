@@ -8,6 +8,7 @@ MODULE EigenSolversModule
   USE DensityMatrixSolversModule
   USE FixedSolversModule
   USE IterativeSolversModule
+  USE JacobiEigenSolverModule
   USE LinearSolversModule
   USE LoggingModule
   USE ParameterConverterModule
@@ -23,8 +24,30 @@ MODULE EigenSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTEGER, PARAMETER :: BASESIZE = 2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: EigenDecomposition
+  PUBLIC :: SplittingEigenDecomposition
+  PUBLIC :: DenseEigenDecomposition
   PUBLIC :: SingularValueDecomposition
+CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE DenseEigenDecomposition(this, eigenvectors, &
+       & solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+
+    CALL JacobiSolve(this, eigenvectors, solver_parameters)
+
+  END SUBROUTINE DenseEigenDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvalues and eigenvectors of a matrix.
   !! @param[in] this the matrix to decompose.
@@ -32,7 +55,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] eigenvalues a diagonal matrix containing the eigenvalues.
   !! @param[in] num_values_in the number of eigenvalues to compute (optional).
   !! @param[in] solver_parameters_in parameters for the solver (optional).
-  SUBROUTINE EigenDecomposition(this, eigenvectors, eigenvalues, &
+  SUBROUTINE SplittingEigenDecomposition(this, eigenvectors, eigenvalues, &
        & num_values_in, solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this

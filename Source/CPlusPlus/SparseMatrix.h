@@ -37,12 +37,13 @@ public:
   //!\param this the matrix to extract from.
   //!\param row_number the row to extract
   //!\param row_out the matrix representing that row
-  void ExtractRow(int row_number, SparseMatrix& row_out) const;
-  //! Extract a column from the matrix into the compressed vector representation.
+  void ExtractRow(int row_number, SparseMatrix &row_out) const;
+  //! Extract a column from the matrix into the compressed vector
+  //! representation.
   //!\param this the matrix to extract from.
   //!\param column_number the column to extract
   //!\param column_out the matrix representing that column
-  void ExtractColumn(int column_number, SparseMatrix& column_out) const;
+  void ExtractColumn(int column_number, SparseMatrix &column_out) const;
 
 public:
   //! Scale the matrix by a constant.
@@ -75,6 +76,9 @@ public:
   void Gemm(const NTPoly::SparseMatrix &matA, const NTPoly::SparseMatrix &matB,
             bool isATransposed, bool isBTransposed, double alpha, double beta,
             double threshold, NTPoly::MatrixMemoryPool &memory_pool);
+
+public:
+  void EigenDecomposition(NTPoly::SparseMatrix &MatV, double threshold);
 
 public:
   //! Transpose a sparse matrix.

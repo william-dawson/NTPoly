@@ -25,6 +25,7 @@ MODULE SparseMatrixAlgebraModule
   PUBLIC :: DotSparseMatrix
   PUBLIC :: PairwiseMultiplySparseMatrix
   PUBLIC :: Gemm
+  PUBLIC :: SparseMatrixColumnNorm
   PUBLIC :: SparseMatrixNorm
   PUBLIC :: SparseMatrixGrandSum
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -337,17 +338,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a sparse matrix along the columns.
   !! @param[in] this the matrix to compute the norm of.
   !! @param[out] norm_per_column the norm value for each column in this matrix.
-  PURE SUBROUTINE SparseMatrixNorm(this, norm_per_column)
+  PURE SUBROUTINE SparseMatrixColumnNorm(this, norm_per_column)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: this
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(OUT) :: norm_per_column
+    REAL(NTREAL), DIMENSION(this%columns), INTENT(OUT) :: norm_per_column
     !! Local Data
     INTEGER :: outer_counter, inner_counter
     INTEGER :: elements_per_inner
     REAL(NTREAL) :: temp_value
 
     !! Allocate Space For Result
-    ALLOCATE(norm_per_column(this%columns))
     norm_per_column = 0
 
     !! Iterate Over Local Data
@@ -361,7 +361,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & ABS(temp_value)
        END DO
     END DO
-  END SUBROUTINE SparseMatrixNorm
+  END SUBROUTINE SparseMatrixColumnNorm
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the 1 norm of a sparse matrix.
+  !! @param[in] this the matrix to compute the norm of.
+  !! @param[out] norm the matrix.
+  PURE FUNCTION SparseMatrixNorm(this) RESULT(norm)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    REAL(NTREAL) :: norm
+    !! Local Variables
+    REAL(NTREAL), DIMENSION(this%columns) :: column
+
+    CALL SparseMatrixColumnNorm(this,column)
+    norm = MAXVAL(column)
+
+  END FUNCTION SparseMatrixNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum the elements of a matrix
   !! @param[in] this the matrix to sum
