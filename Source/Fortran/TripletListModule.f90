@@ -29,6 +29,7 @@ MODULE TripletListModule
   PUBLIC :: SymmetrizeTripletList
   PUBLIC :: GetTripletListSize
   PUBLIC :: RedistributeTripletLists
+  PUBLIC :: ShiftTripletList
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
@@ -420,5 +421,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(recv_buffer_val)
 
   END SUBROUTINE RedistributeTripletLists
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Shift the rows and columns of a triplet list by set values.
+  !! Frequently, we have a triplet list that comes from the global matrix which
+  !! we would like to shift into a local matrix. In that case, just pass
+  !! the negative of the starting row and column (plus 1) to this routine.
+  PURE SUBROUTINE ShiftTripletList(triplet_list, row_shift, column_shift)
+    !! Parameters
+    TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
+    INTEGER, INTENT(IN) :: row_shift
+    INTEGER, INTENT(IN) :: column_shift
+    !! Local Variables
+    INTEGER :: counter
+
+    !! Loop
+    DO counter = 1, triplet_list%CurrentSize
+       triplet_list%data(counter)%index_row = &
+            triplet_list%data(counter)%index_row + row_shift
+       triplet_list%data(counter)%index_column = &
+            triplet_list%data(counter)%index_column + column_shift
+    END DO
+
+  END SUBROUTINE ShiftTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletListModule

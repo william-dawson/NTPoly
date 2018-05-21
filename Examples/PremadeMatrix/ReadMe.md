@@ -45,13 +45,15 @@ I can build this example using gfortran with the following command:
 Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
-  -L../../Build/lib -lNTPoly -fopenmp
+  -L../../Build/lib -lNTPoly -fopenmp -llapack
 
 C++ Build Instructions:
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
+
 mpif90 main.o -o example \
-  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++
+  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
+  -llapack
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:

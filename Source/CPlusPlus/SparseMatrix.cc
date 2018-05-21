@@ -111,4 +111,10 @@ void SparseMatrix::WriteToMatrixMarket(string file_name) {
 void SparseMatrix::MatrixToTripletList(TripletList &triplet_list) {
   MatrixToTripletList_wrp(ih_this, triplet_list.ih_this);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void SparseMatrix::EigenDecomposition(NTPoly::SparseMatrix &MatV,
+                                      double threshold) {
+  DenseEigenDecomposition_wrp(ih_this, MatV.ih_this, &threshold);
+}
 } // namespace NTPoly

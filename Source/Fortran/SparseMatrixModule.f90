@@ -33,9 +33,12 @@ MODULE SparseMatrixModule
   PUBLIC :: GetColumns
   PUBLIC :: ExtractRow
   PUBLIC :: ExtractColumn
-  !! Helper routines
+  !! Routines for splitting and composing
+  PUBLIC :: SplitSparseMatrix
   PUBLIC :: SplitSparseMatrixColumns
+  PUBLIC :: ComposeSparseMatrix
   PUBLIC :: ComposeSparseMatrixColumns
+  !! ETC
   PUBLIC :: TransposeSparseMatrix
   PUBLIC :: PrintSparseMatrix
   PUBLIC :: MatrixToTripletList
@@ -361,6 +364,42 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(sorted_triplet_list)
   END SUBROUTINE TransposeSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Create a big matrix from an array of matrices by putting them one next
+  !! to another.
+  !! @param[in] mat_array 2d array of matrices to compose.
+  !! @param[in] block_rows the number of rows of the array of blocks.
+  !! @param[in] block_columns the number of columns of the array of blocks.
+  !! @param[out] out_matrix the composed matrix.
+  PURE SUBROUTINE ComposeSparseMatrix(mat_array, block_rows, block_columns, &
+       & out_matrix)
+    !! Parameters
+    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
+         & mat_array
+    INTEGER, INTENT(IN) :: block_rows, block_columns
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
+    !! Local Data
+    TYPE(SparseMatrix_t), DIMENSION(block_rows) :: rows_of_merged
+    TYPE(SparseMatrix_t) :: Temp
+    INTEGER :: row_counter
+
+    !! First compose the rows
+    DO row_counter = 1, block_rows
+       CALL ComposeSparseMatrixColumns(mat_array(:,row_counter), Temp)
+       CALL TransposeSparseMatrix(Temp, rows_of_merged(row_counter))
+    END DO
+
+    !! Next compose the columns
+    CALL ComposeSparseMatrixColumns(rows_of_merged, Temp)
+    CALL TransposeSparseMatrix(Temp, out_matrix)
+
+    !! Cleanup
+    CALL DestructSparseMatrix(Temp)
+    DO row_counter=1, block_rows
+       CALL DestructSparseMatrix(rows_of_merged(row_counter))
+    END DO
+
+  END SUBROUTINE ComposeSparseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
   !! the first matrix are followed by the columns of the matrices in the list.
   !! @param[in] mat_list list of matrices to compose.
@@ -416,75 +455,126 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ComposeSparseMatrixColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Take a matrix, and split into into small blocks.
+  !> Split a sparse matrix into an array of sparse matrices.
+  !! @param[in] this the matrix to split.
+  !! @param[in] block_rows number of rows to split the matrix into.
+  !! @param[in] block_columns number of columns to split the matrix into.
+  !! @param[out] split_array a COLUMNxROW array for the output to go into.
+  PURE SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
+       & split_array, block_size_row_in, block_size_column_in)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    INTEGER, INTENT(IN) :: block_rows, block_columns
+    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), &
+         & INTENT(INOUT) :: split_array
+    INTEGER, DIMENSION(block_rows), INTENT(IN), OPTIONAL :: block_size_row_in
+    INTEGER, DIMENSION(block_columns), INTENT(IN), OPTIONAL :: &
+         & block_size_column_in
+    !! Local Data
+    INTEGER, DIMENSION(block_rows) :: block_size_row
+    INTEGER, DIMENSION(block_columns) :: block_size_column
+    !! Temporary Variables
+    TYPE(SparseMatrix_t), DIMENSION(block_columns) :: column_split
+    TYPE(SparseMatrix_t), DIMENSION(block_rows) :: row_split
+    TYPE(SparseMatrix_t) :: Temp
+    INTEGER :: divisor_row, divisor_column
+    INTEGER :: II, JJ
+
+    !! Calculate the split sizes
+    IF (PRESENT(block_size_row_in)) THEN
+       block_size_row = block_size_row_in
+    ELSE
+       divisor_row = this%rows/block_rows
+       block_size_row = divisor_row
+       block_size_row(block_rows) = this%rows - divisor_row*(block_rows-1)
+    END IF
+    IF (PRESENT(block_size_column_in)) THEN
+       block_size_column = block_size_column_in
+    ELSE
+       divisor_column = this%columns/block_columns
+       block_size_column = divisor_column
+       block_size_column(block_columns) = this%columns - &
+            & divisor_column*(block_columns-1)
+    END IF
+
+    !! First split by columns which is easy with the CSR format
+    CALL SplitSparseMatrixColumns(this, block_columns, block_size_column, &
+         & column_split)
+
+    !! Now Split By Rows
+    DO JJ = 1, block_columns
+       CALL TransposeSparseMatrix(column_split(JJ), Temp)
+       CALL SplitSparseMatrixColumns(Temp, block_rows, block_size_row, &
+            & row_split)
+       !! Copy into output array
+       DO II = 1, block_rows
+          CALL TransposeSparseMatrix(row_split(II), split_array(JJ,II))
+       END DO
+    END DO
+
+    !! Cleanup
+    CALL DestructSparseMatrix(Temp)
+    DO II = 1, block_rows
+       CALL DestructSparseMatrix(row_split(II))
+    END DO
+    DO II = 1, block_columns
+       CALL DestructSparseMatrix(column_split(II))
+    END DO
+
+  END SUBROUTINE SplitSparseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Split a matrix into into small blocks based on the specified offsets.
   !! @param[in] this matrix to perform this operation on.
-  !! @param[in] num_blocks number of blocks to split into.
+  !! @param[in] num_blocks number of blocks to split into
+  !! @param[out] block_offsets the offsets used for splitting.
   !! @param[out] split_list 1D array of blocks.
-  !! @param[out] block_offsets_out the offsets used for splitting.
-  PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, split_list, &
-       & block_offsets_out)
+  PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, block_sizes, &
+       & split_list)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: num_blocks
-    TYPE(SparseMatrix_t), DIMENSION(num_blocks), INTENT(OUT) :: split_list
-    INTEGER, DIMENSION(num_blocks+1), INTENT(OUT), OPTIONAL :: block_offsets_out
+    INTEGER, DIMENSION(num_blocks), INTENT(IN) :: block_sizes
+    TYPE(SparseMatrix_t), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
     !! Local Data
-    INTEGER, DIMENSION(num_blocks) :: block_sizes
     INTEGER, DIMENSION(num_blocks+1) :: block_offsets
-    INTEGER :: split_divisor
     !! Counters
     INTEGER :: split_counter
     !! Temporary variables
     INTEGER :: loffset, lcolumns, linner_offset, total_values
 
-    !! Handle trivial case
-    IF (num_blocks .EQ. 1) THEN
-       CALL CopySparseMatrix(this,split_list(1))
-       block_offsets(1) = 1
-       block_offsets(2) = this%columns+1
-    ELSE
-       !! Compute the sizes of each block
-       split_divisor = this%columns/num_blocks
-       block_sizes = split_divisor
-       !! Handle an uneven split
-       block_sizes(num_blocks) = this%columns - split_divisor*(num_blocks-1)
-       !! Offsets
-       block_offsets(1) = 1
-       DO split_counter = 2, num_blocks+1
-          block_offsets(split_counter) = block_offsets(split_counter-1) + &
-               & block_sizes(split_counter-1)
-       END DO
+    !! Compute Offsets
+    block_offsets(1) = 1
+    DO split_counter = 2, num_blocks+1
+       block_offsets(split_counter) = block_offsets(split_counter-1) + &
+            & block_sizes(split_counter-1)
+    END DO
 
-       !! Split up the columns
-       DO split_counter = 1, num_blocks
-          !! Temporary variables
-          loffset = block_offsets(split_counter)
-          lcolumns = block_sizes(split_counter)
-          linner_offset = this%outer_index(loffset)+1
-          !! Construct
-          CALL ConstructEmptySparseMatrix(split_list(split_counter), &
-               & columns=lcolumns, rows=this%rows)
-          !! Copy Outer Index
-          split_list(split_counter)%outer_index =        &
-               & this%outer_index(loffset:loffset+lcolumns)
-          split_list(split_counter)%outer_index =        &
-               & split_list(split_counter)%outer_index -    &
-               & split_list(split_counter)%outer_index(1)
-          total_values = split_list(split_counter)%outer_index(lcolumns+1)
-          !! Copy Inner Indices and Values
-          IF (total_values .GT. 0) THEN
-             ALLOCATE(split_list(split_counter)%inner_index(total_values))
-             split_list(split_counter)%inner_index = &
-                  & this%inner_index(linner_offset:linner_offset+total_values-1)
-             ALLOCATE(split_list(split_counter)%values(total_values))
-             split_list(split_counter)%values = &
-                  & this%values(linner_offset:linner_offset+total_values-1)
-          END IF
-       END DO
-    END IF
-    IF (PRESENT(block_offsets_out)) THEN
-       block_offsets_out = block_offsets
-    END IF
+    !! Split up the columns
+    DO split_counter = 1, num_blocks
+       !! Temporary variables
+       loffset = block_offsets(split_counter)
+       lcolumns = block_sizes(split_counter)
+       linner_offset = this%outer_index(loffset)+1
+       !! Construct
+       CALL ConstructEmptySparseMatrix(split_list(split_counter), &
+            & columns=lcolumns, rows=this%rows)
+       !! Copy Outer Index
+       split_list(split_counter)%outer_index =        &
+            & this%outer_index(loffset:loffset+lcolumns)
+       split_list(split_counter)%outer_index =        &
+            & split_list(split_counter)%outer_index -    &
+            & split_list(split_counter)%outer_index(1)
+       total_values = split_list(split_counter)%outer_index(lcolumns+1)
+       !! Copy Inner Indices and Values
+       IF (total_values .GT. 0) THEN
+          ALLOCATE(split_list(split_counter)%inner_index(total_values))
+          split_list(split_counter)%inner_index = &
+               & this%inner_index(linner_offset:linner_offset+total_values-1)
+          ALLOCATE(split_list(split_counter)%values(total_values))
+          split_list(split_counter)%values = &
+               & this%values(linner_offset:linner_offset+total_values-1)
+       END IF
+    END DO
   END SUBROUTINE SplitSparseMatrixColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list from a matrix.

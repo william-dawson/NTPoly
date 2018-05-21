@@ -1,6 +1,14 @@
-FIND_PACKAGE(SWIG 3.0)
-
+################################################################################
 if (SWIG_FOUND)
+  # Determine python path using python's distutils module
+  if(NOT DEFINED PYTHON_EXECUTABLE)
+    find_package(PythonInterp REQUIRED)
+  endif()
+  execute_process(
+      COMMAND ${PYTHON_EXECUTABLE} -c
+      "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
+      OUTPUT_VARIABLE PYTHON_INCLUDE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
+  MESSAGE("Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
   INCLUDE(${SWIG_USE_FILE})
 
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
@@ -19,10 +27,11 @@ if (SWIG_FOUND)
   endforeach(file)
   set(CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/python)
   SWIG_ADD_MODULE(NTPolySwig python ${Swigsrc})
-  #SWIG_ADD_LIBRARY(NTPolySwig LANGUAGE python SOURCES ${Swigsrc})
   SWIG_LINK_LIBRARIES(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly ${PYTHON_LIBRARIES})
   set_target_properties(_NTPolySwig PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
     LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python
   )
+else()
+  MESSAGE("Swig not found! No python bindings will be generated.")
 endif()

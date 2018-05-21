@@ -15,13 +15,16 @@ set(Fsrc
     GeometryOptimizationModule.f90
     HermiteSolversModule.f90
     InverseSolversModule.f90
+    JacobiEigenSolverModule.f90
     IterativeSolversModule.f90
     LinearSolversModule.f90
     LoadBalancerModule.f90
     LoggingModule.f90
+    MatrixBroadcastModule.f90
     MatrixGatherModule.f90
     MatrixMarketModule.f90
     MatrixMemoryPoolModule.f90
+    MatrixSendRecvModule.f90
     MinimizerSolversModule.f90
     ParameterConverterModule.f90
     PermutationModule.f90
@@ -41,3 +44,5 @@ set(Fsrc
 )
 
 add_library(NTPoly STATIC ${Fsrc})
+install(TARGETS NTPoly
+        ARCHIVE DESTINATION lib)

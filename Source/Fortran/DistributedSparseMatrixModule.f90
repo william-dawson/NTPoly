@@ -15,14 +15,14 @@ MODULE DistributedSparseMatrixModule
   USE SparseMatrixModule, ONLY : SparseMatrix_t, &
        & ConstructFromTripletList, DestructSparseMatrix, &
        & CopySparseMatrix, ConstructZeroSparseMatrix, &
-       & TransposeSparseMatrix, SplitSparseMatrixColumns, &
-       & ComposeSparseMatrixColumns, PrintSparseMatrix, &
-       & MatrixToTripletList
+       & TransposeSparseMatrix, ComposeSparseMatrix, PrintSparseMatrix, &
+       & MatrixToTripletList, SplitSparseMatrix
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_t, GetMPITripletType
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
-       & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists
+       & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
+       & ShiftTripletList
   USE iso_c_binding
   USE MPI
   IMPLICIT NONE
@@ -72,6 +72,7 @@ MODULE DistributedSparseMatrixModule
   PUBLIC :: GetSize
   PUBLIC :: FilterDistributedSparseMatrix
   PUBLIC :: MergeLocalBlocks
+  PUBLIC :: SplitToLocalBlocks
   PUBLIC :: TransposeDistributedSparseMatrix
   PUBLIC :: CommSplitDistributedSparseMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -294,10 +295,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ELSE
           temp_substring = mpi_input_buffer( &
                & full_buffer_counter:full_buffer_counter+current_line_length-1)
-          READ(temp_substring(:current_line_length-1),*) &
-               & temp_triplet%index_row, temp_triplet%index_column, &
-               & temp_triplet%point_value
-          CALL AppendToTripletList(triplet_list, temp_triplet)
+          IF (current_line_length .GT. 1) THEN
+             READ(temp_substring(:current_line_length-1),*) &
+                  & temp_triplet%index_row, temp_triplet%index_column, &
+                  & temp_triplet%point_value
+             CALL AppendToTripletList(triplet_list, temp_triplet)
+          END IF
 
           IF (full_buffer_counter + current_line_length .GE. &
                & local_data_size+2) THEN
@@ -455,6 +458,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL MatrixToTripletList(merged_local_data, triplet_list)
        !! Absolute Positions
+<<<<<<< HEAD
        DO counter = 1, triplet_list%CurrentSize
           triplet_list%data(counter)%index_row = &
                & triplet_list%data(counter)%index_row + this%start_row - 1
@@ -462,6 +466,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & triplet_list%data(counter)%index_column + this%start_column - 1
        END DO
        CALL MPI_File_open(this%process_grid%within_slice_comm,file_name,&
+=======
+       CALL ShiftTripletList(triplet_list, this%start_row - 1, &
+            & this%start_column - 1)
+       CALL MPI_File_open(within_slice_comm,file_name,&
+>>>>>>> Eigensolver
             & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
             & mpi_file_handler, ierr)
        !! Write Header
@@ -550,12 +559,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixToTripletList(merged_local_data, triplet_list)
 
     !! Absolute Positions
-    DO counter = 1, triplet_list%CurrentSize
-       triplet_list%data(counter)%index_row = &
-            & triplet_list%data(counter)%index_row + this%start_row - 1
-       triplet_list%data(counter)%index_column = &
-            & triplet_list%data(counter)%index_column + this%start_column - 1
-    END DO
+    CALL ShiftTripletList(triplet_list, this%start_row - 1, &
+         & this%start_column - 1)
 
     !! Figure out the length of the string for storing.
     triplet_list_string_length = 0
@@ -819,18 +824,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
     !! Local Data
     TYPE(SparseMatrix_t) :: merged_local_data
-    INTEGER :: counter
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
 
     CALL MatrixToTripletList(merged_local_data, triplet_list)
-    DO counter=1, triplet_list%CurrentSize
-       triplet_list%data(counter)%index_column = &
-            & triplet_list%data(counter)%index_column + this%start_column - 1
-       triplet_list%data(counter)%index_row = &
-            & triplet_list%data(counter)%index_row + this%start_row - 1
-    END DO
+    CALL ShiftTripletList(triplet_list, this%start_row - 1, &
+         & this%start_column - 1)
   END SUBROUTINE GetTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list. Block is
@@ -1441,39 +1441,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(SparseMatrix_t), INTENT(IN) :: matrix_to_split
-    !! Local Data
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: column_split
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: row_split
-    TYPE(SparseMatrix_t) :: tempmat
-    INTEGER :: column_counter, row_counter
 
-    !! First Split By Columns
-    ALLOCATE(column_split(this%process_grid%number_of_blocks_columns))
-    ALLOCATE(row_split(this%process_grid%number_of_blocks_rows))
-    CALL SplitSparseMatrixColumns(matrix_to_split, &
-         & this%process_grid%number_of_blocks_columns, column_split)
+    CALL SplitSparseMatrix(matrix_to_split, number_of_blocks_rows, &
+         & number_of_blocks_columns, this%local_data)
 
-    !! Now Split By Rows
-    DO column_counter=1,this%process_grid%number_of_blocks_columns
-       CALL TransposeSparseMatrix(column_split(column_counter),tempmat)
-       CALL SplitSparseMatrixColumns(tempmat, &
-            & this%process_grid%number_of_blocks_rows, row_split)
-       !! And put back in the right place
-       DO row_counter=1,this%process_grid%number_of_blocks_rows
-          CALL TransposeSparseMatrix(row_split(row_counter), &
-               & this%local_data(column_counter,row_counter))
-       END DO
-    END DO
-
-    CALL DestructSparseMatrix(tempmat)
-    DO column_counter=1,this%process_grid%number_of_blocks_columns
-       CALL DestructSparseMatrix(column_split(column_counter))
-    END DO
-    DO row_counter=1,this%process_grid%number_of_blocks_rows
-       CALL DestructSparseMatrix(row_split(row_counter))
-    END DO
-    DEALLOCATE(row_split)
-    DEALLOCATE(column_split)
   END SUBROUTINE SplitToLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Merge together the local matrix blocks into one big matrix.
@@ -1483,26 +1454,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(SparseMatrix_t), INTENT(INOUT) :: merged_matrix
-    !! Local Data
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: rows_of_merged
-    TYPE(SparseMatrix_t) :: tempmat
-    INTEGER :: row_counter
 
-    ALLOCATE(rows_of_merged(this%process_grid%number_of_blocks_rows))
+    CALL ComposeSparseMatrix(this%local_data, number_of_blocks_rows, &
+         & number_of_blocks_columns, merged_matrix)
 
-    DO row_counter = 1, this%process_grid%number_of_blocks_rows
-       CALL ComposeSparseMatrixColumns(this%local_data(:,row_counter), tempmat)
-       CALL TransposeSparseMatrix(tempmat,rows_of_merged(row_counter))
-    END DO
-
-    CALL ComposeSparseMatrixColumns(rows_of_merged,tempmat)
-    CALL TransposeSparseMatrix(tempmat,merged_matrix)
-
-    !! Cleanup
-    CALL DestructSparseMatrix(tempmat)
-    DO row_counter=1, this%process_grid%number_of_blocks_rows
-       CALL DestructSparseMatrix(rows_of_merged(row_counter))
-    END DO
-    DEALLOCATE(rows_of_merged)
   END SUBROUTINE MergeLocalBlocks
 END MODULE DistributedSparseMatrixModule

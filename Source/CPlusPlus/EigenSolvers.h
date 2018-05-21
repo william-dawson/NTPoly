@@ -12,11 +12,15 @@ class EigenSolvers : public SolverBase {
 public:
   //! Compute the eigenvalues and eigenvectors of a matrix
   static void
-  EigenDecomposition(const DistributedSparseMatrix &matrix,
-                     DistributedSparseMatrix &eigenvectors,
-                     DistributedSparseMatrix &eigenvalues,
-                     int num_values,
-                     const IterativeSolverParameters &solver_parameters);
+  TestEigenDecomposition(const DistributedSparseMatrix &matrix,
+                         DistributedSparseMatrix &eigenvectors,
+                         const IterativeSolverParameters &solver_parameters);
+  //! Compute the eigenvalues and eigenvectors of a matrix
+  static void SplittingEigenDecomposition(
+      const DistributedSparseMatrix &matrix,
+      DistributedSparseMatrix &eigenvectors,
+      DistributedSparseMatrix &eigenvalues, int num_values,
+      const IterativeSolverParameters &solver_parameters);
   //! Compute the singularvalues and singularvectors of a matrix
   static void
   SingularValueDecompostion(const DistributedSparseMatrix &matrix,

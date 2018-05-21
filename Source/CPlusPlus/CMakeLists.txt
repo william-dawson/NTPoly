@@ -1,33 +1,71 @@
+################################################################################
 set(Csrc
-    ChebyshevSolvers.cc ChebyshevSolvers.h
-    DensityMatrixSolvers.cc DensityMatrixSolvers.h
-    DistributedSparseMatrix.cc DistributedSparseMatrix.h
-    DistributedMatrixMemoryPool.cc DistributedMatrixMemoryPool.h
-    EigenBounds.cc EigenBounds.h
-    EigenSolvers.cc EigenSolvers.h
-    ExponentialSolvers.cc ExponentialSolvers.h
-    FixedSolversParameters.cc FixedSolversParameters.h
-    GeometryOptimization.cc GeometryOptimization.h
-    HermiteSolvers.cc HermiteSolvers.h
-    InverseSolvers.cc InverseSolvers.h
-    IterativeSolversParameters.cc IterativeSolversParameters.h
-    LinearSolvers.cc LinearSolvers.h
-    LoadBalancer.cc LoadBalancer.h
-    MatrixMemoryPool.cc MatrixMemoryPool.h
-    MinimizerSolvers.cc MinimizerSolvers.h
-    Permutation.cc Permutation.h
-    Polynomial.cc Polynomial.h
-    ProcessGrid.cc ProcessGrid.h
-    RootSolvers.cc RootSolvers.h
-    SignSolvers.cc SignSolvers.h
-    SolverBase.cc SolverBase.h
-    SparseMatrix.cc SparseMatrix.h
-    SquareRootSolvers.cc SquareRootSolvers.h
-    TrigonometrySolvers.cc TrigonometrySolvers.h
-    TripletList.cc TripletList.h
+    ChebyshevSolvers.cc
+    DensityMatrixSolvers.cc
+    DistributedSparseMatrix.cc
+    DistributedMatrixMemoryPool.cc
+    EigenBounds.cc
+    EigenSolvers.cc
+    ExponentialSolvers.cc
+    FixedSolversParameters.cc
+    GeometryOptimization.cc
+    HermiteSolvers.cc
+    InverseSolvers.cc
+    IterativeSolversParameters.cc
+    LinearSolvers.cc
+    LoadBalancer.cc
+    MatrixMemoryPool.cc
+    MinimizerSolvers.cc
+    Permutation.cc
+    Polynomial.cc
+    ProcessGrid.cc
+    RootSolvers.cc
+    SignSolvers.cc
+    SolverBase.cc
+    SparseMatrix.cc
+    SquareRootSolvers.cc
+    TrigonometrySolvers.cc
+    TripletList.cc
+)
+
+set(Chead
+    ChebyshevSolvers.h
+    DensityMatrixSolvers.h
+    DistributedSparseMatrix.h
+    DistributedMatrixMemoryPool.h
+    EigenBounds.h
+    EigenSolvers.h
+    ExponentialSolvers.h
+    FixedSolversParameters.h
+    GeometryOptimization.h
+    HermiteSolvers.h
+    InverseSolvers.h
+    IterativeSolversParameters.h
+    LinearSolvers.h
+    LoadBalancer.h
+    MatrixMemoryPool.h
+    MinimizerSolvers.h
+    Permutation.h
+    Polynomial.h
+    ProcessGrid.h
+    RootSolvers.h
+    SignSolvers.h
+    SolverBase.h
+    SparseMatrix.h
+    SquareRootSolvers.h
+    TrigonometrySolvers.h
+    TripletList.h
     Triplet.h
 )
 
-add_library(NTPolyCPP STATIC ${Csrc})
-target_link_libraries(NTPolyCPP NTPolyWrapper)
+################################################################################
 include_directories(${CMAKE_SOURCE_DIR}/Source/C)
+
+add_library(NTPolyCPP STATIC ${Csrc} ${Chead})
+target_link_libraries(NTPolyCPP NTPolyWrapper)
+
+set_target_properties(NTPolyCPP PROPERTIES PUBLIC_HEADER "${Chead}")
+
+install(TARGETS NTPolyCPP
+        ARCHIVE DESTINATION lib
+        PUBLIC_HEADER DESTINATION include)

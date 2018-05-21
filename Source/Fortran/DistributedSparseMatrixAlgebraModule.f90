@@ -13,8 +13,8 @@ MODULE DistributedSparseMatrixAlgebraModule
        & TestInnerRequest, TestDataRequest
   USE SparseMatrixAlgebraModule, ONLY : &
        & DotSparseMatrix, PairwiseMultiplySparseMatrix, &
-       & SparseMatrixNorm, ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
-       & SparseMatrixGrandSum
+       & SparseMatrixColumnNorm, ScaleSparseMatrix, IncrementSparseMatrix, &
+       & Gemm, SparseMatrixGrandSum
   USE SparseMatrixModule, ONLY : SparseMatrix_t, DestructSparseMatrix, &
        & CopySparseMatrix, &
        & TransposeSparseMatrix, ComposeSparseMatrixColumns, MatrixToTripletList
@@ -551,9 +551,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
+    ALLOCATE(local_norm(merged_local_data%columns))
 
     !! Sum Along Columns
-    CALL SparseMatrixNorm(merged_local_data,local_norm)
+    CALL SparseMatrixColumnNorm(merged_local_data,local_norm)
     CALL MPI_Allreduce(MPI_IN_PLACE,local_norm,SIZE(local_norm), &
          & MPINTREAL, MPI_SUM, this%process_grid%column_comm, ierr)
 

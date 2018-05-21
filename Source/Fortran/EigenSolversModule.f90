@@ -8,6 +8,7 @@ MODULE EigenSolversModule
   USE DensityMatrixSolversModule
   USE FixedSolversModule
   USE IterativeSolversModule
+  USE JacobiEigenSolverModule
   USE LinearSolversModule
   USE LoggingModule
   USE ParameterConverterModule
@@ -23,16 +24,37 @@ MODULE EigenSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTEGER, PARAMETER :: BASESIZE = 1
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: EigenDecomposition
+  PUBLIC :: SplittingEigenDecomposition
+  PUBLIC :: TestEigenDecomposition
   PUBLIC :: SingularValueDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE TestEigenDecomposition(this, eigenvectors, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+
+    CALL JacobiSolve(this, eigenvectors, solver_parameters)
+
+  END SUBROUTINE TestEigenDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvalues and eigenvectors of a matrix.
   !! @param[in] this the matrix to decompose.
   !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
   !! @param[out] eigenvalues a diagonal matrix containing the eigenvalues.
   !! @param[in] num_values_in the number of eigenvalues to compute (optional).
   !! @param[in] solver_parameters_in parameters for the solver (optional).
-  SUBROUTINE EigenDecomposition(this, eigenvectors, eigenvalues, &
+  SUBROUTINE SplittingEigenDecomposition(this, eigenvectors, eigenvalues, &
        & num_values_in, solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
@@ -101,7 +123,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(eigenvectorsT)
     CALL DestructDistributedSparseMatrix(TempMat)
     CALL DestructDistributedSparseMatrix(ReducedMat)
-  END SUBROUTINE EigenDecomposition
+  END SUBROUTINE SplittingEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the singular values and singular vectors of a matrix.
   !! @param[in] this the matrix to decompose.
@@ -141,7 +163,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL PolarDecomposition(this, UMat, HMat, solver_parameters)
 
     !! Compute the eigen decomposition of the hermitian matrix
-    CALL EigenDecomposition(HMat, right_vectors, singularvalues, &
+    CALL SplittingEigenDecomposition(HMat, right_vectors, singularvalues, &
          & solver_parameters_in=solver_parameters)
 
     !! Compute the left singular vectors
@@ -535,6 +557,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense, dense_eig
     INTEGER :: counter, II, JJ, list_size
     INTEGER :: mat_dim
+    TYPE(SparseMatrix_t) :: local_a, local_v
 
     mat_dim = this%actual_matrix_dimension
 
@@ -552,32 +575,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%within_slice_comm, triplet_list)
 
     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-       !! Pack To A Dense Matrix
-       CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
-       CALL ConstructFromTripletList(sparse, sorted_triplet_list, mat_dim, &
-            & mat_dim)
-       ALLOCATE(dense(mat_dim, mat_dim))
-       CALL ConstructDenseFromSparse(sparse, dense)
-
-       !! Solve With LAPACK
-       ALLOCATE(dense_eig(mat_dim, mat_dim))
-       CALL DenseEigenSolve(dense, dense_eig)
-
-       !! Convert to a distributed sparse matrix
-       CALL ConstructTripletList(triplet_list)
-       DO II = 1, mat_dim
-          temp_triplet%index_row = II
-          DO JJ = 1, mat_dim
-             temp_triplet%index_column = JJ
-             temp_triplet%point_value = dense_eig(II,JJ)
-             IF (ABS(temp_triplet%point_value) .GT. fixed_param%threshold) THEN
-                CALL AppendToTripletList(triplet_list, temp_triplet)
-             END IF
-          END DO
-       END DO
-
-       DEALLOCATE(dense)
-       DEALLOCATE(dense_eig)
+      CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
+      CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
+           & mat_dim)
+      CALL DenseEigenDecomposition(local_a, local_v, fixed_param%threshold)
+      CALL MatrixToTripletList(local_v,triplet_list)
     END IF
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
          & process_grid_in=this%process_grid)

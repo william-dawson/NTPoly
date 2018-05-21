@@ -13,7 +13,7 @@ MODULE DenseMatrixModule
   PUBLIC :: ConstructDenseFromSparse
   PUBLIC :: ConstructSparseFromDense
   PUBLIC :: MultiplyDense
-  PUBLIC :: DenseEigenSolve
+  PUBLIC :: DenseEigenDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
@@ -92,12 +92,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MultiplyDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
-  !! @param[in] mat the matrix.
-  !! @param[out] eigenvectors the eigenvectors. Must be preallocated.
-  SUBROUTINE DenseEigenSolve(mat, eigenvectors)
+  !! Wraps a standard dense linear algebra routine.
+  !! @param[in] MatA the matrix to decompose.
+  !! @param[out] MatV the eigenvectors.
+  !! @param[in] threshold for pruning values to zero.
+  SUBROUTINE DenseEigenDecomposition(MatA, MatV, threshold)
     !! Parameters
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: mat
-    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: eigenvectors
+    TYPE(SparseMatrix_t), INTENT(In) :: MatA
+    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatV
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !! Local Matrices
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatA
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatV
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
@@ -110,7 +116,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary variables
     INTEGER :: II, JJ, counter
 
-    N = SIZE(mat,DIM=1)
+    !! Convert Input To Dense
+    ALLOCATE(DMatA(MatA%rows, MatA%columns))
+    DMatA = 0
+    ALLOCATE(DMatV(MatA%rows, MatA%columns))
+    DMatV = 0
+    CALL ConstructDenseFromSparse(MatA,DMatA)
+
+    N = SIZE(DMatA,DIM=1)
     LDA = N
 
     !! Allocations
@@ -121,10 +134,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     A = 0
     counter = 1
     DO II = 1, N
-      DO JJ = 1, N
-        A(counter) = mat(II,JJ)
-        counter = counter + 1
-      END DO
+       DO JJ = 1, N
+          A(counter) = DMatA(II,JJ)
+          counter = counter + 1
+       END DO
     END DO
 
     !! Determine the scratch space size
@@ -140,16 +153,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Unpack
     counter = 1
     DO II = 1, N
-      DO JJ = 1, N
-        eigenvectors(JJ,II) = A(counter)
-        counter = counter + 1
-      END DO
+       DO JJ = 1, N
+          DMatV(JJ,II) = A(counter)
+          counter = counter + 1
+       END DO
     END DO
 
+    !! Convert Output To Sparse
+    CALL ConstructSparseFromDense(DMatV,MatV,threshold)
+
     !! Cleanup
+    DEALLOCATE(DMatA)
+    DEALLOCATE(DMatV)
     DEALLOCATE(A)
     DEALLOCATE(W)
     DEALLOCATE(Work)
 
-  END SUBROUTINE DenseEigenSolve
+  END SUBROUTINE DenseEigenDecomposition
 END MODULE DenseMatrixModule

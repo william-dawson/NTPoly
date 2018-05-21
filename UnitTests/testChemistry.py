@@ -1,9 +1,11 @@
 ''' @package testDistributedSparseMatrix
 A test suite for the Distributed Sparse Matrix module.
 '''
+from Helpers import THRESHOLD, EXTRAPTHRESHOLD
+from Helpers import result_file
+from Helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
-
 import scipy
 from scipy.sparse.linalg import norm
 from scipy.io import mmread
@@ -12,10 +14,6 @@ import os
 from mpi4py import MPI
 # MPI global communicator
 comm = MPI.COMM_WORLD
-
-from Helpers import THRESHOLD, EXTRAPTHRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
 
 
 class TestChemistry(unittest.TestCase):
@@ -47,6 +45,7 @@ class TestChemistry(unittest.TestCase):
         self.geomo1 = os.environ["GEOMO1"]
         self.geomo2 = os.environ["GEOMO2"]
         self.geomd2 = os.environ["GEOMD2"]
+        self.realio = os.environ["REALIO"]
         self.nel = 10
 
     def check_full(self):
@@ -82,6 +81,20 @@ class TestChemistry(unittest.TestCase):
         else:
             self.assertTrue(False)
         pass
+
+    def testrealio(self):
+        '''Test our ability to read data produced by a real chemistry program.'''
+        density_matrix = nt.DistributedSparseMatrix(self.realio)
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            self.CheckMat = mmread(self.realio)
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
 
     def test_trs2(self):
         '''Test our ability to compute the density matrix with TRS2.'''

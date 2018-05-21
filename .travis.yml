@@ -1,3 +1,5 @@
+
+
 os: linux
 sudo: required
 dist: trusty
@@ -7,39 +9,37 @@ notifications:
 
 language: C++
 
+matrix:
+  include:
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST=1
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" FORTRAN_ONLY=1 SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
+    - os: linux
+      sudo: required
+      dist: trusty
+      env: TESTOS="LINUX" SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
+    - os: osx
+      sudo: required
+      env: TESTOS="OSX" MAKETEST=1
+
 cache:
   pip: true
   directories:
-    - openmpi-2.1.1
+    - openmpi-3.0.1
+    - swig-3.0.12
 
 before_install:
-  - sudo apt-get install gfortran
-  - travis_wait bash UnitTests/travis_build_mpi.sh
-  - cd openmpi-2.1.1
-  - sudo make install >/dev/null 2>&1
-  - cd ../
-  - sudo ldconfig
-  - sudo apt-get install python-dev
-  - sudo apt-get install doxygen
-  - wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz
-  - tar xvf swig-3.0.12.tar.gz >/dev/null
-  - cd swig-3.0.12
-  - ./configure >/dev/null 2>&1
-  - make >/dev/null 2>&1
-  - sudo make install >/dev/null 2>&1
-  - cd ../
-  - sudo pip install scipy --upgrade
-  - sudo pip install numpy --upgrade
-  - sudo pip install mpi4py --upgrade
-  - test -n $CC  && unset CC
-  - test -n $FCC  && unset FCC
-  - test -n $CXX && unset CXX
+  - travis_wait bash UnitTests/travis_before_install.sh
 
 script:
   - cd Build
-  - cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake ..
+  - bash ../UnitTests/travis_run_cmake.sh
   - make
-  - travis_wait 30 make test > test_result.txt
-  - tail -n 13 Testing/Temporary/LastTest.log
+  - if [ "$MAKETEST" = 1 ]; then make test; fi
   - cd ../UnitTests/
   - bash travis_check_examples.sh

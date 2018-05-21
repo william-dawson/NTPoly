@@ -1,5 +1,8 @@
-subdirs(C)
-subdirs(CPlusPlus)
 subdirs(Fortran)
-subdirs(Swig)
-subdirs(Wrapper)
+
+if (NOT FORTRAN_ONLY)
+  subdirs(C)
+  subdirs(CPlusPlus)
+  subdirs(Swig)
+  subdirs(Wrapper)
+endif()

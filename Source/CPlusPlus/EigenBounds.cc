@@ -10,13 +10,12 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-void EigenBounds::GershgorinBounds(
-    const DistributedSparseMatrix& matrix, double * min_value,
-    double * max_value) {
+void EigenBounds::GershgorinBounds(const DistributedSparseMatrix &matrix,
+                                   double *min_value, double *max_value) {
   GershgorinBounds_wrp(GetIH(matrix), min_value, max_value);
 }
 void EigenBounds::PowerBounds(
-    const DistributedSparseMatrix &matrix, double * max_value,
+    const DistributedSparseMatrix &matrix, double *max_value,
     const IterativeSolverParameters &solver_parameters) {
   PowerBounds_wrp(GetIH(matrix), max_value, GetIH(solver_parameters));
 }

@@ -2,13 +2,17 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule
+  USE DenseMatrixModule
   USE DistributedMatrixMemoryPoolModule
   USE DistributedSparseMatrixAlgebraModule
   USE DistributedSparseMatrixModule
+  USE FixedSolversModule
   USE IterativeSolversModule
   USE LoggingModule
+  USE MatrixGatherModule
   USE ProcessGridModule
   USE SparseMatrixModule
+  USE SparseMatrixAlgebraModule
   USE TripletListModule
   USE MPI
   IMPLICIT NONE
