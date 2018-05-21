@@ -52,13 +52,13 @@ MODULE JacobiEigenSolverModule
      !! Blocking Information
      INTEGER :: block_start
      INTEGER :: block_end
-     INTEGER :: block_dimension
      INTEGER :: block_rows
      INTEGER :: block_columns
      INTEGER :: rows
      INTEGER :: columns
      INTEGER :: start_row
      INTEGER :: start_column
+     INTEGER :: column_divisor
      !! For Inter Process Swaps
      INTEGER, DIMENSION(:), ALLOCATABLE :: phase_array
      !> During the first num_proc rounds
@@ -139,7 +139,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Convert to global matrix
     CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
 
-    !! Cleanup
+    ! Cleanup
     DO counter = 1, jacobi_data%num_processes*2
        CALL DestructSparseMatrix(ABlocks(1,counter))
        CALL DestructSparseMatrix(ABlocks(2,counter))
@@ -159,7 +159,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
     !! Local Variables
-    INTEGER :: matrix_dimension
     INTEGER :: ierr
     !! Music Data
     INTEGER, DIMENSION(:), ALLOCATABLE :: swap0, swap1, swap_temp
@@ -175,16 +174,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     jdata%block_end = jdata%block_start + 1
 
     !! Compute the Blocking
-    matrix_dimension = matrix%actual_matrix_dimension
     jdata%block_rows = jdata%num_processes*2
     jdata%block_columns = 2
-    jdata%block_dimension = CEILING(matrix_dimension/(1.0*jdata%block_rows))
-    jdata%rows = jdata%block_dimension * jdata%block_rows
-    jdata%columns = jdata%block_dimension * jdata%block_columns
-    jdata%start_column = jdata%columns * within_slice_rank + 1
+    jdata%rows = matrix%actual_matrix_dimension
+    jdata%column_divisor = FLOOR(&
+         & 1.0*matrix%actual_matrix_dimension/jdata%num_processes)
+    jdata%columns = jdata%column_divisor
+    IF (jdata%rank .EQ. jdata%num_processes - 1) THEN
+       jdata%columns = matrix%actual_matrix_dimension - &
+            & jdata%column_divisor*(jdata%num_processes-1)
+    END IF
+    jdata%start_column = jdata%column_divisor * within_slice_rank + 1
     jdata%start_row = 1
-
-    WRITE(*,*) jdata%block_dimension, jdata%rows, jdata%columns
 
     !! Determine Send Partners.
     ALLOCATE(jdata%phase_array(2*jdata%num_processes-1))
@@ -299,7 +300,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     DO counter = 1, local_triplets%CurrentSize
        CALL GetTripletAt(local_triplets, counter, temp_triplet)
-       insert = (temp_triplet%index_column - 1) / jdata%columns + 1
+       insert = (temp_triplet%index_column - 1) /  jdata%column_divisor + 1
+       IF (insert .GE. jdata%num_processes) THEN
+          insert = jdata%num_processes
+       END IF
        CALL AppendToTripletList(send_triplets(insert), temp_triplet)
     END DO
     CALL RedistributeTripletLists(send_triplets, within_slice_comm, &
@@ -366,9 +370,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Diagonalize
        CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
-       WRITE(*,*) "----"
-       CALL PrintSparseMatrix(TargetA)
-       CALL PrintSparseMatrix(TargetV)
 
        !! Rotation Along Row
        CALL TransposeSparseMatrix(TargetV, TargetVT)
@@ -570,20 +571,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Matrices
     TYPE(SparseMatrix_t) :: SendLeft, RecvLeft
     TYPE(SparseMatrix_t) :: SendRight, RecvRight
-    TYPE(SparseMatrix_t), DIMENSION(jdata%block_columns,jdata%block_rows) :: &
-         & TempABlocks
     !! For Sending Data
     TYPE(SendRecvHelper_t) :: send_left_helper
     TYPE(SendRecvHelper_t) :: send_right_helper
     TYPE(SendRecvHelper_t) :: recv_left_helper
     TYPE(SendRecvHelper_t) :: recv_right_helper
-    !! Temporary Variables
+    !! Swap Helpers
+    TYPE(SparseMatrix_t), DIMENSION(jdata%block_columns,jdata%block_rows) :: &
+         & TempABlocks
+    INTEGER, DIMENSION(jdata%block_rows) :: split_guide
+    !! Stage Tracker
     INTEGER :: completed
     INTEGER :: send_left_stage
     INTEGER :: recv_left_stage
     INTEGER :: send_right_stage
     INTEGER :: recv_right_stage
     INTEGER, PARAMETER :: total_to_complete = 4
+    !! Temporary Variables
     INTEGER :: counter
     INTEGER :: index
     INTEGER :: ierr
@@ -597,6 +601,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        index = swap_data%swap_array(counter)
        CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
        CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
+    END DO
+    DO counter = 1, jdata%block_rows
+       split_guide(counter) = ABlocks(1,counter)%rows
     END DO
 
     !! Build matrices to swap
@@ -726,8 +733,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL MPI_Barrier(jdata%communicator, ierr)
 
-    CALL SplitSparseMatrix(RecvLeft,jdata%block_rows,1,ABlocks(1,:))
-    CALL SplitSparseMatrix(RecvRight,jdata%block_rows,1,ABlocks(2,:))
+    CALL SplitSparseMatrix(RecvLeft,jdata%block_rows,1,ABlocks(1,:), &
+         & block_size_row_in=split_guide)
+    CALL SplitSparseMatrix(RecvRight,jdata%block_rows,1,ABlocks(2,:), &
+         & block_size_row_in=split_guide)
 
     !! Cleanup
     DO counter = 1, jdata%block_rows

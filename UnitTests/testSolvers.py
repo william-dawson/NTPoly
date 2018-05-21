@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 3
+    matrix_dimension = 6
 
     @classmethod
     def setUpClass(self):
@@ -790,17 +790,10 @@ class TestSolvers(unittest.TestCase):
         '''Test the dense eigen decomposition'''
         matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
                        density=1.0, random_state=1)
-        # matrix1 = array([[11, 12, 13, 14],
-        #                  [12, 22, 23, 24],
-        #                  [13, 23, 33, 34],
-        #                  [14, 24, 34, 44]])
         matrix1 = 0.5*csr_matrix(matrix1 + matrix1.T)
         if (self.my_rank == 0):
-            print(matrix1)
             mmwrite(self.input_file, matrix1)
         w, vdense = eigh(matrix1.todense())
-        if (self.my_rank == 0):
-            print(w)
         CheckV = csr_matrix(vdense)
 
         ntmatrix = nt.DistributedSparseMatrix(self.input_file)
