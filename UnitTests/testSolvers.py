@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 16
+    matrix_dimension = 32
 
     @classmethod
     def setUpClass(self):
@@ -81,7 +81,7 @@ class TestSolvers(unittest.TestCase):
         if (self.my_rank == 0):
             ResultMat = sort(diag(mmread(result_file).todense()))
             CheckDiag = sort(diag(self.CheckMat.todense()))
-            normval = abs(densenorm(CheckDiag - ResultMat))
+            normval = abs(normd(CheckDiag - ResultMat))
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
@@ -900,34 +900,36 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
     def test_denseeigendecomposition(self):
-        '''Test our ability to compute the eigen decomposition.'''
-        # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0, random_state=2)
-        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+        '''Test the dense eigen decomposition'''
+        matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
+                       density=1.0, random_state=1)
+        matrix1 = 0.5*csr_matrix(matrix1 + matrix1.T)
+        if (self.my_rank == 0):
+            mmwrite(self.input_file, matrix1)
+        w, vdense = eigh(matrix1.todense())
+        CheckV = csr_matrix(vdense)
 
-        # Check Matrix
-        vals, vecs = eigh(matrix1.todense())
-        self.CheckMat = csr_matrix(diag(vals))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
+        ntmatrix = nt.DistributedSparseMatrix(self.input_file)
+        V = nt.DistributedSparseMatrix(self.matrix_dimension)
 
-        # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.iterative_solver_parameters.SetLoadBalance(permutation)
-        vec_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
-        val_matrix = nt.DistributedSparseMatrix(self.matrix_dimension)
-        nt.EigenSolvers.DenseEigenDecomposition(input_matrix, vec_matrix,
-                                                val_matrix,
-                                                self.matrix_dimension,
-                                                self.iterative_solver_parameters)
-        val_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
+        nt.EigenSolvers.TestEigenDecomposition(
+            ntmatrix, V, self.iterative_solver_parameters)
+        V.WriteToMatrixMarket(result_file)
 
-        self.check_result()
+        normval = 0
+        relative_error = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file)
+            CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+            normval = abs(normd(CheckD - ResultD))
+            relative_error = normval / normd(CheckD)
+            print("Norm:", normval)
+            print("Relative_Error:", relative_error)
+
+        global_norm = comm.bcast(normval, root=0)
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
 
     def test_eigendecompositionhalf(self):
         '''Test our ability to compute the eigen decomposition.'''

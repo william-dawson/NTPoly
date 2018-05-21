@@ -211,8 +211,8 @@ class TestLocalMatrix(unittest.TestCase):
                                         ntmatrix1.GetRows())
             memory_pool = nt.MatrixMemoryPool(ntmatrix2.GetColumns(),
                                               ntmatrix1.GetRows())
-            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta, 0.0,
-                           memory_pool)
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta,
+                           0.0, memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
             ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")

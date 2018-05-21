@@ -1,8 +1,10 @@
 '''@package testDistributedSparseMatrix
 A test suite for the Distributed Sparse Matrix module.'''
+from Helpers import THRESHOLD
+from Helpers import result_file
+from Helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
-
 import scipy
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
@@ -12,10 +14,6 @@ import os
 from mpi4py import MPI
 # MPI global communicator.
 comm = MPI.COMM_WORLD
-
-from Helpers import THRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
 
 
 class TestParameters:

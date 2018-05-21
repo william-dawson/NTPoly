@@ -15,6 +15,7 @@ export GEOMO1=@CMAKE_SOURCE_DIR@/UnitTests/Data/S1.mtx
 export GEOMO2=@CMAKE_SOURCE_DIR@/UnitTests/Data/S2.mtx
 export GEOMD2=@CMAKE_SOURCE_DIR@/UnitTests/Data/D2.mtx
 export REALIO=@CMAKE_SOURCE_DIR@/UnitTests/Data/realio.mtx
+export CholTest=@CMAKE_SOURCE_DIR@/UnitTests/Data/CholTest.mtx
 cd @CMAKE_BINARY_DIR@/UnitTests
 
 # Get Parameters

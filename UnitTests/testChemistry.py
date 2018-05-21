@@ -273,10 +273,11 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
-                                                                   inverse_sqrt_matrix,
-                                                                   self.nel, density_matrix,
-                                                                   self.solver_parameters)
+        chemical_potential = \
+        nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
+                                              inverse_sqrt_matrix,
+                                              self.nel, density_matrix,
+                                              self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
