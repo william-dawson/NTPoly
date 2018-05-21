@@ -33,7 +33,7 @@ MODULE DistributedSparseMatrixModule_wrp
   PUBLIC :: TransposeDistributedSparseMatrix_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
-  PURE SUBROUTINE ConstructEmptyDistributedSparseMatrix_wrp(ih_this,matrix_dim) &
+  SUBROUTINE ConstructEmptyDistributedSparseMatrix_wrp(ih_this,matrix_dim) &
        & bind(c,name="ConstructEmptyDistributedSparseMatrix_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: matrix_dim

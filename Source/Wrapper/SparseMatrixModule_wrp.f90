@@ -230,7 +230,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixToTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the dense eigendecompsition routine.
-  PURE SUBROUTINE DenseEigenDecomposition_wrp(ih_matA, ih_matV, threshold) &
+  SUBROUTINE DenseEigenDecomposition_wrp(ih_matA, ih_matV, threshold) &
        & bind(c,name="DenseEigenDecomposition_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matV(SIZE_wrp)

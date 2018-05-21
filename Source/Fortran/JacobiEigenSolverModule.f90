@@ -10,7 +10,6 @@ MODULE JacobiEigenSolverModule
   USE MatrixBroadcastModule
   USE MatrixGatherModule
   USE MatrixSendRecvModule
-  USE ProcessGridModule
   USE SparseMatrixModule
   USE SparseMatrixAlgebraModule
   USE TripletListModule
