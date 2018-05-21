@@ -86,12 +86,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Blocking
     TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: ABlocks
     TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: VBlocks
-    TYPE(SparseMatrix_t) :: local_v
-    TYPE(SparseMatrix_t) :: last_v
+    TYPE(SparseMatrix_t) :: local_a
+    TYPE(SparseMatrix_t) :: last_a
     TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
     REAL(NTREAL) :: norm_value
     INTEGER :: counter, iteration
+    INTEGER :: ierr
 
     !! Setup Communication
     CALL InitializeJacobi(jacobi_data, this)
@@ -106,11 +107,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetLocalBlocks(this, jacobi_data, ABlocks)
     ALLOCATE(VBlocks(2,slice_size*2))
     CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
-    CALL ComposeSparseMatrix(VBlocks, jacobi_data%block_rows, &
-         & jacobi_data%block_columns, local_v)
-
-    ! DO iteration = 1, solver_parameters%max_iterations
-    DO iteration = 1, 4
+    CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
+         & jacobi_data%block_columns, local_a)
+    DO iteration = 1, solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=iteration-1)
           CALL EnterSubLog
@@ -123,12 +122,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%threshold)
 
        !! Compute Norm Value
-       CALL CopySparseMatrix(local_v, last_v)
-       CALL ComposeSparseMatrix(VBlocks, jacobi_data%block_rows, &
-            & jacobi_data%block_columns, local_v)
-       CALL IncrementSparseMatrix(local_v,last_v,alpha_in=REAL(-1.0,NTREAL), &
+       CALL CopySparseMatrix(local_a, last_a)
+       CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
+            & jacobi_data%block_columns, local_a)
+       CALL IncrementSparseMatrix(local_a,last_a,alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold)
-       norm_value = SparseMatrixNorm(last_v)
+       norm_value = SparseMatrixNorm(last_a)
+       CALL MPI_Allreduce(MPI_IN_PLACE, norm_value, 1, MPINTREAL, MPI_SUM,&
+            & jacobi_data%communicator, ierr)
 
        !! Test early exit
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
@@ -176,6 +177,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the Blocking
     jdata%block_rows = jdata%num_processes*2
     jdata%block_columns = 2
+
+    !! Compute the size of the local matrices
     jdata%rows = matrix%actual_matrix_dimension
     jdata%column_divisor = FLOOR(&
          & 1.0*matrix%actual_matrix_dimension/jdata%num_processes)
@@ -285,10 +288,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_t) :: local_triplets
     TYPE(TripletList_t), DIMENSION(slice_size) :: send_triplets
     TYPE(TripletList_t) :: received_triplets, sorted_triplets
+    !! Some Blocking Information
+    INTEGER, DIMENSION(slice_size*2) :: divisor
+    INTEGER, DIMENSION(2) :: local_divide
     !! Temporary
     TYPE(Triplet_t) :: temp_triplet
     TYPE(SparseMatrix_t) :: local_mat
     INTEGER :: counter, insert
+    INTEGER :: ierr
 
     !! Get The Local Triplets
     CALL ConstructTripletList(local_triplets)
@@ -313,9 +320,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructFromTripletList(local_mat, sorted_triplets, jdata%rows, &
          & jdata%columns)
 
+    !! Share blocking information
+    local_divide(1) = local_mat%columns/2
+    local_divide(2) = local_mat%columns - local_divide(1)
+    CALL MPI_Allgather(local_divide, 2, MPI_INTEGER, divisor, 2, MPI_INTEGER, &
+         & jdata%communicator, ierr)
+
     !! Split To Blocks
     CALL SplitSparseMatrix(local_mat, jdata%block_rows, jdata%block_columns, &
-         & local)
+         & local, block_size_row_in=divisor)
 
     !! Cleanup
     CALL DestructTripletList(local_triplets)
@@ -395,7 +408,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL SwapBlocks(VBlocks, jdata, jdata%final_swap)
           END IF
        END IF
-
     END DO
 
   END SUBROUTINE JacobiSweep
@@ -602,6 +614,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
        CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
     END DO
+
     DO counter = 1, jdata%block_rows
        split_guide(counter) = ABlocks(1,counter)%rows
     END DO
@@ -759,12 +772,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     TYPE(SparseMatrix_t) :: AMat, TempMat
     INTEGER :: counter, ind
+    INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
+       row_sizes(1) = ABlocks(1,ind)%rows
+       row_sizes(2) = ABlocks(1,ind+1)%rows
+       col_sizes(1) = ABlocks(1,ind)%columns
+       col_sizes(2) = ABlocks(2,ind)%columns
+
        CALL ComposeSparseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
        CALL Gemm(AMat, TargetV, TempMat, threshold_in=threshold)
-       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1))
+       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
+            & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
     END DO
 
     CALL DestructSparseMatrix(AMat)
@@ -784,6 +804,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: TempMat
     TYPE(SparseMatrix_t) :: RecvMat
     TYPE(SparseMatrix_t) :: AMat
+    INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
@@ -792,9 +813,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL BroadcastMatrix(RecvMat, jdata%communicator, counter - 1)
 
+       row_sizes(1) = ABlocks(1,ind)%rows
+       row_sizes(2) = ABlocks(1,ind+1)%rows
+       col_sizes(1) = ABlocks(1,ind)%columns
+       col_sizes(2) = ABlocks(2,ind)%columns
+
        CALL ComposeSparseMatrix(ABlocks(:,ind:ind+1), 2, 2, AMat)
        CALL Gemm(RecvMat, AMat, TempMat, threshold_in=threshold)
-       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1))
+       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
+            & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
        CALL DestructSparseMatrix(AMat)
     END DO
 
