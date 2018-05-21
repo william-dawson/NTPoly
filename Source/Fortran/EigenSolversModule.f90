@@ -477,32 +477,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
            & mat_dim)
       CALL DenseEigenDecomposition(local_a, local_v, fixed_param%threshold)
       CALL MatrixToTripletList(local_v,triplet_list)
-       ! !! Pack To A Dense Matrix
-       ! CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
-       ! CALL ConstructFromTripletList(sparse, sorted_triplet_list, mat_dim, &
-       !      & mat_dim)
-       ! ALLOCATE(dense(mat_dim, mat_dim))
-       ! CALL ConstructDenseFromSparse(sparse, dense)
-       !
-       ! !! Solve With LAPACK
-       ! ALLOCATE(dense_eig(mat_dim, mat_dim))
-       ! CALL DenseEigenSolve(dense, dense_eig)
-       !
-       ! !! Convert to a distributed sparse matrix
-       ! CALL ConstructTripletList(triplet_list)
-       ! DO II = 1, mat_dim
-       !    temp_triplet%index_row = II
-       !    DO JJ = 1, mat_dim
-       !       temp_triplet%index_column = JJ
-       !       temp_triplet%point_value = dense_eig(II,JJ)
-       !       IF (ABS(temp_triplet%point_value) .GT. fixed_param%threshold) THEN
-       !          CALL AppendToTripletList(triplet_list, temp_triplet)
-       !       END IF
-       !    END DO
-       ! END DO
-       !
-       ! DEALLOCATE(dense)
-       ! DEALLOCATE(dense_eig)
     END IF
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim)
     CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)

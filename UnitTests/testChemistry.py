@@ -1,9 +1,11 @@
 ''' @package testDistributedSparseMatrix
 A test suite for the Distributed Sparse Matrix module.
 '''
+from Helpers import THRESHOLD, EXTRAPTHRESHOLD
+from Helpers import result_file
+from Helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
-
 import scipy
 from scipy.sparse.linalg import norm
 from scipy.io import mmread
@@ -12,10 +14,6 @@ import os
 from mpi4py import MPI
 # MPI global communicator
 comm = MPI.COMM_WORLD
-
-from Helpers import THRESHOLD, EXTRAPTHRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
 
 
 class TestChemistry(unittest.TestCase):
@@ -273,11 +271,10 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = \
-        nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
-                                              inverse_sqrt_matrix,
-                                              self.nel, density_matrix,
-                                              self.solver_parameters)
+        chemical_potential = nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
+                                                                   inverse_sqrt_matrix,
+                                                                   self.nel, density_matrix,
+                                                                   self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
