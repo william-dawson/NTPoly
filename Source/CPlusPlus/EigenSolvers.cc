@@ -9,13 +9,12 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-void EigenSolvers::DenseEigenDecomposition(
+void EigenSolvers::TestEigenDecomposition(
     const DistributedSparseMatrix &matrix,
-    DistributedSparseMatrix &eigenvectors, DistributedSparseMatrix &eigenvalues,
-    int num_values, const IterativeSolverParameters &solver_parameters) {
-  DenseEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
-                              GetIH(eigenvalues), &num_values,
-                              GetIH(solver_parameters));
+    DistributedSparseMatrix &eigenvectors,
+    const IterativeSolverParameters &solver_parameters) {
+  TestEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
+                             GetIH(solver_parameters));
 }
 void EigenSolvers::SplittingEigenDecomposition(
     const DistributedSparseMatrix &matrix,

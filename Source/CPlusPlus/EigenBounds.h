@@ -25,11 +25,6 @@ public:
   static void PowerBounds(const DistributedSparseMatrix &matrix,
                           double *max_power_eig,
                           const IterativeSolverParameters &solver_parameters);
-
-  static void
-  EigenDecomposition(const DistributedSparseMatrix &matrix,
-                     DistributedSparseMatrix &eigenvectors,
-                     const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

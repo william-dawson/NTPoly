@@ -19,11 +19,4 @@ void EigenBounds::PowerBounds(
     const IterativeSolverParameters &solver_parameters) {
   PowerBounds_wrp(GetIH(matrix), max_value, GetIH(solver_parameters));
 }
-void EigenBounds::EigenDecomposition(
-    const DistributedSparseMatrix &matrix,
-    DistributedSparseMatrix &eigenvectors,
-    const IterativeSolverParameters &solver_parameters) {
-  DistributedEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
-                                    GetIH(solver_parameters));
-}
 } // namespace NTPoly
