@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for an iterator that allows one to easily iterate over elements.
 MODULE SparseMatrixIteratorModule
-  USE DataTypesModule
-  USE SparseMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE SparseMatrixModule, ONLY : SparseMatrix_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

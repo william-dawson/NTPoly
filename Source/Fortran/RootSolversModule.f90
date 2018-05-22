@@ -1,21 +1,30 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE EigenBoundsModule
-  USE FixedSolversModule
-  USE InverseSolversModule
-  USE IterativeSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
+       & ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & PrintMatrixInformation
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t
+  USE InverseSolversModule, ONLY : Invert
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       WriteHeader, WriteListElement, WriteCitation
   USE ProcessGridModule
-  USE PolynomialSolversModule
-  USE SquareRootSolversModule
-  USE TimerModule
-  USE mpi
+  USE PolynomialSolversModule, ONLY : ConstructPolynomial, &
+       & PatersonStockmeyerCompute, Polynomial_t, DestructPolynomial, &
+       & SetCoefficient
+  USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

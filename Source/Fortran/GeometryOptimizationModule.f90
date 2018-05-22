@@ -1,17 +1,24 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE EigenBoundsModule
-  USE IterativeSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
+       & DestructDistributedMatrixMemoryPool
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, Trace, &
+       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
+       & ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & PrintMatrixInformation
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement, WriteHeader, WriteCitation
   USE ProcessGridModule
-  USE SquareRootSolversModule
-  USE TimerModule
+  USE SquareRootSolversModule, ONLY : InverseSquareRoot, SquareRoot
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
   IMPLICIT NONE
   PRIVATE

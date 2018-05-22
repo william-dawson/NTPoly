@@ -1,9 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing The Parameters For Iterative Solvers.
 MODULE IterativeSolversModule
-  USE DataTypesModule
-  USE LoggingModule
-  USE PermutationModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+       & WriteHeader
+  USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

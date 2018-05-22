@@ -290,32 +290,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Decide whether to do dense or sparse version.
     IF (MIN(sparsity_a, sparsity_b) .GT. 0.3) THEN
-      CALL DenseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
-           & alpha, threshold)
+       CALL DenseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
+            & alpha, threshold)
     ELSE
-      !! Setup the memory pool
-      IF (.NOT. PRESENT(blocked_memory_pool_in)) THEN
-         CALL ConstructMatrixMemoryPool(blocked_memory_pool,mat_c_columns, &
-              & mat_c_rows, sparsity_estimate)
-         pool_flag = .FALSE.
-      ELSEIF (.NOT. CheckMemoryPoolValidity(blocked_memory_pool_in, &
-           & mat_c_columns, mat_c_rows)) THEN
-         CALL DestructMatrixMemoryPool(blocked_memory_pool_in)
-         CALL ConstructMatrixMemoryPool(blocked_memory_pool_in,mat_c_columns, &
-              & mat_c_rows, sparsity_estimate)
-         pool_flag = .TRUE.
-      ELSE
-         CALL SetPoolSparsity(blocked_memory_pool_in, sparsity_estimate)
-         pool_flag = .TRUE.
-      END IF
-      !! Multiply
-      IF (pool_flag) THEN
-        CALL SparseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
-             & alpha, threshold, blocked_memory_pool_in)
-      ELSE
-        CALL SparseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
-             & alpha, threshold, blocked_memory_pool)
-      END IF
+       !! Setup the memory pool
+       IF (.NOT. PRESENT(blocked_memory_pool_in)) THEN
+          CALL ConstructMatrixMemoryPool(blocked_memory_pool,mat_c_columns, &
+               & mat_c_rows, sparsity_estimate)
+          pool_flag = .FALSE.
+       ELSEIF (.NOT. CheckMemoryPoolValidity(blocked_memory_pool_in, &
+            & mat_c_columns, mat_c_rows)) THEN
+          CALL DestructMatrixMemoryPool(blocked_memory_pool_in)
+          CALL ConstructMatrixMemoryPool(blocked_memory_pool_in,mat_c_columns, &
+               & mat_c_rows, sparsity_estimate)
+          pool_flag = .TRUE.
+       ELSE
+          CALL SetPoolSparsity(blocked_memory_pool_in, sparsity_estimate)
+          pool_flag = .TRUE.
+       END IF
+       !! Multiply
+       IF (pool_flag) THEN
+          CALL SparseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
+               & alpha, threshold, blocked_memory_pool_in)
+       ELSE
+          CALL SparseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
+               & alpha, threshold, blocked_memory_pool)
+       END IF
     END IF
 
     !! Handle the add part of GEMM

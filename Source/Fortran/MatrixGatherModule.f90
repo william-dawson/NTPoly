@@ -1,9 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for gathering matrices across processes.
 MODULE MatrixGatherModule
-  USE DataTypesModule
-  USE SparseMatrixAlgebraModule
-  USE SparseMatrixModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE SparseMatrixAlgebraModule, ONLY : IncrementSparseMatrix
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix, &
+       & DestructSparseMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -232,7 +233,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & threshold_in=threshold)
        ELSE
           CALL IncrementSparseMatrix(temporary_matrix,gathered_matrix,&
-               & threshold_in=real(0.0,NTREAL))
+               & threshold_in=REAL(0.0,NTREAL))
        END IF
        DEALLOCATE(temporary_matrix%values)
        DEALLOCATE(temporary_matrix%inner_index)

@@ -11,7 +11,7 @@ MODULE DistributedMatrixMemoryPoolModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrapper for the distributed matrix memory pool type
   TYPE, PUBLIC :: DistributedMatrixMemoryPool_wrp
-     TYPE(DistributedMatrixMemoryPool_t), POINTER :: data
+     TYPE(DistributedMatrixMemoryPool_t), POINTER :: DATA
   END TYPE DistributedMatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructDistributedMatrixMemoryPool_wrp

@@ -10,7 +10,7 @@ MODULE MatrixMemoryPoolModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the matrix memory pool data type.
   TYPE, PUBLIC :: MatrixMemoryPool_wrp
-     TYPE(MatrixMemoryPool_t), POINTER :: data
+     TYPE(MatrixMemoryPool_t), POINTER :: DATA
   END TYPE MatrixMemoryPool_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructMatrixMemoryPool_wrp

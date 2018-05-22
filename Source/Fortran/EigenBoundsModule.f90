@@ -1,15 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE IterativeSolversModule
-  USE LoggingModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & DotDistributedSparseMatrix, DistributedSparseNorm, &
+       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillFromTripletList, GetTripletList
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
+       & EnterSubLog, ExitSubLog
   USE ProcessGridModule
-  USE SparseMatrixModule
-  USE TripletListModule
+  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
+       & ConstructTripletList, DestructTripletList
+  USE TripletModule, ONLY : Triplet_t
   USE MPI
   IMPLICIT NONE
   PRIVATE
