@@ -1,18 +1,28 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing eigenvalues using the Jacobi method.
 MODULE JacobiEigenSolverModule
-  USE DataTypesModule
-  USE DenseMatrixModule
-  USE DistributedSparseMatrixModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE IterativeSolversModule
-  USE LoggingModule
-  USE MatrixBroadcastModule
-  USE MatrixGatherModule
-  USE MatrixSendRecvModule
-  USE SparseMatrixModule
-  USE SparseMatrixAlgebraModule
-  USE TripletListModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
+       & FillFromTripletList, GetTripletList
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement
+  USE MatrixBroadcastModule, ONLY : BroadcastMatrix
+  USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvMatrixSizes, &
+       & RecvMatrixData, SendMatrixSizes, SendMatrixData, &
+       & TestSendRecvSizeRequest, TestSendRecvOuterRequest, &
+       & TestSendRecvInnerRequest, TestSendRecvDataRequest
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ComposeSparseMatrix, &
+       & ConstructFromTripletList, CopySparseMatrix, DestructSparseMatrix, &
+       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix
+  USE SparseMatrixAlgebraModule, ONLY : Gemm, IncrementSparseMatrix, &
+       & SparseMatrixNorm
+  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
+       & ConstructTripletList, DestructTripletList, GetTripletAt, &
+       & RedistributeTripletLists, ShiftTripletList, SortTripletList
+  USE TripletModule, ONLY : Triplet_t
   USE MPI
   IMPLICIT NONE
   PRIVATE

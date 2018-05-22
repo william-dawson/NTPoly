@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for sending matrices between processes.
 MODULE MatrixSendRecvModule
-  USE DataTypesModule
-  USE SparseMatrixModule
+  USE DataTypesModule, ONLY : MPINTREAL
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE

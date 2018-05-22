@@ -1,9 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
-  USE DataTypesModule
-  USE SparseMatrixAlgebraModule
-  USE SparseMatrixModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE SparseMatrixAlgebraModule, ONLY : IncrementSparseMatrix
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix, &
+       & DestructSparseMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE

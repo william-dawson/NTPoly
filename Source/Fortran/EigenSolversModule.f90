@@ -1,24 +1,33 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
-  USE DataTypesModule
-  USE DenseMatrixModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE DensityMatrixSolversModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
-  USE JacobiEigenSolverModule
-  USE LinearSolversModule
-  USE LoggingModule
-  USE ParameterConverterModule
-  USE PermutationModule
-  USE ProcessGridModule
-  USE SignSolversModule
-  USE SparseMatrixModule
-  USE TimerModule
-  USE TripletListModule
-  USE TripletModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & IncrementDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & CommSplitDistributedSparseMatrix, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillFromTripletList, &
+       & FillDistributedIdentity, GetTripletList, PrintMatrixInformation, &
+       & TransposeDistributedSparseMatrix
+  USE DensityMatrixSolversModule, ONLY : TRS2
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       PrintIterativeSolverParameters
+  USE JacobiEigenSolverModule, ONLY : JacobiSolve
+  USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
+       & WriteElement, WriteListElement
+  USE ParameterConverterModule, ONLY : ConvertIterativeToFixed
+  USE SignSolversModule, ONLY : PolarDecomposition
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructFromTripletList, &
+       & DestructSparseMatrix, MatrixToTripletList
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
+       & ConstructTripletList, DestructTripletList, GetTripletAt, &
+       & RedistributeTripletLists, SortTripletList
+  USE TripletModule, ONLY : Triplet_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -375,7 +384,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END IF
     IF (SubMat%process_grid%my_slice .GT. 0) THEN
-      CALL ConstructTripletList(sub_triplets)
+       CALL ConstructTripletList(sub_triplets)
     END IF
 
     !! Combine
@@ -437,7 +446,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ExtractCorner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color, &
-    & split_slice)
+       & split_slice)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
@@ -573,11 +582,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%within_slice_comm, triplet_list)
 
     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-      CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
-      CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
-           & mat_dim)
-      CALL DenseEigenDecomposition(local_a, local_v, fixed_param%threshold)
-      CALL MatrixToTripletList(local_v,triplet_list)
+       CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
+       CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
+            & mat_dim)
+       CALL DenseEigenDecomposition(local_a, local_v, fixed_param%threshold)
+       CALL MatrixToTripletList(local_v,triplet_list)
     END IF
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
          & process_grid_in=this%process_grid)
