@@ -552,10 +552,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_t) :: triplet_list, sorted_triplet_list
     TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
-    TYPE(Triplet_t) :: temp_triplet
     TYPE(SparseMatrix_t) :: sparse
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense, dense_eig
-    INTEGER :: counter, II, JJ, list_size
+    INTEGER :: counter, list_size
     INTEGER :: mat_dim
     TYPE(SparseMatrix_t) :: local_a, local_v
 

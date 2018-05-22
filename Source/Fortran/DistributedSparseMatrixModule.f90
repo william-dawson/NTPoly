@@ -4,10 +4,10 @@ MODULE DistributedSparseMatrixModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE LoggingModule, ONLY : &
        & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
-  USE MatrixGatherModule, ONLY : GatherHelper_t, GatherSizes, &
-       & GatherAndComposeData, GatherAndComposeCleanup, GatherAndSumData, &
-       & GatherAndSumCleanup, TestSizeRequest, TestOuterRequest, &
-       & TestInnerRequest, TestDataRequest
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
+       & ReduceAndComposeData, ReduceAndComposeCleanup, ReduceAndSumData, &
+       & ReduceAndSumCleanup, TestReduceSizeRequest, TestReduceOuterRequest, &
+       & TestReduceInnerRequest, TestReduceDataRequest
   USE MatrixMarketModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
@@ -635,7 +635,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_t) :: sorted_triplet_list
     TYPE(SparseMatrix_t) :: local_matrix
     TYPE(SparseMatrix_t) :: gathered_matrix
-    TYPE(GatherHelper_t) :: gather_helper
+    TYPE(ReduceHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0
     LOGICAL :: preduplicated
 
@@ -660,19 +660,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! And reduce over the Z dimension. This can be accomplished by
     !! summing up.
     IF (.NOT. PRESENT(preduplicated_in) .OR. .NOT. preduplicated_in) THEN
-       CALL GatherSizes(local_matrix, this%process_grid%between_slice_comm,&
+       CALL ReduceSizes(local_matrix, this%process_grid%between_slice_comm,&
             & gather_helper)
-       DO WHILE(.NOT. TestSizeRequest(gather_helper))
+       DO WHILE(.NOT. TestReduceSizeRequest(gather_helper))
        END DO
-       CALL GatherAndSumData(local_matrix, &
+       CALL ReduceAndSumData(local_matrix, &
             & this%process_grid%between_slice_comm, gather_helper)
-       DO WHILE(.NOT. TestOuterRequest(gather_helper))
+       DO WHILE(.NOT. TestReduceOuterRequest(gather_helper))
        END DO
-       DO WHILE(.NOT. TestInnerRequest(gather_helper))
+       DO WHILE(.NOT. TestReduceInnerRequest(gather_helper))
        END DO
-       DO WHILE(.NOT. TestDataRequest(gather_helper))
+       DO WHILE(.NOT. TestReduceDataRequest(gather_helper))
        END DO
-       CALL GatherAndSumCleanUp(local_matrix, gathered_matrix, threshold, &
+       CALL ReduceAndSumCleanUp(local_matrix, gathered_matrix, threshold, &
             & gather_helper)
        CALL SplitToLocalBlocks(this, gathered_matrix)
     ELSE
@@ -1044,8 +1044,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: this
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Helpers For Communication
-    TYPE(GatherHelper_t) :: row_helper
-    TYPE(GatherHelper_t) :: column_helper
+    TYPE(ReduceHelper_t) :: row_helper
+    TYPE(ReduceHelper_t) :: column_helper
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     !! Temporary Variables
     TYPE(SparseMatrix_t) :: merged_local_data
@@ -1060,27 +1060,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Merge Columns
     CALL TransposeSparseMatrix(merged_local_data, merged_local_dataT)
-    CALL GatherSizes(merged_local_dataT, this%process_grid%column_comm, column_helper)
+    CALL ReduceSizes(merged_local_dataT, this%process_grid%column_comm, &
+         & column_helper)
     CALL MPI_Wait(column_helper%size_request ,mpi_status,ierr)
-    CALL GatherAndComposeData(merged_local_dataT, &
+    CALL ReduceAndComposeData(merged_local_dataT, &
          & this%process_grid%column_comm,merged_columns, &
          & column_helper)
     CALL MPI_Wait(column_helper%outer_request,mpi_status,ierr)
     CALL MPI_Wait(column_helper%inner_request,mpi_status,ierr)
     CALL MPI_Wait(column_helper%data_request,mpi_status,ierr)
-    CALL GatherAndComposeCleanup(merged_local_dataT,merged_columns, &
+    CALL ReduceAndComposeCleanup(merged_local_dataT,merged_columns, &
          & column_helper)
 
     !! Merge Rows
     CALL TransposeSparseMatrix(merged_columns,merged_columnsT)
-    CALL GatherSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
+    CALL ReduceSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
     CALL MPI_Wait(row_helper%size_request,mpi_status,ierr)
-    CALL GatherAndComposeData(merged_columnsT, this%process_grid%row_comm, &
+    CALL ReduceAndComposeData(merged_columnsT, this%process_grid%row_comm, &
          & full_gathered,row_helper)
     CALL MPI_Wait(row_helper%outer_request,mpi_status,ierr)
     CALL MPI_Wait(row_helper%inner_request,mpi_status,ierr)
     CALL MPI_Wait(row_helper%data_request,mpi_status,ierr)
-    CALL GatherAndComposeCleanup(merged_columnsT,full_gathered,row_helper)
+    CALL ReduceAndComposeCleanup(merged_columnsT,full_gathered,row_helper)
 
     !! Make these changes so that it prints the logical rows/columns
     full_gathered%rows = this%actual_matrix_dimension
@@ -1224,7 +1225,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to split.
   !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
   SUBROUTINE CommSplitDistributedSparseMatrix(this, split_mat, my_color, &
-    & split_slice)
+       & split_slice)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: split_mat

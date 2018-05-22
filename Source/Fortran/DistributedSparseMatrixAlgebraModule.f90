@@ -7,10 +7,10 @@ MODULE DistributedSparseMatrixAlgebraModule
        & CheckDistributedMemoryPoolValidity
   USE DistributedSparseMatrixModule
   USE GemmTasksModule
-  USE MatrixGatherModule, ONLY : GatherHelper_t, GatherSizes, &
-       & GatherAndComposeData, GatherAndComposeCleanup, GatherAndSumData, &
-       & GatherAndSumCleanup, TestSizeRequest, TestOuterRequest, &
-       & TestInnerRequest, TestDataRequest
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
+       & ReduceAndComposeData, ReduceAndComposeCleanup, ReduceAndSumData, &
+       & ReduceAndSumCleanup, TestReduceSizeRequest, TestReduceOuterRequest, &
+       & TestReduceInnerRequest, TestReduceDataRequest
   USE SparseMatrixAlgebraModule, ONLY : &
        & DotSparseMatrix, PairwiseMultiplySparseMatrix, &
        & SparseMatrixColumnNorm, ScaleSparseMatrix, IncrementSparseMatrix, &
@@ -110,9 +110,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution
     TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: SliceContribution
     !! Communication Helpers
-    TYPE(GatherHelper_t), DIMENSION(:), ALLOCATABLE :: row_helper
-    TYPE(GatherHelper_t), DIMENSION(:), ALLOCATABLE :: column_helper
-    TYPE(GatherHelper_t), DIMENSION(:,:), ALLOCATABLE :: slice_helper
+    TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: row_helper
+    TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: column_helper
+    TYPE(ReduceHelper_t), DIMENSION(:,:), ALLOCATABLE :: slice_helper
     !! For Iterating Over Local Blocks
     INTEGER :: row_counter, inner_row_counter
     INTEGER :: column_counter, inner_column_counter
@@ -245,34 +245,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !$omp end task
           CASE(SendSizeA)
              !! Then Start A Global Gather
-             CALL GatherSizes(LocalRowContribution(row_counter), &
+             CALL ReduceSizes(LocalRowContribution(row_counter), &
                   & matAB%process_grid%blocked_row_comm(row_counter), &
                   & row_helper(row_counter))
              ATasks(row_counter) = ComposeA
           CASE(ComposeA)
-             IF (TestSizeRequest(row_helper(row_counter))) THEN
-                CALL GatherAndComposeData(LocalRowContribution(row_counter), &
+             IF (TestReduceSizeRequest(row_helper(row_counter))) THEN
+                CALL ReduceAndComposeData(LocalRowContribution(row_counter), &
                      & matAB%process_grid%blocked_row_comm(row_counter), &
                      & GatheredRowContribution(row_counter), &
                      & row_helper(row_counter))
                 ATasks(row_counter) = WaitOuterA
              END IF
           CASE(WaitOuterA)
-             IF (TestOuterRequest(row_helper(row_counter))) THEN
+             IF (TestReduceOuterRequest(row_helper(row_counter))) THEN
                 ATasks(row_counter) = WaitInnerA
              END IF
           CASE(WaitInnerA)
-             IF (TestInnerRequest(row_helper(row_counter))) THEN
+             IF (TestReduceInnerRequest(row_helper(row_counter))) THEN
                 ATasks(row_counter) = WaitDataA
              END IF
           CASE(WaitDataA)
-             IF (TestDataRequest(row_helper(row_counter))) THEN
+             IF (TestReduceDataRequest(row_helper(row_counter))) THEN
                 ATasks(row_counter) = AdjustIndicesA
              END IF
           CASE(AdjustIndicesA)
              ATasks(row_counter) = TaskRunningA
              !$omp task default(shared), firstprivate(row_counter)
-             CALL GatherAndComposeCleanup(LocalRowContribution(row_counter), &
+             CALL ReduceAndComposeCleanup(LocalRowContribution(row_counter), &
                   & GatheredRowContribution(row_counter), &
                   & row_helper(row_counter))
              CALL TransposeSparseMatrix(GatheredRowContribution(row_counter), &
@@ -307,13 +307,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !$omp end task
           CASE(SendSizeB)
              !! Then A Global Gather
-             CALL GatherSizes(LocalColumnContribution(column_counter), &
+             CALL ReduceSizes(LocalColumnContribution(column_counter), &
                   & matAB%process_grid%blocked_column_comm(column_counter), &
                   & column_helper(column_counter))
              BTasks(column_counter) = LocalComposeB
           CASE(LocalComposeB)
-             IF (TestSizeRequest(column_helper(column_counter))) THEN
-                CALL GatherAndComposeData( &
+             IF (TestReduceSizeRequest(column_helper(column_counter))) THEN
+                CALL ReduceAndComposeData( &
                      & LocalColumnContribution(column_counter),&
                      & matAB%process_grid%blocked_column_comm(column_counter), &
                      & GatheredColumnContribution(column_counter), &
@@ -321,21 +321,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 BTasks(column_counter) = WaitOuterB
              END IF
           CASE(WaitOuterB)
-             IF (TestOuterRequest(column_helper(column_counter))) THEN
+             IF (TestReduceOuterRequest(column_helper(column_counter))) THEN
                 BTasks(column_counter) = WaitInnerB
              END IF
           CASE(WaitInnerB)
-             IF (TestInnerRequest(column_helper(column_counter))) THEN
+             IF (TestReduceInnerRequest(column_helper(column_counter))) THEN
                 BTasks(column_counter) = WaitDataB
              END IF
           CASE(WaitDataB)
-             IF (TestDataRequest(column_helper(column_counter))) THEN
+             IF (TestReduceDataRequest(column_helper(column_counter))) THEN
                 BTasks(column_counter) = AdjustIndicesB
              END IF
           CASE(AdjustIndicesB)
              BTasks(column_counter) = TaskRunningB
              !$omp task default(shared), firstprivate(column_counter)
-             CALL GatherAndComposeCleanup( &
+             CALL ReduceAndComposeCleanup( &
                   & LocalColumnContribution(column_counter),&
                   & GatheredColumnContribution(column_counter), &
                   & column_helper(column_counter))
@@ -377,14 +377,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 ABTasks(column_counter,row_counter) = SendSizeAB
                 !$omp end task
              CASE(SendSizeAB)
-                CALL GatherSizes(SliceContribution(column_counter,row_counter), &
+                CALL ReduceSizes(SliceContribution(column_counter,row_counter),&
                      & matAB%process_grid%blocked_between_slice_comm&
                      & (column_counter,row_counter), &
                      & slice_helper(column_counter,row_counter))
                 ABTasks(column_counter,row_counter) = GatherAndSumAB
              CASE (GatherAndSumAB)
-                IF (TestSizeRequest(slice_helper(column_counter,row_counter))) THEN
-                   CALL GatherAndSumData( &
+                IF (TestReduceSizeRequest(&
+                     & slice_helper(column_counter,row_counter))) THEN
+                   CALL ReduceAndSumData( &
                         & SliceContribution(column_counter,row_counter), &
                         & matAB%process_grid%blocked_between_slice_comm&
                         & (column_counter,row_counter), &
@@ -392,22 +393,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    ABTasks(column_counter,row_counter) = WaitOuterAB
                 END IF
              CASE (WaitOuterAB)
-                IF (TestOuterRequest(slice_helper(column_counter,row_counter))) THEN
+                IF (TestReduceOuterRequest(&
+                     & slice_helper(column_counter,row_counter))) THEN
                    ABTasks(column_counter,row_counter) = WaitInnerAB
                 END IF
              CASE (WaitInnerAB)
-                IF (TestInnerRequest(slice_helper(column_counter,row_counter))) THEN
+                IF (TestReduceInnerRequest(&
+                     & slice_helper(column_counter,row_counter))) THEN
                    ABTasks(column_counter,row_counter) = WaitDataAB
                 END IF
              CASE (WaitDataAB)
-                IF (TestDataRequest(slice_helper(column_counter,row_counter))) THEN
+                IF (TestReduceDataRequest(&
+                     & slice_helper(column_counter,row_counter))) THEN
                    ABTasks(column_counter,row_counter) = LocalSumAB
                 END IF
              CASE(LocalSumAB)
                 ABTasks(column_counter,row_counter) = TaskRunningAB
                 !$omp task default(shared), &
                 !$omp& firstprivate(row_counter,column_counter)
-                CALL GatherAndSumCleanup( &
+                CALL ReduceAndSumCleanup( &
                      & SliceContribution(column_counter,row_counter), &
                      & matAB%local_data(column_counter,row_counter), &
                      & threshold, slice_helper(column_counter,row_counter))

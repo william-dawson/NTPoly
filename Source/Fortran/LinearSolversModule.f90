@@ -1,22 +1,34 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
-  USE DataTypesModule
-  USE DenseMatrixModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE MatrixGatherModule
-  USE ProcessGridModule
-  USE SparseMatrixAlgebraModule
-  USE SparseMatrixModule
-  USE SparseVectorModule
-  USE TimerModule
-  USE TripletListModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DenseMatrixModule, ONLY : ConstructDenseFromSparse
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : Trace, &
+      & IncrementDistributedSparseMatrix, DistributedSparseNorm, &
+      & DistributedGemm, ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+      & TransposeDistributedSparseMatrix, PrintMatrixInformation, &
+      & FillDistributedIdentity, MergeLocalBlocks, FillFromTripletList, &
+      & DestructDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+      & ConstructEmptyDistributedSparseMatrix
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
+      & PrintFixedSolverParameters
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+      & PrintIterativeSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
+      & EnterSubLog, ExitSubLog
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
+      & ReduceAndComposeData, ReduceAndComposeCleanup
+  USE ProcessGridModule, ONLY : ProcessGrid_t
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, DestructSparseMatrix, &
+      & TransposeSparseMatrix
+  USE SparseVectorModule, ONLY : DotSparseVectors
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
+      & ConstructTripletList, DestructTripletList
+  USE TripletModule, ONLY : Triplet_t
   USE mpi
   IMPLICIT NONE
   PRIVATE
@@ -789,20 +801,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), INTENT(INOUT) :: column_matrix
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     !! Local Variables
-    TYPE(GatherHelper_t) :: gather_helper
+    TYPE(ReduceHelper_t) :: gather_helper
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     TYPE(SparseMatrix_t) :: local_matrixT
     INTEGER :: mpi_err
 
     CALL TransposeSparseMatrix(local_matrix, local_matrixT)
-    CALL GatherSizes(local_matrixT, process_grid%column_comm, gather_helper)
+    CALL ReduceSizes(local_matrixT, process_grid%column_comm, gather_helper)
     CALL MPI_Wait(gather_helper%size_request, mpi_status, mpi_err)
-    CALL GatherAndComposeData(local_matrixT, process_grid%column_comm, &
+    CALL ReduceAndComposeData(local_matrixT, process_grid%column_comm, &
          & column_matrix, gather_helper)
     CALL MPI_Wait(gather_helper%outer_request,mpi_status,mpi_err)
     CALL MPI_Wait(gather_helper%inner_request,mpi_status,mpi_err)
     CALL MPI_Wait(gather_helper%data_request,mpi_status,mpi_err)
-    CALL GatherAndComposeCleanup(local_matrixT, column_matrix, &
+    CALL ReduceAndComposeCleanup(local_matrixT, column_matrix, &
          & gather_helper)
 
     CALL DestructSparseMatrix(local_matrixT)
