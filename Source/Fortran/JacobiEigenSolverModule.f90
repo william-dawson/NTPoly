@@ -6,7 +6,8 @@ MODULE JacobiEigenSolverModule
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
        & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, &
-       & CommSplitDistributedSparseMatrix, DestructDistributedSparseMatrix
+       & CommSplitDistributedSparseMatrix, DestructDistributedSparseMatrix, &
+       & PrintMatrixInformation
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -184,6 +185,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors, active)
 
     IF (solver_parameters%be_verbose) THEN
+       CALL WriteElement(key="Total_Iterations",int_value_in=iteration)
+       CALL PrintMatrixInformation(eigenvectors)
        CALL ExitSubLog
     END IF
 

@@ -30,7 +30,7 @@ MODULE EigenSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTEGER, PARAMETER :: BASESIZE = 16
+  INTEGER, PARAMETER :: BASESIZE = 1024
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SplittingEigenDecomposition
   PUBLIC :: TestEigenDecomposition
