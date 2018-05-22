@@ -36,9 +36,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_timer_list(:SIZE(timer_list)) = timer_list
        temp_start_times(:SIZE(start_times)) = start_times
        temp_elapsed_times(:SIZE(elapsed_times)) = elapsed_times
-       CALL move_alloc(temp_timer_list,timer_list)
-       CALL move_alloc(temp_start_times,start_times)
-       CALL move_alloc(temp_elapsed_times,elapsed_times)
+       CALL MOVE_ALLOC(temp_timer_list,timer_list)
+       CALL MOVE_ALLOC(temp_start_times,start_times)
+       CALL MOVE_ALLOC(temp_elapsed_times,elapsed_times)
        timer_list(SIZE(timer_list)) = timer_name
        elapsed_times(SIZE(timer_list)) = 0
     ELSE
@@ -130,13 +130,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteHeader("Timers")
     CALL EnterSubLog
 
-<<<<<<< HEAD
-=======
-    IF (IsRoot()) THEN
-       CALL WriteHeader("Timers")
-       CALL EnterSubLog
-    END IF
->>>>>>> master
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        elapsed = elapsed_times(timer_position)
        CALL MPI_Allreduce(elapsed, max_time, 1, MPI_DOUBLE ,MPI_MAX, &
@@ -144,14 +137,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteListElement(key=timer_list(timer_position), &
             & float_value_in=max_time)
     END DO
-<<<<<<< HEAD
 
     CALL ExitSubLog
-=======
-    IF (IsRoot()) THEN
-       CALL ExitSubLog
-    END IF
->>>>>>> master
   END SUBROUTINE PrintAllTimersDistributed
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Figure out the position in the timer list where timer_name is.

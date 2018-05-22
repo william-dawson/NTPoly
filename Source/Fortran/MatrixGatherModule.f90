@@ -4,7 +4,7 @@ MODULE MatrixGatherModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE SparseMatrixAlgebraModule, ONLY : IncrementSparseMatrix
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix, &
-       & DestructSparseMatrix
+       & DestructSparseMatrix, CopySparseMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
