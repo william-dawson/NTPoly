@@ -5,7 +5,7 @@ MODULE JacobiEigenSolverModule
   USE DenseMatrixModule, ONLY : DenseEigenDecomposition
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
-       & FillFromTripletList, GetTripletList
+       & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, PrintDistributedSparseMatrix
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -110,9 +110,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: last_a
     TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
+    TYPE(DistributedSparseMatrix_t) :: WorkingMat
     REAL(NTREAL) :: norm_value
     INTEGER :: counter, iteration
     INTEGER :: ierr
+    LOGICAL :: active
 
     !! Write info about the solver
     IF (solver_parameters%be_verbose) THEN
@@ -123,48 +125,55 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintIterativeSolverParameters(solver_parameters)
     END IF
 
-    !! Setup Communication
-    CALL InitializeJacobi(jacobi_data, this)
+    !! Handle the case where we have a matrix that is too small
+    CALL SplitJacobi(this, WorkingMat, active)
+    CALL PrintDistributedSparseMatrix(WorkingMat)
 
-    !! Initialize the eigenvectors to the identity.
-    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
-         & this%actual_matrix_dimension)
-    CALL FillDistributedIdentity(eigenvectors)
+    IF (active) THEN
+       !! Setup Communication
+       CALL InitializeJacobi(jacobi_data, WorkingMat)
 
-    !! Extract to local dense blocks
-    ALLOCATE(ABlocks(2,jacobi_data%block_rows))
-    CALL GetLocalBlocks(this, jacobi_data, ABlocks)
-    ALLOCATE(VBlocks(2,jacobi_data%block_rows))
-    CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
-    CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
-         & jacobi_data%block_columns, local_a)
-    DO iteration = 1, solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=iteration-1)
-          CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
-          CALL ExitSubLog
-       END IF
+       !! Initialize the eigenvectors to the identity.
+       CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
+            & this%actual_matrix_dimension, &
+            & process_grid_in=this%process_grid)
+       CALL FillDistributedIdentity(eigenvectors)
 
-       !! Loop Over One Jacobi Sweep
-       CALL JacobiSweep(ABlocks, VBlocks, jacobi_data, &
-            & solver_parameters%threshold)
-
-       !! Compute Norm Value
-       CALL CopySparseMatrix(local_a, last_a)
+       !! Extract to local dense blocks
+       ALLOCATE(ABlocks(2,jacobi_data%block_rows))
+       CALL GetLocalBlocks(WorkingMat, jacobi_data, ABlocks)
+       ALLOCATE(VBlocks(2,jacobi_data%block_rows))
+       CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
        CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
             & jacobi_data%block_columns, local_a)
-       CALL IncrementSparseMatrix(local_a,last_a,alpha_in=REAL(-1.0,NTREAL), &
-            & threshold_in=solver_parameters%threshold)
-       norm_value = SparseMatrixNorm(last_a)
-       CALL MPI_Allreduce(MPI_IN_PLACE, norm_value, 1, MPINTREAL, MPI_SUM,&
-            & jacobi_data%communicator, ierr)
+       DO iteration = 1, solver_parameters%max_iterations
+          IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
+             CALL WriteListElement(key="Round", int_value_in=iteration-1)
+             CALL EnterSubLog
+             CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+             CALL ExitSubLog
+          END IF
 
-       !! Test early exit
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
-          EXIT
-       END IF
-    END DO
+          !! Loop Over One Jacobi Sweep
+          CALL JacobiSweep(ABlocks, VBlocks, jacobi_data, &
+               & solver_parameters%threshold)
+
+          !! Compute Norm Value
+          CALL CopySparseMatrix(local_a, last_a)
+          CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
+               & jacobi_data%block_columns, local_a)
+          CALL IncrementSparseMatrix(local_a,last_a,alpha_in=REAL(-1.0,NTREAL), &
+               & threshold_in=solver_parameters%threshold)
+          norm_value = SparseMatrixNorm(last_a)
+          CALL MPI_Allreduce(MPI_IN_PLACE, norm_value, 1, MPINTREAL, MPI_SUM, &
+               & jacobi_data%communicator, ierr)
+
+          !! Test early exit
+          IF (norm_value .LE. solver_parameters%converge_diff) THEN
+             EXIT
+          END IF
+       END DO
+    END IF
 
     !! Convert to global matrix
     CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
@@ -187,6 +196,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CleanupJacobi(jacobi_data)
 
   END SUBROUTINE JacobiSolve
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE SplitJacobi(matrix, splitmat, active)
+     !! Parameters
+     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
+     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: splitmat
+     LOGICAL, INTENT(OUT) :: active
+     !! Local Variables
+
+     ! CALL CommSplitDistributedSparseMatrix()
+     CALL CopyDistributedSparseMatrix(matrix, splitmat)
+     active = .TRUE.
+  END SUBROUTINE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE InitializeJacobi(jdata, matrix)
     !! Parameters

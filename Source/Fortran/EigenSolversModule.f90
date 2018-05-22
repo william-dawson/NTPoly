@@ -2,7 +2,6 @@
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
   USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
   USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
        & IncrementDistributedSparseMatrix
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
@@ -31,7 +30,7 @@ MODULE EigenSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTEGER, PARAMETER :: BASESIZE = 1
+  INTEGER, PARAMETER :: BASESIZE = 16
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SplittingEigenDecomposition
   PUBLIC :: TestEigenDecomposition
@@ -231,7 +230,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Base Case
     IF (mat_dim .LE. BASESIZE) THEN
        CALL StartTimer("Base Case")
-       CALL BaseCase(this, fixed_param, eigenvectors)
+       ! CALL BaseCase(this, fixed_param, eigenvectors)
+       CALL JacobiSolve(this, eigenvectors, it_param)
        CALL StopTimer("Base Case")
     ELSE
        !! Setup
@@ -548,58 +548,5 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(TempMat)
     CALL DestructDistributedSparseMatrix(VAV)
   END SUBROUTINE ReduceDimension
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> The base case: use lapack to solve
-  !! @param[in] this the matrix to compute
-  !! @param[in] fixed_param the solve parameters.
-  !! @param[out] eigenvecotrs the eigenvectors of the matrix
-  SUBROUTINE BaseCase(this, fixed_param, eigenvectors)
-    !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    !! Local Data
-    TYPE(TripletList_t) :: triplet_list, sorted_triplet_list
-    TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
-    TYPE(SparseMatrix_t) :: sparse
-    INTEGER :: counter, list_size
-    INTEGER :: mat_dim
-    TYPE(SparseMatrix_t) :: local_a, local_v
-
-    mat_dim = this%actual_matrix_dimension
-
-    !! Gather on a single processor
-    CALL GetTripletList(this, triplet_list)
-    ALLOCATE(send_list(this%process_grid%slice_size))
-    CALL ConstructTripletList(send_list(1), triplet_list%CurrentSize)
-    DO counter = 2, this%process_grid%slice_size
-       CALL ConstructTripletList(send_list(counter))
-    END DO
-    list_size = triplet_list%CurrentSize
-    send_list(1)%data(:list_size) = triplet_list%data(:list_size)
-    CALL DestructTripletList(triplet_list)
-    CALL RedistributeTripletLists(send_list, &
-         & this%process_grid%within_slice_comm, triplet_list)
-
-    IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-       CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
-       CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
-            & mat_dim)
-       CALL DenseEigenDecomposition(local_a, local_v, fixed_param%threshold)
-       CALL MatrixToTripletList(local_v,triplet_list)
-    END IF
-    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
-         & process_grid_in=this%process_grid)
-    CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
-
-    !! Cleanup
-    CALL DestructSparseMatrix(sparse)
-    CALL DestructTripletList(triplet_list)
-    CALL DestructTripletList(sorted_triplet_list)
-    DO counter = 1, this%process_grid%slice_size
-       CALL DestructTripletList(send_list(counter))
-    END DO
-    DEALLOCATE(send_list)
-  END SUBROUTINE BaseCase
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenSolversModule
