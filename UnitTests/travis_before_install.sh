@@ -1,5 +1,6 @@
 
 if [[ "$TESTOS" == "LINUX" ]]; then
+  sudo apt-get update
   sudo apt-get install gfortran
   if [ -f "openmpi-3.0.1/README" ]; then
     echo "Using cached openmpi";
