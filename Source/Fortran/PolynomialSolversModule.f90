@@ -13,7 +13,6 @@ MODULE PolynomialSolversModule
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader, WriteCitation
-  USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
   IMPLICIT NONE

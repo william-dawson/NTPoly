@@ -16,9 +16,8 @@ MODULE InverseSolversModule
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteElement, WriteListElement, WriteCitation
-  USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -15,7 +15,6 @@ MODULE HermiteSolversModule
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
-  USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
   IMPLICIT NONE

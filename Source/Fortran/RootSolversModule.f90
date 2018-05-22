@@ -18,7 +18,6 @@ MODULE RootSolversModule
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        WriteHeader, WriteListElement, WriteCitation
-  USE ProcessGridModule
   USE PolynomialSolversModule, ONLY : ConstructPolynomial, &
        & PatersonStockmeyerCompute, Polynomial_t, DestructPolynomial, &
        & SetCoefficient

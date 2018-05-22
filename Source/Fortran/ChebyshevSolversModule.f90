@@ -14,7 +14,6 @@ MODULE ChebyshevSolversModule
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
        & EnterSubLog, ExitSubLog
-  USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
   IMPLICIT NONE

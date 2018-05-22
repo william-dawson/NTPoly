@@ -24,7 +24,6 @@ MODULE ExponentialSolversModule
   USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
        & EnterSubLog, ExitSubLog
   USE ParameterConverterModule, ONLY : ConvertFixedToIterative
-  USE ProcessGridModule
   USE RootSolversModule, ONLY : ComputeRoot
   USE SquareRootSolversModule, ONLY : SquareRoot
   USE TimerModule, ONLY : StartTimer, StopTimer

@@ -13,7 +13,6 @@ MODULE EigenBoundsModule
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
        & EnterSubLog, ExitSubLog
-  USE ProcessGridModule
   USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
        & ConstructTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_t

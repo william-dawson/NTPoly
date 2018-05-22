@@ -16,7 +16,6 @@ MODULE GeometryOptimizationModule
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader, WriteCitation
-  USE ProcessGridModule
   USE SquareRootSolversModule, ONLY : InverseSquareRoot, SquareRoot
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
