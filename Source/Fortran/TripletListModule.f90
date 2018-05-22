@@ -2,7 +2,7 @@
 !> A Module For Storing Lists of triplets.
 MODULE TripletListModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE MatrixMarketModule
+  USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC
   USE TripletModule, ONLY : Triplet_t, CompareTriplets
   USE ISO_C_BINDING, ONLY : c_int
   USE MPI

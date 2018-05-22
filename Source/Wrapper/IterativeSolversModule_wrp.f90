@@ -13,7 +13,7 @@ MODULE IterativeSolversModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the sparse matrix data type.
   TYPE, PUBLIC :: IterativeSolverParameters_wrp
-     TYPE(IterativeSolverParameters_t), POINTER :: data
+     TYPE(IterativeSolverParameters_t), POINTER :: DATA
   END TYPE IterativeSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructIterativeSolverParameters_wrp

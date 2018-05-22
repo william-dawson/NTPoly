@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Convert between different types of parameters.
 MODULE ParameterConverterModule
-  USE DataTypesModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -21,7 +21,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     iterative_parameters%threshold = fixed_parameters%threshold
     iterative_parameters%converge_diff = fixed_parameters%threshold*100
     IF (iterative_parameters%converge_diff .LT. 1e-13) THEN
-      iterative_parameters%converge_diff = 1e-13
+       iterative_parameters%converge_diff = 1e-13
     END IF
     iterative_parameters%be_verbose = fixed_parameters%be_verbose
     iterative_parameters%do_load_balancing = fixed_parameters%do_load_balancing

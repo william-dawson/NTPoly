@@ -1,7 +1,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling scratch memory for distributed matrix multiplication.
 MODULE DistributedMatrixMemoryPoolModule
-  USE ErrorModule
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
        & DestructMatrixMemoryPool

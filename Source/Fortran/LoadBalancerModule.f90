@@ -1,10 +1,12 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for load balancing the matrix multiplication calculation.
 MODULE LoadBalancerModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE PermutationModule
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedPermutation
+  USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

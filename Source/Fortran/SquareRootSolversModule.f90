@@ -1,16 +1,25 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Square Root of a Matrix.
 MODULE SquareRootSolversModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE EigenBoundsModule
-  USE IterativeSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE TimerModule
-  USE mpi
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
+       & DestructDistributedMatrixMemoryPool
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
+       & ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & PrintMatrixInformation
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteHeader, WriteListElement, WriteCitation
+  USE ProcessGridModule
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

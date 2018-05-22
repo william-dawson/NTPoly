@@ -1,14 +1,21 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing Matrix functions based on Chebyshev polynomials.
 MODULE ChebyshevSolversModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE FixedSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE TimerModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, GetSize,&
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & GetLoadBalance, PrintMatrixInformation
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
+       & PrintFixedSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
+       & EnterSubLog, ExitSubLog
+  USE ProcessGridModule
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
   IMPLICIT NONE
   PRIVATE

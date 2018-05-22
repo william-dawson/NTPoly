@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to store specifications for basic data types.
 MODULE DataTypesModule
-  USE ErrorModule
+  USE ErrorModule, ONLY : CheckMPIError, Error_t
   USE ISO_C_BINDING
   USE ISO_FORTRAN_ENV
   USE MPI

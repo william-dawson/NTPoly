@@ -1,16 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing Trigonometric functions of a Matrix.
 MODULE TrigonometrySolversModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE EigenBoundsModule
-  USE FixedSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE TimerModule
-  USE mpi
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
+       & PrintFixedSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       WriteHeader, WriteListElement, WriteCitation
+  USE ProcessGridModule
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

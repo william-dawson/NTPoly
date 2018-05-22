@@ -4,12 +4,14 @@
 !! used in situations where matrices become too dense for good sparse matrix
 !! performance.
 MODULE DenseMatrixModule
-  USE DataTypesModule
-  USE SparseMatrixModule
-  USE TripletListModule
-  USE TripletModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructFromTripletList
+  USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
+       & AppendToTripletList
+  USE TripletModule, ONLY : Triplet_t
   IMPLICIT NONE
   PRIVATE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructDenseFromSparse
   PUBLIC :: ConstructSparseFromDense
   PUBLIC :: MultiplyDense

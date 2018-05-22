@@ -121,7 +121,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.
   PURE SUBROUTINE SortTripletList_wrp(ih_this, matrix_columns, ih_sorted) &
-    & bind(c,name="SortTripletList_wrp")
+       & bind(c,name="SortTripletList_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: matrix_columns
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_sorted(SIZE_wrp)

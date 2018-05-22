@@ -2,7 +2,9 @@
 !> Module for gathering matrices across processes.
 MODULE MatrixGatherModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE SparseMatrixModule, ONLY : SparseMatrix_t
+  USE SparseMatrixAlgebraModule, ONLY : IncrementSparseMatrix
+  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix, &
+       & DestructSparseMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE

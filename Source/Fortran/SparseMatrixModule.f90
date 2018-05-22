@@ -2,7 +2,7 @@
 !> A module for handling locally stored CSR matrices.
 MODULE SparseMatrixModule
   USE DataTypesModule, ONLY : NTREAL
-  USE MatrixMarketModule
+  USE MatrixMarketModule, ONLY : ParseMMHeader
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY: TripletList_t, SortTripletList, &
        & ConstructTripletList, DestructTripletList, SetTripletAt, &

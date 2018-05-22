@@ -1,14 +1,23 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE IterativeSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE TimerModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
+       & DestructDistributedMatrixMemoryPool
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
+       & ComputeSigma, ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & PrintMatrixInformation
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
+       & WriteElement, WriteListElement, WriteCitation
+  USE ProcessGridModule
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE mpi
   IMPLICIT NONE
   PRIVATE

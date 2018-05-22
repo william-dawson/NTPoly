@@ -2,7 +2,6 @@
 !> A Module For Storing Triplets of Integer, Integer, Double.
 MODULE TripletModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
-  USE ErrorModule
   USE ISO_C_BINDING, ONLY : c_int
   USE MPI
   IMPLICIT NONE

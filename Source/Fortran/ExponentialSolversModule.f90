@@ -1,21 +1,33 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing Matrix Exponentials and Logarithms.
 MODULE ExponentialSolversModule
-  USE ChebyshevSolversModule
-  USE DataTypesModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixModule
-  USE EigenBoundsModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
-  USE LinearSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE ParameterConverterModule
-  USE RootSolversModule
-  USE SquareRootSolversModule
-  USE TimerModule
+  USE ChebyshevSolversModule, ONLY : ChebyshevPolynomial_t, &
+       & ChebyshevCompute, ConstructChebyshevPolynomial, &
+       & DestructChebyshevPolynomial, FactorizedChebyshevCompute, &
+       & SetChebyshevCoefficient
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
+       & ScaleDistributedSparseMatrix
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & PrintMatrixInformation
+  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
+  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
+       & PrintFixedSolverParameters
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LinearSolversModule, ONLY : CGSolver
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
+       & EnterSubLog, ExitSubLog
+  USE ParameterConverterModule, ONLY : ConvertFixedToIterative
+  USE ProcessGridModule
+  USE RootSolversModule, ONLY : ComputeRoot
+  USE SquareRootSolversModule, ONLY : SquareRoot
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
   IMPLICIT NONE
   PRIVATE
