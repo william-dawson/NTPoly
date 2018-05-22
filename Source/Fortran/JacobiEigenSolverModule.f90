@@ -6,9 +6,10 @@ MODULE JacobiEigenSolverModule
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
        & FillFromTripletList, GetTripletList
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteListElement
+       & WriteListElement, WriteHeader, WriteCitation
   USE MatrixBroadcastModule, ONLY : BroadcastMatrix
   USE MatrixGatherModule, ONLY : BlockingMatrixGather
   USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvMatrixSizes, &
@@ -60,14 +61,23 @@ MODULE JacobiEigenSolverModule
      !> A communicator for performing the calculation on.
      INTEGER :: communicator
      !! Blocking Information
+     !> First block row to work on locally..
      INTEGER :: block_start
+     !> Second block row to work on locally.
      INTEGER :: block_end
+     !> How many block rows there are.
      INTEGER :: block_rows
+     !> How many block columsn there are.
      INTEGER :: block_columns
+     !> Local rows.
      INTEGER :: rows
+     !> Local columns.
      INTEGER :: columns
+     !> First row stored locally.
      INTEGER :: start_row
+     !> First column stored locally.
      INTEGER :: start_column
+     !> For evenly dividing the columns.
      INTEGER :: column_divisor
      !! For Inter Process Swaps
      INTEGER, DIMENSION(:), ALLOCATABLE :: phase_array
@@ -103,6 +113,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: norm_value
     INTEGER :: counter, iteration
     INTEGER :: ierr
+
+    !! Write info about the solver
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Eigen Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="Jacobi")
+       CALL WriteCitation("golub2012matrix")
+       CALL PrintIterativeSolverParameters(solver_parameters)
+    END IF
 
     !! Setup Communication
     CALL InitializeJacobi(jacobi_data, this)
@@ -149,6 +168,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Convert to global matrix
     CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
 
     ! Cleanup
     DO counter = 1, jacobi_data%num_processes*2
