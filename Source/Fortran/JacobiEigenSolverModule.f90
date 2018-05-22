@@ -5,7 +5,8 @@ MODULE JacobiEigenSolverModule
   USE DenseMatrixModule, ONLY : DenseEigenDecomposition
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
-       & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, PrintDistributedSparseMatrix
+       & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, &
+       & CommSplitDistributedSparseMatrix, DestructDistributedSparseMatrix
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -110,7 +111,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: last_a
     TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
-    TYPE(DistributedSparseMatrix_t) :: WorkingMat
+    TYPE(DistributedSparseMatrix_t) :: WorkingMat, WorkingV
     REAL(NTREAL) :: norm_value
     INTEGER :: counter, iteration
     INTEGER :: ierr
@@ -127,25 +128,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle the case where we have a matrix that is too small
     CALL SplitJacobi(this, WorkingMat, active)
-    CALL PrintDistributedSparseMatrix(WorkingMat)
 
     IF (active) THEN
        !! Setup Communication
        CALL InitializeJacobi(jacobi_data, WorkingMat)
 
        !! Initialize the eigenvectors to the identity.
-       CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
+       CALL ConstructEmptyDistributedSparseMatrix(WorkingV, &
             & this%actual_matrix_dimension, &
-            & process_grid_in=this%process_grid)
-       CALL FillDistributedIdentity(eigenvectors)
+            & process_grid_in=WorkingMat%process_grid)
+       CALL FillDistributedIdentity(WorkingV)
 
        !! Extract to local dense blocks
        ALLOCATE(ABlocks(2,jacobi_data%block_rows))
        CALL GetLocalBlocks(WorkingMat, jacobi_data, ABlocks)
        ALLOCATE(VBlocks(2,jacobi_data%block_rows))
-       CALL GetLocalBlocks(eigenvectors, jacobi_data, VBlocks)
+       CALL GetLocalBlocks(WorkingV, jacobi_data, VBlocks)
        CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
             & jacobi_data%block_columns, local_a)
+
+       !! Main Loop
        DO iteration = 1, solver_parameters%max_iterations
           IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
              CALL WriteListElement(key="Round", int_value_in=iteration-1)
@@ -176,38 +178,62 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Convert to global matrix
-    CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors)
+    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
+         & this%actual_matrix_dimension, &
+         & process_grid_in=this%process_grid)
+    CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors, active)
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
     ! Cleanup
-    DO counter = 1, jacobi_data%num_processes*2
-       CALL DestructSparseMatrix(ABlocks(1,counter))
-       CALL DestructSparseMatrix(ABlocks(2,counter))
-       CALL DestructSparseMatrix(VBlocks(1,counter))
-       CALL DestructSparseMatrix(VBlocks(2,counter))
-    END DO
+    IF (active) THEN
+       DO counter = 1, jacobi_data%num_processes*2
+          CALL DestructSparseMatrix(ABlocks(1,counter))
+          CALL DestructSparseMatrix(ABlocks(2,counter))
+          CALL DestructSparseMatrix(VBlocks(1,counter))
+          CALL DestructSparseMatrix(VBlocks(2,counter))
+       END DO
 
-    DEALLOCATE(ABlocks)
-    DEALLOCATE(VBlocks)
+       DEALLOCATE(ABlocks)
+       DEALLOCATE(VBlocks)
 
-    CALL CleanupJacobi(jacobi_data)
+       CALL DestructDistributedSparseMatrix(WorkingV)
+       CALL DestructDistributedSparseMatrix(WorkingMat)
+
+       CALL CleanupJacobi(jacobi_data)
+    END IF
 
   END SUBROUTINE JacobiSolve
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SplitJacobi(matrix, splitmat, active)
-     !! Parameters
-     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
-     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: splitmat
-     LOGICAL, INTENT(OUT) :: active
-     !! Local Variables
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: matrix
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: splitmat
+    LOGICAL, INTENT(OUT) :: active
+    !! Local Variables
+    INTEGER :: mat_dim
+    TYPE(DistributedSparseMatrix_t) :: newmat
+    INTEGER :: my_color
+    LOGICAL :: split_slice
 
-     ! CALL CommSplitDistributedSparseMatrix()
-     CALL CopyDistributedSparseMatrix(matrix, splitmat)
-     active = .TRUE.
-  END SUBROUTINE
+    CALL CopyDistributedSparseMatrix(matrix, splitmat)
+    mat_dim = matrix%actual_matrix_dimension
+    active = .TRUE.
+
+    DO WHILE(mat_dim/(2*splitmat%process_grid%slice_size) .LT. 1)
+       CALL CommSplitDistributedSparseMatrix(splitmat, newmat, my_color, &
+            & split_slice)
+       CALL CopyDistributedSparseMatrix(newmat, splitmat)
+       IF (my_color .GE. 1) THEN
+          active = .FALSE.
+          EXIT
+       END IF
+    END DO
+
+    CALL DestructDistributedSparseMatrix(newmat)
+  END SUBROUTINE SplitJacobi
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE InitializeJacobi(jdata, matrix)
     !! Parameters
@@ -395,21 +421,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSparseMatrix(local_mat)
   END SUBROUTINE GetLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE FillGlobalMatrix(local, jdata, global)
+  SUBROUTINE FillGlobalMatrix(local, jdata, global, active)
     !! Parameters
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(IN) :: local
     TYPE(JacobiData_t), INTENT(IN) :: jdata
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: global
+    LOGICAL, INTENT(IN) :: active
     !! Local Variables
     TYPE(SparseMatrix_t) :: TempMat
     TYPE(TripletList_t) :: triplet_list
 
     !! Get A Global Triplet List and Fill
-    CALL ComposeSparseMatrix(local, jdata%block_rows, jdata%block_columns, &
-         & TempMat)
-    CALL MatrixToTripletList(TempMat, triplet_list)
-    CALL ShiftTripletList(triplet_list, jdata%start_row - 1, &
-         & jdata%start_column - 1)
+    IF (active) THEN
+       CALL ComposeSparseMatrix(local, jdata%block_rows, jdata%block_columns, &
+            & TempMat)
+       CALL MatrixToTripletList(TempMat, triplet_list)
+       CALL ShiftTripletList(triplet_list, jdata%start_row - 1, &
+            & jdata%start_column - 1)
+    ELSE
+       CALL ConstructTripletList(triplet_list)
+    END IF
 
     CALL FillFromTripletList(global, triplet_list)
 
