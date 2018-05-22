@@ -1,15 +1,15 @@
 
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
-  if [ -f "openmpi-3.0.1/README" ]; then
-    echo "Using cached openmpi";
-  else
+  #if [ -f "openmpi-3.0.1/README" ]; then
+  #  echo "Using cached openmpi";
+  #else
     wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz;
     tar xvf openmpi-3.0.1.tar.gz >/dev/null;
     cd openmpi-3.0.1;
     ./configure >/dev/null 2>&1;
     make >/dev/null 2>&1;
-  fi
+  #fi
   cd openmpi-3.0.1
   sudo make install >/dev/null 2>&1
   cd ../
