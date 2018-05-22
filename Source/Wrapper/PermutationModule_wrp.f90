@@ -10,7 +10,7 @@ MODULE PermutationModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the permutation data type.
   TYPE, PUBLIC :: Permutation_wrp
-     TYPE(Permutation_t), POINTER :: data
+     TYPE(Permutation_t), POINTER :: DATA
   END TYPE Permutation_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructDefaultPermutation_wrp

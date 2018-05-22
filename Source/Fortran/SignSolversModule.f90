@@ -1,17 +1,24 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Matrix Sign Function.
 MODULE SignSolversModule
-  USE DataTypesModule
-  USE DistributedMatrixMemoryPoolModule
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
-  USE EigenBoundsModule
-  USE IterativeSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
+  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
+       & IncrementDistributedSparseMatrix, DistributedSparseNorm, &
+       & ScaleDistributedSparseMatrix
+  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
+       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
+       & PrintMatrixInformation, TransposeDistributedSparseMatrix
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
+       & PrintIterativeSolverParameters
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement, WriteHeader, WriteCitation
   USE ProcessGridModule
-  USE TimerModule
-  USE mpi
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -169,14 +176,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        xk = 0.5*alpha_k*xk*(3.0-(alpha_k**2)*xk**2)
 
        IF (needs_transpose) THEN
-         CALL TransposeDistributedSparseMatrix(OutMat, OutMatT)
-         CALL DistributedGemm(OutMatT, OutMat, Temp1, &
-              & alpha_in=-1.0*alpha_k**2, &
-              & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+          CALL TransposeDistributedSparseMatrix(OutMat, OutMatT)
+          CALL DistributedGemm(OutMatT, OutMat, Temp1, &
+               & alpha_in=-1.0*alpha_k**2, &
+               & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        ELSE
-         CALL DistributedGemm(OutMat, OutMat, Temp1, &
-              & alpha_in=-1.0*alpha_k**2, &
-              & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+          CALL DistributedGemm(OutMat, OutMat, Temp1, &
+               & alpha_in=-1.0*alpha_k**2, &
+               & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        END IF
        CALL IncrementDistributedSparseMatrix(Identity,Temp1,alpha_in=THREE)
 

@@ -1,9 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Parameters for a fixed size polynomial solver.
 MODULE FixedSolversModule
-  USE DataTypesModule
-  USE LoggingModule
-  USE PermutationModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+       & WriteHeader
+  USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

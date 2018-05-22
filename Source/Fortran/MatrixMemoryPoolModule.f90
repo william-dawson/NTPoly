@@ -4,7 +4,6 @@
 !! heap during a matrix multiply, and to manage the underlying hash table.
 MODULE MatrixMemoryPoolModule
   USE DataTypesModule, ONLY : NTREAL
-  USE ErrorModule
   USE TripletModule, ONLY : Triplet_t
   USE ISO_C_BINDING, ONLY : c_int, c_loc, c_f_pointer
   IMPLICIT NONE

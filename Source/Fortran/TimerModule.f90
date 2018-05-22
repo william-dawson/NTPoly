@@ -1,9 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to do timings.
 MODULE TimerModule
-  USE LoggingModule
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+       & WriteHeader
   USE ProcessGridModule
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
   LOGICAL :: is_initialized = .FALSE.
@@ -100,7 +101,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL EnterSubLog
     IF (timer_position > 0) THEN
        CALL WriteListElement(key=timer_name, &
-           & float_value_in=elapsed_times(timer_position))
+            & float_value_in=elapsed_times(timer_position))
     END IF
     CALL ExitSubLog
   END SUBROUTINE PrintTimer
@@ -114,7 +115,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL EnterSubLog
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        CALL WriteListElement(key=timer_list(timer_position), &
-           & float_value_in=elapsed_times(timer_position))
+            & float_value_in=elapsed_times(timer_position))
     END DO
     CALL ExitSubLog
   END SUBROUTINE PrintAllTimers
@@ -128,8 +129,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DOUBLE PRECISION :: max_time
 
     IF (IsRoot()) THEN
-      CALL WriteHeader("Timers")
-      CALL EnterSubLog
+       CALL WriteHeader("Timers")
+       CALL EnterSubLog
     END IF
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        elapsed = elapsed_times(timer_position)
@@ -141,7 +142,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     IF (IsRoot()) THEN
-      CALL ExitSubLog
+       CALL ExitSubLog
     END IF
   END SUBROUTINE PrintAllTimersDistributed
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

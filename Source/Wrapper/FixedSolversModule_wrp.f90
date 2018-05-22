@@ -12,7 +12,7 @@ MODULE FixedSolversModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for the fixed solver parameters data type.
   TYPE, PUBLIC :: FixedSolverParameters_wrp
-     TYPE(FixedSolverParameters_t), POINTER :: data
+     TYPE(FixedSolverParameters_t), POINTER :: DATA
   END TYPE FixedSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructFixedSolverParameters_wrp
