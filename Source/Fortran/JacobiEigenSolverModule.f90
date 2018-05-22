@@ -10,6 +10,7 @@ MODULE JacobiEigenSolverModule
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement
   USE MatrixBroadcastModule, ONLY : BroadcastMatrix
+  USE MatrixGatherModule, ONLY : BlockingMatrixGather
   USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvMatrixSizes, &
        & RecvMatrixData, SendMatrixSizes, SendMatrixData, &
        & TestSendRecvSizeRequest, TestSendRecvOuterRequest, &
@@ -808,34 +809,35 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
+    !! For Receiving
+    TYPE(SparseMatrix_t), DIMENSION(jdata%num_processes) :: receive_list
     !! Temporary
     INTEGER :: counter
     INTEGER :: ind
     TYPE(SparseMatrix_t) :: TempMat
-    TYPE(SparseMatrix_t) :: RecvMat
     TYPE(SparseMatrix_t) :: AMat
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
+    CALL BlockingMatrixGather(TargetV, receive_list, jdata%communicator)
+
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
-       IF (jdata%rank .EQ. counter-1) THEN
-          CALL CopySparseMatrix(TargetV, RecvMat)
-       END IF
-       CALL BroadcastMatrix(RecvMat, jdata%communicator, counter - 1)
-
        row_sizes(1) = ABlocks(1,ind)%rows
        row_sizes(2) = ABlocks(1,ind+1)%rows
        col_sizes(1) = ABlocks(1,ind)%columns
        col_sizes(2) = ABlocks(2,ind)%columns
 
        CALL ComposeSparseMatrix(ABlocks(:,ind:ind+1), 2, 2, AMat)
-       CALL Gemm(RecvMat, AMat, TempMat, threshold_in=threshold)
+       CALL Gemm(receive_list(counter), AMat, TempMat, threshold_in=threshold)
        CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
        CALL DestructSparseMatrix(AMat)
     END DO
 
-    CALL DestructSparseMatrix(RecvMat)
+    DO counter = 1, jdata%num_processes
+       CALL DestructSparseMatrix(receive_list(counter))
+    END DO
+
     CALL DestructSparseMatrix(TempMat)
 
   END SUBROUTINE ApplyToRows

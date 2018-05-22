@@ -49,6 +49,7 @@ MODULE MatrixGatherModule
      INTEGER, DIMENSION(:), ALLOCATABLE :: displacement_values
   END TYPE GatherHelper_t
   ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: BlockingMatrixGather
   PUBLIC :: GatherSizes
   PUBLIC :: GatherAndListData
   PUBLIC :: GatherAndListCleanup
@@ -58,6 +59,35 @@ MODULE MatrixGatherModule
   PUBLIC :: TestGatherInnerRequest
   PUBLIC :: TestGatherDataRequest
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A blocking call to the full matrix gather routines.
+  !! Each processor contributes a matrix, which are gathered on all processors
+  !! in a list.
+  !! @param[in] matrix the matrix to gather.
+  !! @param[out] matrix_list the list of matrices to gather
+  !! @param[inout] communicator the communicator to gather on.
+  SUBROUTINE BlockingMatrixGather(matrix, matrix_list, communicator)
+    !! Parameters
+    TYPE(SparseMatrix_t), INTENT(IN) :: matrix
+    TYPE(SparseMatrix_t), DIMENSION(:), INTENT(INOUT) :: matrix_list
+    INTEGER, INTENT(INOUT)           :: communicator
+    !! Local Data
+    TYPE(GatherHelper_t) :: helper
+
+    !! Perfomr all the steps
+    CALL GatherSizes(matrix, communicator, helper)
+    DO WHILE (.NOT. TestGatherSizeRequest(helper))
+    END DO
+    CALL GatherAndListData(matrix, communicator, helper)
+    DO WHILE (.NOT. TestGatherOuterRequest(helper))
+    END DO
+    DO WHILE (.NOT. TestGatherInnerRequest(helper))
+    END DO
+    DO WHILE (.NOT. TestGatherDataRequest(helper))
+    END DO
+    CALL GatherAndListCleanup(matrix, matrix_list, helper)
+
+  END SUBROUTINE BlockingMatrixGather
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
   !! @param[in] matrix to send.
   !! @param[inout] communicator to send along.
@@ -111,13 +141,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Build Displacement List
-    helper%displacement_outer(1) = 0
     helper%displacement_values(1) = 0
+    helper%displacement_outer(1) = 0
     DO II = 2, helper%comm_size
-       helper%displacement_outer(II) = helper%displacement_outer(II-1) + &
-            & helper%outer_sizes(II-1)
        helper%displacement_values(II) = helper%displacement_values(II-1) + &
             & helper%value_sizes(II-1)
+       helper%displacement_outer(II) = helper%displacement_outer(II-1) + &
+            & helper%outer_sizes(II-1)
     END DO
 
     !! Build Storage
@@ -127,13 +157,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! MPI Calls
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
-         & helper%value_buffer, helper%value_sizes, helper%displacement_values, &
+         & helper%value_buffer, helper%value_sizes, helper%displacement_values,&
          & MPINTREAL, communicator, helper%data_request, grid_error)
     CALL MPI_IAllGatherv(matrix%inner_index, SIZE(matrix%values), MPI_INT, &
          & helper%inner_index_buffer, helper%value_sizes, &
          & helper%displacement_values, MPI_INT, communicator, &
          & helper%inner_request, grid_error)
-    CALL MPI_IAllGatherv(matrix%outer_index, helper%comm_size, MPI_INT, &
+    CALL MPI_IAllGatherv(matrix%outer_index, SIZE(matrix%outer_index), MPI_INT,&
          & helper%outer_index_buffer, helper%outer_sizes, &
          & helper%displacement_outer, MPI_INT, communicator, &
          & helper%outer_request, grid_error)
