@@ -23,6 +23,7 @@ MODULE JacobiEigenSolverModule
        & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix
   USE SparseMatrixAlgebraModule, ONLY : Gemm, IncrementSparseMatrix, &
        & SparseMatrixNorm
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
        & ConstructTripletList, DestructTripletList, GetTripletAt, &
        & RedistributeTripletLists, ShiftTripletList, SortTripletList
@@ -128,10 +129,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Handle the case where we have a matrix that is too small
+    CALL StartTimer("Fix Size")
     CALL SplitJacobi(this, WorkingMat, active)
+    CALL StopTimer("Fix Size")
 
     IF (active) THEN
        !! Setup Communication
+       CALL StartTimer("Initialize-Jacobi")
        CALL InitializeJacobi(jacobi_data, WorkingMat)
 
        !! Initialize the eigenvectors to the identity.
@@ -147,8 +151,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLocalBlocks(WorkingV, jacobi_data, VBlocks)
        CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
             & jacobi_data%block_columns, local_a)
+       CALL StopTimer("Initialize-Jacobi")
 
        !! Main Loop
+       CALL StartTimer("Loop-Jacobi")
        DO iteration = 1, solver_parameters%max_iterations
           IF (solver_parameters%be_verbose .AND. iteration .GT. 1) THEN
              CALL WriteListElement(key="Round", int_value_in=iteration-1)
@@ -158,8 +164,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
 
           !! Loop Over One Jacobi Sweep
+          CALL StartTimer("Sweep-Jacobi")
           CALL JacobiSweep(ABlocks, VBlocks, jacobi_data, &
                & solver_parameters%threshold)
+          CALL StopTimer("Sweep-Jacobi")
 
           !! Compute Norm Value
           CALL CopySparseMatrix(local_a, last_a)
@@ -176,6 +184,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              EXIT
           END IF
        END DO
+       CALL StopTimer("Loop-Jacobi")
     END IF
 
     !! Convert to global matrix
@@ -471,17 +480,24 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & 2, 2, TargetA)
 
        !! Diagonalize
+       CALL StartTimer("Decomposition")
        CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
+       CALL StopTimer("Decomposition")
 
        !! Rotation Along Row
        CALL TransposeSparseMatrix(TargetV, TargetVT)
+       CALL StartTimer("Row")
        CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
+       CALL StopTimer("Row")
 
        !! Rotation Along Columns
+       CALL StartTimer("Column")
        CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
+       CALL StopTimer("Column")
 
        !! Swap Blocks
+       CALL StartTimer("Swap")
        IF (jdata%num_processes .GT. 1) THEN
           IF (jdata%phase_array(iteration) .EQ. 1) THEN
              CALL SwapBlocks(ABlocks, jdata, jdata%left_swap)
@@ -497,6 +513,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL SwapBlocks(VBlocks, jdata, jdata%final_swap)
           END IF
        END IF
+       CALL StopTimer("Swap")
     END DO
 
   END SUBROUTINE JacobiSweep
@@ -694,23 +711,33 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Swap Rows
+    CALL StartTimer("Swap Rows")
+    !$OMP PARALLEL
+    !$OMP DO
     DO counter = 1, jdata%block_rows
        CALL CopySparseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
        CALL CopySparseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
     END DO
+    !$OMP END DO
+    !$OMP DO
     DO counter = 1, jdata%block_rows
        index = swap_data%swap_array(counter)
        CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
        CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
     END DO
+    !$OMP END DO
+    !$OMP END PARALLEL
+    CALL StopTimer("Swap Rows")
 
     DO counter = 1, jdata%block_rows
        split_guide(counter) = ABlocks(1,counter)%rows
     END DO
 
     !! Build matrices to swap
+    CALL StartTimer("Compose First")
     CALL ComposeSparseMatrix(ABlocks(1,:),jdata%block_rows,1,SendLeft)
     CALL ComposeSparseMatrix(ABlocks(2,:),jdata%block_rows,1,SendRight)
+    CALL StopTimer("Compose First")
 
     !! Perform Column Swaps
     send_left_stage = 0
@@ -719,6 +746,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     recv_right_stage = 0
 
     completed = 0
+    CALL StartTimer("Swap Loop")
     DO WHILE (completed .LT. total_to_complete)
        !! Send Left Matrix
        SELECT CASE(send_left_stage)
@@ -833,12 +861,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END SELECT
     END DO
-    CALL MPI_Barrier(jdata%communicator, ierr)
+    CALL StopTimer("Swap Loop")
 
-    CALL SplitSparseMatrix(RecvLeft,jdata%block_rows,1,ABlocks(1,:), &
+    CALL StartTimer("Split Last")
+    CALL SplitSparseMatrix(RecvLeft,jdata%block_rows,1,ABlocks(1:1,:), &
          & block_size_row_in=split_guide)
-    CALL SplitSparseMatrix(RecvRight,jdata%block_rows,1,ABlocks(2,:), &
+    CALL SplitSparseMatrix(RecvRight,jdata%block_rows,1,ABlocks(2:2,:), &
          & block_size_row_in=split_guide)
+    CALL StopTimer("Split Last")
 
     !! Cleanup
     DO counter = 1, jdata%block_rows
@@ -863,6 +893,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter, ind
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
+    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
+    !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
        row_sizes(1) = ABlocks(1,ind)%rows
@@ -874,10 +906,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL Gemm(AMat, TargetV, TempMat, threshold_in=threshold)
        CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
+       CALL DestructSparseMatrix(AMat)
+       CALL DestructSparseMatrix(TempMat)
     END DO
-
-    CALL DestructSparseMatrix(AMat)
-    CALL DestructSparseMatrix(TempMat)
+    !$OMP END DO
+    !$OMP END PARALLEL
 
   END SUBROUTINE ApplyToColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -898,6 +931,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL BlockingMatrixGather(TargetV, receive_list, jdata%communicator)
 
+    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
+    !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
        row_sizes(1) = ABlocks(1,ind)%rows
@@ -910,7 +945,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
        CALL DestructSparseMatrix(AMat)
+       CALL DestructSparseMatrix(TempMat)
     END DO
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     DO counter = 1, jdata%num_processes
        CALL DestructSparseMatrix(receive_list(counter))

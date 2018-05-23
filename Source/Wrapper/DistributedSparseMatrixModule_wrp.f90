@@ -161,7 +161,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillFromTripletList_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
-  PURE SUBROUTINE FillDistributedIdentity_wrp(ih_this) &
+  SUBROUTINE FillDistributedIdentity_wrp(ih_this) &
        & bind(c,name="FillDistributedIdentity_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(DistributedSparseMatrix_wrp) :: h_this

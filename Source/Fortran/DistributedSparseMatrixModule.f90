@@ -686,7 +686,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
   !! @param[inout] this the matrix being filled.
-  PURE SUBROUTINE FillDistributedIdentity(this)
+  SUBROUTINE FillDistributedIdentity(this)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     !! Local Data
@@ -735,7 +735,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the matrix being filled.
   !! @param[in] permutation_vector describes for each row/column, where it goes.
   !! @param[in] permuterows if true permute rows, false permute columns.
-  PURE SUBROUTINE FillDistributedPermutation(this, permutation_vector, &
+  SUBROUTINE FillDistributedPermutation(this, permutation_vector, &
        & permuterows)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
@@ -1428,7 +1428,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take a local matrix, and use it to fill the local block matrix structure.
   !! @param[inout] this the distributed sparse matrix.
   !! @param[in] matrix_to_split the matrix to split up.
-  PURE SUBROUTINE SplitToLocalBlocks(this, matrix_to_split)
+  SUBROUTINE SplitToLocalBlocks(this, matrix_to_split)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(SparseMatrix_t), INTENT(IN) :: matrix_to_split

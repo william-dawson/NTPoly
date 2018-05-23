@@ -460,16 +460,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] block_rows number of rows to split the matrix into.
   !! @param[in] block_columns number of columns to split the matrix into.
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
-  PURE SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
+  SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: block_rows, block_columns
-    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), &
-         & INTENT(INOUT) :: split_array
-    INTEGER, DIMENSION(block_rows), INTENT(IN), OPTIONAL :: block_size_row_in
-    INTEGER, DIMENSION(block_columns), INTENT(IN), OPTIONAL :: &
-         & block_size_column_in
+    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: split_array
+    INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
+    INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
     !! Local Data
     INTEGER, DIMENSION(block_rows) :: block_size_row
     INTEGER, DIMENSION(block_columns) :: block_size_column
@@ -498,10 +496,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! First split by columns which is easy with the CSR format
+    CALL StartTimer("Split Column")
     CALL SplitSparseMatrixColumns(this, block_columns, block_size_column, &
          & column_split)
+    CALL StopTimer("Split Column")
 
     !! Now Split By Rows
+    CALL StartTimer("Split Row")
     DO JJ = 1, block_columns
        CALL TransposeSparseMatrix(column_split(JJ), Temp)
        CALL SplitSparseMatrixColumns(Temp, block_rows, block_size_row, &
@@ -511,6 +512,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL TransposeSparseMatrix(row_split(II), split_array(JJ,II))
        END DO
     END DO
+    CALL StopTimer("Split Row")
 
     !! Cleanup
     CALL DestructSparseMatrix(Temp)
