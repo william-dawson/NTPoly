@@ -105,69 +105,41 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Matrices
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatA
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatV
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: A
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
     INTEGER :: LWORK
     DOUBLE PRECISION :: TEMP
     INTEGER :: INFO
-    !! Temporary variables
-    INTEGER :: II, JJ, counter
 
     !! Convert Input To Dense
     ALLOCATE(DMatA(MatA%rows, MatA%columns))
     DMatA = 0
-    ALLOCATE(DMatV(MatA%rows, MatA%columns))
-    DMatV = 0
     CALL ConstructDenseFromSparse(MatA,DMatA)
 
     N = SIZE(DMatA,DIM=1)
     LDA = N
 
     !! Allocations
-    ALLOCATE(A(N*N))
     ALLOCATE(W(N))
-
-    !! Store as an upper triangular matrix
-    A = 0
-    counter = 1
-    DO II = 1, N
-       DO JJ = 1, N
-          A(counter) = DMatA(II,JJ)
-          counter = counter + 1
-       END DO
-    END DO
 
     !! Determine the scratch space size
     LWORK = -1
-    CALL DSYEV(JOB, UPLO, N, A, LDA, W, TEMP, LWORK, INFO)
+    CALL DSYEV(JOB, UPLO, N, DMatA, LDA, W, TEMP, LWORK, INFO)
     N = LDA
     LWORK = INT(TEMP)
     ALLOCATE(WORK(LWORK))
 
     !! Run Lapack For Real
-    CALL DSYEV(JOB, UPLO, N, A, LDA, W, WORK, LWORK, INFO)
-
-    !! Unpack
-    counter = 1
-    DO II = 1, N
-       DO JJ = 1, N
-          DMatV(JJ,II) = A(counter)
-          counter = counter + 1
-       END DO
-    END DO
+    CALL DSYEV(JOB, UPLO, N, DMatA, LDA, W, WORK, LWORK, INFO)
 
     !! Convert Output To Sparse
-    CALL ConstructSparseFromDense(DMatV,MatV,threshold)
+    CALL ConstructSparseFromDense(DMatA,MatV,threshold)
 
     !! Cleanup
     DEALLOCATE(DMatA)
-    DEALLOCATE(DMatV)
-    DEALLOCATE(A)
     DEALLOCATE(W)
     DEALLOCATE(Work)
 
