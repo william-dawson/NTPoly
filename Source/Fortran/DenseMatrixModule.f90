@@ -110,8 +110,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: N, LDA
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
+    DOUBLE PRECISION :: WORKTEMP
     INTEGER :: LWORK
-    DOUBLE PRECISION :: TEMP
+    INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
+    INTEGER :: IWORKTEMP
+    INTEGER :: LIWORK
+    INTEGER :: ITEMP
     INTEGER :: INFO
 
     !! Convert Input To Dense
@@ -127,13 +131,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Determine the scratch space size
     LWORK = -1
-    CALL DSYEV(JOB, UPLO, N, DMatA, LDA, W, TEMP, LWORK, INFO)
+    CALL DSYEV(JOB, UPLO, N, DMatA, LDA, W, WORKTEMP, LWORK, IWORKTEMP, LIWORK, INFO)
     N = LDA
-    LWORK = INT(TEMP)
+    LWORK = INT(WORKTEMP)
     ALLOCATE(WORK(LWORK))
+    LIWORK = INT(IWORKTEMP)
+    ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
-    CALL DSYEV(JOB, UPLO, N, DMatA, LDA, W, WORK, LWORK, INFO)
+    CALL DSYEV(JOB, UPLO, N, DMatA, LDA, W, WORK, LWORK, IWORK, LIWORK, INFO)
 
     !! Convert Output To Sparse
     CALL ConstructSparseFromDense(DMatA,MatV,threshold)
