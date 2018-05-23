@@ -10,7 +10,7 @@ MODULE EigenSolversModule
        & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
        & DestructDistributedSparseMatrix, FillFromTripletList, &
        & FillDistributedIdentity, GetTripletList, PrintMatrixInformation, &
-       & TransposeDistributedSparseMatrix
+       & TransposeDistributedSparseMatrix, GetSize
   USE DensityMatrixSolversModule, ONLY : TRS2
   USE FixedSolversModule, ONLY : FixedSolverParameters_t
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
@@ -31,7 +31,7 @@ MODULE EigenSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTEGER, PARAMETER :: BASESIZE = 1024
+  INTEGER, PARAMETER :: BASESIZE = 2048
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SplittingEigenDecomposition
   PUBLIC :: TestEigenDecomposition
@@ -108,12 +108,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConvertIterativeToFixed(it_param, fixed_param)
 
     !! Rotate so that we are only computing the target number of values
+    CALL StartTimer("Initial Purify")
     IF (num_values .LT. this%actual_matrix_dimension) THEN
        CALL ReduceDimension(this, num_values, solver_parameters, &
             & fixed_param, ReducedMat)
     ELSE
        CALL CopyDistributedSparseMatrix(this, ReducedMat)
     END IF
+    CALL StopTimer("Initial Purify")
 
     !! Actual Solve
     CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters, it_param, &
@@ -215,6 +217,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mat_dim, left_dim, right_dim
     INTEGER :: color
     LOGICAL :: split_slice
+    REAL(NTREAL) :: sparsity
 
     mat_dim = this%actual_matrix_dimension
     CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim, &
@@ -227,9 +230,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintMatrixInformation(this)
        CALL ExitSubLog
     END IF
+    sparsity = REAL(GetSize(this),KIND=NTREAL) / &
+             & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
 
     !! Base Case
-    IF (mat_dim .LE. BASESIZE) THEN
+    IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
        CALL StartTimer("Base Case")
        CALL SerialBase(this, fixed_param, eigenvectors)
        ! CALL JacobiSolve(this, eigenvectors, it_param)
