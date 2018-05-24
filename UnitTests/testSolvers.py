@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 33
+    matrix_dimension = 127
 
     @classmethod
     def setUpClass(self):
@@ -920,6 +920,9 @@ class TestSolvers(unittest.TestCase):
         relative_error = 0
         if (self.my_rank == 0):
             ResultV = mmread(result_file)
+            print(matrix1.todense())
+            print((CheckV.T.dot(matrix1).dot(CheckV)).todense())
+            print((ResultV.T.dot(matrix1).dot(ResultV)).todense())
             CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
             ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
             normval = abs(normd(CheckD - ResultD))

@@ -20,7 +20,7 @@ MODULE JacobiEigenSolverModule
        & TestSendRecvInnerRequest, TestSendRecvDataRequest
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ComposeSparseMatrix, &
        & ConstructFromTripletList, CopySparseMatrix, DestructSparseMatrix, &
-       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix
+       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix, PrintSparseMatrix
   USE SparseMatrixAlgebraModule, ONLY : Gemm, IncrementSparseMatrix, &
        & SparseMatrixNorm
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -28,6 +28,7 @@ MODULE JacobiEigenSolverModule
        & ConstructTripletList, DestructTripletList, GetTripletAt, &
        & RedistributeTripletLists, ShiftTripletList, SortTripletList
   USE TripletModule, ONLY : Triplet_t
+  USE ProcessGridModule, ONLY : global_grid
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -35,22 +36,22 @@ MODULE JacobiEigenSolverModule
   PUBLIC :: JacobiSolve
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TYPE, PRIVATE :: SwapData_t
-     !> Which process to send the left matrix to.
-     INTEGER :: send_left_partner
-     !> Which process to send the right matrix to.
-     INTEGER :: send_right_partner
-     !> A tag to identify where the left matrix is sent to.
-     INTEGER :: send_left_tag
-     !> A tag to identify where the right matrix is sent to.
-     INTEGER :: send_right_tag
-     !> Which process to receive the left matrix from.
-     INTEGER :: recv_left_partner
-     !> Which process to receive the right matrix from.
-     INTEGER :: recv_right_partner
-     !> A tag to identify the left matrix being received.
-     INTEGER :: recv_left_tag
-     !> A tag to identify the right matrix being received.
-     INTEGER :: recv_right_tag
+     !> Which process to send the up matrix to.
+     INTEGER :: send_up_partner
+     !> Which process to send the down matrix to.
+     INTEGER :: send_down_partner
+     !> A tag to identify where the up matrix is sent to.
+     INTEGER :: send_up_tag
+     !> A tag to identify where the down matrix is sent to.
+     INTEGER :: send_down_tag
+     !> Which process to receive the up matrix from.
+     INTEGER :: recv_up_partner
+     !> Which process to receive the down matrix from.
+     INTEGER :: recv_down_partner
+     !> A tag to identify the up matrix being received.
+     INTEGER :: recv_up_tag
+     !> A tag to identify the down matrix being received.
+     INTEGER :: recv_down_tag
      !> A full list of the permutation that needs to be performed at each step.
      INTEGER, DIMENSION(:), ALLOCATABLE :: swap_array
   END TYPE SwapData_t
@@ -65,9 +66,13 @@ MODULE JacobiEigenSolverModule
      INTEGER :: communicator
      !! Blocking Information
      !> First block row to work on locally..
-     INTEGER :: block_start
+     INTEGER :: row_block_start
      !> Second block row to work on locally.
-     INTEGER :: block_end
+     INTEGER :: row_block_end
+     !> First block row to work on locally..
+     INTEGER :: col_block_start
+     !> Second block row to work on locally.
+     INTEGER :: col_block_end
      !> How many block rows there are.
      INTEGER :: block_rows
      !> How many block columsn there are.
@@ -80,17 +85,17 @@ MODULE JacobiEigenSolverModule
      INTEGER :: start_row
      !> First column stored locally.
      INTEGER :: start_column
-     !> For evenly dividing the columns.
-     INTEGER :: column_divisor
+     !> For evenly dividing the rows.
+     INTEGER :: row_divisor
      !! For Inter Process Swaps
      INTEGER, DIMENSION(:), ALLOCATABLE :: phase_array
      !> During the first num_proc rounds
-     TYPE(SwapData_t) :: left_swap
+     TYPE(SwapData_t) :: up_swap
      !> After round num_proc+1, we need to do a special swap to maintain the
      !! correct within process order.
      TYPE(SwapData_t) :: mid_swap
      !> In the last num_proc+2->end rounds, we change direction when sending.
-     TYPE(SwapData_t) :: right_swap
+     TYPE(SwapData_t) :: down_swap
      !> After the sweeps are finished, this swaps the data back to the original
      !! permutation.
      TYPE(SwapData_t) :: final_swap
@@ -115,7 +120,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     TYPE(DistributedSparseMatrix_t) :: WorkingMat, WorkingV
     REAL(NTREAL) :: norm_value
-    INTEGER :: counter, iteration
+    INTEGER :: iteration, II, JJ
     INTEGER :: ierr
     LOGICAL :: active
 
@@ -145,9 +150,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL FillDistributedIdentity(WorkingV)
 
        !! Extract to local dense blocks
-       ALLOCATE(ABlocks(2,jacobi_data%block_rows))
+       ALLOCATE(ABlocks(jacobi_data%block_columns,jacobi_data%block_rows))
        CALL GetLocalBlocks(WorkingMat, jacobi_data, ABlocks)
-       ALLOCATE(VBlocks(2,jacobi_data%block_rows))
+       ALLOCATE(VBlocks(jacobi_data%block_columns,jacobi_data%block_rows))
        CALL GetLocalBlocks(WorkingV, jacobi_data, VBlocks)
        CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
             & jacobi_data%block_columns, local_a)
@@ -201,11 +206,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ! Cleanup
     IF (active) THEN
-       DO counter = 1, jacobi_data%num_processes*2
-          CALL DestructSparseMatrix(ABlocks(1,counter))
-          CALL DestructSparseMatrix(ABlocks(2,counter))
-          CALL DestructSparseMatrix(VBlocks(1,counter))
-          CALL DestructSparseMatrix(VBlocks(2,counter))
+       DO II = 1, jacobi_data%block_rows
+          DO JJ = 1, jacobi_data%block_columns
+             CALL DestructSparseMatrix(ABlocks(JJ,II))
+             CALL DestructSparseMatrix(VBlocks(JJ,II))
+          END DO
        END DO
 
        DEALLOCATE(ABlocks)
@@ -264,30 +269,32 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & jdata%communicator, ierr)
     CALL MPI_Comm_size(jdata%communicator, jdata%num_processes, ierr)
     CALL MPI_Comm_rank(jdata%communicator, jdata%rank, ierr)
-    jdata%block_start = (jdata%rank) * 2 + 1
-    jdata%block_end = jdata%block_start + 1
+    jdata%col_block_start = (jdata%rank) * 2 + 1
+    jdata%col_block_end = jdata%col_block_start + 1
+    jdata%row_block_start = 1
+    jdata%row_block_end = 2
 
     !! Compute the Blocking
-    jdata%block_rows = jdata%num_processes*2
-    jdata%block_columns = 2
+    jdata%block_rows = 2
+    jdata%block_columns = jdata%num_processes*2
 
     !! Compute the size of the local matrices
-    jdata%rows = matrix%actual_matrix_dimension
-    jdata%column_divisor = FLOOR(&
+    jdata%columns = matrix%actual_matrix_dimension
+    jdata%row_divisor = FLOOR(&
          & 1.0*matrix%actual_matrix_dimension/jdata%num_processes)
-    jdata%columns = jdata%column_divisor
+    jdata%rows = jdata%row_divisor
     IF (jdata%rank .EQ. jdata%num_processes - 1) THEN
-       jdata%columns = matrix%actual_matrix_dimension - &
-            & jdata%column_divisor*(jdata%num_processes-1)
+       jdata%rows = matrix%actual_matrix_dimension - &
+            & jdata%row_divisor*(jdata%num_processes-1)
     END IF
-    jdata%start_column = jdata%column_divisor * jdata%rank + 1
-    jdata%start_row = 1
+    jdata%start_row = jdata%row_divisor * jdata%rank + 1
+    jdata%start_column = 1
 
     !! Determine Send Partners.
     ALLOCATE(jdata%phase_array(2*jdata%num_processes-1))
-    ALLOCATE(jdata%left_swap%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%up_swap%swap_array(2*jdata%num_processes))
     ALLOCATE(jdata%mid_swap%swap_array(2*jdata%num_processes))
-    ALLOCATE(jdata%right_swap%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%down_swap%swap_array(2*jdata%num_processes))
     ALLOCATE(jdata%final_swap%swap_array(2*jdata%num_processes))
     !! First we create the default permutation.
     ALLOCATE(swap0(2*jdata%num_processes))
@@ -304,7 +311,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL RotateMusic(jdata,swap1,1)
     jdata%phase_array(stage_counter) = 1
     stage_counter = stage_counter+1
-    CALL ComputePartners(jdata, jdata%left_swap, swap_temp, swap1)
+    CALL ComputePartners(jdata, jdata%up_swap, swap_temp, swap1)
 
     DO counter = 2, jdata%num_processes-1
        CALL RotateMusic(jdata,swap1,1)
@@ -325,7 +332,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL RotateMusic(jdata,swap1,3)
        jdata%phase_array(stage_counter) = 3
        stage_counter = stage_counter+1
-       CALL ComputePartners(jdata, jdata%right_swap, swap_temp, swap1)
+       CALL ComputePartners(jdata, jdata%down_swap, swap_temp, swap1)
        DO counter = jdata%num_processes+1, 2*jdata%num_processes-3
           CALL RotateMusic(jdata,swap1,3)
           jdata%phase_array(stage_counter) = 3
@@ -357,14 +364,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Comm_free(jacobi_data%communicator, ierr)
 
     !! Memory Deallocation
-    IF (ALLOCATED(jacobi_data%left_swap%swap_array)) THEN
-       DEALLOCATE(jacobi_data%left_swap%swap_array)
+    IF (ALLOCATED(jacobi_data%up_swap%swap_array)) THEN
+       DEALLOCATE(jacobi_data%up_swap%swap_array)
     END IF
     IF (ALLOCATED(jacobi_data%mid_swap%swap_array)) THEN
        DEALLOCATE(jacobi_data%mid_swap%swap_array)
     END IF
-    IF (ALLOCATED(jacobi_data%right_swap%swap_array)) THEN
-       DEALLOCATE(jacobi_data%right_swap%swap_array)
+    IF (ALLOCATED(jacobi_data%down_swap%swap_array)) THEN
+       DEALLOCATE(jacobi_data%down_swap%swap_array)
     END IF
     IF (ALLOCATED(jacobi_data%final_swap%swap_array)) THEN
        DEALLOCATE(jacobi_data%final_swap%swap_array)
@@ -382,7 +389,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_t), DIMENSION(jdata%num_processes) :: send_triplets
     TYPE(TripletList_t) :: received_triplets, sorted_triplets
     !! Some Blocking Information
-    INTEGER, DIMENSION(jdata%block_rows) :: divisor
+    INTEGER, DIMENSION(jdata%block_columns) :: divisor
     INTEGER, DIMENSION(2) :: local_divide
     !! Temporary
     TYPE(Triplet_t) :: temp_triplet
@@ -400,7 +407,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     DO counter = 1, local_triplets%CurrentSize
        CALL GetTripletAt(local_triplets, counter, temp_triplet)
-       insert = (temp_triplet%index_column - 1) /  jdata%column_divisor + 1
+       insert = (temp_triplet%index_row - 1) /  jdata%row_divisor + 1
        IF (insert .GE. jdata%num_processes) THEN
           insert = jdata%num_processes
        END IF
@@ -408,20 +415,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL RedistributeTripletLists(send_triplets, &
          & distributed%process_grid%within_slice_comm, received_triplets)
-    CALL ShiftTripletList(received_triplets, 0, -(jdata%start_column - 1))
+    CALL ShiftTripletList(received_triplets, -(jdata%start_row - 1), 0)
     CALL SortTripletList(received_triplets, jdata%columns, sorted_triplets)
     CALL ConstructFromTripletList(local_mat, sorted_triplets, jdata%rows, &
          & jdata%columns)
 
     !! Share blocking information
-    local_divide(1) = local_mat%columns/2
-    local_divide(2) = local_mat%columns - local_divide(1)
+    local_divide(1) = local_mat%rows/2
+    local_divide(2) = local_mat%rows - local_divide(1)
     CALL MPI_Allgather(local_divide, 2, MPI_INTEGER, divisor, 2, MPI_INTEGER, &
          & jdata%communicator, ierr)
 
     !! Split To Blocks
     CALL SplitSparseMatrix(local_mat, jdata%block_rows, jdata%block_columns, &
-         & local, block_size_row_in=divisor)
+         & local, block_size_column_in=divisor)
 
     !! Cleanup
     CALL DestructTripletList(local_triplets)
@@ -476,7 +483,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
        !! Construct A Block To Diagonalize
-       CALL ComposeSparseMatrix(ABlocks(:,jdata%block_start:jdata%block_end), &
+       CALL ComposeSparseMatrix(ABlocks(&
+            & jdata%col_block_start:jdata%col_block_end, &
+            & jdata%row_block_start:jdata%row_block_end), &
             & 2, 2, TargetA)
 
        !! Diagonalize
@@ -485,13 +494,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StopTimer("Decomposition")
 
        !! Rotation Along Row
-       CALL TransposeSparseMatrix(TargetV, TargetVT)
        CALL StartTimer("Row")
+       WRITE(*,*) "ROW"
+       CALL TransposeSparseMatrix(TargetV, TargetVT)
        CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
        CALL StopTimer("Row")
 
        !! Rotation Along Columns
        CALL StartTimer("Column")
+       WRITE(*,*) "COL"
        CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
        CALL StopTimer("Column")
@@ -500,14 +511,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StartTimer("Swap")
        IF (jdata%num_processes .GT. 1) THEN
           IF (jdata%phase_array(iteration) .EQ. 1) THEN
-             CALL SwapBlocks(ABlocks, jdata, jdata%left_swap)
-             CALL SwapBlocks(VBlocks, jdata, jdata%left_swap)
+             CALL SwapBlocks(ABlocks, jdata, jdata%up_swap)
+             CALL SwapBlocks(VBlocks, jdata, jdata%up_swap)
           ELSE IF (jdata%phase_array(iteration) .EQ. 2) THEN
              CALL SwapBlocks(ABlocks, jdata, jdata%mid_swap)
              CALL SwapBlocks(VBlocks, jdata, jdata%mid_swap)
           ELSE IF (jdata%phase_array(iteration) .EQ. 3) THEN
-             CALL SwapBlocks(ABlocks, jdata, jdata%right_swap)
-             CALL SwapBlocks(VBlocks, jdata, jdata%right_swap)
+             CALL SwapBlocks(ABlocks, jdata, jdata%down_swap)
+             CALL SwapBlocks(VBlocks, jdata, jdata%down_swap)
           ELSE
              CALL SwapBlocks(ABlocks, jdata, jdata%final_swap)
              CALL SwapBlocks(VBlocks, jdata, jdata%final_swap)
@@ -651,23 +662,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO counter = 1, 2*jdata%num_processes
        !! Send
        IF (perm_after(counter) .EQ. send_row) THEN
-          swap_data%send_left_partner = (counter-1)/jdata%block_columns
-          swap_data%send_left_tag = MOD((counter-1), jdata%block_columns)+1
+          swap_data%send_up_partner = (counter-1)/jdata%block_rows
+          swap_data%send_up_tag = MOD((counter-1), jdata%block_rows)+1
        END IF
        IF (perm_after(counter) .EQ. send_col) THEN
-          swap_data%send_right_partner = (counter-1)/jdata%block_columns
-          swap_data%send_right_tag = MOD((counter-1), jdata%block_columns)+1
+          swap_data%send_down_partner = (counter-1)/jdata%block_rows
+          swap_data%send_down_tag = MOD((counter-1), jdata%block_rows)+1
        END IF
        !! Receive
        IF (perm_before(counter) .EQ. recv_row) THEN
-          swap_data%recv_left_partner = (counter-1)/jdata%block_columns
+          swap_data%recv_up_partner = (counter-1)/jdata%block_rows
        END IF
        IF (perm_before(counter) .EQ. recv_col) THEN
-          swap_data%recv_right_partner = (counter-1)/jdata%block_columns
+          swap_data%recv_down_partner = (counter-1)/jdata%block_rows
        END IF
     END DO
-    swap_data%recv_left_tag = 1
-    swap_data%recv_right_tag = 2
+    swap_data%recv_up_tag = 1
+    swap_data%recv_down_tag = 2
 
     !! Fill In The Swap Data Array For Local Permutation
     DO outer_counter = 1, 2*jdata%num_processes
@@ -687,176 +698,175 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     TYPE(SwapData_t), INTENT(IN) :: swap_data
     !! Local Matrices
-    TYPE(SparseMatrix_t) :: SendLeft, RecvLeft
-    TYPE(SparseMatrix_t) :: SendRight, RecvRight
+    TYPE(SparseMatrix_t) :: SendUp, RecvUp
+    TYPE(SparseMatrix_t) :: SendDown, RecvDown
     !! For Sending Data
-    TYPE(SendRecvHelper_t) :: send_left_helper
-    TYPE(SendRecvHelper_t) :: send_right_helper
-    TYPE(SendRecvHelper_t) :: recv_left_helper
-    TYPE(SendRecvHelper_t) :: recv_right_helper
+    TYPE(SendRecvHelper_t) :: send_up_helper
+    TYPE(SendRecvHelper_t) :: send_down_helper
+    TYPE(SendRecvHelper_t) :: recv_up_helper
+    TYPE(SendRecvHelper_t) :: recv_down_helper
     !! Swap Helpers
     TYPE(SparseMatrix_t), DIMENSION(jdata%block_columns,jdata%block_rows) :: &
          & TempABlocks
-    INTEGER, DIMENSION(jdata%block_rows) :: split_guide
+    INTEGER, DIMENSION(jdata%block_columns) :: split_guide
     !! Stage Tracker
     INTEGER :: completed
-    INTEGER :: send_left_stage
-    INTEGER :: recv_left_stage
-    INTEGER :: send_right_stage
-    INTEGER :: recv_right_stage
+    INTEGER :: send_up_stage
+    INTEGER :: recv_up_stage
+    INTEGER :: send_down_stage
+    INTEGER :: recv_down_stage
     INTEGER, PARAMETER :: total_to_complete = 4
     !! Temporary Variables
     INTEGER :: counter
     INTEGER :: index
-    INTEGER :: ierr
 
     !! Swap Rows
     CALL StartTimer("Swap Rows")
     !$OMP PARALLEL
     !$OMP DO
-    DO counter = 1, jdata%block_rows
-       CALL CopySparseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
-       CALL CopySparseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
+    DO counter = 1, jdata%block_columns
+       CALL CopySparseMatrix(ABlocks(counter,1), TempABlocks(counter,1))
+       CALL CopySparseMatrix(ABlocks(counter,2), TempABlocks(counter,2))
     END DO
     !$OMP END DO
     !$OMP DO
-    DO counter = 1, jdata%block_rows
+    DO counter = 1, jdata%block_columns
        index = swap_data%swap_array(counter)
-       CALL CopySparseMatrix(TempABlocks(1,index), ABlocks(1,counter))
-       CALL CopySparseMatrix(TempABlocks(2,index), ABlocks(2,counter))
+       CALL CopySparseMatrix(TempABlocks(index,1), ABlocks(counter,1))
+       CALL CopySparseMatrix(TempABlocks(index,2), ABlocks(counter,2))
     END DO
     !$OMP END DO
     !$OMP END PARALLEL
     CALL StopTimer("Swap Rows")
 
-    DO counter = 1, jdata%block_rows
-       split_guide(counter) = ABlocks(1,counter)%rows
+    DO counter = 1, jdata%block_columns
+       split_guide(counter) = ABlocks(counter,1)%columns
     END DO
 
     !! Build matrices to swap
     CALL StartTimer("Compose First")
-    CALL ComposeSparseMatrix(ABlocks(1,:),jdata%block_rows,1,SendLeft)
-    CALL ComposeSparseMatrix(ABlocks(2,:),jdata%block_rows,1,SendRight)
+    CALL ComposeSparseMatrix(ABlocks(:,1),1,jdata%block_columns,SendUp)
+    CALL ComposeSparseMatrix(ABlocks(:,2),1,jdata%block_columns,SendDown)
     CALL StopTimer("Compose First")
 
     !! Perform Column Swaps
-    send_left_stage = 0
-    send_right_stage = 0
-    recv_left_stage = 0
-    recv_right_stage = 0
+    send_up_stage = 0
+    send_down_stage = 0
+    recv_up_stage = 0
+    recv_down_stage = 0
 
     completed = 0
     CALL StartTimer("Swap Loop")
     DO WHILE (completed .LT. total_to_complete)
-       !! Send Left Matrix
-       SELECT CASE(send_left_stage)
+       !! Send Up Matrix
+       SELECT CASE(send_up_stage)
        CASE(0) !! Send Sizes
-          CALL SendMatrixSizes(SendLeft, swap_data%send_left_partner, &
-               & jdata%communicator, send_left_helper, &
-               & swap_data%send_left_tag)
-          send_left_stage = send_left_stage + 1
+          CALL SendMatrixSizes(SendUp, swap_data%send_up_partner, &
+               & jdata%communicator, send_up_helper, &
+               & swap_data%send_up_tag)
+          send_up_stage = send_up_stage + 1
        CASE(1) !! Test Send Sizes
-          IF (TestSendRecvSizeRequest(send_left_helper)) THEN
-             CALL SendMatrixData(SendLeft, swap_data%send_left_partner, &
-                  & jdata%communicator, send_left_helper, &
-                  & swap_data%send_left_tag)
-             send_left_stage = send_left_stage + 1
+          IF (TestSendRecvSizeRequest(send_up_helper)) THEN
+             CALL SendMatrixData(SendUp, swap_data%send_up_partner, &
+                  & jdata%communicator, send_up_helper, &
+                  & swap_data%send_up_tag)
+             send_up_stage = send_up_stage + 1
           END IF
        CASE(2) !! Test Send Outer
-          IF (TestSendRecvOuterRequest(send_left_helper)) THEN
-             send_left_stage = send_left_stage + 1
+          IF (TestSendRecvOuterRequest(send_up_helper)) THEN
+             send_up_stage = send_up_stage + 1
           END IF
        CASE(3) !! Test Send Inner
-          IF (TestSendRecvInnerRequest(send_left_helper)) THEN
-             send_left_stage = send_left_stage + 1
+          IF (TestSendRecvInnerRequest(send_up_helper)) THEN
+             send_up_stage = send_up_stage + 1
           END IF
        CASE(4) !! Test Send Data
-          IF (TestSendRecvDataRequest(send_left_helper)) THEN
-             send_left_stage = send_left_stage + 1
+          IF (TestSendRecvDataRequest(send_up_helper)) THEN
+             send_up_stage = send_up_stage + 1
              completed = completed + 1
           END IF
        END SELECT
-       !! Receive Left Matrix
-       SELECT CASE(recv_left_stage)
+       !! Receive Up Matrix
+       SELECT CASE(recv_up_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvMatrixSizes(RecvLeft, swap_data%recv_left_partner, &
-               & jdata%communicator, recv_left_helper, &
-               & swap_data%recv_left_tag)
-          recv_left_stage = recv_left_stage + 1
+          CALL RecvMatrixSizes(RecvUp, swap_data%recv_up_partner, &
+               & jdata%communicator, recv_up_helper, &
+               & swap_data%recv_up_tag)
+          recv_up_stage = recv_up_stage + 1
        CASE(1) !! Test Receive Sizes
-          IF (TestSendRecvSizeRequest(recv_left_helper)) THEN
-             CALL RecvMatrixData(RecvLeft, swap_data%recv_left_partner, &
-                  & jdata%communicator, recv_left_helper, &
-                  & swap_data%recv_left_tag)
-             recv_left_stage = recv_left_stage + 1
+          IF (TestSendRecvSizeRequest(recv_up_helper)) THEN
+             CALL RecvMatrixData(RecvUp, swap_data%recv_up_partner, &
+                  & jdata%communicator, recv_up_helper, &
+                  & swap_data%recv_up_tag)
+             recv_up_stage = recv_up_stage + 1
           END IF
        CASE(2) !! Test Receive Outer
-          IF (TestSendRecvOuterRequest(recv_left_helper)) THEN
-             recv_left_stage = recv_left_stage + 1
+          IF (TestSendRecvOuterRequest(recv_up_helper)) THEN
+             recv_up_stage = recv_up_stage + 1
           END IF
        CASE(3) !! Test Receive Inner
-          IF (TestSendRecvInnerRequest(recv_left_helper)) THEN
-             recv_left_stage = recv_left_stage + 1
+          IF (TestSendRecvInnerRequest(recv_up_helper)) THEN
+             recv_up_stage = recv_up_stage + 1
           END IF
        CASE(4) !! Test Receive Data
-          IF (TestSendRecvDataRequest(recv_left_helper)) THEN
-             recv_left_stage = recv_left_stage + 1
+          IF (TestSendRecvDataRequest(recv_up_helper)) THEN
+             recv_up_stage = recv_up_stage + 1
              completed = completed + 1
           END IF
        END SELECT
-       !! Send Right Matrix
-       SELECT CASE(send_right_stage)
+       !! Send Down Matrix
+       SELECT CASE(send_down_stage)
        CASE(0) !! Send Sizes
-          CALL SendMatrixSizes(SendRight, swap_data%send_right_partner, &
-               & jdata%communicator, send_right_helper, &
-               & swap_data%send_right_tag)
-          send_right_stage = send_right_stage + 1
+          CALL SendMatrixSizes(SendDown, swap_data%send_down_partner, &
+               & jdata%communicator, send_down_helper, &
+               & swap_data%send_down_tag)
+          send_down_stage = send_down_stage + 1
        CASE(1) !! Test Send Sizes
-          IF (TestSendRecvSizeRequest(send_right_helper)) THEN
-             CALL SendMatrixData(SendRight, swap_data%send_right_partner, &
-                  & jdata%communicator, send_right_helper, &
-                  & swap_data%send_right_tag)
-             send_right_stage = send_right_stage + 1
+          IF (TestSendRecvSizeRequest(send_down_helper)) THEN
+             CALL SendMatrixData(SendDown, swap_data%send_down_partner, &
+                  & jdata%communicator, send_down_helper, &
+                  & swap_data%send_down_tag)
+             send_down_stage = send_down_stage + 1
           END IF
        CASE(2) !! Test Send Outer
-          IF (TestSendRecvOuterRequest(send_right_helper)) THEN
-             send_right_stage = send_right_stage + 1
+          IF (TestSendRecvOuterRequest(send_down_helper)) THEN
+             send_down_stage = send_down_stage + 1
           END IF
        CASE(3) !! Test Send Inner
-          IF (TestSendRecvInnerRequest(send_right_helper)) THEN
-             send_right_stage = send_right_stage + 1
+          IF (TestSendRecvInnerRequest(send_down_helper)) THEN
+             send_down_stage = send_down_stage + 1
           END IF
        CASE(4) !! Test Send Data
-          IF (TestSendRecvDataRequest(send_right_helper)) THEN
-             send_right_stage = send_right_stage + 1
+          IF (TestSendRecvDataRequest(send_down_helper)) THEN
+             send_down_stage = send_down_stage + 1
              completed = completed + 1
           END IF
        END SELECT
-       !! Receive Right Matrix
-       SELECT CASE(recv_right_stage)
+       !! Receive Down Matrix
+       SELECT CASE(recv_down_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvMatrixSizes(RecvRight, swap_data%recv_right_partner, &
-               & jdata%communicator, recv_right_helper, &
-               & swap_data%recv_right_tag)
-          recv_right_stage = recv_right_stage + 1
+          CALL RecvMatrixSizes(RecvDown, swap_data%recv_down_partner, &
+               & jdata%communicator, recv_down_helper, &
+               & swap_data%recv_down_tag)
+          recv_down_stage = recv_down_stage + 1
        CASE(1) !! Test Receive Sizes
-          IF (TestSendRecvSizeRequest(recv_right_helper)) THEN
-             CALL RecvMatrixData(RecvRight, swap_data%recv_right_partner, &
-                  & jdata%communicator, recv_right_helper, &
-                  & swap_data%recv_right_tag)
-             recv_right_stage = recv_right_stage + 1
+          IF (TestSendRecvSizeRequest(recv_down_helper)) THEN
+             CALL RecvMatrixData(RecvDown, swap_data%recv_down_partner, &
+                  & jdata%communicator, recv_down_helper, &
+                  & swap_data%recv_down_tag)
+             recv_down_stage = recv_down_stage + 1
           END IF
        CASE(2) !! Test Receive Outer
-          IF (TestSendRecvOuterRequest(recv_right_helper)) THEN
-             recv_right_stage = recv_right_stage + 1
+          IF (TestSendRecvOuterRequest(recv_down_helper)) THEN
+             recv_down_stage = recv_down_stage + 1
           END IF
        CASE(3) !! Test Receive Inner
-          IF (TestSendRecvInnerRequest(recv_right_helper)) THEN
-             recv_right_stage = recv_right_stage + 1
+          IF (TestSendRecvInnerRequest(recv_down_helper)) THEN
+             recv_down_stage = recv_down_stage + 1
           END IF
        CASE(4) !! Test Receive Data
-          IF (TestSendRecvDataRequest(recv_right_helper)) THEN
-             recv_right_stage = recv_right_stage + 1
+          IF (TestSendRecvDataRequest(recv_down_helper)) THEN
+             recv_down_stage = recv_down_stage + 1
              completed = completed + 1
           END IF
        END SELECT
@@ -864,25 +874,25 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("Swap Loop")
 
     CALL StartTimer("Split Last")
-    CALL SplitSparseMatrix(RecvLeft,jdata%block_rows,1,ABlocks(1:1,:), &
-         & block_size_row_in=split_guide)
-    CALL SplitSparseMatrix(RecvRight,jdata%block_rows,1,ABlocks(2:2,:), &
-         & block_size_row_in=split_guide)
+    CALL SplitSparseMatrix(RecvUp,1,jdata%block_columns,ABlocks(:,1:1), &
+         & block_size_column_in=split_guide)
+    CALL SplitSparseMatrix(RecvDown,1,jdata%block_columns,ABlocks(:,2:2), &
+         & block_size_column_in=split_guide)
     CALL StopTimer("Split Last")
 
     !! Cleanup
     DO counter = 1, jdata%block_rows
-       CALL DestructSparseMatrix(TempABlocks(1,counter))
-       CALL DestructSparseMatrix(TempABlocks(2,counter))
+       CALL DestructSparseMatrix(TempABlocks(counter,1))
+       CALL DestructSparseMatrix(TempABlocks(counter,2))
     END DO
-    CALL DestructSparseMatrix(SendLeft)
-    CALL DestructSparseMatrix(SendRight)
-    CALL DestructSparseMatrix(RecvLeft)
-    CALL DestructSparseMatrix(RecvRight)
+    CALL DestructSparseMatrix(SendUp)
+    CALL DestructSparseMatrix(SendDown)
+    CALL DestructSparseMatrix(RecvUp)
+    CALL DestructSparseMatrix(RecvDown)
 
   END SUBROUTINE SwapBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ApplyToColumns(TargetV, ABlocks, jdata, threshold)
+  SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata, threshold)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: TargetV
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
@@ -897,14 +907,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
-       row_sizes(1) = ABlocks(1,ind)%rows
-       row_sizes(2) = ABlocks(1,ind+1)%rows
-       col_sizes(1) = ABlocks(1,ind)%columns
-       col_sizes(2) = ABlocks(2,ind)%columns
+       row_sizes(1) = ABlocks(ind,1)%rows
+       row_sizes(2) = ABlocks(ind+1,2)%rows
+       col_sizes(1) = ABlocks(ind,1)%columns
+       col_sizes(2) = ABlocks(ind+1,2)%columns
+       WRITE(*,*) ":::::", row_sizes, ":", col_sizes, "_", TargetV%rows, TargetV%columns
 
-       CALL ComposeSparseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
-       CALL Gemm(AMat, TargetV, TempMat, threshold_in=threshold)
-       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
+       CALL ComposeSparseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
+       CALL Gemm(TargetV, AMat, TempMat, threshold_in=threshold)
+       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
        CALL DestructSparseMatrix(AMat)
        CALL DestructSparseMatrix(TempMat)
@@ -912,9 +923,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$OMP END DO
     !$OMP END PARALLEL
 
-  END SUBROUTINE ApplyToColumns
+  END SUBROUTINE ApplyToRows
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata, threshold)
+  SUBROUTINE ApplyToColumns(TargetV, ABlocks, jdata, threshold)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(INOUT) :: TargetV
     TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
@@ -935,14 +946,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
-       row_sizes(1) = ABlocks(1,ind)%rows
-       row_sizes(2) = ABlocks(1,ind+1)%rows
-       col_sizes(1) = ABlocks(1,ind)%columns
-       col_sizes(2) = ABlocks(2,ind)%columns
+       row_sizes(1) = ABlocks(ind,1)%rows
+       row_sizes(2) = ABlocks(ind+1,2)%rows
+       col_sizes(1) = ABlocks(ind,1)%columns
+       col_sizes(2) = ABlocks(ind+1,2)%columns
 
-       CALL ComposeSparseMatrix(ABlocks(:,ind:ind+1), 2, 2, AMat)
-       CALL Gemm(receive_list(counter), AMat, TempMat, threshold_in=threshold)
-       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(:,ind:ind+1), &
+       CALL ComposeSparseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
+       CALL Gemm(AMat, receive_list(counter), TempMat, threshold_in=threshold)
+       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
        CALL DestructSparseMatrix(AMat)
        CALL DestructSparseMatrix(TempMat)
@@ -956,5 +967,5 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructSparseMatrix(TempMat)
 
-  END SUBROUTINE ApplyToRows
+  END SUBROUTINE ApplyToColumns
 END MODULE JacobiEigenSolverModule
