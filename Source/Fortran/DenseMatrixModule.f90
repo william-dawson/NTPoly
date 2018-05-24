@@ -22,14 +22,17 @@ MODULE DenseMatrixModule
   PUBLIC :: ConstructEmptyDenseMatrix
   PUBLIC :: ConstructDenseFromSparse
   PUBLIC :: ConstructSparseFromDense
+  PUBLIC :: CopyDenseMatrix
   PUBLIC :: DestructDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SplitDenseMatrix
   PUBLIC :: ComposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: DenseEigenDecomposition
-  PUBLIC :: MultiplyDense
   PUBLIC :: DenseMatrixNorm
+  PUBLIC :: IncrementDenseMatrix
+  PUBLIC :: MultiplyDense
+  PUBLIC :: TransposeDenseMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
   PURE SUBROUTINE ConstructEmptyDenseMatrix(this, rows, columns)
@@ -131,6 +134,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructFromTripletList(sparse_matrix, temporary_list, rows, columns)
   END SUBROUTINE ConstructSparseFromDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopyDenseMatrix(matA, matB)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(IN) :: matA
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: matB
+
+    CALL ConstructEmptyDenseMatrix(matB,matA%rows,matA%columns)
+    matB%data = matA%data
+  END SUBROUTINE CopyDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DestructDenseMatrix(this)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(INOUT) :: this
@@ -156,6 +168,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     MatC%data = MATMUL(MatA%data,MatB%data)
   END SUBROUTINE MultiplyDense
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PURE SUBROUTINE IncrementDenseMatrix(MatA,MatB,alpha_in)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(IN) :: MatA
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: MatB
+    REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    !! Temporary
+    REAL(NTREAL) :: alpha
+
+    !! Process Optional Parameters
+    IF (.NOT. PRESENT(alpha_in)) THEN
+       alpha = 1.0d+0
+    ELSE
+       alpha = alpha_in
+    END IF
+
+    MatB%data = MatB%data + alpha*MatA%data
+  END SUBROUTINE IncrementDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
   !! Wraps a standard dense linear algebra routine.
@@ -223,7 +253,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     N = this%columns
     LDA = this%rows
     norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
-  END FUNCTION
+  END FUNCTION DenseMatrixNorm
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE TransposeDenseMatrix(matA, matAT)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(IN) :: matA
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: matAT
+
+    CALL ConstructEmptyDenseMatrix(matAT,matA%columns,matA%rows)
+    matAT%data = TRANSPOSE(matA%data)
+  END SUBROUTINE TransposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
@@ -239,28 +278,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II, JJ
 
     !! Determine the size of the big matrix
-    out_rows = 0
-    row_offsets(1) = 1
-    out_rows = 1
-    DO II = 1, block_rows
-       row_offsets(II+1) = row_offsets(II) + mat_array(1,II)%rows
-       out_rows = out_rows + mat_array(1,II)%rows
-    END DO
+    out_columns = 0
     column_offsets(1) = 1
-    out_columns = 1
-    DO JJ = 1, block_columns
-       column_offsets(JJ+1) = column_offsets(JJ) + mat_array(JJ,1)%columns
-       out_columns = out_columns + mat_array(JJ,1)%columns
+    out_columns = 0
+    DO II = 1, block_columns
+       column_offsets(II+1) = column_offsets(II) + mat_array(II,1)%columns
+       out_columns = out_columns + mat_array(II,1)%columns
+    END DO
+    row_offsets(1) = 1
+    out_rows = 0
+    DO JJ = 1, block_rows
+       row_offsets(JJ+1) = row_offsets(JJ) + mat_array(1,JJ)%rows
+       out_rows = out_rows + mat_array(1,JJ)%rows
     END DO
 
     !! Allocate Memory
     CALL ConstructEmptyDenseMatrix(out_matrix, out_rows, out_columns)
 
-    !! Copy
     DO II = 1, block_rows
        DO JJ = 1, block_columns
-          out_matrix%data(row_offsets(II):row_offsets(II+1), &
-               & column_offsets(JJ):column_offsets(JJ+1)) = mat_array(II,JJ)%data
+          out_matrix%data(row_offsets(II):row_offsets(II+1)-1, &
+               & column_offsets(JJ):column_offsets(JJ+1)-1) = &
+               & mat_array(JJ,II)%data
        END DO
     END DO
   END SUBROUTINE ComposeDenseMatrix
@@ -312,11 +351,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Copy
     DO II = 1, block_rows
        DO JJ = 1, block_columns
-          CALL ConstructEmptyDenseMatrix(split_array(II,JJ), &
+          CALL ConstructEmptyDenseMatrix(split_array(JJ,II), &
                & block_size_row(II), block_size_column(JJ))
-          split_array(II,JJ)%data = &
-               & this%data(row_offsets(II):row_offsets(II+1), &
-               & column_offsets(JJ):column_offsets(JJ+1))
+          split_array(JJ,II)%data = &
+               & this%data(row_offsets(II):row_offsets(II+1)-1, &
+               & column_offsets(JJ):column_offsets(JJ+1)-1)
        END DO
     END DO
 

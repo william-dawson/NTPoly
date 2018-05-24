@@ -3,7 +3,10 @@
 MODULE JacobiEigenSolverModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructSparseFromDense, &
-       & ConstructDenseFromSparse, DenseEigenDecomposition, DestructDenseMatrix
+       & ConstructDenseFromSparse, DenseEigenDecomposition, &
+       & DestructDenseMatrix, DenseMatrixNorm, SplitDenseMatrix, &
+       & ComposeDenseMatrix, MultiplyDense, IncrementDenseMatrix, &
+       & CopyDenseMatrix, TransposeDenseMatrix
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
        & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, &
@@ -13,15 +16,13 @@ MODULE JacobiEigenSolverModule
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader, WriteCitation
-  USE MatrixGatherModule, ONLY : BlockingSparseMatrixGather
-  USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvSparseMatrixSizes, &
-       & RecvSparseMatrixData, SendSparseMatrixSizes, SendSparseMatrixData, &
-       & TestSendRecvSizeRequest, TestSendRecvOuterRequest, &
-       & TestSendRecvInnerRequest, TestSendRecvDataRequest
+  USE MatrixGatherModule, ONLY : BlockingDenseMatrixGather
+  USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvDenseMatrixSizes, &
+       & RecvDenseMatrixData, SendDenseMatrixSizes, SendDenseMatrixData, &
+       & TestSendRecvSizeRequest, TestSendRecvDataRequest
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ComposeSparseMatrix, &
        & ConstructFromTripletList, CopySparseMatrix, DestructSparseMatrix, &
-       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix, &
-       & PrintSparseMatrix
+       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix
   USE SparseMatrixAlgebraModule, ONLY : Gemm, IncrementSparseMatrix, &
        & SparseMatrixNorm
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -112,10 +113,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     !! Local Blocking
-    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: ABlocks
-    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: VBlocks
-    TYPE(SparseMatrix_t) :: local_a
-    TYPE(SparseMatrix_t) :: last_a
+    TYPE(DenseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: ABlocks
+    TYPE(DenseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: VBlocks
+    TYPE(DenseMatrix_t) :: local_a
+    TYPE(DenseMatrix_t) :: last_a
     TYPE(JacobiData_t) :: jacobi_data
     !! Temporary
     TYPE(DistributedSparseMatrix_t) :: WorkingMat, WorkingV
@@ -154,7 +155,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLocalBlocks(WorkingMat, jacobi_data, ABlocks)
        ALLOCATE(VBlocks(jacobi_data%block_columns,jacobi_data%block_rows))
        CALL GetLocalBlocks(WorkingV, jacobi_data, VBlocks)
-       CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
+       CALL ComposeDenseMatrix(ABlocks, jacobi_data%block_rows, &
             & jacobi_data%block_columns, local_a)
        CALL StopTimer("Initialize-Jacobi")
 
@@ -175,12 +176,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL StopTimer("Sweep-Jacobi")
 
           !! Compute Norm Value
-          CALL CopySparseMatrix(local_a, last_a)
-          CALL ComposeSparseMatrix(ABlocks, jacobi_data%block_rows, &
+          CALL CopyDenseMatrix(local_a, last_a)
+          CALL ComposeDenseMatrix(ABlocks, jacobi_data%block_rows, &
                & jacobi_data%block_columns, local_a)
-          CALL IncrementSparseMatrix(local_a,last_a,alpha_in=REAL(-1.0,NTREAL), &
-               & threshold_in=solver_parameters%threshold)
-          norm_value = SparseMatrixNorm(last_a)
+          CALL IncrementDenseMatrix(local_a,last_a,alpha_in=REAL(-1.0,NTREAL))
+          norm_value = DenseMatrixNorm(last_a)
           CALL MPI_Allreduce(MPI_IN_PLACE, norm_value, 1, MPINTREAL, MPI_SUM, &
                & jacobi_data%communicator, ierr)
 
@@ -196,7 +196,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, &
          & this%actual_matrix_dimension, &
          & process_grid_in=this%process_grid)
-    CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors, active)
+    CALL FillGlobalMatrix(VBlocks, jacobi_data, eigenvectors, &
+         & solver_parameters%threshold, active)
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteElement(key="Total_Iterations",int_value_in=iteration)
@@ -208,8 +209,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (active) THEN
        DO II = 1, jacobi_data%block_rows
           DO JJ = 1, jacobi_data%block_columns
-             CALL DestructSparseMatrix(ABlocks(JJ,II))
-             CALL DestructSparseMatrix(VBlocks(JJ,II))
+             CALL DestructDenseMatrix(ABlocks(JJ,II))
+             CALL DestructDenseMatrix(VBlocks(JJ,II))
           END DO
        END DO
 
@@ -383,7 +384,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t) :: distributed
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
-    TYPE(SparseMatrix_t), DIMENSION(:,:) :: local
+    TYPE(DenseMatrix_t), DIMENSION(:,:) :: local
     !! Local Variables
     TYPE(TripletList_t) :: local_triplets
     TYPE(TripletList_t), DIMENSION(jdata%num_processes) :: send_triplets
@@ -393,7 +394,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(2) :: local_divide
     !! Temporary
     TYPE(Triplet_t) :: temp_triplet
-    TYPE(SparseMatrix_t) :: local_mat
+    TYPE(SparseMatrix_t) :: local_mat_sparse
+    TYPE(DenseMatrix_t) :: local_mat
     INTEGER :: counter, insert
     INTEGER :: ierr
 
@@ -417,8 +419,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & distributed%process_grid%within_slice_comm, received_triplets)
     CALL ShiftTripletList(received_triplets, -(jdata%start_row - 1), 0)
     CALL SortTripletList(received_triplets, jdata%columns, sorted_triplets)
-    CALL ConstructFromTripletList(local_mat, sorted_triplets, jdata%rows, &
-         & jdata%columns)
+    CALL ConstructFromTripletList(local_mat_sparse, sorted_triplets, &
+         & jdata%rows, jdata%columns)
+    CALL ConstructDenseFromSparse(local_mat_sparse,local_mat)
 
     !! Share blocking information
     local_divide(1) = local_mat%rows/2
@@ -427,7 +430,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & jdata%communicator, ierr)
 
     !! Split To Blocks
-    CALL SplitSparseMatrix(local_mat, jdata%block_rows, jdata%block_columns, &
+    CALL SplitDenseMatrix(local_mat, jdata%block_rows, jdata%block_columns, &
          & local, block_size_column_in=divisor)
 
     !! Cleanup
@@ -437,23 +440,27 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL DestructTripletList(received_triplets)
     CALL DestructTripletList(sorted_triplets)
-    CALL DestructSparseMatrix(local_mat)
+    CALL DestructSparseMatrix(local_mat_sparse)
+    CALL DestructDenseMatrix(local_mat)
   END SUBROUTINE GetLocalBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE FillGlobalMatrix(local, jdata, global, active)
+  SUBROUTINE FillGlobalMatrix(local, jdata, global, threshold, active)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(IN) :: local
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(IN) :: local
     TYPE(JacobiData_t), INTENT(IN) :: jdata
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: global
+    REAL(NTREAL), INTENT(IN) :: threshold
     LOGICAL, INTENT(IN) :: active
     !! Local Variables
     TYPE(SparseMatrix_t) :: TempMat
+    TYPE(DenseMatrix_t) :: TempMatDense
     TYPE(TripletList_t) :: triplet_list
 
     !! Get A Global Triplet List and Fill
     IF (active) THEN
-       CALL ComposeSparseMatrix(local, jdata%block_rows, jdata%block_columns, &
-            & TempMat)
+       CALL ComposeDenseMatrix(local, jdata%block_rows, jdata%block_columns, &
+            & TempMatDense)
+       CALL ConstructSparseFromDense(TempMatDense, TempMat, threshold)
        CALL MatrixToTripletList(TempMat, triplet_list)
        CALL ShiftTripletList(triplet_list, jdata%start_row - 1, &
             & jdata%start_column - 1)
@@ -464,45 +471,39 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillFromTripletList(global, triplet_list)
 
     !! Cleanup
-    CALL DestructSparseMatrix(tempmat)
+    CALL DestructSparseMatrix(TempMat)
+    CALL DestructDenseMatrix(TempMatDense)
     CALL DestructTripletList(triplet_list)
 
   END SUBROUTINE FillGlobalMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE JacobiSweep(ABlocks, VBlocks, jdata, threshold)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: VBlocks
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: VBlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
-    TYPE(SparseMatrix_t) :: TargetA
-    TYPE(SparseMatrix_t) :: TargetV, TargetVT
-    TYPE(DenseMatrix_t) :: DenseA, DenseV
+    TYPE(DenseMatrix_t) :: TargetA
+    TYPE(DenseMatrix_t) :: TargetV, TargetVT
     INTEGER :: iteration
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
        !! Construct A Block To Diagonalize
-       CALL ComposeSparseMatrix(ABlocks(&
+       CALL ComposeDenseMatrix(ABlocks(&
             & jdata%col_block_start:jdata%col_block_end, &
             & jdata%row_block_start:jdata%row_block_end), &
             & 2, 2, TargetA)
 
        !! Diagonalize
        CALL StartTimer("Decomposition")
-       CALL ConstructDenseFromSparse(TargetA, DenseA)
-
-       CALL DenseEigenDecomposition(DenseA, DenseV)
-       CALL ConstructSparseFromDense(DenseV, TargetV)
-
-       CALL DestructDenseMatrix(DenseA)
-       CALL DestructDenseMatrix(DenseV)
+       CALL DenseEigenDecomposition(TargetA, TargetV)
        CALL StopTimer("Decomposition")
 
        !! Rotation Along Row
        CALL StartTimer("Row")
-       CALL TransposeSparseMatrix(TargetV, TargetVT)
+       CALL TransposeDenseMatrix(TargetV, TargetVT)
        CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
        CALL StopTimer("Row")
 
@@ -699,19 +700,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SwapBlocks(ABlocks, jdata, swap_data)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     TYPE(SwapData_t), INTENT(IN) :: swap_data
     !! Local Matrices
-    TYPE(SparseMatrix_t) :: SendUp, RecvUp
-    TYPE(SparseMatrix_t) :: SendDown, RecvDown
+    TYPE(DenseMatrix_t) :: SendUp, RecvUp
+    TYPE(DenseMatrix_t) :: SendDown, RecvDown
     !! For Sending Data
     TYPE(SendRecvHelper_t) :: send_up_helper
     TYPE(SendRecvHelper_t) :: send_down_helper
     TYPE(SendRecvHelper_t) :: recv_up_helper
     TYPE(SendRecvHelper_t) :: recv_down_helper
     !! Swap Helpers
-    TYPE(SparseMatrix_t), DIMENSION(jdata%block_columns,jdata%block_rows) :: &
+    TYPE(DenseMatrix_t), DIMENSION(jdata%block_columns,jdata%block_rows) :: &
          & TempABlocks
     INTEGER, DIMENSION(jdata%block_columns) :: split_guide
     !! Stage Tracker
@@ -730,15 +731,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$OMP PARALLEL
     !$OMP DO
     DO counter = 1, jdata%block_columns
-       CALL CopySparseMatrix(ABlocks(counter,1), TempABlocks(counter,1))
-       CALL CopySparseMatrix(ABlocks(counter,2), TempABlocks(counter,2))
+       CALL CopyDenseMatrix(ABlocks(counter,1), TempABlocks(counter,1))
+       CALL CopyDenseMatrix(ABlocks(counter,2), TempABlocks(counter,2))
     END DO
     !$OMP END DO
     !$OMP DO
     DO counter = 1, jdata%block_columns
        index = swap_data%swap_array(counter)
-       CALL CopySparseMatrix(TempABlocks(index,1), ABlocks(counter,1))
-       CALL CopySparseMatrix(TempABlocks(index,2), ABlocks(counter,2))
+       CALL CopyDenseMatrix(TempABlocks(index,1), ABlocks(counter,1))
+       CALL CopyDenseMatrix(TempABlocks(index,2), ABlocks(counter,2))
     END DO
     !$OMP END DO
     !$OMP END PARALLEL
@@ -750,8 +751,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Build matrices to swap
     CALL StartTimer("Compose First")
-    CALL ComposeSparseMatrix(ABlocks(:,1),1,jdata%block_columns,SendUp)
-    CALL ComposeSparseMatrix(ABlocks(:,2),1,jdata%block_columns,SendDown)
+    CALL ComposeDenseMatrix(ABlocks(:,1),1,jdata%block_columns,SendUp)
+    CALL ComposeDenseMatrix(ABlocks(:,2),1,jdata%block_columns,SendDown)
     CALL StopTimer("Compose First")
 
     !! Perform Column Swaps
@@ -766,26 +767,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Send Up Matrix
        SELECT CASE(send_up_stage)
        CASE(0) !! Send Sizes
-          CALL SendSparseMatrixSizes(SendUp, swap_data%send_up_partner, &
+          CALL SendDenseMatrixSizes(SendUp, swap_data%send_up_partner, &
                & jdata%communicator, send_up_helper, &
                & swap_data%send_up_tag)
           send_up_stage = send_up_stage + 1
        CASE(1) !! Test Send Sizes
           IF (TestSendRecvSizeRequest(send_up_helper)) THEN
-             CALL SendSparseMatrixData(SendUp, swap_data%send_up_partner, &
+             CALL SendDenseMatrixData(SendUp, swap_data%send_up_partner, &
                   & jdata%communicator, send_up_helper, &
                   & swap_data%send_up_tag)
              send_up_stage = send_up_stage + 1
           END IF
-       CASE(2) !! Test Send Outer
-          IF (TestSendRecvOuterRequest(send_up_helper)) THEN
-             send_up_stage = send_up_stage + 1
-          END IF
-       CASE(3) !! Test Send Inner
-          IF (TestSendRecvInnerRequest(send_up_helper)) THEN
-             send_up_stage = send_up_stage + 1
-          END IF
-       CASE(4) !! Test Send Data
+       CASE(2) !! Test Send Data
           IF (TestSendRecvDataRequest(send_up_helper)) THEN
              send_up_stage = send_up_stage + 1
              completed = completed + 1
@@ -794,26 +787,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Receive Up Matrix
        SELECT CASE(recv_up_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvSparseMatrixSizes(RecvUp, swap_data%recv_up_partner, &
+          CALL RecvDenseMatrixSizes(RecvUp, swap_data%recv_up_partner, &
                & jdata%communicator, recv_up_helper, &
                & swap_data%recv_up_tag)
           recv_up_stage = recv_up_stage + 1
        CASE(1) !! Test Receive Sizes
           IF (TestSendRecvSizeRequest(recv_up_helper)) THEN
-             CALL RecvSparseMatrixData(RecvUp, swap_data%recv_up_partner, &
+             CALL RecvDenseMatrixData(RecvUp, swap_data%recv_up_partner, &
                   & jdata%communicator, recv_up_helper, &
                   & swap_data%recv_up_tag)
              recv_up_stage = recv_up_stage + 1
           END IF
-       CASE(2) !! Test Receive Outer
-          IF (TestSendRecvOuterRequest(recv_up_helper)) THEN
-             recv_up_stage = recv_up_stage + 1
-          END IF
-       CASE(3) !! Test Receive Inner
-          IF (TestSendRecvInnerRequest(recv_up_helper)) THEN
-             recv_up_stage = recv_up_stage + 1
-          END IF
-       CASE(4) !! Test Receive Data
+       CASE(2) !! Test Receive Data
           IF (TestSendRecvDataRequest(recv_up_helper)) THEN
              recv_up_stage = recv_up_stage + 1
              completed = completed + 1
@@ -822,26 +807,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Send Down Matrix
        SELECT CASE(send_down_stage)
        CASE(0) !! Send Sizes
-          CALL SendSparseMatrixSizes(SendDown, swap_data%send_down_partner, &
+          CALL SendDenseMatrixSizes(SendDown, swap_data%send_down_partner, &
                & jdata%communicator, send_down_helper, &
                & swap_data%send_down_tag)
           send_down_stage = send_down_stage + 1
        CASE(1) !! Test Send Sizes
           IF (TestSendRecvSizeRequest(send_down_helper)) THEN
-             CALL SendSparseMatrixData(SendDown, swap_data%send_down_partner, &
+             CALL SendDenseMatrixData(SendDown, swap_data%send_down_partner, &
                   & jdata%communicator, send_down_helper, &
                   & swap_data%send_down_tag)
              send_down_stage = send_down_stage + 1
           END IF
-       CASE(2) !! Test Send Outer
-          IF (TestSendRecvOuterRequest(send_down_helper)) THEN
-             send_down_stage = send_down_stage + 1
-          END IF
-       CASE(3) !! Test Send Inner
-          IF (TestSendRecvInnerRequest(send_down_helper)) THEN
-             send_down_stage = send_down_stage + 1
-          END IF
-       CASE(4) !! Test Send Data
+       CASE(2) !! Test Send Data
           IF (TestSendRecvDataRequest(send_down_helper)) THEN
              send_down_stage = send_down_stage + 1
              completed = completed + 1
@@ -850,26 +827,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Receive Down Matrix
        SELECT CASE(recv_down_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvSparseMatrixSizes(RecvDown, swap_data%recv_down_partner, &
+          CALL RecvDenseMatrixSizes(RecvDown, swap_data%recv_down_partner, &
                & jdata%communicator, recv_down_helper, &
                & swap_data%recv_down_tag)
           recv_down_stage = recv_down_stage + 1
        CASE(1) !! Test Receive Sizes
           IF (TestSendRecvSizeRequest(recv_down_helper)) THEN
-             CALL RecvSparseMatrixData(RecvDown, swap_data%recv_down_partner, &
+             CALL RecvDenseMatrixData(RecvDown, swap_data%recv_down_partner, &
                   & jdata%communicator, recv_down_helper, &
                   & swap_data%recv_down_tag)
              recv_down_stage = recv_down_stage + 1
           END IF
-       CASE(2) !! Test Receive Outer
-          IF (TestSendRecvOuterRequest(recv_down_helper)) THEN
-             recv_down_stage = recv_down_stage + 1
-          END IF
-       CASE(3) !! Test Receive Inner
-          IF (TestSendRecvInnerRequest(recv_down_helper)) THEN
-             recv_down_stage = recv_down_stage + 1
-          END IF
-       CASE(4) !! Test Receive Data
+       CASE(2) !! Test Receive Data
           IF (TestSendRecvDataRequest(recv_down_helper)) THEN
              recv_down_stage = recv_down_stage + 1
              completed = completed + 1
@@ -879,32 +848,32 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("Swap Loop")
 
     CALL StartTimer("Split Last")
-    CALL SplitSparseMatrix(RecvUp,1,jdata%block_columns,ABlocks(:,1:1), &
+    CALL SplitDenseMatrix(RecvUp,1,jdata%block_columns,ABlocks(:,1:1), &
          & block_size_column_in=split_guide)
-    CALL SplitSparseMatrix(RecvDown,1,jdata%block_columns,ABlocks(:,2:2), &
+    CALL SplitDenseMatrix(RecvDown,1,jdata%block_columns,ABlocks(:,2:2), &
          & block_size_column_in=split_guide)
     CALL StopTimer("Split Last")
 
     !! Cleanup
     DO counter = 1, jdata%block_rows
-       CALL DestructSparseMatrix(TempABlocks(counter,1))
-       CALL DestructSparseMatrix(TempABlocks(counter,2))
+       CALL DestructDenseMatrix(TempABlocks(counter,1))
+       CALL DestructDenseMatrix(TempABlocks(counter,2))
     END DO
-    CALL DestructSparseMatrix(SendUp)
-    CALL DestructSparseMatrix(SendDown)
-    CALL DestructSparseMatrix(RecvUp)
-    CALL DestructSparseMatrix(RecvDown)
+    CALL DestructDenseMatrix(SendUp)
+    CALL DestructDenseMatrix(SendDown)
+    CALL DestructDenseMatrix(RecvUp)
+    CALL DestructDenseMatrix(RecvDown)
 
   END SUBROUTINE SwapBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata, threshold)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: TargetV
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(DenseMatrix_t), INTENT(IN) :: TargetV
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(IN) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Temporary
-    TYPE(SparseMatrix_t) :: AMat, TempMat
+    TYPE(DenseMatrix_t) :: AMat, TempMat
     INTEGER :: counter, ind
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
@@ -916,12 +885,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        row_sizes(2) = ABlocks(ind+1,2)%rows
        col_sizes(1) = ABlocks(ind,1)%columns
        col_sizes(2) = ABlocks(ind+1,2)%columns
-       CALL ComposeSparseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
-       CALL Gemm(TargetV, AMat, TempMat, threshold_in=threshold)
-       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
+       CALL ComposeDenseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
+       CALL MultiplyDense(TargetV, AMat, TempMat)
+       CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
-       CALL DestructSparseMatrix(AMat)
-       CALL DestructSparseMatrix(TempMat)
+       CALL DestructDenseMatrix(AMat)
+       CALL DestructDenseMatrix(TempMat)
     END DO
     !$OMP END DO
     !$OMP END PARALLEL
@@ -930,20 +899,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ApplyToColumns(TargetV, ABlocks, jdata, threshold)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: TargetV
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: TargetV
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     REAL(NTREAL), INTENT(IN) :: threshold
     !! For Receiving
-    TYPE(SparseMatrix_t), DIMENSION(jdata%num_processes) :: receive_list
+    TYPE(DenseMatrix_t), DIMENSION(jdata%num_processes) :: receive_list
     !! Temporary
     INTEGER :: counter
     INTEGER :: ind
-    TYPE(SparseMatrix_t) :: TempMat
-    TYPE(SparseMatrix_t) :: AMat
+    TYPE(DenseMatrix_t) :: TempMat
+    TYPE(DenseMatrix_t) :: AMat
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
-    CALL BlockingSparseMatrixGather(TargetV, receive_list, jdata%communicator)
+    CALL BlockingDenseMatrixGather(TargetV, receive_list, jdata%communicator)
 
     !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
     !$OMP DO
@@ -954,21 +923,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        col_sizes(1) = ABlocks(ind,1)%columns
        col_sizes(2) = ABlocks(ind+1,2)%columns
 
-       CALL ComposeSparseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
-       CALL Gemm(AMat, receive_list(counter), TempMat, threshold_in=threshold)
-       CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
+       CALL ComposeDenseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
+       CALL MultiplyDense(AMat, receive_list(counter), TempMat)
+       CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
-       CALL DestructSparseMatrix(AMat)
-       CALL DestructSparseMatrix(TempMat)
+       CALL DestructDenseMatrix(AMat)
+       CALL DestructDenseMatrix(TempMat)
     END DO
     !$OMP END DO
     !$OMP END PARALLEL
 
     DO counter = 1, jdata%num_processes
-       CALL DestructSparseMatrix(receive_list(counter))
+       CALL DestructDenseMatrix(receive_list(counter))
     END DO
 
-    CALL DestructSparseMatrix(TempMat)
+    CALL DestructDenseMatrix(TempMat)
 
   END SUBROUTINE ApplyToColumns
 END MODULE JacobiEigenSolverModule

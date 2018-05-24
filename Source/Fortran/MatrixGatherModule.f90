@@ -243,10 +243,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO WHILE (.NOT. TestGatherSizeRequest(helper))
     END DO
     CALL GatherDenseMatrixAndListData(matrix, communicator, helper)
-    DO WHILE (.NOT. TestGatherOuterRequest(helper))
-    END DO
-    DO WHILE (.NOT. TestGatherInnerRequest(helper))
-    END DO
     DO WHILE (.NOT. TestGatherDataRequest(helper))
     END DO
     CALL GatherDenseMatrixAndListCleanup(matrix, matrix_list, helper)
