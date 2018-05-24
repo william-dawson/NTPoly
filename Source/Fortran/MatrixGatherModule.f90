@@ -301,8 +301,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Build Displacement List
     helper%displacement_values(1) = 0
     DO II = 2, helper%comm_size
-       helper%displacement_outer(II) = helper%displacement_outer(II-1) + &
-            & helper%outer_sizes(II-1)
+       helper%displacement_values(II) = helper%displacement_values(II-1) + &
+            & helper%value_sizes(II-1)
     END DO
 
     !! Build Storage

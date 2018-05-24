@@ -35,7 +35,7 @@ MODULE DenseMatrixModule
   PUBLIC :: TransposeDenseMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
-  PURE SUBROUTINE ConstructEmptyDenseMatrix(this, rows, columns)
+  PURE SUBROUTINE ConstructEmptyDenseMatrix(this, columns, rows)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(INOUT) :: this
     INTEGER :: rows
@@ -63,8 +63,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_t) :: temporary
 
     IF (.NOT. ALLOCATED(dense_matrix%data)) THEN
-       CALL ConstructEmptyDenseMatrix(dense_matrix,sparse_matrix%rows, &
-            & sparse_matrix%columns)
+       CALL ConstructEmptyDenseMatrix(dense_matrix,sparse_matrix%columns, &
+            & sparse_matrix%rows)
     END IF
 
     !! Loop over elements.
@@ -139,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DenseMatrix_t), INTENT(IN) :: matA
     TYPE(DenseMatrix_t), INTENT(INOUT) :: matB
 
-    CALL ConstructEmptyDenseMatrix(matB,matA%rows,matA%columns)
+    CALL ConstructEmptyDenseMatrix(matB,matA%columns,matA%rows)
     matB%data = matA%data
   END SUBROUTINE CopyDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -163,7 +163,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DenseMatrix_t), INTENT(INOUT) :: MatC
 
     IF (.NOT. ALLOCATED(MatC%data)) THEN
-       CALL ConstructEmptyDenseMatrix(MatC,MatA%rows,MatB%columns)
+       CALL ConstructEmptyDenseMatrix(MatC,MatB%columns,MatA%rows)
     END IF
 
     MatC%data = MATMUL(MatA%data,MatB%data)
@@ -207,9 +207,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: LIWORK
     INTEGER :: INFO
 
-    IF (.NOT. ALLOCATED(MatV%data)) THEN
-       CALL ConstructEmptyDenseMatrix(MatV,MatA%rows,MatA%columns)
-    END IF
+    CALL ConstructEmptyDenseMatrix(MatV,MatA%columns,MatA%rows)
     MatV%data = MatA%data
 
     N = SIZE(MatA%data,DIM=1)
@@ -260,7 +258,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DenseMatrix_t), INTENT(IN) :: matA
     TYPE(DenseMatrix_t), INTENT(INOUT) :: matAT
 
-    CALL ConstructEmptyDenseMatrix(matAT,matA%columns,matA%rows)
+    CALL ConstructEmptyDenseMatrix(matAT,matA%rows,matA%columns)
     matAT%data = TRANSPOSE(matA%data)
   END SUBROUTINE TransposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -293,7 +291,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Allocate Memory
-    CALL ConstructEmptyDenseMatrix(out_matrix, out_rows, out_columns)
+    CALL ConstructEmptyDenseMatrix(out_matrix, out_columns, out_rows)
 
     DO II = 1, block_rows
        DO JJ = 1, block_columns
@@ -352,7 +350,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, block_rows
        DO JJ = 1, block_columns
           CALL ConstructEmptyDenseMatrix(split_array(JJ,II), &
-               & block_size_row(II), block_size_column(JJ))
+               & block_size_column(JJ), block_size_row(II))
           split_array(JJ,II)%data = &
                & this%data(row_offsets(II):row_offsets(II+1)-1, &
                & column_offsets(JJ):column_offsets(JJ+1)-1)
