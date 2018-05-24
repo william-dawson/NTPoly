@@ -23,20 +23,25 @@ MODULE MatrixBroadcastModule
      INTEGER, DIMENSION(3) :: matrix_data
   END TYPE BroadcastHelper_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: BroadcastMatrixSizes
-  PUBLIC :: BroadcastMatrixData
+  PUBLIC :: BroadcastSparseMatrixSizes
+  PUBLIC :: BroadcastSparseMatrixData
+  PUBLIC :: BroadcastSparseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! PUBLIC :: BroadcastDenseMatrixSizes
+  ! PUBLIC :: BroadcastDenseMatrixData
+  ! PUBLIC :: BroadcastDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: TestBroadcastMatrixSize
   PUBLIC :: TestBroadcastMatrixOuter
   PUBLIC :: TestBroadcastMatrixInner
   PUBLIC :: TestBroadcastMatrixData
-  PUBLIC :: BroadcastMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Broadcast The Size of a Matrix across the communicator.
   !! @param[inout] matrix to broadcast.
   !! @param[in] comm the communicator to broadcast along.
   !! @param[in] root the root process which holds the matrix.
   !! @param[inout] helper the broadcast matrix helper.
-  SUBROUTINE BroadcastMatrixSizes(matrix, comm, root, helper)
+  SUBROUTINE BroadcastSparseMatrixSizes(matrix, comm, root, helper)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
     INTEGER, INTENT(INOUT) :: comm
@@ -58,14 +63,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Ibcast(helper%matrix_data, 3, MPI_INTEGER, root, comm, &
          & helper%size_request, ierr)
 
-  END SUBROUTINE BroadcastMatrixSizes
+  END SUBROUTINE BroadcastSparseMatrixSizes
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Broadcast The Data of a Matrix across the communicator.
   !! @param[inout] matrix to broadcast.
   !! @param[in] comm the communicator to broadcast along.
   !! @param[in] root the root process which holds the matrix.
   !! @param[inout] helper the broadcast matrix helper.
-  SUBROUTINE BroadcastMatrixData(matrix, comm, root, helper)
+  SUBROUTINE BroadcastSparseMatrixData(matrix, comm, root, helper)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
     INTEGER, INTENT(INOUT) :: comm
@@ -90,7 +95,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Ibcast(matrix%outer_index, helper%matrix_data(3)+1, MPI_INT, root,&
          & comm, helper%outer_request, ierr)
 
-  END SUBROUTINE BroadcastMatrixData
+  END SUBROUTINE BroadcastSparseMatrixData
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.
   !! @param[in] helper the send helper structure.
@@ -156,7 +161,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matrix to broadcast.
   !! @param[in] comm the communicator to broadcast along.
   !! @param[in] root the root process which holds the matrix.
-  SUBROUTINE BroadcastMatrix(matrix, comm, root)
+  SUBROUTINE BroadcastSparseMatrix(matrix, comm, root)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
     INTEGER, INTENT(INOUT) :: comm
@@ -192,5 +197,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & root, comm, ierr)
     CALL MPI_Bcast(matrix%inner_index, nnz, MPI_INT, root, comm, ierr)
     CALL MPI_Bcast(matrix%values, nnz, MPINTREAL, root, comm, ierr)
-  END SUBROUTINE BroadcastMatrix
+  END SUBROUTINE BroadcastSparseMatrix
 END MODULE MatrixBroadcastModule

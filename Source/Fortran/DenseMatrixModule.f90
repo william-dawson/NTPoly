@@ -12,26 +12,56 @@ MODULE DenseMatrixModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A datatype for storing a dense matrix.
+  TYPE, PUBLIC :: DenseMatrix_t
+     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix
+     INTEGER :: rows !< Matrix dimension: rows
+     INTEGER :: columns !< Matrix dimension: columns
+  END TYPE DenseMatrix_t
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ConstructEmptyDenseMatrix
   PUBLIC :: ConstructDenseFromSparse
   PUBLIC :: ConstructSparseFromDense
+  PUBLIC :: DestructDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: MultiplyDense
   PUBLIC :: DenseEigenDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct an empty dense matrix with a set number of rows and columns
+  PURE SUBROUTINE ConstructEmptyDenseMatrix(this, rows, columns)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: this
+    INTEGER :: rows
+    INTEGER :: columns
+
+    CALL DestructDenseMatrix(this)
+    ALLOCATE(this%data(rows,columns))
+
+    this%rows = rows
+    this%columns = columns
+
+  END SUBROUTINE ConstructEmptyDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
   !! @param[inout] dense_matrix output. Must be preallocated.
   PURE SUBROUTINE ConstructDenseFromSparse(sparse_matrix, dense_matrix)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: sparse_matrix
-    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: dense_matrix
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
     INTEGER :: inner_counter, outer_counter
     INTEGER :: elements_per_inner
     INTEGER :: total_counter
     TYPE(Triplet_t) :: temporary
 
+    IF (.NOT. ALLOCATED(dense_matrix%data)) THEN
+       CALL ConstructEmptyDenseMatrix(dense_matrix,sparse_matrix%rows, &
+            & sparse_matrix%columns)
+    END IF
+
     !! Loop over elements.
-    dense_matrix = 0
+    dense_matrix%data = 0
     total_counter = 1
     DO outer_counter = 1, sparse_matrix%columns
        elements_per_inner = sparse_matrix%outer_index(outer_counter+1) - &
@@ -40,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        DO inner_counter = 1, elements_per_inner
           temporary%index_row = sparse_matrix%inner_index(total_counter)
           temporary%point_value = sparse_matrix%values(total_counter)
-          dense_matrix(temporary%index_row, temporary%index_column) = &
+          dense_matrix%data(temporary%index_row, temporary%index_column) = &
                & temporary%point_value
           total_counter = total_counter + 1
        END DO
@@ -50,61 +80,87 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a dense matrix to a sparse matrix.
   !! @param[in] dense_matrix to convert.
   !! @param[out] sparse_matrix output matrix.
-  !! @param[in] threshold value for pruning values to zero.
-  PURE SUBROUTINE ConstructSparseFromDense(dense_matrix,sparse_matrix,threshold)
+  !! @param[in] threshold_in value for pruning values to zero.
+  PURE SUBROUTINE ConstructSparseFromDense(dense_matrix, sparse_matrix, &
+       & threshold_in)
     !! Parameters
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: dense_matrix
+    TYPE(DenseMatrix_t), INTENT(IN) :: dense_matrix
     TYPE(SparseMatrix_t), INTENT(INOUT) :: sparse_matrix
-    REAL(NTREAL), INTENT(IN) :: threshold
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Local Variables
     INTEGER :: inner_counter, outer_counter
     TYPE(Triplet_t) :: temporary
     TYPE(TripletList_t) :: temporary_list
     INTEGER :: columns, rows
+    INTEGER :: ind
 
-    columns = SIZE(dense_matrix,DIM=2)
-    rows = SIZE(dense_matrix,DIM=1)
+    columns = dense_matrix%columns
+    rows = dense_matrix%rows
 
-    CALL ConstructTripletList(temporary_list)
-    DO outer_counter = 1, columns
-       temporary%index_column = outer_counter
-       DO inner_counter = 1, rows
-          temporary%point_value = dense_matrix(inner_counter,outer_counter)
-          IF (ABS(temporary%point_value) .GT. threshold) THEN
-             temporary%index_row = inner_counter
-             CALL AppendToTripletList(temporary_list,temporary)
-          END IF
+    IF (PRESENT(threshold_in)) THEN
+       CALL ConstructTripletList(temporary_list)
+       DO outer_counter = 1, columns
+          temporary%index_column = outer_counter
+          DO inner_counter = 1, rows
+             temporary%point_value = &
+                  & dense_matrix%data(inner_counter,outer_counter)
+             IF (ABS(temporary%point_value) .GT. threshold_in) THEN
+                temporary%index_row = inner_counter
+                CALL AppendToTripletList(temporary_list,temporary)
+             END IF
+          END DO
        END DO
-    END DO
+    ELSE
+       CALL ConstructTripletList(temporary_list, rows*columns)
+       DO outer_counter = 1, columns
+          temporary%index_column = outer_counter
+          DO inner_counter = 1, rows
+             temporary%point_value = &
+                  & dense_matrix%data(inner_counter,outer_counter)
+             temporary%index_row = inner_counter
+             temporary_list%data(inner_counter+rows*(outer_counter-1)) = &
+                  & temporary
+          END DO
+       END DO
+    END IF
 
     CALL ConstructFromTripletList(sparse_matrix, temporary_list, rows, columns)
   END SUBROUTINE ConstructSparseFromDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE DestructDenseMatrix(this)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: this
+
+    IF (ALLOCATED(this%data)) THEN
+       DEALLOCATE(this%data)
+    END IF
+  END SUBROUTINE DestructDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
   !! @param[in] MatA the first matrix.
   !! @param[in] MatB the second matrix.
-  !! @param[inout] MatC = MatA*MatB. MatC must be preallocated.
+  !! @param[inout] MatC = MatA*MatB.
   PURE SUBROUTINE MultiplyDense(MatA,MatB,MatC)
     !! Parameters
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: MatA
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: MatB
-    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: MatC
+    TYPE(DenseMatrix_t), INTENT(IN) :: MatA
+    TYPE(DenseMatrix_t), INTENT(IN) :: MatB
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: MatC
 
-    MatC = MATMUL(MatA,MatB)
+    IF (.NOT. ALLOCATED(MatC%data)) THEN
+       CALL ConstructEmptyDenseMatrix(MatC,MatA%rows,MatB%columns)
+    END IF
+
+    MatC%data = MATMUL(MatA%data,MatB%data)
   END SUBROUTINE MultiplyDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
   !! Wraps a standard dense linear algebra routine.
   !! @param[in] MatA the matrix to decompose.
   !! @param[out] MatV the eigenvectors.
-  !! @param[in] threshold for pruning values to zero.
-  SUBROUTINE DenseEigenDecomposition(MatA, MatV, threshold)
+  SUBROUTINE DenseEigenDecomposition(MatA, MatV)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(In) :: MatA
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: MatV
-    REAL(NTREAL), INTENT(IN) :: threshold
-    !! Local Matrices
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DMatA
+    TYPE(DenseMatrix_t), INTENT(IN) :: MatA
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: MatV
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
@@ -117,12 +173,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: LIWORK
     INTEGER :: INFO
 
-    !! Convert Input To Dense
-    ALLOCATE(DMatA(MatA%rows, MatA%columns))
-    DMatA = 0
-    CALL ConstructDenseFromSparse(MatA,DMatA)
+    IF (.NOT. ALLOCATED(MatV%data)) THEN
+       CALL ConstructEmptyDenseMatrix(MatV,MatA%rows,MatA%columns)
+    END IF
+    MatV%data = MatA%data
 
-    N = SIZE(DMatA,DIM=1)
+    N = SIZE(MatA%data,DIM=1)
     LDA = N
 
     !! Allocations
@@ -130,7 +186,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Determine the scratch space size
     LWORK = -1
-    CALL DSYEVD(JOB, UPLO, N, DMatA, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
+    CALL DSYEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
          & LIWORK, INFO)
     N = LDA
     LWORK = INT(WORKTEMP)
@@ -139,13 +195,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
-    CALL DSYEVD(JOB, UPLO, N, DMatA, LDA, W, WORK, LWORK, IWORK, LIWORK, INFO)
-
-    !! Convert Output To Sparse
-    CALL ConstructSparseFromDense(DMatA,MatV,threshold)
+    CALL DSYEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, IWORK, LIWORK, &
+         & INFO)
 
     !! Cleanup
-    DEALLOCATE(DMatA)
     DEALLOCATE(W)
     DEALLOCATE(Work)
 

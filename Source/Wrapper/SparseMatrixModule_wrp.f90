@@ -2,7 +2,8 @@
 !> A module for wrapping the sparse matrix data type.
 MODULE SparseMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
+  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructDenseFromSparse, &
+       & ConstructSparseFromDense, DenseEigenDecomposition, DestructDenseMatrix
   USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructZeroSparseMatrix, &
        & ConstructEmptySparseMatrix, ConstructSparseMatrixFromFile, &
@@ -237,10 +238,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: threshold
     TYPE(SparseMatrix_wrp) :: h_matA
     TYPE(SparseMatrix_wrp) :: h_matV
+    !! Temporary Dense Matrices
+    TYPE(DenseMatrix_t) :: dense_a, dense_v
 
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matV = TRANSFER(ih_matV,h_matV)
-    CALL DenseEigenDecomposition(h_matA%data,h_matV%data, threshold)
+
+    CALL ConstructDenseFromSparse(h_matA%data, dense_a)
+    CALL DenseEigenDecomposition(dense_a, dense_v)
+    CALL ConstructSparseFromDense(dense_v,h_matV%data,threshold)
+
+    !! Cleanup
+    CALL DestructDenseMatrix(dense_a)
+    CALL DestructDenseMatrix(dense_v)
   END SUBROUTINE DenseEigenDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SparseMatrixModule_wrp

@@ -48,7 +48,7 @@ MODULE MatrixGatherModule
      !> Displacement of the values.
      INTEGER, DIMENSION(:), ALLOCATABLE :: displacement_values
   END TYPE GatherHelper_t
-  ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: BlockingMatrixGather
   PUBLIC :: GatherSizes
   PUBLIC :: GatherAndListData

@@ -2,8 +2,8 @@
 !> A module for performing linear algebra using sparse matrices.
 MODULE SparseMatrixAlgebraModule
   USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : ConstructDenseFromSparse, &
-       & ConstructSparseFromDense, MultiplyDense
+  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructDenseFromSparse, &
+       & ConstructSparseFromDense, MultiplyDense, DestructDenseMatrix
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
        & CheckMemoryPoolValidity, SetPoolSparsity
@@ -440,9 +440,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(SparseMatrix_t) :: untransposedMatA
     TYPE(SparseMatrix_t) :: untransposedMatB
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DenseA
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DenseB
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DenseC
+    TYPE(DenseMatrix_t) :: DenseA
+    TYPE(DenseMatrix_t) :: DenseB
+    TYPE(DenseMatrix_t) :: DenseC
 
     !! Handle Transposed Case
     IF (IsATransposed) THEN
@@ -457,9 +457,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Convert Forward
-    ALLOCATE(DenseA(untransposedMatA%rows,untransposedMatA%columns))
-    ALLOCATE(DenseB(untransposedMatB%rows,untransposedMatB%columns))
-    ALLOCATE(DenseC(untransposedMatA%rows,untransposedMatB%columns))
     CALL ConstructDenseFromSparse(untransposedMatA, DenseA)
     CALL ConstructDenseFromSparse(untransposedMatB, DenseB)
 
@@ -470,9 +467,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructSparseFromDense(DenseC, matC, threshold)
     CALL ScaleSparseMatrix(matC,alpha)
 
-    DEALLOCATE(DenseA)
-    DEALLOCATE(DenseB)
-    DEALLOCATE(DenseC)
+    !! Cleanup
+    CALL DestructDenseMatrix(DenseA)
+    CALL DestructDenseMatrix(DenseB)
+    CALL DestructDenseMatrix(DenseC)
   END SUBROUTINE DenseBranch
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE MultiplyBlock(matAT,matBT,memorypool)

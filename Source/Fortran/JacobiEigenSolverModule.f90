@@ -2,7 +2,8 @@
 !> A module for computing eigenvalues using the Jacobi method.
 MODULE JacobiEigenSolverModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
+  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructSparseFromDense, &
+       & ConstructDenseFromSparse, DenseEigenDecomposition, DestructDenseMatrix
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
        & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, &
@@ -12,10 +13,9 @@ MODULE JacobiEigenSolverModule
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader, WriteCitation
-  USE MatrixBroadcastModule, ONLY : BroadcastMatrix
   USE MatrixGatherModule, ONLY : BlockingMatrixGather
-  USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvMatrixSizes, &
-       & RecvMatrixData, SendMatrixSizes, SendMatrixData, &
+  USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvSparseMatrixSizes, &
+       & RecvSparseMatrixData, SendSparseMatrixSizes, SendSparseMatrixData, &
        & TestSendRecvSizeRequest, TestSendRecvOuterRequest, &
        & TestSendRecvInnerRequest, TestSendRecvDataRequest
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ComposeSparseMatrix, &
@@ -29,7 +29,6 @@ MODULE JacobiEigenSolverModule
        & ConstructTripletList, DestructTripletList, GetTripletAt, &
        & RedistributeTripletLists, ShiftTripletList, SortTripletList
   USE TripletModule, ONLY : Triplet_t
-  USE ProcessGridModule, ONLY : global_grid
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -479,6 +478,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: TargetA
     TYPE(SparseMatrix_t) :: TargetV, TargetVT
+    TYPE(DenseMatrix_t) :: DenseA, DenseV
     INTEGER :: iteration
 
     !! Loop Over Processors
@@ -491,7 +491,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Diagonalize
        CALL StartTimer("Decomposition")
-       CALL DenseEigenDecomposition(TargetA, TargetV, threshold)
+       CALL ConstructDenseFromSparse(TargetA, DenseA)
+
+       CALL DenseEigenDecomposition(DenseA, DenseV)
+       CALL ConstructSparseFromDense(DenseV, TargetV)
+
+       CALL DestructDenseMatrix(DenseA)
+       CALL DestructDenseMatrix(DenseV)
        CALL StopTimer("Decomposition")
 
        !! Rotation Along Row
@@ -760,13 +766,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Send Up Matrix
        SELECT CASE(send_up_stage)
        CASE(0) !! Send Sizes
-          CALL SendMatrixSizes(SendUp, swap_data%send_up_partner, &
+          CALL SendSparseMatrixSizes(SendUp, swap_data%send_up_partner, &
                & jdata%communicator, send_up_helper, &
                & swap_data%send_up_tag)
           send_up_stage = send_up_stage + 1
        CASE(1) !! Test Send Sizes
           IF (TestSendRecvSizeRequest(send_up_helper)) THEN
-             CALL SendMatrixData(SendUp, swap_data%send_up_partner, &
+             CALL SendSparseMatrixData(SendUp, swap_data%send_up_partner, &
                   & jdata%communicator, send_up_helper, &
                   & swap_data%send_up_tag)
              send_up_stage = send_up_stage + 1
@@ -788,13 +794,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Receive Up Matrix
        SELECT CASE(recv_up_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvMatrixSizes(RecvUp, swap_data%recv_up_partner, &
+          CALL RecvSparseMatrixSizes(RecvUp, swap_data%recv_up_partner, &
                & jdata%communicator, recv_up_helper, &
                & swap_data%recv_up_tag)
           recv_up_stage = recv_up_stage + 1
        CASE(1) !! Test Receive Sizes
           IF (TestSendRecvSizeRequest(recv_up_helper)) THEN
-             CALL RecvMatrixData(RecvUp, swap_data%recv_up_partner, &
+             CALL RecvSparseMatrixData(RecvUp, swap_data%recv_up_partner, &
                   & jdata%communicator, recv_up_helper, &
                   & swap_data%recv_up_tag)
              recv_up_stage = recv_up_stage + 1
@@ -816,13 +822,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Send Down Matrix
        SELECT CASE(send_down_stage)
        CASE(0) !! Send Sizes
-          CALL SendMatrixSizes(SendDown, swap_data%send_down_partner, &
+          CALL SendSparseMatrixSizes(SendDown, swap_data%send_down_partner, &
                & jdata%communicator, send_down_helper, &
                & swap_data%send_down_tag)
           send_down_stage = send_down_stage + 1
        CASE(1) !! Test Send Sizes
           IF (TestSendRecvSizeRequest(send_down_helper)) THEN
-             CALL SendMatrixData(SendDown, swap_data%send_down_partner, &
+             CALL SendSparseMatrixData(SendDown, swap_data%send_down_partner, &
                   & jdata%communicator, send_down_helper, &
                   & swap_data%send_down_tag)
              send_down_stage = send_down_stage + 1
@@ -844,13 +850,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Receive Down Matrix
        SELECT CASE(recv_down_stage)
        CASE(0) !! Receive Sizes
-          CALL RecvMatrixSizes(RecvDown, swap_data%recv_down_partner, &
+          CALL RecvSparseMatrixSizes(RecvDown, swap_data%recv_down_partner, &
                & jdata%communicator, recv_down_helper, &
                & swap_data%recv_down_tag)
           recv_down_stage = recv_down_stage + 1
        CASE(1) !! Test Receive Sizes
           IF (TestSendRecvSizeRequest(recv_down_helper)) THEN
-             CALL RecvMatrixData(RecvDown, swap_data%recv_down_partner, &
+             CALL RecvSparseMatrixData(RecvDown, swap_data%recv_down_partner, &
                   & jdata%communicator, recv_down_helper, &
                   & swap_data%recv_down_tag)
              recv_down_stage = recv_down_stage + 1

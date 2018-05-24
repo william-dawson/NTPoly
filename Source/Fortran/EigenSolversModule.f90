@@ -2,7 +2,9 @@
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
   USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : DenseEigenDecomposition
+  USE DenseMatrixModule, ONLY : DenseMatrix_t, &
+       & ConstructSparseFromDense, ConstructDenseFromSparse, &
+       & DenseEigenDecomposition, DestructDenseMatrix
   USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
        & IncrementDistributedSparseMatrix
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
@@ -591,6 +593,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter, list_size
     INTEGER :: mat_dim
     TYPE(SparseMatrix_t) :: local_a, local_v
+    TYPE(DenseMatrix_t) :: dense_a, dense_v
 
     mat_dim = this%actual_matrix_dimension
 
@@ -611,7 +614,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
        CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
             & mat_dim)
-       CALL DenseEigenDecomposition(local_a, local_v, fixed_param%threshold)
+       CALL ConstructDenseFromSparse(local_a, dense_a)
+       CALL DenseEigenDecomposition(dense_a, dense_v)
+       CALL ConstructSparseFromDense(dense_v,local_v,fixed_param%threshold)
+       CALL DestructDenseMatrix(dense_a)
+       CALL DestructDenseMatrix(dense_v)
        CALL MatrixToTripletList(local_v,triplet_list)
     END IF
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
