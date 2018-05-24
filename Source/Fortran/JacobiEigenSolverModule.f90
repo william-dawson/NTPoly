@@ -20,7 +20,7 @@ MODULE JacobiEigenSolverModule
        & TestSendRecvInnerRequest, TestSendRecvDataRequest
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ComposeSparseMatrix, &
        & ConstructFromTripletList, CopySparseMatrix, DestructSparseMatrix, &
-       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix, PrintSparseMatrix
+       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix
   USE SparseMatrixAlgebraModule, ONLY : Gemm, IncrementSparseMatrix, &
        & SparseMatrixNorm
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -495,14 +495,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Rotation Along Row
        CALL StartTimer("Row")
-       WRITE(*,*) "ROW"
        CALL TransposeSparseMatrix(TargetV, TargetVT)
        CALL ApplyToRows(TargetVT, ABlocks, jdata, threshold)
        CALL StopTimer("Row")
 
        !! Rotation Along Columns
        CALL StartTimer("Column")
-       WRITE(*,*) "COL"
        CALL ApplyToColumns(TargetV, ABlocks, jdata, threshold)
        CALL ApplyToColumns(TargetV, VBlocks, jdata, threshold)
        CALL StopTimer("Column")
@@ -911,7 +909,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        row_sizes(2) = ABlocks(ind+1,2)%rows
        col_sizes(1) = ABlocks(ind,1)%columns
        col_sizes(2) = ABlocks(ind+1,2)%columns
-       WRITE(*,*) ":::::", row_sizes, ":", col_sizes, "_", TargetV%rows, TargetV%columns
 
        CALL ComposeSparseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
        CALL Gemm(TargetV, AMat, TempMat, threshold_in=threshold)
