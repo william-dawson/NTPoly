@@ -328,40 +328,53 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t), INTENT(IN)  :: this
     TYPE(SparseMatrix_t), INTENT(INOUT) :: matT
     !! Local Data
-    TYPE(TripletList_t) :: triplet_list
-    TYPE(TripletList_t) :: sorted_triplet_list
-    !! Temporary variables and counters
-    INTEGER :: counter
-    INTEGER :: temp_int
-    INTEGER :: temp_columns, temp_rows
-    INTEGER :: size_of_this
+    INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
+    !! Temporary Variables
+    INTEGER :: II, JJ
+    INTEGER :: inner_index, insert_pt, this_offset
+    INTEGER :: num_values, elements_per_inner
 
-    CALL DestructSparseMatrix(matT)
+    !! Allocate New Matrix
+    num_values = this%outer_index(this%columns+1)
+    CALL ConstructEmptySparseMatrix(matT,this%rows,this%columns)
+    ALLOCATE(matT%inner_index(num_values))
+    ALLOCATE(matT%values(num_values))
 
-    temp_rows = this%columns
-    temp_columns = this%rows
+    !! Temporary Arrays
+    ALLOCATE(values_per_row(this%rows))
+    ALLOCATE(offset_array(this%rows))
 
-    !! Construct a transposed triplet list
-    size_of_this = this%outer_index(this%columns+1)
-    CALL ConstructTripletList(triplet_list,size_of_this)
-
-    CALL MatrixToTripletList(this,triplet_list)
-    DO counter = 1,triplet_list%CurrentSize
-       temp_int = triplet_list%data(counter)%index_column
-       triplet_list%data(counter)%index_column = &
-            & triplet_list%data(counter)%index_row
-       triplet_list%data(counter)%index_row = temp_int
+    !! Count the values per row
+    values_per_row = 0
+    DO II = 1, num_values
+       inner_index = this%inner_index(II)
+       values_per_row(inner_index) = values_per_row(inner_index) + 1
+    END DO
+    offset_array(1) = 0
+    DO II = 2, this%rows
+       offset_array(II) = offset_array(II-1) + values_per_row(II-1)
     END DO
 
-    !! Build a new matrix from the triplet list
-    CALL SortTripletList(triplet_list,temp_columns,sorted_triplet_list, &
-         & bubble_in=.FALSE.)
-    CALL ConstructFromTripletList(matT, sorted_triplet_list,&
-         & temp_rows,temp_columns)
+    !! Insert
+    matT%outer_index(:this%rows) = offset_array(:this%rows)
+    matT%outer_index(this%rows+1) = offset_array(this%rows) + &
+         & values_per_row(this%rows)
+    DO II = 1, this%columns
+       elements_per_inner = this%outer_index(II+1) - this%outer_index(II)
+       this_offset = this%outer_index(II)
+       DO JJ = 1, elements_per_inner
+          inner_index = this%inner_index(this_offset+JJ)
+          insert_pt = offset_array(inner_index)+1
+          matT%inner_index(insert_pt) = II
+          matT%values(insert_pt) = this%values(this_offset+JJ)
+          offset_array(inner_index) = offset_array(inner_index) +1
+       END DO
+    END DO
 
     !! Cleanup
-    CALL DestructTripletList(triplet_list)
-    CALL DestructTripletList(sorted_triplet_list)
+    DEALLOCATE(values_per_row)
+    DEALLOCATE(offset_array)
   END SUBROUTINE TransposeSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next

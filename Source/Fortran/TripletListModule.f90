@@ -224,7 +224,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     inserted_per_row = 0
 
     !! Do a first pass bucket sort
-    !DO counter = LBOUND(input_list%data(:),dim=1), UBOUND(input_list%data,dim=1)
     DO counter = 1, input_list%CurrentSize
        values_per_row(input_list%data(counter)%index_column) = &
             & values_per_row(input_list%data(counter)%index_column) + 1
@@ -234,7 +233,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        offset_array(counter) = offset_array(counter-1) + &
             & values_per_row(counter-1)
     END DO
-    !DO counter = LBOUND(input_list%data,dim=1), UBOUND(input_list%data,dim=1)
     DO counter = 1, input_list%CurrentSize
        temp_index = input_list%data(counter)%index_column
        sorted_list%data(offset_array(temp_index)+inserted_per_row(temp_index))=&
@@ -243,7 +241,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Finish with bubble sort
-    !! Not necessary for transpoing.
+    !! Not necessary for transposing.
     swap_occured = .TRUE.
     IF (bubble) THEN
        DO WHILE (swap_occured .EQV. .TRUE.)
