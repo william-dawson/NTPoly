@@ -391,25 +391,52 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: block_rows, block_columns
     TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
     !! Local Data
-    TYPE(SparseMatrix_t), DIMENSION(block_rows) :: rows_of_merged
+    TYPE(SparseMatrix_t), DIMENSION(block_columns) :: merged_columns
     TYPE(SparseMatrix_t) :: Temp
-    INTEGER :: row_counter
+    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows) :: mat_t
+    INTEGER :: II, JJ
 
-    !! First compose the rows
-    DO row_counter = 1, block_rows
-       CALL ComposeSparseMatrixColumns(mat_array(:,row_counter), Temp)
-       CALL TransposeSparseMatrix(Temp, rows_of_merged(row_counter))
+    !! First transpose the matrices
+    DO JJ = 1, block_rows
+       DO II = 1, block_columns
+          CALL TransposeSparseMatrix(mat_array(II,JJ), mat_t(II,JJ))
+       END DO
     END DO
 
-    !! Next compose the columns
-    CALL ComposeSparseMatrixColumns(rows_of_merged, Temp)
-    CALL TransposeSparseMatrix(Temp, out_matrix)
+    !! Next merge the columns
+    DO JJ = 1, block_columns
+       CALL ComposeSparseMatrixColumns(mat_t(JJ,:), Temp)
+       CALL TransposeSparseMatrix(Temp, merged_columns(JJ))
+    END DO
+
+    !! Final Merge
+    CALL ComposeSparseMatrixColumns(merged_columns, out_matrix)
 
     !! Cleanup
-    CALL DestructSparseMatrix(Temp)
-    DO row_counter=1, block_rows
-       CALL DestructSparseMatrix(rows_of_merged(row_counter))
+    DO JJ = 1, block_rows
+       DO II = 1, block_columns
+          CALL DestructSparseMatrix(mat_t(II,JJ))
+       END DO
     END DO
+    DO JJ = 1, block_columns
+       CALL DestructSparseMatrix(merged_columns(JJ))
+    END DO
+
+    ! !! First compose the rows
+    ! DO row_counter = 1, block_rows
+    !    CALL ComposeSparseMatrixColumns(mat_array(:,row_counter), Temp)
+    !    CALL TransposeSparseMatrix(Temp, rows_of_merged(row_counter))
+    ! END DO
+    !
+    ! !! Next compose the columns
+    ! CALL ComposeSparseMatrixColumns(rows_of_merged, Temp)
+    ! CALL TransposeSparseMatrix(Temp, out_matrix)
+    !
+    ! !! Cleanup
+    ! CALL DestructSparseMatrix(Temp)
+    ! DO row_counter=1, block_rows
+    !    CALL DestructSparseMatrix(rows_of_merged(row_counter))
+    ! END DO
 
   END SUBROUTINE ComposeSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

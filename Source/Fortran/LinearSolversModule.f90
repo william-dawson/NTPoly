@@ -2,34 +2,35 @@
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DenseMatrixModule, ONLY : ConstructDenseFromSparse
+  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructDenseFromSparse, &
+       & DestructDenseMatrix
   USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
   USE DistributedSparseMatrixAlgebraModule, ONLY : Trace, &
-      & IncrementDistributedSparseMatrix, DistributedSparseNorm, &
-      & DistributedGemm, ScaleDistributedSparseMatrix
+       & IncrementDistributedSparseMatrix, DistributedSparseNorm, &
+       & DistributedGemm, ScaleDistributedSparseMatrix
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-      & TransposeDistributedSparseMatrix, PrintMatrixInformation, &
-      & FillDistributedIdentity, MergeLocalBlocks, FillFromTripletList, &
-      & DestructDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-      & ConstructEmptyDistributedSparseMatrix
+       & TransposeDistributedSparseMatrix, PrintMatrixInformation, &
+       & FillDistributedIdentity, MergeLocalBlocks, FillFromTripletList, &
+       & DestructDistributedSparseMatrix, CopyDistributedSparseMatrix, &
+       & ConstructEmptyDistributedSparseMatrix
   USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
-      & PrintFixedSolverParameters
+       & PrintFixedSolverParameters
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-      & PrintIterativeSolverParameters
+       & PrintIterativeSolverParameters
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
-      & EnterSubLog, ExitSubLog
+       & EnterSubLog, ExitSubLog
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
-      & ReduceAndComposeData, ReduceAndComposeCleanup
+       & ReduceAndComposeData, ReduceAndComposeCleanup
   USE ProcessGridModule, ONLY : ProcessGrid_t
   USE SparseMatrixModule, ONLY : SparseMatrix_t, DestructSparseMatrix, &
-      & TransposeSparseMatrix
+       & TransposeSparseMatrix
   USE SparseVectorModule, ONLY : DotSparseVectors
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
-      & ConstructTripletList, DestructTripletList
+       & ConstructTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_t
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -210,7 +211,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(SparseMatrix_t) :: sparse_a
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    TYPE(DenseMatrix_t) :: dense_a
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
@@ -245,8 +246,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
-    ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
-    dense_a = 0
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
 
     !! Root Lookups
@@ -278,7 +277,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & dot_values(1:1), LMat%process_grid%column_comm)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              local_row = JJ - AMat%start_row + 1
-             Aval = dense_a(local_row, local_JJ)
+             Aval = dense_a%data(local_row, local_JJ)
              insert_value = SQRT(Aval - dot_values(1))
              inverse_factor = 1.0/insert_value
              !! Insert
@@ -307,7 +306,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
              local_II = II - AMat%start_column + 1
              local_row = JJ - AMat%start_row + 1
-             Aval = dense_a(local_row, local_II)
+             Aval = dense_a%data(local_row, local_II)
              insert_value = inverse_factor * (Aval - dot_values(local_II))
              IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
                 CALL AppendToVector(values_per_column_l(local_II), &
@@ -326,7 +325,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintMatrixInformation(LMat)
        CALL ExitSubLog
     END IF
-    DEALLOCATE(dense_a)
+    CALL DestructDenseMatrix(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
     DEALLOCATE(values_l)
@@ -359,7 +358,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SparseMatrix_t) :: sparse_a
     TYPE(SparseMatrix_t) :: acol
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: dense_a
+    TYPE(DenseMatrix_t) :: dense_a
     !! For Storing The Results
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
@@ -410,8 +409,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! First get the local matrix in a dense recommendation for quick lookup
     CALL MergeLocalBlocks(AMat, sparse_a)
-    ALLOCATE(dense_a(sparse_a%rows, sparse_a%columns))
-    dense_a = 0
     CALL ConstructDenseFromSparse(sparse_a, dense_a)
     ALLOCATE(local_pivots(sparse_a%columns))
 
@@ -517,7 +514,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(local_pivots)
     DEALLOCATE(pivot_vector)
     DEALLOCATE(diag)
-    DEALLOCATE(dense_a)
+    CALL DestructDenseMatrix(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
     DEALLOCATE(values_l)
@@ -735,7 +732,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: dense_a
+    TYPE(DenseMatrix_t), INTENT(IN) :: dense_a
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
     !! Local Variables
     INTEGER :: fill_counter
@@ -750,7 +747,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
           local_JJ = JJ - AMat%start_column + 1
           local_II = JJ - AMat%start_row + 1
-          diag(local_JJ) = dense_a(local_II, local_JJ)
+          diag(local_JJ) = dense_a%data(local_II, local_JJ)
           fill_counter = fill_counter + 1
        END IF
     END DO
