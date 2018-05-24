@@ -24,8 +24,12 @@ MODULE DenseMatrixModule
   PUBLIC :: ConstructSparseFromDense
   PUBLIC :: DestructDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: MultiplyDense
+  PUBLIC :: SplitDenseMatrix
+  PUBLIC :: ComposeDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: DenseEigenDecomposition
+  PUBLIC :: MultiplyDense
+  PUBLIC :: DenseMatrixNorm
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
   PURE SUBROUTINE ConstructEmptyDenseMatrix(this, rows, columns)
@@ -203,4 +207,119 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(Work)
 
   END SUBROUTINE DenseEigenDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  FUNCTION DenseMatrixNorm(this) RESULT(norm)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(IN) :: this
+    REAL(NTREAL) :: norm
+    !! Local Variables
+    CHARACTER, PARAMETER :: NORMC = 'F'
+    DOUBLE PRECISION, DIMENSION(this%rows) :: WORK
+    INTEGER :: M, N, LDA
+    !! Externel
+    DOUBLE PRECISION, EXTERNAL :: dlange
+
+    M = this%rows
+    N = this%columns
+    LDA = this%rows
+    norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
+  END FUNCTION
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
+       & out_matrix)
+    !! Parameters
+    TYPE(DenseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
+         & mat_array
+    INTEGER, INTENT(IN) :: block_rows, block_columns
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: out_matrix
+    !! Local Data
+    INTEGER, DIMENSION(block_rows+1) :: row_offsets
+    INTEGER, DIMENSION(block_columns+1) :: column_offsets
+    INTEGER :: out_rows, out_columns
+    INTEGER :: II, JJ
+
+    !! Determine the size of the big matrix
+    out_rows = 0
+    row_offsets(1) = 1
+    out_rows = 1
+    DO II = 1, block_rows
+       row_offsets(II+1) = row_offsets(II) + mat_array(1,II)%rows
+       out_rows = out_rows + mat_array(1,II)%rows
+    END DO
+    column_offsets(1) = 1
+    out_columns = 1
+    DO JJ = 1, block_columns
+       column_offsets(JJ+1) = column_offsets(JJ) + mat_array(JJ,1)%columns
+       out_columns = out_columns + mat_array(JJ,1)%columns
+    END DO
+
+    !! Allocate Memory
+    CALL ConstructEmptyDenseMatrix(out_matrix, out_rows, out_columns)
+
+    !! Copy
+    DO II = 1, block_rows
+       DO JJ = 1, block_columns
+          out_matrix%data(row_offsets(II):row_offsets(II+1), &
+               & column_offsets(JJ):column_offsets(JJ+1)) = mat_array(II,JJ)%data
+       END DO
+    END DO
+  END SUBROUTINE ComposeDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE SplitDenseMatrix(this, block_rows, block_columns, &
+       & split_array, block_size_row_in, block_size_column_in)
+    !! Parameters
+    TYPE(DenseMatrix_t), INTENT(IN) :: this
+    INTEGER, INTENT(IN) :: block_rows, block_columns
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: split_array
+    INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
+    INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
+    !! Local Data
+    INTEGER, DIMENSION(block_rows) :: block_size_row
+    INTEGER, DIMENSION(block_columns) :: block_size_column
+    INTEGER, DIMENSION(block_rows+1) :: row_offsets
+    INTEGER, DIMENSION(block_columns+1) :: column_offsets
+    !! Temporary Variables
+    INTEGER :: divisor_row, divisor_column
+    INTEGER :: II, JJ
+
+    !! Calculate the split sizes
+    IF (PRESENT(block_size_row_in)) THEN
+       block_size_row = block_size_row_in
+    ELSE
+       divisor_row = this%rows/block_rows
+       block_size_row = divisor_row
+       block_size_row(block_rows) = this%rows - divisor_row*(block_rows-1)
+    END IF
+    IF (PRESENT(block_size_column_in)) THEN
+       block_size_column = block_size_column_in
+    ELSE
+       divisor_column = this%columns/block_columns
+       block_size_column = divisor_column
+       block_size_column(block_columns) = this%columns - &
+            & divisor_column*(block_columns-1)
+    END IF
+
+    !! Copy the block offsets
+    row_offsets(1) = 1
+    DO II = 1, block_rows
+       row_offsets(II+1) = row_offsets(II) + block_size_row(II)
+    END DO
+    column_offsets(1) = 1
+    DO JJ = 1, block_columns
+       column_offsets(JJ+1) = column_offsets(JJ) + block_size_column(JJ)
+    END DO
+
+    !! Copy
+    DO II = 1, block_rows
+       DO JJ = 1, block_columns
+          CALL ConstructEmptyDenseMatrix(split_array(II,JJ), &
+               & block_size_row(II), block_size_column(JJ))
+          split_array(II,JJ)%data = &
+               & this%data(row_offsets(II):row_offsets(II+1), &
+               & column_offsets(JJ):column_offsets(JJ+1))
+       END DO
+    END DO
+
+  END SUBROUTINE SplitDenseMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DenseMatrixModule

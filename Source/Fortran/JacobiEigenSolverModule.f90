@@ -13,7 +13,7 @@ MODULE JacobiEigenSolverModule
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader, WriteCitation
-  USE MatrixGatherModule, ONLY : BlockingMatrixGather
+  USE MatrixGatherModule, ONLY : BlockingSparseMatrixGather
   USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvSparseMatrixSizes, &
        & RecvSparseMatrixData, SendSparseMatrixSizes, SendSparseMatrixData, &
        & TestSendRecvSizeRequest, TestSendRecvOuterRequest, &
@@ -943,7 +943,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SparseMatrix_t) :: AMat
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
-    CALL BlockingMatrixGather(TargetV, receive_list, jdata%communicator)
+    CALL BlockingSparseMatrixGather(TargetV, receive_list, jdata%communicator)
 
     !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
     !$OMP DO
