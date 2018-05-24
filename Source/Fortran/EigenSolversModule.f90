@@ -17,6 +17,7 @@ MODULE EigenSolversModule
        PrintIterativeSolverParameters
   USE JacobiEigenSolverModule, ONLY : JacobiSolve
   USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
+  USE PermutationModule, ONLY : ConstructRandomPermutation, Permutation_t
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteElement, WriteListElement
   USE ParameterConverterModule, ONLY : ConvertIterativeToFixed
@@ -218,6 +219,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: color
     LOGICAL :: split_slice
     REAL(NTREAL) :: sparsity
+    !! Special parameters
+    TYPE(IterativeSolverParameters_t) :: balanced_it
+    TYPE(Permutation_t) :: permutation
 
     mat_dim = this%actual_matrix_dimension
     CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim, &
@@ -244,9 +248,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        left_dim = mat_dim/2
        right_dim = mat_dim - left_dim
 
+       !! Setup special parameters for purification
+       CALL ConstructRandomPermutation(permutation, &
+            & this%logical_matrix_dimension)
+       balanced_it = IterativeSolverParameters_t(&
+            & converge_diff_in = it_param%converge_diff, &
+            & threshold_in = it_param%threshold, &
+            & max_iterations_in = it_param%max_iterations, &
+            & BalancePermutation_in=permutation)
+
        !! Purify
        CALL StartTimer("Purify")
-       CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=it_param)
+       CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=balanced_it)
        CALL CopyDistributedSparseMatrix(Identity, PHoleMat)
        CALL IncrementDistributedSparseMatrix(PMat, PHoleMat, &
             & alpha_in=REAL(-1.0,NTREAL), threshold_in=it_param%threshold)
@@ -524,14 +537,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DistributedSparseMatrix_t) :: PVec, PVecT
     TYPE(DistributedSparseMatrix_t) :: TempMat
     TYPE(DistributedSparseMatrix_t) :: VAV
+    !! Special parameters
+    TYPE(IterativeSolverParameters_t) :: balanced_it
+    TYPE(Permutation_t) :: permutation
 
     !! Compute Identity Matrix
     CALL ConstructEmptyDistributedSparseMatrix(Identity, &
          & this%actual_matrix_dimension, process_grid_in=this%process_grid)
     CALL FillDistributedIdentity(Identity)
 
+    !! Setup special parameters for purification
+    CALL ConstructRandomPermutation(permutation, &
+         & this%logical_matrix_dimension)
+    balanced_it = IterativeSolverParameters_t(&
+         & converge_diff_in = it_param%converge_diff, &
+         & threshold_in = it_param%threshold, &
+         & max_iterations_in = it_param%max_iterations, &
+         & BalancePermutation_in=permutation)
+
     !! Purify
-    CALL TRS2(this, Identity, dim*2, PMat, solver_parameters_in=it_param)
+    CALL TRS2(this, Identity, dim*2, PMat, solver_parameters_in=balanced_it)
 
     !! Compute Eigenvectors of the Density Matrix
     CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
