@@ -20,7 +20,8 @@ MODULE JacobiEigenSolverModule
        & TestSendRecvInnerRequest, TestSendRecvDataRequest
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ComposeSparseMatrix, &
        & ConstructFromTripletList, CopySparseMatrix, DestructSparseMatrix, &
-       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix
+       & MatrixToTripletList, SplitSparseMatrix, TransposeSparseMatrix, &
+       & PrintSparseMatrix
   USE SparseMatrixAlgebraModule, ONLY : Gemm, IncrementSparseMatrix, &
        & SparseMatrixNorm
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -901,7 +902,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter, ind
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
-    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
+    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat, TempBlocks)
     !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
@@ -909,7 +910,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        row_sizes(2) = ABlocks(ind+1,2)%rows
        col_sizes(1) = ABlocks(ind,1)%columns
        col_sizes(2) = ABlocks(ind+1,2)%columns
-
        CALL ComposeSparseMatrix(ABlocks(ind:ind+1,1:2), 2, 2, AMat)
        CALL Gemm(TargetV, AMat, TempMat, threshold_in=threshold)
        CALL SplitSparseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
