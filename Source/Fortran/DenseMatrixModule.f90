@@ -41,11 +41,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: rows
     INTEGER, INTENT(IN) :: columns
 
-    CALL DestructDenseMatrix(this)
-    ALLOCATE(this%data(rows,columns))
-
     this%rows = rows
     this%columns = columns
+
+    !! Check if the memory is already useful
+    IF (ALLOCATED(this%data)) THEN
+       IF (SIZE(this%data,1) .NE. rows .OR. SIZE(this%data,2) .NE. columns) THEN
+         CALL DestructDenseMatrix(this)
+         ALLOCATE(this%data(rows,columns))
+       END IF
+    ELSE
+       ALLOCATE(this%data(rows,columns))
+    END IF
 
   END SUBROUTINE ConstructEmptyDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -62,10 +69,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: total_counter
     TYPE(Triplet_t) :: temporary
 
-    IF (.NOT. ALLOCATED(dense_matrix%data)) THEN
-       CALL ConstructEmptyDenseMatrix(dense_matrix,sparse_matrix%columns, &
-            & sparse_matrix%rows)
-    END IF
+    CALL ConstructEmptyDenseMatrix(dense_matrix,sparse_matrix%columns, &
+         & sparse_matrix%rows)
 
     !! Loop over elements.
     dense_matrix%data = 0
@@ -177,6 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructEmptyDenseMatrix(MatC,MatB%columns,MatA%rows)
     END IF
 
+    !! Setup Lapack
     M = MatA%rows
     N = MatB%columns
     K = MatA%columns
@@ -185,9 +191,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LDC = M
 
     CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
-          & LDB, BETA, MatC%data, LDC)
+         & LDB, BETA, MatC%data, LDC)
 
-    ! MatC%data = MATMUL(MatA%data,MatB%data)
   END SUBROUTINE MultiplyDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE IncrementDenseMatrix(MatA,MatB,alpha_in)
