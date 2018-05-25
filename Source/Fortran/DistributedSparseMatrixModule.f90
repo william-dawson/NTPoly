@@ -115,9 +115,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%end_column   = this%start_column + this%local_columns
 
     !! Build local storage
-    ALLOCATE(this%local_data(this%process_grid%number_of_blocks_columns, &
-         & this%process_grid%number_of_blocks_rows))
-    CALL ConstructZeroSparseMatrix(zeromatrix,this%local_rows,this%local_columns)
+    ALLOCATE(this%local_data(this%process_grid%number_of_blocks_rows, &
+         & this%process_grid%number_of_blocks_columns))
+    CALL ConstructZeroSparseMatrix(zeromatrix, this%local_rows, &
+         & this%local_columns)
     CALL SplitToLocalBlocks(this, zeromatrix)
     CALL DestructSparseMatrix(zeromatrix)
   END SUBROUTINE ConstructEmptyDistributedSparseMatrix
@@ -128,13 +129,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     !! Local Data
-    INTEGER :: row_counter, column_counter
+    INTEGER :: II, JJ
 
     IF (ALLOCATED(this%local_data)) THEN
-       DO row_counter = 1, this%process_grid%number_of_blocks_rows
-          DO column_counter = 1, this%process_grid%number_of_blocks_columns
-             CALL DestructSparseMatrix( &
-                  & this%local_data(column_counter,row_counter))
+       DO JJ = 1, this%process_grid%number_of_blocks_columns
+          DO II = 1, this%process_grid%number_of_blocks_rows
+             CALL DestructSparseMatrix(this%local_data(II,JJ))
           END DO
        END DO
        DEALLOCATE(this%local_data)

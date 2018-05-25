@@ -3,7 +3,7 @@
 MODULE ProcessGridModule
   USE DataTypesModule, ONLY : MPITypeInfoInit
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
-      & WriteHeader, WriteListElement
+       & WriteHeader, WriteListElement
   USE MPI
   USE ISO_C_BINDING, ONLY : c_int, c_bool
 #ifdef _OPENMP
@@ -201,20 +201,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Create Blocked Communicators
     ALLOCATE(grid%blocked_row_comm(grid%number_of_blocks_rows))
     ALLOCATE(grid%blocked_column_comm(grid%number_of_blocks_columns))
-    ALLOCATE(grid%blocked_within_slice_comm(grid%number_of_blocks_columns, &
-         & grid%number_of_blocks_rows))
-    ALLOCATE(grid%blocked_between_slice_comm(grid%number_of_blocks_columns, &
-         & grid%number_of_blocks_rows))
+    ALLOCATE(grid%blocked_within_slice_comm(grid%number_of_blocks_rows, &
+         & grid%number_of_blocks_columns))
+    ALLOCATE(grid%blocked_between_slice_comm(grid%number_of_blocks_rows, &
+         & grid%number_of_blocks_columns))
 
-    DO row_counter=1,grid%number_of_blocks_rows
-       DO column_counter=1,grid%number_of_blocks_columns
+    DO column_counter=1,grid%number_of_blocks_columns
+       DO row_counter=1,grid%number_of_blocks_rows
           CALL MPI_COMM_SPLIT(grid%global_comm, grid%my_slice, &
                & grid%global_rank, &
-               & grid%blocked_within_slice_comm(column_counter,row_counter), &
+               & grid%blocked_within_slice_comm(row_counter,column_counter), &
                & ierr)
           CALL MPI_COMM_SPLIT(grid%global_comm, grid%within_slice_rank, &
                & grid%global_rank, &
-               & grid%blocked_between_slice_comm(column_counter,row_counter), &
+               & grid%blocked_between_slice_comm(row_counter,column_counter), &
                & ierr)
        END DO
     END DO
@@ -242,9 +242,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(new_grid%blocked_row_comm(old_grid%number_of_blocks_rows))
     ALLOCATE(new_grid%blocked_column_comm(old_grid%number_of_blocks_columns))
     ALLOCATE(new_grid%blocked_within_slice_comm(&
-         & old_grid%number_of_blocks_columns, old_grid%number_of_blocks_rows))
+         & old_grid%number_of_blocks_rows, old_grid%number_of_blocks_columns))
     ALLOCATE(new_grid%blocked_between_slice_comm( &
-         & old_grid%number_of_blocks_columns, old_grid%number_of_blocks_rows))
+         & old_grid%number_of_blocks_rows, old_grid%number_of_blocks_columns))
 
     new_grid = old_grid
   END SUBROUTINE CopyProcessGrid
