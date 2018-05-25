@@ -877,7 +877,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter, ind
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
-    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat, TempBlocks)
+    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
     !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
