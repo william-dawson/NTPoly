@@ -178,9 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DOUBLE PRECISION, PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
-    IF (.NOT. ALLOCATED(MatC%data)) THEN
-       CALL ConstructEmptyDenseMatrix(MatC,MatB%columns,MatA%rows)
-    END IF
+    CALL ConstructEmptyDenseMatrix(MatC,MatB%columns,MatA%rows)
 
     !! Setup Lapack
     M = MatA%rows
