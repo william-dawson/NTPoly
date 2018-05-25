@@ -28,9 +28,6 @@ MODULE JacobiEigenSolverModule
        & RedistributeTripletLists, ShiftTripletList, SortTripletList
   USE TripletModule, ONLY : Triplet_t
   USE MPI
-#ifdef _OPENMP
-  USE omp_lib, ONLY : omp_get_num_threads, omp_get_thread_num
-#endif
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -100,8 +97,6 @@ MODULE JacobiEigenSolverModule
      !> After the sweeps are finished, this swaps the data back to the original
      !! permutation.
      TYPE(SwapData_t) :: final_swap
-     !> Number of threads
-     INTEGER :: num_threads
   END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using the Block Jacobi Eigenvalue
@@ -347,15 +342,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        jdata%phase_array(stage_counter) = 4
     END IF
 
-    !! Threading
-#ifdef _OPENMP
-    !$omp PARALLEL
-    jdata%num_threads = omp_get_num_threads()
-    !$omp end PARALLEL
-#else
-    jdata%num_threads = 1
-#endif
-
     !! Cleanup
     DEALLOCATE(swap0)
     DEALLOCATE(swap1)
@@ -495,7 +481,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(DenseMatrix_t) :: TargetA
     TYPE(DenseMatrix_t) :: TargetV, TargetVT
-    INTEGER :: iteration
+    TYPE(DenseMatrix_t), DIMENSION(jdata%num_processes) :: VList
+    INTEGER :: iteration, II
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
@@ -510,10 +497,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DenseEigenDecomposition(TargetA, TargetV)
        CALL StopTimer("Decomposition")
 
+       CALL BlockingDenseMatrixGather(TargetV, VList, jdata%communicator)
+
        !! Rotation Along Columns
        CALL StartTimer("Column")
-       CALL ApplyToColumns(TargetV, ABlocks, jdata)
-       CALL ApplyToColumns(TargetV, VBlocks, jdata)
+       CALL ApplyToColumns(VList, ABlocks, jdata)
+       CALL ApplyToColumns(VList, VBlocks, jdata)
        CALL StopTimer("Column")
 
        !! Rotation Along Row
@@ -540,6 +529,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END IF
        CALL StopTimer("Swap")
+    END DO
+
+    CALL DestructDenseMatrix(TargetV)
+    CALL DestructDenseMatrix(TargetVT)
+    DO II = 1, jdata%num_processes
+      CALL DestructDenseMatrix(VList(II))
     END DO
 
   END SUBROUTINE JacobiSweep
@@ -882,10 +877,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(jdata%block_columns) :: col_sizes
 
     DO counter = 1, jdata%block_rows
-       row_sizes(counter) = ABlocks(counter,1)%rows
+      row_sizes(counter) = ABlocks(counter,1)%rows
     END DO
     DO counter = 1, jdata%block_columns
-       col_sizes(counter) = ABlocks(1,counter)%columns
+      col_sizes(counter) = ABlocks(1,counter)%columns
     END DO
 
     CALL ComposeDenseMatrix(ABlocks, jdata%block_rows, jdata%block_columns, &
@@ -910,71 +905,32 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ApplyToRows
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ApplyToColumns(TargetV, ABlocks, jdata)
+  SUBROUTINE ApplyToColumns(VList, ABlocks, jdata)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: TargetV
+    TYPE(DenseMatrix_t), DIMENSION(:), INTENT(INOUT) :: VList
     TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
-    !! For Receiving
-    TYPE(DenseMatrix_t), DIMENSION(jdata%num_processes) :: receive_list
     !! Temporary
     INTEGER :: counter
     INTEGER :: ind
-    ! TYPE(DenseMatrix_t) :: TempMat
-    ! TYPE(DenseMatrix_t) :: AMat
+    TYPE(DenseMatrix_t) :: TempMat
+    TYPE(DenseMatrix_t) :: AMat
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
-    TYPE(DenseMatrix_t), DIMENSION(jdata%num_threads) :: TempArray
-    TYPE(DenseMatrix_t), DIMENSION(jdata%num_threads) :: AArray
-    INTEGER :: thread_id
 
-    CALL BlockingDenseMatrixGather(TargetV, receive_list, jdata%communicator)
-
-    !$OMP PARALLEL PRIVATE(thread_id, ind, row_sizes, col_sizes)
-    !$OMP DO
     DO counter = 1, jdata%num_processes
-#ifdef _OPENMP
-       thread_id = omp_get_thread_num() + 1
-#else
-       thread_id = 1
-#endif
        ind = (counter-1)*2 + 1
        row_sizes(1) = ABlocks(1,ind)%rows
        row_sizes(2) = ABlocks(2,ind+1)%rows
        col_sizes(1) = ABlocks(1,ind)%columns
        col_sizes(2) = ABlocks(2,ind+1)%columns
 
-       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AArray(thread_id))
-       CALL MultiplyDense(AArray(thread_id), receive_list(counter), &
-            & TempArray(thread_id))
-       CALL SplitDenseMatrix(TempArray(thread_id), 2, 2, &
-            & ABlocks(1:2,ind:ind+1), block_size_row_in=row_sizes, &
-            & block_size_column_in=col_sizes)
-    END DO
-    !$OMP END DO
-    !$OMP END PARALLEL
-    ! DO counter = 1, jdata%num_processes
-    !    ind = (counter-1)*2 + 1
-    !    row_sizes(1) = ABlocks(1,ind)%rows
-    !    row_sizes(2) = ABlocks(2,ind+1)%rows
-    !    col_sizes(1) = ABlocks(1,ind)%columns
-    !    col_sizes(2) = ABlocks(2,ind+1)%columns
-    !
-    !    CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
-    !    CALL MultiplyDense(AMat, receive_list(counter), TempMat)
-    !    CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(1:2,ind:ind+1), &
-    !         & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
-    ! END DO
-
-    DO counter = 1, jdata%num_threads
-       CALL DestructDenseMatrix(TempArray(counter))
-       CALL DestructDenseMatrix(AArray(counter))
+       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
+       CALL MultiplyDense(AMat, VList(counter), TempMat)
+       CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(1:2,ind:ind+1), &
+            & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
     END DO
 
-    DO counter = 1, jdata%num_processes
-       CALL DestructDenseMatrix(receive_list(counter))
-    END DO
-
-    ! CALL DestructDenseMatrix(TempMat)
+    CALL DestructDenseMatrix(TempMat)
 
   END SUBROUTINE ApplyToColumns
 END MODULE JacobiEigenSolverModule
