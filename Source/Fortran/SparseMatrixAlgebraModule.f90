@@ -427,7 +427,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & blocked_memory_pool%columns, blocked_memory_pool%rows, matC)
   END SUBROUTINE SparseBranch
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE SUBROUTINE DenseBranch(matA, matB, matC, IsATransposed, IsBTransposed, &
+  SUBROUTINE DenseBranch(matA, matB, matC, IsATransposed, IsBTransposed, &
        & alpha, threshold)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN)  :: matA
