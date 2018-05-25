@@ -47,8 +47,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Check if the memory is already useful
     IF (ALLOCATED(this%data)) THEN
        IF (SIZE(this%data,1) .NE. rows .OR. SIZE(this%data,2) .NE. columns) THEN
-         CALL DestructDenseMatrix(this)
-         ALLOCATE(this%data(rows,columns))
+          CALL DestructDenseMatrix(this)
+          ALLOCATE(this%data(rows,columns))
        END IF
     ELSE
        ALLOCATE(this%data(rows,columns))
@@ -289,7 +289,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
-    TYPE(DenseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
+    TYPE(DenseMatrix_t), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
          & mat_array
     INTEGER, INTENT(IN) :: block_rows, block_columns
     TYPE(DenseMatrix_t), INTENT(INOUT) :: out_matrix
@@ -303,25 +303,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     out_columns = 0
     column_offsets(1) = 1
     out_columns = 0
-    DO II = 1, block_columns
-       column_offsets(II+1) = column_offsets(II) + mat_array(II,1)%columns
-       out_columns = out_columns + mat_array(II,1)%columns
+    DO JJ = 1, block_columns
+       column_offsets(JJ+1) = column_offsets(JJ) + mat_array(1,JJ)%columns
+       out_columns = out_columns + mat_array(1,JJ)%columns
     END DO
     row_offsets(1) = 1
     out_rows = 0
-    DO JJ = 1, block_rows
-       row_offsets(JJ+1) = row_offsets(JJ) + mat_array(1,JJ)%rows
-       out_rows = out_rows + mat_array(1,JJ)%rows
+    DO II = 1, block_rows
+       row_offsets(II+1) = row_offsets(II) + mat_array(II,1)%rows
+       out_rows = out_rows + mat_array(II,1)%rows
     END DO
 
     !! Allocate Memory
     CALL ConstructEmptyDenseMatrix(out_matrix, out_columns, out_rows)
 
-    DO II = 1, block_rows
-       DO JJ = 1, block_columns
+    DO JJ = 1, block_columns
+       DO II = 1, block_rows
           out_matrix%data(row_offsets(II):row_offsets(II+1)-1, &
                & column_offsets(JJ):column_offsets(JJ+1)-1) = &
-               & mat_array(JJ,II)%data
+               & mat_array(II,JJ)%data
        END DO
     END DO
   END SUBROUTINE ComposeDenseMatrix
@@ -371,11 +371,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Copy
-    DO II = 1, block_rows
-       DO JJ = 1, block_columns
-          CALL ConstructEmptyDenseMatrix(split_array(JJ,II), &
+    DO JJ = 1, block_columns
+       DO II = 1, block_rows
+          CALL ConstructEmptyDenseMatrix(split_array(II,JJ), &
                & block_size_column(JJ), block_size_row(II))
-          split_array(JJ,II)%data = &
+          split_array(II,JJ)%data = &
                & this%data(row_offsets(II):row_offsets(II+1)-1, &
                & column_offsets(JJ):column_offsets(JJ+1)-1)
        END DO

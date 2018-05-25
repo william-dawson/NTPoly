@@ -386,26 +386,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ComposeSparseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
+    TYPE(SparseMatrix_t), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
          & mat_array
     INTEGER, INTENT(IN) :: block_rows, block_columns
     TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
     !! Local Data
     TYPE(SparseMatrix_t), DIMENSION(block_columns) :: merged_columns
     TYPE(SparseMatrix_t) :: Temp
-    TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows) :: mat_t
+    TYPE(SparseMatrix_t), DIMENSION(block_rows,block_columns) :: mat_t
     INTEGER :: II, JJ
 
     !! First transpose the matrices
-    DO JJ = 1, block_rows
-       DO II = 1, block_columns
+    DO JJ = 1, block_columns
+       DO II = 1, block_rows
           CALL TransposeSparseMatrix(mat_array(II,JJ), mat_t(II,JJ))
        END DO
     END DO
 
     !! Next merge the columns
     DO JJ = 1, block_columns
-       CALL ComposeSparseMatrixColumns(mat_t(JJ,:), Temp)
+       CALL ComposeSparseMatrixColumns(mat_t(:,JJ), Temp)
        CALL TransposeSparseMatrix(Temp, merged_columns(JJ))
     END DO
 
@@ -413,8 +413,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComposeSparseMatrixColumns(merged_columns, out_matrix)
 
     !! Cleanup
-    DO JJ = 1, block_rows
-       DO II = 1, block_columns
+    DO JJ = 1, block_columns
+       DO II = 1, block_rows
           CALL DestructSparseMatrix(mat_t(II,JJ))
        END DO
     END DO
@@ -549,7 +549,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & row_split)
        !! Copy into output array
        DO II = 1, block_rows
-          CALL TransposeSparseMatrix(row_split(II), split_array(JJ,II))
+          CALL TransposeSparseMatrix(row_split(II), split_array(II,JJ))
        END DO
     END DO
     CALL StopTimer("Split Row")

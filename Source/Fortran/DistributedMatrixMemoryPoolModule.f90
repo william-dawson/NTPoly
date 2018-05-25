@@ -28,8 +28,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Allocate
     CALL DestructDistributedMatrixMemoryPool(this)
-    ALLOCATE(this%grid(matrix%process_grid%number_of_blocks_columns, &
-         & matrix%process_grid%number_of_blocks_rows))
+    ALLOCATE(this%grid(matrix%process_grid%number_of_blocks_rows, &
+         & matrix%process_grid%number_of_blocks_columns))
   END SUBROUTINE ConstructDistributedMatrixMemoryPool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Distributed Matrix Memory Pool object.
@@ -42,10 +42,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Allocate
     IF (ALLOCATED(this%grid)) THEN
-       DO row_counter = LBOUND(this%grid,2), UBOUND(this%grid,2)
-          DO column_counter = LBOUND(this%grid,1), UBOUND(this%grid,1)
+       DO column_counter = LBOUND(this%grid,2), UBOUND(this%grid,2)
+          DO row_counter = LBOUND(this%grid,1), UBOUND(this%grid,1)
              CALL DestructMatrixMemoryPool( &
-                  & this%grid(column_counter,row_counter))
+                  & this%grid(row_counter, column_counter))
           END DO
        END DO
        DEALLOCATE(this%grid)
