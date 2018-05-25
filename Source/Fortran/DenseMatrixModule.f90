@@ -38,8 +38,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructEmptyDenseMatrix(this, columns, rows)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(INOUT) :: this
-    INTEGER :: rows
-    INTEGER :: columns
+    INTEGER, INTENT(IN) :: rows
+    INTEGER, INTENT(IN) :: columns
 
     CALL DestructDenseMatrix(this)
     ALLOCATE(this%data(rows,columns))
@@ -134,7 +134,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructFromTripletList(sparse_matrix, temporary_list, rows, columns)
   END SUBROUTINE ConstructSparseFromDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE CopyDenseMatrix(matA, matB)
+  PURE SUBROUTINE CopyDenseMatrix(matA, matB)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: matA
     TYPE(DenseMatrix_t), INTENT(INOUT) :: matB
@@ -143,7 +143,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matB%data = matA%data
   END SUBROUTINE CopyDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE DestructDenseMatrix(this)
+  PURE SUBROUTINE DestructDenseMatrix(this)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(INOUT) :: this
 
@@ -253,7 +253,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
   END FUNCTION DenseMatrixNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE TransposeDenseMatrix(matA, matAT)
+  PURE SUBROUTINE TransposeDenseMatrix(matA, matAT)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: matA
     TYPE(DenseMatrix_t), INTENT(INOUT) :: matAT
@@ -262,7 +262,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matAT%data = TRANSPOSE(matA%data)
   END SUBROUTINE TransposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
+  PURE SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
     TYPE(DenseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
@@ -302,7 +302,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
   END SUBROUTINE ComposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SplitDenseMatrix(this, block_rows, block_columns, &
+  PURE SUBROUTINE SplitDenseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: this
