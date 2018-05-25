@@ -156,17 +156,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] MatA the first matrix.
   !! @param[in] MatB the second matrix.
   !! @param[inout] MatC = MatA*MatB.
-  PURE SUBROUTINE MultiplyDense(MatA,MatB,MatC)
+  SUBROUTINE MultiplyDense(MatA,MatB,MatC)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: MatA
     TYPE(DenseMatrix_t), INTENT(IN) :: MatB
     TYPE(DenseMatrix_t), INTENT(INOUT) :: MatC
+    !! Local variables
+    CHARACTER, PARAMETER :: TRANSA = 'N'
+    CHARACTER, PARAMETER :: TRANSB = 'N'
+    INTEGER :: M
+    INTEGER :: N
+    INTEGER :: K
+    DOUBLE PRECISION, PARAMETER :: ALPHA = 1.0
+    INTEGER :: LDA
+    INTEGER :: LDB
+    DOUBLE PRECISION, PARAMETER :: BETA = 0.0
+    INTEGER :: LDC
 
     IF (.NOT. ALLOCATED(MatC%data)) THEN
        CALL ConstructEmptyDenseMatrix(MatC,MatB%columns,MatA%rows)
     END IF
 
-    MatC%data = MATMUL(MatA%data,MatB%data)
+    M = MatA%rows
+    N = MatB%columns
+    K = MatA%columns
+    LDA = M
+    LDB = K
+    LDC = M
+
+    CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
+          & LDB, BETA, MatC%data, LDC)
+
+    ! MatC%data = MATMUL(MatA%data,MatB%data)
   END SUBROUTINE MultiplyDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE IncrementDenseMatrix(MatA,MatB,alpha_in)
