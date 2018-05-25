@@ -863,19 +863,36 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     TYPE(DenseMatrix_t) :: AMat, TempMat
     INTEGER :: counter, ind
-    INTEGER, DIMENSION(2) :: row_sizes, col_sizes
+    ! INTEGER, DIMENSION(2) :: row_sizes, col_sizes
+    INTEGER, DIMENSION(jdata%block_rows) :: row_sizes
+    INTEGER, DIMENSION(jdata%block_columns) :: col_sizes
 
-    DO counter = 1, jdata%num_processes
-       ind = (counter-1)*2 + 1
-       row_sizes(1) = ABlocks(1,ind)%rows
-       row_sizes(2) = ABlocks(2,ind+1)%rows
-       col_sizes(1) = ABlocks(1,ind)%columns
-       col_sizes(2) = ABlocks(2,ind+1)%columns
-       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
-       CALL MultiplyDense(TargetV, AMat, TempMat)
-       CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(1:2,ind:ind+1), &
-            & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
+    DO counter = 1, jdata%block_rows
+      row_sizes(counter) = ABlocks(counter,1)%rows
     END DO
+    DO counter = 1, jdata%block_columns
+      col_sizes(counter) = ABlocks(1,counter)%columns
+    END DO
+
+    CALL ComposeDenseMatrix(ABlocks, jdata%block_rows, jdata%block_columns, &
+         & AMat)
+    CALL MultiplyDense(TargetV, AMat, TempMat)
+    CALL SplitDenseMatrix(TempMat, jdata%block_rows, jdata%block_columns, &
+         & ABlocks, block_size_row_in=row_sizes, block_size_column_in=col_sizes)
+
+    CALL DestructDenseMatrix(TempMat)
+    CALL DestructDenseMatrix(AMat)
+    ! DO counter = 1, jdata%num_processes
+    !    ind = (counter-1)*2 + 1
+    !    row_sizes(1) = ABlocks(1,ind)%rows
+    !    row_sizes(2) = ABlocks(2,ind+1)%rows
+    !    col_sizes(1) = ABlocks(1,ind)%columns
+    !    col_sizes(2) = ABlocks(2,ind+1)%columns
+    !    CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
+    !    CALL MultiplyDense(TargetV, AMat, TempMat)
+    !    CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(1:2,ind:ind+1), &
+    !         & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
+    ! END DO
 
   END SUBROUTINE ApplyToRows
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
