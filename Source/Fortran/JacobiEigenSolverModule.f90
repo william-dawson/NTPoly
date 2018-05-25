@@ -877,8 +877,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter, ind
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
 
-    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
-    !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
        row_sizes(1) = ABlocks(ind,1)%rows
@@ -889,11 +887,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MultiplyDense(TargetV, AMat, TempMat)
        CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
-       CALL DestructDenseMatrix(AMat)
-       CALL DestructDenseMatrix(TempMat)
     END DO
-    !$OMP END DO
-    !$OMP END PARALLEL
 
   END SUBROUTINE ApplyToRows
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -914,8 +908,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL BlockingDenseMatrixGather(TargetV, receive_list, jdata%communicator)
 
-    !$OMP PARALLEL PRIVATE(ind, row_sizes, col_sizes, AMat, TempMat)
-    !$OMP DO
     DO counter = 1, jdata%num_processes
        ind = (counter-1)*2 + 1
        row_sizes(1) = ABlocks(ind,1)%rows
@@ -927,11 +919,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MultiplyDense(AMat, receive_list(counter), TempMat)
        CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(ind:ind+1,1:2), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
-       CALL DestructDenseMatrix(AMat)
-       CALL DestructDenseMatrix(TempMat)
     END DO
-    !$OMP END DO
-    !$OMP END PARALLEL
 
     DO counter = 1, jdata%num_processes
        CALL DestructDenseMatrix(receive_list(counter))
