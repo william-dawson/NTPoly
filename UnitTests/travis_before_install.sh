@@ -2,7 +2,6 @@
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
-  sudo apt-get install libatlas-base-dev
   #if [ -f "openmpi-3.0.1/README" ]; then
   #  echo "Using cached openmpi";
   #else
