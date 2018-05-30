@@ -87,16 +87,8 @@ MODULE JacobiEigenSolverModule
      INTEGER :: row_divisor
      !! For Inter Process Swaps
      INTEGER, DIMENSION(:), ALLOCATABLE :: phase_array
-     !> During the first num_proc rounds
-     TYPE(SwapData_t) :: up_swap
-     !> After round num_proc+1, we need to do a special swap to maintain the
-     !! correct within process order.
-     TYPE(SwapData_t) :: mid_swap
-     !> In the last num_proc+2->end rounds, we change direction when sending.
-     TYPE(SwapData_t) :: down_swap
-     !> After the sweeps are finished, this swaps the data back to the original
-     !! permutation.
-     TYPE(SwapData_t) :: final_swap
+     !> Swap information
+     TYPE(SwapData_t), DIMENSION(4) :: swap
   END TYPE JacobiData_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using the Block Jacobi Eigenvalue
@@ -289,10 +281,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Determine Send Partners.
     ALLOCATE(jdata%phase_array(2*jdata%num_processes-1))
-    ALLOCATE(jdata%up_swap%swap_array(2*jdata%num_processes))
-    ALLOCATE(jdata%mid_swap%swap_array(2*jdata%num_processes))
-    ALLOCATE(jdata%down_swap%swap_array(2*jdata%num_processes))
-    ALLOCATE(jdata%final_swap%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%swap(1)%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%swap(2)%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%swap(3)%swap_array(2*jdata%num_processes))
+    ALLOCATE(jdata%swap(4)%swap_array(2*jdata%num_processes))
     !! First we create the default permutation.
     ALLOCATE(swap0(2*jdata%num_processes))
     ALLOCATE(swap1(2*jdata%num_processes))
@@ -308,7 +300,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL RotateMusic(jdata,swap1,1)
     jdata%phase_array(stage_counter) = 1
     stage_counter = stage_counter+1
-    CALL ComputePartners(jdata, jdata%up_swap, swap_temp, swap1)
+    CALL ComputePartners(jdata, jdata%swap(1), swap_temp, swap1)
 
     DO counter = 2, jdata%num_processes-1
        CALL RotateMusic(jdata,swap1,1)
@@ -321,7 +313,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL RotateMusic(jdata,swap1,2)
        jdata%phase_array(stage_counter) = 2
        stage_counter = stage_counter+1
-       CALL ComputePartners(jdata, jdata%mid_swap, swap_temp, swap1)
+       CALL ComputePartners(jdata, jdata%swap(2), swap_temp, swap1)
     END IF
 
     IF (jdata%num_processes .GT. 2) THEN
@@ -329,7 +321,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL RotateMusic(jdata,swap1,3)
        jdata%phase_array(stage_counter) = 3
        stage_counter = stage_counter+1
-       CALL ComputePartners(jdata, jdata%down_swap, swap_temp, swap1)
+       CALL ComputePartners(jdata, jdata%swap(3), swap_temp, swap1)
        DO counter = jdata%num_processes+1, 2*jdata%num_processes-3
           CALL RotateMusic(jdata,swap1,3)
           jdata%phase_array(stage_counter) = 3
@@ -338,7 +330,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     IF (jdata%num_processes .GT. 1) THEN
-       CALL ComputePartners(jdata, jdata%final_swap, swap1, swap0)
+       CALL ComputePartners(jdata, jdata%swap(4), swap1, swap0)
        jdata%phase_array(stage_counter) = 4
     END IF
 
@@ -361,17 +353,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Comm_free(jacobi_data%communicator, ierr)
 
     !! Memory Deallocation
-    IF (ALLOCATED(jacobi_data%up_swap%swap_array)) THEN
-       DEALLOCATE(jacobi_data%up_swap%swap_array)
+    IF (ALLOCATED(jacobi_data%swap(1)%swap_array)) THEN
+       DEALLOCATE(jacobi_data%swap(1)%swap_array)
     END IF
-    IF (ALLOCATED(jacobi_data%mid_swap%swap_array)) THEN
-       DEALLOCATE(jacobi_data%mid_swap%swap_array)
+    IF (ALLOCATED(jacobi_data%swap(2)%swap_array)) THEN
+       DEALLOCATE(jacobi_data%swap(2)%swap_array)
     END IF
-    IF (ALLOCATED(jacobi_data%down_swap%swap_array)) THEN
-       DEALLOCATE(jacobi_data%down_swap%swap_array)
+    IF (ALLOCATED(jacobi_data%swap(3)%swap_array)) THEN
+       DEALLOCATE(jacobi_data%swap(3)%swap_array)
     END IF
-    IF (ALLOCATED(jacobi_data%final_swap%swap_array)) THEN
-       DEALLOCATE(jacobi_data%final_swap%swap_array)
+    IF (ALLOCATED(jacobi_data%swap(4)%swap_array)) THEN
+       DEALLOCATE(jacobi_data%swap(4)%swap_array)
     END IF
 
   END SUBROUTINE CleanupJacobi
@@ -483,6 +475,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DenseMatrix_t) :: TargetV, TargetVT
     TYPE(DenseMatrix_t), DIMENSION(jdata%num_processes) :: VList
     INTEGER :: iteration, II
+    INTEGER :: phase
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
@@ -497,7 +490,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DenseEigenDecomposition(TargetA, TargetV)
        CALL StopTimer("Decomposition")
 
+       !! Broadcast
+       CALL StartTimer("Gather")
        CALL BlockingDenseMatrixGather(TargetV, VList, jdata%communicator)
+       CALL StopTimer("Gather")
 
        !! Rotation Along Columns
        CALL StartTimer("Column")
@@ -514,19 +510,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Swap Blocks
        CALL StartTimer("Swap")
        IF (jdata%num_processes .GT. 1) THEN
-          IF (jdata%phase_array(iteration) .EQ. 1) THEN
-             CALL SwapBlocks(ABlocks, jdata, jdata%up_swap)
-             CALL SwapBlocks(VBlocks, jdata, jdata%up_swap)
-          ELSE IF (jdata%phase_array(iteration) .EQ. 2) THEN
-             CALL SwapBlocks(ABlocks, jdata, jdata%mid_swap)
-             CALL SwapBlocks(VBlocks, jdata, jdata%mid_swap)
-          ELSE IF (jdata%phase_array(iteration) .EQ. 3) THEN
-             CALL SwapBlocks(ABlocks, jdata, jdata%down_swap)
-             CALL SwapBlocks(VBlocks, jdata, jdata%down_swap)
-          ELSE
-             CALL SwapBlocks(ABlocks, jdata, jdata%final_swap)
-             CALL SwapBlocks(VBlocks, jdata, jdata%final_swap)
-          END IF
+          phase = jdata%phase_array(iteration)
+          CALL SwapBlocks(ABlocks, jdata, jdata%swap(phase))
+          CALL SwapBlocks(VBlocks, jdata, jdata%swap(phase))
        END IF
        CALL StopTimer("Swap")
     END DO
@@ -534,7 +520,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDenseMatrix(TargetV)
     CALL DestructDenseMatrix(TargetVT)
     DO II = 1, jdata%num_processes
-      CALL DestructDenseMatrix(VList(II))
+       CALL DestructDenseMatrix(VList(II))
     END DO
 
   END SUBROUTINE JacobiSweep
@@ -877,10 +863,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(jdata%block_columns) :: col_sizes
 
     DO counter = 1, jdata%block_rows
-      row_sizes(counter) = ABlocks(counter,1)%rows
+       row_sizes(counter) = ABlocks(counter,1)%rows
     END DO
     DO counter = 1, jdata%block_columns
-      col_sizes(counter) = ABlocks(1,counter)%columns
+       col_sizes(counter) = ABlocks(1,counter)%columns
     END DO
 
     CALL ComposeDenseMatrix(ABlocks, jdata%block_rows, jdata%block_columns, &
