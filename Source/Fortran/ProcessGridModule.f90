@@ -144,6 +144,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_COMM_SIZE(grid%global_comm, grid%total_processors, ierr)
     grid%slice_size = grid%total_processors/grid%num_process_slices
 
+    !! Do a sanity check
+    IF (grid%num_process_rows*grid%num_process_columns*grid%num_process_slices &
+         & .NE. grid%total_processors) THEN
+       CALL WriteHeader(&
+            & "Error: you didn't specify a consistent process grid size")
+       CALL MPI_Abort(grid%global_comm, -1, ierr)
+    END IF
+
     !! Grid ID
     CALL MPI_COMM_RANK(grid%global_comm,grid%global_rank,ierr)
     grid%my_slice = grid%global_rank/grid%slice_size
