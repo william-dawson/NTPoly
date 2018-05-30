@@ -19,11 +19,14 @@ path=get_python_lib(standard_lib=True)+\"/../../Python\"
 print path"
     OUTPUT_VARIABLE PYTHON_LIBRARIES OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+# Library Files
+set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp")
+
 # Release Suggestions
-set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -framework Accelerate -lgomp")
+set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp")
 set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
 
 # Debug suggestions
-set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -framework Accelerate")
+set(CXX_TOOLCHAINFLAGS_DEBUG "-O0")
 set(F_TOOLCHAINFLAGS_DEBUG
-  "-fbounds-check -O0 -fexternal-blas -framework Accelerate -cpp -Wall -DPURE=")
+  "-fbounds-check -O0 -fexternal-blas -cpp -Wall -DPURE=")
