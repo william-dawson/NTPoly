@@ -891,7 +891,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SwapBlocks1(ABlocks, jdata, swap_data, swap_helper)
     !! Parameters
-    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
+    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(IN) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     TYPE(SwapData_t), INTENT(IN) :: swap_data
     !! Swap Helpers
@@ -906,34 +906,34 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, PARAMETER :: total_to_complete = 4
     !! Temporary Variables
     INTEGER :: counter
-    INTEGER :: index
+    INTEGER :: ind
 
-    CALL StartTimer("Swap Initial")
     !! Setup Swap Helper
     ALLOCATE(TempABlocks(jdata%block_rows,jdata%block_columns))
     ALLOCATE(swap_helper%split_guide(jdata%block_columns))
 
     !! Swap Rows
+    CALL StartTimer("Swap Initial")
+    !$OMP PARALLEL PRIVATE(ind)
+    !$OMP DO
     DO counter = 1, jdata%block_columns
-       CALL CopyDenseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
-       CALL CopyDenseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
+       ind = swap_data%swap_array(counter)
+       CALL CopyDenseMatrix(ABlocks(1,ind), TempABlocks(1,counter))
+       CALL CopyDenseMatrix(ABlocks(2,ind), TempABlocks(2,counter))
     END DO
-    DO counter = 1, jdata%block_columns
-       index = swap_data%swap_array(counter)
-       CALL CopyDenseMatrix(TempABlocks(1,index), ABlocks(1,counter))
-       CALL CopyDenseMatrix(TempABlocks(2,index), ABlocks(2,counter))
-    END DO
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     DO counter = 1, jdata%block_columns
-       swap_helper%split_guide(counter) = ABlocks(1,counter)%columns
+       swap_helper%split_guide(counter) = TempABlocks(1,counter)%columns
     END DO
     CALL StopTimer("Swap Initial")
 
     !! Build matrices to swap
     CALL StartTimer("Swap Compose")
-    CALL ComposeDenseMatrix(ABlocks(1,:), 1, jdata%block_columns, &
+    CALL ComposeDenseMatrix(TempABlocks(1,:), 1, jdata%block_columns, &
          & swap_helper%SendUp)
-    CALL ComposeDenseMatrix(ABlocks(2,:), 1, jdata%block_columns, &
+    CALL ComposeDenseMatrix(TempABlocks(2,:), 1, jdata%block_columns, &
          & swap_helper%SendDown)
     CALL StopTimer("Swap Compose")
 
