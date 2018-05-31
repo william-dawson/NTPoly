@@ -39,6 +39,7 @@ MODULE EigenSolversModule
   PUBLIC :: SplittingEigenDecomposition
   PUBLIC :: TestEigenDecomposition
   PUBLIC :: SingularValueDecomposition
+  PUBLIC :: SerialBase
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TestEigenDecomposition(this, eigenvectors, solver_parameters_in)
     !! Parameters
@@ -620,7 +621,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
             & mat_dim)
        CALL ConstructDenseFromSparse(local_a, dense_a)
+       CALL StartTimer("Serial Inner")
        CALL DenseEigenDecomposition(dense_a, dense_v)
+       CALL StopTimer("Serial Inner")
        CALL ConstructSparseFromDense(dense_v,local_v,fixed_param%threshold)
        CALL DestructDenseMatrix(dense_a)
        CALL DestructDenseMatrix(dense_v)

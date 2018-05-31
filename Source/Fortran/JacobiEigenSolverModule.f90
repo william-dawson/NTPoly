@@ -136,13 +136,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Handle the case where we have a matrix that is too small
-    CALL StartTimer("Fix Size")
     CALL SplitJacobi(this, WorkingMat, active)
-    CALL StopTimer("Fix Size")
 
     IF (active) THEN
        !! Setup Communication
-       CALL StartTimer("Initialize-Jacobi")
        CALL InitializeJacobi(jacobi_data, WorkingMat)
 
        !! Initialize the eigenvectors to the identity.
@@ -158,7 +155,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetLocalBlocks(WorkingV, jacobi_data, VBlocks)
        CALL ComposeDenseMatrix(ABlocks, jacobi_data%block_rows, &
             & jacobi_data%block_columns, local_a)
-       CALL StopTimer("Initialize-Jacobi")
 
        !! Main Loop
        CALL StartTimer("Loop-Jacobi")
@@ -171,9 +167,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
 
           !! Loop Over One Jacobi Sweep
-          CALL StartTimer("Sweep-Jacobi")
+          CALL StartTimer("Jacobi Sweep")
           CALL JacobiSweep(ABlocks, VBlocks, jacobi_data)
-          CALL StopTimer("Sweep-Jacobi")
+          CALL StopTimer("Jacobi Sweep")
 
           !! Compute Norm Value
           CALL CopyDenseMatrix(local_a, last_a)
@@ -493,10 +489,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
        !! Construct A Block To Diagonalize
+       CALL StartTimer("Target A")
        CALL ComposeDenseMatrix(ABlocks(&
             & jdata%row_block_start:jdata%row_block_end, &
             & jdata%col_block_start:jdata%col_block_end), &
             & 2, 2, TargetA)
+       CALL StopTimer("Target A")
 
        !! Diagonalize
        CALL StartTimer("Decomposition")
@@ -511,12 +509,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Rotate V
        CALL StartTimer("Rotate V")
        CALL ApplyToColumns(VList, VBlocks, jdata)
-       CALL StartTimer("Rotate V")
+       CALL StopTimer("Rotate V")
 
+       CALL StartTimer("Swap")
        IF (jdata%num_processes .GT. 1) THEN
           phase = jdata%phase_array(iteration)
           CALL SwapBlocks1(VBlocks, jdata, jdata%swap(phase), swap_v)
        END IF
+       CALL StopTimer("Swap")
 
        !! Rotation A
        CALL StartTimer("Rotate A")
@@ -524,10 +524,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ApplyToColumns(VList, ABlocks, jdata)
        CALL StopTimer("Rotate A")
 
+       CALL StartTimer("Swap")
        IF (jdata%num_processes .GT. 1) THEN
           phase = jdata%phase_array(iteration)
           CALL SwapBlocks2(VBlocks, jdata, jdata%swap(phase), swap_v)
        END IF
+       CALL StopTimer("Swap")
 
        CALL StartTimer("Rotate A")
        CALL ApplyToRows(TargetVT, ABlocks, jdata)
@@ -906,12 +908,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     INTEGER :: index
 
+    CALL StartTimer("Swap Initial")
     !! Setup Swap Helper
     ALLOCATE(TempABlocks(jdata%block_rows,jdata%block_columns))
     ALLOCATE(swap_helper%split_guide(jdata%block_columns))
 
     !! Swap Rows
-    CALL StartTimer("Swap Rows")
     DO counter = 1, jdata%block_columns
        CALL CopyDenseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
        CALL CopyDenseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
@@ -921,19 +923,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyDenseMatrix(TempABlocks(1,index), ABlocks(1,counter))
        CALL CopyDenseMatrix(TempABlocks(2,index), ABlocks(2,counter))
     END DO
-    CALL StopTimer("Swap Rows")
 
     DO counter = 1, jdata%block_columns
        swap_helper%split_guide(counter) = ABlocks(1,counter)%columns
     END DO
+    CALL StopTimer("Swap Initial")
 
     !! Build matrices to swap
-    CALL StartTimer("Compose First")
+    CALL StartTimer("Swap Compose")
     CALL ComposeDenseMatrix(ABlocks(1,:), 1, jdata%block_columns, &
          & swap_helper%SendUp)
     CALL ComposeDenseMatrix(ABlocks(2,:), 1, jdata%block_columns, &
          & swap_helper%SendDown)
-    CALL StopTimer("Compose First")
+    CALL StopTimer("Swap Compose")
 
     !! Perform Column Swaps
     send_up_stage = 0
@@ -1123,13 +1125,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     CALL StopTimer("Swap Loop")
 
-    CALL StartTimer("Split Last")
+    CALL StartTimer("Swap Split")
     CALL SplitDenseMatrix(swap_helper%RecvUp, 1, jdata%block_columns, &
          & ABlocks(1:1,:), block_size_column_in=swap_helper%split_guide)
     CALL SplitDenseMatrix(swap_helper%RecvDown, 1, &
          & jdata%block_columns,ABlocks(2:2,:), &
          & block_size_column_in=swap_helper%split_guide)
-    CALL StopTimer("Split Last")
+    CALL StopTimer("Swap Split")
 
     !! Cleanup
     CALL DestructDenseMatrix(swap_helper%SendUp)
@@ -1163,7 +1165,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL ComposeDenseMatrix(ABlocks, jdata%block_rows, jdata%block_columns, &
          & AMat)
+    CALL StartTimer("GEMM Row")
     CALL MultiplyDense(TargetV, AMat, TempMat)
+    CALL StopTimer("GEMM Row")
     CALL SplitDenseMatrix(TempMat, jdata%block_rows, jdata%block_columns, &
          & ABlocks, block_size_row_in=row_sizes, block_size_column_in=col_sizes)
 
@@ -1203,7 +1207,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        col_sizes(2) = ABlocks(2,ind+1)%columns
 
        CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
+       CALL StartTimer("GEMM Col")
        CALL MultiplyDense(AMat, VList(counter), TempMat)
+       CALL StopTimer("GEMM Col")
        CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(1:2,ind:ind+1), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
     END DO
