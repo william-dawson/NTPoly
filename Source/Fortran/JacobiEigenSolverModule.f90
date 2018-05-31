@@ -6,7 +6,8 @@ MODULE JacobiEigenSolverModule
        & ConstructDenseFromSparse, DenseEigenDecomposition, &
        & DestructDenseMatrix, DenseMatrixNorm, SplitDenseMatrix, &
        & ComposeDenseMatrix, MultiplyDense, IncrementDenseMatrix, &
-       & CopyDenseMatrix, TransposeDenseMatrix
+       & CopyDenseMatrix, TransposeDenseMatrix, &
+       & ConstructEmptyDenseMatrix
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, FillDistributedIdentity, &
        & FillFromTripletList, GetTripletList, CopyDistributedSparseMatrix, &
@@ -1042,28 +1043,44 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
     !! Temporary
-    INTEGER :: counter
+    INTEGER :: II
     INTEGER :: ind
     TYPE(DenseMatrix_t) :: TempMat
     TYPE(DenseMatrix_t) :: AMat
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
+    TYPE(DenseMatrix_t), DIMENSION(:), ALLOCATABLE :: TempLeft, TempRight
 
-    DO counter = 1, jdata%num_processes
-       ind = (counter-1)*2 + 1
+    ALLOCATE(TempLeft(jdata%num_processes))
+    ALLOCATE(TempRight(jdata%num_processes))
+
+    !$OMP PARALLEL PRIVATE(row_sizes, col_sizes, ind)
+    !$OMP DO
+    DO II = 1, jdata%num_processes
+       ind = (II-1)*2 + 1
        row_sizes(1) = ABlocks(1,ind)%rows
        row_sizes(2) = ABlocks(2,ind+1)%rows
        col_sizes(1) = ABlocks(1,ind)%columns
        col_sizes(2) = ABlocks(2,ind+1)%columns
 
-       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, AMat)
+       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, TempLeft(II))
+
        CALL StartTimer("GEMM Col")
-       CALL MultiplyDense(AMat, VList(counter), TempMat)
+       CALL MultiplyDense(TempLeft(II), VList(II), TempRight(II))
        CALL StopTimer("GEMM Col")
-       CALL SplitDenseMatrix(TempMat, 2, 2, ABlocks(1:2,ind:ind+1), &
+
+       CALL SplitDenseMatrix(TempRight(II), 2, 2, ABlocks(1:2,ind:ind+1), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
+
+       CALL DestructDenseMatrix(TempLeft(II))
+       CALL DestructDenseMatrix(TempRight(II))
     END DO
+    !$OMP END DO
+    !$OMP END PARALLEL
 
     CALL DestructDenseMatrix(TempMat)
+
+    DEALLOCATE(TempLeft)
+    DEALLOCATE(TempRight)
 
   END SUBROUTINE ApplyToColumns
 END MODULE JacobiEigenSolverModule
