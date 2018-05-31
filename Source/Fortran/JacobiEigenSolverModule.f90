@@ -490,6 +490,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: phase
     TYPE(SwapHelper_t) :: swap_a, swap_v
     TYPE(GatherHelper_t) :: gather_helper
+    TYPE(DenseMatrix_t), DIMENSION(:), ALLOCATABLE :: ColLeft, ColRight
+    TYPE(DenseMatrix_t) :: RowLeft, RowRight
+
+    ALLOCATE(ColLeft(jdata%num_processes))
+    ALLOCATE(ColRight(jdata%num_processes))
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
@@ -523,7 +528,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL StartTimer("Rotate A")
        CALL TransposeDenseMatrix(TargetV, TargetVT)
-       CALL ApplyToRows(TargetVT, ABlocks, jdata)
+       CALL ApplyToRows(TargetVT, ABlocks, jdata, RowLeft, RowRight)
        CALL StopTimer("Rotate A")
 
        CALL StartTimer("Gather")
@@ -534,7 +539,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Rotate V
        CALL StartTimer("Rotate V")
-       CALL ApplyToColumns(VList, VBlocks, jdata)
+       CALL ApplyToColumns(VList, VBlocks, jdata, ColLeft, ColRight)
        CALL StopTimer("Rotate V")
 
        CALL StartTimer("Swap")
@@ -553,7 +558,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Rotation A
        CALL StartTimer("Rotate A")
-       CALL ApplyToColumns(VList, ABlocks, jdata)
+       CALL ApplyToColumns(VList, ABlocks, jdata, ColLeft, ColRight)
        CALL StopTimer("Rotate A")
 
        !! Swap Blocks
@@ -572,7 +577,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDenseMatrix(TargetVT)
     DO II = 1, jdata%num_processes
        CALL DestructDenseMatrix(VList(II))
+       CALL DestructDenseMatrix(ColLeft(II))
+       CALL DestructDenseMatrix(ColRight(II))
     END DO
+    CALL DestructDenseMatrix(RowLeft)
+    CALL DestructDenseMatrix(RowRight)
+
+    DEALLOCATE(ColLeft)
+    DEALLOCATE(ColRight)
 
   END SUBROUTINE JacobiSweep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -993,13 +1005,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE SwapBlocks3
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata)
+  SUBROUTINE ApplyToRows(TargetV, ABlocks, jdata, RowLeft, RowRight)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: TargetV
     TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(IN) :: jdata
+    TYPE(DenseMatrix_t), INTENT(INOUT) :: RowLeft, RowRight
     !! Temporary
-    TYPE(DenseMatrix_t) :: AMat, TempMat
     INTEGER :: counter
     ! INTEGER :: ind
     ! INTEGER, DIMENSION(2) :: row_sizes, col_sizes
@@ -1014,15 +1026,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     CALL ComposeDenseMatrix(ABlocks, jdata%block_rows, jdata%block_columns, &
-         & AMat)
+         & RowLeft)
     CALL StartTimer("GEMM Row")
-    CALL MultiplyDense(TargetV, AMat, TempMat)
+    CALL MultiplyDense(TargetV, RowLeft, RowRight)
     CALL StopTimer("GEMM Row")
-    CALL SplitDenseMatrix(TempMat, jdata%block_rows, jdata%block_columns, &
+    CALL SplitDenseMatrix(RowRight, jdata%block_rows, jdata%block_columns, &
          & ABlocks, block_size_row_in=row_sizes, block_size_column_in=col_sizes)
 
-    CALL DestructDenseMatrix(TempMat)
-    CALL DestructDenseMatrix(AMat)
     ! DO counter = 1, jdata%num_processes
     !    ind = (counter-1)*2 + 1
     !    row_sizes(1) = ABlocks(1,ind)%rows
@@ -1037,21 +1047,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ApplyToRows
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ApplyToColumns(VList, ABlocks, jdata)
+  SUBROUTINE ApplyToColumns(VList, ABlocks, jdata, ColLeft, ColRight)
     !! Parameters
     TYPE(DenseMatrix_t), DIMENSION(:), INTENT(INOUT) :: VList
     TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
     TYPE(JacobiData_t), INTENT(INOUT) :: jdata
+    TYPE(DenseMatrix_t), DIMENSION(:), INTENT(INOUT) :: ColLeft, ColRight
     !! Temporary
     INTEGER :: II
     INTEGER :: ind
     TYPE(DenseMatrix_t) :: TempMat
     TYPE(DenseMatrix_t) :: AMat
     INTEGER, DIMENSION(2) :: row_sizes, col_sizes
-    TYPE(DenseMatrix_t), DIMENSION(:), ALLOCATABLE :: TempLeft, TempRight
-
-    ALLOCATE(TempLeft(jdata%num_processes))
-    ALLOCATE(TempRight(jdata%num_processes))
 
     !$OMP PARALLEL PRIVATE(row_sizes, col_sizes, ind)
     !$OMP DO
@@ -1062,25 +1069,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        col_sizes(1) = ABlocks(1,ind)%columns
        col_sizes(2) = ABlocks(2,ind+1)%columns
 
-       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, TempLeft(II))
-
-       CALL StartTimer("GEMM Col")
-       CALL MultiplyDense(TempLeft(II), VList(II), TempRight(II))
-       CALL StopTimer("GEMM Col")
-
-       CALL SplitDenseMatrix(TempRight(II), 2, 2, ABlocks(1:2,ind:ind+1), &
+       CALL ComposeDenseMatrix(ABlocks(1:2,ind:ind+1), 2, 2, ColLeft(II))
+       CALL MultiplyDense(ColLeft(II), VList(II), ColRight(II))
+       CALL SplitDenseMatrix(ColRight(II), 2, 2, ABlocks(1:2,ind:ind+1), &
             & block_size_row_in=row_sizes, block_size_column_in=col_sizes)
-
-       CALL DestructDenseMatrix(TempLeft(II))
-       CALL DestructDenseMatrix(TempRight(II))
     END DO
     !$OMP END DO
     !$OMP END PARALLEL
 
     CALL DestructDenseMatrix(TempMat)
-
-    DEALLOCATE(TempLeft)
-    DEALLOCATE(TempRight)
 
   END SUBROUTINE ApplyToColumns
 END MODULE JacobiEigenSolverModule
