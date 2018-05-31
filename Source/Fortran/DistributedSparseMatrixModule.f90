@@ -198,25 +198,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsRoot(global_grid)) THEN
        header_length = 0
        local_file_handler = 16
-       OPEN(local_file_handler, file=file_name, status="old")
-       !! Parse the header.
-       READ(local_file_handler,fmt='(A)') input_buffer
-       error_occured = ParseMMHeader(input_buffer, sparsity_type, data_type, &
-            & pattern_type)
-       header_length = header_length + LEN_TRIM(input_buffer) + 1
-       !! First Read In The Comment Lines
-       found_comment_line = .TRUE.
-       DO WHILE (found_comment_line)
-          READ(local_file_handler,fmt='(A)') input_buffer
-          !! +1 for newline
-          header_length = header_length + LEN_TRIM(input_buffer) + 1
-          IF (.NOT. input_buffer(1:1) .EQ. '%') THEN
-             found_comment_line = .FALSE.
-          END IF
-       END DO
-       !! Get The Matrix Parameters
-       READ(input_buffer,*) matrix_rows, matrix_columns, total_values
-       CLOSE(local_file_handler)
+       OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
+       IF (ierr .EQ. 0) THEN
+         !! Parse the header.
+         READ(local_file_handler,fmt='(A)') input_buffer
+         error_occured = ParseMMHeader(input_buffer, sparsity_type, data_type, &
+              & pattern_type)
+         header_length = header_length + LEN_TRIM(input_buffer) + 1
+         !! First Read In The Comment Lines
+         found_comment_line = .TRUE.
+         DO WHILE (found_comment_line)
+            READ(local_file_handler,fmt='(A)') input_buffer
+            !! +1 for newline
+            header_length = header_length + LEN_TRIM(input_buffer) + 1
+            IF (.NOT. input_buffer(1:1) .EQ. '%') THEN
+               found_comment_line = .FALSE.
+            END IF
+         END DO
+         !! Get The Matrix Parameters
+         READ(input_buffer,*) matrix_rows, matrix_columns, total_values
+         CLOSE(local_file_handler)
+       ELSE
+         WRITE(*,*) file_name, " doesn't exist"
+       END IF
+    ELSE
+       ierr = 0
+    END IF
+
+    IF (ierr .NE. 0) THEN
+      CALL MPI_Abort(global_grid%global_comm, -1, ierr)
     END IF
 
     !! Broadcast Parameters
@@ -355,6 +365,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL MPI_File_open(global_grid%global_comm,file_name,MPI_MODE_RDONLY,&
          & MPI_INFO_NULL,mpi_file_handler,ierr)
+    IF (ierr .NE. 0) THEN
+      IF (IsRoot(global_grid)) THEN
+        WRITE(*,*) file_name, " doesn't exist"
+      END IF
+      CALL MPI_Abort(global_grid%global_comm, -1, ierr)
+    END IF
 
     !! Get The Matrix Parameters
     IF (IsRoot(global_grid)) THEN
