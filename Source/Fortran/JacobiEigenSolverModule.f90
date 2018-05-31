@@ -16,7 +16,10 @@ MODULE JacobiEigenSolverModule
        & PrintIterativeSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader, WriteCitation
-  USE MatrixGatherModule, ONLY : BlockingDenseMatrixGather
+  USE MatrixGatherModule, ONLY : BlockingDenseMatrixGather, &
+       & GatherHelper_t, GatherDenseMatrixSizes, GatherDenseMatrixAndListData, &
+       & GatherDenseMatrixAndListCleanup, TestGatherSizeRequest, &
+       & TestGatherDataRequest
   USE MatrixSendRecvModule, ONLY : SendRecvHelper_t, RecvDenseMatrixSizes, &
        & RecvDenseMatrixData, SendDenseMatrixSizes, SendDenseMatrixData, &
        & TestSendRecvSizeRequest, TestSendRecvDataRequest
@@ -485,6 +488,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: iteration, II
     INTEGER :: phase
     TYPE(SwapHelper_t) :: swap_a, swap_v
+    TYPE(GatherHelper_t) :: gather_helper
 
     !! Loop Over Processors
     DO iteration = 1, jdata%num_processes*2 - 1
@@ -496,14 +500,35 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & 2, 2, TargetA)
        CALL StopTimer("Target A")
 
+       CALL StartTimer("Gather")
+       !! Note that we use TargetA here because it's just passing the dimensions
+       CALL GatherDenseMatrixSizes(TargetA, jdata%communicator, gather_helper)
+       CALL StopTimer("Gather")
+
        !! Diagonalize
        CALL StartTimer("Decomposition")
        CALL DenseEigenDecomposition(TargetA, TargetV)
        CALL StopTimer("Decomposition")
 
-       !! Broadcast
        CALL StartTimer("Gather")
-       CALL BlockingDenseMatrixGather(TargetV, VList, jdata%communicator)
+       DO WHILE (.NOT. TestGatherSizeRequest(gather_helper))
+       END DO
+       CALL StopTimer("Gather")
+
+       CALL StartTimer("Gather")
+       CALL GatherDenseMatrixAndListData(TargetV, jdata%communicator, &
+            & gather_helper)
+       CALL StopTimer("Gather")
+
+       CALL StartTimer("Rotate A")
+       CALL TransposeDenseMatrix(TargetV, TargetVT)
+       CALL ApplyToRows(TargetVT, ABlocks, jdata)
+       CALL StopTimer("Rotate A")
+
+       CALL StartTimer("Gather")
+       DO WHILE (.NOT. TestGatherDataRequest(gather_helper))
+       END DO
+       CALL GatherDenseMatrixAndListCleanup(TargetV, VList, gather_helper)
        CALL StopTimer("Gather")
 
        !! Rotate V
@@ -518,12 +543,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL StopTimer("Swap")
 
-       !! Rotation A
-       CALL StartTimer("Rotate A")
-       CALL TransposeDenseMatrix(TargetV, TargetVT)
-       CALL ApplyToColumns(VList, ABlocks, jdata)
-       CALL StopTimer("Rotate A")
-
        CALL StartTimer("Swap")
        IF (jdata%num_processes .GT. 1) THEN
           phase = jdata%phase_array(iteration)
@@ -531,8 +550,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL StopTimer("Swap")
 
+       !! Rotation A
        CALL StartTimer("Rotate A")
-       CALL ApplyToRows(TargetVT, ABlocks, jdata)
+       CALL ApplyToColumns(VList, ABlocks, jdata)
        CALL StopTimer("Rotate A")
 
        !! Swap Blocks
@@ -717,177 +737,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE ComputePartners
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE SwapBlocks(ABlocks, jdata, swap_data, swap_helper)
-    !! Parameters
-    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: ABlocks
-    TYPE(JacobiData_t), INTENT(INOUT) :: jdata
-    TYPE(SwapData_t), INTENT(IN) :: swap_data
-    !! Swap Helpers
-    TYPE(SwapHelper_t) :: swap_helper
-    TYPE(DenseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: TempABlocks
-    !! Stage Tracker
-    INTEGER :: completed
-    INTEGER :: send_up_stage
-    INTEGER :: recv_up_stage
-    INTEGER :: send_down_stage
-    INTEGER :: recv_down_stage
-    INTEGER, PARAMETER :: total_to_complete = 4
-    !! Temporary Variables
-    INTEGER :: counter
-    INTEGER :: index
-
-    !! Setup Swap Helper
-    ALLOCATE(TempABlocks(jdata%block_rows,jdata%block_columns))
-    ALLOCATE(swap_helper%split_guide(jdata%block_columns))
-
-    !! Swap Rows
-    CALL StartTimer("Swap Rows")
-    DO counter = 1, jdata%block_columns
-       CALL CopyDenseMatrix(ABlocks(1,counter), TempABlocks(1,counter))
-       CALL CopyDenseMatrix(ABlocks(2,counter), TempABlocks(2,counter))
-    END DO
-    DO counter = 1, jdata%block_columns
-       index = swap_data%swap_array(counter)
-       CALL CopyDenseMatrix(TempABlocks(1,index), ABlocks(1,counter))
-       CALL CopyDenseMatrix(TempABlocks(2,index), ABlocks(2,counter))
-    END DO
-    CALL StopTimer("Swap Rows")
-
-    DO counter = 1, jdata%block_columns
-       swap_helper%split_guide(counter) = ABlocks(1,counter)%columns
-    END DO
-
-    !! Build matrices to swap
-    CALL StartTimer("Compose First")
-    CALL ComposeDenseMatrix(ABlocks(1,:), 1, jdata%block_columns, &
-         & swap_helper%SendUp)
-    CALL ComposeDenseMatrix(ABlocks(2,:), 1, jdata%block_columns, &
-         & swap_helper%SendDown)
-    CALL StopTimer("Compose First")
-
-    !! Perform Column Swaps
-    send_up_stage = 0
-    send_down_stage = 0
-    recv_up_stage = 0
-    recv_down_stage = 0
-
-    completed = 0
-    CALL StartTimer("Swap Loop")
-    DO WHILE (completed .LT. total_to_complete)
-       !! Send Up Matrix
-       SELECT CASE(send_up_stage)
-       CASE(0) !! Send Sizes
-          CALL SendDenseMatrixSizes(swap_helper%SendUp, &
-               & swap_data%send_up_partner, &
-               & jdata%communicator, swap_helper%send_up_helper, &
-               & swap_data%send_up_tag)
-          send_up_stage = send_up_stage + 1
-       CASE(1) !! Test Send Sizes
-          IF (TestSendRecvSizeRequest(swap_helper%send_up_helper)) THEN
-             CALL SendDenseMatrixData(swap_helper%SendUp, &
-                  & swap_data%send_up_partner, &
-                  & jdata%communicator, swap_helper%send_up_helper, &
-                  & swap_data%send_up_tag)
-             send_up_stage = send_up_stage + 1
-          END IF
-       CASE(2) !! Test Send Data
-          IF (TestSendRecvDataRequest(swap_helper%send_up_helper)) THEN
-             send_up_stage = send_up_stage + 1
-             completed = completed + 1
-          END IF
-       END SELECT
-       !! Receive Up Matrix
-       SELECT CASE(recv_up_stage)
-       CASE(0) !! Receive Sizes
-          CALL RecvDenseMatrixSizes(swap_helper%RecvUp, &
-               & swap_data%recv_up_partner, &
-               & jdata%communicator, swap_helper%recv_up_helper, &
-               & swap_data%recv_up_tag)
-          recv_up_stage = recv_up_stage + 1
-       CASE(1) !! Test Receive Sizes
-          IF (TestSendRecvSizeRequest(swap_helper%recv_up_helper)) THEN
-             CALL RecvDenseMatrixData(swap_helper%RecvUp, &
-                  & swap_data%recv_up_partner, &
-                  & jdata%communicator, swap_helper%recv_up_helper, &
-                  & swap_data%recv_up_tag)
-             recv_up_stage = recv_up_stage + 1
-          END IF
-       CASE(2) !! Test Receive Data
-          IF (TestSendRecvDataRequest(swap_helper%recv_up_helper)) THEN
-             recv_up_stage = recv_up_stage + 1
-             completed = completed + 1
-          END IF
-       END SELECT
-       !! Send Down Matrix
-       SELECT CASE(send_down_stage)
-       CASE(0) !! Send Sizes
-          CALL SendDenseMatrixSizes(swap_helper%SendDown, &
-               & swap_data%send_down_partner, &
-               & jdata%communicator, swap_helper%send_down_helper, &
-               & swap_data%send_down_tag)
-          send_down_stage = send_down_stage + 1
-       CASE(1) !! Test Send Sizes
-          IF (TestSendRecvSizeRequest(swap_helper%send_down_helper)) THEN
-             CALL SendDenseMatrixData(swap_helper%SendDown, &
-                  & swap_data%send_down_partner, &
-                  & jdata%communicator, swap_helper%send_down_helper, &
-                  & swap_data%send_down_tag)
-             send_down_stage = send_down_stage + 1
-          END IF
-       CASE(2) !! Test Send Data
-          IF (TestSendRecvDataRequest(swap_helper%send_down_helper)) THEN
-             send_down_stage = send_down_stage + 1
-             completed = completed + 1
-          END IF
-       END SELECT
-       !! Receive Down Matrix
-       SELECT CASE(recv_down_stage)
-       CASE(0) !! Receive Sizes
-          CALL RecvDenseMatrixSizes(swap_helper%RecvDown, &
-               & swap_data%recv_down_partner, &
-               & jdata%communicator, swap_helper%recv_down_helper, &
-               & swap_data%recv_down_tag)
-          recv_down_stage = recv_down_stage + 1
-       CASE(1) !! Test Receive Sizes
-          IF (TestSendRecvSizeRequest(swap_helper%recv_down_helper)) THEN
-             CALL RecvDenseMatrixData(swap_helper%RecvDown, &
-                  & swap_data%recv_down_partner, &
-                  & jdata%communicator, swap_helper%recv_down_helper, &
-                  & swap_data%recv_down_tag)
-             recv_down_stage = recv_down_stage + 1
-          END IF
-       CASE(2) !! Test Receive Data
-          IF (TestSendRecvDataRequest(swap_helper%recv_down_helper)) THEN
-             recv_down_stage = recv_down_stage + 1
-             completed = completed + 1
-          END IF
-       END SELECT
-    END DO
-    CALL StopTimer("Swap Loop")
-
-    CALL StartTimer("Split Last")
-    CALL SplitDenseMatrix(swap_helper%RecvUp, 1, jdata%block_columns, &
-         & ABlocks(1:1,:), block_size_column_in=swap_helper%split_guide)
-    CALL SplitDenseMatrix(swap_helper%RecvDown, 1, &
-         & jdata%block_columns,ABlocks(2:2,:), &
-         & block_size_column_in=swap_helper%split_guide)
-    CALL StopTimer("Split Last")
-
-    !! Cleanup
-    DO counter = 1, jdata%block_rows
-       CALL DestructDenseMatrix(TempABlocks(1,counter))
-       CALL DestructDenseMatrix(TempABlocks(2,counter))
-    END DO
-    CALL DestructDenseMatrix(swap_helper%SendUp)
-    CALL DestructDenseMatrix(swap_helper%SendDown)
-    CALL DestructDenseMatrix(swap_helper%RecvUp)
-    CALL DestructDenseMatrix(swap_helper%RecvDown)
-
-    DEALLOCATE(TempABlocks)
-    DEALLOCATE(swap_helper%split_guide)
-
-  END SUBROUTINE SwapBlocks
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SwapBlocks1(ABlocks, jdata, swap_data, swap_helper)
     !! Parameters

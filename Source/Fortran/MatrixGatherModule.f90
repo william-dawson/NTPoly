@@ -265,6 +265,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Comm_size(communicator,helper%comm_size,grid_error)
 
     !! Setup the matrix data array
+    IF (ALLOCATED(helper%matrix_data)) DEALLOCATE(helper%matrix_data)
     ALLOCATE(helper%matrix_data(3*helper%comm_size))
     send_data(1) = matrix%rows*matrix%columns
     send_data(2) = matrix%rows
