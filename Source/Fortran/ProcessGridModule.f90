@@ -12,6 +12,7 @@ MODULE ProcessGridModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A datatype which stores a process grid and all its communicators.
   TYPE, PUBLIC :: ProcessGrid_t
      !! Describe the grid
      INTEGER, PUBLIC :: total_processors !< total processors in the grid.
@@ -25,8 +26,10 @@ MODULE ProcessGridModule
      INTEGER, PUBLIC :: my_column !< which column is the current process in.
      !! Ranks for communication
      INTEGER, PUBLIC :: global_rank !< current process's rank amongst processes.
-     INTEGER, PUBLIC :: within_slice_rank !< rank for within slice communication.
-     INTEGER, PUBLIC :: between_slice_rank !< rank for between slice communication.
+     !> rank for within slice communication.
+     INTEGER, PUBLIC :: within_slice_rank
+     !> rank for between slice communication.
+     INTEGER, PUBLIC :: between_slice_rank
      INTEGER, PUBLIC :: column_rank !< rank for within column communication.
      INTEGER, PUBLIC :: row_rank !< rank for within row communication.
      !! Communicators for communication
@@ -238,6 +241,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ConstructNewProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy a process grid.
+  !! @param[in] old_grid the grid to copy.
+  !! @param[inout] new_grid = old_grid
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !! Parameters
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid

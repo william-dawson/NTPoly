@@ -17,9 +17,7 @@ MODULE EigenSolversModule
   USE FixedSolversModule, ONLY : FixedSolverParameters_t
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
        PrintIterativeSolverParameters
-#if JACOBI
-  USE JacobiEigenSolverModule, ONLY : JacobiSolve
-#elif EIGENEXA
+#if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
@@ -44,10 +42,14 @@ MODULE EigenSolversModule
   PUBLIC :: SingularValueDecomposition
   PUBLIC :: SplittingEigenDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This routine uses a dense eigensolver for reference purposes.
+  !! @param[in] this the matrix to decompose.
+  !! @param[inout] eigenvectors the eigenvectors of a matrix.
+  !! @param[in] solver_parameters_in parameters for computing (optional).
   SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -63,9 +65,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL ConvertIterativeToFixed(iter_params, fixed_params)
 
-#if JACOBI
-    CALL JacobiSolve(this, eigenvectors, iter_params)
-#elif EIGENEXA
+#if EIGENEXA
     CALL EigenExa_s(this, eigenvectors, fixed_params)
 #else
     CALL SerialBase(this, eigenvectors, fixed_params)
@@ -255,9 +255,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Base Case
     IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
        CALL StartTimer("Base Case")
-#if JACOBI
-       CALL JacobiSolve(this, eigenvectors, it_param)
-#elif EIGENEXA
+#if EIGENEXA
        CALL EigenExa_s(this, eigenvectors, fixed_param)
 #else
        CALL SerialBase(this, eigenvectors, fixed_param)
@@ -607,8 +605,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SerialBase(this, eigenvectors, fixed_param)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Data
     TYPE(TripletList_t) :: triplet_list, sorted_triplet_list
     TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list

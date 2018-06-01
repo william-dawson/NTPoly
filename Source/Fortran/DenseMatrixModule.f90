@@ -139,6 +139,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructFromTripletList(sparse_matrix, temporary_list, rows, columns)
   END SUBROUTINE ConstructSparseFromDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy the matrix A into the B.
+  !! @param[in] matA the matrix to copy.
+  !! @param[inout] matB = matA
   PURE SUBROUTINE CopyDenseMatrix(matA, matB)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: matA
@@ -148,6 +151,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matB%data = matA%data
   END SUBROUTINE CopyDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Deallocate the memory associated with this matrix.
+  !! @param[inout] this the matrix to delete.
   PURE SUBROUTINE DestructDenseMatrix(this)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(INOUT) :: this
@@ -193,6 +198,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE MultiplyDense
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> AXPY for dense matrices. B = B + alpha*A
+  !! @param[in] MatA is added
+  !! @param[inout] MatB is incremented.
+  !! @param[in] alpha_in a scaling parameter (optional).
   PURE SUBROUTINE IncrementDenseMatrix(MatA,MatB,alpha_in)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: MatA
@@ -260,6 +269,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE DenseEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the norm of a dense matrix.
+  !! Computes the Frobenius norm.
+  !! @param[in] this the matrix to compute the norm of.
+  !! @result the norm of the matrix.
   FUNCTION DenseMatrixNorm(this) RESULT(norm)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: this
@@ -277,6 +290,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
   END FUNCTION DenseMatrixNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Transpose a dense matrix.
+  !! @param[in] matA the matrix to transpose.
+  !! @param[inout] matAT = matA^T.
   PURE SUBROUTINE TransposeDenseMatrix(matA, matAT)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: matA
@@ -286,6 +302,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matAT%data = TRANSPOSE(matA%data)
   END SUBROUTINE TransposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Create a big matrix from an array of matrices by putting them one next
+  !! to another.
+  !! @param[in] mat_array 2d array of matrices to compose.
+  !! @param[in] block_rows the number of rows of the array of blocks.
+  !! @param[in] block_columns the number of columns of the array of blocks.
+  !! @param[out] out_matrix the composed matrix.
   PURE SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
@@ -326,6 +348,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
   END SUBROUTINE ComposeDenseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Split a sparse matrix into an array of sparse matrices.
+  !! @param[in] this the matrix to split.
+  !! @param[in] block_rows number of rows to split the matrix into.
+  !! @param[in] block_columns number of columns to split the matrix into.
+  !! @param[out] split_array a COLUMNxROW array for the output to go into.
   PURE SUBROUTINE SplitDenseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters

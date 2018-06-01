@@ -116,6 +116,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE AppendToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> (Just for a related project)
   PURE SUBROUTINE AccumulateTripletList(this, triplet_value)
     !! Parameters
     TYPE(TripletList_t), INTENT(inout) :: this

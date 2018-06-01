@@ -365,7 +365,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the 1 norm of a sparse matrix.
   !! @param[in] this the matrix to compute the norm of.
-  !! @param[out] norm the matrix.
+  !! @result norm the matrix.
   PURE FUNCTION SparseMatrixNorm(this) RESULT(norm)
     !! Parameters
     TYPE(SparseMatrix_t), INTENT(IN) :: this

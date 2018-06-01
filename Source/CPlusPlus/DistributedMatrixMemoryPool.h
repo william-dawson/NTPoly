@@ -11,9 +11,9 @@ class DistributedSparseMatrix;
 //! this is to prevent excessive alloc/dealloc.
 class DistributedMatrixMemoryPool {
 public:
-  // Standard constructor.
+  //! Standard constructor.
   DistributedMatrixMemoryPool(const DistributedSparseMatrix &Matrix);
-  // Standard destructor.
+  //! Standard destructor.
   ~DistributedMatrixMemoryPool();
 
 private:

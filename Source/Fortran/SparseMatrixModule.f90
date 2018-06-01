@@ -500,6 +500,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] block_rows number of rows to split the matrix into.
   !! @param[in] block_columns number of columns to split the matrix into.
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
+  !! @param[in] block_size_row_in specifies the size of the  rows.
+  !! @param[in] block_size_column_in specifies the size of the columns.
   SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
@@ -568,7 +570,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a matrix into into small blocks based on the specified offsets.
   !! @param[in] this matrix to perform this operation on.
   !! @param[in] num_blocks number of blocks to split into
-  !! @param[out] block_offsets the offsets used for splitting.
+  !! @param[out] block_sizes the sizes used for splitting.
   !! @param[out] split_list 1D array of blocks.
   PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, block_sizes, &
        & split_list)

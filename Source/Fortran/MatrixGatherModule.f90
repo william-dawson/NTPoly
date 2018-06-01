@@ -125,7 +125,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine we gather the data into a list.
   !! @param[in] matrix to send.
   !! @param[inout] communicator to send along.
-  !! @param[inout] gathered_matrix_list the matrix we are gathering.
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherSparseMatrixAndListData(matrix,communicator,helper)
     !! Parameters
@@ -178,7 +177,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third a routine to cleanup the list builder.
   !! @param[in] matrix to send.
-  !! @param[inout] gathered_matrix the matrix being gathered.
+  !! @param[inout] matrix_list the list of matrices being gathered.
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE GatherSparseMatrixAndListCleanup(matrix, matrix_list, helper)
     !! Parameters
@@ -281,7 +280,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine we gather the data into a list.
   !! @param[in] matrix to send.
   !! @param[inout] communicator to send along.
-  !! @param[inout] gathered_matrix_list the matrix we are gathering.
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherDenseMatrixAndListData(matrix,communicator,helper)
     !! Parameters
@@ -318,7 +316,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third a routine to cleanup the list builder.
   !! @param[in] matrix to send.
-  !! @param[inout] gathered_matrix the matrix being gathered.
+  !! @param[inout] matrix_list the list of matrices gathered.
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE GatherDenseMatrixAndListCleanup(matrix, matrix_list, helper)
     !! Parameters

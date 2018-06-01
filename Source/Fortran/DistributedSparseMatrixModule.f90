@@ -79,7 +79,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   !! @param[out] this the matrix to be constructed.
   !! @param[in] matrix_dim_ the dimension of the full matrix.
-  !! @param[in] process_grid a process grid to host the matrix (optional).
+  !! @param[in] process_grid_in a process grid to host the matrix (optional).
   SUBROUTINE ConstructEmptyDistributedSparseMatrix(this, matrix_dim_, &
        & process_grid_in)
     !! Parameters
@@ -1240,6 +1240,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split the current communicator, and give each group a complete copy of this
   !! @param[in] this the matrix to split.
   !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
+  !! @param[out] my_color distinguishes between the two groups (optional).
+  !! @param[out] split_slice if we split along the slice direction, this is True
   SUBROUTINE CommSplitDistributedSparseMatrix(this, split_mat, my_color, &
        & split_slice)
     !! Parameters
