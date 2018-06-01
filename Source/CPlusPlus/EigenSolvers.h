@@ -11,10 +11,10 @@ class DistributedSparseMatrix;
 class EigenSolvers : public SolverBase {
 public:
   //! Compute the eigenvalues and eigenvectors of a matrix
-  static void
-  TestEigenDecomposition(const DistributedSparseMatrix &matrix,
-                         DistributedSparseMatrix &eigenvectors,
-                         const IterativeSolverParameters &solver_parameters);
+  static void ReferenceEigenDecomposition(
+      const DistributedSparseMatrix &matrix,
+      DistributedSparseMatrix &eigenvectors,
+      const IterativeSolverParameters &solver_parameters);
   //! Compute the eigenvalues and eigenvectors of a matrix
   static void SplittingEigenDecomposition(
       const DistributedSparseMatrix &matrix,

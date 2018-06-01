@@ -17,7 +17,11 @@ MODULE EigenSolversModule
   USE FixedSolversModule, ONLY : FixedSolverParameters_t
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
        PrintIterativeSolverParameters
+#if JACOBI
   USE JacobiEigenSolverModule, ONLY : JacobiSolve
+#elif EIGENEXA
+  USE EigenExaModule, ONLY : EigenExa_s
+#endif
   USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
   USE PermutationModule, ONLY : ConstructRandomPermutation, Permutation_t
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
@@ -36,30 +40,38 @@ MODULE EigenSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTEGER, PARAMETER :: BASESIZE = 2048
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: SplittingEigenDecomposition
-  PUBLIC :: TestEigenDecomposition
+  PUBLIC :: ReferenceEigenDecomposition
   PUBLIC :: SingularValueDecomposition
-  PUBLIC :: SerialBase
+  PUBLIC :: SplittingEigenDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE TestEigenDecomposition(this, eigenvectors, solver_parameters_in)
+  SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, &
+       & solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
-    !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    !! For Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: iter_params
+    TYPE(FixedSolverParameters_t) :: fixed_params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       iter_params = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       iter_params = IterativeSolverParameters_t()
     END IF
+    CALL ConvertIterativeToFixed(iter_params, fixed_params)
 
-    CALL JacobiSolve(this, eigenvectors, solver_parameters)
+#if JACOBI
+    CALL JacobiSolve(this, eigenvectors, iter_params)
+#elif EIGENEXA
+    CALL EigenExa_s(this, eigenvectors, fixed_params)
+#else
+    CALL SerialBase(this, eigenvectors, fixed_params)
+#endif
 
-  END SUBROUTINE TestEigenDecomposition
+  END SUBROUTINE ReferenceEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvalues and eigenvectors of a matrix.
   !! @param[in] this the matrix to decompose.
@@ -238,13 +250,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     sparsity = REAL(GetSize(this),KIND=NTREAL) / &
-             & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
+         & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
 
     !! Base Case
     IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
        CALL StartTimer("Base Case")
-       CALL SerialBase(this, fixed_param, eigenvectors)
-       ! CALL JacobiSolve(this, eigenvectors, it_param)
+#if JACOBI
+       CALL JacobiSolve(this, eigenvectors, it_param)
+#elif EIGENEXA
+       CALL EigenExa_s(this, eigenvectors, fixed_param)
+#else
+       CALL SerialBase(this, eigenvectors, fixed_param)
+#endif
        CALL StopTimer("Base Case")
     ELSE
        !! Setup
@@ -587,7 +604,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to compute
   !! @param[in] fixed_param the solve parameters.
   !! @param[out] eigenvecotrs the eigenvectors of the matrix
-  SUBROUTINE SerialBase(this, fixed_param, eigenvectors)
+  SUBROUTINE SerialBase(this, eigenvectors, fixed_param)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param

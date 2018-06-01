@@ -1,7 +1,7 @@
 #ifndef EIGENSOLVERS_ch
 #define EIGENSOLVERS_ch
 
-void TestEigenDecomposition_wrp(const int *ih_this, int *ih_eigenvectors,
+void ReferenceEigenDecomposition_wrp(const int *ih_this, int *ih_eigenvectors,
                                 const int *ih_solver_parameters);
 void SplittingEigenDecomposition_wrp(const int *ih_this, int *ih_eigenvectors,
                                      int *ih_eigenvalues, int *num_values,

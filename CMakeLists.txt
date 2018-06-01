@@ -39,6 +39,7 @@ else()
 endif()
 
 ################################################################################
+## Compiler Flags
 set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
 set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
@@ -48,6 +49,16 @@ if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS_RELEASE})
   set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS_RELEASE})
 endif()
+
+################################################################################
+## Check for EigenExa
+IF (EIGEN_EXA)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -DEIGENEXA")
+  set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -DEIGENEXA")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DEIGENEXA")
+
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -L${EIGEN_EXA} -lEigenExa -lscalapack")
+ENDIF()
 
 ################################################################################
 ## Get at the source files

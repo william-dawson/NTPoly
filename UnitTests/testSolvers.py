@@ -912,7 +912,7 @@ class TestSolvers(unittest.TestCase):
         ntmatrix = nt.DistributedSparseMatrix(self.input_file)
         V = nt.DistributedSparseMatrix(self.matrix_dimension)
 
-        nt.EigenSolvers.TestEigenDecomposition(
+        nt.EigenSolvers.ReferenceEigenDecomposition(
             ntmatrix, V, self.iterative_solver_parameters)
         V.WriteToMatrixMarket(result_file)
 

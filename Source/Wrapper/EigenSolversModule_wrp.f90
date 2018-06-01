@@ -4,7 +4,7 @@ MODULE EigenSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
-  USE EigenSolversModule, ONLY : TestEigenDecomposition, &
+  USE EigenSolversModule, ONLY : ReferenceEigenDecomposition, &
        & SplittingEigenDecomposition, SingularValueDecomposition
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -13,7 +13,7 @@ MODULE EigenSolversModule_wrp
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SplittingEigenDecomposition_wrp
-  PUBLIC :: TestEigenDecomposition_wrp
+  PUBLIC :: ReferenceEigenDecomposition_wrp
   PUBLIC :: SingularValueDecompostion_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a distributed matrix.
@@ -65,8 +65,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SingularValueDecompostion_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a distributed matrix.
-  SUBROUTINE TestEigenDecomposition_wrp(ih_this, ih_eigenvectors, &
-       & ih_solver_parameters) bind(c,name="TestEigenDecomposition_wrp")
+  SUBROUTINE ReferenceEigenDecomposition_wrp(ih_this, ih_eigenvectors, &
+       & ih_solver_parameters) bind(c,name="ReferenceEigenDecomposition_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_eigenvectors(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -78,7 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_eigenvectors = TRANSFER(ih_eigenvectors, h_eigenvectors)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL TestEigenDecomposition(h_this%data, h_eigenvectors%data, &
+    CALL ReferenceEigenDecomposition(h_this%data, h_eigenvectors%data, &
          & h_solver_parameters%data)
-  END SUBROUTINE TestEigenDecomposition_wrp
+  END SUBROUTINE ReferenceEigenDecomposition_wrp
 END MODULE EigenSolversModule_wrp

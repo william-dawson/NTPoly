@@ -44,6 +44,11 @@ set(Fsrc
     TripletModule.f90
 )
 
+IF (EIGEN_EXA)
+  LIST(APPEND Fsrc EigenExaModule.f90)
+  include_directories(${EIGEN_EXA})
+ENDIF()
+
 add_library(NTPoly STATIC ${Fsrc})
 install(TARGETS NTPoly
         ARCHIVE DESTINATION lib)
