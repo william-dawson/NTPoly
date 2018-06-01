@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for calling eigenexa
 MODULE EigenExaModule
+  USE DataTypesModule, ONLY : NTREAL
   USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
        & GetTripletList, ConstructEmptyDistributedSparseMatrix, &
        & FillFromTripletList, PrintMatrixInformation
@@ -56,9 +57,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Helper
     TYPE(ExaHelper_t) :: exa
     !! Dense Matrices
-    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: AD
-    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE :: VD
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WD
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: AD
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: VD
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: WD
 
     !! Process Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -99,9 +100,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE InitializeEigenExa(A, AD, VD, WD, exa)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: A
-    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
-    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
     INTEGER :: ierr
@@ -131,7 +132,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE NTToEigen(A, AD, exa)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: A
-    DOUBLE PRECISION, DIMENSION(:,:), INTENT(INOUT) :: AD
+    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: AD
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
     TYPE(TripletList_t) :: triplet_a
@@ -195,7 +196,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] info about the calculation.
   SUBROUTINE EigenToNT(VD, V, solver_parameters, exa)
     !! Parameters
-    DOUBLE PRECISION, DIMENSION(:,:), INTENT(IN) :: VD
+    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: VD
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: V
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(ExaHelper_t) :: exa
@@ -206,7 +207,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II, JJ, ilookup, jlookup
     INTEGER :: ICTXT, INFO
     INTEGER, DIMENSION(9) :: DESCA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: VD1
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: VD1
     INTEGER :: ind
 
     !! The Matrices We'll Build
@@ -258,9 +259,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] exa calculation parameters.
   SUBROUTINE Compute(A, V, W, exa)
     !! Parameters
-    DOUBLE PRECISION, DIMENSION(:,:), INTENT(INOUT) :: A
-    DOUBLE PRECISION, DIMENSION(:,:), INTENT(INOUT) :: V
-    DOUBLE PRECISION, DIMENSION(:), INTENT(INOUT) :: W
+    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: A
+    REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: V
+    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: W
     TYPE(ExaHelper_t), INTENT(IN) :: exa
     !! Local Variables
     INTEGER :: N, LDA, LDZ
@@ -280,9 +281,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] VD the eigenvectors.
   !! @param[inout] W the eigenvalues.
   SUBROUTINE CleanUp(AD, VD, WD)
-    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
-    DOUBLE PRECISION, DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
 
     IF(ALLOCATED(AD)) DEALLOCATE(AD)
     IF(ALLOCATED(VD)) DEALLOCATE(VD)
