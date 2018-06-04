@@ -17,6 +17,7 @@ MODULE PermutationModule
   PUBLIC :: ConstructDefaultPermutation
   PUBLIC :: ConstructReversePermutation
   PUBLIC :: ConstructRandomPermutation
+  PUBLIC :: ConstructLimitedRandomPermutation
   PUBLIC :: DestructPermutation
 CONTAINS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -101,6 +102,50 @@ CONTAINS
        this%reverse_index_lookup(this%index_lookup(counter)) = counter
     END DO reverse
   END SUBROUTINE ConstructRandomPermutation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Constructs a permutation that has a random order, but there is no
+  !! permutation from beyond the actual matrix dimension.
+  !! @param[inout] this the permutation to construct.
+  !! @param[in] actual_matrix_dimension actual size of the matrix.
+  !! @param[in] logical_matrix_dimension padded size of the matrix.
+  SUBROUTINE ConstructLimitedRandomPermutation(this, actual_matrix_dimension, &
+       & logical_matrix_dimension)
+    !! Parameters
+    TYPE(Permutation_t), INTENT(inout) :: this
+    INTEGER, INTENT(in) :: actual_matrix_dimension
+    INTEGER, INTENT(in) :: logical_matrix_dimension
+    !! Local Data
+    INTEGER :: counter
+    INTEGER :: random_integer
+    REAL(KIND=8) :: rand_temp
+    INTEGER :: swap_space
+    INTEGER, DIMENSION(:), ALLOCATABLE :: seed
+    INTEGER :: seed_size
+
+    !! Temporary, seed the random number generator
+    CALL RANDOM_SEED(size=seed_size)
+    ALLOCATE(seed(seed_size))
+    seed = 0
+    CALL RANDOM_SEED(put=seed)
+
+    !! First fill by counting.
+    CALL ConstructDefaultPermutation(this,logical_matrix_dimension)
+
+    !! Do the shuffle
+    shuffle: DO counter=actual_matrix_dimension,1,-1
+       CALL RANDOM_NUMBER(rand_temp)
+       random_integer = FLOOR(actual_matrix_dimension*rand_temp)+1
+       swap_space = this%index_lookup(actual_matrix_dimension)
+       this%index_lookup(actual_matrix_dimension) = &
+            & this%index_lookup(random_integer)
+       this%index_lookup(random_integer) = swap_space
+    END DO shuffle
+
+    !! Compute the reverse lookup
+    reverse: DO counter=1,logical_matrix_dimension
+       this%reverse_index_lookup(this%index_lookup(counter)) = counter
+    END DO reverse
+  END SUBROUTINE ConstructLimitedRandomPermutation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
   !! @param[inout] this the permutation to destruct.

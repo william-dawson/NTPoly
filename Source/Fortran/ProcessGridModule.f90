@@ -54,6 +54,7 @@ MODULE ProcessGridModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: blocked_between_slice_comm
   END TYPE ProcessGrid_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The default process grid.
   TYPE(ProcessGrid_t), PUBLIC :: global_grid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid
@@ -263,6 +264,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     new_grid = old_grid
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Destruct a process grid.
+  !! @param[inout] grid the grid to destruct.
   SUBROUTINE DestructProcessGrid(grid)
     !! Parameters
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid

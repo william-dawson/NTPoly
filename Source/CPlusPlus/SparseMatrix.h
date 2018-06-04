@@ -76,7 +76,7 @@ public:
 
 public:
   //! Compute the eigen vectors of a matrix.
-  //!\param matV the eigenvectors.
+  //!\param MatV the eigenvectors.
   //!\param threshold for pruning small values.
   void EigenDecomposition(NTPoly::SparseMatrix &MatV, double threshold);
 

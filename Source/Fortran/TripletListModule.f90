@@ -183,6 +183,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! matrix columns. Bubble sort is used within a bucket.
   !! @param[in] input_list list to be sorted.
   !! @param[in] matrix_columns this is the highest column value in the list.
+  !! @param[in] matrix_rows this is the highest row value in the list.
   !! @param[in] bubble_in false if you don't need the final bubble sort.
   !! @param[out] sorted_list a now sorted version of the list. This routine
   !! will allocate it.
@@ -452,6 +453,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ShiftTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Sort a triplet list assuming that the matrix it corresponds to is nearly
+  !! dense.
+  !! @param[in] input_list the list
+  !! @param[in] matrix_columns for the corresponding matrix.
+  !! @param[in] matrix_rows for the corresponding matrix.
+  !! @param[out] sorted_list sorted and ready to use for building matrices.
   PURE SUBROUTINE SortDenseTripletList(input_list, matrix_columns, &
        & matrix_rows, sorted_list)
     !! Parameters
