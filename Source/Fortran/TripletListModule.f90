@@ -3,6 +3,7 @@
 MODULE TripletListModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_t, CompareTriplets
   USE ISO_C_BINDING, ONLY : c_int
   USE MPI
@@ -389,6 +390,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Do Actual Send
+    CALL StartTimer("AllToAllV")
     CALL MPI_Alltoallv(send_buffer_col, send_per_process, send_offsets, &
          & MPI_INT, recv_buffer_col, recv_per_process, recv_offsets, MPI_INT, &
          & comm, mpi_error)
@@ -398,6 +400,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Alltoallv(send_buffer_val, send_per_process, send_offsets, &
          & MPINTREAL, recv_buffer_val, recv_per_process, recv_offsets, &
          & MPINTREAL, comm, mpi_error)
+    CALL StopTimer("AllToAllV")
 
     !! Unpack Into The Output Triplet List
     CALL ConstructTripletList(local_data_out,size_in=SUM(recv_per_process))

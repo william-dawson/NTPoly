@@ -1400,8 +1400,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & reverse_index_lookup(gathered_list%data(counter)%index_column) - &
             & this%start_column + 1
     END DO
+    CALL StartTimer("SortTripletList")
     CALL SortTripletList(gathered_list,this%local_columns, &
          & sorted_triplet_list)
+    CALL StopTimer("SortTripletList")
 
     !! Cleanup
     DO counter = 1, this%process_grid%slice_size

@@ -5,6 +5,8 @@ set(CMAKE_C_COMPILER mpifccpx)
 set(CMAKE_Fortran_COMPILER mpifrtpx)
 set(CMAKE_CXX_COMPILER mpiFCCpx)
 
+set(TOOLCHAIN_LIBS "")
+
 # Release Suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE
     "-Kfast,-Kparallel,openmp,optmsg=2 --linkfortran")

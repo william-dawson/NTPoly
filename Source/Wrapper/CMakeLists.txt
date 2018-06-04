@@ -32,6 +32,10 @@ set(Wsrc
 
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)
 
+IF (EIGEN_EXA)                                                                     
+  include_directories(${EIGEN_EXA})                                                
+ENDIF()    
+
 add_library(NTPolyWrapper STATIC ${Wsrc})
 target_link_libraries(NTPolyWrapper NTPoly)
 install(TARGETS NTPolyWrapper ARCHIVE DESTINATION lib)

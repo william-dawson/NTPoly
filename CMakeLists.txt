@@ -57,7 +57,8 @@ IF (EIGEN_EXA)
   set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -DEIGENEXA")
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DEIGENEXA")
 
-  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -L${EIGEN_EXA} -lEigenExa -lscalapack")
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -L${EIGEN_EXA}")
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -lEigenExa")
 ENDIF()
 
 ################################################################################

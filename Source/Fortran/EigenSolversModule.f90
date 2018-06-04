@@ -306,7 +306,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StopTimer("Rotate")
 
        !! Iterate Recursively
-       IF (this%process_grid%total_processors .GT. 1) THEN
+       IF (this%process_grid%total_processors .GT. 1 .AND. .FALSE.) THEN
           CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color, &
                & split_slice)
           CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&

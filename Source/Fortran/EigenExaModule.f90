@@ -9,6 +9,7 @@ MODULE EigenExaModule
        & PrintFixedSolverParameters
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader, WriteCitation
+  USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_t, SetTriplet
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & GetTripletAt, DestructTripletList, AppendToTripletList, &
@@ -47,6 +48,7 @@ MODULE EigenExaModule
      INTEGER :: M
      !> Mode of the solver
      CHARACTER :: MODE
+     INTEGER :: offset
   END TYPE ExaHelper_t
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa.
@@ -85,9 +87,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Main Routines
     CALL InitializeEigenExa(A, AD, VD, WD, exa)
+    
+    CALL StartTimer("NTToEigen")
     CALL NTToEigen(A, AD, exa)
+    CALL StopTimer("NTToEigen")
+
+    CALL StartTimer("EigenExaCompute")
     CALL Compute(AD, VD, WD, exa)
+    CALL StopTimer("EigenExaCompute")
+
+    CALL StartTimer("EigenToNT")
     CALL EigenToNT(VD, V, solver_parameters, exa)
+    CALL StopTimer("EigenToNT")
+
     CALL CleanUp(AD, VD, WD)
 
     IF (solver_parameters%be_verbose) THEN
@@ -111,6 +123,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
+    INTEGER :: ICTXT, INFO
+    INTEGER, DIMENSION(9) :: DESCA
     INTEGER :: ierr
 
     !! Setup the MPI Communicator
@@ -125,13 +139,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     exa%mat_dim = A%actual_matrix_dimension
     CALL eigen_get_matdims(exa%mat_dim, exa%local_rows, exa%local_cols)
     ALLOCATE(AD(exa%local_rows, exa%local_cols))
+    AD = 0
     ALLOCATE(VD(exa%local_rows, exa%local_cols))
+    VD = 0
     ALLOCATE(WD(exa%mat_dim))
+    WD = 0
 
     !> Default blocking parameters
     exa%MB = 128
     exa%M = 48
     exa%MODE = 'A'
+
+    !! Blacs gives us the blocking info.
+    ICTXT = eigen_get_blacs_context()
+    CALL DESCINIT(DESCA, exa%mat_dim, exa%mat_dim, 1, 1, 0, 0, ICTXT, &
+         & exa%local_rows, INFO )
+    exa%offset = DESCA(9)
 
   END SUBROUTINE InitializeEigenExa
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -216,8 +239,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_t) :: trip
     INTEGER :: row_start, row_end, col_start, col_end
     INTEGER :: II, JJ, ilookup, jlookup
-    INTEGER :: ICTXT, INFO
-    INTEGER, DIMENSION(9) :: DESCA
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: VD1
     INTEGER :: ind
 
@@ -230,15 +251,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     col_start = eigen_loop_start(1, exa%proc_cols, exa%colid)
     col_end = eigen_loop_end(exa%mat_dim, exa%proc_cols, exa%colid)
 
-    !! Blacs gives us the blocking info.
-    ICTXT = eigen_get_blacs_context()
-    CALL DESCINIT(DESCA, exa%mat_dim, exa%mat_dim, 1, 1, 0, 0, ICTXT, &
-         & exa%local_rows, INFO )
-
     !! Convert to a 1D array for index ease.
     ALLOCATE(VD1(SIZE(VD,DIM=1)*SIZE(VD,DIM=2)))
     VD1 = PACK(VD, .TRUE.)
 
+    CALL StartTimer("EigenExaFilter")
     CALL ConstructTripletList(triplet_v)
     ind = 1
     DO JJ = col_start, col_end
@@ -250,10 +267,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL AppendToTripletList(triplet_v, trip)
           END IF
        END DO
-       ind = ind + DESCA(9)
+       ind = ind + exa%offset
     END DO
+    CALL StopTimer("EigenExaFilter")
 
+    CALL StartTimer("EigenFill")
     CALL FillFromTripletList(V, triplet_v)
+    CALL StopTimer("EigenFill")
 
     !! Cleanup
     CALL DestructTripletList(triplet_w)
@@ -283,8 +303,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LDZ = exa%local_rows
 
     !! Call
-    CALL eigen_sx(N, N, A, LDA, W, V, LDZ, m_forward=exa%M, m_backward=exa%MB, &
-         & mode=exa%MODE)
+    CALL eigen_sx(N, N, A, LDA, W, V, LDZ, mode=exa%MODE)
 
   END SUBROUTINE Compute
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
