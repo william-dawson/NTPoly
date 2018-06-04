@@ -112,7 +112,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CLOSE(file_handler)
 
     CALL SymmetrizeTripletList(triplet_list, pattern_type)
-    CALL SortTripletList(triplet_list,temp_columns,sorted_triplet_list)
+    CALL SortTripletList(triplet_list, temp_columns, temp_rows, &
+         & sorted_triplet_list)
     CALL ConstructFromTripletList(this, sorted_triplet_list, temp_rows, &
          & temp_columns)
 

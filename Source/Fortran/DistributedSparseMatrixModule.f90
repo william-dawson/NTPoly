@@ -734,7 +734,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructTripletList(unsorted_triplet_list,total_values)
     unsorted_triplet_list%data = triplet_list%data(:total_values)
     CALL SortTripletList(unsorted_triplet_list,this%local_columns,&
-         & sorted_triplet_list)
+         & this%local_rows, sorted_triplet_list)
     CALL ConstructFromTripletList(local_matrix,sorted_triplet_list, &
          & this%local_rows,this%local_columns)
 
@@ -807,8 +807,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Finish constructing
     CALL ConstructTripletList(unsorted_triplet_list,total_values)
     unsorted_triplet_list%data = triplet_list%data(:total_values)
-    CALL SortTripletList(unsorted_triplet_list,this%local_columns,&
-         & sorted_triplet_list)
+    CALL SortTripletList(unsorted_triplet_list, this%local_columns, &
+         & this%local_rows, sorted_triplet_list)
     CALL ConstructFromTripletList(local_matrix,sorted_triplet_list, &
          & this%local_rows,this%local_columns)
 
@@ -1401,7 +1401,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & this%start_column + 1
     END DO
     CALL StartTimer("SortTripletList")
-    CALL SortTripletList(gathered_list,this%local_columns, &
+    CALL SortTripletList(gathered_list, this%local_columns, this%local_rows, &
          & sorted_triplet_list)
     CALL StopTimer("SortTripletList")
 

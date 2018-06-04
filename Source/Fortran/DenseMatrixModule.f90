@@ -104,7 +104,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_t) :: temporary
     TYPE(TripletList_t) :: temporary_list
     INTEGER :: columns, rows
-    INTEGER :: ind
 
     columns = dense_matrix%columns
     rows = dense_matrix%rows

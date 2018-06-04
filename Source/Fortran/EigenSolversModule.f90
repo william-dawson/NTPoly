@@ -632,7 +632,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%within_slice_comm, triplet_list)
 
     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-       CALL SortTripletList(triplet_list, mat_dim, sorted_triplet_list, .TRUE.)
+       CALL SortTripletList(triplet_list, mat_dim, mat_dim, &
+            & sorted_triplet_list, .TRUE.)
        CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
             & mat_dim)
        CALL ConstructDenseFromSparse(local_a, dense_a)

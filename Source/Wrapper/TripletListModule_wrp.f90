@@ -120,10 +120,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetTripletAt_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.
-  PURE SUBROUTINE SortTripletList_wrp(ih_this, matrix_columns, ih_sorted) &
-       & bind(c,name="SortTripletList_wrp")
+  PURE SUBROUTINE SortTripletList_wrp(ih_this, matrix_columns, matrix_rows, &
+       & ih_sorted) bind(c,name="SortTripletList_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: matrix_columns
+    INTEGER(kind=c_int), INTENT(IN)    :: matrix_rows
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_sorted(SIZE_wrp)
     TYPE(TripletList_wrp) :: h_this
     TYPE(TripletList_wrp) :: h_sorted
@@ -131,7 +132,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     ALLOCATE(h_sorted%data)
 
-    CALL SortTripletList(h_this%data, matrix_columns, h_sorted%data)
+    CALL SortTripletList(h_this%data, matrix_columns, matrix_rows, &
+         & h_sorted%data)
 
     ih_sorted = TRANSFER(h_sorted,ih_sorted)
   END SUBROUTINE SortTripletList_wrp

@@ -94,8 +94,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_value the value to append.
   PURE SUBROUTINE AppendToTripletList(this, triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(inout) :: this
-    TYPE(Triplet_t), INTENT(in)        :: triplet_value
+    TYPE(TripletList_t), INTENT(INOUT) :: this
+    TYPE(Triplet_t), INTENT(IN)        :: triplet_value
     !! Local data
     INTEGER :: new_size
 
@@ -120,18 +120,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> (Just for a related project)
   PURE SUBROUTINE AccumulateTripletList(this, triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(inout) :: this
-    TYPE(Triplet_t), INTENT(in)        :: triplet_value
+    TYPE(TripletList_t), INTENT(INOUT) :: this
+    TYPE(Triplet_t), INTENT(IN)        :: triplet_value
     !! Local data
     INTEGER :: new_size
     INTEGER :: idata
 
     DO idata = 1, this%CurrentSize
-      IF ((this%DATA(idata)%index_row == triplet_value%index_row) .AND. &
-   &    (this%DATA(idata)%index_column == triplet_value%index_column)) THEN
-        this%DATA(idata)%point_value = this%DATA(idata)%point_value + triplet_value%point_value
-        RETURN
-      END IF
+       IF ((this%DATA(idata)%index_row == triplet_value%index_row) .AND. &
+            &    (this%DATA(idata)%index_column == triplet_value%index_column)) THEN
+          this%DATA(idata)%point_value = this%DATA(idata)%point_value + triplet_value%point_value
+          RETURN
+       END IF
     END DO
 
     !! First, check if we need to allocate more memory
@@ -158,9 +158,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_value the value of the triplet to set.
   PURE SUBROUTINE SetTripletAt(this,index,triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(inout) :: this
-    INTEGER(KIND=c_int), INTENT(in)    :: index
-    TYPE(Triplet_t), INTENT(in)        :: triplet_value
+    TYPE(TripletList_t), INTENT(INOUT) :: this
+    INTEGER(KIND=c_int), INTENT(IN)    :: index
+    TYPE(Triplet_t), INTENT(IN)        :: triplet_value
 
     this%data(index) = triplet_value
   END SUBROUTINE SetTripletAt
@@ -171,9 +171,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] triplet_value the extracted triplet value.
   PURE SUBROUTINE GetTripletAt(this,index,triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(in) :: this
-    INTEGER(kind=c_int), INTENT(in) :: index
-    TYPE(Triplet_t), INTENT(out)    :: triplet_value
+    TYPE(TripletList_t), INTENT(IN) :: this
+    INTEGER(kind=c_int), INTENT(IN) :: index
+    TYPE(Triplet_t), INTENT(OUT)    :: triplet_value
 
     triplet_value = this%data(index)
   END SUBROUTINE GetTripletAt
@@ -186,13 +186,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] bubble_in false if you don't need the final bubble sort.
   !! @param[out] sorted_list a now sorted version of the list. This routine
   !! will allocate it.
-  PURE SUBROUTINE SortTripletList(input_list, matrix_columns, sorted_list, &
-       & bubble_in)
+  PURE SUBROUTINE SortTripletList(input_list, matrix_columns, matrix_rows, &
+       & sorted_list, bubble_in)
     !! Parameters
-    TYPE(TripletList_t), INTENT(in)  :: input_list
-    INTEGER, INTENT(in) :: matrix_columns
-    TYPE(TripletList_t), INTENT(out) :: sorted_list
-    LOGICAL, OPTIONAL, INTENT(in) :: bubble_in
+    TYPE(TripletList_t), INTENT(IN)  :: input_list
+    INTEGER, INTENT(IN) :: matrix_columns
+    INTEGER, INTENT(IN) :: matrix_rows
+    TYPE(TripletList_t), INTENT(OUT) :: sorted_list
+    LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     LOGICAL :: bubble
     TYPE(Triplet_t) :: temporary
@@ -212,58 +213,63 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        bubble = .TRUE.
     END IF
 
-    !! Data Allocation
-    !list_length = SIZE(input_list%data)
     list_length = input_list%CurrentSize
-    CALL ConstructTripletList(sorted_list,list_length)
-    !allocate(sorted_list%(size(input_list%data)), stat=alloc_stat)
-    ALLOCATE(values_per_row(matrix_columns), stat=alloc_stat)
-    ALLOCATE(offset_array(matrix_columns), stat=alloc_stat)
-    ALLOCATE(inserted_per_row(matrix_columns), stat=alloc_stat)
 
-    !! Initial one dimensional sort
-    values_per_row = 0
-    inserted_per_row = 0
+    IF (bubble .AND. list_length .GT. matrix_rows*matrix_columns*0.1) THEN
+       CALL SortDenseTripletList(input_list, matrix_columns, matrix_rows, &
+            & sorted_list)
+    ELSE
+       !! Data Allocation
+       CALL ConstructTripletList(sorted_list,list_length)
+       ALLOCATE(values_per_row(matrix_columns), stat=alloc_stat)
+       ALLOCATE(offset_array(matrix_columns), stat=alloc_stat)
+       ALLOCATE(inserted_per_row(matrix_columns), stat=alloc_stat)
 
-    !! Do a first pass bucket sort
-    DO counter = 1, input_list%CurrentSize
-       values_per_row(input_list%data(counter)%index_column) = &
-            & values_per_row(input_list%data(counter)%index_column) + 1
-    END DO
-    offset_array(1) = 1
-    DO counter = 2, UBOUND(offset_array,dim=1)
-       offset_array(counter) = offset_array(counter-1) + &
-            & values_per_row(counter-1)
-    END DO
-    DO counter = 1, input_list%CurrentSize
-       temp_index = input_list%data(counter)%index_column
-       sorted_list%data(offset_array(temp_index)+inserted_per_row(temp_index))=&
-            & input_list%data(counter)
-       inserted_per_row(temp_index) = inserted_per_row(temp_index) + 1
-    END DO
+       !! Initial one dimensional sort
+       values_per_row = 0
+       inserted_per_row = 0
 
-    !! Finish with bubble sort
-    !! Not necessary for transposing.
-    swap_occured = .TRUE.
-    IF (bubble) THEN
-       DO WHILE (swap_occured .EQV. .TRUE.)
-          swap_occured = .FALSE.
-          DO counter = 2, sorted_list%CurrentSize
-             IF (CompareTriplets(sorted_list%data(counter-1), &
-                  & sorted_list%data(counter))) THEN
-                temporary = sorted_list%data(counter)
-                sorted_list%data(counter) = sorted_list%data(counter-1)
-                sorted_list%data(counter-1) = temporary
-                swap_occured = .TRUE.
-             END IF
-          END DO
+       !! Do a first pass bucket sort
+       DO counter = 1, input_list%CurrentSize
+          values_per_row(input_list%data(counter)%index_column) = &
+               & values_per_row(input_list%data(counter)%index_column) + 1
        END DO
+       offset_array(1) = 1
+       DO counter = 2, UBOUND(offset_array,dim=1)
+          offset_array(counter) = offset_array(counter-1) + &
+               & values_per_row(counter-1)
+       END DO
+       DO counter = 1, input_list%CurrentSize
+          temp_index = input_list%data(counter)%index_column
+          sorted_list%data(offset_array(temp_index)+inserted_per_row(temp_index))=&
+               & input_list%data(counter)
+          inserted_per_row(temp_index) = inserted_per_row(temp_index) + 1
+       END DO
+
+       !! Finish with bubble sort
+       !! Not necessary for transposing or unpacking.
+       swap_occured = .TRUE.
+       IF (bubble) THEN
+          DO WHILE (swap_occured .EQV. .TRUE.)
+             swap_occured = .FALSE.
+             DO counter = 2, sorted_list%CurrentSize
+                IF (CompareTriplets(sorted_list%data(counter-1), &
+                     & sorted_list%data(counter))) THEN
+                   temporary = sorted_list%data(counter)
+                   sorted_list%data(counter) = sorted_list%data(counter-1)
+                   sorted_list%data(counter-1) = temporary
+                   swap_occured = .TRUE.
+                END IF
+             END DO
+          END DO
+       END IF
+
+       !! Cleanup
+       DEALLOCATE(values_per_row)
+       DEALLOCATE(offset_array)
+       DEALLOCATE(inserted_per_row)
     END IF
 
-    !! Cleanup
-    DEALLOCATE(values_per_row)
-    DEALLOCATE(offset_array)
-    DEALLOCATE(inserted_per_row)
   END SUBROUTINE SortTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Symmetrizes an unsymmetric triplet list according to the specified
@@ -445,5 +451,54 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE ShiftTripletList
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PURE SUBROUTINE SortDenseTripletList(input_list, matrix_columns, &
+       & matrix_rows, sorted_list)
+    !! Parameters
+    TYPE(TripletList_t), INTENT(IN)  :: input_list
+    INTEGER, INTENT(IN) :: matrix_columns
+    INTEGER, INTENT(IN) :: matrix_rows
+    TYPE(TripletList_t), INTENT(OUT) :: sorted_list
+    !! Local Variables
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: value_buffer
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: dirty_buffer
+    INTEGER :: list_length
+    INTEGER :: row, col, ind
+    INTEGER :: II, JJ
+
+    !! Setup Memory
+    ALLOCATE(value_buffer(matrix_rows,matrix_columns))
+    ALLOCATE(dirty_buffer(matrix_rows,matrix_columns))
+    value_buffer = 0
+    dirty_buffer = 0
+    list_length = input_list%CurrentSize
+    CALL ConstructTripletList(sorted_list,list_length)
+
+    !! Unpack
+    DO II = 1, list_length
+       row = input_list%data(II)%index_row
+       col = input_list%data(II)%index_column
+       value_buffer(row,col) = input_list%data(II)%point_value
+       dirty_buffer(row,col) = 1
+    END DO
+
+    !! Repack
+    ind = 1
+    DO JJ = 1, matrix_columns
+       DO II = 1, matrix_rows
+          IF (dirty_buffer(II,JJ) .EQ. 1) THEN
+             sorted_list%data(ind)%index_row = II
+             sorted_list%data(ind)%index_column = JJ
+             sorted_list%data(ind)%point_value = value_buffer(II,JJ)
+             ind = ind + 1
+          END IF
+       END DO
+    END DO
+
+    !! Cleanup
+    DEALLOCATE(value_buffer)
+    DEALLOCATE(dirty_buffer)
+
+  END SUBROUTINE SortDenseTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletListModule
