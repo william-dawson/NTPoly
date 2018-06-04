@@ -41,6 +41,12 @@ MODULE EigenExaModule
      INTEGER :: mat_dim
      !> The communicator for this calculation.
      INTEGER :: comm
+     !> Householder transform block size
+     INTEGER :: MB
+     !> Householder backward transformation block size
+     INTEGER :: M
+     !> Mode of the solver
+     CHARACTER :: MODE
   END TYPE ExaHelper_t
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa.
@@ -121,6 +127,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(AD(exa%local_rows, exa%local_cols))
     ALLOCATE(VD(exa%local_rows, exa%local_cols))
     ALLOCATE(WD(exa%mat_dim))
+
+    !> Default blocking parameters
+    exa%MB = 128
+    exa%M = 48
+    exa%MODE = 'A'
 
   END SUBROUTINE InitializeEigenExa
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -272,7 +283,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LDZ = exa%local_rows
 
     !! Call
-    CALL eigen_s(N, N, A, LDA, W, V, LDZ)
+    CALL eigen_sx(N, N, A, LDA, W, V, LDZ, m_forward=exa%M, m_backward=exa%MB, &
+         & mode=exa%MODE)
 
   END SUBROUTINE Compute
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
