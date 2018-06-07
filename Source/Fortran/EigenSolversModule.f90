@@ -99,6 +99,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local
     TYPE(DistributedSparseMatrix_t) :: eigenvectorsT, TempMat
     TYPE(DistributedSparseMatrix_t) :: ReducedMat
+    TYPE(TripletList_t) :: triplet_list
+    TYPE(TripletList_t) :: new_list
+    TYPE(Triplet_t) :: temporary
+    INTEGER :: counter
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -139,11 +143,30 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Actual Solve
     CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters, it_param, &
          & fixed_param)
+
+    !! Compute the eigenvalues
     CALL TransposeDistributedSparseMatrix(eigenvectors, eigenvectorsT)
     CALL DistributedGemm(eigenvectorsT, ReducedMat, TempMat, &
          & threshold_in=solver_parameters%threshold)
     CALL DistributedGemm(TempMat, eigenvectors, eigenvalues, &
          & threshold_in=solver_parameters%threshold)
+
+    !! Get rid of the off diagonal elements
+    CALL GetTripletList(eigenvalues,triplet_list)
+    CALL ConstructTripletList(new_list)
+    DO counter=1,triplet_list%CurrentSize
+       CALL GetTripletAt(triplet_list,counter,temporary)
+       IF (temporary%index_row .EQ. temporary%index_column) THEN
+          CALL AppendToTripletList(new_list,temporary)
+       END IF
+    END DO
+    CALL DestructDistributedSparseMatrix(this)
+    CALL ConstructEmptyDistributedSparseMatrix(this, &
+         & eigenvectorsT%actual_matrix_dimension, &
+         & eigenvectorsT%process_grid)
+    CALL FillFromTripletList(eigenvalues,new_list)
+    CALL DestructTripletList(triplet_list)
+    CALL DestructTripletList(new_list)
 
     !! Cleanup
     IF (solver_parameters%be_verbose) THEN
