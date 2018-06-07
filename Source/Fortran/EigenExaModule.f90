@@ -30,6 +30,8 @@ MODULE EigenExaModule
      INTEGER :: proc_cols
      !> Which process this is.
      INTEGER :: procid
+     !> The global rank
+     INTEGER :: global_rank
      !> Which row is this process in.
      INTEGER :: rowid
      !> Which column is this process in.
@@ -48,6 +50,7 @@ MODULE EigenExaModule
      INTEGER :: M
      !> Mode of the solver
      CHARACTER :: MODE
+     !> For block cyclic indexing.
      INTEGER :: offset
   END TYPE ExaHelper_t
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -102,6 +105,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL EigenToNT(VD, eigenvectors, solver_parameters, exa)
     CALL StopTimer("EigenToNT")
 
+    IF (PRESENT(eigenvalues_out)) THEN
+       CALL ExtractEigenvalues(WD, eigenvalues_out, exa)
+    END IF
+
     CALL CleanUp(AD, VD, WD)
 
     IF (solver_parameters%be_verbose) THEN
@@ -131,6 +138,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup the MPI Communicator
     CALL MPI_Comm_dup(A%process_grid%global_comm, exa%comm, ierr)
+    CALL MPI_Comm_rank(exa%comm, exa%global_rank, ierr)
 
     !! Build EigenExa Process Grid
     CALL eigen_init(exa%comm)
@@ -284,6 +292,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(VD1)
 
   END SUBROUTINE EigenToNT
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Converts the dense eigenvalue matrix stored duplicated across processes.
+  !! @param[in] WD the dense eigenvalue matrix.
+  !! @param[inout] V the distributed sparse matrix.
+  !! @param[in] solver_parameters for thresholding small values.
+  !! @param[inout] info about the calculation.
+  SUBROUTINE ExtractEigenvalues(WD, W, exa)
+    !! Parameters
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: WD
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: W
+    TYPE(ExaHelper_t) :: exa
+    !! Local Variables
+    TYPE(TripletList_t) :: triplet_w
+    TYPE(Triplet_t) :: trip
+    INTEGER :: wstart, wend, wsize
+    INTEGER :: II
+
+    !! The Matrices We'll Build
+    CALL ConstructEmptyDistributedSparseMatrix(W, exa%mat_dim)
+
+    !! Copy To Triplet List
+    wsize = MAX(CEILING((1.0*exa%mat_dim)/exa%num_procs), 1)
+    wstart = wsize*exa%global_rank + 1
+    wend = MIN(wsize*(exa%global_rank+1), exa%mat_dim)
+
+    CALL ConstructTripletList(triplet_w)
+    DO II = wstart, wend
+       CALL SetTriplet(trip, II, II, WD(II))
+       CALL AppendToTripletList(triplet_w, trip)
+    END DO
+
+    !! Go to global matrix
+    CALL FillFromTripletList(W, triplet_w)
+
+    !! Cleanup
+    CALL DestructTripletList(triplet_w)
+
+  END SUBROUTINE ExtractEigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The routine which calls the eigenexa driver.
   !! @param[in] A the matrix to decompose.
