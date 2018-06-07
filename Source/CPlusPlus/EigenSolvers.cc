@@ -12,9 +12,10 @@ namespace NTPoly {
 void EigenSolvers::ReferenceEigenDecomposition(
     const DistributedSparseMatrix &matrix,
     DistributedSparseMatrix &eigenvectors,
+    DistributedSparseMatrix &eigenvalues,
     const IterativeSolverParameters &solver_parameters) {
   ReferenceEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
-                                  GetIH(solver_parameters));
+                                  GetIH(eigenvalues), GetIH(solver_parameters));
 }
 void EigenSolvers::SplittingEigenDecomposition(
     const DistributedSparseMatrix &matrix,

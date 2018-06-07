@@ -223,10 +223,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Wraps a standard dense linear algebra routine.
   !! @param[in] MatA the matrix to decompose.
   !! @param[out] MatV the eigenvectors.
-  SUBROUTINE DenseEigenDecomposition(MatA, MatV)
+  !! @param[out] MatV the eigenvalues.
+  SUBROUTINE DenseEigenDecomposition(MatA, MatV, MatW)
     !! Parameters
     TYPE(DenseMatrix_t), INTENT(IN) :: MatA
     TYPE(DenseMatrix_t), INTENT(INOUT) :: MatV
+    TYPE(DenseMatrix_t), INTENT(INOUT), OPTIONAL :: MatW
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
@@ -238,6 +240,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: IWORKTEMP
     INTEGER :: LIWORK
     INTEGER :: INFO
+    INTEGER :: II
 
     CALL ConstructEmptyDenseMatrix(MatV,MatA%columns,MatA%rows)
     MatV%data = MatA%data
@@ -261,6 +264,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Run Lapack For Real
     CALL DSYEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, IWORK, LIWORK, &
          & INFO)
+
+    !! Extract Eigenvalues
+    IF (PRESENT(MatW)) THEN
+      CALL ConstructEmptyDenseMatrix(MatW,1,MatA%rows)
+      DO II = 1, N
+        MatW%data(II,1) = W(II)
+      END DO
+    END IF
 
     !! Cleanup
     DEALLOCATE(W)

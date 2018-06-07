@@ -46,11 +46,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to decompose.
   !! @param[inout] eigenvectors the eigenvectors of a matrix.
   !! @param[in] solver_parameters_in parameters for computing (optional).
-  SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, &
+  SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues, &
        & solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvalues
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! For Handling Optional Parameters
@@ -66,9 +67,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConvertIterativeToFixed(iter_params, fixed_params)
 
 #if EIGENEXA
-    CALL EigenExa_s(this, eigenvectors, fixed_params)
+    CALL EigenExa_s(this, eigenvectors, eigenvalues_out=eigenvalues, &
+         & solver_parameters_in=fixed_params)
 #else
-    CALL SerialBase(this, eigenvectors, fixed_params)
+    CALL SerialBase(this, eigenvectors, eigenvalues_out=eigenvalues, &
+         & solver_parameters_in=fixed_params)
 #endif
 
   END SUBROUTINE ReferenceEigenDecomposition
@@ -256,9 +259,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
        CALL StartTimer("Base Case")
 #if EIGENEXA
-       CALL EigenExa_s(this, eigenvectors, fixed_param)
+       CALL EigenExa_s(this, eigenvectors, solver_parameters_in=fixed_param)
 #else
-       CALL SerialBase(this, eigenvectors, fixed_param)
+       CALL SerialBase(this, eigenvectors, solver_parameters_in=fixed_param)
 #endif
        CALL StopTimer("Base Case")
     ELSE
@@ -598,23 +601,34 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(VAV)
   END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> The base case: use lapack to solve
-  !! @param[in] this the matrix to compute
-  !! @param[in] fixed_param the solve parameters.
-  !! @param[out] eigenvecotrs the eigenvectors of the matrix
-  SUBROUTINE SerialBase(this, eigenvectors, fixed_param)
+  !> The base case: use lapack to solve.
+  !! @param[in] this the matrix to compute.
+  !! @param[out] eigenvectors the eigenvectors of the matrix.
+  !! @param[out] eigenvalues the eigenvalues of the matrix.
+  !! @param[in] solver_parameters_in the solve parameters.
+  SUBROUTINE SerialBase(this, eigenvectors, eigenvalues_out, &
+       & solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Local Data
-    TYPE(TripletList_t) :: triplet_list, sorted_triplet_list
+    TYPE(TripletList_t) :: triplet_list, sorted_triplet_list, triplet_w
     TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
     TYPE(SparseMatrix_t) :: sparse
     INTEGER :: counter, list_size
     INTEGER :: mat_dim
     TYPE(SparseMatrix_t) :: local_a, local_v
-    TYPE(DenseMatrix_t) :: dense_a, dense_v
+    TYPE(DenseMatrix_t) :: dense_a, dense_v, dense_w
+    TYPE(FixedSolverParameters_t) :: fixed_params
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       fixed_params = solver_parameters_in
+    ELSE
+       fixed_params = FixedSolverParameters_t()
+    END IF
 
     mat_dim = this%actual_matrix_dimension
 
@@ -631,27 +645,49 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL RedistributeTripletLists(send_list, &
          & this%process_grid%within_slice_comm, triplet_list)
 
+    !! Perform the local decomposition
+    CALL ConstructTripletList(triplet_w)
     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
        CALL SortTripletList(triplet_list, mat_dim, mat_dim, &
             & sorted_triplet_list, .TRUE.)
        CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
             & mat_dim)
+
        CALL ConstructDenseFromSparse(local_a, dense_a)
-       CALL StartTimer("Serial Inner")
-       CALL DenseEigenDecomposition(dense_a, dense_v)
-       CALL StopTimer("Serial Inner")
-       CALL ConstructSparseFromDense(dense_v,local_v,fixed_param%threshold)
-       CALL DestructDenseMatrix(dense_a)
-       CALL DestructDenseMatrix(dense_v)
-       CALL MatrixToTripletList(local_v,triplet_list)
+       IF (PRESENT(eigenvalues_out)) THEN
+          CALL DenseEigenDecomposition(dense_a, dense_v, dense_w)
+          CALL ConstructTripletList(triplet_w, mat_dim)
+          DO counter = 1, mat_dim
+             triplet_w%data(counter)%index_row = counter
+             triplet_w%data(counter)%index_column = counter
+             triplet_w%data(counter)%point_value = dense_w%data(counter,1)
+          END DO
+       ELSE
+          CALL DenseEigenDecomposition(dense_a, dense_v)
+       END IF
+
+       CALL ConstructSparseFromDense(dense_v, local_v, fixed_params%threshold)
+       CALL MatrixToTripletList(local_v, triplet_list)
     END IF
+
+    !! Build The Full Matrices
     CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
          & process_grid_in=this%process_grid)
     CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
+    IF (PRESENT(eigenvalues_out)) THEN
+      CALL ConstructEmptyDistributedSparseMatrix(eigenvalues_out, mat_dim, &
+           & process_grid_in=this%process_grid)
+      CALL FillFromTripletList(eigenvalues_out, triplet_w, .TRUE.)
+    END IF
+
     !! Cleanup
+    CALL DestructDenseMatrix(dense_a)
+    CALL DestructDenseMatrix(dense_v)
+    CALL DestructDenseMatrix(dense_w)
     CALL DestructSparseMatrix(sparse)
     CALL DestructTripletList(triplet_list)
+    CALL DestructTripletList(triplet_w)
     CALL DestructTripletList(sorted_triplet_list)
     DO counter = 1, this%process_grid%slice_size
        CALL DestructTripletList(send_list(counter))

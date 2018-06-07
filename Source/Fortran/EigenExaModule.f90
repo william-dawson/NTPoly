@@ -53,12 +53,14 @@ MODULE EigenExaModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa.
   !! @param[in] A the matrix to decompose.
-  !! @param[out] V the eigenvectors computed.
+  !! @param[out] eigenvectors the eigenvectors computed.
+  !! @param[out] eigenvalues the eigenvalues computed (optional).
   !! @param[in] solver_parameters_in the parameters for this solver (optional).
-  SUBROUTINE EigenExa_s(A, V, solver_parameters_in)
+  SUBROUTINE EigenExa_s(A, eigenvectors, eigenvalues_out, solver_parameters_in)
     !! Parameters
     TYPE(DistributedSparseMatrix_t), INTENT(IN) :: A
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: V
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(DistributedSparseMatrix_t), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
@@ -87,7 +89,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Main Routines
     CALL InitializeEigenExa(A, AD, VD, WD, exa)
-    
+
     CALL StartTimer("NTToEigen")
     CALL NTToEigen(A, AD, exa)
     CALL StopTimer("NTToEigen")
@@ -97,13 +99,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("EigenExaCompute")
 
     CALL StartTimer("EigenToNT")
-    CALL EigenToNT(VD, V, solver_parameters, exa)
+    CALL EigenToNT(VD, eigenvectors, solver_parameters, exa)
     CALL StopTimer("EigenToNT")
 
     CALL CleanUp(AD, VD, WD)
 
     IF (solver_parameters%be_verbose) THEN
-       CALL PrintMatrixInformation(V)
+       CALL PrintMatrixInformation(eigenvectors)
        CALL ExitSubLog
     END IF
 

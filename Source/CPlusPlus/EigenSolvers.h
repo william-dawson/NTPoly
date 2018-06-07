@@ -14,6 +14,7 @@ public:
   static void ReferenceEigenDecomposition(
       const DistributedSparseMatrix &matrix,
       DistributedSparseMatrix &eigenvectors,
+      DistributedSparseMatrix &eigenvalues, 
       const IterativeSolverParameters &solver_parameters);
   //! Compute the eigenvalues and eigenvectors of a matrix
   static void SplittingEigenDecomposition(

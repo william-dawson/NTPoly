@@ -18,7 +18,7 @@ from numpy.polynomial.chebyshev import chebfit, chebval
 from numpy.polynomial.hermite import hermfit, hermval
 from mpi4py import MPI
 from Helpers import THRESHOLD
-from Helpers import result_file
+from Helpers import result_file, result_file2
 from Helpers import scratch_dir
 
 
@@ -911,13 +911,17 @@ class TestSolvers(unittest.TestCase):
 
         ntmatrix = nt.DistributedSparseMatrix(self.input_file)
         V = nt.DistributedSparseMatrix(self.matrix_dimension)
+        W = nt.DistributedSparseMatrix(self.matrix_dimension)
 
         nt.EigenSolvers.ReferenceEigenDecomposition(
-            ntmatrix, V, self.iterative_solver_parameters)
+            ntmatrix, V, W, self.iterative_solver_parameters)
         V.WriteToMatrixMarket(result_file)
+        W.WriteToMatrixMarket(result_file2)
 
         normval = 0
         relative_error = 0
+        normval2 = 0
+        relative_error2 = 0
         if (self.my_rank == 0):
             ResultV = mmread(result_file)
             CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
@@ -927,8 +931,18 @@ class TestSolvers(unittest.TestCase):
             print("Norm:", normval)
             print("Relative_Error:", relative_error)
 
+            ResultW = diag((mmread(result_file2)).todense())
+            normval = abs(normd(CheckD - ResultW))
+            relative_error = normval / normd(CheckD)
+            print("Norm:", normval2)
+            print("Relative_Error:", relative_error2)
+
         global_norm = comm.bcast(normval, root=0)
         global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
+
+        global_norm = comm.bcast(normval2, root=0)
+        global_error = comm.bcast(relative_error2, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
     def test_eigendecompositionhalf(self):
