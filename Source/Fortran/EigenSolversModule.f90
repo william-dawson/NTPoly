@@ -164,7 +164,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyDistributedSparseMatrix(this, &
          & eigenvectorsT%actual_matrix_dimension, &
          & eigenvectorsT%process_grid)
-    CALL FillFromTripletList(eigenvalues,new_list)
+    CALL FillFromTripletList(eigenvalues, new_list, preduplicated_in=.TRUE.)
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(new_list)
 

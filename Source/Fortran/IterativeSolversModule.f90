@@ -38,7 +38,7 @@ MODULE IterativeSolversModule
   !> The default convergence difference.
   REAL(NTREAL), PARAMETER, PUBLIC :: CONVERGENCE_DIFF_CONST = 1e-6
   !> The default maximum number of iterations.
-  INTEGER, PARAMETER, PUBLIC :: MAX_ITERATIONS_CONST = 100
+  INTEGER, PARAMETER, PUBLIC :: MAX_ITERATIONS_CONST = 1000
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Handle the parameters
   !> Construct a data type which stores iterative solver parameters.
