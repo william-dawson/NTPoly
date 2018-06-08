@@ -56,19 +56,12 @@ set(FHelpers
 set(FTypes
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DataTypesModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DenseMatrixModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DenseMatrixCModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolCModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseMatrixAlgebraModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseMatrixAlgebraCModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseMatrixModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseMatrixCModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseVectorModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseVectorCModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListCModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletCModule.f90
 )
 
 IF (EIGEN_EXA)
