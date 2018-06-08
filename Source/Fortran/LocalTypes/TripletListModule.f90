@@ -1,22 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Triplets of Integer, Integer, Double.
-MODULE TripletListModule
+MODULE TripletListRModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
-  USE TripletModule, ONLY : Triplet_t, CompareTriplets
+  USE TripletRModule, ONLY : Triplet_r, CompareTriplets
 
 #define DATATYPE REAL(NTREAL)
 #define MPIDATATYPE MPINTREAL
-#define TLISTTYPE TripletList_t
-#define TTYPE Triplet_t
+#define TLISTTYPE TripletList_r
+#define TTYPE Triplet_r
 
-#include "includes/TripletListImplementation.f90"
+#include "includes/TripletListImpl.f90"
 
 #undef TTYPE
 #undef TLISTTYPE
 #undef MPIDATATYPE
 #undef DATATYPE
 
-END MODULE TripletListModule
+END MODULE TripletListRModule
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Triplets of Integer, Integer, Double.
@@ -29,7 +29,7 @@ MODULE TripletListCModule
 #define TLISTTYPE TripletList_c
 #define TTYPE Triplet_c
 
-#include "includes/TripletListImplementation.f90"
+#include "includes/TripletListImpl.f90"
 
 #undef TTYPE
 #undef TLISTTYPE

@@ -55,11 +55,11 @@ set(FHelpers
 
 set(FTypes
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DataTypesModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DenseMatrixModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixDModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseMatrixAlgebraModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseMatrixModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SparseVectorModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSAlgebraModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/VectorSModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule.f90
 )

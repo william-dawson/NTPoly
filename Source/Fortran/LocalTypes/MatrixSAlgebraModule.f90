@@ -1,28 +1,28 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for performing linear algebra using sparse matrices.
-MODULE SparseMatrixAlgebraModule
+MODULE MatrixSRAlgebraModule
   USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructDenseFromSparse, &
+  USE MatrixDRModule, ONLY : Matrix_dr, ConstructDenseFromSparse, &
        & ConstructSparseFromDense, MultiplyDense, DestructDenseMatrix
-  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_t, &
+  USE MatrixMemoryPoolRModule, ONLY : MatrixMemoryPool_r, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
        & CheckMemoryPoolValidity, SetPoolSparsity
-  USE SparseMatrixModule, ONLY: SparseMatrix_t, ConstructEmptySparseMatrix, &
+  USE MatrixSRModule, ONLY: Matrix_sr, ConstructEmptySparseMatrix, &
        & DestructSparseMatrix, ConstructFromTripletList, CopySparseMatrix, &
        & TransposeSparseMatrix, PrintSparseMatrix
-  USE SparseVectorModule, ONLY : AddSparseVectors, DotSparseVectors, &
+  USE VectorSRModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
-  USE TripletListModule, ONLY: TripletList_t, SortTripletList, &
+  USE TripletListRModule, ONLY: TripletList_r, SortTripletList, &
        & ConstructTripletList, DestructTripletList
 
 #define DATATYPE REAL(NTREAL)
-#define DMTYPE DenseMatrix_t
-#define MPOOLTYPE MatrixMemoryPool_t
-#define SMTYPE SparseMatrix_t
-#define TTYPE Triplet_t
-#define TLISTTYPE TripletList_t
+#define DMTYPE Matrix_dr
+#define MPOOLTYPE MatrixMemoryPool_r
+#define SMTYPE Matrix_sr
+#define TTYPE Triplet_r
+#define TLISTTYPE TripletList_r
 
-#include "includes/SparseMatrixAlgebraImplementation.f90"
+#include "includes/MatrixSAlgebraImpl.f90"
 
 #undef TLISTTYPE
 #undef TTYPE
@@ -31,33 +31,33 @@ MODULE SparseMatrixAlgebraModule
 #undef DMTYPE
 #undef DATATYPE
 
-END MODULE SparseMatrixAlgebraModule
+END MODULE MatrixSRAlgebraModule
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for performing linear algebra using sparse matrices.
-MODULE SparseMatrixAlgebraCModule
+MODULE MatrixSCAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE DenseMatrixCModule, ONLY : DenseMatrix_c, ConstructDenseFromSparse, &
+  USE MatrixDCModule, ONLY : Matrix_dc, ConstructDenseFromSparse, &
        & ConstructSparseFromDense, MultiplyDense, DestructDenseMatrix
   USE MatrixMemoryPoolCModule, ONLY : MatrixMemoryPool_c, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
        & CheckMemoryPoolValidity, SetPoolSparsity
-  USE SparseMatrixCModule, ONLY: SparseMatrix_c, ConstructEmptySparseMatrix, &
+  USE MatrixSCModule, ONLY: Matrix_sc, ConstructEmptySparseMatrix, &
        & DestructSparseMatrix, ConstructFromTripletList, CopySparseMatrix, &
        & TransposeSparseMatrix, PrintSparseMatrix
-  USE SparseVectorCModule, ONLY : AddSparseVectors, DotSparseVectors, &
+  USE VectorSCModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
   USE TripletListCModule, ONLY: TripletList_c, SortTripletList, &
        & ConstructTripletList, DestructTripletList
 
 #define DATATYPE COMPLEX(NTCOMPLEX)
-#define DMTYPE DenseMatrix_c
+#define DMTYPE Matrix_dc
 #define MPOOLTYPE MatrixMemoryPool_c
-#define SMTYPE SparseMatrix_c
+#define SMTYPE Matrix_sc
 #define TTYPE Triplet_c
 #define TLISTTYPE TripletList_c
 
-#include "includes/SparseMatrixAlgebraImplementation.f90"
+#include "includes/MatrixSAlgebraImpl.f90"
 
 #undef TLISTTYPE
 #undef TTYPE
@@ -66,4 +66,4 @@ MODULE SparseMatrixAlgebraCModule
 #undef DMTYPE
 #undef DATATYPE
 
-END MODULE SparseMatrixAlgebraCModule
+END MODULE MatrixSCAlgebraModule

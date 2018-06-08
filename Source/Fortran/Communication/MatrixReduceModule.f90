@@ -2,8 +2,8 @@
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE SparseMatrixAlgebraModule, ONLY : IncrementSparseMatrix
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix, &
+  USE MatrixSRAlgebraModule, ONLY : IncrementSparseMatrix
+  USE MatrixSRModule, ONLY : Matrix_sr, ConstructEmptySparseMatrix, &
        & DestructSparseMatrix
   USE MPI
   IMPLICIT NONE
@@ -63,7 +63,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceSizes(matrix, communicator, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    TYPE(Matrix_sr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
@@ -86,9 +86,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndComposeData(matrix,communicator,gathered_matrix,helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    TYPE(Matrix_sr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
-    TYPE(SparseMatrix_t), INTENT(INOUT)   :: gathered_matrix
+    TYPE(Matrix_sr), INTENT(INOUT)   :: gathered_matrix
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: grid_error
@@ -132,8 +132,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndComposeCleanup(matrix, gathered_matrix, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
-    TYPE(SparseMatrix_t), INTENT(INOUT)   :: gathered_matrix
+    TYPE(Matrix_sr), INTENT(IN)      :: matrix
+    TYPE(Matrix_sr), INTENT(INOUT)   :: gathered_matrix
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: counter, inner_counter
@@ -158,7 +158,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndSumData(matrix,communicator,helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
+    TYPE(Matrix_sr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
@@ -202,12 +202,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndSumCleanup(matrix,gathered_matrix, threshold, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN)      :: matrix
-    TYPE(SparseMatrix_t), INTENT(INOUT)   :: gathered_matrix
+    TYPE(Matrix_sr), INTENT(IN)      :: matrix
+    TYPE(Matrix_sr), INTENT(INOUT)   :: gathered_matrix
     REAL(NTREAL), INTENT(IN) :: threshold
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
-    TYPE(SparseMatrix_t) :: temporary_matrix
+    TYPE(Matrix_sr) :: temporary_matrix
     INTEGER :: counter
     INTEGER :: temporary_total_values
 

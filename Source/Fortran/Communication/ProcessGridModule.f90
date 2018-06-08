@@ -135,7 +135,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: column_block_multiplier
     INTEGER :: row_block_multiplier
     INTEGER :: row_counter, column_counter
+#ifdef _OPENMP
     INTEGER :: num_threads
+#endif
 
     CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
     !! Grid Dimensions

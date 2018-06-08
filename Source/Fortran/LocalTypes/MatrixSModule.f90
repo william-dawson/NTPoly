@@ -1,29 +1,29 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling locally stored CSR matrices.
-MODULE SparseMatrixModule
+MODULE MatrixSRModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
-  USE TripletListModule, ONLY: TripletList_t, SortTripletList, &
+  USE TripletListRModule, ONLY: TripletList_r, SortTripletList, &
        & ConstructTripletList, DestructTripletList, SetTripletAt, &
        & AppendToTripletList, SymmetrizeTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE TripletRModule, ONLY : Triplet_r
 
 #define DATATYPE REAL(NTREAL)
-#define SMTYPE SparseMatrix_t
-#define TTYPE Triplet_t
-#define TLISTTYPE TripletList_t
+#define SMTYPE Matrix_sr
+#define TTYPE Triplet_r
+#define TLISTTYPE TripletList_r
 
-#include "includes/SparseMatrixImplementation.f90"
+#include "includes/MatrixSImpl.f90"
 
 #undef TLISTTYPE
 #undef TTYPE
 #undef SMTYPE
 #undef DATATYPE
 
-END MODULE SparseMatrixModule
+END MODULE MatrixSRModule
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling locally stored CSR matrices.
-MODULE SparseMatrixCModule
+MODULE MatrixSCModule
   USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX, MPINTREAL
   USE TripletListCModule, ONLY: TripletList_c, SortTripletList, &
        & ConstructTripletList, DestructTripletList, SetTripletAt, &
@@ -31,15 +31,15 @@ MODULE SparseMatrixCModule
   USE TripletCModule, ONLY : Triplet_c
 
 #define DATATYPE COMPLEX(NTCOMPLEX)
-#define SMTYPE SparseMatrix_c
+#define SMTYPE Matrix_sc
 #define TTYPE Triplet_c
 #define TLISTTYPE TripletList_c
 
-#include "includes/SparseMatrixImplementation.f90"
+#include "includes/MatrixSImpl.f90"
 
 #undef TLISTTYPE
 #undef TTYPE
 #undef SMTYPE
 #undef DATATYPE
 
-END MODULE SparseMatrixCModule
+END MODULE MatrixSCModule

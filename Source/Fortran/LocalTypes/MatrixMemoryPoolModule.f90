@@ -2,21 +2,21 @@
 !> A module for handling scratch memory for matrix multiplication.
 !! The purpose of this module is to avoid having to allocate memory on the
 !! heap during a matrix multiply, and to manage the underlying hash table.
-MODULE MatrixMemoryPoolModule
+MODULE MatrixMemoryPoolRModule
   USE DataTypesModule, ONLY: NTREAL
-  USE TripletModule, ONLY : Triplet_t
+  USE TripletRModule, ONLY : Triplet_r
 
 #define DATATYPE REAL(NTREAL)
-#define TTYPE Triplet_t
-#define MPOOLTYPE MatrixMemoryPool_t
+#define TTYPE Triplet_r
+#define MPOOLTYPE MatrixMemoryPool_r
 
-#include "includes/MatrixMemoryPoolImplementation.f90"
+#include "includes/MatrixMemoryPoolImpl.f90"
 
 #undef MPOOLTYPE
 #undef TTYPE
 #undef DATATYPE
 
-END MODULE MatrixMemoryPoolModule
+END MODULE MatrixMemoryPoolRModule
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling scratch memory for matrix multiplication.
@@ -30,7 +30,7 @@ MODULE MatrixMemoryPoolCModule
 #define TTYPE Triplet_c
 #define MPOOLTYPE MatrixMemoryPool_c
 
-#include "includes/MatrixMemoryPoolImplementation.f90"
+#include "includes/MatrixMemoryPoolImpl.f90"
 
 #undef MPOOLTYPE
 #undef TTYPE

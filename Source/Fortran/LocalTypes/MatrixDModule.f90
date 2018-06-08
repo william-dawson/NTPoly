@@ -3,20 +3,20 @@
 !! supports dense the dense versions of core matrix routines. This module is
 !! used in situations where matrices become too dense for good sparse matrix
 !! performance.
-MODULE DenseMatrixModule
+MODULE MatrixDRModule
   USE DataTypesModule, ONLY : NTREAL
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructFromTripletList
-  USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
+  USE MatrixSRModule, ONLY : Matrix_sr, ConstructFromTripletList
+  USE TripletListRModule, ONLY : TripletList_r, ConstructTripletList, &
        & AppendToTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE TripletRModule, ONLY : Triplet_r
 
 #define DATATYPE REAL(NTREAL)
-#define DMTYPE DenseMatrix_t
-#define SMTYPE SparseMatrix_t
-#define TTYPE Triplet_t
-#define TLISTTYPE TripletList_t
+#define DMTYPE Matrix_dr
+#define SMTYPE Matrix_sr
+#define TTYPE Triplet_r
+#define TLISTTYPE TripletList_r
 
-#include "includes/DenseMatrixImplementation.f90"
+#include "includes/MatrixDImpl.f90"
 
 #undef TLISTTYPE
 #undef TTYPE
@@ -24,27 +24,27 @@ MODULE DenseMatrixModule
 #undef DMTYPE
 #undef DATATYPE
 
-END MODULE DenseMatrixModule
+END MODULE MatrixDRModule
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> This module allows one to convert a sparse matrix to a dense matrix. It also
 !! supports dense the dense versions of core matrix routines. This module is
 !! used in situations where matrices become too dense for good sparse matrix
 !! performance.
-MODULE DenseMatrixCModule
+MODULE MatrixDCModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE SparseMatrixCModule, ONLY : SparseMatrix_c, ConstructFromTripletList
+  USE MatrixSCModule, ONLY : Matrix_sc, ConstructFromTripletList
   USE TripletListCModule, ONLY : TripletList_c, ConstructTripletList, &
        & AppendToTripletList
   USE TripletCModule, ONLY : Triplet_c
 
 #define DATATYPE COMPLEX(NTCOMPLEX)
-#define DMTYPE DenseMatrix_c
-#define SMTYPE SparseMatrix_c
+#define DMTYPE Matrix_dc
+#define SMTYPE Matrix_sc
 #define TTYPE Triplet_c
 #define TLISTTYPE TripletList_c
 
-#include "includes/DenseMatrixImplementation.f90"
+#include "includes/MatrixDImpl.f90"
 
 #undef TLISTTYPE
 #undef TTYPE
@@ -52,4 +52,4 @@ MODULE DenseMatrixCModule
 #undef DMTYPE
 #undef DATATYPE
 
-END MODULE DenseMatrixCModule
+END MODULE MatrixDCModule

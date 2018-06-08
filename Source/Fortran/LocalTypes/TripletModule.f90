@@ -1,19 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Triplets of Integer, Integer, Double.
-MODULE TripletModule
+MODULE TripletRModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
 
 #define DATATYPE REAL(NTREAL)
 #define MPIDATATYPE MPINTREAL
-#define INNERTYPE Triplet_t
+#define INNERTYPE Triplet_r
 
-#include "includes/TripletImplementation.f90"
+#include "includes/TripletImpl.f90"
 
 #undef INNERTYPE
 #undef MPIDATATYPE
 #undef DATATYPE
 
-END MODULE TripletModule
+END MODULE TripletRModule
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Triplets of Integer, Integer, Complex.
@@ -24,7 +24,7 @@ MODULE TripletCModule
 #define MPIDATATYPE MPINTCOMPLEX
 #define INNERTYPE Triplet_c
 
-#include "includes/TripletImplementation.f90"
+#include "includes/TripletImpl.f90"
 
 #undef INNERTYPE
 #undef MPIDATATYPE
