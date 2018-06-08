@@ -1,23 +1,12 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> This module allows one to convert a sparse matrix to a dense matrix. It also
-!! supports dense the dense versions of core matrix routines. This module is
-!! used in situations where matrices become too dense for good sparse matrix
-!! performance.
-MODULE DenseMatrixModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructFromTripletList
-  USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
-       & AppendToTripletList
-  USE TripletModule, ONLY : Triplet_t
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for storing a dense matrix.
-  TYPE, PUBLIC :: DenseMatrix_t
-     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix
+  TYPE, PUBLIC :: DMTYPE
+     DATATYPE, DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix
      INTEGER :: rows !< Matrix dimension: rows
      INTEGER :: columns !< Matrix dimension: columns
-  END TYPE DenseMatrix_t
+  END TYPE DMTYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructEmptyDenseMatrix
   PUBLIC :: ConstructDenseFromSparse
@@ -37,7 +26,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
   PURE SUBROUTINE ConstructEmptyDenseMatrix(this, columns, rows)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: this
+    TYPE(DMTYPE), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: rows
     INTEGER, INTENT(IN) :: columns
 
@@ -61,13 +50,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] dense_matrix output. Must be preallocated.
   PURE SUBROUTINE ConstructDenseFromSparse(sparse_matrix, dense_matrix)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: sparse_matrix
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: dense_matrix
+    TYPE(SMTYPE), INTENT(IN) :: sparse_matrix
+    TYPE(DMTYPE), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
     INTEGER :: inner_counter, outer_counter
     INTEGER :: elements_per_inner
     INTEGER :: total_counter
-    TYPE(Triplet_t) :: temporary
+    TYPE(TTYPE) :: temporary
 
     CALL ConstructEmptyDenseMatrix(dense_matrix,sparse_matrix%columns, &
          & sparse_matrix%rows)
@@ -96,13 +85,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructSparseFromDense(dense_matrix, sparse_matrix, &
        & threshold_in)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: dense_matrix
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: sparse_matrix
+    TYPE(DMTYPE), INTENT(IN) :: dense_matrix
+    TYPE(SMTYPE), INTENT(INOUT) :: sparse_matrix
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Local Variables
     INTEGER :: inner_counter, outer_counter
-    TYPE(Triplet_t) :: temporary
-    TYPE(TripletList_t) :: temporary_list
+    TYPE(TTYPE) :: temporary
+    TYPE(TLISTTYPE) :: temporary_list
     INTEGER :: columns, rows
 
     columns = dense_matrix%columns
@@ -143,8 +132,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matB = matA
   PURE SUBROUTINE CopyDenseMatrix(matA, matB)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: matA
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: matB
+    TYPE(DMTYPE), INTENT(IN) :: matA
+    TYPE(DMTYPE), INTENT(INOUT) :: matB
 
     CALL ConstructEmptyDenseMatrix(matB,matA%columns,matA%rows)
     matB%data = matA%data
@@ -154,7 +143,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the matrix to delete.
   PURE SUBROUTINE DestructDenseMatrix(this)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: this
+    TYPE(DMTYPE), INTENT(INOUT) :: this
 
     IF (ALLOCATED(this%data)) THEN
        DEALLOCATE(this%data)
@@ -167,9 +156,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] MatC = MatA*MatB.
   SUBROUTINE MultiplyDense(MatA,MatB,MatC)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: MatA
-    TYPE(DenseMatrix_t), INTENT(IN) :: MatB
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: MatC
+    TYPE(DMTYPE), INTENT(IN) :: MatA
+    TYPE(DMTYPE), INTENT(IN) :: MatB
+    TYPE(DMTYPE), INTENT(INOUT) :: MatC
     !! Local variables
     CHARACTER, PARAMETER :: TRANSA = 'N'
     CHARACTER, PARAMETER :: TRANSB = 'N'
@@ -203,8 +192,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] alpha_in a scaling parameter (optional).
   PURE SUBROUTINE IncrementDenseMatrix(MatA,MatB,alpha_in)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: MatA
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: MatB
+    TYPE(DMTYPE), INTENT(IN) :: MatA
+    TYPE(DMTYPE), INTENT(INOUT) :: MatB
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     !! Temporary
     REAL(NTREAL) :: alpha
@@ -226,9 +215,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] MatV the eigenvalues.
   SUBROUTINE DenseEigenDecomposition(MatA, MatV, MatW)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: MatA
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: MatV
-    TYPE(DenseMatrix_t), INTENT(INOUT), OPTIONAL :: MatW
+    TYPE(DMTYPE), INTENT(IN) :: MatA
+    TYPE(DMTYPE), INTENT(INOUT) :: MatV
+    TYPE(DMTYPE), INTENT(INOUT), OPTIONAL :: MatW
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
@@ -285,7 +274,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result the norm of the matrix.
   FUNCTION DenseMatrixNorm(this) RESULT(norm)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: this
+    TYPE(DMTYPE), INTENT(IN) :: this
     REAL(NTREAL) :: norm
     !! Local Variables
     CHARACTER, PARAMETER :: NORMC = 'F'
@@ -305,8 +294,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matAT = matA^T.
   PURE SUBROUTINE TransposeDenseMatrix(matA, matAT)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: matA
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: matAT
+    TYPE(DMTYPE), INTENT(IN) :: matA
+    TYPE(DMTYPE), INTENT(INOUT) :: matAT
 
     CALL ConstructEmptyDenseMatrix(matAT,matA%rows,matA%columns)
     matAT%data = TRANSPOSE(matA%data)
@@ -321,10 +310,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ComposeDenseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
-    TYPE(DenseMatrix_t), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
+    TYPE(DMTYPE), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
          & mat_array
     INTEGER, INTENT(IN) :: block_rows, block_columns
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: out_matrix
+    TYPE(DMTYPE), INTENT(INOUT) :: out_matrix
     !! Local Data
     INTEGER, DIMENSION(block_rows+1) :: row_offsets
     INTEGER, DIMENSION(block_columns+1) :: column_offsets
@@ -368,9 +357,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SplitDenseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: this
+    TYPE(DMTYPE), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: block_rows, block_columns
-    TYPE(DenseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: split_array
+    TYPE(DMTYPE), DIMENSION(:,:), INTENT(INOUT) :: split_array
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
     !! Local Data
@@ -421,5 +410,3 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE SplitDenseMatrix
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-END MODULE DenseMatrixModule

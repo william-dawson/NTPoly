@@ -1,26 +1,19 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A module for handling scratch memory for matrix multiplication.
-!! The purpose of this module is to avoid having to allocate memory on the
-!! heap during a matrix multiply, and to manage the underlying hash table.
-MODULE MatrixMemoryPoolModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE TripletModule, ONLY : Triplet_t
-  USE ISO_C_BINDING, ONLY : c_int, c_loc, c_f_pointer
+  USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A memory pool datatype that can be reused for matrix matrix multiplication.
   !! this is to prevent excessive alloc/dealloc.
-  TYPE, PUBLIC :: MatrixMemoryPool_t
+  TYPE, PUBLIC :: MPOOLTYPE
      PRIVATE
      !> Shape of matrix: columns
      INTEGER, PUBLIC :: columns
      !> Shape of matrix: rows
      INTEGER, PUBLIC :: rows
      !> storage for actual values added to the matrix.
-     TYPE(Triplet_t), DIMENSION(:), ALLOCATABLE, PUBLIC :: pruned_list
+     TYPE(TTYPE), DIMENSION(:), ALLOCATABLE, PUBLIC :: pruned_list
      !> storage for potential values added to the matrix.
-     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: value_array
+     DATATYPE, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: value_array
      !> true if an element has been pushed to this part of the matrix.
      LOGICAL, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: dirty_array
      !> Storage space for indices, hashed.
@@ -29,7 +22,7 @@ MODULE MatrixMemoryPoolModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: inserted_per_bucket
      !> Size of the buckets.
      INTEGER, PUBLIC :: hash_size
-  END TYPE MatrixMemoryPool_t
+  END TYPE MPOOLTYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !type(Error_t) :: error_handler
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -45,7 +38,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @param[in] sparsity_in estimated sparsity (optional).
   SUBROUTINE ConstructMatrixMemoryPool(this, columns, rows, sparsity_in)
     !! Parameters
-    TYPE(MatrixMemoryPool_t), INTENT(OUT), TARGET :: this
+    TYPE(MPOOLTYPE), INTENT(OUT), TARGET :: this
     INTEGER(kind=c_int), INTENT(IN) :: columns
     INTEGER(kind=c_int), INTENT(IN) :: rows
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
@@ -83,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @param[inout] this the matrix being destructed.
   PURE SUBROUTINE DestructMatrixMemoryPool(this)
     !! Parameters
-    TYPE(MatrixMemoryPool_t), INTENT(INOUT) :: this
+    TYPE(MPOOLTYPE), INTENT(INOUT) :: this
 
     !! Perform deallocations.
     IF (ALLOCATED(this%pruned_list)) DEALLOCATE(this%pruned_list)
@@ -102,7 +95,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @return true if the memory pool is valid.
   PURE FUNCTION CheckMemoryPoolValidity(this, columns, rows) RESULT(isvalid)
     !! Parameters
-    TYPE(MatrixMemoryPool_t), INTENT(in) :: this
+    TYPE(MPOOLTYPE), INTENT(in) :: this
     INTEGER, INTENT(IN) :: columns
     INTEGER, INTENT(IN) :: rows
     LOGICAL :: isvalid
@@ -127,7 +120,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] sparsity the sparsity value.
   SUBROUTINE SetPoolSparsity(this,sparsity)
     !! Parameters
-    TYPE(MatrixMemoryPool_t), INTENT(INOUT), TARGET :: this
+    TYPE(MPOOLTYPE), INTENT(INOUT), TARGET :: this
     REAL(NTREAL), INTENT(IN) :: sparsity
     !! Local Variables
     INTEGER :: num_buckets
@@ -136,4 +129,3 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (this%hash_size > this%columns) this%hash_size = this%columns
     num_buckets = this%columns/this%hash_size + 1
   END SUBROUTINE SetPoolSparsity
-END MODULE MatrixMemoryPoolModule

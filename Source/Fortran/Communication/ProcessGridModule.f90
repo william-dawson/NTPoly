@@ -1,7 +1,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to manage the process grid.
 MODULE ProcessGridModule
-  USE DataTypesModule, ONLY : MPITypeInfoInit
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
   USE MPI
@@ -93,8 +92,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL ConstructNewProcessGrid(global_grid, world_comm_, process_rows_, &
          & process_columns_, process_slices_)
-
-    CALL MPITypeInfoInit()
 
     !! Report
     IF (IsRoot(global_grid)) THEN

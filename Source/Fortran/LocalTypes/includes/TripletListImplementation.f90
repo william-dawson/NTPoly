@@ -1,10 +1,5 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A Module For Storing Lists of triplets.
-MODULE TripletListModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletModule, ONLY : Triplet_t, CompareTriplets
   USE ISO_C_BINDING, ONLY : c_int
   USE MPI
   IMPLICIT NONE
@@ -12,12 +7,12 @@ MODULE TripletListModule
   !> A data type for a list of triplets.
   !! As this is related to matrix multiplication, the referencing indices are
   !! rows and columns.
-  TYPE, PUBLIC :: TripletList_t
+  TYPE, PUBLIC :: TLISTTYPE
      !> Internal representation of the data.
-     TYPE(Triplet_t), DIMENSION(:), ALLOCATABLE :: DATA
+     TYPE(TTYPE), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list
      INTEGER :: CurrentSize
-  END TYPE TripletList_t
+  END TYPE TLISTTYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructTripletList
   PUBLIC :: DestructTripletList
@@ -37,7 +32,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] size_in the length of the triplet list (optional, default=0).
   PURE SUBROUTINE ConstructTripletList(this,size_in)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: this
+    TYPE(TLISTTYPE), INTENT(INOUT) :: this
     INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: size_in
     !! Local data
     INTEGER :: size
@@ -58,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the triplet list to destruct.
   PURE SUBROUTINE DestructTripletList(this)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: this
+    TYPE(TLISTTYPE), INTENT(INOUT) :: this
 
     IF (ALLOCATED(this%data)) DEALLOCATE(this%data)
     this%CurrentSize = 0
@@ -69,10 +64,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] size to resize to.
   PURE SUBROUTINE ResizeTripletList(this, size)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: this
+    TYPE(TLISTTYPE), INTENT(INOUT) :: this
     INTEGER(KIND=c_int), INTENT(IN) :: size
     !! Local Data
-    TYPE(Triplet_t), DIMENSION(:), ALLOCATABLE :: temporary_data
+    TYPE(TTYPE), DIMENSION(:), ALLOCATABLE :: temporary_data
 
     !! Temporary copy
     ALLOCATE(temporary_data(this%CurrentSize))
@@ -94,8 +89,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_value the value to append.
   PURE SUBROUTINE AppendToTripletList(this, triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: this
-    TYPE(Triplet_t), INTENT(IN)        :: triplet_value
+    TYPE(TLISTTYPE), INTENT(INOUT) :: this
+    TYPE(TTYPE), INTENT(IN)        :: triplet_value
     !! Local data
     INTEGER :: new_size
 
@@ -120,8 +115,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> (Just for a related project)
   PURE SUBROUTINE AccumulateTripletList(this, triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: this
-    TYPE(Triplet_t), INTENT(IN)        :: triplet_value
+    TYPE(TLISTTYPE), INTENT(INOUT) :: this
+    TYPE(TTYPE), INTENT(IN)        :: triplet_value
     !! Local data
     INTEGER :: new_size
     INTEGER :: idata
@@ -158,9 +153,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_value the value of the triplet to set.
   PURE SUBROUTINE SetTripletAt(this,index,triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: this
+    TYPE(TLISTTYPE), INTENT(INOUT) :: this
     INTEGER(KIND=c_int), INTENT(IN)    :: index
-    TYPE(Triplet_t), INTENT(IN)        :: triplet_value
+    TYPE(TTYPE), INTENT(IN)        :: triplet_value
 
     this%data(index) = triplet_value
   END SUBROUTINE SetTripletAt
@@ -171,9 +166,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] triplet_value the extracted triplet value.
   PURE SUBROUTINE GetTripletAt(this,index,triplet_value)
     !! Parameters
-    TYPE(TripletList_t), INTENT(IN) :: this
+    TYPE(TLISTTYPE), INTENT(IN) :: this
     INTEGER(kind=c_int), INTENT(IN) :: index
-    TYPE(Triplet_t), INTENT(OUT)    :: triplet_value
+    TYPE(TTYPE), INTENT(OUT)    :: triplet_value
 
     triplet_value = this%data(index)
   END SUBROUTINE GetTripletAt
@@ -190,14 +185,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SortTripletList(input_list, matrix_columns, matrix_rows, &
        & sorted_list, bubble_in)
     !! Parameters
-    TYPE(TripletList_t), INTENT(IN)  :: input_list
+    TYPE(TLISTTYPE), INTENT(IN)  :: input_list
     INTEGER, INTENT(IN) :: matrix_columns
     INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_t), INTENT(OUT) :: sorted_list
+    TYPE(TLISTTYPE), INTENT(OUT) :: sorted_list
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     LOGICAL :: bubble
-    TYPE(Triplet_t) :: temporary
+    TYPE(TTYPE) :: temporary
     LOGICAL :: swap_occured
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
@@ -279,10 +274,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] pattern_type type of symmetry.
   SUBROUTINE SymmetrizeTripletList(triplet_list, pattern_type)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT)  :: triplet_list
+    TYPE(TLISTTYPE), INTENT(INOUT)  :: triplet_list
     INTEGER, INTENT(IN) :: pattern_type
     !! Local variables
-    TYPE(Triplet_t) :: temporary, temporary_transpose
+    TYPE(TTYPE) :: temporary, temporary_transpose
     INTEGER :: counter
     INTEGER :: initial_size
 
@@ -316,7 +311,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return list_size the number of entries in the triplet list.
   PURE FUNCTION GetTripletListSize(triplet_list) RESULT(list_size)
     !! Parameters
-    TYPE(TripletList_t), INTENT(IN)  :: triplet_list
+    TYPE(TLISTTYPE), INTENT(IN)  :: triplet_list
     INTEGER :: list_size
     list_size = triplet_list%CurrentSize
   END FUNCTION GetTripletListSize
@@ -329,9 +324,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] local_data_out the resulting local triplet list.
   SUBROUTINE RedistributeTripletLists(triplet_lists, comm, local_data_out)
     !! Parameters
-    TYPE(TripletList_t), DIMENSION(:), INTENT(IN) :: triplet_lists
+    TYPE(TLISTTYPE), DIMENSION(:), INTENT(IN) :: triplet_lists
     INTEGER, INTENT(INOUT) :: comm
-    TYPE(TripletList_t), INTENT(INOUT) :: local_data_out
+    TYPE(TLISTTYPE), INTENT(INOUT) :: local_data_out
     !! Local Data - Offsets
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_process
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_offsets
@@ -340,12 +335,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data - Send/Recv Buffers
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: send_buffer_val
+    DATATYPE, DIMENSION(:), ALLOCATABLE :: send_buffer_val
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
+    DATATYPE, DIMENSION(:), ALLOCATABLE :: recv_buffer_val
     !! ETC
-    TYPE(Triplet_t) :: temp_triplet
+    TYPE(TTYPE) :: temp_triplet
     INTEGER :: num_processes
     INTEGER :: counter, inner_counter, insert_pt
     INTEGER :: mpi_error
@@ -405,8 +400,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_INT, recv_buffer_row, recv_per_process, recv_offsets, MPI_INT, &
          & comm, mpi_error)
     CALL MPI_Alltoallv(send_buffer_val, send_per_process, send_offsets, &
-         & MPINTREAL, recv_buffer_val, recv_per_process, recv_offsets, &
-         & MPINTREAL, comm, mpi_error)
+         & MPIDATATYPE, recv_buffer_val, recv_per_process, recv_offsets, &
+         & MPIDATATYPE, comm, mpi_error)
     CALL StopTimer("AllToAllV")
 
     !! Unpack Into The Output Triplet List
@@ -437,7 +432,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! the negative of the starting row and column (plus 1) to this routine.
   PURE SUBROUTINE ShiftTripletList(triplet_list, row_shift, column_shift)
     !! Parameters
-    TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
+    TYPE(TLISTTYPE), INTENT(INOUT) :: triplet_list
     INTEGER, INTENT(IN) :: row_shift
     INTEGER, INTENT(IN) :: column_shift
     !! Local Variables
@@ -462,12 +457,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SortDenseTripletList(input_list, matrix_columns, &
        & matrix_rows, sorted_list)
     !! Parameters
-    TYPE(TripletList_t), INTENT(IN)  :: input_list
+    TYPE(TLISTTYPE), INTENT(IN)  :: input_list
     INTEGER, INTENT(IN) :: matrix_columns
     INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_t), INTENT(OUT) :: sorted_list
+    TYPE(TLISTTYPE), INTENT(OUT) :: sorted_list
     !! Local Variables
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: value_buffer
+    DATATYPE, DIMENSION(:,:), ALLOCATABLE :: value_buffer
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: dirty_buffer
     INTEGER :: list_length
     INTEGER :: row, col, ind
@@ -507,5 +502,3 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(dirty_buffer)
 
   END SUBROUTINE SortDenseTripletList
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-END MODULE TripletListModule

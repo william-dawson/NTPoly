@@ -19,8 +19,7 @@ MODULE PermutationModule
   PUBLIC :: ConstructRandomPermutation
   PUBLIC :: ConstructLimitedRandomPermutation
   PUBLIC :: DestructPermutation
-CONTAINS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that preserves the original order.
   !! @param[inout] this the permutation to construct.
   !! @param[in] matrix_dimension size of the matrix.

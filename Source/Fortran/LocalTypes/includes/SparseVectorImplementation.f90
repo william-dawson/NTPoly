@@ -1,10 +1,3 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A module for handling compressed vectors.
-!! Compressed vectors are stored in two lists. The first is a list of indices,
-!! the second a list of values.
-!! This module can add two of those vectors together.
-MODULE SparseVectorModule
-  USE DataTypesModule, ONLY : NTREAL
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -32,9 +25,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
     INTEGER, DIMENSION(:), INTENT(OUT) :: inner_index_c
-    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_a
-    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_b
-    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: values_c
+    DATATYPE, DIMENSION(:), INTENT(IN)    :: values_a
+    DATATYPE, DIMENSION(:), INTENT(IN)    :: values_b
+    DATATYPE, DIMENSION(:), INTENT(OUT) :: values_c
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     INTEGER, INTENT(OUT) :: total_values_c
@@ -43,7 +36,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: threshold
     !! Temporary Variables
     INTEGER :: working_index_a, working_index_b
-    REAL(NTREAL) :: working_value_a, working_value_b
+    DATATYPE :: working_value_a, working_value_b
     !! Counter Variables
     INTEGER :: counter_a, counter_b, counter_c
 
@@ -122,12 +115,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
-    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_a
-    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_b
-    REAL(NTREAL) :: product
+    DATATYPE, DIMENSION(:), INTENT(IN)    :: values_a
+    DATATYPE, DIMENSION(:), INTENT(IN)    :: values_b
+    DATATYPE :: product
     !! Temporary Variables
     INTEGER :: working_index_a, working_index_b
-    REAL(NTREAL) :: working_value_a, working_value_b
+    DATATYPE :: working_value_a, working_value_b
     !! Counter Variables
     INTEGER :: counter_a, counter_b
 
@@ -163,19 +156,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] inner_index_c list of indices computed for C.
   !! @param[out] values_c list of values computed for C.
   !! @param[out] total_values_c this is the total number of values in C.
-  PURE SUBROUTINE PairwiseMultiplyVectors(inner_index_a,values_a,inner_index_b, &
+  PURE SUBROUTINE PairwiseMultiplyVectors(inner_index_a,values_a,inner_index_b,&
        & values_b,inner_index_c,values_c,total_values_c)
     !! Parameters
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
     INTEGER, DIMENSION(:), INTENT(OUT) :: inner_index_c
-    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_a
-    REAL(NTREAL), DIMENSION(:), INTENT(IN)    :: values_b
-    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: values_c
+    DATATYPE, DIMENSION(:), INTENT(IN)    :: values_a
+    DATATYPE, DIMENSION(:), INTENT(IN)    :: values_b
+    DATATYPE, DIMENSION(:), INTENT(OUT) :: values_c
     INTEGER, INTENT(OUT) :: total_values_c
     !! Temporary Variables
     INTEGER :: working_index_a, working_index_b
-    REAL(NTREAL) :: working_value_a, working_value_b
+    DATATYPE :: working_value_a, working_value_b
     !! Counter Variables
     INTEGER :: counter_a, counter_b, counter_c
 
@@ -204,4 +197,3 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO sum_loop
     total_values_c = counter_c - 1
   END SUBROUTINE PairwiseMultiplyVectors
-END MODULE SparseVectorModule

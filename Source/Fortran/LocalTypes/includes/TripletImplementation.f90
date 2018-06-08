@@ -1,7 +1,3 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A Module For Storing Triplets of Integer, Integer, Double.
-MODULE TripletModule
-  USE DataTypesModule, ONLY: NTREAL, MPINTREAL
   USE ISO_C_BINDING, ONLY : c_int
   USE MPI
   IMPLICIT NONE
@@ -10,11 +6,11 @@ MODULE TripletModule
   !> A data type for a triplet of integer, integer, double.
   !! As this is related to matrix multiplication, the referencing indices are
   !! rows and columns.
-  TYPE, PUBLIC :: Triplet_t
+  TYPE, PUBLIC :: INNERTYPE
      INTEGER(kind=c_int)    :: index_column !< column value.
      INTEGER(kind=c_int)    :: index_row    !< row value.
-     REAL(NTREAL) :: point_value  !< actual value at those indices.
-  END TYPE Triplet_t
+     DATATYPE :: point_value  !< actual value at those indices.
+  END TYPE INNERTYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SetTriplet
   PUBLIC :: GetTripletValues
@@ -33,10 +29,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] point_value the value at that point.
   PURE SUBROUTINE SetTriplet(this,index_column,index_row,point_value)
     !! Parameters
-    TYPE(Triplet_t), INTENT(INOUT)       :: this
+    TYPE(INNERTYPE), INTENT(INOUT)       :: this
     INTEGER, INTENT(IN)                  :: index_column
     INTEGER, INTENT(IN)                  :: index_row
-    REAL(NTREAL), INTENT(IN)   :: point_value
+    DATATYPE, INTENT(IN)   :: point_value
 
     this%index_column = index_column
     this%index_row    = index_row
@@ -50,10 +46,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] point_value actual stored value.
   PURE SUBROUTINE GetTripletValues(this,index_column,index_row,point_value)
     !! Parameters
-    TYPE(Triplet_t), INTENT(IN)           :: this
+    TYPE(INNERTYPE), INTENT(IN)           :: this
     INTEGER, INTENT(OUT)                  :: index_column
     INTEGER, INTENT(OUT)                  :: index_row
-    REAL(NTREAL), INTENT(OUT)   :: point_value
+    DATATYPE, INTENT(OUT)   :: point_value
 
     index_column = this%index_column
     index_row    = this%index_row
@@ -68,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return A < B.
   PURE FUNCTION CompareTriplets(tripA, tripB) RESULT(islessthan)
     !! Parameters
-    TYPE(Triplet_t), INTENT(IN) :: tripA, tripB
+    TYPE(INNERTYPE), INTENT(IN) :: tripA, tripB
     LOGICAL :: islessthan
 
     IF (tripA%index_column .GT. tripB%index_column) THEN
@@ -104,7 +100,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        !! Otherwise make it
        CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
-       CALL MPI_Type_extent(MPINTREAL,bytes_per_double,ierr)
+       CALL MPI_Type_extent(MPIDATATYPE,bytes_per_double,ierr)
        triplet_block_length(1) = 1
        triplet_block_length(2) = 1
        triplet_block_length(3) = 1
@@ -113,7 +109,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        triplet_displacement(3) = bytes_per_int + triplet_displacement(2)
        triplet_sub_types(1) = MPI_INT
        triplet_sub_types(2) = MPI_INT
-       triplet_sub_types(3) = MPINTREAL
+       triplet_sub_types(3) = MPIDATATYPE
 
        CALL MPI_Type_struct(3,triplet_block_length,triplet_displacement,&
             & triplet_sub_types,mpi_triplet_type,ierr)
@@ -121,4 +117,3 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        return_mpi_triplet_type = mpi_triplet_type
     END IF
   END FUNCTION GetMPITripletType
-END MODULE TripletModule

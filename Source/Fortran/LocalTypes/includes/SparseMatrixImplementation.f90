@@ -1,25 +1,17 @@
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A module for handling locally stored CSR matrices.
-MODULE SparseMatrixModule
-  USE DataTypesModule, ONLY : NTREAL
   USE MatrixMarketModule, ONLY : ParseMMHeader
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletListModule, ONLY: TripletList_t, SortTripletList, &
-       & ConstructTripletList, DestructTripletList, SetTripletAt, &
-       & AppendToTripletList, SymmetrizeTripletList
-  USE TripletModule, ONLY : Triplet_t
   USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for storing a CSR matrix.
-  TYPE, PUBLIC :: SparseMatrix_t
+  TYPE, PUBLIC :: SMTYPE
      INTEGER, DIMENSION(:), ALLOCATABLE :: outer_index !< Outer indices
      INTEGER, DIMENSION(:), ALLOCATABLE :: inner_index !< Inner indices
-     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: values !< Values
+     DATATYPE, DIMENSION(:), ALLOCATABLE :: values !< Values
      INTEGER :: rows !< Matrix dimension: rows
      INTEGER :: columns !< Matrix dimension: columns
-  END TYPE SparseMatrix_t
+  END TYPE SMTYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Construct/Destruct
   PUBLIC :: ConstructEmptySparseMatrix
@@ -51,7 +43,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] rows number of matrix rows.
   PURE SUBROUTINE ConstructEmptySparseMatrix(this, columns, rows)
     !! Parameters
-    TYPE(SparseMatrix_t),INTENT(OUT)  :: this
+    TYPE(SMTYPE),INTENT(OUT)  :: this
     INTEGER, INTENT(IN) :: columns, rows
 
     CALL DestructSparseMatrix(this)
@@ -66,17 +58,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file.
   SUBROUTINE ConstructSparseMatrixFromFile(this, file_name)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(OUT) :: this
+    TYPE(SMTYPE), INTENT(OUT) :: this
     CHARACTER(len=*), INTENT(IN)   :: file_name
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Local Data
     INTEGER :: temp_rows, temp_columns, temp_total_values
-    TYPE(TripletList_t) :: triplet_list
-    TYPE(TripletList_t) :: sorted_triplet_list
+    TYPE(TLISTTYPE) :: triplet_list
+    TYPE(TLISTTYPE) :: sorted_triplet_list
     CHARACTER(len=81) :: input_buffer
     INTEGER :: file_handler
-    TYPE(Triplet_t) :: temporary
+    TYPE(TTYPE) :: temporary
     INTEGER :: counter
     LOGICAL :: found_comment_line
     LOGICAL :: error_occured
@@ -127,7 +119,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] columns number of matrix columns
   PURE SUBROUTINE ConstructZeroSparseMatrix(this,rows,columns)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(OUT) :: this
+    TYPE(SMTYPE), INTENT(OUT) :: this
     INTEGER, INTENT(IN)             :: rows, columns
 
     !! Allocate
@@ -146,8 +138,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] columns number of matrix columns
   PURE SUBROUTINE ConstructFromTripletList(this,triplet_list,rows,columns)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(OUT) :: this
-    TYPE(TripletList_t), INTENT(IN) :: triplet_list
+    TYPE(SMTYPE), INTENT(OUT) :: this
+    TYPE(TLISTTYPE), INTENT(IN) :: triplet_list
     INTEGER, INTENT(IN)             :: rows, columns
     INTEGER :: outer_array_ptr
     INTEGER :: values_counter
@@ -193,7 +185,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the matrix to free up
   PURE SUBROUTINE DestructSparseMatrix(this)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: this
+    TYPE(SMTYPE), INTENT(INOUT) :: this
 
     IF (ALLOCATED(this%outer_index)) THEN
        DEALLOCATE(this%outer_index)
@@ -211,8 +203,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matB = matA
   PURE SUBROUTINE CopySparseMatrix(matA, matB)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: matA
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matB
+    TYPE(SMTYPE), INTENT(IN) :: matA
+    TYPE(SMTYPE), INTENT(INOUT) :: matB
 
     CALL DestructSparseMatrix(matB)
     matB = matA
@@ -223,7 +215,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result number of rows.
   PURE FUNCTION GetRows(this) RESULT(rows)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     INTEGER :: rows
     rows = this%rows
   END FUNCTION GetRows
@@ -233,7 +225,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result number of columns.
   PURE FUNCTION GetColumns(this) RESULT(columns)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     INTEGER :: columns
     columns = this%columns
   END FUNCTION GetColumns
@@ -244,12 +236,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] row_out the matrix representing that row
   PURE SUBROUTINE ExtractRow(this, row_number, row_out)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: row_number
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: row_out
+    TYPE(SMTYPE), INTENT(INOUT) :: row_out
     !! Temporary Variables
     INTEGER :: values_found
-    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: value_buffer
+    DATATYPE, DIMENSION(:), ALLOCATABLE :: value_buffer
     INTEGER :: total_counter, elements_per_inner
     INTEGER :: outer_counter
     INTEGER :: inner_counter
@@ -293,9 +285,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] column_out the matrix representing that row
   PURE SUBROUTINE ExtractColumn(this, column_number, column_out)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: column_number
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: column_out
+    TYPE(SMTYPE), INTENT(INOUT) :: column_out
     !! Local variables
     INTEGER :: number_of_values
     INTEGER :: start_index
@@ -326,8 +318,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] matT the input matrix transposed.
   PURE SUBROUTINE TransposeSparseMatrix(this, matT)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN)  :: this
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matT
+    TYPE(SMTYPE), INTENT(IN)  :: this
+    TYPE(SMTYPE), INTENT(INOUT) :: matT
     !! Local Data
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
@@ -387,14 +379,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ComposeSparseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
+    TYPE(SMTYPE), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
          & mat_array
     INTEGER, INTENT(IN) :: block_rows, block_columns
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
+    TYPE(SMTYPE), INTENT(INOUT) :: out_matrix
     !! Local Data
-    TYPE(SparseMatrix_t), DIMENSION(block_columns) :: merged_columns
-    TYPE(SparseMatrix_t) :: Temp
-    TYPE(SparseMatrix_t), DIMENSION(block_rows,block_columns) :: mat_t
+    TYPE(SMTYPE), DIMENSION(block_columns) :: merged_columns
+    TYPE(SMTYPE) :: Temp
+    TYPE(SMTYPE), DIMENSION(block_rows,block_columns) :: mat_t
     INTEGER :: II, JJ
 
     !! First transpose the matrices
@@ -423,22 +415,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DestructSparseMatrix(merged_columns(JJ))
     END DO
 
-    ! !! First compose the rows
-    ! DO row_counter = 1, block_rows
-    !    CALL ComposeSparseMatrixColumns(mat_array(:,row_counter), Temp)
-    !    CALL TransposeSparseMatrix(Temp, rows_of_merged(row_counter))
-    ! END DO
-    !
-    ! !! Next compose the columns
-    ! CALL ComposeSparseMatrixColumns(rows_of_merged, Temp)
-    ! CALL TransposeSparseMatrix(Temp, out_matrix)
-    !
-    ! !! Cleanup
-    ! CALL DestructSparseMatrix(Temp)
-    ! DO row_counter=1, block_rows
-    !    CALL DestructSparseMatrix(rows_of_merged(row_counter))
-    ! END DO
-
   END SUBROUTINE ComposeSparseMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
@@ -447,8 +423,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] out_matrix = [Matrix 1 | Matrix 2, ...] .
   PURE SUBROUTINE ComposeSparseMatrixColumns(mat_list, out_matrix)
     !! Parameters
-    TYPE(SparseMatrix_t), DIMENSION(:), INTENT(IN) :: mat_list
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
+    TYPE(SMTYPE), DIMENSION(:), INTENT(IN) :: mat_list
+    TYPE(SMTYPE), INTENT(INOUT) :: out_matrix
     !! Local Variables
     INTEGER :: total_columns, total_values
     INTEGER :: inner_start, inner_length
@@ -506,18 +482,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: block_rows, block_columns
-    TYPE(SparseMatrix_t), DIMENSION(:,:), INTENT(INOUT) :: split_array
+    TYPE(SMTYPE), DIMENSION(:,:), INTENT(INOUT) :: split_array
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
     !! Local Data
     INTEGER, DIMENSION(block_rows) :: block_size_row
     INTEGER, DIMENSION(block_columns) :: block_size_column
     !! Temporary Variables
-    TYPE(SparseMatrix_t), DIMENSION(block_columns) :: column_split
-    TYPE(SparseMatrix_t), DIMENSION(block_rows) :: row_split
-    TYPE(SparseMatrix_t) :: Temp
+    TYPE(SMTYPE), DIMENSION(block_columns) :: column_split
+    TYPE(SMTYPE), DIMENSION(block_rows) :: row_split
+    TYPE(SMTYPE) :: Temp
     INTEGER :: divisor_row, divisor_column
     INTEGER :: II, JJ
 
@@ -576,10 +552,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, block_sizes, &
        & split_list)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: num_blocks
     INTEGER, DIMENSION(num_blocks), INTENT(IN) :: block_sizes
-    TYPE(SparseMatrix_t), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
+    TYPE(SMTYPE), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
     !! Local Data
     INTEGER, DIMENSION(num_blocks+1) :: block_offsets
     !! Counters
@@ -627,13 +603,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] triplet_list the triplet list we created.
   PURE SUBROUTINE MatrixToTripletList(this, triplet_list)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
-    TYPE(TripletList_t), INTENT(INOUT) :: triplet_list
+    TYPE(SMTYPE), INTENT(IN) :: this
+    TYPE(TLISTTYPE), INTENT(INOUT) :: triplet_list
     !! Helper variables
     INTEGER :: outer_counter, inner_counter
     INTEGER :: elements_per_inner
     INTEGER :: total_counter
-    TYPE(Triplet_t) :: temporary
+    TYPE(TTYPE) :: temporary
     INTEGER :: size_of_this
 
     size_of_this = this%outer_index(this%columns+1)
@@ -658,10 +634,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name_in optionally, you can pass a file to print to.
   SUBROUTINE PrintSparseMatrix(this, file_name_in)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: this
+    TYPE(SMTYPE), INTENT(IN) :: this
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Local Data
-    TYPE(TripletList_t) :: triplet_list
+    TYPE(TLISTTYPE) :: triplet_list
     INTEGER :: file_handler
     INTEGER :: counter
     INTEGER :: size_of_this
@@ -693,4 +669,3 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL DestructTripletList(triplet_list)
   END SUBROUTINE PrintSparseMatrix
-END MODULE SparseMatrixModule
