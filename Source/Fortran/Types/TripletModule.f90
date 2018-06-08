@@ -25,8 +25,6 @@ MODULE TripletModule
   LOGICAL :: set_mpi_triplet_type = .FALSE.
   !> A derived data type for mpi triplets
   INTEGER, SAVE :: mpi_triplet_type
-  !> For error handling in this module
-  !type(Error_t) :: error_handler
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
   !! @param[inout] this the triplet to set the values of.

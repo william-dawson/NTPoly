@@ -31,10 +31,15 @@ set(Wsrc
 )
 
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)
+include_directories(${CMAKE_BINARY_DIR}/Source/Base/Algebra)
+include_directories(${CMAKE_BINARY_DIR}/Source/Base/Communication)
+include_directories(${CMAKE_BINARY_DIR}/Source/Base/Helpers)
+include_directories(${CMAKE_BINARY_DIR}/Source/Base/Types)
 
-IF (EIGEN_EXA)                                                                     
-  include_directories(${EIGEN_EXA})                                                
-ENDIF()    
+IF (EIGEN_EXA)
+  LIST(APPEND Wsrc EigenExaModule_wrp.f90)
+  include_directories(${EIGEN_EXA})
+ENDIF()
 
 add_library(NTPolyWrapper STATIC ${Wsrc})
 target_link_libraries(NTPolyWrapper NTPoly)
