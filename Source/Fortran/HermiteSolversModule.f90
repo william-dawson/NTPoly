@@ -2,20 +2,14 @@
 !> A module for computing matrix functions based on Hermite polynomials.
 !! The Physicist variety.
 MODULE HermiteSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
-       & PrintFixedSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteListElement, WriteHeader
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE FixedSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -76,20 +70,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HermiteCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ds), INTENT(in)  :: InputMat
+    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
     TYPE(HermitePolynomial_t), INTENT(in) :: poly
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: BalancedInput
-    TYPE(DistributedSparseMatrix_t) :: Hk
-    TYPE(DistributedSparseMatrix_t) :: Hkminus1
-    TYPE(DistributedSparseMatrix_t) :: Hkplus1
-    TYPE(DistributedSparseMatrix_t) :: Hkprime
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: BalancedInput
+    TYPE(Matrix_ds) :: Hk
+    TYPE(Matrix_ds) :: Hkminus1
+    TYPE(Matrix_ds) :: Hkplus1
+    TYPE(Matrix_ds) :: Hkprime
+    TYPE(MatrixMemoryPool_d) :: pool
     !! Local Variables
     INTEGER :: degree
     INTEGER :: counter
@@ -112,10 +106,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
-    CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
+    CALL CopyMatrixDS(InputMat,BalancedInput)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -126,16 +120,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Recursive expansion
-    CALL CopyDistributedSparseMatrix(Identity, Hkminus1)
-    CALL CopyDistributedSparseMatrix(Hkminus1, OutputMat)
+    CALL CopyMatrixDS(Identity, Hkminus1)
+    CALL CopyMatrixDS(Hkminus1, OutputMat)
     CALL ScaleDistributedSparseMatrix(OutputMat, poly%coefficients(1))
     IF (degree .GT. 1) THEN
-       CALL CopyDistributedSparseMatrix(BalancedInput, Hk)
+       CALL CopyMatrixDS(BalancedInput, Hk)
        CALL ScaleDistributedSparseMatrix(Hk, REAL(2.0,KIND=NTREAL))
        CALL IncrementDistributedSparseMatrix(Hk, OutputMat, &
             & alpha_in=poly%coefficients(2))
        IF (degree .GT. 2) THEN
-          CALL CopyDistributedSparseMatrix(Hkminus1, Hkprime)
+          CALL CopyMatrixDS(Hkminus1, Hkprime)
           CALL ScaleDistributedSparseMatrix(Hkprime, REAL(2.0,NTREAL))
           DO counter = 3, degree
              CALL DistributedGemm(BalancedInput, Hk, Hkplus1, &
@@ -144,11 +138,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & memory_pool_in=pool)
              CALL IncrementDistributedSparseMatrix(Hkprime, Hkplus1, &
                   & alpha_in=REAL(-1.0,NTREAL))
-             CALL CopyDistributedSparseMatrix(Hk, Hkprime)
+             CALL CopyMatrixDS(Hk, Hkprime)
              CALL ScaleDistributedSparseMatrix(Hkprime, &
                   & REAL(2*(counter-1),KIND=NTREAL))
-             CALL CopyDistributedSparseMatrix(Hk, Hkminus1)
-             CALL CopyDistributedSparseMatrix(Hkplus1, Hk)
+             CALL CopyMatrixDS(Hk, Hkminus1)
+             CALL CopyMatrixDS(Hkplus1, Hk)
              CALL IncrementDistributedSparseMatrix(Hk, OutputMat, &
                   & alpha_in=poly%coefficients(counter))
           END DO
@@ -168,11 +162,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(Hk)
-    CALL DestructDistributedSparseMatrix(Hkminus1)
-    CALL DestructDistributedSparseMatrix(Hkplus1)
-    CALL DestructDistributedSparseMatrix(Hkprime)
-    CALL DestructDistributedSparseMatrix(BalancedInput)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(Hk)
+    CALL DestructMatrixDS(Hkminus1)
+    CALL DestructMatrixDS(Hkplus1)
+    CALL DestructMatrixDS(Hkprime)
+    CALL DestructMatrixDS(BalancedInput)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE HermiteCompute
 END MODULE HermiteSolversModule

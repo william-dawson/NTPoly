@@ -1,38 +1,25 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DenseMatrixModule, ONLY : DenseMatrix_t, &
-       & ConstructSparseFromDense, ConstructDenseFromSparse, &
-       & DenseEigenDecomposition, DestructDenseMatrix
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & IncrementDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & CommSplitDistributedSparseMatrix, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillFromTripletList, &
-       & FillDistributedIdentity, GetTripletList, PrintMatrixInformation, &
-       & TransposeDistributedSparseMatrix, GetSize
-  USE DensityMatrixSolversModule, ONLY : TRS2
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       PrintIterativeSolverParameters
+  USE DataTypesModule
+  USE MatrixDRModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE DensityMatrixSolversModule
+  USE FixedSolversModule
+  USE IterativeSolversModule
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
-  USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
-  USE PermutationModule, ONLY : ConstructRandomPermutation, Permutation_t
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteElement, WriteListElement
-  USE ParameterConverterModule, ONLY : ConvertIterativeToFixed
-  USE SignSolversModule, ONLY : PolarDecomposition
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructFromTripletList, &
-       & DestructSparseMatrix, MatrixToTripletList
-  USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
-       & ConstructTripletList, DestructTripletList, GetTripletAt, &
-       & RedistributeTripletLists, SortTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE LinearSolversModule
+  USE PermutationModule
+  USE LoggingModule
+  USE ParameterConverterModule
+  USE SignSolversModule
+  USE MatrixSRModule
+  USE TimerModule
+  USE TripletListRModule
+  USE TripletRModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -49,9 +36,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvalues
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvalues
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! For Handling Optional Parameters
@@ -85,9 +72,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SplittingEigenDecomposition(this, eigenvectors, eigenvalues, &
        & num_values_in, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvalues
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvalues
     INTEGER, INTENT(IN), OPTIONAL :: num_values_in
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -97,11 +84,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: it_param
     INTEGER :: num_values
     !! Local
-    TYPE(DistributedSparseMatrix_t) :: eigenvectorsT, TempMat
-    TYPE(DistributedSparseMatrix_t) :: ReducedMat
-    TYPE(TripletList_t) :: triplet_list
-    TYPE(TripletList_t) :: new_list
-    TYPE(Triplet_t) :: temporary
+    TYPE(Matrix_ds) :: eigenvectorsT, TempMat
+    TYPE(Matrix_ds) :: ReducedMat
+    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: new_list
+    TYPE(Triplet_r) :: temporary
     INTEGER :: counter
 
     !! Optional Parameters
@@ -136,7 +123,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ReduceDimension(this, num_values, solver_parameters, &
             & fixed_param, ReducedMat)
     ELSE
-       CALL CopyDistributedSparseMatrix(this, ReducedMat)
+       CALL CopyMatrixDS(this, ReducedMat)
     END IF
     CALL StopTimer("Initial Purify")
 
@@ -160,8 +147,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL AppendToTripletList(new_list,temporary)
        END IF
     END DO
-    CALL DestructDistributedSparseMatrix(this)
-    CALL ConstructEmptyDistributedSparseMatrix(this, &
+    CALL DestructMatrixDS(this)
+    CALL ConstructEmptyMatrixDS(this, &
          & eigenvectorsT%actual_matrix_dimension, &
          & eigenvectorsT%process_grid)
     CALL FillFromTripletList(eigenvalues, new_list, preduplicated_in=.TRUE.)
@@ -173,9 +160,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    CALL DestructDistributedSparseMatrix(eigenvectorsT)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(ReducedMat)
+    CALL DestructMatrixDS(eigenvectorsT)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixDS(ReducedMat)
   END SUBROUTINE SplittingEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the singular values and singular vectors of a matrix.
@@ -187,16 +174,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SingularValueDecomposition(this, left_vectors, &
        & right_vectors, singularvalues, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: left_vectors
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: right_vectors
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: singularvalues
+    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: left_vectors
+    TYPE(Matrix_ds), INTENT(INOUT) :: right_vectors
+    TYPE(Matrix_ds), INTENT(INOUT) :: singularvalues
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix_t) :: UMat, HMat
+    TYPE(Matrix_ds) :: UMat, HMat
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -228,8 +215,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    CALL DestructDistributedSparseMatrix(UMat)
-    CALL DestructDistributedSparseMatrix(HMat)
+    CALL DestructMatrixDS(UMat)
+    CALL DestructMatrixDS(HMat)
   END SUBROUTINE SingularValueDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The recursive workhorse routine for the eigendecompositon.
@@ -240,21 +227,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters, &
        & it_param, fixed_param)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Variables - matrices
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: PMat, PHoleMat
-    TYPE(DistributedSparseMatrix_t) :: PVec, PHoleVec
-    TYPE(DistributedSparseMatrix_t) :: StackV, StackVT
-    TYPE(DistributedSparseMatrix_t) :: VAV
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(DistributedSparseMatrix_t) :: LeftMat, RightMat
-    TYPE(DistributedSparseMatrix_t) :: LeftVectors, RightVectors
-    TYPE(DistributedSparseMatrix_t) :: SubMat, SubVec
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: PMat, PHoleMat
+    TYPE(Matrix_ds) :: PVec, PHoleVec
+    TYPE(Matrix_ds) :: StackV, StackVT
+    TYPE(Matrix_ds) :: VAV
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ds) :: LeftMat, RightMat
+    TYPE(Matrix_ds) :: LeftVectors, RightVectors
+    TYPE(Matrix_ds) :: SubMat, SubVec
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim
     INTEGER :: color
@@ -265,7 +252,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Permutation_t) :: permutation
 
     mat_dim = this%actual_matrix_dimension
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, mat_dim, &
+    CALL ConstructEmptyMatrixDS(Identity, mat_dim, &
          & process_grid_in=this%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -304,7 +291,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Purify
        CALL StartTimer("Purify")
        CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=balanced_it)
-       CALL CopyDistributedSparseMatrix(Identity, PHoleMat)
+       CALL CopyMatrixDS(Identity, PHoleMat)
        CALL IncrementDistributedSparseMatrix(PMat, PHoleMat, &
             & alpha_in=REAL(-1.0,NTREAL), threshold_in=it_param%threshold)
        CALL StopTimer("Purify")
@@ -316,7 +303,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
             & solver_parameters_in=fixed_param)
        CALL StopTimer("Cholesky")
-       CALL ConstructEmptyDistributedSparseMatrix(StackV, &
+       CALL ConstructEmptyMatrixDS(StackV, &
             & this%actual_matrix_dimension, process_grid_in=this%process_grid)
        CALL StartTimer("Stack")
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
@@ -337,7 +324,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & split_slice)
           CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
                & fixed_param)
-          CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+          CALL ConstructEmptyMatrixDS(TempMat, &
                & this%actual_matrix_dimension, this%process_grid)
           CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
        ELSE
@@ -346,7 +333,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & fixed_param)
           CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
                & fixed_param)
-          CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+          CALL ConstructEmptyMatrixDS(TempMat, &
                & this%actual_matrix_dimension, this%process_grid)
           CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
                & TempMat)
@@ -359,22 +346,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL StopTimer("Recombine")
 
        !! Cleanup
-       CALL DestructDistributedSparseMatrix(SubMat)
-       CALL DestructDistributedSparseMatrix(SubVec)
-       CALL DestructDistributedSparseMatrix(PMat)
-       CALL DestructDistributedSparseMatrix(PHoleMat)
-       CALL DestructDistributedSparseMatrix(PVec)
-       CALL DestructDistributedSparseMatrix(PHoleVec)
-       CALL DestructDistributedSparseMatrix(StackV)
-       CALL DestructDistributedSparseMatrix(StackVT)
-       CALL DestructDistributedSparseMatrix(VAV)
-       CALL DestructDistributedSparseMatrix(TempMat)
-       CALL DestructDistributedSparseMatrix(LeftMat)
-       CALL DestructDistributedSparseMatrix(RightMat)
-       CALL DestructDistributedSparseMatrix(LeftVectors)
-       CALL DestructDistributedSparseMatrix(RightVectors)
+       CALL DestructMatrixDS(SubMat)
+       CALL DestructMatrixDS(SubVec)
+       CALL DestructMatrixDS(PMat)
+       CALL DestructMatrixDS(PHoleMat)
+       CALL DestructMatrixDS(PVec)
+       CALL DestructMatrixDS(PHoleVec)
+       CALL DestructMatrixDS(StackV)
+       CALL DestructMatrixDS(StackVT)
+       CALL DestructMatrixDS(VAV)
+       CALL DestructMatrixDS(TempMat)
+       CALL DestructMatrixDS(LeftMat)
+       CALL DestructMatrixDS(RightMat)
+       CALL DestructMatrixDS(LeftVectors)
+       CALL DestructMatrixDS(RightVectors)
     END IF
-    CALL DestructDistributedSparseMatrix(Identity)
+    CALL DestructMatrixDS(Identity)
 
   END SUBROUTINE EigenRecursive
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -387,11 +374,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] Combined the stacked matrix.
   SUBROUTINE StackMatrices(LeftMat,RightMat,column_offset,row_offset,Combined)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: LeftMat, RightMat
+    TYPE(Matrix_ds), INTENT(IN) :: LeftMat, RightMat
     INTEGER :: column_offset, row_offset
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Combined
+    TYPE(Matrix_ds), INTENT(INOUT) :: Combined
     !! Local Data
-    TYPE(TripletList_t) :: left_triplets, right_triplets, combined_triplets
+    TYPE(TripletList_r) :: left_triplets, right_triplets, combined_triplets
     INTEGER :: left_size, right_size, total_size
     INTEGER :: counter
 
@@ -426,12 +413,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: SubMat
     INTEGER, INTENT(IN) :: column_offset, row_offset
     INTEGER, INTENT(IN) :: color
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: FullMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: FullMat
     !! Local Variables
-    TYPE(TripletList_t) :: sub_triplets
+    TYPE(TripletList_r) :: sub_triplets
     INTEGER :: counter
 
     !! Basic Triplet Lists
@@ -466,12 +453,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] RightMat the bottom right corner matirx.
   SUBROUTINE ExtractCorner(this, left_dim, right_dim, LeftMat, RightMat)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LeftMat, RightMat
+    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: LeftMat, RightMat
     INTEGER :: left_dim, right_dim
     !! Local Data
-    TYPE(TripletList_t) :: left_triplets, right_triplets, combined_triplets
-    TYPE(Triplet_t) :: temp_triplet
+    TYPE(TripletList_r) :: left_triplets, right_triplets, combined_triplets
+    TYPE(Triplet_r) :: temp_triplet
     INTEGER :: counter
 
     !! Get Triplet Lists
@@ -494,9 +481,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Fill
-    CALL ConstructEmptyDistributedSparseMatrix(LeftMat, left_dim, &
+    CALL ConstructEmptyMatrixDS(LeftMat, left_dim, &
          & this%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(RightMat, right_dim, &
+    CALL ConstructEmptyMatrixDS(RightMat, right_dim, &
          & this%process_grid)
     CALL FillFromTripletList(LeftMat, left_triplets, .TRUE.)
     CALL FillFromTripletList(RightMat, right_triplets, .TRUE.)
@@ -511,15 +498,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color, &
        & split_slice)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SubMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: SubMat
     LOGICAL, INTENT(OUT) :: split_slice
     INTEGER, INTENT(IN) :: left_dim, right_dim
     INTEGER, INTENT(OUT) :: color
     !! Local Data
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(TripletList_t) :: full_triplets, extracted_triplets
-    TYPE(Triplet_t) :: temp_triplet
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(TripletList_r) :: full_triplets, extracted_triplets
+    TYPE(Triplet_r) :: temp_triplet
     INTEGER :: counter
 
     !! First Duplicate Across Process Grids
@@ -545,16 +532,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill
     IF (color .EQ. 0) THEN
-       CALL ConstructEmptyDistributedSparseMatrix(SubMat, left_dim, &
+       CALL ConstructEmptyMatrixDS(SubMat, left_dim, &
             & process_grid_in=TempMat%process_grid)
     ELSE
-       CALL ConstructEmptyDistributedSparseMatrix(SubMat, right_dim, &
+       CALL ConstructEmptyMatrixDS(SubMat, right_dim, &
             & process_grid_in=TempMat%process_grid)
     END IF
     CALL FillFromTripletList(SubMat,extracted_triplets,preduplicated_in=.TRUE.)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructMatrixDS(TempMat)
     CALL DestructTripletList(full_triplets)
     CALL DestructTripletList(extracted_triplets)
 
@@ -570,23 +557,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! as the first.
   SUBROUTINE ReduceDimension(this, dim, it_param, fixed_param, ReducedMat)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: dim
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: ReducedMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: ReducedMat
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Variables - matrices
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: PMat
-    TYPE(DistributedSparseMatrix_t) :: PVec, PVecT
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(DistributedSparseMatrix_t) :: VAV
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: PMat
+    TYPE(Matrix_ds) :: PVec, PVecT
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ds) :: VAV
     !! Special parameters
     TYPE(IterativeSolverParameters_t) :: balanced_it
     TYPE(Permutation_t) :: permutation
 
     !! Compute Identity Matrix
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & this%actual_matrix_dimension, process_grid_in=this%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -616,12 +603,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Extract
     CALL ExtractCorner(VAV, dim, dim, ReducedMat, TempMat)
 
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(PMat)
-    CALL DestructDistributedSparseMatrix(PVec)
-    CALL DestructDistributedSparseMatrix(PVecT)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(VAV)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(PMat)
+    CALL DestructMatrixDS(PVec)
+    CALL DestructMatrixDS(PVecT)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixDS(VAV)
   END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
@@ -632,18 +619,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SerialBase(this, eigenvectors, eigenvalues_out, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ds), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Local Data
-    TYPE(TripletList_t) :: triplet_list, sorted_triplet_list, triplet_w
-    TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
-    TYPE(SparseMatrix_t) :: sparse
+    TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
+    TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(Matrix_sr) :: sparse
     INTEGER :: counter, list_size
     INTEGER :: mat_dim
-    TYPE(SparseMatrix_t) :: local_a, local_v
-    TYPE(DenseMatrix_t) :: dense_a, dense_v, dense_w
+    TYPE(Matrix_sr) :: local_a, local_v
+    TYPE(Matrix_dr) :: dense_a, dense_v, dense_w
     TYPE(FixedSolverParameters_t) :: fixed_params
 
     !! Optional Parameters
@@ -694,12 +681,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Build The Full Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(eigenvectors, mat_dim, &
+    CALL ConstructEmptyMatrixDS(eigenvectors, mat_dim, &
          & process_grid_in=this%process_grid)
     CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
     IF (PRESENT(eigenvalues_out)) THEN
-      CALL ConstructEmptyDistributedSparseMatrix(eigenvalues_out, mat_dim, &
+      CALL ConstructEmptyMatrixDS(eigenvalues_out, mat_dim, &
            & process_grid_in=this%process_grid)
       CALL FillFromTripletList(eigenvalues_out, triplet_w, .TRUE.)
     END IF

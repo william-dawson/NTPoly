@@ -1,25 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Performing Distributed Sparse Matrix Algebra Operations.
-MODULE DistributedSparseMatrixAlgebraModule
+MODULE MatrixDSAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : &
-       & DistributedMatrixMemoryPool_t, ConstructDistributedMatrixMemoryPool, &
-       & CheckDistributedMemoryPoolValidity
-  USE DistributedSparseMatrixModule
+  USE MatrixMemoryPoolDModule, ONLY : MatrixMemoryPool_d, &
+       & ConstructMatrixMemoryPoolD, CheckMemoryPoolDValidity
+  USE MatrixDSModule
   USE GemmTasksModule
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
        & ReduceAndComposeData, ReduceAndComposeCleanup, ReduceAndSumData, &
        & ReduceAndSumCleanup, TestReduceSizeRequest, TestReduceOuterRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
-  USE SparseMatrixAlgebraModule, ONLY : &
-       & DotSparseMatrix, PairwiseMultiplySparseMatrix, &
-       & SparseMatrixColumnNorm, ScaleSparseMatrix, IncrementSparseMatrix, &
-       & Gemm, SparseMatrixGrandSum
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, DestructSparseMatrix, &
-       & CopySparseMatrix, &
-       & TransposeSparseMatrix, ComposeSparseMatrixColumns, MatrixToTripletList
+  USE MatrixSRAlgebraModule, ONLY : DotMatrixS, PairwiseMultiplyMatrixS, &
+       & MatrixSColumnNorm, ScaleMatrixS, IncrementMatrixS, &
+       & GemmMatrixS, MatrixSGrandSum
+  USE MatrixSRModule, ONLY : Matrix_sr, DestructMatrixS,  CopyMatrixS, &
+       & TransposeMatrixS, ComposeMatrixSColumns, MatrixSToTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletListModule, ONLY : TripletList_t, DestructTripletList
+  USE TripletListRModule, ONLY : TripletList_r, DestructTripletList
   USE ISO_C_BINDING
   USE MPI
   IMPLICIT NONE
@@ -42,13 +39,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] sigma_value sigma.
   SUBROUTINE ComputeSigma(this, sigma_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: sigma_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: column_sigma_contribution
     !! Counters/Temporary
     INTEGER :: inner_counter, outer_counter
-    TYPE(SparseMatrix_t) :: merged_local_data
+    TYPE(Matrix_sr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -72,7 +69,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sigma_value = 1.0d+0/(sigma_value**2)
 
     DEALLOCATE(column_sigma_contribution)
-    CALL DestructSparseMatrix(merged_local_data)
+    CALL DestructMatrixS(merged_local_data)
   END SUBROUTINE ComputeSigma
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
@@ -87,28 +84,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DistributedGemm(matA, matB ,matC, alpha_in, beta_in, threshold_in,&
        & memory_pool_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)    :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)    :: matB
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: matC
+    TYPE(Matrix_ds), INTENT(IN)    :: matA
+    TYPE(Matrix_ds), INTENT(IN)    :: matB
+    TYPE(Matrix_ds), INTENT(INOUT) :: matC
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: beta_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
-    TYPE(DistributedMatrixMemoryPool_t), OPTIONAL, INTENT(inout) :: &
+    TYPE(MatrixMemoryPool_d), OPTIONAL, INTENT(inout) :: &
          & memory_pool_in
     !! Local Versions of Optional Parameter
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: beta
     REAL(NTREAL) :: threshold
-    TYPE(DistributedSparseMatrix_t) :: matAB
+    TYPE(Matrix_ds) :: matAB
     !! Temporary Matrices
-    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: LocalRowContribution
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: GatheredRowContribution
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: GatheredRowContributionT
-    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: TransposedBBlocks
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: LocalColumnContribution
-    TYPE(SparseMatrix_t), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution
-    TYPE(SparseMatrix_t), DIMENSION(:,:), ALLOCATABLE :: SliceContribution
+    TYPE(Matrix_sr), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks
+    TYPE(Matrix_sr), DIMENSION(:), ALLOCATABLE :: LocalRowContribution
+    TYPE(Matrix_sr), DIMENSION(:), ALLOCATABLE :: GatheredRowContribution
+    TYPE(Matrix_sr), DIMENSION(:), ALLOCATABLE :: GatheredRowContributionT
+    TYPE(Matrix_sr), DIMENSION(:,:), ALLOCATABLE :: TransposedBBlocks
+    TYPE(Matrix_sr), DIMENSION(:), ALLOCATABLE :: LocalColumnContribution
+    TYPE(Matrix_sr), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution
+    TYPE(Matrix_sr), DIMENSION(:,:), ALLOCATABLE :: SliceContribution
     !! Communication Helpers
     TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: row_helper
     TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: column_helper
@@ -209,8 +206,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup AB Tasks
     IF (PRESENT(memory_pool_in)) THEN
-       IF (.NOT. CheckDistributedMemoryPoolValidity(memory_pool_in)) THEN
-          CALL ConstructDistributedMatrixMemoryPool(memory_pool_in, matAB)
+       IF (.NOT. CheckMemoryPoolDValidity(memory_pool_in)) THEN
+          CALL ConstructMatrixMemoryPoolD(memory_pool_in, matAB)
        END IF
     END IF
 
@@ -232,12 +229,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              DO JJ2=1, &
                   & matAB%process_grid%number_of_blocks_columns/ &
                   & matAB%process_grid%num_process_slices
-                CALL CopySparseMatrix(matA%local_data(II, &
+                CALL CopyMatrixS(matA%local_data(II, &
                      & duplicate_start_column+duplicate_offset_column*(JJ2-1)),&
                      & AdjacentABlocks(II,JJ2))
              END DO
              !! Then Do A Local Gather
-             CALL ComposeSparseMatrixColumns(AdjacentABlocks(II,:), &
+             CALL ComposeMatrixSColumns(AdjacentABlocks(II,:), &
                   & LocalRowContribution(II))
              ATasks(II) = SendSizeA
              !$OMP END TASK
@@ -271,7 +268,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(II)
              CALL ReduceAndComposeCleanup(LocalRowContribution(II), &
                   & GatheredRowContribution(II), row_helper(II))
-             CALL TransposeSparseMatrix(GatheredRowContribution(II), &
+             CALL TransposeMatrixS(GatheredRowContribution(II), &
                   & GatheredRowContributionT(II))
              ATasks(II) = CleanupA
              !$OMP END TASK
@@ -289,12 +286,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !! First Transpose The Data We're Working With
              DO II2=1, matAB%process_grid%number_of_blocks_rows/&
                   & matAB%process_grid%num_process_slices
-                CALL TransposeSparseMatrix(matB%local_data(duplicate_start_row+&
+                CALL TransposeMatrixS(matB%local_data(duplicate_start_row+&
                      & duplicate_offset_row*(II2-1),JJ), &
                      & TransposedBBlocks(II2,JJ))
              END DO
              !! Then Do A Local Gather
-             CALL ComposeSparseMatrixColumns(TransposedBBlocks(:,JJ), &
+             CALL ComposeMatrixSColumns(TransposedBBlocks(:,JJ), &
                   & LocalColumnContribution(JJ))
              BTasks(JJ) = SendSizeB
              !$OMP END TASK
@@ -348,14 +345,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 ABTasks(II,JJ) = TaskRunningAB
                 !$OMP TASK DEFAULT(shared), FIRSTPRIVATE(II,JJ)
                 IF (PRESENT(memory_pool_in)) THEN
-                   CALL Gemm(GatheredRowContributionT(II), &
+                   CALL GemmMatrixS(GatheredRowContributionT(II), &
                         & GatheredColumnContribution(JJ), &
                         & SliceContribution(II,JJ), &
                         & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
                         & alpha_in=alpha, threshold_in=working_threshold, &
                         & blocked_memory_pool_in=memory_pool_in%grid(II,JJ))
                 ELSE
-                   CALL Gemm(GatheredRowContributionT(II), &
+                   CALL GemmMatrixS(GatheredRowContributionT(II), &
                         & GatheredColumnContribution(JJ), &
                         & SliceContribution(II,JJ), &
                         & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
@@ -426,10 +423,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II=1,matAB%process_grid%number_of_blocks_rows
        DO JJ2=1,matAB%process_grid%number_of_blocks_columns/&
             & matAB%process_grid%num_process_slices
-          CALL DestructSparseMatrix(AdjacentABlocks(II,JJ2))
+          CALL DestructMatrixS(AdjacentABlocks(II,JJ2))
        END DO
-       CALL DestructSparseMatrix(LocalRowContribution(II))
-       CALL DestructSparseMatrix(GatheredRowContribution(II))
+       CALL DestructMatrixS(LocalRowContribution(II))
+       CALL DestructMatrixS(GatheredRowContribution(II))
     END DO
     DEALLOCATE(AdjacentABlocks)
     DEALLOCATE(LocalRowContribution)
@@ -438,25 +435,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO JJ=1,matAB%process_grid%number_of_blocks_columns
        DO II2=1,matAB%process_grid%number_of_blocks_rows/&
             & matAB%process_grid%num_process_slices
-          CALL DestructSparseMatrix(TransposedBBlocks(II2,JJ))
+          CALL DestructMatrixS(TransposedBBlocks(II2,JJ))
        END DO
-       CALL DestructSparseMatrix(LocalColumnContribution(JJ))
+       CALL DestructMatrixS(LocalColumnContribution(JJ))
     END DO
     DEALLOCATE(TransposedBBlocks)
     DEALLOCATE(LocalColumnContribution)
     !! Deallocate Buffers From Multiplying The Block
     DO II=1,matAB%process_grid%number_of_blocks_rows
-       CALL DestructSparseMatrix(GatheredRowContributionT(II))
+       CALL DestructMatrixS(GatheredRowContributionT(II))
     END DO
     DO JJ=1,matAB%process_grid%number_of_blocks_columns
-       CALL DestructSparseMatrix(GatheredColumnContribution(JJ))
+       CALL DestructMatrixS(GatheredColumnContribution(JJ))
     END DO
     DEALLOCATE(GatheredRowContributionT)
     DEALLOCATE(GatheredColumnContribution)
     !! Deallocate Buffers From Sum
     DO JJ=1,matAB%process_grid%number_of_blocks_columns
        DO II=1,matAB%process_grid%number_of_blocks_rows
-          CALL DestructSparseMatrix(SliceContribution(II,JJ))
+          CALL DestructMatrixS(SliceContribution(II,JJ))
        END DO
     END DO
     DEALLOCATE(SliceContribution)
@@ -469,7 +466,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result sum the sum of all elements.
   FUNCTION DistributedGrandSum(this) RESULT(sum)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: this
+    TYPE(Matrix_ds), INTENT(IN)  :: this
     REAL(NTREAL) :: sum
     !! Local Data
     INTEGER :: II, JJ
@@ -479,7 +476,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sum = 0
     DO JJ = 1, this%process_grid%number_of_blocks_columns
        DO II = 1, this%process_grid%number_of_blocks_rows
-          temp = SparseMatrixGrandSum(this%local_data(II,JJ))
+          temp = MatrixSGrandSum(this%local_data(II,JJ))
           sum = sum + temp
        END DO
     END DO
@@ -496,9 +493,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matC = MatA mult MatB.
   SUBROUTINE DistributedPairwiseMultiply(matA, matB, matC)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matB
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT)  :: matC
+    TYPE(Matrix_ds), INTENT(IN)  :: matA
+    TYPE(Matrix_ds), INTENT(IN)  :: matB
+    TYPE(Matrix_ds), INTENT(INOUT)  :: matC
     !! Local Data
     INTEGER :: II, JJ
 
@@ -509,7 +506,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$omp do collapse(2)
     DO JJ = 1, matA%process_grid%number_of_blocks_columns
        DO II = 1, matA%process_grid%number_of_blocks_rows
-          CALL PairwiseMultiplySparseMatrix(matA%local_data(II,JJ), &
+          CALL PairwiseMultiplyMatrixS(matA%local_data(II,JJ), &
                & matB%local_data(II,JJ), matC%local_data(II,JJ))
        END DO
     END DO
@@ -522,11 +519,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the norm value of the full distributed sparse matrix.
   FUNCTION DistributedSparseNorm(this) RESULT(norm_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(IN) :: this
     REAL(NTREAL) :: norm_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: local_norm
-    TYPE(SparseMatrix_t) :: merged_local_data
+    TYPE(Matrix_sr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -534,7 +531,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(local_norm(merged_local_data%columns))
 
     !! Sum Along Columns
-    CALL SparseMatrixColumnNorm(merged_local_data,local_norm)
+    CALL MatrixSColumnNorm(merged_local_data,local_norm)
     CALL MPI_Allreduce(MPI_IN_PLACE,local_norm,SIZE(local_norm), &
          & MPINTREAL, MPI_SUM, this%process_grid%column_comm, ierr)
 
@@ -543,7 +540,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(MPI_IN_PLACE,norm_value,1,MPINTREAL,MPI_MAX, &
          & this%process_grid%row_comm, ierr)
 
-    CALL DestructSparseMatrix(merged_local_data)
+    CALL DestructMatrixS(merged_local_data)
     DEALLOCATE(local_norm)
   END FUNCTION DistributedSparseNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -555,11 +552,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result product the dot product.
   FUNCTION DotDistributedSparseMatrix(matA, matB) RESULT(product)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matB
+    TYPE(Matrix_ds), INTENT(IN)  :: matA
+    TYPE(Matrix_ds), INTENT(IN)  :: matB
     REAL(NTREAL) :: product
     !! Local Data
-    TYPE(DistributedSparseMatrix_t)  :: matC
+    TYPE(Matrix_ds)  :: matC
 
     CALL DistributedPairwiseMultiply(matA,matB,matC)
     product = DistributedGrandSum(matC)
@@ -574,8 +571,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold_in for flushing values to zero. (Optional, default=0)
   SUBROUTINE IncrementDistributedSparseMatrix(matA, matB, alpha_in,threshold_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: matA
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT)  :: matB
+    TYPE(Matrix_ds), INTENT(IN)  :: matA
+    TYPE(Matrix_ds), INTENT(INOUT)  :: matB
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Data
@@ -599,7 +596,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$omp do collapse(2)
     DO JJ = 1, matA%process_grid%number_of_blocks_columns
        DO II = 1, matA%process_grid%number_of_blocks_rows
-          CALL IncrementSparseMatrix(matA%local_data(II,JJ), &
+          CALL IncrementMatrixS(matA%local_data(II,JJ), &
                & matB%local_data(II,JJ), alpha, threshold)
        END DO
     END DO
@@ -613,7 +610,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] constant scale factor.
   SUBROUTINE ScaleDistributedSparseMatrix(this,constant)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: this
+    TYPE(Matrix_ds), INTENT(INOUT) :: this
     REAL(NTREAL), INTENT(IN) :: constant
     INTEGER :: II, JJ
 
@@ -621,7 +618,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$omp do collapse(2)
     DO JJ = 1, this%process_grid%number_of_blocks_columns
        DO II = 1, this%process_grid%number_of_blocks_rows
-          CALL ScaleSparseMatrix(this%local_data(II,JJ),constant)
+          CALL ScaleMatrixS(this%local_data(II,JJ),constant)
        END DO
     END DO
     !$omp end do
@@ -633,13 +630,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the trace value of the full distributed sparse matrix.
   FUNCTION Trace(this) RESULT(trace_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(IN) :: this
     REAL(NTREAL) :: trace_value
     !! Local data
-    TYPE(TripletList_t) :: triplet_list
+    TYPE(TripletList_r) :: triplet_list
     !! Counters/Temporary
     INTEGER :: counter
-    TYPE(SparseMatrix_t) :: merged_local_data
+    TYPE(Matrix_sr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -647,7 +644,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute The Local Contribution
     trace_value = 0
-    CALL MatrixToTripletList(merged_local_data,triplet_list)
+    CALL MatrixSToTripletList(merged_local_data,triplet_list)
     DO counter = 1, triplet_list%CurrentSize
        IF (this%start_row + triplet_list%data(counter)%index_row .EQ. &
             & this%start_column + triplet_list%data(counter)%index_column) THEN
@@ -659,6 +656,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(MPI_IN_PLACE, trace_value, 1, MPINTREAL, &
          & MPI_SUM, this%process_grid%within_slice_comm, ierr)
 
-    CALL DestructSparseMatrix(merged_local_data)
+    CALL DestructMatrixS(merged_local_data)
   END FUNCTION Trace
-END MODULE DistributedSparseMatrixAlgebraModule
+END MODULE MatrixDSAlgebraModule

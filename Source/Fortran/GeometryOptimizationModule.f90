@@ -1,23 +1,15 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
-       & DestructDistributedMatrixMemoryPool
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, Trace, &
-       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
-       & ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteListElement, WriteHeader, WriteCitation
-  USE SquareRootSolversModule, ONLY : InverseSquareRoot, SquareRoot
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE SquareRootSolversModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -36,18 +28,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PurificationExtrapolate(PreviousDensity, Overlap, nel, NewDensity,&
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: PreviousDensity, Overlap
+    TYPE(Matrix_ds), INTENT(IN)  :: PreviousDensity, Overlap
     INTEGER, INTENT(IN) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: NewDensity
+    TYPE(Matrix_ds), INTENT(INOUT) :: NewDensity
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: WorkingDensity
-    TYPE(DistributedSparseMatrix_t) :: WorkingOverlap
-    TYPE(DistributedSparseMatrix_t) :: AddBranch, SubtractBranch
-    TYPE(DistributedSparseMatrix_t) :: TempMat1, TempMat2
-    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(Matrix_ds) :: WorkingDensity
+    TYPE(Matrix_ds) :: WorkingOverlap
+    TYPE(Matrix_ds) :: AddBranch, SubtractBranch
+    TYPE(Matrix_ds) :: TempMat1, TempMat2
+    TYPE(Matrix_ds) :: Identity
     !! Local Variables
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     REAL(NTREAL) :: subtract_trace
@@ -55,7 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: norm_value
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
     INTEGER :: outer_counter
     INTEGER :: total_iterations
 
@@ -75,23 +67,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(NewDensity, &
+    CALL ConstructEmptyMatrixDS(NewDensity, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingDensity, &
+    CALL ConstructEmptyMatrixDS(WorkingDensity, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingOverlap, &
+    CALL ConstructEmptyMatrixDS(WorkingOverlap, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
     CALL FillDistributedIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL CopyDistributedSparseMatrix(PreviousDensity, WorkingDensity)
-    CALL CopyDistributedSparseMatrix(Overlap, WorkingOverlap)
+    CALL CopyMatrixDS(PreviousDensity, WorkingDensity)
+    CALL CopyMatrixDS(Overlap, WorkingOverlap)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -104,9 +96,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Finish Setup
-    CALL CopyDistributedSparseMatrix(WorkingDensity, NewDensity)
-    CALL CopyDistributedSparseMatrix(WorkingDensity, AddBranch)
-    CALL CopyDistributedSparseMatrix(WorkingDensity, SubtractBranch)
+    CALL CopyMatrixDS(WorkingDensity, NewDensity)
+    CALL CopyMatrixDS(WorkingDensity, AddBranch)
+    CALL CopyMatrixDS(WorkingDensity, SubtractBranch)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -130,15 +122,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL IncrementDistributedSparseMatrix(AddBranch, NewDensity, &
                   & NEGATIVE_ONE)
              norm_value = DistributedSparseNorm(NewDensity)
-             CALL CopyDistributedSparseMatrix(AddBranch, NewDensity)
-             CALL CopyDistributedSparseMatrix(TempMat2, TempMat1)
+             CALL CopyMatrixDS(AddBranch, NewDensity)
+             CALL CopyMatrixDS(TempMat2, TempMat1)
           ELSE
              !! Add Branch
              trace_value = add_trace
              CALL IncrementDistributedSparseMatrix(SubtractBranch, NewDensity, &
                   & NEGATIVE_ONE)
              norm_value = DistributedSparseNorm(NewDensity)
-             CALL CopyDistributedSparseMatrix(SubtractBranch, NewDensity)
+             CALL CopyMatrixDS(SubtractBranch, NewDensity)
           END IF
        ELSE
           CALL DistributedGemm(NewDensity, WorkingOverlap, TempMat1, &
@@ -167,12 +159,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
        !! Subtracted Version Xn - (I - XnS)Xn
-       CALL CopyDistributedSparseMatrix(NewDensity, SubtractBranch)
+       CALL CopyMatrixDS(NewDensity, SubtractBranch)
        CALL IncrementDistributedSparseMatrix(TempMat2, SubtractBranch, &
             & NEGATIVE_ONE)
 
        !! Added Version Xn + (I - XnS)Xn
-       CALL CopyDistributedSparseMatrix(NewDensity, AddBranch)
+       CALL CopyMatrixDS(NewDensity, AddBranch)
        CALL IncrementDistributedSparseMatrix(TempMat2, AddBranch)
 
     END DO
@@ -190,14 +182,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(WorkingDensity)
-    CALL DestructDistributedSparseMatrix(WorkingOverlap)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(TempMat1)
-    CALL DestructDistributedSparseMatrix(TempMat2)
-    CALL DestructDistributedSparseMatrix(AddBranch)
-    CALL DestructDistributedSparseMatrix(SubtractBranch)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixDS(WorkingDensity)
+    CALL DestructMatrixDS(WorkingOverlap)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(TempMat1)
+    CALL DestructMatrixDS(TempMat2)
+    CALL DestructMatrixDS(AddBranch)
+    CALL DestructMatrixDS(SubtractBranch)
+    CALL DestructMatrixMemoryPoolD(pool1)
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
@@ -215,19 +207,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE LowdinExtrapolate(PreviousDensity, OldOverlap, NewOverlap, &
        & NewDensity, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: PreviousDensity
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: OldOverlap
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: NewOverlap
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: NewDensity
+    TYPE(Matrix_ds), INTENT(IN)  :: PreviousDensity
+    TYPE(Matrix_ds), INTENT(IN)  :: OldOverlap
+    TYPE(Matrix_ds), INTENT(IN)  :: NewOverlap
+    TYPE(Matrix_ds), INTENT(INOUT) :: NewDensity
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: SQRMat
-    TYPE(DistributedSparseMatrix_t) :: ISQMat
-    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(Matrix_ds) :: SQRMat
+    TYPE(Matrix_ds) :: ISQMat
+    TYPE(Matrix_ds) :: TempMat
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -256,9 +248,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DistributedGemm(TempMat, ISQMat, NewDensity, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
-    CALL DestructDistributedSparseMatrix(SQRMat)
-    CALL DestructDistributedSparseMatrix(ISQMat)
-    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructMatrixDS(SQRMat)
+    CALL DestructMatrixDS(ISQMat)
+    CALL DestructMatrixDS(TempMat)
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog

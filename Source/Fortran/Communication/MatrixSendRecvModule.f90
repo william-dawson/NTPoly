@@ -2,8 +2,8 @@
 !> Module for sending matrices between processes.
 MODULE MatrixSendRecvModule
   USE DataTypesModule, ONLY : MPINTREAL
-  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructEmptyDenseMatrix
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix
+  USE MatrixDRModule, ONLY : Matrix_dr, ConstructEmptyMatrixD
+  USE MatrixSRModule, ONLY : Matrix_sr, ConstructEmptyMatrixS
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -45,7 +45,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] send_tag a tag to identify this message.
   SUBROUTINE SendSparseMatrixSizes(inmat, rank, comm, helper, send_tag)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: inmat
+    TYPE(Matrix_sr), INTENT(IN) :: inmat
     INTEGER, INTENT(IN) :: rank
     INTEGER, INTENT(INOUT) :: comm
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
@@ -70,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] recv_tag a tag to identify this message.
   SUBROUTINE RecvSparseMatrixSizes(outmat, rank, comm, helper, recv_tag)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: outmat
+    TYPE(Matrix_sr), INTENT(INOUT) :: outmat
     INTEGER, INTENT(IN) :: rank
     INTEGER, INTENT(INOUT) :: comm
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
@@ -91,7 +91,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] send_tag a tag to identify this message.
   SUBROUTINE SendSparseMatrixData(inmat,rank,comm,helper,send_tag)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: inmat
+    TYPE(Matrix_sr), INTENT(IN) :: inmat
     INTEGER, INTENT(IN) :: rank
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
     INTEGER, INTENT(IN) :: send_tag
@@ -117,7 +117,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] recv_tag a tag to identify this message.
   SUBROUTINE RecvSparseMatrixData(outmat,rank,comm,helper,recv_tag)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: outmat
+    TYPE(Matrix_sr), INTENT(INOUT) :: outmat
     INTEGER, INTENT(IN) :: rank
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
     INTEGER, INTENT(IN) :: recv_tag
@@ -126,7 +126,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Build Storage
-    CALL ConstructEmptySparseMatrix(outmat, helper%matrix_data(3), &
+    CALL ConstructEmptyMatrixS(outmat, helper%matrix_data(3), &
          & helper%matrix_data(2))
     ALLOCATE(outmat%values(helper%matrix_data(1)))
     ALLOCATE(outmat%inner_index(helper%matrix_data(1)))
@@ -150,7 +150,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] send_tag a tag to identify this message.
   SUBROUTINE SendDenseMatrixSizes(inmat, rank, comm, helper, send_tag)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: inmat
+    TYPE(Matrix_dr), INTENT(IN) :: inmat
     INTEGER, INTENT(IN) :: rank
     INTEGER, INTENT(INOUT) :: comm
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
@@ -175,7 +175,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] recv_tag a tag to identify this message.
   SUBROUTINE RecvDenseMatrixSizes(outmat, rank, comm, helper, recv_tag)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: outmat
+    TYPE(Matrix_dr), INTENT(INOUT) :: outmat
     INTEGER, INTENT(IN) :: rank
     INTEGER, INTENT(INOUT) :: comm
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
@@ -196,7 +196,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] send_tag a tag to identify this message.
   SUBROUTINE SendDenseMatrixData(inmat,rank,comm,helper,send_tag)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(IN) :: inmat
+    TYPE(Matrix_dr), INTENT(IN) :: inmat
     INTEGER, INTENT(IN) :: rank
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
     INTEGER, INTENT(IN) :: send_tag
@@ -218,7 +218,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] recv_tag a tag to identify this message.
   SUBROUTINE RecvDenseMatrixData(outmat,rank,comm,helper,recv_tag)
     !! Parameters
-    TYPE(DenseMatrix_t), INTENT(INOUT) :: outmat
+    TYPE(Matrix_dr), INTENT(INOUT) :: outmat
     INTEGER, INTENT(IN) :: rank
     TYPE(SendRecvHelper_t), INTENT(INOUT) :: helper
     INTEGER, INTENT(IN) :: recv_tag
@@ -227,7 +227,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Build Storage
-    CALL ConstructEmptyDenseMatrix(outmat, helper%matrix_data(3), &
+    CALL ConstructEmptyMatrixD(outmat, helper%matrix_data(3), &
          & helper%matrix_data(2))
 
     !! Receive the data

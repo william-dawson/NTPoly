@@ -1,22 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Systems Quantum Chemistry Systems Using Minimization.
 MODULE MinimizerSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
-       & DestructDistributedMatrixMemoryPool
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, Trace, &
-       & DotDistributedSparseMatrix, ScaleDistributedSparseMatrix, &
-       & IncrementDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader,&
-       & WriteListElement, WriteCitation
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -37,10 +29,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InverseSquareRoot
+    TYPE(Matrix_ds), INTENT(IN)  :: Hamiltonian
+    TYPE(Matrix_ds), INTENT(IN)  :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    TYPE(Matrix_ds), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -50,13 +42,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: last_trace_value
     REAL(NTREAL) :: norm_value
-    TYPE(DistributedSparseMatrix_t) :: WorkingHamiltonian
-    TYPE(DistributedSparseMatrix_t) :: P_k
-    TYPE(DistributedSparseMatrix_t) :: Gradient
-    TYPE(DistributedSparseMatrix_t) :: G_k, G_kplusone
-    TYPE(DistributedSparseMatrix_t) :: H_k
-    TYPE(DistributedSparseMatrix_t) :: TempMat, TempMat2
-    TYPE(DistributedSparseMatrix_t) :: Identity
+    TYPE(Matrix_ds) :: WorkingHamiltonian
+    TYPE(Matrix_ds) :: P_k
+    TYPE(Matrix_ds) :: Gradient
+    TYPE(Matrix_ds) :: G_k, G_kplusone
+    TYPE(Matrix_ds) :: H_k
+    TYPE(Matrix_ds) :: TempMat, TempMat2
+    TYPE(Matrix_ds) :: Identity
     REAL(NTREAL) :: mu
     REAL(NTREAL) :: gamma
     REAL(NTREAL) :: step_size
@@ -64,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: root1, root2, root_temp
     REAL(NTREAL) :: energy_value, energy_value2
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
     INTEGER :: outer_counter
     INTEGER :: matrix_dimension
 
@@ -85,25 +77,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Construct All The Necessary Matrices
     matrix_dimension = Hamiltonian%actual_matrix_dimension
-    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Density, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
          & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(P_k, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(P_k, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(G_k, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(G_k, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(G_kplusone, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(G_kplusone, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(H_k, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(H_k, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(TempMat, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat2, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(TempMat2, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Gradient, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Gradient, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Identity, matrix_dimension, &
          & Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -124,11 +116,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Initialize
     trace_value = 0.0d+0
     last_trace_value = 0.0d+0
-    CALL CopyDistributedSparseMatrix(Identity, P_k)
+    CALL CopyMatrixDS(Identity, P_k)
     CALL ScaleDistributedSparseMatrix(P_k,REAL(0.5*nel,NTREAL)/matrix_dimension)
 
     !! Compute The Gradient
-    CALL CopyDistributedSparseMatrix(Identity,TempMat)
+    CALL CopyMatrixDS(Identity,TempMat)
     CALL IncrementDistributedSparseMatrix(P_k,TempMat,REAL(-1.0,NTREAL))
     CALL DistributedGemm(P_k,WorkingHamiltonian,TempMat2, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
@@ -138,9 +130,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     mu = Trace(Gradient)/matrix_dimension
     CALL IncrementDistributedSparseMatrix(Identity,Gradient, &
          & REAL(-1.0*mu,NTREAL))
-    CALL CopyDistributedSparseMatrix(Gradient,H_k)
+    CALL CopyMatrixDS(Gradient,H_k)
     CALL ScaleDistributedSparseMatrix(H_k,REAL(-1.0,NTREAL))
-    CALL CopyDistributedSparseMatrix(H_k,G_k)
+    CALL CopyMatrixDS(H_k,G_k)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -166,7 +158,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DistributedGemm(H_k,TempMat,TempMat2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
-       CALL CopyDistributedSparseMatrix(Identity,TempMat)
+       CALL CopyMatrixDS(Identity,TempMat)
        CALL IncrementDistributedSparseMatrix(P_k,TempMat,REAL(-2.0,NTREAL))
        c = 3.0*DotDistributedSparseMatrix(TempMat,TempMat2)
        d = -2.0*DotDistributedSparseMatrix(H_k,TempMat2)
@@ -184,7 +176,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementDistributedSparseMatrix(H_k,P_k,REAL(step_size,NTREAL))
 
        !! Compute new gradient
-       CALL CopyDistributedSparseMatrix(Identity,TempMat)
+       CALL CopyMatrixDS(Identity,TempMat)
        CALL IncrementDistributedSparseMatrix(P_k,TempMat,REAL(-1.0,NTREAL))
        CALL DistributedGemm(P_k,WorkingHamiltonian,TempMat2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
@@ -194,7 +186,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        mu = Trace(Gradient)/matrix_dimension
        CALL IncrementDistributedSparseMatrix(Identity,Gradient, &
             & REAL(-1.0*mu,NTREAL))
-       CALL CopyDistributedSparseMatrix(Gradient,G_kplusone)
+       CALL CopyMatrixDS(Gradient,G_kplusone)
        CALL ScaleDistributedSparseMatrix(G_kplusone,REAL(-1.0,NTREAL))
 
        !! Compute conjugate direction
@@ -205,7 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL ScaleDistributedSparseMatrix(H_k,gamma)
        CALL IncrementDistributedSparseMatrix(G_kplusone,H_k)
-       CALL CopyDistributedSparseMatrix(G_kplusone,G_k)
+       CALL CopyMatrixDS(G_kplusone,G_k)
 
        !! Energy value based convergence
        energy_value2 = energy_value
@@ -254,6 +246,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(G_k)
     CALL DestructDistributedSparseMatrix(G_kplusone)
     CALL DestructDistributedSparseMatrix(H_k)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixMemoryPoolD(pool1)
   END SUBROUTINE ConjugateGradient
 END MODULE MinimizerSolversModule

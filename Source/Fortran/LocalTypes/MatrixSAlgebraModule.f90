@@ -2,14 +2,14 @@
 !> A module for performing linear algebra using sparse matrices.
 MODULE MatrixSRAlgebraModule
   USE DataTypesModule, ONLY : NTREAL
-  USE MatrixDRModule, ONLY : Matrix_dr, ConstructDenseFromSparse, &
-       & ConstructSparseFromDense, MultiplyDense, DestructDenseMatrix
+  USE MatrixDRModule, ONLY : Matrix_dr, ConstructMatrixDFromS, &
+       & ConstructMatrixSFromD, MultiplyMatrixD, DestructMatrixD
   USE MatrixMemoryPoolRModule, ONLY : MatrixMemoryPool_r, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
        & CheckMemoryPoolValidity, SetPoolSparsity
-  USE MatrixSRModule, ONLY: Matrix_sr, ConstructEmptySparseMatrix, &
-       & DestructSparseMatrix, ConstructFromTripletList, CopySparseMatrix, &
-       & TransposeSparseMatrix, PrintSparseMatrix
+  USE MatrixSRModule, ONLY: Matrix_sr, ConstructEmptyMatrixS, &
+       & DestructMatrixS, ConstructMatrixSFromTripletList, CopyMatrixS, &
+       & TransposeMatrixS, PrintMatrixS
   USE VectorSRModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
   USE TripletListRModule, ONLY: TripletList_r, SortTripletList, &
@@ -37,14 +37,14 @@ END MODULE MatrixSRAlgebraModule
 !> A module for performing linear algebra using sparse matrices.
 MODULE MatrixSCAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE MatrixDCModule, ONLY : Matrix_dc, ConstructDenseFromSparse, &
-       & ConstructSparseFromDense, MultiplyDense, DestructDenseMatrix
+  USE MatrixDCModule, ONLY : Matrix_dc, ConstructMatrixDFromS, &
+       & ConstructMatrixSFromD, MultiplyMatrixD, DestructMatrixD
   USE MatrixMemoryPoolCModule, ONLY : MatrixMemoryPool_c, &
        & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
        & CheckMemoryPoolValidity, SetPoolSparsity
-  USE MatrixSCModule, ONLY: Matrix_sc, ConstructEmptySparseMatrix, &
-       & DestructSparseMatrix, ConstructFromTripletList, CopySparseMatrix, &
-       & TransposeSparseMatrix, PrintSparseMatrix
+  USE MatrixSCModule, ONLY: Matrix_sc, ConstructEmptyMatrixS, &
+       & DestructMatrixS, ConstructMatrixSFromTripletList, CopyMatrixS, &
+       & TransposeMatrixS, PrintMatrixS
   USE VectorSCModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
   USE TripletListCModule, ONLY: TripletList_c, SortTripletList, &

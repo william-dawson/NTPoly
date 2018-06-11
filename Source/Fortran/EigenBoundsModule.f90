@@ -1,21 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & DotDistributedSparseMatrix, DistributedSparseNorm, &
-       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillFromTripletList, GetTripletList
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
-       & EnterSubLog, ExitSubLog
-  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
-       & ConstructTripletList, DestructTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE IterativeSolversModule
+  USE LoggingModule
+  USE TripletListRModule
+  USE TripletRModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -30,12 +23,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] max_value an uppder bound on the eigenspectrum.
   SUBROUTINE GershgorinBounds(this,min_value,max_value)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: min_value, max_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_max
-    TYPE(TripletList_t) :: triplet_list
+    TYPE(TripletList_r) :: triplet_list
     !! Counters/Temporary
     INTEGER :: counter
     INTEGER :: local_column
@@ -92,20 +85,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] solver_parameters_in solver parameters (optional).
   SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: this
+    TYPE(Matrix_ds), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: max_value
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Data
-    TYPE(DistributedSparseMatrix_t) :: vector, vector2, TempMat
+    TYPE(Matrix_ds) :: vector, vector2, TempMat
     REAL(NTREAL) :: scale_value
     REAL(NTREAL) :: norm_value
-    TYPE(TripletList_t) :: temp_list
-    TYPE(Triplet_t) :: temp_triplet
+    TYPE(TripletList_r) :: temp_list
+    TYPE(Triplet_r) :: temp_triplet
     INTEGER :: outer_counter
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(MatrixMemoryPool_d) :: pool
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -122,9 +115,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Diagonal matrices serve as vectors.
-    CALL ConstructEmptyDistributedSparseMatrix(vector, &
+    CALL ConstructEmptyMatrixDS(vector, &
          & this%actual_matrix_dimension, this%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(vector2, &
+    CALL ConstructEmptyMatrixDS(vector2, &
          & this%actual_matrix_dimension, this%process_grid)
 
     !! Guess Vector
@@ -163,7 +156,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementDistributedSparseMatrix(vector2,vector,REAL(-1.0,NTREAL))
        norm_value = DistributedSparseNorm(vector)
 
-       CALL CopyDistributedSparseMatrix(vector2,vector)
+       CALL CopyMatrixDS(vector2,vector)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -187,8 +180,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(vector)
-    CALL DestructDistributedSparseMatrix(vector2)
-    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructMatrixDS(vector)
+    CALL DestructMatrixDS(vector2)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE PowerBounds
 END MODULE EigenBoundsModule

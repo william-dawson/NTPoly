@@ -2,7 +2,7 @@
 !> Module for broadcasting matrices across processes.
 MODULE MatrixBroadcastModule
   USE DataTypesModule
-  USE SparseMatrixModule
+  USE MatrixSRModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -43,7 +43,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper the broadcast matrix helper.
   SUBROUTINE BroadcastSparseMatrixSizes(matrix, comm, root, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    TYPE(Matrix_sr), INTENT(INOUT) :: matrix
     INTEGER, INTENT(INOUT) :: comm
     INTEGER, INTENT(IN) :: root
     TYPE(BroadcastHelper_t), INTENT(INOUT) :: helper
@@ -72,7 +72,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper the broadcast matrix helper.
   SUBROUTINE BroadcastSparseMatrixData(matrix, comm, root, helper)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    TYPE(Matrix_sr), INTENT(INOUT) :: matrix
     INTEGER, INTENT(INOUT) :: comm
     INTEGER, INTENT(IN) :: root
     TYPE(BroadcastHelper_t), INTENT(INOUT) :: helper
@@ -163,7 +163,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] root the root process which holds the matrix.
   SUBROUTINE BroadcastSparseMatrix(matrix, comm, root)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: matrix
+    TYPE(Matrix_sr), INTENT(INOUT) :: matrix
     INTEGER, INTENT(INOUT) :: comm
     INTEGER, INTENT(IN) :: root
     !! Local Data

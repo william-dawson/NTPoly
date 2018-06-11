@@ -1,20 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing Matrix functions based on Chebyshev polynomials.
 MODULE ChebyshevSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, GetSize,&
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & GetLoadBalance, PrintMatrixInformation
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
-       & PrintFixedSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
-       & EnterSubLog, ExitSubLog
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE FixedSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -76,19 +70,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ChebyshevCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: BalancedInput
-    TYPE(DistributedSparseMatrix_t) :: Tk
-    TYPE(DistributedSparseMatrix_t) :: Tkminus1
-    TYPE(DistributedSparseMatrix_t) :: Tkminus2
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: BalancedInput
+    TYPE(Matrix_ds) :: Tk
+    TYPE(Matrix_ds) :: Tkminus1
+    TYPE(Matrix_ds) :: Tkminus2
+    TYPE(MatrixMemoryPool_d) :: pool
     !! Local Variables
     INTEGER :: degree
     INTEGER :: counter
@@ -111,10 +105,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
-    CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
+    CALL CopyMatrixDS(InputMat,BalancedInput)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -125,13 +119,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! First Term
-    CALL CopyDistributedSparseMatrix(Identity,Tkminus2)
+    CALL CopyMatrixDS(Identity,Tkminus2)
     IF (degree == 1) THEN
-       CALL CopyDistributedSparseMatrix(Tkminus2,OutputMat)
+       CALL CopyMatrixDS(Tkminus2,OutputMat)
        CALL ScaleDistributedSparseMatrix(OutputMat,poly%coefficients(1))
     ELSE
-       CALL CopyDistributedSparseMatrix(BalancedInput,Tkminus1)
-       CALL CopyDistributedSparseMatrix(Tkminus2,OutputMat)
+       CALL CopyMatrixDS(BalancedInput,Tkminus1)
+       CALL CopyMatrixDS(Tkminus2,OutputMat)
        CALL ScaleDistributedSparseMatrix(OutputMat,poly%coefficients(1))
        CALL IncrementDistributedSparseMatrix(Tkminus1,OutputMat, &
             & alpha_in=poly%coefficients(2))
@@ -143,8 +137,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL IncrementDistributedSparseMatrix(Tk, OutputMat, &
                & alpha_in=poly%coefficients(3))
           DO counter = 4, degree
-             CALL CopyDistributedSparseMatrix(Tkminus1,Tkminus2)
-             CALL CopyDistributedSparseMatrix(Tk,Tkminus1)
+             CALL CopyMatrixDS(Tkminus1,Tkminus2)
+             CALL CopyMatrixDS(Tk,Tkminus1)
              CALL DistributedGemm(BalancedInput, Tkminus1, Tk, &
                   & alpha_in=REAL(2.0,NTREAL), &
                   & threshold_in=solver_parameters%threshold, &
@@ -170,11 +164,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(Tk)
-    CALL DestructDistributedSparseMatrix(Tkminus1)
-    CALL DestructDistributedSparseMatrix(Tkminus2)
-    CALL DestructDistributedSparseMatrix(BalancedInput)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(Tk)
+    CALL DestructMatrixDS(Tkminus1)
+    CALL DestructMatrixDS(Tkminus2)
+    CALL DestructMatrixDS(BalancedInput)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE ChebyshevCompute
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
@@ -188,17 +183,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FactorizedChebyshevCompute(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: BalancedInput
-    TYPE(DistributedSparseMatrix_t), DIMENSION(:), ALLOCATABLE :: T_Powers
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: BalancedInput
+    TYPE(Matrix_ds), DIMENSION(:), ALLOCATABLE :: T_Powers
+    TYPE(MatrixMemoryPool_d) :: pool
     !! Local Variables
     INTEGER :: degree
     INTEGER :: log2degree
@@ -224,10 +219,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(Identity)
-    CALL CopyDistributedSparseMatrix(InputMat,BalancedInput)
+    CALL CopyMatrixDS(InputMat,BalancedInput)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -246,11 +241,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(T_Powers(log2degree))
 
     !! Now compute those powers of two
-    CALL CopyDistributedSparseMatrix(Identity, T_Powers(1))
+    CALL CopyMatrixDS(Identity, T_Powers(1))
     IF (degree .EQ. 1) THEN
-       CALL CopyDistributedSparseMatrix(T_Powers(1), OutputMat)
+       CALL CopyMatrixDS(T_Powers(1), OutputMat)
     ELSE
-       CALL CopyDistributedSparseMatrix(BalancedInput,T_Powers(2))
+       CALL CopyMatrixDS(BalancedInput,T_Powers(2))
        DO counter=3,log2degree
           CALL DistributedGemm(T_Powers(counter-1), T_Powers(counter-1), &
                & T_Powers(counter), threshold_in=solver_parameters%threshold, &
@@ -286,11 +281,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     DO counter=1,log2degree
-       CALL DestructDistributedSparseMatrix(T_Powers(counter))
+       CALL DestructMatrixDS(T_Powers(counter))
     END DO
     DEALLOCATE(T_Powers)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(BalancedInput)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(BalancedInput)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE FactorizedChebyshevCompute
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The workhorse routine for the factorized chebyshev computation function.
@@ -303,12 +299,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   RECURSIVE SUBROUTINE ComputeRecursive(T_Powers, poly, OutputMat, pool, &
        & depth, solver_parameters)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), DIMENSION(:), INTENT(IN) :: T_Powers
+    TYPE(Matrix_ds), DIMENSION(:), INTENT(IN) :: T_Powers
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(in) :: depth
     TYPE(FixedSolverParameters_t), INTENT(IN) :: solver_parameters
-    TYPE(DistributedMatrixMemoryPool_t), INTENT(INOUT) :: pool
+    TYPE(MatrixMemoryPool_d), INTENT(INOUT) :: pool
     !! Local Data
     INTEGER :: coefficient_midpoint
     INTEGER :: left_length, right_length
@@ -316,12 +312,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     TYPE(ChebyshevPolynomial_t) :: left_poly
     TYPE(ChebyshevPolynomial_t) :: right_poly
-    TYPE(DistributedSparseMatrix_t) :: LeftMat
-    TYPE(DistributedSparseMatrix_t) :: RightMat
+    TYPE(Matrix_ds) :: LeftMat
+    TYPE(Matrix_ds) :: RightMat
 
     !! First Handle The Base Case
     IF (SIZE(poly%coefficients) .EQ. 2) THEN
-       CALL CopyDistributedSparseMatrix(T_Powers(1), OutputMat)
+       CALL CopyMatrixDS(T_Powers(1), OutputMat)
        CALL ScaleDistributedSparseMatrix(OutputMat, poly%coefficients(1))
        CALL IncrementDistributedSparseMatrix(T_Powers(2), OutputMat, &
             & alpha_in=poly%coefficients(2))
@@ -360,8 +356,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Cleanup
        DEALLOCATE(left_poly%coefficients)
        DEALLOCATE(right_poly%coefficients)
-       CALL DestructDistributedSparseMatrix(LeftMat)
-       CALL DestructDistributedSparseMatrix(RightMat)
+       CALL DestructMatrixDS(LeftMat)
+       CALL DestructMatrixDS(RightMat)
     END IF
 
   END SUBROUTINE ComputeRecursive

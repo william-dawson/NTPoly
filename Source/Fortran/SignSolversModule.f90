@@ -1,22 +1,15 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Matrix Sign Function.
 MODULE SignSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & IncrementDistributedSparseMatrix, DistributedSparseNorm, &
-       & ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation, TransposeDistributedSparseMatrix
-  USE EigenBoundsModule, ONLY : GershgorinBounds
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteListElement, WriteHeader, WriteCitation
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE EigenBoundsModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -30,8 +23,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in optional parameters for the routine.
   SUBROUTINE SignFunction(Mat1, SignMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Mat1
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: SignMat
+    TYPE(Matrix_ds), INTENT(IN) :: Mat1
+    TYPE(Matrix_ds), INTENT(INOUT) :: SignMat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
@@ -66,14 +59,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in optional parameters for the routine.
   SUBROUTINE PolarDecomposition(Mat1, Umat, Hmat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Mat1
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Umat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT), OPTIONAL :: Hmat
+    TYPE(Matrix_ds), INTENT(IN) :: Mat1
+    TYPE(Matrix_ds), INTENT(INOUT) :: Umat
+    TYPE(Matrix_ds), INTENT(INOUT), OPTIONAL :: Hmat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
-    TYPE(DistributedSparseMatrix_t) :: UmatT
+    TYPE(Matrix_ds) :: UmatT
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -108,16 +101,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! polar decomposition.
   SUBROUTINE CoreComputation(Mat1, OutMat, solver_parameters, needs_transpose)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Mat1
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutMat
+    TYPE(Matrix_ds), INTENT(IN) :: Mat1
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutMat
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     LOGICAL, INTENT(IN) :: needs_transpose
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: Temp1
-    TYPE(DistributedSparseMatrix_t) :: Temp2
-    TYPE(DistributedSparseMatrix_t) :: OutMatT
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: Temp1
+    TYPE(Matrix_ds) :: Temp2
+    TYPE(Matrix_ds) :: OutMatT
+    TYPE(MatrixMemoryPool_d) :: pool
     !! Local Data
     REAL(NTREAL), PARAMETER :: alpha = 1.69770248526
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
@@ -129,11 +122,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: outer_counter
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
+    CALL ConstructEmptyMatrixDS(Temp1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
+    CALL ConstructEmptyMatrixDS(Temp2, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -146,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(Mat1, OutMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyDistributedSparseMatrix(Mat1,OutMat)
+       CALL CopyMatrixDS(Mat1,OutMat)
     END IF
     CALL StopTimer("Load Balance")
 
@@ -192,7 +185,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementDistributedSparseMatrix(Temp2, OutMat, &
             & alpha_in=NEGATIVE_ONE)
        norm_value = DistributedSparseNorm(OutMat)
-       CALL CopyDistributedSparseMatrix(Temp2,OutMat)
+       CALL CopyMatrixDS(Temp2,OutMat)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -216,5 +209,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(Temp2)
     CALL DestructDistributedSparseMatrix(OutMatT)
     CALL DestructDistributedSparseMatrix(Identity)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE CoreComputation
 END MODULE SignSolversModule

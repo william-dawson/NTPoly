@@ -14,26 +14,26 @@
   END TYPE SMTYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Construct/Destruct
-  PUBLIC :: ConstructEmptySparseMatrix
-  PUBLIC :: ConstructSparseMatrixFromFile
-  PUBLIC :: ConstructZeroSparseMatrix
-  PUBLIC :: ConstructFromTripletList
-  PUBLIC :: DestructSparseMatrix
-  PUBLIC :: CopySparseMatrix
+  PUBLIC :: ConstructEmptyMatrixS
+  PUBLIC :: ConstructMatrixSFromFile
+  PUBLIC :: ConstructZeroMatrixS
+  PUBLIC :: ConstructMatrixSFromTripletList
+  PUBLIC :: DestructMatrixS
+  PUBLIC :: CopyMatrixS
   !! Basic Accessors
   PUBLIC :: GetRows
   PUBLIC :: GetColumns
   PUBLIC :: ExtractRow
   PUBLIC :: ExtractColumn
   !! Routines for splitting and composing
-  PUBLIC :: SplitSparseMatrix
-  PUBLIC :: SplitSparseMatrixColumns
-  PUBLIC :: ComposeSparseMatrix
-  PUBLIC :: ComposeSparseMatrixColumns
+  PUBLIC :: SplitMatrixS
+  PUBLIC :: SplitMatrixSColumns
+  PUBLIC :: ComposeMatrixS
+  PUBLIC :: ComposeMatrixSColumns
   !! ETC
-  PUBLIC :: TransposeSparseMatrix
-  PUBLIC :: PrintSparseMatrix
-  PUBLIC :: MatrixToTripletList
+  PUBLIC :: TransposeMatrixS
+  PUBLIC :: PrintMatrixS
+  PUBLIC :: MatrixSToTripletList
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Internal only. Create a sparse matrix with a certain number of columns
   !! and rows. Will allocate storage for the outer values, nothing else.
@@ -41,22 +41,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! index allocated, but nothing else.
   !! @param[in] columns number of matrix columns.
   !! @param[in] rows number of matrix rows.
-  PURE SUBROUTINE ConstructEmptySparseMatrix(this, columns, rows)
+  PURE SUBROUTINE ConstructEmptyMatrixS(this, columns, rows)
     !! Parameters
     TYPE(SMTYPE),INTENT(OUT)  :: this
     INTEGER, INTENT(IN) :: columns, rows
 
-    CALL DestructSparseMatrix(this)
+    CALL DestructMatrixS(this)
     this%rows = rows
     this%columns = columns
     ALLOCATE(this%outer_index(this%columns+1))
     this%outer_index = 0
-  END SUBROUTINE ConstructEmptySparseMatrix
+  END SUBROUTINE ConstructEmptyMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   !! @param[out] this the matrix being constructed.
   !! @param[in] file_name name of the file.
-  SUBROUTINE ConstructSparseMatrixFromFile(this, file_name)
+  SUBROUTINE ConstructMatrixSFromFile(this, file_name)
     !! Parameters
     TYPE(SMTYPE), INTENT(OUT) :: this
     CHARACTER(len=*), INTENT(IN)   :: file_name
@@ -106,28 +106,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SymmetrizeTripletList(triplet_list, pattern_type)
     CALL SortTripletList(triplet_list, temp_columns, temp_rows, &
          & sorted_triplet_list)
-    CALL ConstructFromTripletList(this, sorted_triplet_list, temp_rows, &
+    CALL ConstructMatrixSFromTripletList(this, sorted_triplet_list, temp_rows, &
          & temp_columns)
 
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(sorted_triplet_list)
-  END SUBROUTINE ConstructSparseMatrixFromFile
+  END SUBROUTINE ConstructMatrixSFromFile
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix with zero values in it.
   !! @param[out] this the matrix being constructed
   !! @param[in] rows number of matrix rows
   !! @param[in] columns number of matrix columns
-  PURE SUBROUTINE ConstructZeroSparseMatrix(this,rows,columns)
+  PURE SUBROUTINE ConstructZeroMatrixS(this,rows,columns)
     !! Parameters
     TYPE(SMTYPE), INTENT(OUT) :: this
     INTEGER, INTENT(IN)             :: rows, columns
 
     !! Allocate
-    CALL ConstructEmptySparseMatrix(this,columns,rows)
+    CALL ConstructEmptyMatrixS(this,columns,rows)
     ALLOCATE(this%inner_index(0))
     ALLOCATE(this%values(0))
 
-  END SUBROUTINE ConstructZeroSparseMatrix
+  END SUBROUTINE ConstructZeroMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
   !! The triplet list must be sorted to efficiently fill in the matrix. This
@@ -136,7 +136,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_list a list of triplet values. They must be sorted.
   !! @param[in] rows number of matrix rows
   !! @param[in] columns number of matrix columns
-  PURE SUBROUTINE ConstructFromTripletList(this,triplet_list,rows,columns)
+  PURE SUBROUTINE ConstructMatrixSFromTripletList(this,triplet_list,rows,columns)
     !! Parameters
     TYPE(SMTYPE), INTENT(OUT) :: this
     TYPE(TLISTTYPE), INTENT(IN) :: triplet_list
@@ -145,7 +145,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: values_counter
 
     IF (ALLOCATED(this%outer_index)) THEN
-       CALL DestructSparseMatrix(this)
+       CALL DestructMatrixS(this)
     END IF
 
     this%rows = rows
@@ -179,11 +179,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        this%outer_index(outer_array_ptr) = this%outer_index(outer_array_ptr-1)
     END DO
 
-  END SUBROUTINE ConstructFromTripletList
+  END SUBROUTINE ConstructMatrixSFromTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
   !! @param[inout] this the matrix to free up
-  PURE SUBROUTINE DestructSparseMatrix(this)
+  PURE SUBROUTINE DestructMatrixS(this)
     !! Parameters
     TYPE(SMTYPE), INTENT(INOUT) :: this
 
@@ -196,19 +196,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (ALLOCATED(this%values)) THEN
        DEALLOCATE(this%values)
     END IF
-  END SUBROUTINE DestructSparseMatrix
+  END SUBROUTINE DestructMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a sparse matrix in a safe way.
   !! @param[in] matA matrix to copy
   !! @param[inout] matB = matA
-  PURE SUBROUTINE CopySparseMatrix(matA, matB)
+  PURE SUBROUTINE CopyMatrixS(matA, matB)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: matA
     TYPE(SMTYPE), INTENT(INOUT) :: matB
 
-    CALL DestructSparseMatrix(matB)
+    CALL DestructMatrixS(matB)
     matB = matA
-  END SUBROUTINE CopySparseMatrix
+  END SUBROUTINE CopyMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of rows of a matrix.
   !! @param[in] this the matrix.
@@ -247,7 +247,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: inner_counter
 
     !! Fill a value buffer
-    CALL ConstructEmptySparseMatrix(row_out,this%columns,1)
+    CALL ConstructEmptyMatrixS(row_out,this%columns,1)
     ALLOCATE(value_buffer(this%columns))
     values_found = 0
     total_counter = 1
@@ -294,7 +294,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! Allocate Memory
-    CALL ConstructEmptySparseMatrix(column_out, 1, this%rows)
+    CALL ConstructEmptyMatrixS(column_out, 1, this%rows)
     start_index = this%outer_index(column_number)
     number_of_values = this%outer_index(column_number+1) - &
          & this%outer_index(column_number)
@@ -316,7 +316,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! sorted and then the return matrix is constructed.
   !! @param[in] this the matrix to be transposed.
   !! @param[out] matT the input matrix transposed.
-  PURE SUBROUTINE TransposeSparseMatrix(this, matT)
+  PURE SUBROUTINE TransposeMatrixS(this, matT)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN)  :: this
     TYPE(SMTYPE), INTENT(INOUT) :: matT
@@ -330,7 +330,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Allocate New Matrix
     num_values = this%outer_index(this%columns+1)
-    CALL ConstructEmptySparseMatrix(matT,this%rows,this%columns)
+    CALL ConstructEmptyMatrixS(matT,this%rows,this%columns)
     ALLOCATE(matT%inner_index(num_values))
     ALLOCATE(matT%values(num_values))
 
@@ -368,7 +368,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     DEALLOCATE(values_per_row)
     DEALLOCATE(offset_array)
-  END SUBROUTINE TransposeSparseMatrix
+  END SUBROUTINE TransposeMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
   !! to another.
@@ -376,7 +376,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] block_rows the number of rows of the array of blocks.
   !! @param[in] block_columns the number of columns of the array of blocks.
   !! @param[out] out_matrix the composed matrix.
-  PURE SUBROUTINE ComposeSparseMatrix(mat_array, block_rows, block_columns, &
+  PURE SUBROUTINE ComposeMatrixS(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
     TYPE(SMTYPE), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
@@ -392,36 +392,36 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! First transpose the matrices
     DO JJ = 1, block_columns
        DO II = 1, block_rows
-          CALL TransposeSparseMatrix(mat_array(II,JJ), mat_t(II,JJ))
+          CALL TransposeMatrixS(mat_array(II,JJ), mat_t(II,JJ))
        END DO
     END DO
 
     !! Next merge the columns
     DO JJ = 1, block_columns
-       CALL ComposeSparseMatrixColumns(mat_t(:,JJ), Temp)
-       CALL TransposeSparseMatrix(Temp, merged_columns(JJ))
+       CALL ComposeMatrixSColumns(mat_t(:,JJ), Temp)
+       CALL TransposeMatrixS(Temp, merged_columns(JJ))
     END DO
 
     !! Final Merge
-    CALL ComposeSparseMatrixColumns(merged_columns, out_matrix)
+    CALL ComposeMatrixSColumns(merged_columns, out_matrix)
 
     !! Cleanup
     DO JJ = 1, block_columns
        DO II = 1, block_rows
-          CALL DestructSparseMatrix(mat_t(II,JJ))
+          CALL DestructMatrixS(mat_t(II,JJ))
        END DO
     END DO
     DO JJ = 1, block_columns
-       CALL DestructSparseMatrix(merged_columns(JJ))
+       CALL DestructMatrixS(merged_columns(JJ))
     END DO
 
-  END SUBROUTINE ComposeSparseMatrix
+  END SUBROUTINE ComposeMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
   !! the first matrix are followed by the columns of the matrices in the list.
   !! @param[in] mat_list list of matrices to compose.
   !! @param[out] out_matrix = [Matrix 1 | Matrix 2, ...] .
-  PURE SUBROUTINE ComposeSparseMatrixColumns(mat_list, out_matrix)
+  PURE SUBROUTINE ComposeMatrixSColumns(mat_list, out_matrix)
     !! Parameters
     TYPE(SMTYPE), DIMENSION(:), INTENT(IN) :: mat_list
     TYPE(SMTYPE), INTENT(INOUT) :: out_matrix
@@ -433,7 +433,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     INTEGER :: size_of_mat
 
-    CALL DestructSparseMatrix(out_matrix)
+    CALL DestructMatrixS(out_matrix)
 
     !! Figure Out The Sizes
     total_columns = 0
@@ -445,7 +445,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Allocate The Space
-    CALL ConstructEmptySparseMatrix(out_matrix,total_columns,mat_list(1)%rows)
+    CALL ConstructEmptyMatrixS(out_matrix,total_columns,mat_list(1)%rows)
     ALLOCATE(out_matrix%inner_index(total_values))
     ALLOCATE(out_matrix%values(total_values))
 
@@ -470,7 +470,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        outer_offset = out_matrix%outer_index(outer_start)
     END DO
 
-  END SUBROUTINE ComposeSparseMatrixColumns
+  END SUBROUTINE ComposeMatrixSColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
   !! @param[in] this the matrix to split.
@@ -479,7 +479,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
   !! @param[in] block_size_row_in specifies the size of the  rows.
   !! @param[in] block_size_column_in specifies the size of the columns.
-  SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
+  SUBROUTINE SplitMatrixS(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
@@ -516,40 +516,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! First split by columns which is easy with the CSR format
     CALL StartTimer("Split Column")
-    CALL SplitSparseMatrixColumns(this, block_columns, block_size_column, &
+    CALL SplitMatrixSColumns(this, block_columns, block_size_column, &
          & column_split)
     CALL StopTimer("Split Column")
 
     !! Now Split By Rows
     CALL StartTimer("Split Row")
     DO JJ = 1, block_columns
-       CALL TransposeSparseMatrix(column_split(JJ), Temp)
-       CALL SplitSparseMatrixColumns(Temp, block_rows, block_size_row, &
+       CALL TransposeMatrixS(column_split(JJ), Temp)
+       CALL SplitMatrixSColumns(Temp, block_rows, block_size_row, &
             & row_split)
        !! Copy into output array
        DO II = 1, block_rows
-          CALL TransposeSparseMatrix(row_split(II), split_array(II,JJ))
+          CALL TransposeMatrixS(row_split(II), split_array(II,JJ))
        END DO
     END DO
     CALL StopTimer("Split Row")
 
     !! Cleanup
-    CALL DestructSparseMatrix(Temp)
+    CALL DestructMatrixS(Temp)
     DO II = 1, block_rows
-       CALL DestructSparseMatrix(row_split(II))
+       CALL DestructMatrixS(row_split(II))
     END DO
     DO II = 1, block_columns
-       CALL DestructSparseMatrix(column_split(II))
+       CALL DestructMatrixS(column_split(II))
     END DO
 
-  END SUBROUTINE SplitSparseMatrix
+  END SUBROUTINE SplitMatrixS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a matrix into into small blocks based on the specified offsets.
   !! @param[in] this matrix to perform this operation on.
   !! @param[in] num_blocks number of blocks to split into
   !! @param[out] block_sizes the sizes used for splitting.
   !! @param[out] split_list 1D array of blocks.
-  PURE SUBROUTINE SplitSparseMatrixColumns(this, num_blocks, block_sizes, &
+  PURE SUBROUTINE SplitMatrixSColumns(this, num_blocks, block_sizes, &
        & split_list)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
@@ -577,7 +577,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        lcolumns = block_sizes(split_counter)
        linner_offset = this%outer_index(loffset)+1
        !! Construct
-       CALL ConstructEmptySparseMatrix(split_list(split_counter), &
+       CALL ConstructEmptyMatrixS(split_list(split_counter), &
             & columns=lcolumns, rows=this%rows)
        !! Copy Outer Index
        split_list(split_counter)%outer_index =        &
@@ -596,12 +596,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & this%values(linner_offset:linner_offset+total_values-1)
        END IF
     END DO
-  END SUBROUTINE SplitSparseMatrixColumns
+  END SUBROUTINE SplitMatrixSColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list from a matrix.
   !! @param[in] this the matrix to construct the triplet list from.
   !! @param[out] triplet_list the triplet list we created.
-  PURE SUBROUTINE MatrixToTripletList(this, triplet_list)
+  PURE SUBROUTINE MatrixSToTripletList(this, triplet_list)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
     TYPE(TLISTTYPE), INTENT(INOUT) :: triplet_list
@@ -627,12 +627,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           total_counter = total_counter + 1
        END DO
     END DO
-  END SUBROUTINE MatrixToTripletList
+  END SUBROUTINE MatrixSToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a sparse matrix.
   !! @param[in] this the matrix to be printed.
   !! @param[in] file_name_in optionally, you can pass a file to print to.
-  SUBROUTINE PrintSparseMatrix(this, file_name_in)
+  SUBROUTINE PrintMatrixS(this, file_name_in)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
@@ -651,7 +651,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Print
-    CALL MatrixToTripletList(this,triplet_list)
+    CALL MatrixSToTripletList(this,triplet_list)
 
     size_of_this = this%outer_index(this%columns+1)
 
@@ -668,4 +668,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CLOSE(file_handler)
     END IF
     CALL DestructTripletList(triplet_list)
-  END SUBROUTINE PrintSparseMatrix
+  END SUBROUTINE PrintMatrixS

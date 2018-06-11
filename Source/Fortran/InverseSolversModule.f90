@@ -1,22 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
-       & DestructDistributedMatrixMemoryPool
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
-       & ComputeSigma, ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteElement, WriteListElement, WriteCitation
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -32,8 +24,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE Invert(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Mat1
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: InverseMat
+    TYPE(Matrix_ds), INTENT(in)  :: Mat1
+    TYPE(Matrix_ds), INTENT(inout) :: InverseMat
     TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
@@ -42,12 +34,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
-    TYPE(DistributedSparseMatrix_t) :: Temp1,Temp2,Identity
-    TYPE(DistributedSparseMatrix_t) :: BalancedMat1
+    TYPE(Matrix_ds) :: Temp1,Temp2,Identity
+    TYPE(Matrix_ds) :: BalancedMat1
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -64,15 +56,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrice
-    CALL ConstructEmptyDistributedSparseMatrix(InverseMat, &
+    CALL ConstructEmptyMatrixDS(InverseMat, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
+    CALL ConstructEmptyMatrixDS(Temp1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
+    CALL ConstructEmptyMatrixDS(Temp2, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(BalancedMat1, &
+    CALL ConstructEmptyMatrixDS(BalancedMat1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -84,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(Mat1, BalancedMat1, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     ELSE
-       CALL CopyDistributedSparseMatrix(Mat1,BalancedMat1)
+       CALL CopyMatrixDS(Mat1,BalancedMat1)
     END IF
     CALL StopTimer("Load Balance")
 
@@ -92,7 +84,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeSigma(BalancedMat1,sigma)
 
     !! Create Inverse Guess
-    CALL CopyDistributedSparseMatrix(BalancedMat1,InverseMat)
+    CALL CopyMatrixDS(BalancedMat1,InverseMat)
     CALL ScaleDistributedSparseMatrix(InverseMat,sigma)
 
     !! Iterate
@@ -115,7 +107,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
        !! Check if Converged
-       CALL CopyDistributedSparseMatrix(Identity,Temp2)
+       CALL CopyMatrixDS(Identity,Temp2)
        CALL IncrementDistributedSparseMatrix(Temp1,Temp2,REAL(-1.0,NTREAL))
        norm_value = DistributedSparseNorm(Temp2)
 
@@ -124,7 +116,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
 
        !! Save a copy of the last inverse matrix
-       CALL CopyDistributedSparseMatrix(InverseMat,Temp1)
+       CALL CopyMatrixDS(InverseMat,Temp1)
 
        CALL ScaleDistributedSparseMatrix(InverseMat,TWO)
 
@@ -158,7 +150,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(Temp1)
     CALL DestructDistributedSparseMatrix(Temp2)
     CALL DestructDistributedSparseMatrix(BalancedMat1)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixMemoryPoolD(pool1)
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
@@ -169,8 +161,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE PseudoInverse(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Mat1
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: InverseMat
+    TYPE(Matrix_ds), INTENT(in)  :: Mat1
+    TYPE(Matrix_ds), INTENT(inout) :: InverseMat
     TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
@@ -179,12 +171,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
-    TYPE(DistributedSparseMatrix_t) :: Temp1,Temp2,Identity
-    TYPE(DistributedSparseMatrix_t) :: BalancedMat1
+    TYPE(Matrix_ds) :: Temp1,Temp2,Identity
+    TYPE(Matrix_ds) :: BalancedMat1
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -201,15 +193,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(InverseMat, &
+    CALL ConstructEmptyMatrixDS(InverseMat, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp1, &
+    CALL ConstructEmptyMatrixDS(Temp1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
+    CALL ConstructEmptyMatrixDS(Temp2, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(BalancedMat1, &
+    CALL ConstructEmptyMatrixDS(BalancedMat1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -220,14 +212,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(Mat1, BalancedMat1, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     ELSE
-       CALL CopyDistributedSparseMatrix(Mat1,BalancedMat1)
+       CALL CopyMatrixDS(Mat1,BalancedMat1)
     END IF
 
     !! Compute Sigma
     CALL ComputeSigma(BalancedMat1,sigma)
 
     !! Create Inverse Guess
-    CALL CopyDistributedSparseMatrix(BalancedMat1,InverseMat)
+    CALL CopyMatrixDS(BalancedMat1,InverseMat)
     CALL ScaleDistributedSparseMatrix(InverseMat,sigma)
 
     !! Iterate
@@ -251,7 +243,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
 
        !! Save a copy of the last inverse matrix
-       CALL CopyDistributedSparseMatrix(InverseMat,Temp1)
+       CALL CopyMatrixDS(InverseMat,Temp1)
 
        CALL ScaleDistributedSparseMatrix(InverseMat,TWO)
        CALL IncrementDistributedSparseMatrix(Temp2,InverseMat, &
@@ -288,6 +280,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(Temp1)
     CALL DestructDistributedSparseMatrix(Temp2)
     CALL DestructDistributedSparseMatrix(BalancedMat1)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixMemoryPoolD(pool1)
   END SUBROUTINE PseudoInverse
 END MODULE InverseSolversModule

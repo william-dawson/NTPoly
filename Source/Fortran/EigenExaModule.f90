@@ -1,19 +1,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for calling eigenexa
 MODULE EigenExaModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & GetTripletList, ConstructEmptyDistributedSparseMatrix, &
-       & FillFromTripletList, PrintMatrixInformation
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
-       & PrintFixedSolverParameters
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteListElement, WriteHeader, WriteCitation
-  USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletModule, ONLY : Triplet_t, SetTriplet
-  USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
-       & GetTripletAt, DestructTripletList, AppendToTripletList, &
-       & RedistributeTripletLists
+  USE DataTypesModule
+  USE MatrixDSModule
+  USE FixedSolversModule
+  USE LoggingModule
+  USE TimerModule
+  USE TripletRModule
+  USE TripletListRModule
   USE eigen_libs
   USE MPI
   IMPLICIT NONE
@@ -61,9 +55,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in the parameters for this solver (optional).
   SUBROUTINE EigenExa_s(A, eigenvectors, eigenvalues_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: A
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: eigenvectors
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    TYPE(Matrix_ds), INTENT(IN) :: A
+    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ds), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
@@ -126,7 +120,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] exa stores info about the calculation.
   SUBROUTINE InitializeEigenExa(A, AD, VD, WD, exa)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: A
+    TYPE(Matrix_ds), INTENT(IN) :: A
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
@@ -175,7 +169,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] info about the calculation.
   SUBROUTINE NTToEigen(A, AD, exa)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: A
+    TYPE(Matrix_ds), INTENT(IN) :: A
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: AD
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
@@ -241,7 +235,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE EigenToNT(VD, V, solver_parameters, exa)
     !! Parameters
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: VD
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: V
+    TYPE(Matrix_ds), INTENT(INOUT) :: V
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
@@ -253,7 +247,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ind
 
     !! The Matrices We'll Build
-    CALL ConstructEmptyDistributedSparseMatrix(V, exa%mat_dim)
+    CALL ConstructEmptyMatrixDS(V, exa%mat_dim)
 
     !! Get The Eigenvectors
     row_start = eigen_loop_start(1, exa%proc_rows, exa%rowid)
@@ -301,7 +295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ExtractEigenvalues(WD, W, exa)
     !! Parameters
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: WD
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: W
+    TYPE(Matrix_ds), INTENT(INOUT) :: W
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
     TYPE(TripletList_t) :: triplet_w
@@ -310,7 +304,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     !! The Matrices We'll Build
-    CALL ConstructEmptyDistributedSparseMatrix(W, exa%mat_dim)
+    CALL ConstructEmptyMatrixDS(W, exa%mat_dim)
 
     !! Copy To Triplet List
     wsize = MAX(CEILING((1.0*exa%mat_dim)/exa%num_procs), 1)

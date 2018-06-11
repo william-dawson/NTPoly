@@ -1,35 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DenseMatrixModule, ONLY : DenseMatrix_t, ConstructDenseFromSparse, &
-       & DestructDenseMatrix
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : Trace, &
-       & IncrementDistributedSparseMatrix, DistributedSparseNorm, &
-       & DistributedGemm, ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & TransposeDistributedSparseMatrix, PrintMatrixInformation, &
-       & FillDistributedIdentity, MergeLocalBlocks, FillFromTripletList, &
-       & DestructDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & ConstructEmptyDistributedSparseMatrix
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
-       & PrintFixedSolverParameters
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : WriteHeader, WriteElement, WriteListElement, &
-       & EnterSubLog, ExitSubLog
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
-       & ReduceAndComposeData, ReduceAndComposeCleanup
-  USE ProcessGridModule, ONLY : ProcessGrid_t
-  USE SparseMatrixModule, ONLY : SparseMatrix_t, DestructSparseMatrix, &
-       & TransposeSparseMatrix
-  USE SparseVectorModule, ONLY : DotSparseVectors
-  USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletListModule, ONLY : TripletList_t, AppendToTripletList, &
-       & ConstructTripletList, DestructTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE DataTypesModule
+  USE MatrixDRModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE FixedSolversModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE MatrixReduceModule
+  USE ProcessGridModule
+  USE MatrixSRModule
+  USE VectorSRModule
+  USE TimerModule
+  USE TripletListRModule
+  USE TripletRModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -46,24 +33,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE CGSolver(AMat, XMat, BMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: XMat
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: BMat
+    TYPE(Matrix_ds), INTENT(IN)  :: AMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: XMat
+    TYPE(Matrix_ds), INTENT(IN)  :: BMat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: ABalanced
-    TYPE(DistributedSparseMatrix_t) :: BBalanced
-    TYPE(DistributedSparseMatrix_t) :: RMat, PMat, QMat
-    TYPE(DistributedSparseMatrix_t) :: RMatT, PMatT
-    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: ABalanced
+    TYPE(Matrix_ds) :: BBalanced
+    TYPE(Matrix_ds) :: RMat, PMat, QMat
+    TYPE(Matrix_ds) :: RMatT, PMatT
+    TYPE(Matrix_ds) :: TempMat
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(MatrixMemoryPool_d) :: pool
     REAL(NTREAL) :: top, bottom, new_top, step_size
 
     !! Optional Parameters
@@ -82,20 +69,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup all the matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
     CALL FillDistributedIdentity(Identity)
-    CALL ConstructEmptyDistributedSparseMatrix(ABalanced, &
+    CALL ConstructEmptyMatrixDS(ABalanced, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(BBalanced, &
+    CALL ConstructEmptyMatrixDS(BBalanced, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(RMat, &
+    CALL ConstructEmptyMatrixDS(RMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(PMat, &
+    CALL ConstructEmptyMatrixDS(PMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(QMat, &
+    CALL ConstructEmptyMatrixDS(QMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+    CALL ConstructEmptyMatrixDS(TempMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! Load Balancing Step
@@ -108,20 +95,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(BMat, BBalanced, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyDistributedSparseMatrix(AMat,ABalanced)
-       CALL CopyDistributedSparseMatrix(BMat,BBalanced)
+       CALL CopyMatrixDS(AMat,ABalanced)
+       CALL CopyMatrixDS(BMat,BBalanced)
     END IF
     CALL StopTimer("Load Balance")
 
     !! Initial Matrix Values
-    CALL CopyDistributedSparseMatrix(Identity, XMat)
+    CALL CopyMatrixDS(Identity, XMat)
     !! Compute residual
     CALL DistributedGemm(ABalanced, Xmat, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL CopyDistributedSparseMatrix(BBalanced,RMat)
+    CALL CopyMatrixDS(BBalanced,RMat)
     CALL IncrementDistributedSparseMatrix(TempMat, RMat, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL CopyDistributedSparseMatrix(RMat,PMat)
+    CALL CopyMatrixDS(RMat,PMat)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -195,6 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(Identity)
     CALL DestructDistributedSparseMatrix(ABalanced)
     CALL DestructDistributedSparseMatrix(BBalanced)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE CGSolver
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
@@ -204,14 +192,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE CholeskyDecomposition(AMat, LMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    TYPE(Matrix_ds), INTENT(IN)  :: AMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: LMat
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(SparseMatrix_t) :: sparse_a
-    TYPE(DenseMatrix_t) :: dense_a
+    TYPE(Matrix_sr) :: sparse_a
+    TYPE(Matrix_dr) :: dense_a
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
@@ -241,7 +229,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+    CALL ConstructEmptyMatrixDS(LMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! First get the local matrix in a dense recommendation for quick lookup
@@ -345,8 +333,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: AMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    TYPE(Matrix_ds), INTENT(IN)  :: AMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: LMat
     INTEGER, INTENT(IN) :: rank_in
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
@@ -356,9 +344,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
     INTEGER :: pi_j
     !! Local Variables
-    TYPE(SparseMatrix_t) :: sparse_a
-    TYPE(SparseMatrix_t) :: acol
-    TYPE(DenseMatrix_t) :: dense_a
+    TYPE(Matrix_sr) :: sparse_a
+    TYPE(Matrix_sr) :: acol
+    TYPE(Matrix_dr) :: dense_a
     !! For Storing The Results
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
@@ -398,7 +386,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyDistributedSparseMatrix(LMat, &
+    CALL ConstructEmptyMatrixDS(LMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! Construct the pivot vector
@@ -531,11 +519,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), INTENT(IN) :: values_per_column
     INTEGER, DIMENSION(:,:), INTENT(IN) :: index
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: LMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: LMat
     !! Local Variables
     INTEGER :: local_columns
-    TYPE(TripletList_t) :: local_triplets
-    TYPE(Triplet_t) :: temp
+    TYPE(TripletList_r) :: local_triplets
+    TYPE(Triplet_r) :: temp
     INTEGER :: II, JJ
 
     local_columns = LMat%local_columns
@@ -676,7 +664,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE GetPivot(AMat, process_grid, start_index, pivot_vector, diag, &
        & index, value, local_pivots, num_local_pivots)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    TYPE(Matrix_ds), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
@@ -730,9 +718,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the vector holding the accumulated diagonal values
   SUBROUTINE ConstructDiag(AMat, process_grid, dense_a, diag)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    TYPE(Matrix_ds), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    TYPE(DenseMatrix_t), INTENT(IN) :: dense_a
+    TYPE(Matrix_dr), INTENT(IN) :: dense_a
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
     !! Local Variables
     INTEGER :: fill_counter
@@ -766,7 +754,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructRankLookup(AMat, process_grid, col_root_lookup)
     !! Root Lookups
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: AMat
+    TYPE(Matrix_ds), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     INTEGER, DIMENSION(:), INTENT(INOUT) :: col_root_lookup
     !! Local Variables
@@ -794,13 +782,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] column_matrix the final result.
   SUBROUTINE GatherMatrixColumn(local_matrix, column_matrix, process_grid)
     !! Parameters
-    TYPE(SparseMatrix_t), INTENT(IN) :: local_matrix
-    TYPE(SparseMatrix_t), INTENT(INOUT) :: column_matrix
+    TYPE(Matrix_sr), INTENT(IN) :: local_matrix
+    TYPE(Matrix_sr), INTENT(INOUT) :: column_matrix
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     !! Local Variables
     TYPE(ReduceHelper_t) :: gather_helper
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
-    TYPE(SparseMatrix_t) :: local_matrixT
+    TYPE(Matrix_sr) :: local_matrixT
     INTEGER :: mpi_err
 
     CALL TransposeSparseMatrix(local_matrix, local_matrixT)

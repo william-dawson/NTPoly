@@ -5,7 +5,7 @@
 !! performance.
 MODULE MatrixDRModule
   USE DataTypesModule, ONLY : NTREAL
-  USE MatrixSRModule, ONLY : Matrix_sr, ConstructFromTripletList
+  USE MatrixSRModule, ONLY : Matrix_sr, ConstructMatrixSFromTripletList
   USE TripletListRModule, ONLY : TripletList_r, ConstructTripletList, &
        & AppendToTripletList
   USE TripletRModule, ONLY : Triplet_r
@@ -33,7 +33,7 @@ END MODULE MatrixDRModule
 !! performance.
 MODULE MatrixDCModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE MatrixSCModule, ONLY : Matrix_sc, ConstructFromTripletList
+  USE MatrixSCModule, ONLY : Matrix_sc, ConstructMatrixSFromTripletList
   USE TripletListCModule, ONLY : TripletList_c, ConstructTripletList, &
        & AppendToTripletList
   USE TripletCModule, ONLY : Triplet_c

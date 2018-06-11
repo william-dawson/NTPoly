@@ -1,28 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & DistributedSparseNorm, IncrementDistributedSparseMatrix, &
-       & ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation
-  USE EigenBoundsModule, ONLY : GershgorinBounds
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t
-  USE InverseSolversModule, ONLY : Invert
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       WriteHeader, WriteListElement, WriteCitation
-  USE PolynomialSolversModule, ONLY : ConstructPolynomial, &
-       & PatersonStockmeyerCompute, Polynomial_t, DestructPolynomial, &
-       & SetCoefficient
-  USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE EigenBoundsModule
+  USE FixedSolversModule
+  USE InverseSolversModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE PolynomialSolversModule
+  USE SquareRootSolversModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -38,15 +29,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(Matrix_ds) :: TempMat
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -64,7 +55,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle base cases, or call to general implementation.
     IF (root .EQ. 1) THEN
-       CALL CopyDistributedSparseMatrix(InputMat, OutputMat)
+       CALL CopyMatrixDS(InputMat, OutputMat)
     ELSE IF (root .EQ. 2) THEN
        CALL SquareRoot(InputMat, OutputMat, solver_parameters)
     ELSE IF (root .EQ. 3) THEN
@@ -95,15 +86,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ComputeRootImplementation(InputMat, OutputMat, root, &
        & solver_parameters)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: fixed_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix_t) :: RaisedMat
-    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(Matrix_ds) :: RaisedMat
+    TYPE(Matrix_ds) :: TempMat
     TYPE(Polynomial_t) :: power_poly
     INTEGER :: counter
 
@@ -143,15 +134,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(DistributedSparseMatrix_t) :: TempMat
+    TYPE(Matrix_ds) :: TempMat
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -194,8 +185,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ComputeInverseRootImplemention(InputMat, OutputMat, root, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -203,12 +194,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: SqrtMat, FthrtMat
-    TYPE(DistributedSparseMatrix_t) :: IdentityMat
-    TYPE(DistributedSparseMatrix_t) :: Mk
-    TYPE(DistributedSparseMatrix_t) :: IntermediateMat
-    TYPE(DistributedSparseMatrix_t) :: IntermediateMatP
-    TYPE(DistributedSparseMatrix_t) :: Temp
+    TYPE(Matrix_ds) :: SqrtMat, FthrtMat
+    TYPE(Matrix_ds) :: IdentityMat
+    TYPE(Matrix_ds) :: Mk
+    TYPE(Matrix_ds) :: IntermediateMat
+    TYPE(Matrix_ds) :: IntermediateMatP
+    TYPE(Matrix_ds) :: Temp
     !! Local Variables
     INTEGER :: target_root
     REAL(NTREAL) :: e_min
@@ -218,7 +209,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     INTEGER :: outer_counter
     INTEGER :: inner_counter
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
+    TYPE(MatrixMemoryPool_d) :: pool
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -257,7 +248,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(SqrtMat)
 
     !! Setup the Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+    CALL ConstructEmptyMatrixDS(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
@@ -269,18 +260,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
 
-    CALL CopyDistributedSparseMatrix(IdentityMat, OutputMat)
+    CALL CopyMatrixDS(IdentityMat, OutputMat)
     CALL ScaleDistributedSparseMatrix(OutputMat, 1.0/scaling_factor)
 
-    CALL CopyDistributedSparseMatrix(FthrtMat, Mk)
+    CALL CopyMatrixDS(FthrtMat, Mk)
     CALL ScaleDistributedSparseMatrix(Mk, 1.0/(scaling_factor**target_root))
     CALL DestructDistributedSparseMatrix(FthrtMat)
 
-    CALL ConstructEmptyDistributedSparseMatrix(IntermediateMat, &
+    CALL ConstructEmptyMatrixDS(IntermediateMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(IntermediateMatP, &
+    CALL ConstructEmptyMatrixDS(IntermediateMatP, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp, &
+    CALL ConstructEmptyMatrixDS(Temp, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
 
     outer_counter = 1
@@ -297,7 +288,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ExitSubLog
        END IF
 
-       CALL CopyDistributedSparseMatrix(IdentityMat, IntermediateMat)
+       CALL CopyMatrixDS(IdentityMat, IntermediateMat)
        CALL ScaleDistributedSparseMatrix(IntermediateMat, &
             & REAL(target_root+1,NTREAL))
        CALL IncrementDistributedSparseMatrix(Mk, IntermediateMat, &
@@ -307,18 +298,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL DistributedGemm(OutputMat, IntermediateMat, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyDistributedSparseMatrix(Temp, OutputMat)
+       CALL CopyMatrixDS(Temp, OutputMat)
 
-       CALL CopyDistributedSparseMatrix(IntermediateMat, IntermediateMatP)
+       CALL CopyMatrixDS(IntermediateMat, IntermediateMatP)
        DO inner_counter = 1, target_root-1
           CALL DistributedGemm(IntermediateMat, IntermediateMatP, Temp, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-          CALL CopyDistributedSparseMatrix(Temp, IntermediateMatP)
+          CALL CopyMatrixDS(Temp, IntermediateMatP)
        END DO
 
        CALL DistributedGemm(IntermediateMatP, Mk, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyDistributedSparseMatrix(Temp, Mk)
+       CALL CopyMatrixDS(Temp, Mk)
 
        CALL IncrementDistributedSparseMatrix(IdentityMat, Temp, &
             & alpha_in=NEGATIVE_ONE)
@@ -342,7 +333,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE IF (MOD(root,4) .NE. 0) THEN
        CALL DistributedGemm(OutputMat, OutputMat, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyDistributedSparsematrix(Temp, OutputMat)
+       CALL CopyMatrixDS(Temp, OutputMat)
     END IF
 
     !! Undo Load Balancing Step
@@ -362,5 +353,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(IntermediateMat)
     CALL DestructDistributedSparseMatrix(IntermediateMatP)
     CALL DestructDistributedSparseMatrix(Temp)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE ComputeInverseRootImplemention
 END MODULE RootSolversModule

@@ -2,9 +2,9 @@
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE MatrixSRAlgebraModule, ONLY : IncrementSparseMatrix
-  USE MatrixSRModule, ONLY : Matrix_sr, ConstructEmptySparseMatrix, &
-       & DestructSparseMatrix
+  USE MatrixSRAlgebraModule, ONLY : IncrementMatrixS
+  USE MatrixSRModule, ONLY : Matrix_sr, ConstructEmptyMatrixS, &
+       & DestructMatrixS
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -212,8 +212,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: temporary_total_values
 
     !! Build Matrix Objects
-    CALL ConstructEmptySparseMatrix(temporary_matrix,matrix%columns,matrix%rows)
-    CALL ConstructEmptySparseMatrix(gathered_matrix,matrix%columns,matrix%rows)
+    CALL ConstructEmptyMatrixS(temporary_matrix,matrix%columns,matrix%rows)
+    CALL ConstructEmptyMatrixS(gathered_matrix,matrix%columns,matrix%rows)
 
     !! Sum
     DO counter = 1, helper%comm_size
@@ -229,16 +229,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temporary_matrix%outer_index = helper%outer_index_buffer(&
             & (matrix%columns+1)*(counter-1)+1:(matrix%columns+1)*(counter))
        IF (counter .EQ. helper%comm_size) THEN
-          CALL IncrementSparseMatrix(temporary_matrix,gathered_matrix,&
+          CALL IncrementMatrixS(temporary_matrix,gathered_matrix,&
                & threshold_in=threshold)
        ELSE
-          CALL IncrementSparseMatrix(temporary_matrix,gathered_matrix,&
+          CALL IncrementMatrixS(temporary_matrix,gathered_matrix,&
                & threshold_in=REAL(0.0,NTREAL))
        END IF
        DEALLOCATE(temporary_matrix%values)
        DEALLOCATE(temporary_matrix%inner_index)
     END DO
-    CALL DestructSparseMatrix(temporary_matrix)
+    CALL DestructMatrixS(temporary_matrix)
     DEALLOCATE(helper%value_buffer)
     DEALLOCATE(helper%inner_index_buffer)
     DEALLOCATE(helper%outer_index_buffer)

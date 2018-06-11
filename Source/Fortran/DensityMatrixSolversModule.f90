@@ -1,23 +1,15 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t, &
-       & DestructDistributedMatrixMemoryPool
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & Trace, DotDistributedSparseMatrix, IncrementDistributedSparseMatrix, &
-       & ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity, &
-       & PrintMatrixInformation
-  USE EigenBoundsModule, ONLY : GershgorinBounds
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t, &
-       & PrintIterativeSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteHeader, WriteListElement, WriteCitation
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE EigenBoundsModule
+  USE IterativeSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -39,10 +31,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Hamiltonian
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
+    TYPE(Matrix_ds), INTENT(IN) :: Hamiltonian
+    TYPE(Matrix_ds), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    TYPE(Matrix_ds), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
@@ -50,9 +42,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: WorkingHamiltonian
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: X_k, X_k2, TempMat
+    TYPE(Matrix_ds) :: WorkingHamiltonian
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: X_k, X_k2, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
@@ -62,7 +54,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
 
@@ -84,17 +76,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, &
+    CALL ConstructEmptyMatrixDS(Density, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k, &
+    CALL ConstructEmptyMatrixDS(X_k, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k2, &
+    CALL ConstructEmptyMatrixDS(X_k2, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+    CALL ConstructEmptyMatrixDS(TempMat, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -116,7 +108,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
 
     !! Initialize
-    CALL CopyDistributedSparseMatrix(WorkingHamiltonian,X_k)
+    CALL CopyMatrixDS(WorkingHamiltonian,X_k)
     CALL ScaleDistributedSparseMatrix(X_k,REAL(-1.0,NTREAL))
     CALL IncrementDistributedSparseMatrix(Identity,X_k,alpha_in=e_max)
     CALL ScaleDistributedSparseMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
@@ -156,11 +148,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & memory_pool_in=pool1)
 
        !! Subtract from X_k
-       CALL CopyDistributedSparseMatrix(X_k,TempMat)
+       CALL CopyMatrixDS(X_k,TempMat)
        CALL IncrementDistributedSparseMatrix(X_k2,TempMat,REAL(-1.0,NTREAL))
 
        !! Add To X_k
-       CALL CopyDistributedSparseMatrix(X_k,X_k2)
+       CALL CopyMatrixDS(X_k,X_k2)
        CALL IncrementDistributedSparseMatrix(TempMat,X_k, &
             & sigma_array(outer_counter))
 
@@ -189,12 +181,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(WorkingHamiltonian)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(X_k)
-    CALL DestructDistributedSparseMatrix(X_k2)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixDS(WorkingHamiltonian)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixDS(X_k)
+    CALL DestructMatrixDS(X_k2)
+    CALL DestructMatrixMemoryPoolD(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN
@@ -246,10 +238,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
+    TYPE(Matrix_ds), INTENT(IN)  :: Hamiltonian
+    TYPE(Matrix_ds), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    TYPE(Matrix_ds), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -258,9 +250,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: WorkingHamiltonian
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: X_k, X_k2, Fx_right, GX_right, TempMat
+    TYPE(Matrix_ds) :: WorkingHamiltonian
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: X_k, X_k2, Fx_right, GX_right, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
@@ -270,7 +262,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     REAL(NTREAL) :: tempfx,tempgx
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
     REAL(NTREAL) :: trace_fx, trace_gx
@@ -293,21 +285,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, &
+    CALL ConstructEmptyMatrixDS(Density, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k, &
+    CALL ConstructEmptyMatrixDS(X_k, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(X_k2, &
+    CALL ConstructEmptyMatrixDS(X_k2, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, &
+    CALL ConstructEmptyMatrixDS(TempMat, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Fx_right, &
+    CALL ConstructEmptyMatrixDS(Fx_right, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Gx_right, &
+    CALL ConstructEmptyMatrixDS(Gx_right, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+    CALL ConstructEmptyMatrixDS(Identity, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -329,7 +321,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
 
     !! Initialize
-    CALL CopyDistributedSparseMatrix(WorkingHamiltonian,X_k)
+    CALL CopyMatrixDS(WorkingHamiltonian,X_k)
     CALL ScaleDistributedSparseMatrix(X_k,REAL(-1.0,NTREAL))
     CALL IncrementDistributedSparseMatrix(Identity,X_k,alpha_in=e_max)
     CALL ScaleDistributedSparseMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
@@ -359,12 +351,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DistributedGemm(X_k, X_k, X_k2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        !! Compute Fx_right
-       CALL CopyDistributedSparseMatrix(X_k2,Fx_right)
+       CALL CopyMatrixDS(X_k2,Fx_right)
        CALL ScaleDistributedSparseMatrix(Fx_right,REAL(-3.0,NTREAL))
        CALL IncrementDistributedSparseMatrix(X_k,Fx_right, &
             & alpha_in=REAL(4.0,NTREAL))
        !! Compute Gx_right
-       CALL CopyDistributedSparseMatrix(Identity,Gx_right)
+       CALL CopyMatrixDS(Identity,Gx_right)
        CALL IncrementDistributedSparseMatrix(X_k,Gx_right, &
             & alpha_in=REAL(-2.0,NTREAL))
        CALL IncrementDistributedSparseMatrix(X_k2,Gx_right)
@@ -378,12 +370,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Update The Matrix
        IF (sigma_array(outer_counter) .GT. sigma_max) THEN
-          CALL CopyDistributedSparseMatrix(X_k, TempMat)
+          CALL CopyMatrixDS(X_k, TempMat)
           CALL ScaleDistributedSparseMatrix(TempMat, REAL(2.0,NTREAL))
           CALL IncrementDistributedSparseMatrix(X_k2, TempMat, &
                & alpha_in=REAL(-1.0,NTREAL))
        ELSE IF (sigma_array(outer_counter) .LT. sigma_min) THEN
-          CALL CopyDistributedSparseMatrix(X_k2, TempMat)
+          CALL CopyMatrixDS(X_k2, TempMat)
        ELSE
           CALL ScaleDistributedSparseMatrix(Gx_right,sigma_array(outer_counter))
           CALL IncrementDistributedSparseMatrix(Fx_right,Gx_right)
@@ -393,7 +385,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL IncrementDistributedSparseMatrix(TempMat,X_k, &
             & alpha_in=REAL(-1.0,NTREAL))
-       CALL CopyDistributedSparseMatrix(TempMat,X_k)
+       CALL CopyMatrixDS(TempMat,X_k)
 
        !! Energy value based convergence
        energy_value2 = energy_value
@@ -419,14 +411,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(WorkingHamiltonian)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(X_k)
-    CALL DestructDistributedSparseMatrix(X_k2)
-    CALL DestructDistributedSparseMatrix(Fx_right)
-    CALL DestructDistributedSparseMatrix(Gx_right)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixDS(WorkingHamiltonian)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixDS(X_k)
+    CALL DestructMatrixDS(X_k2)
+    CALL DestructMatrixDS(Fx_right)
+    CALL DestructMatrixDS(Gx_right)
+    CALL DestructMatrixMemoryPoolD(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN
@@ -483,9 +475,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
+    TYPE(Matrix_ds), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    TYPE(Matrix_ds), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -494,10 +486,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: WorkingHamiltonian
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: D1, DH, DDH, D2DH
+    TYPE(Matrix_ds) :: WorkingHamiltonian
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: D1, DH, DDH, D2DH
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: beta_1, beta_2
@@ -511,7 +503,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
     INTEGER :: matrix_dimension
@@ -536,21 +528,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Density, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
          & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(TempMat, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(D1, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(DDH, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(DDH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(D2DH, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(D2DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Identity, matrix_dimension, &
          & Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -579,9 +571,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     beta_2 = MIN(beta,beta_bar)
 
     !! Initialize
-    CALL CopyDistributedSparseMatrix(Identity,D1)
+    CALL CopyMatrixDS(Identity,D1)
     CALL ScaleDistributedSparseMatrix(D1,beta_1)
-    CALL CopyDistributedSparseMatrix(Identity,TempMat)
+    CALL CopyMatrixDS(Identity,TempMat)
     CALL ScaleDistributedSparseMatrix(TempMat,mu)
     CALL IncrementDistributedSparseMatrix(WorkingHamiltonian, TempMat, &
          & NEGATIVE_ONE)
@@ -612,7 +604,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute the hole matrix DH
-       CALL CopyDistributedSparseMatrix(D1,DH)
+       CALL CopyMatrixDS(D1,DH)
        CALL IncrementDistributedSparseMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
        CALL ScaleDistributedSparseMatrix(DH,NEGATIVE_ONE)
 
@@ -630,7 +622,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Sigma
        sigma_array(outer_counter) = Trace(D2DH)/trace_value
 
-       CALL CopyDistributedSparseMatrix(D1,TempMat)
+       CALL CopyMatrixDS(D1,TempMat)
 
        !! Compute D1 + 2*D2DH
        CALL IncrementDistributedSparseMatrix(D2DH,D1,alpha_in=TWO)
@@ -663,14 +655,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(WorkingHamiltonian)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(D1)
-    CALL DestructDistributedSparseMatrix(DH)
-    CALL DestructDistributedSparseMatrix(DDH)
-    CALL DestructDistributedSparseMatrix(D2DH)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixDS(WorkingHamiltonian)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixDS(D1)
+    CALL DestructMatrixDS(DH)
+    CALL DestructMatrixDS(DDH)
+    CALL DestructMatrixDS(D2DH)
+    CALL DestructMatrixMemoryPoolD(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN
@@ -717,10 +709,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Hamiltonian
-    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
+    TYPE(Matrix_ds), INTENT(IN) :: Hamiltonian
+    TYPE(Matrix_ds), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
+    TYPE(Matrix_ds), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -729,10 +721,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: WorkingHamiltonian
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(DistributedSparseMatrix_t) :: Identity
-    TYPE(DistributedSparseMatrix_t) :: D1, DH, DDH, D2DH
+    TYPE(Matrix_ds) :: WorkingHamiltonian
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ds) :: D1, DH, DDH, D2DH
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: beta_1, beta_2
@@ -749,7 +741,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
-    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+    TYPE(MatrixMemoryPool_d) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
     INTEGER :: matrix_dimension
@@ -774,21 +766,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(Density, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Density, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
          & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(TempMat, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(TempMat, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(D1, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(D1, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(DH, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(DDH, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(DDH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(D2DH, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(D2DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(Identity, matrix_dimension, &
+    CALL ConstructEmptyMatrixDS(Identity, matrix_dimension, &
          & Hamiltonian%process_grid)
     CALL FillDistributedIdentity(Identity)
 
@@ -819,25 +811,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     beta_2_h = -1.0*MAX(beta,beta_bar)
 
     !! Initialize
-    CALL CopyDistributedSparseMatrix(Identity,D1)
+    CALL CopyMatrixDS(Identity,D1)
     CALL ScaleDistributedSparseMatrix(D1,beta_1)
-    CALL CopyDistributedSparseMatrix(Identity,TempMat)
+    CALL CopyMatrixDS(Identity,TempMat)
     CALL ScaleDistributedSparseMatrix(TempMat,mu)
     CALL IncrementDistributedSparseMatrix(WorkingHamiltonian, TempMat, &
          & NEGATIVE_ONE)
     CALL ScaleDistributedSparseMatrix(TempMat,beta_2)
     CALL IncrementDistributedSparseMatrix(TempMat,D1)
 
-    CALL CopyDistributedSparseMatrix(Identity,DH)
+    CALL CopyMatrixDS(Identity,DH)
     CALL ScaleDistributedSparseMatrix(DH,beta_1_h)
-    CALL CopyDistributedSparseMatrix(Identity,TempMat)
+    CALL CopyMatrixDS(Identity,TempMat)
     CALL ScaleDistributedSparseMatrix(TempMat,mu)
     CALL IncrementDistributedSparseMatrix(WorkingHamiltonian,TempMat, &
          & REAL(-1.0,NTREAL))
     CALL ScaleDistributedSparseMatrix(TempMat,beta_2_h)
     CALL IncrementDistributedSparseMatrix(TempMat,DH)
 
-    CALL CopyDistributedSparseMatrix(Identity,TempMat)
+    CALL CopyMatrixDS(Identity,TempMat)
     CALL IncrementDistributedSparseMatrix(DH,TempMat,REAL(-1.0,NTREAL))
 
     a = DotDistributedSparseMatrix(D1,D1)
@@ -856,7 +848,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ENDIF
 
     CALL ScaleDistributedSparseMatrix(D1,REAL(mixing_value,ntreal))
-    CALL CopyDistributedSparseMatrix(Identity,TempMat)
+    CALL CopyMatrixDS(Identity,TempMat)
     CALL IncrementDistributedSparseMatrix(DH,TempMat,REAL(-1.0,NTREAL))
     CALL IncrementDistributedSparseMatrix(TempMat,D1, &
          & REAL(1.0-mixing_value,ntreal))
@@ -883,7 +875,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute the hole matrix DH
-       CALL CopyDistributedSparseMatrix(D1,DH)
+       CALL CopyMatrixDS(D1,DH)
        CALL IncrementDistributedSparseMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
        CALL ScaleDistributedSparseMatrix(DH,NEGATIVE_ONE)
 
@@ -900,7 +892,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Sigma
        sigma_array(outer_counter) = Trace(D2DH)/trace_value
 
-       CALL CopyDistributedSparseMatrix(D1,TempMat)
+       CALL CopyMatrixDS(D1,TempMat)
 
        !! Compute D1 + 2*D2DH
        CALL IncrementDistributedSparseMatrix(D2DH,D1,alpha_in=TWO)
@@ -933,14 +925,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(WorkingHamiltonian)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(D1)
-    CALL DestructDistributedSparseMatrix(DH)
-    CALL DestructDistributedSparseMatrix(DDH)
-    CALL DestructDistributedSparseMatrix(D2DH)
-    CALL DestructDistributedMatrixMemoryPool(pool1)
+    CALL DestructMatrixDS(WorkingHamiltonian)
+    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrixDS(D1)
+    CALL DestructMatrixDS(DH)
+    CALL DestructMatrixDS(DDH)
+    CALL DestructMatrixDS(D2DH)
+    CALL DestructMatrixMemoryPoolD(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN

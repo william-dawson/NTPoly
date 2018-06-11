@@ -1,20 +1,15 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing Trigonometric functions of a Matrix.
 MODULE TrigonometrySolversModule
-  USE DataTypesModule, ONLY : NTREAL
-  USE DistributedMatrixMemoryPoolModule, ONLY : DistributedMatrixMemoryPool_t
-  USE DistributedSparseMatrixAlgebraModule, ONLY : DistributedGemm, &
-       & IncrementDistributedSparseMatrix, ScaleDistributedSparseMatrix
-  USE DistributedSparseMatrixModule, ONLY : DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, CopyDistributedSparseMatrix, &
-       & DestructDistributedSparseMatrix, FillDistributedIdentity
-  USE EigenBoundsModule, ONLY : GershgorinBounds
-  USE FixedSolversModule, ONLY : FixedSolverParameters_t, &
-       & PrintFixedSolverParameters
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       WriteHeader, WriteListElement, WriteCitation
-  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE DataTypesModule
+  USE MatrixMemoryPoolDModule
+  USE MatrixDSAlgebraModule
+  USE MatrixDSModule
+  USE EigenBoundsModule
+  USE FixedSolversModule
+  USE LoadBalancerModule
+  USE LoggingModule
+  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -29,17 +24,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Sine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ds), INTENT(in)  :: InputMat
+    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     !! A temporary matrix to hold the transformation from sine to cosine.
-    TYPE(DistributedSparseMatrix_t) :: ShiftedMat
-    TYPE(DistributedSparseMatrix_t) :: IdentityMat
+    TYPE(Matrix_ds) :: ShiftedMat
+    TYPE(Matrix_ds) :: IdentityMat
     REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.0)
 
     !! Shift
-    CALL CopyDistributedSparseMatrix(InputMat,ShiftedMat)
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+    CALL CopyMatrixDS(InputMat,ShiftedMat)
+    CALL ConstructEmptyMatrixDS(IdentityMat, &
          InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
     CALL IncrementDistributedSparseMatrix(IdentityMat,ShiftedMat, &
@@ -59,8 +54,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Cosine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ds), INTENT(in)  :: InputMat
+    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
@@ -76,17 +71,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ScaleSquareTrigonometryTaylor(InputMat, OutputMat, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ds), INTENT(in)  :: InputMat
+    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: ScaledMat
-    TYPE(DistributedSparseMatrix_t) :: Ak
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
-    TYPE(DistributedSparseMatrix_t) :: IdentityMat
+    TYPE(Matrix_ds) :: ScaledMat
+    TYPE(Matrix_ds) :: Ak
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ds) :: IdentityMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -121,12 +116,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
+    CALL CopyMatrixDS(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
+    CALL ConstructEmptyMatrixDS(OutputMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(OutputMat)
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+    CALL ConstructEmptyMatrixDS(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
@@ -142,16 +137,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Square the scaled matrix.
     taylor_denom = -2.0
-    CALL CopyDistributedSparseMatrix(OutputMat, Ak)
+    CALL CopyMatrixDS(OutputMat, Ak)
     CALL DistributedGemm(ScaledMat,ScaledMat,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL CopyDistributedSparseMatrix(TempMat,ScaledMat)
+    CALL CopyMatrixDS(TempMat,ScaledMat)
 
     !! Expand Taylor Series
     DO counter=2,40,2
        CALL DistributedGemm(Ak,ScaledMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyDistributedSparseMatrix(TempMat,Ak)
+       CALL CopyMatrixDS(TempMat,Ak)
        CALL IncrementDistributedSparseMatrix(Ak,OutputMat, &
             & alpha_in=REAL(1.0/taylor_denom,NTREAL))
        taylor_denom = taylor_denom * (counter+1)
@@ -162,7 +157,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO counter=1,sigma_counter-1
        CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyDistributedSparseMatrix(TempMat,OutputMat)
+       CALL CopyMatrixDS(TempMat,OutputMat)
        CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2.0,NTREAL))
        CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat, &
             & REAL(-1.0,NTREAL))
@@ -192,22 +187,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: InputMat
-    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ds), INTENT(in)  :: InputMat
+    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(DistributedSparseMatrix_t) :: ScaledMat
-    TYPE(DistributedSparseMatrix_t) :: TempMat
-    TYPE(DistributedMatrixMemoryPool_t) :: pool
-    TYPE(DistributedSparseMatrix_t) :: IdentityMat
+    TYPE(Matrix_ds) :: ScaledMat
+    TYPE(Matrix_ds) :: TempMat
+    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ds) :: IdentityMat
     !! For Chebyshev Expansion
     REAL(NTREAL), DIMENSION(17) :: coefficients
-    TYPE(DistributedSparseMatrix_t) :: T2
-    TYPE(DistributedSparseMatrix_t) :: T4
-    TYPE(DistributedSparseMatrix_t) :: T6
-    TYPE(DistributedSparseMatrix_t) :: T8
+    TYPE(Matrix_ds) :: T2
+    TYPE(Matrix_ds) :: T4
+    TYPE(Matrix_ds) :: T6
+    TYPE(Matrix_ds) :: T8
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -241,11 +236,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
+    CALL CopyMatrixDS(InputMat, ScaledMat)
     CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
+    CALL ConstructEmptyMatrixDS(OutputMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
+    CALL ConstructEmptyMatrixDS(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
     CALL FillDistributedIdentity(IdentityMat)
 
@@ -295,7 +290,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & alpha_in=REAL(-1.0,NTREAL))
 
     !! Contribution from the second half.
-    CALL CopyDistributedSparseMatrix(T8,OutputMat)
+    CALL CopyMatrixDS(T8,OutputMat)
     CALL ScaleDistributedSparseMatrix(OutputMat,0.5*coefficients(17))
     CALL IncrementDistributedSparseMatrix(T6,OutputMat,&
          & alpha_in=REAL(0.5*coefficients(15),NTREAL))
@@ -307,7 +302,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Contribution from the first half.
-    CALL CopyDistributedSparseMatrix(T8,OutputMat)
+    CALL CopyMatrixDS(T8,OutputMat)
     CALL ScaleDistributedSparseMatrix(OutputMat,coefficients(9))
     CALL IncrementDistributedSparseMatrix(T6,OutputMat,&
          & alpha_in=REAL(coefficients(7)+0.5*coefficients(11),NTREAL))
@@ -324,7 +319,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO counter=1,sigma_counter-1
        CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyDistributedSparseMatrix(TempMat,OutputMat)
+       CALL CopyMatrixDS(TempMat,OutputMat)
        CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2.0,NTREAL))
        CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat, &
             & REAL(-1.0,NTREAL))
@@ -346,5 +341,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(T4)
     CALL DestructDistributedSparseMatrix(T6)
     CALL DestructDistributedSparseMatrix(T8)
+    CALL DestructMatrixMemoryPoolD(pool)
   END SUBROUTINE ScaleSquareTrigonometry
 END MODULE TrigonometrySolversModule
