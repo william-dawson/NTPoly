@@ -9,6 +9,7 @@ MODULE EigenBoundsModule
   USE LoggingModule
   USE TripletListRModule
   USE TripletRModule
+  USE TripletCModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
