@@ -173,10 +173,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: AD
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
-    TYPE(TripletList_t) :: triplet_a
-    TYPE(TripletList_t), DIMENSION(:), ALLOCATABLE :: send_list
-    TYPE(TripletList_t) :: recv_list
-    TYPE(Triplet_t) :: trip, shifted_trip
+    TYPE(TripletList_r) :: triplet_a
+    TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(TripletList_r) :: recv_list
+    TYPE(Triplet_r) :: trip, shifted_trip
     INTEGER :: ilookup, jlookup, iowner, jowner, ijowner
     INTEGER :: lrow, lcol
     INTEGER :: II
@@ -239,8 +239,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
-    TYPE(TripletList_t) :: triplet_w, triplet_v
-    TYPE(Triplet_t) :: trip
+    TYPE(TripletList_r) :: triplet_w, triplet_v
+    TYPE(Triplet_r) :: trip
     INTEGER :: row_start, row_end, col_start, col_end
     INTEGER :: II, JJ, ilookup, jlookup
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: VD1
@@ -298,8 +298,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: W
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
-    TYPE(TripletList_t) :: triplet_w
-    TYPE(Triplet_t) :: trip
+    TYPE(TripletList_r) :: triplet_w
+    TYPE(Triplet_r) :: trip
     INTEGER :: wstart, wend, wsize
     INTEGER :: II
 
