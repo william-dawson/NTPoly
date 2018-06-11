@@ -1,27 +1,14 @@
-  USE TimerModule, ONLY : StartTimer, StopTimer
-  IMPLICIT NONE
-  PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !! Linear Algebra
-  PUBLIC :: ScaleMatrixS
-  PUBLIC :: IncrementMatrixS
-  PUBLIC :: DotMatrixS
-  PUBLIC :: PairwiseMultiplyMatrixS
-  PUBLIC :: GemmMatrixS
-  PUBLIC :: MatrixSColumnNorm
-  PUBLIC :: MatrixSNorm
-  PUBLIC :: MatrixSGrandSum
-CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
   !! @param[inout] matA Matrix A.
   !! @param[in] constant scale factor.
-  PURE SUBROUTINE ScaleMatrixS(matA,constant)
+  PURE SUBROUTINE ScaleMatrix(matA,constant)
     !! Parameters
     TYPE(SMTYPE), INTENT(INOUT) :: matA
     REAL(NTREAL), INTENT(IN) :: constant
 
     matA%values = constant * matA%values
-  END SUBROUTINE ScaleMatrixS
+  END SUBROUTINE ScaleMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
   !! This will utilize the sparse vector addition routine.
@@ -29,7 +16,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in,out] matB Matrix B.
   !! @param[in] alpha_in multiplier (optional, default=1.0)
   !! @param[in] threshold_in for flushing values to zero. (Optional, default=0).
-  PURE SUBROUTINE IncrementMatrixS(matA, matB, alpha_in, threshold_in)
+  PURE SUBROUTINE IncrementMatrix(matA, matB, alpha_in, threshold_in)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN)  :: matA
     TYPE(SMTYPE), INTENT(INOUT) :: matB
@@ -61,7 +48,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     size_of_a = matA%outer_index(matA%columns+1)
 
     !! Allocate sufficient space for matC
-    CALL ConstructEmptySparseMatrix(matC, matA%columns, matA%rows)
+    CALL ConstructEmptyMatrix(matC, matA%columns, matA%rows)
     IF (ALLOCATED(matB%values)) THEN
        size_of_b = matB%outer_index(matB%columns+1)
        ALLOCATE(matC%inner_index(size_of_a+size_of_b))
@@ -96,22 +83,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Cleanup
-    CALL DestructSparseMatrix(matB)
-    CALL ConstructEmptySparseMatrix(matB,matC%columns,matC%rows)
+    CALL DestructMatrix(matB)
+    CALL ConstructEmptyMatrix(matB,matC%columns,matC%rows)
     matB%outer_index = matC%outer_index
     ALLOCATE(matB%inner_index(matC%outer_index(matC%columns+1)))
     ALLOCATE(matB%values(matC%outer_index(matC%columns+1)))
     matB%inner_index = matC%inner_index(:matC%outer_index(matC%columns+1))
     matB%values = matC%values(:matC%outer_index(matC%columns+1))
-    CALL DestructSparseMatrix(matC)
-  END SUBROUTINE IncrementMatrixS
+    CALL DestructMatrix(matC)
+  END SUBROUTINE IncrementMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Pairwise Multiply two matrices.
   !! This will utilize the sparse vector pairwise routine.
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @param[in,out] matC = MatA mult MatB.
-  PURE SUBROUTINE PairwiseMultiplyMatrixS(matA, matB, matC)
+  PURE SUBROUTINE PairwiseMultiplyMatrix(matA, matB, matC)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN)  :: matA
     TYPE(SMTYPE), INTENT(IN) :: matB
@@ -125,7 +112,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: indices_added_into_c
     INTEGER :: size_of_a, size_of_b
 
-    CALL ConstructEmptySparseMatrix(TempMat, matA%columns, matA%rows)
+    CALL ConstructEmptyMatrix(TempMat, matA%columns, matA%rows)
     size_of_a = matA%outer_index(matA%columns+1)
     size_of_b = matB%outer_index(matB%columns+1)
     ALLOCATE(TempMat%inner_index(MIN(size_of_a,size_of_b)))
@@ -156,21 +143,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Cleanup
-    CALL DestructSparseMatrix(matC)
-    CALL ConstructEmptySparseMatrix(matC,TempMat%columns,TempMat%rows)
+    CALL DestructMatrix(matC)
+    CALL ConstructEmptyMatrix(matC,TempMat%columns,TempMat%rows)
     matC%outer_index = TempMat%outer_index
     ALLOCATE(matC%inner_index(TempMat%outer_index(TempMat%columns+1)))
     ALLOCATE(matC%values(TempMat%outer_index(TempMat%columns+1)))
     matC%inner_index = TempMat%inner_index(:TempMat%outer_index(TempMat%columns+1))
     matC%values = TempMat%values(:TempMat%outer_index(TempMat%columns+1))
-    CALL DestructSparseMatrix(TempMat)
-  END SUBROUTINE PairwiseMultiplyMatrixS
+    CALL DestructMatrix(TempMat)
+  END SUBROUTINE PairwiseMultiplyMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Product = sum(MatA[ij]*MatB[ij])
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @result product
-  PURE FUNCTION DotMatrixS(matA, matB) RESULT(product)
+  PURE FUNCTION DotMatrix(matA, matB) RESULT(product)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: matA
     TYPE(SMTYPE), INTENT(IN) :: matB
@@ -178,11 +165,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(SMTYPE) :: matC
 
-    CALL PairwiseMultiplyMatrixS(matA,matB,matC)
+    CALL PairwiseMultiplyMatrix(matA,matB,matC)
 
-    product = MatrixSGrandSum(matC)
-    CALL DestructSparseMatrix(matC)
-  END FUNCTION DotMatrixS
+    product = MatrixGrandSum(matC)
+    CALL DestructMatrix(matC)
+  END FUNCTION DotMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !! C := alpha*matA*op( matB ) + beta*matC
@@ -196,7 +183,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold_in for flushing values to zero. Default value is 0.0.
   !! @param[inout] blocked_memory_pool_in an optional memory pool for doing the
   !! calculation.
-  SUBROUTINE GemmMatrixS(matA, matB, matC, IsATransposed_in, IsBTransposed_in, &
+  SUBROUTINE GemmMatrix(matA, matB, matC, IsATransposed_in, IsBTransposed_in, &
        & alpha_in, beta_in, threshold_in, blocked_memory_pool_in)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN)  :: matA
@@ -305,23 +292,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handle the add part of GEMM
     IF (PRESENT(beta_in)) THEN
        IF (ABS(beta_in) .GT. 0) THEN
-          CALL ScaleMatrixS(matC,beta)
-          CALL IncrementMatrixS(matAB,matC)
+          CALL ScaleMatrix(matC,beta)
+          CALL IncrementMatrix(matAB,matC)
        ELSE
-          CALL CopySparseMatrix(matAB,matC)
+          CALL CopyMatrix(matAB,matC)
        END IF
     ELSE
-       CALL CopySparseMatrix(matAB,matC)
+       CALL CopyMatrix(matAB,matC)
     END IF
 
-    CALL DestructSparseMatrix(matAB)
+    CALL DestructMatrix(matAB)
     CALL DestructMatrixMemoryPool(blocked_memory_pool)
-  END SUBROUTINE GemmMatrixS
+  END SUBROUTINE GemmMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a sparse matrix along the columns.
   !! @param[in] this the matrix to compute the norm of.
   !! @param[out] norm_per_column the norm value for each column in this matrix.
-  PURE SUBROUTINE MatrixSColumnNorm(this, norm_per_column)
+  PURE SUBROUTINE MatrixColumnNorm(this, norm_per_column)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
     REAL(NTREAL), DIMENSION(this%columns), INTENT(OUT) :: norm_per_column
@@ -344,34 +331,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & ABS(temp_value)
        END DO
     END DO
-  END SUBROUTINE MatrixSColumnNorm
+  END SUBROUTINE MatrixColumnNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the 1 norm of a sparse matrix.
   !! @param[in] this the matrix to compute the norm of.
   !! @result norm the matrix.
-  PURE FUNCTION MatrixSNorm(this) RESULT(norm)
+  PURE FUNCTION MatrixNorm(this) RESULT(norm)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
     REAL(NTREAL) :: norm
     !! Local Variables
     REAL(NTREAL), DIMENSION(this%columns) :: column
 
-    CALL MatrixSColumnNorm(this,column)
+    CALL MatrixColumnNorm(this,column)
     norm = MAXVAL(column)
 
-  END FUNCTION MatrixSNorm
+  END FUNCTION MatrixNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum the elements of a matrix
   !! @param[in] this the matrix to sum
   !! @result sum_value the sum of the matrix elements
-  PURE FUNCTION MatrixSGrandSum(this) RESULT(sum_value)
+  PURE FUNCTION MatrixGrandSum(this) RESULT(sum_value)
     !! Parameters
     TYPE(SMTYPE), INTENT(IN) :: this
     DATATYPE :: sum_value
 
     sum_value = SUM(this%values)
 
-  END FUNCTION MatrixSGrandSum
+  END FUNCTION MatrixGrandSum
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SparseBranch(matA, matB, matC, IsATransposed, IsBTransposed, &
        & alpha, threshold, blocked_memory_pool)
@@ -389,10 +376,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Block A and B
     IF (.NOT. IsATransposed) THEN
-       CALL TransposeSparseMatrix(matA,matAT)
+       CALL TransposeMatrix(matA,matAT)
     END IF
     IF (.NOT. IsBTransposed) THEN
-       CALL TransposeSparseMatrix(matB,matBT)
+       CALL TransposeMatrix(matB,matBT)
     END IF
 
     IF (IsATransposed .AND. IsBTransposed) THEN
@@ -429,14 +416,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle Transposed Case
     IF (IsATransposed) THEN
-       CALL TransposeSparseMatrix(matA,untransposedMatA)
+       CALL TransposeMatrix(matA,untransposedMatA)
     ELSE
-       CALL CopySparseMatrix(matA,untransposedMatA)
+       CALL CopyMatrix(matA,untransposedMatA)
     END IF
     IF (IsBTransposed) THEN
-       CALL TransposeSparseMatrix(matB,untransposedMatB)
+       CALL TransposeMatrix(matB,untransposedMatB)
     ELSE
-       CALL CopySparseMatrix(matB,untransposedMatB)
+       CALL CopyMatrix(matB,untransposedMatB)
     END IF
 
     !! Convert Forward
@@ -555,7 +542,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     unsorted_pruned_list%data = memorypool%pruned_list(1:pruned_counter-1)
     CALL SortTripletList(unsorted_pruned_list, mat_c_columns, mat_c_rows, &
          & sorted_pruned_list, bubble_in=.TRUE.)
-    CALL ConstructFromTripletList(matAB,sorted_pruned_list,mat_c_rows, &
+    CALL ConstructMatrixFromTripletList(matAB,sorted_pruned_list,mat_c_rows, &
          & mat_c_columns)
     CALL DestructTripletList(sorted_pruned_list)
   END SUBROUTINE PruneList

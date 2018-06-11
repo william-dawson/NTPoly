@@ -1,32 +1,3 @@
-  USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC
-  USE TimerModule, ONLY : StartTimer, StopTimer
-  USE ISO_C_BINDING, ONLY : c_int
-  USE MPI
-  IMPLICIT NONE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a list of triplets.
-  !! As this is related to matrix multiplication, the referencing indices are
-  !! rows and columns.
-  TYPE, PUBLIC :: TLISTTYPE
-     !> Internal representation of the data.
-     TYPE(TTYPE), DIMENSION(:), ALLOCATABLE :: DATA
-     !> Current number of elements in the triplet list
-     INTEGER :: CurrentSize
-  END TYPE TLISTTYPE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructTripletList
-  PUBLIC :: DestructTripletList
-  PUBLIC :: ResizeTripletList
-  PUBLIC :: AppendToTripletList
-  PUBLIC :: AccumulateTripletList
-  PUBLIC :: SetTripletAt
-  PUBLIC :: GetTripletAt
-  PUBLIC :: SortTripletList
-  PUBLIC :: SymmetrizeTripletList
-  PUBLIC :: GetTripletListSize
-  PUBLIC :: RedistributeTripletLists
-  PUBLIC :: ShiftTripletList
-CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
   !! @param[in] size_in the length of the triplet list (optional, default=0).

@@ -39,9 +39,9 @@ set(FCommunication
 )
 
 set(FDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolDModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixDSAlgebraModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixDSModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule.f90
 )
 
 set(FHelpers

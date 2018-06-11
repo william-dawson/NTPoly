@@ -2,9 +2,9 @@
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE InverseSolversModule
@@ -29,15 +29,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ps) :: TempMat
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -86,15 +86,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ComputeRootImplementation(InputMat, OutputMat, root, &
        & solver_parameters)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: fixed_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: RaisedMat
-    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ps) :: RaisedMat
+    TYPE(Matrix_ps) :: TempMat
     TYPE(Polynomial_t) :: power_poly
     INTEGER :: counter
 
@@ -134,15 +134,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ps) :: TempMat
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -185,8 +185,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ComputeInverseRootImplemention(InputMat, OutputMat, root, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -194,12 +194,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: SqrtMat, FthrtMat
-    TYPE(Matrix_ds) :: IdentityMat
-    TYPE(Matrix_ds) :: Mk
-    TYPE(Matrix_ds) :: IntermediateMat
-    TYPE(Matrix_ds) :: IntermediateMatP
-    TYPE(Matrix_ds) :: Temp
+    TYPE(Matrix_ps) :: SqrtMat, FthrtMat
+    TYPE(Matrix_ps) :: IdentityMat
+    TYPE(Matrix_ps) :: Mk
+    TYPE(Matrix_ps) :: IntermediateMat
+    TYPE(Matrix_ps) :: IntermediateMatP
+    TYPE(Matrix_ps) :: Temp
     !! Local Variables
     INTEGER :: target_root
     REAL(NTREAL) :: e_min
@@ -209,7 +209,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     INTEGER :: outer_counter
     INTEGER :: inner_counter
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(MatrixMemoryPool_p) :: pool
 
     !! Handle The Optional Parameters
     !! Optional Parameters

@@ -2,12 +2,12 @@
 !> A module for calling eigenexa
 MODULE EigenExaModule
   USE DataTypesModule
-  USE MatrixDSModule
+  USE MatrixPSModule
   USE FixedSolversModule
   USE LoggingModule
   USE TimerModule
-  USE TripletRModule
-  USE TripletListRModule
+  USE TripletModule
+  USE TripletListModule
   USE eigen_libs
   USE MPI
   IMPLICIT NONE
@@ -55,9 +55,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in the parameters for this solver (optional).
   SUBROUTINE EigenExa_s(A, eigenvectors, eigenvalues_out, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: A
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
-    TYPE(Matrix_ds), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    TYPE(Matrix_ps), INTENT(IN) :: A
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
@@ -120,7 +120,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] exa stores info about the calculation.
   SUBROUTINE InitializeEigenExa(A, AD, VD, WD, exa)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: A
+    TYPE(Matrix_ps), INTENT(IN) :: A
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
@@ -169,7 +169,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] info about the calculation.
   SUBROUTINE NTToEigen(A, AD, exa)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: A
+    TYPE(Matrix_ps), INTENT(IN) :: A
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: AD
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
@@ -235,7 +235,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE EigenToNT(VD, V, solver_parameters, exa)
     !! Parameters
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: VD
-    TYPE(Matrix_ds), INTENT(INOUT) :: V
+    TYPE(Matrix_ps), INTENT(INOUT) :: V
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
@@ -295,7 +295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ExtractEigenvalues(WD, W, exa)
     !! Parameters
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: WD
-    TYPE(Matrix_ds), INTENT(INOUT) :: W
+    TYPE(Matrix_ps), INTENT(INOUT) :: W
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
     TYPE(TripletList_t) :: triplet_w

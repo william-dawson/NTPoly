@@ -2,9 +2,9 @@
 !> A Module For Computing Matrix functions based on Chebyshev polynomials.
 MODULE ChebyshevSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -70,19 +70,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ChebyshevCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: BalancedInput
-    TYPE(Matrix_ds) :: Tk
-    TYPE(Matrix_ds) :: Tkminus1
-    TYPE(Matrix_ds) :: Tkminus2
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: BalancedInput
+    TYPE(Matrix_ps) :: Tk
+    TYPE(Matrix_ps) :: Tkminus1
+    TYPE(Matrix_ps) :: Tkminus2
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     INTEGER :: degree
     INTEGER :: counter
@@ -183,17 +183,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FactorizedChebyshevCompute(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: BalancedInput
-    TYPE(Matrix_ds), DIMENSION(:), ALLOCATABLE :: T_Powers
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: BalancedInput
+    TYPE(Matrix_ps), DIMENSION(:), ALLOCATABLE :: T_Powers
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     INTEGER :: degree
     INTEGER :: log2degree
@@ -299,12 +299,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   RECURSIVE SUBROUTINE ComputeRecursive(T_Powers, poly, OutputMat, pool, &
        & depth, solver_parameters)
     !! Parameters
-    TYPE(Matrix_ds), DIMENSION(:), INTENT(IN) :: T_Powers
+    TYPE(Matrix_ps), DIMENSION(:), INTENT(IN) :: T_Powers
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(in) :: depth
     TYPE(FixedSolverParameters_t), INTENT(IN) :: solver_parameters
-    TYPE(MatrixMemoryPool_d), INTENT(INOUT) :: pool
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !! Local Data
     INTEGER :: coefficient_midpoint
     INTEGER :: left_length, right_length
@@ -312,8 +312,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
     TYPE(ChebyshevPolynomial_t) :: left_poly
     TYPE(ChebyshevPolynomial_t) :: right_poly
-    TYPE(Matrix_ds) :: LeftMat
-    TYPE(Matrix_ds) :: RightMat
+    TYPE(Matrix_ps) :: LeftMat
+    TYPE(Matrix_ps) :: RightMat
 
     !! First Handle The Base Case
     IF (SIZE(poly%coefficients) .EQ. 2) THEN

@@ -3,9 +3,9 @@
 !! The Physicist variety.
 MODULE HermiteSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -70,20 +70,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HermiteCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(HermitePolynomial_t), INTENT(in) :: poly
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: BalancedInput
-    TYPE(Matrix_ds) :: Hk
-    TYPE(Matrix_ds) :: Hkminus1
-    TYPE(Matrix_ds) :: Hkplus1
-    TYPE(Matrix_ds) :: Hkprime
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: BalancedInput
+    TYPE(Matrix_ps) :: Hk
+    TYPE(Matrix_ps) :: Hkminus1
+    TYPE(Matrix_ps) :: Hkplus1
+    TYPE(Matrix_ps) :: Hkprime
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     INTEGER :: degree
     INTEGER :: counter

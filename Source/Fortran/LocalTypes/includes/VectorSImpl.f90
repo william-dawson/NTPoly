@@ -1,10 +1,4 @@
-  IMPLICIT NONE
-  PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: AddSparseVectors
-  PUBLIC :: DotSparseVectors
-  PUBLIC :: PairwiseMultiplyVectors
-CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add together two sparse vectors. C = A + alpha*B
   !! @param[in] inner_index_a list of indices for A.
   !! @param[in] values_a list of values for A.

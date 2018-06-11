@@ -2,9 +2,9 @@
 !> A Module For Computing The Square Root of a Matrix.
 MODULE SquareRootSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -23,8 +23,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE SquareRoot(InputMat, OutputMat, solver_parameters_in)
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(IterativeSolverParameters_t),INTENT(in),OPTIONAL :: &
          & solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
@@ -40,8 +40,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE InverseSquareRoot(InputMat, OutputMat, solver_parameters_in)
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(IterativeSolverParameters_t),INTENT(in),OPTIONAL :: &
          & solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
@@ -60,8 +60,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE NewtonSchultzISR(Mat1, OutMat, compute_inverse_in, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: Mat1
-    TYPE(Matrix_ds), INTENT(inout) :: OutMat
+    TYPE(Matrix_ps), INTENT(in)  :: Mat1
+    TYPE(Matrix_ps), INTENT(inout) :: OutMat
     LOGICAL, INTENT(in), OPTIONAL :: compute_inverse_in
     TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
          & solver_parameters_in
@@ -72,15 +72,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: compute_inverse
     !! Local Variables
     REAL(NTREAL) :: lambda
-    TYPE(Matrix_ds) :: X_k,T_k,Temp,Identity
-    TYPE(Matrix_ds) :: SquareRootMat
-    TYPE(Matrix_ds) :: InverseSquareRootMat
+    TYPE(Matrix_ps) :: X_k,T_k,Temp,Identity
+    TYPE(Matrix_ps) :: SquareRootMat
+    TYPE(Matrix_ps) :: InverseSquareRootMat
     !! Temporary Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: max_between
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN

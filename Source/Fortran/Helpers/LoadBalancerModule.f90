@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for load balancing the matrix multiplication calculation.
 MODULE LoadBalancerModule
-  USE MatrixMemoryPoolDModule, ONLY : MatrixMemoryPool_d
-  USE MatrixDSAlgebraModule, ONLY : DistributedGemm
-  USE MatrixDSModule, ONLY : Matrix_ds, ConstructEmptyMatrixDS, &
+  USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p
+  USE MatrixPSAlgebraModule, ONLY : DistributedGemm
+  USE MatrixPSModule, ONLY : Matrix_ps, ConstructEmptyMatrixDS, &
        & DestructMatrixDS, FillDistributedPermutation
   USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
@@ -19,13 +19,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] memorypool_in memory pool to use. Optional.
   SUBROUTINE PermuteMatrix(mat, mat_out, permutation, memorypool_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: mat
-    TYPE(Matrix_ds), INTENT(INOUT) :: mat_out
+    TYPE(Matrix_ps), INTENT(IN) :: mat
+    TYPE(Matrix_ps), INTENT(INOUT) :: mat_out
     TYPE(Permutation_t), INTENT(IN) :: permutation
-    TYPE(MatrixMemoryPool_d), INTENT(INOUT),OPTIONAL :: memorypool_in
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
     !! Local Variables
-    TYPE(Matrix_ds) :: PermuteRows, PermuteColumns
-    TYPE(Matrix_ds) :: Temp
+    TYPE(Matrix_ps) :: PermuteRows, PermuteColumns
+    TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
     CALL ConstructEmptyDistributedSparseMatrix(PermuteRows, &
@@ -62,13 +62,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] memorypool_in memory pool to use. Optional.
   SUBROUTINE UndoPermuteMatrix(mat, mat_out, permutation, memorypool_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: mat
-    TYPE(Matrix_ds), INTENT(INOUT) :: mat_out
+    TYPE(Matrix_ps), INTENT(IN) :: mat
+    TYPE(Matrix_ps), INTENT(INOUT) :: mat_out
     TYPE(Permutation_t), INTENT(IN) :: permutation
-    TYPE(MatrixMemoryPool_d), INTENT(INOUT),OPTIONAL :: memorypool_in
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
     !! Local Variables
-    TYPE(Matrix_ds) :: PermuteRows, PermuteColumns
-    TYPE(Matrix_ds) :: Temp
+    TYPE(Matrix_ps) :: PermuteRows, PermuteColumns
+    TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
     CALL ConstructEmptyDistributedSparseMatrix(PermuteRows, &

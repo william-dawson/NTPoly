@@ -2,21 +2,21 @@
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
   USE DataTypesModule
-  USE MatrixDRModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixDModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE FixedSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE MatrixReduceModule
   USE ProcessGridModule
-  USE MatrixSRModule
-  USE VectorSRModule
+  USE MatrixSModule
+  USE VectorSModule
   USE TimerModule
-  USE TripletListRModule
-  USE TripletRModule
+  USE TripletListModule
+  USE TripletModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -33,24 +33,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE CGSolver(AMat, XMat, BMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: AMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: XMat
-    TYPE(Matrix_ds), INTENT(IN)  :: BMat
+    TYPE(Matrix_ps), INTENT(IN)  :: AMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: XMat
+    TYPE(Matrix_ps), INTENT(IN)  :: BMat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: ABalanced
-    TYPE(Matrix_ds) :: BBalanced
-    TYPE(Matrix_ds) :: RMat, PMat, QMat
-    TYPE(Matrix_ds) :: RMatT, PMatT
-    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: ABalanced
+    TYPE(Matrix_ps) :: BBalanced
+    TYPE(Matrix_ps) :: RMat, PMat, QMat
+    TYPE(Matrix_ps) :: RMatT, PMatT
+    TYPE(Matrix_ps) :: TempMat
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(MatrixMemoryPool_p) :: pool
     REAL(NTREAL) :: top, bottom, new_top, step_size
 
     !! Optional Parameters
@@ -192,14 +192,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE CholeskyDecomposition(AMat, LMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: AMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: LMat
+    TYPE(Matrix_ps), INTENT(IN)  :: AMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: LMat
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_sr) :: sparse_a
-    TYPE(Matrix_dr) :: dense_a
+    TYPE(Matrix_lsr) :: sparse_a
+    TYPE(Matrix_ldr) :: dense_a
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: values_l
@@ -333,8 +333,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: AMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: LMat
+    TYPE(Matrix_ps), INTENT(IN)  :: AMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: LMat
     INTEGER, INTENT(IN) :: rank_in
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
@@ -344,9 +344,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
     INTEGER :: pi_j
     !! Local Variables
-    TYPE(Matrix_sr) :: sparse_a
-    TYPE(Matrix_sr) :: acol
-    TYPE(Matrix_dr) :: dense_a
+    TYPE(Matrix_lsr) :: sparse_a
+    TYPE(Matrix_lsr) :: acol
+    TYPE(Matrix_ldr) :: dense_a
     !! For Storing The Results
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_column_l
     INTEGER, DIMENSION(:,:), ALLOCATABLE :: index_l
@@ -519,7 +519,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), INTENT(IN) :: values_per_column
     INTEGER, DIMENSION(:,:), INTENT(IN) :: index
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values
-    TYPE(Matrix_ds), INTENT(INOUT) :: LMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: LMat
     !! Local Variables
     INTEGER :: local_columns
     TYPE(TripletList_r) :: local_triplets
@@ -664,7 +664,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE GetPivot(AMat, process_grid, start_index, pivot_vector, diag, &
        & index, value, local_pivots, num_local_pivots)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: AMat
+    TYPE(Matrix_ps), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
@@ -718,9 +718,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the vector holding the accumulated diagonal values
   SUBROUTINE ConstructDiag(AMat, process_grid, dense_a, diag)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: AMat
+    TYPE(Matrix_ps), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    TYPE(Matrix_dr), INTENT(IN) :: dense_a
+    TYPE(Matrix_ldr), INTENT(IN) :: dense_a
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
     !! Local Variables
     INTEGER :: fill_counter
@@ -754,7 +754,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructRankLookup(AMat, process_grid, col_root_lookup)
     !! Root Lookups
-    TYPE(Matrix_ds), INTENT(IN) :: AMat
+    TYPE(Matrix_ps), INTENT(IN) :: AMat
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     INTEGER, DIMENSION(:), INTENT(INOUT) :: col_root_lookup
     !! Local Variables
@@ -782,13 +782,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] column_matrix the final result.
   SUBROUTINE GatherMatrixColumn(local_matrix, column_matrix, process_grid)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN) :: local_matrix
-    TYPE(Matrix_sr), INTENT(INOUT) :: column_matrix
+    TYPE(Matrix_lsr), INTENT(IN) :: local_matrix
+    TYPE(Matrix_lsr), INTENT(INOUT) :: column_matrix
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     !! Local Variables
     TYPE(ReduceHelper_t) :: gather_helper
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
-    TYPE(Matrix_sr) :: local_matrixT
+    TYPE(Matrix_lsr) :: local_matrixT
     INTEGER :: mpi_err
 
     CALL TransposeSparseMatrix(local_matrix, local_matrixT)

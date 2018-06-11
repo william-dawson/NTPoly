@@ -1,18 +1,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling scratch memory for distributed matrix multiplication.
-MODULE MatrixMemoryPoolDModule
-  USE MatrixDSModule, ONLY : Matrix_ds
-  USE MatrixMemoryPoolRModule, ONLY : MatrixMemoryPool_r, &
+MODULE MatrixMemoryPoolPModule
+  USE MatrixPSModule, ONLY : Matrix_ps
+  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, &
        & DestructMatrixMemoryPool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A memory pool datatype that can be reused for matrix matrix multiplication.
   !! this is to prevent excessive alloc/dealloc.
-  TYPE, PUBLIC :: MatrixMemoryPool_d
+  TYPE, PUBLIC :: MatrixMemoryPool_p
      !> Grid of local pools.
-     TYPE(MatrixMemoryPool_r), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: grid
-  END TYPE MatrixMemoryPool_d
+     TYPE(MatrixMemoryPool_lr), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: grid
+  END TYPE MatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructMatrixMemoryPoolD
   PUBLIC :: DestructMatrixMemoryPoolD
@@ -23,8 +23,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matrix the associated distributed sparse matrix.
   PURE SUBROUTINE ConstructMatrixMemoryPoolD(this, matrix)
     !! Parameters
-    TYPE(MatrixMemoryPool_d), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(IN) :: matrix
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: matrix
 
     !! Allocate
     CALL DestructMatrixMemoryPoolD(this)
@@ -36,7 +36,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @param[out] this Distributed Matrix Memory Pool object to destroy.
   PURE SUBROUTINE DestructMatrixMemoryPoolD(this)
     !! Parameters
-    TYPE(MatrixMemoryPool_d), INTENT(INOUT) :: this
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
     !! Local Data
     INTEGER :: row_counter, column_counter
 
@@ -58,7 +58,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> @return true if the memory pool is valid.
   PURE FUNCTION CheckMemoryPoolDValidity(this) RESULT(isvalid)
     !! Parameters
-    TYPE(MatrixMemoryPool_d), INTENT(IN) :: this
+    TYPE(MatrixMemoryPool_p), INTENT(IN) :: this
     LOGICAL :: isvalid
 
     isvalid = .TRUE.
@@ -66,4 +66,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. ALLOCATED(this%grid)) isvalid = .FALSE.
 
   END FUNCTION CheckMemoryPoolDValidity
-END MODULE MatrixMemoryPoolDModule
+END MODULE MatrixMemoryPoolPModule

@@ -1,27 +1,4 @@
-  USE ISO_C_BINDING, ONLY : c_int
-  USE MPI
-  IMPLICIT NONE
-  PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a triplet of integer, integer, double.
-  !! As this is related to matrix multiplication, the referencing indices are
-  !! rows and columns.
-  TYPE, PUBLIC :: INNERTYPE
-     INTEGER(kind=c_int)    :: index_column !< column value.
-     INTEGER(kind=c_int)    :: index_row    !< row value.
-     DATATYPE :: point_value  !< actual value at those indices.
-  END TYPE INNERTYPE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: SetTriplet
-  PUBLIC :: GetTripletValues
-  PUBLIC :: CompareTriplets
-  PUBLIC :: GetMPITripletType
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Flag about whether we've registered an mpi triplet type before
-  LOGICAL :: set_mpi_triplet_type = .FALSE.
-  !> A derived data type for mpi triplets
-  INTEGER, SAVE :: mpi_triplet_type
-CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
   !! @param[inout] this the triplet to set the values of.
   !! @param[in] index_column the column value.
@@ -82,9 +59,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! it every time this function is called. Thus this functional call should
   !! add very little overhead.
   !! @return the derived type
-  FUNCTION GetMPITripletType() RESULT(return_mpi_triplet_type)
+  FUNCTION GetMPITripletType() RESULT(mpi_triplet_type)
     !! Parameters
-    INTEGER :: return_mpi_triplet_type
+    INTEGER :: mpi_triplet_type
     !! Local Data
     INTEGER, DIMENSION(3) :: triplet_sub_types
     INTEGER, DIMENSION(3) :: triplet_displacement
@@ -92,28 +69,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: bytes_per_int
     INTEGER :: bytes_per_double
     INTEGER :: ierr
-    !  logical :: error_occurred
 
-    !! Check if already created this data type
-    IF (set_mpi_triplet_type) THEN
-       return_mpi_triplet_type = mpi_triplet_type
-    ELSE
-       !! Otherwise make it
-       CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
-       CALL MPI_Type_extent(MPIDATATYPE,bytes_per_double,ierr)
-       triplet_block_length(1) = 1
-       triplet_block_length(2) = 1
-       triplet_block_length(3) = 1
-       triplet_displacement(1) = 0
-       triplet_displacement(2) = bytes_per_int + triplet_displacement(1)
-       triplet_displacement(3) = bytes_per_int + triplet_displacement(2)
-       triplet_sub_types(1) = MPI_INT
-       triplet_sub_types(2) = MPI_INT
-       triplet_sub_types(3) = MPIDATATYPE
+    CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
+    CALL MPI_Type_extent(MPIDATATYPE,bytes_per_double,ierr)
+    triplet_block_length(1) = 1
+    triplet_block_length(2) = 1
+    triplet_block_length(3) = 1
+    triplet_displacement(1) = 0
+    triplet_displacement(2) = bytes_per_int + triplet_displacement(1)
+    triplet_displacement(3) = bytes_per_int + triplet_displacement(2)
+    triplet_sub_types(1) = MPI_INT
+    triplet_sub_types(2) = MPI_INT
+    triplet_sub_types(3) = MPIDATATYPE
 
-       CALL MPI_Type_struct(3,triplet_block_length,triplet_displacement,&
-            & triplet_sub_types,mpi_triplet_type,ierr)
-       CALL MPI_Type_commit(mpi_triplet_type,ierr)
-       return_mpi_triplet_type = mpi_triplet_type
-    END IF
+    CALL MPI_Type_struct(3,triplet_block_length,triplet_displacement,&
+         & triplet_sub_types,mpi_triplet_type,ierr)
+    CALL MPI_Type_commit(mpi_triplet_type,ierr)
+    
   END FUNCTION GetMPITripletType

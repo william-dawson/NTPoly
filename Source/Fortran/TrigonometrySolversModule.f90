@@ -2,9 +2,9 @@
 !> A Module For Computing Trigonometric functions of a Matrix.
 MODULE TrigonometrySolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE LoadBalancerModule
@@ -24,12 +24,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Sine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     !! A temporary matrix to hold the transformation from sine to cosine.
-    TYPE(Matrix_ds) :: ShiftedMat
-    TYPE(Matrix_ds) :: IdentityMat
+    TYPE(Matrix_ps) :: ShiftedMat
+    TYPE(Matrix_ps) :: IdentityMat
     REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.0)
 
     !! Shift
@@ -54,8 +54,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat the resulting matrix.
   !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Cosine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
@@ -71,17 +71,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ScaleSquareTrigonometryTaylor(InputMat, OutputMat, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: Ak
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(MatrixMemoryPool_d) :: pool
-    TYPE(Matrix_ds) :: IdentityMat
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: Ak
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(MatrixMemoryPool_p) :: pool
+    TYPE(Matrix_ps) :: IdentityMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -187,22 +187,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(MatrixMemoryPool_d) :: pool
-    TYPE(Matrix_ds) :: IdentityMat
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(MatrixMemoryPool_p) :: pool
+    TYPE(Matrix_ps) :: IdentityMat
     !! For Chebyshev Expansion
     REAL(NTREAL), DIMENSION(17) :: coefficients
-    TYPE(Matrix_ds) :: T2
-    TYPE(Matrix_ds) :: T4
-    TYPE(Matrix_ds) :: T6
-    TYPE(Matrix_ds) :: T8
+    TYPE(Matrix_ps) :: T2
+    TYPE(Matrix_ps) :: T4
+    TYPE(Matrix_ps) :: T6
+    TYPE(Matrix_ps) :: T8
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val

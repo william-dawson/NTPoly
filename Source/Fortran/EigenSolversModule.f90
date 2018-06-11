@@ -2,9 +2,6 @@
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
   USE DataTypesModule
-  USE MatrixDRModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
   USE DensityMatrixSolversModule
   USE FixedSolversModule
   USE IterativeSolversModule
@@ -12,14 +9,18 @@ MODULE EigenSolversModule
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LinearSolversModule
+  USE MatrixSModule
+  USE MatrixSAlgebraModule
+  USE MatrixDModule
+  USE MatrixPSModule
+  USE MatrixPSAlgebraModule
   USE PermutationModule
   USE LoggingModule
   USE ParameterConverterModule
   USE SignSolversModule
-  USE MatrixSRModule
   USE TimerModule
-  USE TripletListRModule
-  USE TripletRModule
+  USE TripletListModule
+  USE TripletModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -36,9 +37,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvalues
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! For Handling Optional Parameters
@@ -72,9 +73,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SplittingEigenDecomposition(this, eigenvectors, eigenvalues, &
        & num_values_in, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvalues
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
     INTEGER, INTENT(IN), OPTIONAL :: num_values_in
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -84,8 +85,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: it_param
     INTEGER :: num_values
     !! Local
-    TYPE(Matrix_ds) :: eigenvectorsT, TempMat
-    TYPE(Matrix_ds) :: ReducedMat
+    TYPE(Matrix_ps) :: eigenvectorsT, TempMat
+    TYPE(Matrix_ps) :: ReducedMat
     TYPE(TripletList_r) :: triplet_list
     TYPE(TripletList_r) :: new_list
     TYPE(Triplet_r) :: temporary
@@ -174,16 +175,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SingularValueDecomposition(this, left_vectors, &
        & right_vectors, singularvalues, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: left_vectors
-    TYPE(Matrix_ds), INTENT(INOUT) :: right_vectors
-    TYPE(Matrix_ds), INTENT(INOUT) :: singularvalues
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: left_vectors
+    TYPE(Matrix_ps), INTENT(INOUT) :: right_vectors
+    TYPE(Matrix_ps), INTENT(INOUT) :: singularvalues
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: UMat, HMat
+    TYPE(Matrix_ps) :: UMat, HMat
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -227,21 +228,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters, &
        & it_param, fixed_param)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Variables - matrices
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: PMat, PHoleMat
-    TYPE(Matrix_ds) :: PVec, PHoleVec
-    TYPE(Matrix_ds) :: StackV, StackVT
-    TYPE(Matrix_ds) :: VAV
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: LeftMat, RightMat
-    TYPE(Matrix_ds) :: LeftVectors, RightVectors
-    TYPE(Matrix_ds) :: SubMat, SubVec
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: PMat, PHoleMat
+    TYPE(Matrix_ps) :: PVec, PHoleVec
+    TYPE(Matrix_ps) :: StackV, StackVT
+    TYPE(Matrix_ps) :: VAV
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: LeftMat, RightMat
+    TYPE(Matrix_ps) :: LeftVectors, RightVectors
+    TYPE(Matrix_ps) :: SubMat, SubVec
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim
     INTEGER :: color
@@ -374,9 +375,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] Combined the stacked matrix.
   SUBROUTINE StackMatrices(LeftMat,RightMat,column_offset,row_offset,Combined)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: LeftMat, RightMat
+    TYPE(Matrix_ps), INTENT(IN) :: LeftMat, RightMat
     INTEGER :: column_offset, row_offset
-    TYPE(Matrix_ds), INTENT(INOUT) :: Combined
+    TYPE(Matrix_ps), INTENT(INOUT) :: Combined
     !! Local Data
     TYPE(TripletList_r) :: left_triplets, right_triplets, combined_triplets
     INTEGER :: left_size, right_size, total_size
@@ -413,10 +414,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: SubMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: SubMat
     INTEGER, INTENT(IN) :: column_offset, row_offset
     INTEGER, INTENT(IN) :: color
-    TYPE(Matrix_ds), INTENT(INOUT) :: FullMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: FullMat
     !! Local Variables
     TYPE(TripletList_r) :: sub_triplets
     INTEGER :: counter
@@ -453,8 +454,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] RightMat the bottom right corner matirx.
   SUBROUTINE ExtractCorner(this, left_dim, right_dim, LeftMat, RightMat)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: LeftMat, RightMat
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: LeftMat, RightMat
     INTEGER :: left_dim, right_dim
     !! Local Data
     TYPE(TripletList_r) :: left_triplets, right_triplets, combined_triplets
@@ -498,13 +499,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color, &
        & split_slice)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: SubMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: SubMat
     LOGICAL, INTENT(OUT) :: split_slice
     INTEGER, INTENT(IN) :: left_dim, right_dim
     INTEGER, INTENT(OUT) :: color
     !! Local Data
-    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ps) :: TempMat
     TYPE(TripletList_r) :: full_triplets, extracted_triplets
     TYPE(Triplet_r) :: temp_triplet
     INTEGER :: counter
@@ -557,17 +558,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! as the first.
   SUBROUTINE ReduceDimension(this, dim, it_param, fixed_param, ReducedMat)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: dim
-    TYPE(Matrix_ds), INTENT(INOUT) :: ReducedMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: ReducedMat
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
     TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
     !! Local Variables - matrices
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: PMat
-    TYPE(Matrix_ds) :: PVec, PVecT
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: VAV
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: PMat
+    TYPE(Matrix_ps) :: PVec, PVecT
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: VAV
     !! Special parameters
     TYPE(IterativeSolverParameters_t) :: balanced_it
     TYPE(Permutation_t) :: permutation
@@ -619,18 +620,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SerialBase(this, eigenvectors, eigenvalues_out, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: eigenvectors
-    TYPE(Matrix_ds), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Local Data
     TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
     TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
-    TYPE(Matrix_sr) :: sparse
+    TYPE(Matrix_lsr) :: sparse
     INTEGER :: counter, list_size
     INTEGER :: mat_dim
-    TYPE(Matrix_sr) :: local_a, local_v
-    TYPE(Matrix_dr) :: dense_a, dense_v, dense_w
+    TYPE(Matrix_lsr) :: local_a, local_v
+    TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
     TYPE(FixedSolverParameters_t) :: fixed_params
 
     !! Optional Parameters

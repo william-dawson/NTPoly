@@ -2,9 +2,9 @@
 !> Module for gathering matrices across processes.
 MODULE MatrixGatherModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE MatrixDRModule, ONLY : Matrix_dr, ConstructEmptyMatrixD
-  USE MatrixSRModule, ONLY : Matrix_sr, ConstructEmptyMatrixS, &
-       & DestructMatrixS, CopyMatrixS
+  USE MatrixDModule, ONLY : Matrix_ldr, ConstructEmptyMatrix
+  USE MatrixSModule, ONLY : Matrix_lsr, ConstructEmptyMatrix, &
+       & DestructMatrix, CopyMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -72,8 +72,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] communicator the communicator to gather on.
   SUBROUTINE BlockingSparseMatrixGather(matrix, matrix_list, communicator)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN) :: matrix
-    TYPE(Matrix_sr), DIMENSION(:), INTENT(INOUT) :: matrix_list
+    TYPE(Matrix_lsr), INTENT(IN) :: matrix
+    TYPE(Matrix_lsr), DIMENSION(:), INTENT(INOUT) :: matrix_list
     INTEGER, INTENT(INOUT)           :: communicator
     !! Local Data
     TYPE(GatherHelper_t) :: helper
@@ -99,7 +99,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherSparseMatrixSizes(matrix, communicator, helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)    :: matrix
+    TYPE(Matrix_lsr), INTENT(IN)    :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
@@ -127,7 +127,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherSparseMatrixAndListData(matrix,communicator,helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)      :: matrix
+    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Temporary Values
@@ -180,17 +180,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE GatherSparseMatrixAndListCleanup(matrix, matrix_list, helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN) :: matrix
-    TYPE(Matrix_sr), DIMENSION(:), INTENT(INOUT) :: matrix_list
+    TYPE(Matrix_lsr), INTENT(IN) :: matrix
+    TYPE(Matrix_lsr), DIMENSION(:), INTENT(INOUT) :: matrix_list
     TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
-    TYPE(Matrix_sr) :: temporary_matrix
+    TYPE(Matrix_lsr) :: temporary_matrix
     INTEGER :: II
 
     !! Unpack into the list
     DO II = 1, helper%comm_size
        !! Allocate Memory
-       CALL ConstructEmptySparseMatrix(temporary_matrix, &
+       CALL ConstructEmptyMatrix(temporary_matrix, &
             & helper%matrix_data(3*(II-1)+2), helper%matrix_data(3*(II-1)+2))
        ALLOCATE(temporary_matrix%values(helper%value_sizes(II)))
        ALLOCATE(temporary_matrix%inner_index(helper%value_sizes(II)))
@@ -207,8 +207,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & helper%displacement_outer(II) + helper%outer_sizes(II))
 
        !! Copy from temporary to the list
-       CALL CopySparseMatrix(temporary_matrix, matrix_list(II))
-       CALL DestructSparseMatrix(temporary_matrix)
+       CALL CopyMatrix(temporary_matrix, matrix_list(II))
+       CALL DestructMatrix(temporary_matrix)
     END DO
 
     !! Cleanup
@@ -230,8 +230,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] communicator the communicator to gather on.
   SUBROUTINE BlockingDenseMatrixGather(matrix, matrix_list, communicator)
     !! Parameters
-    TYPE(Matrix_dr), INTENT(IN) :: matrix
-    TYPE(Matrix_dr), DIMENSION(:), INTENT(INOUT) :: matrix_list
+    TYPE(Matrix_ldr), INTENT(IN) :: matrix
+    TYPE(Matrix_ldr), DIMENSION(:), INTENT(INOUT) :: matrix_list
     INTEGER, INTENT(INOUT)           :: communicator
     !! Local Data
     TYPE(GatherHelper_t) :: helper
@@ -253,7 +253,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherDenseMatrixSizes(matrix, communicator, helper)
     !! Parameters
-    TYPE(Matrix_dr), INTENT(IN)    :: matrix
+    TYPE(Matrix_ldr), INTENT(IN)    :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
@@ -282,7 +282,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE GatherDenseMatrixAndListData(matrix,communicator,helper)
     !! Parameters
-    TYPE(Matrix_dr), INTENT(IN)      :: matrix
+    TYPE(Matrix_ldr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Temporary Values
@@ -319,8 +319,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE GatherDenseMatrixAndListCleanup(matrix, matrix_list, helper)
     !! Parameters
-    TYPE(Matrix_dr), INTENT(IN) :: matrix
-    TYPE(Matrix_dr), DIMENSION(:), INTENT(INOUT) :: matrix_list
+    TYPE(Matrix_ldr), INTENT(IN) :: matrix
+    TYPE(Matrix_ldr), DIMENSION(:), INTENT(INOUT) :: matrix_list
     TYPE(GatherHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: II
@@ -328,7 +328,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Unpack into the list
     DO II = 1, helper%comm_size
        !! Allocate Memory
-       CALL ConstructEmptyMatrixD(matrix_list(II), &
+       CALL ConstructEmptyMatrix(matrix_list(II), &
             & helper%matrix_data(3*(II-1)+2), helper%matrix_data(3*(II-1)+2))
 
        !! Copy Values

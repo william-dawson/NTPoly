@@ -2,9 +2,9 @@
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -28,18 +28,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PurificationExtrapolate(PreviousDensity, Overlap, nel, NewDensity,&
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: PreviousDensity, Overlap
+    TYPE(Matrix_ps), INTENT(IN)  :: PreviousDensity, Overlap
     INTEGER, INTENT(IN) :: nel
-    TYPE(Matrix_ds), INTENT(INOUT) :: NewDensity
+    TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: WorkingDensity
-    TYPE(Matrix_ds) :: WorkingOverlap
-    TYPE(Matrix_ds) :: AddBranch, SubtractBranch
-    TYPE(Matrix_ds) :: TempMat1, TempMat2
-    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ps) :: WorkingDensity
+    TYPE(Matrix_ps) :: WorkingOverlap
+    TYPE(Matrix_ps) :: AddBranch, SubtractBranch
+    TYPE(Matrix_ps) :: TempMat1, TempMat2
+    TYPE(Matrix_ps) :: Identity
     !! Local Variables
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     REAL(NTREAL) :: subtract_trace
@@ -47,7 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: norm_value
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter
     INTEGER :: total_iterations
 
@@ -207,19 +207,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE LowdinExtrapolate(PreviousDensity, OldOverlap, NewOverlap, &
        & NewDensity, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: PreviousDensity
-    TYPE(Matrix_ds), INTENT(IN)  :: OldOverlap
-    TYPE(Matrix_ds), INTENT(IN)  :: NewOverlap
-    TYPE(Matrix_ds), INTENT(INOUT) :: NewDensity
+    TYPE(Matrix_ps), INTENT(IN)  :: PreviousDensity
+    TYPE(Matrix_ps), INTENT(IN)  :: OldOverlap
+    TYPE(Matrix_ps), INTENT(IN)  :: NewOverlap
+    TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: SQRMat
-    TYPE(Matrix_ds) :: ISQMat
-    TYPE(Matrix_ds) :: TempMat
+    TYPE(Matrix_ps) :: SQRMat
+    TYPE(Matrix_ps) :: ISQMat
+    TYPE(Matrix_ps) :: TempMat
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN

@@ -1,10 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE MatrixSRAlgebraModule, ONLY : IncrementMatrixS
-  USE MatrixSRModule, ONLY : Matrix_sr, ConstructEmptyMatrixS, &
-       & DestructMatrixS
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX
+  USE MatrixSAlgebraModule, ONLY : IncrementMatrix
+  USE MatrixSModule, ONLY : Matrix_lsr, ConstructEmptyMatrix, DestructMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -63,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceSizes(matrix, communicator, helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)      :: matrix
+    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
@@ -86,9 +85,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndComposeData(matrix,communicator,gathered_matrix,helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)      :: matrix
+    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
-    TYPE(Matrix_sr), INTENT(INOUT)   :: gathered_matrix
+    TYPE(Matrix_lsr), INTENT(INOUT)   :: gathered_matrix
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: grid_error
@@ -132,8 +131,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndComposeCleanup(matrix, gathered_matrix, helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)      :: matrix
-    TYPE(Matrix_sr), INTENT(INOUT)   :: gathered_matrix
+    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
+    TYPE(Matrix_lsr), INTENT(INOUT)   :: gathered_matrix
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     INTEGER :: counter, inner_counter
@@ -158,7 +157,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndSumData(matrix,communicator,helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)      :: matrix
+    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
     INTEGER, INTENT(INOUT)              :: communicator
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
@@ -202,18 +201,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndSumCleanup(matrix,gathered_matrix, threshold, helper)
     !! Parameters
-    TYPE(Matrix_sr), INTENT(IN)      :: matrix
-    TYPE(Matrix_sr), INTENT(INOUT)   :: gathered_matrix
+    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
+    TYPE(Matrix_lsr), INTENT(INOUT)   :: gathered_matrix
     REAL(NTREAL), INTENT(IN) :: threshold
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
-    TYPE(Matrix_sr) :: temporary_matrix
+    TYPE(Matrix_lsr) :: temporary_matrix
     INTEGER :: counter
     INTEGER :: temporary_total_values
 
     !! Build Matrix Objects
-    CALL ConstructEmptyMatrixS(temporary_matrix,matrix%columns,matrix%rows)
-    CALL ConstructEmptyMatrixS(gathered_matrix,matrix%columns,matrix%rows)
+    CALL ConstructEmptyMatrix(temporary_matrix,matrix%columns,matrix%rows)
+    CALL ConstructEmptyMatrix(gathered_matrix,matrix%columns,matrix%rows)
 
     !! Sum
     DO counter = 1, helper%comm_size
@@ -229,16 +228,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temporary_matrix%outer_index = helper%outer_index_buffer(&
             & (matrix%columns+1)*(counter-1)+1:(matrix%columns+1)*(counter))
        IF (counter .EQ. helper%comm_size) THEN
-          CALL IncrementMatrixS(temporary_matrix,gathered_matrix,&
+          CALL IncrementMatrix(temporary_matrix,gathered_matrix,&
                & threshold_in=threshold)
        ELSE
-          CALL IncrementMatrixS(temporary_matrix,gathered_matrix,&
+          CALL IncrementMatrix(temporary_matrix,gathered_matrix,&
                & threshold_in=REAL(0.0,NTREAL))
        END IF
        DEALLOCATE(temporary_matrix%values)
        DEALLOCATE(temporary_matrix%inner_index)
     END DO
-    CALL DestructMatrixS(temporary_matrix)
+    CALL DestructMatrix(temporary_matrix)
     DEALLOCATE(helper%value_buffer)
     DEALLOCATE(helper%inner_index_buffer)
     DEALLOCATE(helper%outer_index_buffer)

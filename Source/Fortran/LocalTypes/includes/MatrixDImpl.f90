@@ -1,30 +1,9 @@
-  IMPLICIT NONE
-  PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A datatype for storing a dense matrix.
-  TYPE, PUBLIC :: DMTYPE
-     DATATYPE, DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix
-     INTEGER :: rows !< Matrix dimension: rows
-     INTEGER :: columns !< Matrix dimension: columns
-  END TYPE DMTYPE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructEmptyMatrixD
-  PUBLIC :: ConstructMatrixDFromS
-  PUBLIC :: ConstructMatrixSFromD
-  PUBLIC :: CopyMatrixD
-  PUBLIC :: DestructMatrixD
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: SplitMatrixD
-  PUBLIC :: ComposeMatrixD
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: EigenDecompositionD
-  PUBLIC :: MatrixDNorm
-  PUBLIC :: IncrementMatrixD
-  PUBLIC :: MultiplyMatrixD
-  PUBLIC :: TransposeMatrixD
-CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
-  PURE SUBROUTINE ConstructEmptyMatrixD(this, columns, rows)
+  !! @param[inout] this the matrix to construct.
+  !! @param[in] columns of the matrix.
+  !! @parma[in] rows of the matrix
+  PURE SUBROUTINE ConstructEmptyMatrix(this, columns, rows)
     !! Parameters
     TYPE(DMTYPE), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: rows
@@ -36,14 +15,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Check if the memory is already useful
     IF (ALLOCATED(this%data)) THEN
        IF (SIZE(this%data,1) .NE. rows .OR. SIZE(this%data,2) .NE. columns) THEN
-          CALL DestructMatrixD(this)
+          CALL DestructMatrix(this)
           ALLOCATE(this%data(rows,columns))
        END IF
     ELSE
        ALLOCATE(this%data(rows,columns))
     END IF
 
-  END SUBROUTINE ConstructEmptyMatrixD
+  END SUBROUTINE ConstructEmptyMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   !! @param[in] sparse_matrix a sparse matrix to convert.
@@ -58,7 +37,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: total_counter
     TYPE(TTYPE) :: temporary
 
-    CALL ConstructEmptyMatrixD(dense_matrix,sparse_matrix%columns, &
+    CALL ConstructEmptyMatrix(dense_matrix,sparse_matrix%columns, &
          & sparse_matrix%rows)
 
     !! Loop over elements.
@@ -124,37 +103,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END IF
 
-    CALL ConstructFromTripletList(sparse_matrix, temporary_list, rows, columns)
+    CALL ConstructMatrixFromTripletList(sparse_matrix, temporary_list, rows, &
+         & columns)
   END SUBROUTINE ConstructMatrixSFromD
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy the matrix A into the B.
   !! @param[in] matA the matrix to copy.
   !! @param[inout] matB = matA
-  PURE SUBROUTINE CopyMatrixD(matA, matB)
+  PURE SUBROUTINE CopyMatrix(matA, matB)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: matA
     TYPE(DMTYPE), INTENT(INOUT) :: matB
 
-    CALL ConstructEmptyMatrixD(matB,matA%columns,matA%rows)
+    CALL ConstructEmptyMatrix(matB,matA%columns,matA%rows)
     matB%data = matA%data
-  END SUBROUTINE CopyMatrixD
+  END SUBROUTINE CopyMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deallocate the memory associated with this matrix.
   !! @param[inout] this the matrix to delete.
-  PURE SUBROUTINE DestructMatrixD(this)
+  PURE SUBROUTINE DestructMatrix(this)
     !! Parameters
     TYPE(DMTYPE), INTENT(INOUT) :: this
 
     IF (ALLOCATED(this%data)) THEN
        DEALLOCATE(this%data)
     END IF
-  END SUBROUTINE DestructMatrixD
+  END SUBROUTINE DestructMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
   !! @param[in] MatA the first matrix.
   !! @param[in] MatB the second matrix.
   !! @param[inout] MatC = MatA*MatB.
-  SUBROUTINE MultiplyMatrixD(MatA,MatB,MatC)
+  SUBROUTINE MultiplyMatrix(MatA,MatB,MatC)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: MatA
     TYPE(DMTYPE), INTENT(IN) :: MatB
@@ -184,13 +164,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
          & LDB, BETA, MatC%data, LDC)
 
-  END SUBROUTINE MultiplyMatrixD
+  END SUBROUTINE MultiplyMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> AXPY for dense matrices. B = B + alpha*A
   !! @param[in] MatA is added
   !! @param[inout] MatB is incremented.
   !! @param[in] alpha_in a scaling parameter (optional).
-  PURE SUBROUTINE IncrementMatrixD(MatA,MatB,alpha_in)
+  PURE SUBROUTINE IncrementMatrix(MatA,MatB,alpha_in)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: MatA
     TYPE(DMTYPE), INTENT(INOUT) :: MatB
@@ -206,14 +186,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     MatB%data = MatB%data + alpha*MatA%data
-  END SUBROUTINE IncrementMatrixD
+  END SUBROUTINE IncrementMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
   !! Wraps a standard dense linear algebra routine.
   !! @param[in] MatA the matrix to decompose.
   !! @param[out] MatV the eigenvectors.
   !! @param[out] MatV the eigenvalues.
-  SUBROUTINE EigenDecompositionD(MatA, MatV, MatW)
+  SUBROUTINE EigenDecomposition(MatA, MatV, MatW)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: MatA
     TYPE(DMTYPE), INTENT(INOUT) :: MatV
@@ -231,7 +211,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: INFO
     INTEGER :: II
 
-    CALL ConstructEmptyMatrixD(MatV,MatA%columns,MatA%rows)
+    CALL ConstructEmptyMatrix(MatV,MatA%columns,MatA%rows)
     MatV%data = MatA%data
 
     N = SIZE(MatA%data,DIM=1)
@@ -256,7 +236,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-      CALL ConstructEmptyMatrixD(MatW,1,MatA%rows)
+      CALL ConstructEmptyMatrix(MatW,1,MatA%rows)
       DO II = 1, N
         MatW%data(II,1) = W(II)
       END DO
@@ -266,13 +246,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(W)
     DEALLOCATE(Work)
 
-  END SUBROUTINE EigenDecompositionD
+  END SUBROUTINE EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a dense matrix.
   !! Computes the Frobenius norm.
   !! @param[in] this the matrix to compute the norm of.
   !! @result the norm of the matrix.
-  FUNCTION MatrixDNorm(this) RESULT(norm)
+  FUNCTION MatrixNorm(this) RESULT(norm)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: this
     REAL(NTREAL) :: norm
@@ -287,19 +267,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     N = this%columns
     LDA = this%rows
     norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
-  END FUNCTION MatrixDNorm
+  END FUNCTION MatrixNorm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.
   !! @param[in] matA the matrix to transpose.
   !! @param[inout] matAT = matA^T.
-  PURE SUBROUTINE TransposeMatrixD(matA, matAT)
+  PURE SUBROUTINE TransposeMatrix(matA, matAT)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: matA
     TYPE(DMTYPE), INTENT(INOUT) :: matAT
 
-    CALL ConstructEmptyMatrixD(matAT,matA%rows,matA%columns)
+    CALL ConstructEmptyMatrix(matAT,matA%rows,matA%columns)
     matAT%data = TRANSPOSE(matA%data)
-  END SUBROUTINE TransposeMatrixD
+  END SUBROUTINE TransposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
   !! to another.
@@ -307,7 +287,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] block_rows the number of rows of the array of blocks.
   !! @param[in] block_columns the number of columns of the array of blocks.
   !! @param[out] out_matrix the composed matrix.
-  PURE SUBROUTINE ComposeMatrixD(mat_array, block_rows, block_columns, &
+  PURE SUBROUTINE ComposeMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
     TYPE(DMTYPE), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
@@ -336,7 +316,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Allocate Memory
-    CALL ConstructEmptyMatrixD(out_matrix, out_columns, out_rows)
+    CALL ConstructEmptyMatrix(out_matrix, out_columns, out_rows)
 
     DO JJ = 1, block_columns
        DO II = 1, block_rows
@@ -345,7 +325,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & mat_array(II,JJ)%data
        END DO
     END DO
-  END SUBROUTINE ComposeMatrixD
+  END SUBROUTINE ComposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
   !! @param[in] this the matrix to split.
@@ -354,7 +334,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
   !! @param[in] block_size_row_in specifies the size of the  rows.
   !! @param[in] block_size_column_in specifies the size of the columns.
-  PURE SUBROUTINE SplitMatrixD(this, block_rows, block_columns, &
+  PURE SUBROUTINE SplitMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(DMTYPE), INTENT(IN) :: this
@@ -401,7 +381,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Copy
     DO JJ = 1, block_columns
        DO II = 1, block_rows
-          CALL ConstructEmptyMatrixD(split_array(II,JJ), &
+          CALL ConstructEmptyMatrix(split_array(II,JJ), &
                & block_size_column(JJ), block_size_row(II))
           split_array(II,JJ)%data = &
                & this%data(row_offsets(II):row_offsets(II+1)-1, &
@@ -409,4 +389,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END DO
 
-  END SUBROUTINE SplitMatrixD
+  END SUBROUTINE SplitMatrix

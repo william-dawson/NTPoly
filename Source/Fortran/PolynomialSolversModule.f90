@@ -2,9 +2,9 @@
 !> A Module For Computing General Matrix Polynomials.
 MODULE PolynomialSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -69,19 +69,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HornerCompute(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(Polynomial_t), INTENT(in) :: poly
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: BalancedInput
-    TYPE(Matrix_ds) :: Temporary
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: BalancedInput
+    TYPE(Matrix_ps) :: Temporary
     INTEGER :: degree
     INTEGER :: counter
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(MatrixMemoryPool_p) :: pool
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -157,24 +157,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PatersonStockmeyerCompute(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: InputMat
-    TYPE(Matrix_ds), INTENT(inout) :: OutputMat
+    TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(Polynomial_t), INTENT(in) :: poly
     TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Variables
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds), DIMENSION(:), ALLOCATABLE :: x_powers
-    TYPE(Matrix_ds) :: Bk
-    TYPE(Matrix_ds) :: Xs
-    TYPE(Matrix_ds) :: Temp
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps), DIMENSION(:), ALLOCATABLE :: x_powers
+    TYPE(Matrix_ps) :: Bk
+    TYPE(Matrix_ps) :: Xs
+    TYPE(Matrix_ps) :: Temp
     INTEGER :: degree
     INTEGER :: m_value, s_value, r_value
     INTEGER :: k_value
     INTEGER :: counter
     INTEGER :: c_index
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(MatrixMemoryPool_p) :: pool
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN

@@ -2,14 +2,13 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoggingModule
-  USE TripletListRModule
-  USE TripletRModule
-  USE TripletCModule
+  USE TripletListModule
+  USE TripletModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -24,7 +23,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] max_value an uppder bound on the eigenspectrum.
   SUBROUTINE GershgorinBounds(this,min_value,max_value)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: min_value, max_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
@@ -86,20 +85,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] solver_parameters_in solver parameters (optional).
   SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: max_value
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Data
-    TYPE(Matrix_ds) :: vector, vector2, TempMat
+    TYPE(Matrix_ps) :: vector, vector2, TempMat
     REAL(NTREAL) :: scale_value
     REAL(NTREAL) :: norm_value
     TYPE(TripletList_r) :: temp_list
     TYPE(Triplet_r) :: temp_triplet
     INTEGER :: outer_counter
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(MatrixMemoryPool_p) :: pool
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN

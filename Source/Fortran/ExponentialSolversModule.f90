@@ -3,9 +3,9 @@
 MODULE ExponentialSolversModule
   USE ChebyshevSolversModule
   USE DataTypesModule
-  USE MatrixDSAlgebraModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSModule
+  USE MatrixPSAlgebraModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE IterativeSolversModule
@@ -33,17 +33,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponential(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(FixedSolverParameters_t) :: sub_solver_parameters
     TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(MatrixMemoryPool_p) :: pool
     !! For Chebyshev Expansion
     TYPE(ChebyshevPolynomial_t) :: polynomial
     !! Local Variables
@@ -166,21 +166,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponentialPade(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     TYPE(IterativeSolverParameters_t) :: sub_solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: IdentityMat
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: B1, B2, B3
-    TYPE(Matrix_ds) :: P1, P2
-    TYPE(Matrix_ds) :: LeftMat, RightMat
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: IdentityMat
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: B1, B2, B3
+    TYPE(Matrix_ps) :: P1, P2
+    TYPE(Matrix_ps) :: LeftMat, RightMat
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     REAL(NTREAL) :: spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -297,18 +297,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponentialTaylor(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: Ak
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: Ak
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     REAL(NTREAL) :: spectral_radius
     REAL(NTREAL) :: sigma_val
@@ -397,15 +397,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithm(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: IdentityMat
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: IdentityMat
     !! For Chebyshev Expansion
     TYPE(ChebyshevPolynomial_t) :: polynomial
     !! Local Variables
@@ -553,18 +553,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithmTaylor(InputMat, OutputMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: InputMat
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutputMat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(FixedSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: ScaledMat
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: Ak
-    TYPE(Matrix_ds) :: IdentityMat
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: ScaledMat
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: Ak
+    TYPE(Matrix_ps) :: IdentityMat
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     TYPE(IterativeSolverParameters_t) :: sub_solver_parameters
     REAL(NTREAL) :: e_min, e_max, spectral_radius

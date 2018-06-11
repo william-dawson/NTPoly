@@ -2,9 +2,9 @@
 !> A Module For Computing The Matrix Sign Function.
 MODULE SignSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -23,8 +23,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in optional parameters for the routine.
   SUBROUTINE SignFunction(Mat1, SignMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: Mat1
-    TYPE(Matrix_ds), INTENT(INOUT) :: SignMat
+    TYPE(Matrix_ps), INTENT(IN) :: Mat1
+    TYPE(Matrix_ps), INTENT(INOUT) :: SignMat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
@@ -59,14 +59,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in optional parameters for the routine.
   SUBROUTINE PolarDecomposition(Mat1, Umat, Hmat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: Mat1
-    TYPE(Matrix_ds), INTENT(INOUT) :: Umat
-    TYPE(Matrix_ds), INTENT(INOUT), OPTIONAL :: Hmat
+    TYPE(Matrix_ps), INTENT(IN) :: Mat1
+    TYPE(Matrix_ps), INTENT(INOUT) :: Umat
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: Hmat
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
-    TYPE(Matrix_ds) :: UmatT
+    TYPE(Matrix_ps) :: UmatT
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -101,16 +101,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! polar decomposition.
   SUBROUTINE CoreComputation(Mat1, OutMat, solver_parameters, needs_transpose)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: Mat1
-    TYPE(Matrix_ds), INTENT(INOUT) :: OutMat
+    TYPE(Matrix_ps), INTENT(IN) :: Mat1
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
     LOGICAL, INTENT(IN) :: needs_transpose
     !! Local Matrices
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: Temp1
-    TYPE(Matrix_ds) :: Temp2
-    TYPE(Matrix_ds) :: OutMatT
-    TYPE(MatrixMemoryPool_d) :: pool
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: Temp1
+    TYPE(Matrix_ps) :: Temp2
+    TYPE(Matrix_ps) :: OutMatT
+    TYPE(MatrixMemoryPool_p) :: pool
     !! Local Data
     REAL(NTREAL), PARAMETER :: alpha = 1.69770248526
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0

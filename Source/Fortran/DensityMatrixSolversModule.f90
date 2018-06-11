@@ -2,9 +2,9 @@
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
@@ -31,10 +31,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: Hamiltonian
-    TYPE(Matrix_ds), INTENT(IN) :: InverseSquareRoot
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(Matrix_ds), INTENT(INOUT) :: Density
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
@@ -42,9 +42,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: WorkingHamiltonian
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: X_k, X_k2, TempMat
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: X_k, X_k2, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
@@ -54,7 +54,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
 
@@ -238,10 +238,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: Hamiltonian
-    TYPE(Matrix_ds), INTENT(IN) :: InverseSquareRoot
+    TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(Matrix_ds), INTENT(INOUT) :: Density
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -250,9 +250,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: WorkingHamiltonian
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: X_k, X_k2, Fx_right, GX_right, TempMat
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: X_k, X_k2, Fx_right, GX_right, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
@@ -262,7 +262,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     REAL(NTREAL) :: tempfx,tempgx
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
     REAL(NTREAL) :: trace_fx, trace_gx
@@ -475,9 +475,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
+    TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(Matrix_ds), INTENT(INOUT) :: Density
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -486,10 +486,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: WorkingHamiltonian
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: D1, DH, DDH, D2DH
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: D1, DH, DDH, D2DH
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: beta_1, beta_2
@@ -503,7 +503,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
     INTEGER :: matrix_dimension
@@ -709,10 +709,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: Hamiltonian
-    TYPE(Matrix_ds), INTENT(IN) :: InverseSquareRoot
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(Matrix_ds), INTENT(INOUT) :: Density
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -721,10 +721,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
-    TYPE(Matrix_ds) :: WorkingHamiltonian
-    TYPE(Matrix_ds) :: TempMat
-    TYPE(Matrix_ds) :: Identity
-    TYPE(Matrix_ds) :: D1, DH, DDH, D2DH
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: D1, DH, DDH, D2DH
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: beta_1, beta_2
@@ -741,7 +741,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter, inner_counter
     INTEGER :: total_iterations
     INTEGER :: matrix_dimension

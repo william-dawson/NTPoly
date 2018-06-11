@@ -1,6 +1,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Performing Distributed Sparse Matrix Operations.
-MODULE MatrixDSModule
+MODULE MatrixPSModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE LoggingModule, ONLY : &
        & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
@@ -12,14 +12,12 @@ MODULE MatrixDSModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
        & SplitProcessGrid, CopyProcessGrid
-  USE MatrixSRModule, ONLY : Matrix_sr, &
-       & ConstructMatrixSFromTripletList, DestructMatrixS, &
-       & CopyMatrixS, ConstructZeroMatrixS, &
-       & TransposeMatrixS, ComposeMatrixS, PrintMatrixS, &
-       & MatrixSToTripletList, SplitMatrixS
+  USE MatrixSModule, ONLY : Matrix_lsr, ConstructMatrixFromTripletList, &
+       & DestructMatrix, CopyMatrix, ConstructZeroMatrix, TransposeMatrix, &
+       & ComposeMatrix, PrintMatrix, MatrixToTripletList, SplitMatrix
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletRModule, ONLY : Triplet_r, GetMPITripletType
-  USE TripletListRModule, ONLY : TripletList_r, ConstructTripletList, &
+  USE TripletModule, ONLY : Triplet_r, GetMPITripletType_r
+  USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
        & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
        & ShiftTripletList
@@ -29,14 +27,14 @@ MODULE MatrixDSModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for a distributed blocked CSR matrix.
-  TYPE, PUBLIC :: Matrix_ds
+  TYPE, PUBLIC :: Matrix_ps
      !> Number of matrix rows/columns for full matrix, scaled for process grid.
      INTEGER :: logical_matrix_dimension
      !> Number of matrix rows/columns for the full matrix, unscaled.
      INTEGER :: actual_matrix_dimension
      !! Local Storage
      !> A 2D array of local CSR matrices.
-     TYPE(Matrix_sr), DIMENSION(:,:), ALLOCATABLE :: local_data
+     TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: local_data
      INTEGER :: start_column !< first column stored locally.
      INTEGER :: end_column !< last column stored locally  is less than this.
      INTEGER :: start_row !< first row stored locally.
@@ -44,7 +42,7 @@ MODULE MatrixDSModule
      INTEGER :: local_columns !< number of local columns.
      INTEGER :: local_rows !< number of local rows.
      TYPE(ProcessGrid_t) :: process_grid !< process grid to operate on
-  END TYPE Matrix_ds
+  END TYPE Matrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Constructors/Destructors
   PUBLIC :: ConstructEmptyMatrixDS
@@ -83,11 +81,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructEmptyMatrixDS(this, matrix_dim_, &
        & process_grid_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     INTEGER, INTENT(IN)           :: matrix_dim_
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !! Local Variables
-    TYPE(Matrix_sr) :: zeromatrix
+    TYPE(Matrix_lsr) :: zeromatrix
 
     CALL DestructMatrixDS(this)
 
@@ -117,24 +115,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Build local storage
     ALLOCATE(this%local_data(this%process_grid%number_of_blocks_rows, &
          & this%process_grid%number_of_blocks_columns))
-    CALL ConstructZeroMatrixS(zeromatrix, this%local_rows, &
+    CALL ConstructZeroMatrix(zeromatrix, this%local_rows, &
          & this%local_columns)
     CALL SplitToLocalBlocks(this, zeromatrix)
-    CALL DestructMatrixS(zeromatrix)
+    CALL DestructMatrix(zeromatrix)
   END SUBROUTINE ConstructEmptyMatrixDS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix.
   !! @param[inout] this the matrix to destruct.
   PURE SUBROUTINE DestructMatrixDS(this)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     INTEGER :: II, JJ
 
     IF (ALLOCATED(this%local_data)) THEN
        DO JJ = 1, this%process_grid%number_of_blocks_columns
           DO II = 1, this%process_grid%number_of_blocks_rows
-             CALL DestructMatrixS(this%local_data(II,JJ))
+             CALL DestructMatrix(this%local_data(II,JJ))
           END DO
        END DO
        DEALLOCATE(this%local_data)
@@ -146,8 +144,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matB = matA
   PURE SUBROUTINE CopyMatrixDS(matA, matB)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)    :: matA
-    TYPE(Matrix_ds), INTENT(INOUT) :: matB
+    TYPE(Matrix_ps), INTENT(IN)    :: matA
+    TYPE(Matrix_ps), INTENT(INOUT) :: matB
 
     CALL DestructMatrixDS(matB)
     matB = matA
@@ -159,7 +157,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to read.
   SUBROUTINE ConstructFromMatrixMarket(this, file_name)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
@@ -342,7 +340,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to read.
   SUBROUTINE ConstructFromBinary(this, file_name)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! File Handles
     INTEGER :: mpi_file_handler
@@ -405,7 +403,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructTripletList(triplet_list,local_triplets)
 
     !! Do The Actual Reading
-    triplet_mpi_type = GetMPITripletType()
+    triplet_mpi_type = GetMPITripletType_r()
     CALL MPI_File_set_view(mpi_file_handler,local_offset,triplet_mpi_type,&
          & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
     CALL MPI_File_read_all(mpi_file_handler,triplet_list%data,local_triplets,&
@@ -425,7 +423,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to write to.
   SUBROUTINE WriteToBinary(this,file_name)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
@@ -444,7 +442,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER(KIND=MPI_OFFSET_KIND) :: zero_offset = 0
     INTEGER :: counter
-    TYPE(Matrix_sr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -470,9 +468,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Write The File
     IF (this%process_grid%between_slice_rank .EQ. 0) THEN
        !! Create Special MPI Type
-       triplet_mpi_type = GetMPITripletType()
+       triplet_mpi_type = GetMPITripletType_r()
 
-       CALL MatrixSToTripletList(merged_local_data, triplet_list)
+       CALL MatrixToTripletList(merged_local_data, triplet_list)
        !! Absolute Positions
        CALL ShiftTripletList(triplet_list, this%start_row - 1, &
             & this%start_column - 1)
@@ -500,7 +498,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     DEALLOCATE(local_values_buffer)
     CALL MPI_Barrier(this%process_grid%global_comm,ierr)
-    CALL DestructMatrixS(merged_local_data)
+    CALL DestructMatrix(merged_local_data)
   END SUBROUTINE WriteToBinary
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write a distributed sparse matrix to a matrix market file.
@@ -509,7 +507,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name name of the file to write to.
   SUBROUTINE WriteToMatrixMarket(this,file_name)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
     !! Local MPI Variables
@@ -536,7 +534,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: temp_length
     INTEGER :: bytes_per_character
     CHARACTER(len=1) :: temp_char
-    TYPE(Matrix_sr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -562,7 +560,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     header_size = LEN(header_line1) + LEN(header_line2)
 
     !! Local Data
-    CALL MatrixSToTripletList(merged_local_data, triplet_list)
+    CALL MatrixToTripletList(merged_local_data, triplet_list)
 
     !! Absolute Positions
     CALL ShiftTripletList(triplet_list, this%start_row - 1, &
@@ -643,14 +641,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! slices set this to true (optional, default=False).
   SUBROUTINE FillFromTripletList(this,triplet_list,preduplicated_in)
     !! Parameters
-    TYPE(Matrix_ds) :: this
+    TYPE(Matrix_ps) :: this
     TYPE(TripletList_r) :: triplet_list
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !! Local Data
     TYPE(Permutation_t) :: basic_permutation
     TYPE(TripletList_r) :: sorted_triplet_list
-    TYPE(Matrix_sr) :: local_matrix
-    TYPE(Matrix_sr) :: gathered_matrix
+    TYPE(Matrix_lsr) :: local_matrix
+    TYPE(Matrix_lsr) :: gathered_matrix
     TYPE(ReduceHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0
     LOGICAL :: preduplicated
@@ -671,7 +669,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & sorted_triplet_list)
 
     !! Now we can just construct a local matrix.
-    CALL ConstructMatrixSFromTripletList(local_matrix,sorted_triplet_list, &
+    CALL ConstructMatrixFromTripletList(local_matrix,sorted_triplet_list, &
          & this%local_rows, this%local_columns)
     !! And reduce over the Z dimension. This can be accomplished by
     !! summing up.
@@ -696,7 +694,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL StopTimer("FillFromTriplet")
 
-    CALL DestructMatrixS(local_matrix)
+    CALL DestructMatrix(local_matrix)
     CALL DestructTripletList(sorted_triplet_list)
   END SUBROUTINE FillFromTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -704,14 +702,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the matrix being filled.
   SUBROUTINE FillDistributedIdentity(this)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
     TYPE(TripletList_r) :: unsorted_triplet_list
     TYPE(TripletList_r) :: sorted_triplet_list
     INTEGER :: i, j
     INTEGER :: total_values
-    TYPE(Matrix_sr) :: local_matrix
+    TYPE(Matrix_lsr) :: local_matrix
 
     !! There can't be more than one entry per row
     CALL ConstructTripletList(triplet_list,this%local_rows)
@@ -735,12 +733,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     unsorted_triplet_list%data = triplet_list%data(:total_values)
     CALL SortTripletList(unsorted_triplet_list,this%local_columns,&
          & this%local_rows, sorted_triplet_list)
-    CALL ConstructMatrixSFromTripletList(local_matrix,sorted_triplet_list, &
+    CALL ConstructMatrixFromTripletList(local_matrix,sorted_triplet_list, &
          & this%local_rows,this%local_columns)
 
     CALL SplitToLocalBlocks(this, local_matrix)
 
-    CALL DestructMatrixS(local_matrix)
+    CALL DestructMatrix(local_matrix)
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(unsorted_triplet_list)
     CALL DestructTripletList(sorted_triplet_list)
@@ -754,7 +752,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillDistributedPermutation(this, permutation_vector, &
        & permuterows)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     INTEGER, DIMENSION(:), INTENT(IN) :: permutation_vector
     LOGICAL, OPTIONAL, INTENT(IN) :: permuterows
     !! Local Data
@@ -765,7 +763,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: total_values
     INTEGER :: counter
     INTEGER :: local_row, local_column
-    TYPE(Matrix_sr) :: local_matrix
+    TYPE(Matrix_lsr) :: local_matrix
 
     !! Figure out what type of permutation
     IF (PRESENT(permuterows) .AND. permuterows .EQV. .FALSE.) THEN
@@ -809,12 +807,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     unsorted_triplet_list%data = triplet_list%data(:total_values)
     CALL SortTripletList(unsorted_triplet_list, this%local_columns, &
          & this%local_rows, sorted_triplet_list)
-    CALL ConstructMatrixSFromTripletList(local_matrix,sorted_triplet_list, &
+    CALL ConstructMatrixFromTripletList(local_matrix,sorted_triplet_list, &
          & this%local_rows,this%local_columns)
 
     CALL SplitToLocalBlocks(this, local_matrix)
 
-    CALL DestructMatrixS(local_matrix)
+    CALL DestructMatrix(local_matrix)
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(unsorted_triplet_list)
     CALL DestructTripletList(sorted_triplet_list)
@@ -826,15 +824,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] triplet_list the list to fill.
   PURE SUBROUTINE GetTripletList(this, triplet_list)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
     !! Local Data
-    TYPE(Matrix_sr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_data
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
 
-    CALL MatrixSToTripletList(merged_local_data, triplet_list)
+    CALL MatrixToTripletList(merged_local_data, triplet_list)
     CALL ShiftTripletList(triplet_list, this%start_row - 1, &
          & this%start_column - 1)
   END SUBROUTINE GetTripletList
@@ -852,12 +850,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE GetMatrixBlock(this, triplet_list, start_row, end_row, &
        & start_column, end_column)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
     INTEGER :: start_row, end_row
     INTEGER :: start_column, end_column
     !! Local Data
-    TYPE(Matrix_sr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_data
     TYPE(TripletList_r) :: local_triplet_list
     INTEGER, DIMENSION(:), ALLOCATABLE :: row_start_list
     INTEGER, DIMENSION(:), ALLOCATABLE :: column_start_list
@@ -882,7 +880,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
-    CALL MatrixSToTripletList(merged_local_data, local_triplet_list)
+    CALL MatrixToTripletList(merged_local_data, local_triplet_list)
 
     !! Share the start row/column information across processes
     ALLOCATE(row_start_list(this%process_grid%slice_size))
@@ -1012,7 +1010,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result dimension of the matrix;
   PURE FUNCTION GetActualDimension(this) RESULT(DIMENSION)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     INTEGER :: DIMENSION
     DIMENSION = this%actual_matrix_dimension
   END FUNCTION GetActualDimension
@@ -1023,7 +1021,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result dimension of the matrix;
   PURE FUNCTION GetLogicalDimension(this) RESULT(DIMENSION)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     INTEGER :: DIMENSION
     DIMENSION = this%logical_matrix_dimension
   END FUNCTION GetLogicalDimension
@@ -1033,7 +1031,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to print information about.
   SUBROUTINE PrintMatrixInformation(this)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     INTEGER :: min_size, max_size
     REAL(NTREAL) :: sparsity
 
@@ -1057,25 +1055,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] file_name_in optionally, you can pass a file to print to.
   SUBROUTINE PrintMatrixDS(this, file_name_in)
     !! Parameters
-    TYPE(Matrix_ds) :: this
+    TYPE(Matrix_ps) :: this
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Helpers For Communication
     TYPE(ReduceHelper_t) :: row_helper
     TYPE(ReduceHelper_t) :: column_helper
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     !! Temporary Variables
-    TYPE(Matrix_sr) :: merged_local_data
-    TYPE(Matrix_sr) :: merged_local_dataT
-    TYPE(Matrix_sr) :: merged_columns
-    TYPE(Matrix_sr) :: merged_columnsT
-    TYPE(Matrix_sr) :: full_gathered
+    TYPE(Matrix_lsr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_dataT
+    TYPE(Matrix_lsr) :: merged_columns
+    TYPE(Matrix_lsr) :: merged_columnsT
+    TYPE(Matrix_lsr) :: full_gathered
     INTEGER :: ierr
 
     !! Merge all the local data
     CALL MergeLocalBlocks(this, merged_local_data)
 
     !! Merge Columns
-    CALL TransposeMatrixS(merged_local_data, merged_local_dataT)
+    CALL TransposeMatrix(merged_local_data, merged_local_dataT)
     CALL ReduceSizes(merged_local_dataT, this%process_grid%column_comm, &
          & column_helper)
     CALL MPI_Wait(column_helper%size_request ,mpi_status,ierr)
@@ -1089,7 +1087,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & column_helper)
 
     !! Merge Rows
-    CALL TransposeMatrixS(merged_columns,merged_columnsT)
+    CALL TransposeMatrix(merged_columns,merged_columnsT)
     CALL ReduceSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
     CALL MPI_Wait(row_helper%size_request,mpi_status,ierr)
     CALL ReduceAndComposeData(merged_columnsT, this%process_grid%row_comm, &
@@ -1105,16 +1103,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (IsRoot(this%process_grid)) THEN
        IF (PRESENT(file_name_in)) THEN
-          CALL PrintMatrixS(full_gathered, file_name_in)
+          CALL PrintMatrix(full_gathered, file_name_in)
        ELSE
-          CALL PrintMatrixS(full_gathered)
+          CALL PrintMatrix(full_gathered)
        END IF
     END IF
 
-    CALL DestructMatrixS(merged_local_data)
-    CALL DestructMatrixS(merged_local_dataT)
-    CALL DestructMatrixS(merged_columns)
-    CALL DestructMatrixS(merged_columnsT)
+    CALL DestructMatrix(merged_local_data)
+    CALL DestructMatrix(merged_local_dataT)
+    CALL DestructMatrix(merged_columns)
+    CALL DestructMatrix(merged_columnsT)
   END SUBROUTINE PrintMatrixDS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A utility routine that filters a sparse matrix.
@@ -1123,7 +1121,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold (absolute) values below this are filtered
   SUBROUTINE FilterMatrixDS(this, threshold)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
@@ -1154,13 +1152,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the number of non-zero entries in the matrix.
   FUNCTION GetSize(this) RESULT(total_size)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     INTEGER(c_long) :: total_size
     !! Local Data
     !integer :: local_size
     REAL(NTREAL) :: local_size
     REAL(NTREAL) :: temp_size
-    TYPE(Matrix_sr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -1172,7 +1170,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     total_size = INT(temp_size,kind=c_long)
 
-    CALL DestructMatrixS(merged_local_data)
+    CALL DestructMatrix(merged_local_data)
   END FUNCTION GetSize
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get a measure of how load balanced this matrix is. For each process, the
@@ -1183,12 +1181,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] max_size the maximum entries contained on a single process.
   SUBROUTINE GetLoadBalance(this, min_size, max_size)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     INTEGER, INTENT(OUT) :: min_size
     INTEGER, INTENT(OUT) :: max_size
     !! Local Data
     INTEGER :: local_size
-    TYPE(Matrix_sr) :: merged_local_data
+    TYPE(Matrix_lsr) :: merged_local_data
     INTEGER :: ierr
 
     !! Merge all the local data
@@ -1200,7 +1198,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(local_size,min_size,1,MPI_INT,MPI_MIN,&
          & this%process_grid%within_slice_comm, ierr)
 
-    CALL DestructMatrixS(merged_local_data)
+    CALL DestructMatrix(merged_local_data)
   END SUBROUTINE GetLoadBalance
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix.
@@ -1208,8 +1206,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] TransMat A^T
   SUBROUTINE TransposeMatrixDS(AMat, TransMat)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: AMat
-    TYPE(Matrix_ds), INTENT(OUT) :: TransMat
+    TYPE(Matrix_ps), INTENT(IN) :: AMat
+    TYPE(Matrix_ps), INTENT(OUT) :: TransMat
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
     TYPE(TripletList_r) :: new_list
@@ -1245,8 +1243,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE CommSplitMatrixDS(this, split_mat, my_color, &
        & split_slice)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_ds), INTENT(INOUT) :: split_mat
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: split_mat
     INTEGER, INTENT(OUT) :: my_color
     LOGICAL, INTENT(OUT) :: split_slice
     !! For Grid Splitting
@@ -1337,7 +1335,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE RedistributeData(this,index_lookup,reverse_index_lookup,&
        & initial_triplet_list,sorted_triplet_list)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     INTEGER, DIMENSION(:), INTENT(IN) :: index_lookup
     INTEGER, DIMENSION(:), INTENT(IN) :: reverse_index_lookup
     TYPE(TripletList_r), INTENT(IN) :: initial_triplet_list
@@ -1425,7 +1423,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE FUNCTION CalculateScaledDimension(this, matrix_dim) &
        & RESULT(scaled_dim)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     INTEGER, INTENT(IN) :: matrix_dim
     INTEGER :: scaled_dim
     !! Local Data
@@ -1450,10 +1448,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matrix_to_split the matrix to split up.
   SUBROUTINE SplitToLocalBlocks(this, matrix_to_split)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(INOUT) :: this
-    TYPE(Matrix_sr), INTENT(IN) :: matrix_to_split
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_lsr), INTENT(IN) :: matrix_to_split
 
-    CALL SplitMatrixS(matrix_to_split, &
+    CALL SplitMatrix(matrix_to_split, &
          & this%process_grid%number_of_blocks_rows, &
          & this%process_grid%number_of_blocks_columns, this%local_data)
 
@@ -1464,12 +1462,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] merged_matrix the merged matrix.
   PURE SUBROUTINE MergeLocalBlocks(this, merged_matrix)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN) :: this
-    TYPE(Matrix_sr), INTENT(INOUT) :: merged_matrix
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_lsr), INTENT(INOUT) :: merged_matrix
 
-    CALL ComposeMatrixS(this%local_data, &
+    CALL ComposeMatrix(this%local_data, &
          & this%process_grid%number_of_blocks_rows, &
          & this%process_grid%number_of_blocks_columns, merged_matrix)
 
   END SUBROUTINE MergeLocalBlocks
-END MODULE MatrixDSModule
+END MODULE MatrixPSModule

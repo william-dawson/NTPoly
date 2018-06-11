@@ -2,9 +2,9 @@
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -24,8 +24,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE Invert(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: Mat1
-    TYPE(Matrix_ds), INTENT(inout) :: InverseMat
+    TYPE(Matrix_ps), INTENT(in)  :: Mat1
+    TYPE(Matrix_ps), INTENT(inout) :: InverseMat
     TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
@@ -34,12 +34,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
-    TYPE(Matrix_ds) :: Temp1,Temp2,Identity
-    TYPE(Matrix_ds) :: BalancedMat1
+    TYPE(Matrix_ps) :: Temp1,Temp2,Identity
+    TYPE(Matrix_ps) :: BalancedMat1
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -161,8 +161,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE PseudoInverse(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(in)  :: Mat1
-    TYPE(Matrix_ds), INTENT(inout) :: InverseMat
+    TYPE(Matrix_ps), INTENT(in)  :: Mat1
+    TYPE(Matrix_ps), INTENT(inout) :: InverseMat
     TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
@@ -171,12 +171,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
-    TYPE(Matrix_ds) :: Temp1,Temp2,Identity
-    TYPE(Matrix_ds) :: BalancedMat1
+    TYPE(Matrix_ps) :: Temp1,Temp2,Identity
+    TYPE(Matrix_ps) :: BalancedMat1
     !! Temporary Variables
     INTEGER :: outer_counter
     REAL(NTREAL) :: norm_value
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN

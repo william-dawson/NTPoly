@@ -1,36 +1,4 @@
-  USE ISO_C_BINDING, ONLY : c_int
-  IMPLICIT NONE
-  PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A memory pool datatype that can be reused for matrix matrix multiplication.
-  !! this is to prevent excessive alloc/dealloc.
-  TYPE, PUBLIC :: MPOOLTYPE
-     PRIVATE
-     !> Shape of matrix: columns
-     INTEGER, PUBLIC :: columns
-     !> Shape of matrix: rows
-     INTEGER, PUBLIC :: rows
-     !> storage for actual values added to the matrix.
-     TYPE(TTYPE), DIMENSION(:), ALLOCATABLE, PUBLIC :: pruned_list
-     !> storage for potential values added to the matrix.
-     DATATYPE, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: value_array
-     !> true if an element has been pushed to this part of the matrix.
-     LOGICAL, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: dirty_array
-     !> Storage space for indices, hashed.
-     INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: hash_index
-     !> Internal storage space for amount of items added to a bucket.
-     INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: inserted_per_bucket
-     !> Size of the buckets.
-     INTEGER, PUBLIC :: hash_size
-  END TYPE MPOOLTYPE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !type(Error_t) :: error_handler
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructMatrixMemoryPool
-  PUBLIC :: DestructMatrixMemoryPool
-  PUBLIC :: CheckMemoryPoolValidity
-  PUBLIC :: SetPoolSparsity
-CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Matrix Memory Pool object.
   !> @param[out] this a constructed Matrix Memory Pool object.
   !> @param[in] columns number of columns in the matrix.

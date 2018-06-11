@@ -2,9 +2,9 @@
 !> A Module For Solving Systems Quantum Chemistry Systems Using Minimization.
 MODULE MinimizerSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolDModule
-  USE MatrixDSAlgebraModule
-  USE MatrixDSModule
+  USE MatrixMemoryPoolPModule
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
@@ -29,10 +29,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ds), INTENT(IN)  :: Hamiltonian
-    TYPE(Matrix_ds), INTENT(IN)  :: InverseSquareRoot
+    TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
+    TYPE(Matrix_ps), INTENT(IN)  :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
-    TYPE(Matrix_ds), INTENT(INOUT) :: Density
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
     TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
@@ -42,13 +42,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: last_trace_value
     REAL(NTREAL) :: norm_value
-    TYPE(Matrix_ds) :: WorkingHamiltonian
-    TYPE(Matrix_ds) :: P_k
-    TYPE(Matrix_ds) :: Gradient
-    TYPE(Matrix_ds) :: G_k, G_kplusone
-    TYPE(Matrix_ds) :: H_k
-    TYPE(Matrix_ds) :: TempMat, TempMat2
-    TYPE(Matrix_ds) :: Identity
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: P_k
+    TYPE(Matrix_ps) :: Gradient
+    TYPE(Matrix_ps) :: G_k, G_kplusone
+    TYPE(Matrix_ps) :: H_k
+    TYPE(Matrix_ps) :: TempMat, TempMat2
+    TYPE(Matrix_ps) :: Identity
     REAL(NTREAL) :: mu
     REAL(NTREAL) :: gamma
     REAL(NTREAL) :: step_size
@@ -56,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: root1, root2, root_temp
     REAL(NTREAL) :: energy_value, energy_value2
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_d) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter
     INTEGER :: matrix_dimension
 
