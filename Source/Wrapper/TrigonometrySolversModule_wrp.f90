@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the trigonometry solvers module for calling from other languages.
 MODULE TrigonometrySolversModule_wrp
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE TrigonometrySolversModule, ONLY : Sine, Cosine
   USE WrapperModule, ONLY : SIZE_wrp
@@ -19,8 +19,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp)  :: h_InputMat
-    TYPE(DistributedSparseMatrix_wrp)  :: h_OutputMat
+    TYPE(Matrix_ps_wrp)  :: h_InputMat
+    TYPE(Matrix_ps_wrp)  :: h_OutputMat
     TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
@@ -37,8 +37,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp)  :: h_InputMat
-    TYPE(DistributedSparseMatrix_wrp)  :: h_OutputMat
+    TYPE(Matrix_ps_wrp)  :: h_InputMat
+    TYPE(Matrix_ps_wrp)  :: h_OutputMat
     TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)

@@ -2,8 +2,8 @@
 !> Wraps the eigen solvers module for calling from other languages.
 MODULE EigenSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE EigenSolversModule, ONLY : ReferenceEigenDecomposition, &
        & SplittingEigenDecomposition, SingularValueDecomposition
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
@@ -25,9 +25,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_eigenvalues(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: target_values
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
-    TYPE(DistributedSparseMatrix_wrp) :: h_eigenvectors
-    TYPE(DistributedSparseMatrix_wrp) :: h_eigenvalues
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_eigenvectors
+    TYPE(Matrix_ps_wrp) :: h_eigenvalues
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
@@ -48,10 +48,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_rightvectors(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_singularvalues(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
-    TYPE(DistributedSparseMatrix_wrp) :: h_leftvectors
-    TYPE(DistributedSparseMatrix_wrp) :: h_rightvectors
-    TYPE(DistributedSparseMatrix_wrp) :: h_singularvalues
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_leftvectors
+    TYPE(Matrix_ps_wrp) :: h_rightvectors
+    TYPE(Matrix_ps_wrp) :: h_singularvalues
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
@@ -72,9 +72,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_eigenvectors(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_eigenvalues(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
-    TYPE(DistributedSparseMatrix_wrp) :: h_eigenvectors
-    TYPE(DistributedSparseMatrix_wrp) :: h_eigenvalues
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_eigenvectors
+    TYPE(Matrix_ps_wrp) :: h_eigenvalues
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this, h_this)

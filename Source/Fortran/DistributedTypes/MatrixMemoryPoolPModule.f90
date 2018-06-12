@@ -14,27 +14,37 @@ MODULE MatrixMemoryPoolPModule
      TYPE(MatrixMemoryPool_lr), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: grid
   END TYPE MatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructMatrixMemoryPoolD
-  PUBLIC :: DestructMatrixMemoryPoolD
-  PUBLIC :: CheckMemoryPoolDValidity
+  PUBLIC :: ConstructMatrixMemoryPool
+  PUBLIC :: DestructMatrixMemoryPool
+  PUBLIC :: CheckMemoryPoolValidity
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE ConstructMatrixMemoryPool
+    MODULE PROCEDURE ConstructMatrixMemoryPool_p
+  END INTERFACE
+  INTERFACE DestructMatrixMemoryPool
+    MODULE PROCEDURE DestructMatrixMemoryPool_p
+  END INTERFACE
+  INTERFACE CheckMemoryPoolValidity
+    MODULE PROCEDURE CheckMemoryPoolValidity_p
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
   !> @param[out] this a constructed Matrix Memory Pool object.
   !! @param[in] matrix the associated distributed sparse matrix.
-  PURE SUBROUTINE ConstructMatrixMemoryPoolD(this, matrix)
+  PURE SUBROUTINE ConstructMatrixMemoryPool_p(this, matrix)
     !! Parameters
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(IN) :: matrix
 
     !! Allocate
-    CALL DestructMatrixMemoryPoolD(this)
+    CALL DestructMatrixMemoryPool(this)
     ALLOCATE(this%grid(matrix%process_grid%number_of_blocks_rows, &
          & matrix%process_grid%number_of_blocks_columns))
-  END SUBROUTINE ConstructMatrixMemoryPoolD
+  END SUBROUTINE ConstructMatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Distributed Matrix Memory Pool object.
   !> @param[out] this Distributed Matrix Memory Pool object to destroy.
-  PURE SUBROUTINE DestructMatrixMemoryPoolD(this)
+  PURE SUBROUTINE DestructMatrixMemoryPool_p(this)
     !! Parameters
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
     !! Local Data
@@ -50,13 +60,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
        DEALLOCATE(this%grid)
     END IF
-  END SUBROUTINE DestructMatrixMemoryPoolD
+  END SUBROUTINE DestructMatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Checks if a given distributed memory pool has been validly allocated to
   !! handle the given parameters.
   !> @param[in] this the memory pool to check.
   !> @return true if the memory pool is valid.
-  PURE FUNCTION CheckMemoryPoolDValidity(this) RESULT(isvalid)
+  PURE FUNCTION CheckMemoryPoolValidity_p(this) RESULT(isvalid)
     !! Parameters
     TYPE(MatrixMemoryPool_p), INTENT(IN) :: this
     LOGICAL :: isvalid
@@ -65,5 +75,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Check allocation
     IF (.NOT. ALLOCATED(this%grid)) isvalid = .FALSE.
 
-  END FUNCTION CheckMemoryPoolDValidity
+  END FUNCTION CheckMemoryPoolValidity_p
 END MODULE MatrixMemoryPoolPModule

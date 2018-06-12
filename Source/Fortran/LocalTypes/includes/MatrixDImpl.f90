@@ -151,7 +151,7 @@
     DOUBLE PRECISION, PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
-    CALL ConstructEmptyMatrixD(MatC,MatB%columns,MatA%rows)
+    CALL ConstructEmptyMatrix(MatC,MatB%columns,MatA%rows)
 
     !! Setup Lapack
     M = MatA%rows

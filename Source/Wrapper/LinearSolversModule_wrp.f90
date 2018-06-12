@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the linear solvers module for calling from other languages.
 MODULE LinearSolversModule_wrp
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE LinearSolversModule, ONLY : CGSolver, CholeskyDecomposition, &
@@ -23,9 +23,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_XMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_BMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_AMat
-    TYPE(DistributedSparseMatrix_wrp) :: h_XMat
-    TYPE(DistributedSparseMatrix_wrp) :: h_BMat
+    TYPE(Matrix_ps_wrp) :: h_AMat
+    TYPE(Matrix_ps_wrp) :: h_XMat
+    TYPE(Matrix_ps_wrp) :: h_BMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_AMat = TRANSFER(ih_AMat,h_AMat)
@@ -43,8 +43,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(in) :: ih_AMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(inout) :: ih_LMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_AMat
-    TYPE(DistributedSparseMatrix_wrp) :: h_LMat
+    TYPE(Matrix_ps_wrp) :: h_AMat
+    TYPE(Matrix_ps_wrp) :: h_LMat
     TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
 
     h_AMat = TRANSFER(ih_AMat,h_AMat)
@@ -62,8 +62,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(inout) :: ih_LMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: rank_in
-    TYPE(DistributedSparseMatrix_wrp) :: h_AMat
-    TYPE(DistributedSparseMatrix_wrp) :: h_LMat
+    TYPE(Matrix_ps_wrp) :: h_AMat
+    TYPE(Matrix_ps_wrp) :: h_LMat
     TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
 
     h_AMat = TRANSFER(ih_AMat,h_AMat)

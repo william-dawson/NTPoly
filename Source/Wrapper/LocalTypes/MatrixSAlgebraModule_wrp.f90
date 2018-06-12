@@ -1,86 +1,85 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping the sparse algebra routines.
-MODULE SparseMatrixAlgebraModule_wrp
+MODULE MatrixSAlgebraModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_wrp
-  USE SparseMatrixAlgebraModule, ONLY : &
-       & ScaleSparseMatrix, IncrementSparseMatrix, Gemm, &
-       & DotSparseMatrix, PairwiseMultiplySparseMatrix
-  USE SparseMatrixModule, ONLY : SparseMatrix_t
-  USE SparseMatrixModule_wrp, ONLY: SparseMatrix_wrp
-  USE TripletListModule_wrp, ONLY : TripletList_wrp
+  USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_lr_wrp
+  USE MatrixSAlgebraModule, ONLY : ScaleMatrix, IncrementMatrix, &
+       & MatrixMultiply, DotMatrix, PairwiseMultiplyMatrix
+  USE MatrixSModule, ONLY : Matrix_lsr
+  USE MatrixSModule_wrp, ONLY: Matrix_lsr_wrp
+  USE TripletListModule_wrp, ONLY : TripletList_r_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ScaleSparseMatrix_wrp
-  PUBLIC :: IncrementSparseMatrix_wrp
-  PUBLIC :: PairwiseMultiplySparseMatrix_wrp
-  PUBLIC :: DotSparseMatrix_wrp
-  PUBLIC :: Gemm_wrp
+  PUBLIC :: ScaleMatrix_lsr_wrp
+  PUBLIC :: IncrementMatrix_lsr_wrp
+  PUBLIC :: PairwiseMultiplyMatrix_lsr_wrp
+  PUBLIC :: DotMatrix_lsr_wrp
+  PUBLIC :: MatrixMultiply_lsr_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
-  PURE SUBROUTINE ScaleSparseMatrix_wrp(ih_this, constant) &
-       & bind(c,name="ScaleSparseMatrix_wrp")
+  PURE SUBROUTINE ScaleMatrix_lsr_wrp(ih_this, constant) &
+       & bind(c,name="ScaleMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
-    TYPE(SparseMatrix_wrp) :: h_this
+    TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL ScaleSparseMatrix(h_this%data,constant)
-  END SUBROUTINE ScaleSparseMatrix_wrp
+    CALL ScaleMatrix(h_this%data,constant)
+  END SUBROUTINE ScaleMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix incrementing function.
-  PURE SUBROUTINE IncrementSparseMatrix_wrp(ih_matA, ih_matB, alpha_in, &
-       & threshold_in) bind(c,name="IncrementSparseMatrix_wrp")
+  PURE SUBROUTINE IncrementMatrix_lsr_wrp(ih_matA, ih_matB, alpha_in, &
+       & threshold_in) bind(c,name="IncrementMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: alpha_in
     REAL(NTREAL), INTENT(IN) :: threshold_in
-    TYPE(SparseMatrix_wrp) :: h_matA
-    TYPE(SparseMatrix_wrp) :: h_matB
+    TYPE(Matrix_lsr_wrp) :: h_matA
+    TYPE(Matrix_lsr_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL IncrementSparseMatrix(h_matA%data, h_matB%data, alpha_in, threshold_in)
-  END SUBROUTINE IncrementSparseMatrix_wrp
+    CALL IncrementMatrix(h_matA%data, h_matB%data, alpha_in, threshold_in)
+  END SUBROUTINE IncrementMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
-  PURE FUNCTION DotSparseMatrix_wrp(ih_matA, ih_matB) RESULT(product) &
-       & bind(c,name="DotSparseMatrix_wrp")
+  PURE FUNCTION DotMatrix_lsr_wrp(ih_matA, ih_matB) RESULT(product) &
+       & bind(c,name="DotMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     REAL(NTREAL) :: product
-    TYPE(SparseMatrix_wrp) :: h_matA
-    TYPE(SparseMatrix_wrp) :: h_matB
+    TYPE(Matrix_lsr_wrp) :: h_matA
+    TYPE(Matrix_lsr_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    product = DotSparseMatrix(h_matA%data, h_matB%data)
-  END FUNCTION DotSparseMatrix_wrp
+    product = DotMatrix(h_matA%data, h_matB%data)
+  END FUNCTION DotMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.
-  SUBROUTINE PairwiseMultiplySparseMatrix_wrp(ih_matA, ih_matB, ih_matC) &
-       & bind(c,name="PairwiseMultiplySparseMatrix_wrp")
+  SUBROUTINE PairwiseMultiplyMatrix_lsr_wrp(ih_matA, ih_matB, ih_matC) &
+       & bind(c,name="PairwiseMultiplyMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
-    TYPE(SparseMatrix_wrp) :: h_matA
-    TYPE(SparseMatrix_wrp) :: h_matB
-    TYPE(SparseMatrix_wrp) :: h_matC
+    TYPE(Matrix_lsr_wrp) :: h_matA
+    TYPE(Matrix_lsr_wrp) :: h_matB
+    TYPE(Matrix_lsr_wrp) :: h_matC
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
     h_matC = TRANSFER(ih_matC,h_matC)
 
-    CALL PairwiseMultiplySparseMatrix(h_matA%data, h_matB%data, h_matC%data)
-  END SUBROUTINE PairwiseMultiplySparseMatrix_wrp
+    CALL PairwiseMultiplyMatrix(h_matA%data, h_matB%data, h_matC%data)
+  END SUBROUTINE PairwiseMultiplyMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix multiplication function.
-  SUBROUTINE Gemm_wrp(ih_matA, ih_matB, ih_matC, IsATransposed, &
+  SUBROUTINE MatrixMultiply_lsr_wrp(ih_matA, ih_matB, ih_matC, IsATransposed, &
        & IsBTransposed, alpha, beta, threshold, ih_blocked_memory_pool) &
-       & bind(c,name="Gemm_wrp")
+       & bind(c,name="MatrixMultiply_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -90,10 +89,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(in) :: beta
     REAL(NTREAL), INTENT(in) :: threshold
     INTEGER(kind=c_int), INTENT(inout) :: ih_blocked_memory_pool(SIZE_wrp)
-    TYPE(SparseMatrix_wrp) :: h_matA
-    TYPE(SparseMatrix_wrp) :: h_matB
-    TYPE(SparseMatrix_wrp) :: h_matC
-    TYPE(MatrixMemoryPool_wrp) :: h_blocked_memory_pool
+    TYPE(Matrix_lsr_wrp) :: h_matA
+    TYPE(Matrix_lsr_wrp) :: h_matB
+    TYPE(Matrix_lsr_wrp) :: h_matC
+    TYPE(MatrixMemoryPool_lr_wrp) :: h_blocked_memory_pool
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
@@ -101,8 +100,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_blocked_memory_pool = TRANSFER(ih_blocked_memory_pool, &
          & h_blocked_memory_pool)
 
-    CALL Gemm(h_matA%data, h_matB%data, h_matC%data, &
+    CALL MatrixMultiply(h_matA%data, h_matB%data, h_matC%data, &
          & LOGICAL(IsATransposed), LOGICAL(IsBTransposed), alpha, &
          & beta, threshold, h_blocked_memory_pool%data)
-  END SUBROUTINE Gemm_wrp
-END MODULE SparseMatrixAlgebraModule_wrp
+  END SUBROUTINE MatrixMultiply_lsr_wrp
+END MODULE MatrixSAlgebraModule_wrp

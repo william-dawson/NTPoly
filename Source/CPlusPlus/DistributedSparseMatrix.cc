@@ -17,7 +17,7 @@ extern "C" {
 namespace NTPoly {
 //////////////////////////////////////////////////////////////////////////////
 DistributedSparseMatrix::DistributedSparseMatrix(int matrix_dimension) {
-  ConstructEmptyDistributedSparseMatrix_wrp(ih_this, &matrix_dimension);
+  ConstructEmptyMatrix_ps_wrp(ih_this, &matrix_dimension);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -25,10 +25,11 @@ DistributedSparseMatrix::DistributedSparseMatrix(std::string file_name,
                                                  bool is_binary) {
   int string_length = file_name.length();
   if (is_binary) {
-    ConstructFromBinary_wrp(ih_this, &file_name.c_str()[0], &string_length);
+    ConstructMatrixFromBinary_ps_wrp(ih_this, &file_name.c_str()[0],
+                                     &string_length);
   } else {
-    ConstructFromMatrixMarket_wrp(ih_this, &file_name.c_str()[0],
-                                  &string_length);
+    ConstructMatrixFromMatrixMarket_ps_wrp(ih_this, &file_name.c_str()[0],
+                                           &string_length);
   }
 }
 
@@ -38,87 +39,87 @@ DistributedSparseMatrix::DistributedSparseMatrix(
   // Constructing empty here is important because the call to Empty_wrp
   // also allocates a handle.
   int matrix_dimension = matB.GetActualDimension();
-  ConstructEmptyDistributedSparseMatrix_wrp(ih_this, &matrix_dimension);
-  CopyDistributedSparseMatrix_wrp(matB.ih_this, ih_this);
+  ConstructEmptyMatrix_ps_wrp(ih_this, &matrix_dimension);
+  CopyMatrix_ps_wrp(matB.ih_this, ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::WriteToBinary(std::string file_name) const {
   int string_length = file_name.length();
-  WriteToBinary_wrp(ih_this, &file_name.c_str()[0], &string_length);
+  WriteMatrixToBinary_ps_wrp(ih_this, &file_name.c_str()[0], &string_length);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::WriteToMatrixMarket(string file_name) const {
   int string_length = file_name.length();
-  WriteToMatrixMarket_wrp(ih_this, &file_name.c_str()[0], &string_length);
+  WriteMatrixToMatrixMarket_ps_wrp(ih_this, &file_name.c_str()[0],
+                                   &string_length);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::FillFromTripletList(
     const TripletList &triplet_list) {
-  FillFromTripletList_wrp(ih_this, triplet_list.ih_this);
+  FillMatrixFromTripletList_ps_wrp(ih_this, triplet_list.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::FillDistributedPermutation(const Permutation &lb,
                                                          bool permuterows) {
-  FillDistributedPermutation_wrp(ih_this, lb.ih_this, &permuterows);
+  FillMatrixPermutation_ps_wrp(ih_this, lb.ih_this, &permuterows);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::FillIdentity() {
-  FillDistributedIdentity_wrp(ih_this);
+  FillMatrixIdentity_ps_wrp(ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 int DistributedSparseMatrix::GetLogicalDimension() const {
   int temp;
-  GetLogicalDimension_wrp(ih_this, &temp);
+  GetMatrixLogicalDimension_ps_wrp(ih_this, &temp);
   return temp;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 int DistributedSparseMatrix::GetActualDimension() const {
   int temp;
-  GetActualDimension_wrp(ih_this, &temp);
+  GetMatrixActualDimension_ps_wrp(ih_this, &temp);
   return temp;
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::GetTripletList(TripletList &triplet_list) {
-  GetTripletList_wrp(ih_this, triplet_list.ih_this);
+  GetMatrixTripletList_ps_wrp(ih_this, triplet_list.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::GetMatrixBlock(TripletList &triplet_list,
                                              int start_row, int end_row,
                                              int start_column, int end_column) {
-  GetMatrixBlock_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
-                     &start_column, &end_column);
+  GetMatrixBlock_ps_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
+                        &start_column, &end_column);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::Transpose(const DistributedSparseMatrix &matA) {
-  TransposeDistributedSparseMatrix_wrp(matA.ih_this, ih_this);
+  TransposeMatrix_ps_wrp(matA.ih_this, ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 double DistributedSparseMatrix::Dot(const DistributedSparseMatrix &matB) {
-  return DotDistributedSparseMatrix_wrp(ih_this, matB.ih_this);
+  return DotMatrix_ps_wrp(ih_this, matB.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::Increment(const DistributedSparseMatrix &matB,
                                         double alpha, double threshold) {
-  IncrementDistributedSparseMatrix_wrp(matB.ih_this, ih_this, &alpha,
-                                       &threshold);
+  IncrementMatrix_ps_wrp(matB.ih_this, ih_this, &alpha, &threshold);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::PairwiseMultiply(
     const DistributedSparseMatrix &matA, const DistributedSparseMatrix &matB) {
-  DistributedPairwiseMultiply_wrp(matA.ih_this, matB.ih_this, ih_this);
+  MatrixPairwiseMultiply_ps_wrp(matA.ih_this, matB.ih_this, ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -127,25 +128,27 @@ void DistributedSparseMatrix::Gemm(const DistributedSparseMatrix &matA,
                                    DistributedMatrixMemoryPool &memory_pool,
                                    double alpha, double beta,
                                    double threshold) {
-  DistributedGemm_wrp(matA.ih_this, matB.ih_this, ih_this, &alpha, &beta,
-                      &threshold, memory_pool.ih_this);
+  MatrixMultiply_ps_wrp(matA.ih_this, matB.ih_this, ih_this, &alpha, &beta,
+                        &threshold, memory_pool.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::Scale(double constant) {
-  ScaleDistributedSparseMatrix_wrp(ih_this, &constant);
+  ScaleMatrix_ps_wrp(ih_this, &constant);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 double DistributedSparseMatrix::Norm() const {
-  return DistributedSparseNorm_wrp(ih_this);
+  return MatrixNorm_ps_wrp(ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
-double DistributedSparseMatrix::Trace() const { return Trace_wrp(ih_this); }
+double DistributedSparseMatrix::Trace() const {
+  return MatrixTrace_ps_wrp(ih_this);
+}
 
 //////////////////////////////////////////////////////////////////////////////
 DistributedSparseMatrix::~DistributedSparseMatrix() {
-  DestructDistributedSparseMatrix_wrp(ih_this);
+  DestructMatrix_ps_wrp(ih_this);
 }
 } // namespace NTPoly

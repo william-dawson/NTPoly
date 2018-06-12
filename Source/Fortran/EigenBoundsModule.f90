@@ -41,7 +41,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute The Local Contribution
     per_column_min = 0
     per_column_max = 0
-    CALL GetTripletList(this, triplet_list)
+    CALL GetMatrixTripletList(this, triplet_list)
     DO counter = 1, triplet_list%CurrentSize
        local_column = triplet_list%data(counter)%index_column - &
             & this%start_column + 1
@@ -115,9 +115,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Diagonal matrices serve as vectors.
-    CALL ConstructEmptyMatrixDS(vector, &
+    CALL ConstructEmptyMatrix(vector, &
          & this%actual_matrix_dimension, this%process_grid)
-    CALL ConstructEmptyMatrixDS(vector2, &
+    CALL ConstructEmptyMatrix(vector2, &
          & this%actual_matrix_dimension, this%process_grid)
 
     !! Guess Vector
@@ -128,7 +128,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_triplet%point_value = 1.0
        CALL AppendToTripletList(temp_list,temp_triplet)
     END IF
-    CALL FillFromTripletList(vector,temp_list)
+    CALL FillMatrixFromTripletList(vector,temp_list)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -146,17 +146,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! x = Ax
-       CALL DistributedGemm(this,vector,vector2, &
+       CALL MatrixMultiply(this,vector,vector2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        !! x = x/||x||
-       scale_value = 1.0/DistributedSparseNorm(vector2)
-       CALL ScaleDistributedSparseMatrix(vector2,scale_value)
+       scale_value = 1.0/MatrixNorm(vector2)
+       CALL ScaleMatrix(vector2,scale_value)
 
        !! Check if Converged
-       CALL IncrementDistributedSparseMatrix(vector2,vector,REAL(-1.0,NTREAL))
-       norm_value = DistributedSparseNorm(vector)
+       CALL IncrementMatrix(vector2,vector,REAL(-1.0,NTREAL))
+       norm_value = MatrixNorm(vector)
 
-       CALL CopyMatrixDS(vector2,vector)
+       CALL CopyMatrix(vector2,vector)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -168,10 +168,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Largest Eigenvalue
-    scale_value = DotDistributedSparseMatrix(vector,vector)
-    CALL DistributedGemm(this,vector,vector2, &
+    scale_value = DotMatrix(vector,vector)
+    CALL MatrixMultiply(this,vector,vector2, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    max_value = DotDistributedSparseMatrix(vector,vector2)
+    max_value = DotMatrix(vector,vector2)
     max_value = max_value / scale_value
 
     IF (solver_parameters%be_verbose) THEN
@@ -180,9 +180,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructMatrixDS(vector)
-    CALL DestructMatrixDS(vector2)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(vector)
+    CALL DestructMatrix(vector2)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE PowerBounds
 END MODULE EigenBoundsModule

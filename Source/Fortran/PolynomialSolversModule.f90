@@ -101,12 +101,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(Identity)
-    CALL ConstructEmptyMatrixDS(Temporary, &
+    CALL FillMatrixIdentity(Identity)
+    CALL ConstructEmptyMatrix(Temporary, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL CopyMatrixDS(InputMat,BalancedInput)
+    CALL CopyMatrix(InputMat,BalancedInput)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -115,19 +115,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(BalancedInput, BalancedInput, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
-    CALL CopyMatrixDS(Identity,OutputMat)
+    CALL CopyMatrix(Identity,OutputMat)
 
     IF (SIZE(poly%coefficients) .EQ. 1) THEN
-       CALL ScaleDistributedSparseMatrix(OutputMat, poly%coefficients(degree))
+       CALL ScaleMatrix(OutputMat, poly%coefficients(degree))
     ELSE
-       CALL ScaleDistributedSparseMatrix(OutputMat,poly%coefficients(degree-1))
-       CALL IncrementDistributedSparseMatrix(BalancedInput,OutputMat, &
+       CALL ScaleMatrix(OutputMat,poly%coefficients(degree-1))
+       CALL IncrementMatrix(BalancedInput,OutputMat, &
             & poly%coefficients(degree))
        DO counter = degree-2,1,-1
-          CALL DistributedGemm(BalancedInput,OutputMat,Temporary, &
+          CALL MatrixMultiply(BalancedInput,OutputMat,Temporary, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-          CALL CopyMatrixDS(Temporary,OutputMat)
-          CALL IncrementDistributedSparseMatrix(Identity, &
+          CALL CopyMatrix(Temporary,OutputMat)
+          CALL IncrementMatrix(Identity, &
                & OutputMat, alpha_in=poly%coefficients(counter))
        END DO
     END IF
@@ -142,9 +142,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(Temporary)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(Temporary)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE HornerCompute
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
@@ -201,54 +201,54 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(x_powers(s_value+1))
 
     !! Initial values for matrices
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Create the X Powers
-    CALL ConstructEmptyMatrixDS(x_powers(1), &
+    CALL ConstructEmptyMatrix(x_powers(1), &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(x_powers(1))
+    CALL FillMatrixIdentity(x_powers(1))
     DO counter=1,s_value+1-1
-       CALL DistributedGemm(InputMat,x_powers(counter-1+1),x_powers(counter+1),&
+       CALL MatrixMultiply(InputMat,x_powers(counter-1+1),x_powers(counter+1),&
             & memory_pool_in=pool)
     END DO
-    CALL CopyMatrixDS(x_powers(s_value+1),Xs)
+    CALL CopyMatrix(x_powers(s_value+1),Xs)
 
     !! S_k = bmX
-    CALL CopyMatrixDS(Identity,Bk)
-    CALL ScaleDistributedSparseMatrix(Bk, poly%coefficients(s_value*r_value+1))
+    CALL CopyMatrix(Identity,Bk)
+    CALL ScaleMatrix(Bk, poly%coefficients(s_value*r_value+1))
     DO counter=1,m_value-s_value*r_value+1-1
        c_index = s_value*r_value + counter
-       CALL IncrementDistributedSparseMatrix(x_powers(counter+1),Bk, &
+       CALL IncrementMatrix(x_powers(counter+1),Bk, &
             & alpha_in=poly%coefficients(c_index+1))
     END DO
-    CALL DistributedGemm(Bk,Xs,OutputMat, memory_pool_in=pool)
+    CALL MatrixMultiply(Bk,Xs,OutputMat, memory_pool_in=pool)
 
     !! S_k += bmx + bm-1I
     k_value = r_value - 1
-    CALL CopyMatrixDS(Identity,Bk)
-    CALL ScaleDistributedSparseMatrix(Bk,poly%coefficients(s_value*k_value+1))
+    CALL CopyMatrix(Identity,Bk)
+    CALL ScaleMatrix(Bk,poly%coefficients(s_value*k_value+1))
     DO counter=1,s_value-1+1-1
        c_index = s_value*k_value + counter
-       CALL IncrementDistributedSparseMatrix(x_powers(counter+1),Bk, &
+       CALL IncrementMatrix(x_powers(counter+1),Bk, &
             & alpha_in=poly%coefficients(c_index+1))
     END DO
-    CALL IncrementDistributedSparseMatrix(Bk,OutputMat)
+    CALL IncrementMatrix(Bk,OutputMat)
 
     !! Loop over the rest.
     DO k_value=r_value-2,-1+1,-1
-       CALL CopyMatrixDS(Identity,Bk)
-       CALL ScaleDistributedSparseMatrix(Bk, &
+       CALL CopyMatrix(Identity,Bk)
+       CALL ScaleMatrix(Bk, &
             & poly%coefficients(s_value*k_value+1))
        DO counter=1,s_value-1+1-1
           c_index = s_value*k_value + counter
-          CALL IncrementDistributedSparseMatrix(x_powers(counter+1),Bk, &
+          CALL IncrementMatrix(x_powers(counter+1),Bk, &
                & alpha_in=poly%coefficients(c_index+1))
        END DO
-       CALL DistributedGemm(Xs,OutputMat,Temp)
-       CALL CopyMatrixDS(Temp,OutputMat)
-       CALL IncrementDistributedSparseMatrix(Bk,OutputMat)
+       CALL MatrixMultiply(Xs,OutputMat,Temp)
+       CALL CopyMatrix(Temp,OutputMat)
+       CALL IncrementMatrix(Bk,OutputMat)
     END DO
 
     !! Cleanup
@@ -256,12 +256,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     DO counter=1,s_value+1
-       CALL DestructDistributedSparseMatrix(x_powers(counter))
+       CALL DestructMatrix(x_powers(counter))
     END DO
     DEALLOCATE(x_powers)
-    CALL DestructDistributedSparseMatrix(Bk)
-    CALL DestructDistributedSparseMatrix(Xs)
-    CALL DestructDistributedSparseMatrix(Temp)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(Bk)
+    CALL DestructMatrix(Xs)
+    CALL DestructMatrix(Temp)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE PatersonStockmeyerCompute
 END MODULE PolynomialSolversModule

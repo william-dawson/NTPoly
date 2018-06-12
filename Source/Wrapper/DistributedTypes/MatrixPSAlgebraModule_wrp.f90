@@ -1,79 +1,76 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping a Distributed Sparse Matrix.
-MODULE DistributedSparseMatrixAlgebraModule_wrp
+MODULE MatrixPSAlgebraModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DistributedSparseMatrixModule_wrp, ONLY : DistributedSparseMatrix_wrp
-  USE DistributedMatrixMemoryPoolModule_wrp, ONLY : &
-       & DistributedMatrixMemoryPool_wrp
-  USE DistributedSparseMatrixAlgebraModule
-  USE DistributedSparseMatrixModule
+  USE MatrixPSModule_wrp, ONLY : Matrix_ps_wrp
+  USE MatrixMemoryPoolPModule_wrp, ONLY : MatrixMemoryPool_p_wrp
+  USE MatrixPSAlgebraModule
+  USE MatrixPSModule
   USE PermutationModule_wrp, ONLY : Permutation_wrp
-  USE TripletListModule_wrp, ONLY : TripletList_wrp
+  USE TripletListModule_wrp, ONLY : TripletList_r_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: IncrementDistributedSparseMatrix_wrp
-  PUBLIC :: DotDistributedSparseMatrix_wrp
-  PUBLIC :: DistributedPairwiseMultiply_wrp
-  PUBLIC :: DistributedGemm_wrp
-  PUBLIC :: ScaleDistributedSparseMatrix_wrp
-  PUBLIC :: DistributedSparseNorm_wrp
-  PUBLIC :: Trace_wrp
+  PUBLIC :: IncrementMatrix_ps_wrp
+  PUBLIC :: DotMatrix_ps_wrp
+  PUBLIC :: MatrixPairwiseMultiply_ps_wrp
+  PUBLIC :: MatrixMultiply_ps_wrp
+  PUBLIC :: ScaleMatrix_ps_wrp
+  PUBLIC :: MatrixNorm_ps_wrp
+  PUBLIC :: MatrixTrace_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
-  SUBROUTINE IncrementDistributedSparseMatrix_wrp(ih_matA, ih_matB,&
-       & alpha_in,threshold_in) &
-       & bind(c,name="IncrementDistributedSparseMatrix_wrp")
+  SUBROUTINE IncrementMatrix_ps_wrp(ih_matA, ih_matB, alpha_in,threshold_in) &
+       & bind(c,name="IncrementMatrix_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: alpha_in
     REAL(NTREAL), INTENT(IN) :: threshold_in
-    TYPE(DistributedSparseMatrix_wrp) :: h_matA
-    TYPE(DistributedSparseMatrix_wrp) :: h_matB
+    TYPE(Matrix_ps_wrp) :: h_matA
+    TYPE(Matrix_ps_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL IncrementDistributedSparseMatrix(h_matA%data, h_matB%data, alpha_in, &
-         & threshold_in)
-  END SUBROUTINE IncrementDistributedSparseMatrix_wrp
+    CALL IncrementMatrix(h_matA%data, h_matB%data, alpha_in, threshold_in)
+  END SUBROUTINE IncrementMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(matA,matB)
-  FUNCTION DotDistributedSparseMatrix_wrp(ih_matA, ih_matB) RESULT(product)&
-       & bind(c,name="DotDistributedSparseMatrix_wrp")
+  FUNCTION DotMatrix_ps_wrp(ih_matA, ih_matB) RESULT(product) &
+       & bind(c,name="DotMatrix_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     REAL(NTREAL) :: product
-    TYPE(DistributedSparseMatrix_wrp) :: h_matA
-    TYPE(DistributedSparseMatrix_wrp) :: h_matB
+    TYPE(Matrix_ps_wrp) :: h_matA
+    TYPE(Matrix_ps_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    product = DotDistributedSparseMatrix(h_matA%data, h_matB%data)
-  END FUNCTION DotDistributedSparseMatrix_wrp
+    product = DotMatrix(h_matA%data, h_matB%data)
+  END FUNCTION DotMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication.
-  SUBROUTINE DistributedPairwiseMultiply_wrp(ih_matA, ih_matB, ih_matC) &
-       & bind(c,name="DistributedPairwiseMultiply_wrp")
+  SUBROUTINE MatrixPairwiseMultiply_ps_wrp(ih_matA, ih_matB, ih_matC) &
+       & bind(c,name="MatrixPairwiseMultiply_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_matA
-    TYPE(DistributedSparseMatrix_wrp) :: h_matB
-    TYPE(DistributedSparseMatrix_wrp) :: h_matC
+    TYPE(Matrix_ps_wrp) :: h_matA
+    TYPE(Matrix_ps_wrp) :: h_matB
+    TYPE(Matrix_ps_wrp) :: h_matC
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
     h_matC = TRANSFER(ih_matC,h_matC)
 
-    CALL DistributedPairwiseMultiply(h_matA%data, h_matB%data, h_matC%data)
-  END SUBROUTINE DistributedPairwiseMultiply_wrp
+    CALL PairwiseMultiplyMatrix(h_matA%data, h_matB%data, h_matC%data)
+  END SUBROUTINE MatrixPairwiseMultiply_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
-  SUBROUTINE DistributedGemm_wrp(ih_matA, ih_matB, ih_matC, alpha_in, &
+  SUBROUTINE MatrixMultiply_ps_wrp(ih_matA, ih_matB, ih_matC, alpha_in, &
        & beta_in, threshold_in, ih_memory_pool_in) &
-       & bind(c,name="DistributedGemm_wrp")
+       & bind(c,name="MatrixMultiply_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -81,50 +78,50 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: beta_in
     REAL(NTREAL), INTENT(IN) :: threshold_in
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_memory_pool_in(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_matA
-    TYPE(DistributedSparseMatrix_wrp) :: h_matB
-    TYPE(DistributedSparseMatrix_wrp) :: h_matC
-    TYPE(DistributedMatrixMemoryPool_wrp) :: h_memory_pool_in
+    TYPE(Matrix_ps_wrp) :: h_matA
+    TYPE(Matrix_ps_wrp) :: h_matB
+    TYPE(Matrix_ps_wrp) :: h_matC
+    TYPE(MatrixMemoryPool_p_wrp) :: h_memory_pool_in
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
     h_matC = TRANSFER(ih_matC,h_matC)
     h_memory_pool_in = TRANSFER(ih_memory_pool_in,h_memory_pool_in)
 
-    CALL DistributedGemm(h_matA%data, h_matB%data, h_matC%data, &
+    CALL MatrixMultiply(h_matA%data, h_matB%data, h_matC%data, &
          & alpha_in, beta_in, threshold_in, h_memory_pool_in%data)
-  END SUBROUTINE DistributedGemm_wrp
+  END SUBROUTINE MatrixMultiply_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
-  SUBROUTINE ScaleDistributedSparseMatrix_wrp(ih_this, constant) &
-       & bind(c,name="ScaleDistributedSparseMatrix_wrp")
+  SUBROUTINE ScaleMatrix_ps_wrp(ih_this, constant) &
+       & bind(c,name="ScaleMatrix_ps_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL ScaleDistributedSparseMatrix(h_this%data,constant)
-  END SUBROUTINE ScaleDistributedSparseMatrix_wrp
+    CALL ScaleMatrix(h_this%data,constant)
+  END SUBROUTINE ScaleMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a distributed sparse matrix along the rows.
-  FUNCTION DistributedSparseNorm_wrp(ih_this) &
-       & bind(c,name="DistributedSparseNorm_wrp") RESULT(norm_value)
+  FUNCTION MatrixNorm_ps_wrp(ih_this) bind(c,name="MatrixNorm_ps_wrp") &
+       & RESULT(norm_value)
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL) :: norm_value
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    norm_value = DistributedSparseNorm(h_this%data)
-  END FUNCTION DistributedSparseNorm_wrp
+    norm_value = MatrixNorm(h_this%data)
+  END FUNCTION MatrixNorm_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
-  FUNCTION Trace_wrp(ih_this) &
-       & bind(c,name="Trace_wrp") RESULT(trace_value)
+  FUNCTION MatrixTrace_ps_wrp(ih_this) bind(c,name="MatrixTrace_ps_wrp") &
+        & RESULT(trace_value)
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL) :: trace_value
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    trace_value = Trace(h_this%data)
-  END FUNCTION Trace_wrp
-END MODULE DistributedSparseMatrixAlgebraModule_wrp
+    trace_value = MatrixTrace(h_this%data)
+  END FUNCTION MatrixTrace_ps_wrp
+END MODULE MatrixPSAlgebraModule_wrp

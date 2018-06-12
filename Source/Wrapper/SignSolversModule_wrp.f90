@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the sign solvers module for calling from other languages.
 MODULE SignSolversModule_wrp
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE SignSolversModule, ONLY : SignFunction, PolarDecomposition
   USE WrapperModule, ONLY : SIZE_wrp
@@ -19,8 +19,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_SignMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
-    TYPE(DistributedSparseMatrix_wrp) :: h_SignMat
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_SignMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
@@ -37,9 +37,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Umat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Hmat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
-    TYPE(DistributedSparseMatrix_wrp) :: h_Umat
-    TYPE(DistributedSparseMatrix_wrp) :: h_Hmat
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_Umat
+    TYPE(Matrix_ps_wrp) :: h_Hmat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)

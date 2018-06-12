@@ -1,10 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the load balancer module for calling from other languages.
 MODULE LoadBalancerModule_wrp
-  USE DistributedMatrixMemoryPoolModule_wrp, ONLY : &
-       & DistributedMatrixMemoryPool_wrp
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixMemoryPoolPModule_wrp, ONLY : MatrixMemoryPool_p_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -22,10 +21,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat_out(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_memorypool(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_mat_in
-    TYPE(DistributedSparseMatrix_wrp) :: h_mat_out
+    TYPE(Matrix_ps_wrp) :: h_mat_in
+    TYPE(Matrix_ps_wrp) :: h_mat_out
     TYPE(Permutation_wrp) :: h_permutation
-    TYPE(DistributedMatrixMemoryPool_wrp) :: h_memorypool
+    TYPE(MatrixMemoryPool_p_wrp) :: h_memorypool
 
     h_mat_in = TRANSFER(ih_mat_in,h_mat_in)
     h_mat_out = TRANSFER(ih_mat_out,h_mat_out)
@@ -43,10 +42,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat_out(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_memorypool(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_mat_in
-    TYPE(DistributedSparseMatrix_wrp) :: h_mat_out
+    TYPE(Matrix_ps_wrp) :: h_mat_in
+    TYPE(Matrix_ps_wrp) :: h_mat_out
     TYPE(Permutation_wrp) :: h_permutation
-    TYPE(DistributedMatrixMemoryPool_wrp) :: h_memorypool
+    TYPE(MatrixMemoryPool_p_wrp) :: h_memorypool
 
     h_mat_in = TRANSFER(ih_mat_in,h_mat_in)
     h_mat_out = TRANSFER(ih_mat_out,h_mat_out)

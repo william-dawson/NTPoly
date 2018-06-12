@@ -33,20 +33,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.0)
 
     !! Shift
-    CALL CopyMatrixDS(InputMat,ShiftedMat)
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL CopyMatrix(InputMat,ShiftedMat)
+    CALL ConstructEmptyMatrix(IdentityMat, &
          InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
-    CALL IncrementDistributedSparseMatrix(IdentityMat,ShiftedMat, &
+    CALL FillMatrixIdentity(IdentityMat)
+    CALL IncrementMatrix(IdentityMat,ShiftedMat, &
          & alpha_in=REAL(-1.0*PI/2.0,NTREAL))
-    CALL DestructDistributedSparseMatrix(IdentityMat)
+    CALL DestructMatrix(IdentityMat)
 
     IF (PRESENT(solver_parameters_in)) THEN
        CALL ScaleSquareTrigonometry(ShiftedMat, OutputMat, solver_parameters_in)
     ELSE
        CALL ScaleSquareTrigonometry(ShiftedMat, OutputMat)
     END IF
-    CALL DestructDistributedSparseMatrix(ShiftedMat)
+    CALL DestructMatrix(ShiftedMat)
   END SUBROUTINE Sine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cosine of a matrix.
@@ -116,14 +116,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL CopyMatrixDS(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmptyMatrixDS(OutputMat, &
+    CALL CopyMatrix(InputMat, ScaledMat)
+    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
+    CALL ConstructEmptyMatrix(OutputMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(OutputMat)
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL FillMatrixIdentity(OutputMat)
+    CALL ConstructEmptyMatrix(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
+    CALL FillMatrixIdentity(IdentityMat)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -137,17 +137,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Square the scaled matrix.
     taylor_denom = -2.0
-    CALL CopyMatrixDS(OutputMat, Ak)
-    CALL DistributedGemm(ScaledMat,ScaledMat,TempMat, &
+    CALL CopyMatrix(OutputMat, Ak)
+    CALL MatrixMultiply(ScaledMat,ScaledMat,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL CopyMatrixDS(TempMat,ScaledMat)
+    CALL CopyMatrix(TempMat,ScaledMat)
 
     !! Expand Taylor Series
     DO counter=2,40,2
-       CALL DistributedGemm(Ak,ScaledMat,TempMat, &
+       CALL MatrixMultiply(Ak,ScaledMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,Ak)
-       CALL IncrementDistributedSparseMatrix(Ak,OutputMat, &
+       CALL CopyMatrix(TempMat,Ak)
+       CALL IncrementMatrix(Ak,OutputMat, &
             & alpha_in=REAL(1.0/taylor_denom,NTREAL))
        taylor_denom = taylor_denom * (counter+1)
        taylor_denom = -1.0*taylor_denom*(counter+1)
@@ -155,11 +155,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Undo scaling
     DO counter=1,sigma_counter-1
-       CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
+       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,OutputMat)
-       CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat, &
+       CALL CopyMatrix(TempMat,OutputMat)
+       CALL ScaleMatrix(OutputMat,REAL(2.0,NTREAL))
+       CALL IncrementMatrix(IdentityMat,OutputMat, &
             & REAL(-1.0,NTREAL))
     END DO
 
@@ -172,11 +172,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(ScaledMat)
-    CALL DestructDistributedSparseMatrix(Ak)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(IdentityMat)
-    CALL DestructDistributedSparseMatrix(Ak)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(Ak)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(IdentityMat)
+    CALL DestructMatrix(Ak)
   END SUBROUTINE ScaleSquareTrigonometryTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute trigonometric functions of a matrix.
@@ -236,13 +236,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL CopyMatrixDS(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmptyMatrixDS(OutputMat, &
+    CALL CopyMatrix(InputMat, ScaledMat)
+    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
+    CALL ConstructEmptyMatrix(OutputMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL ConstructEmptyMatrix(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
+    CALL FillMatrixIdentity(IdentityMat)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -272,56 +272,56 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     coefficients(17) = 9.181480886537484e-17_16
 
     !! Basic T Values.
-    CALL DistributedGemm(ScaledMat,ScaledMat,T2,alpha_in=REAL(2.0,NTREAL),&
+    CALL MatrixMultiply(ScaledMat,ScaledMat,T2,alpha_in=REAL(2.0,NTREAL),&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(IdentityMat,T2, &
+    CALL IncrementMatrix(IdentityMat,T2, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL DistributedGemm(T2,T2,T4,alpha_in=REAL(2.0,NTREAL),&
+    CALL MatrixMultiply(T2,T2,T4,alpha_in=REAL(2.0,NTREAL),&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(IdentityMat,T4, &
+    CALL IncrementMatrix(IdentityMat,T4, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL DistributedGemm(T4,T2,T6,alpha_in=REAL(2.0,NTREAL),&
+    CALL MatrixMultiply(T4,T2,T6,alpha_in=REAL(2.0,NTREAL),&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(T2,T6, &
+    CALL IncrementMatrix(T2,T6, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL DistributedGemm(T6,T2,T8,alpha_in=REAL(2.0,NTREAL),&
+    CALL MatrixMultiply(T6,T2,T8,alpha_in=REAL(2.0,NTREAL),&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(T4,T8, &
+    CALL IncrementMatrix(T4,T8, &
          & alpha_in=REAL(-1.0,NTREAL))
 
     !! Contribution from the second half.
-    CALL CopyMatrixDS(T8,OutputMat)
-    CALL ScaleDistributedSparseMatrix(OutputMat,0.5*coefficients(17))
-    CALL IncrementDistributedSparseMatrix(T6,OutputMat,&
+    CALL CopyMatrix(T8,OutputMat)
+    CALL ScaleMatrix(OutputMat,0.5*coefficients(17))
+    CALL IncrementMatrix(T6,OutputMat,&
          & alpha_in=REAL(0.5*coefficients(15),NTREAL))
-    CALL IncrementDistributedSparseMatrix(T4,OutputMat,&
+    CALL IncrementMatrix(T4,OutputMat,&
          & alpha_in=REAL(0.5*coefficients(13),NTREAL))
-    CALL IncrementDistributedSparseMatrix(T2,OutputMat,&
+    CALL IncrementMatrix(T2,OutputMat,&
          & alpha_in=REAL(0.5*coefficients(11),NTREAL))
-    CALL DistributedGemm(T8,OutputMat,TempMat,&
+    CALL MatrixMultiply(T8,OutputMat,TempMat,&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Contribution from the first half.
-    CALL CopyMatrixDS(T8,OutputMat)
-    CALL ScaleDistributedSparseMatrix(OutputMat,coefficients(9))
-    CALL IncrementDistributedSparseMatrix(T6,OutputMat,&
+    CALL CopyMatrix(T8,OutputMat)
+    CALL ScaleMatrix(OutputMat,coefficients(9))
+    CALL IncrementMatrix(T6,OutputMat,&
          & alpha_in=REAL(coefficients(7)+0.5*coefficients(11),NTREAL))
-    CALL IncrementDistributedSparseMatrix(T4,OutputMat,&
+    CALL IncrementMatrix(T4,OutputMat,&
          & alpha_in=REAL(coefficients(5)+0.5*coefficients(13),NTREAL))
-    CALL IncrementDistributedSparseMatrix(T2,OutputMat,&
+    CALL IncrementMatrix(T2,OutputMat,&
          & alpha_in=REAL(coefficients(3)+0.5*coefficients(15),NTREAL))
-    CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat,&
+    CALL IncrementMatrix(IdentityMat,OutputMat,&
          & alpha_in=REAL(coefficients(1)+0.5*coefficients(17),NTREAL))
 
-    CALL IncrementDistributedSparseMatrix(TempMat,OutputMat)
+    CALL IncrementMatrix(TempMat,OutputMat)
 
     !! Undo scaling
     DO counter=1,sigma_counter-1
-       CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
+       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,OutputMat)
-       CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat, &
+       CALL CopyMatrix(TempMat,OutputMat)
+       CALL ScaleMatrix(OutputMat,REAL(2.0,NTREAL))
+       CALL IncrementMatrix(IdentityMat,OutputMat, &
             & REAL(-1.0,NTREAL))
     END DO
 
@@ -334,13 +334,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(ScaledMat)
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(IdentityMat)
-    CALL DestructDistributedSparseMatrix(T2)
-    CALL DestructDistributedSparseMatrix(T4)
-    CALL DestructDistributedSparseMatrix(T6)
-    CALL DestructDistributedSparseMatrix(T8)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(IdentityMat)
+    CALL DestructMatrix(T2)
+    CALL DestructMatrix(T4)
+    CALL DestructMatrix(T6)
+    CALL DestructMatrix(T8)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE ScaleSquareTrigonometry
 END MODULE TrigonometrySolversModule

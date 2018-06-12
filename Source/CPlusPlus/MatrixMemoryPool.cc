@@ -10,8 +10,10 @@ extern "C" {
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 MatrixMemoryPool::MatrixMemoryPool(int columns, int rows) {
-  ConstructMatrixMemoryPool_wrp(ih_this, &columns, &rows);
+  ConstructMatrixMemoryPool_lr_wrp(ih_this, &columns, &rows);
 }
 
-MatrixMemoryPool::~MatrixMemoryPool() { DestructMatrixMemoryPool_wrp(ih_this); }
+MatrixMemoryPool::~MatrixMemoryPool() {
+  DestructMatrixMemoryPool_lr_wrp(ih_this);
+}
 } // namespace NTPoly

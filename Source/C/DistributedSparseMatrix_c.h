@@ -1,40 +1,39 @@
 #ifndef DISTRIBUTEDSPARSEMATRIX_ch
 #define DISTRIBUTEDSPARSEMATRIX_ch
 
-void ConstructEmptyDistributedSparseMatrix_wrp(int *ih_this,
-                                               const int *matrix_dim);
-void CopyDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_matB);
-void DestructDistributedSparseMatrix_wrp(int *ih_this);
-void ConstructFromMatrixMarket_wrp(int *ih_this, const char *file_name,
-                                   const int *name_size);
-void ConstructFromBinary_wrp(int *ih_this, const char *file_name,
-                             const int *name_size);
-void WriteToBinary_wrp(const int *ih_this, const char *file_name,
-                       const int *name_size);
-void WriteToMatrixMarket_wrp(const int *ih_this, const char *file_name,
-                             const int *name_size);
-void FillFromTripletList_wrp(const int *ih_this, const int *ih_triplet_list);
-void FillDistributedPermutation_wrp(int *ih_this, const int *ih_permutation,
-                                    const bool *permuterows);
-void FillDistributedIdentity_wrp(int *ih_this);
-void GetActualDimension_wrp(const int *ih_this, int *size);
-void GetLogicalDimension_wrp(const int *ih_this, int *size);
-void GetTripletList_wrp(const int *ih_this, int *ih_triplet_list);
-void GetMatrixBlock_wrp(const int *ih_this, int *ih_triplet_list,
-                        int *start_row, int *end_row, int *start_column,
-                        int *end_column);
-void TransposeDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_transmat);
-double DotDistributedSparseMatrix_wrp(const int *ih_matA, const int *ih_matB);
-void IncrementDistributedSparseMatrix_wrp(const int *ih_matA, int *ih_matB,
-                                          const double *alpha_in,
-                                          const double *threshold_in);
-void DistributedPairwiseMultiply_wrp(const int *ih_matA, const int *ih_matB,
-                                     int *ih_matC);
-void DistributedGemm_wrp(const int *ih_matA, const int *ih_matB, int *ih_matC,
-                         const double *alpha_in, const double *beta_in,
-                         const double *threshold_in, int *ih_memory_pool_in);
-void ScaleDistributedSparseMatrix_wrp(int *ih_this, const double *constant);
-double DistributedSparseNorm_wrp(const int *ih_this);
-double Trace_wrp(const int *ih_this);
+void ConstructEmptyMatrix_ps_wrp(int *ih_this, const int *matrix_dim);
+void CopyMatrix_ps_wrp(const int *ih_matA, int *ih_matB);
+void DestructMatrix_ps_wrp(int *ih_this);
+void ConstructMatrixFromMatrixMarket_ps_wrp(int *ih_this, const char *file_name,
+                                            const int *name_size);
+void ConstructMatrixFromBinary_ps_wrp(int *ih_this, const char *file_name,
+                                      const int *name_size);
+void WriteMatrixToBinary_ps_wrp(const int *ih_this, const char *file_name,
+                                const int *name_size);
+void WriteMatrixToMatrixMarket_ps_wrp(const int *ih_this, const char *file_name,
+                                      const int *name_size);
+void FillMatrixFromTripletList_ps_wrp(const int *ih_this,
+                                      const int *ih_triplet_list);
+void FillMatrixPermutation_ps_wrp(int *ih_this, const int *ih_permutation,
+                                  const bool *permuterows);
+void FillMatrixIdentity_ps_wrp(int *ih_this);
+void GetMatrixActualDimension_ps_wrp(const int *ih_this, int *size);
+void GetMatrixLogicalDimension_ps_wrp(const int *ih_this, int *size);
+void GetMatrixTripletList_ps_wrp(const int *ih_this, int *ih_triplet_list);
+void GetMatrixBlock_ps_wrp(const int *ih_this, int *ih_triplet_list,
+                           int *start_row, int *end_row, int *start_column,
+                           int *end_column);
+void TransposeMatrix_ps_wrp(const int *ih_matA, int *ih_transmat);
+double DotMatrix_ps_wrp(const int *ih_matA, const int *ih_matB);
+void IncrementMatrix_ps_wrp(const int *ih_matA, int *ih_matB,
+                            const double *alpha_in, const double *threshold_in);
+void MatrixPairwiseMultiply_ps_wrp(const int *ih_matA, const int *ih_matB,
+                                   int *ih_matC);
+void MatrixMultiply_ps_wrp(const int *ih_matA, const int *ih_matB, int *ih_matC,
+                           const double *alpha_in, const double *beta_in,
+                           const double *threshold_in, int *ih_memory_pool_in);
+void ScaleMatrix_ps_wrp(int *ih_this, const double *constant);
+double MatrixNorm_ps_wrp(const int *ih_this);
+double MatrixTrace_ps_wrp(const int *ih_this);
 
 #endif

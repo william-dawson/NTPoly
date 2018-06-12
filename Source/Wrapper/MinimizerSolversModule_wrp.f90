@@ -2,8 +2,8 @@
 !> Wraps the minimizer solvers module for calling from other languages.
 MODULE MinimizerSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE MinimizerSolversModule, ONLY : ConjugateGradient
   USE WrapperModule, ONLY : SIZE_wrp
@@ -23,9 +23,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Density(SIZE_wrp)
     REAL(NTREAL), INTENT(OUT) :: chemical_potential_out
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Hamiltonian
-    TYPE(DistributedSparseMatrix_wrp) :: h_InverseSquareRoot
-    TYPE(DistributedSparseMatrix_wrp) :: h_Density
+    TYPE(Matrix_ps_wrp) :: h_Hamiltonian
+    TYPE(Matrix_ps_wrp) :: h_InverseSquareRoot
+    TYPE(Matrix_ps_wrp) :: h_Density
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Hamiltonian = TRANSFER(ih_Hamiltonian,h_Hamiltonian)

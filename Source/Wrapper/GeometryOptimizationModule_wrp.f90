@@ -4,8 +4,8 @@ MODULE GeometryOptimizationModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE GeometryOptimizationModule, ONLY : PurificationExtrapolate, &
        & LowdinExtrapolate
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
@@ -24,9 +24,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: nel
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_NewDensity(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_PreviousDensity
-    TYPE(DistributedSparseMatrix_wrp) :: h_Overlap
-    TYPE(DistributedSparseMatrix_wrp) :: h_NewDensity
+    TYPE(Matrix_ps_wrp) :: h_PreviousDensity
+    TYPE(Matrix_ps_wrp) :: h_Overlap
+    TYPE(Matrix_ps_wrp) :: h_NewDensity
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_PreviousDensity = TRANSFER(ih_PreviousDensity,h_PreviousDensity)
@@ -47,10 +47,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_NewOverlap(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_NewDensity(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_PreviousDensity
-    TYPE(DistributedSparseMatrix_wrp) :: h_OldOverlap
-    TYPE(DistributedSparseMatrix_wrp) :: h_NewOverlap
-    TYPE(DistributedSparseMatrix_wrp) :: h_NewDensity
+    TYPE(Matrix_ps_wrp) :: h_PreviousDensity
+    TYPE(Matrix_ps_wrp) :: h_OldOverlap
+    TYPE(Matrix_ps_wrp) :: h_NewOverlap
+    TYPE(Matrix_ps_wrp) :: h_NewDensity
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_PreviousDensity = TRANSFER(ih_PreviousDensity,h_PreviousDensity)

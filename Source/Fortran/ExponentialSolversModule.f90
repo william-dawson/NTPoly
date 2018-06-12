@@ -70,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyMatrixDS(OutputMat, &
+    CALL ConstructEmptyMatrix(OutputMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
 
     !! Scale the matrix
@@ -81,8 +81,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
-    CALL CopyMatrixDS(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    CALL CopyMatrix(InputMat, ScaledMat)
+    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
     sub_solver_parameters%threshold = sub_solver_parameters%threshold/sigma_val
 
     IF (solver_parameters%be_verbose) THEN
@@ -136,9 +136,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     DO counter=1,sigma_counter-1
-       CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
+       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,OutputMat)
+       CALL CopyMatrix(TempMat,OutputMat)
     END DO
 
     IF (solver_parameters%be_verbose) THEN
@@ -155,8 +155,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     CALL DestructChebyshevPolynomial(polynomial)
-    CALL DestructMatrixDS(ScaledMat)
-    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(TempMat)
   END SUBROUTINE ComputeExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a pade approximation.
@@ -203,20 +203,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL ConstructEmptyMatrix(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
+    CALL FillMatrixIdentity(IdentityMat)
 
     !! Scale the matrix
-    spectral_radius = DistributedSparseNorm(InputMat)
+    spectral_radius = MatrixNorm(InputMat)
     sigma_val = 1.0
     sigma_counter = 1
     DO WHILE (spectral_radius/sigma_val .GT. 1.0)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
-    CALL CopyMatrixDS(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    CALL CopyMatrix(InputMat, ScaledMat)
+    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
     IF (solver_parameters%be_verbose) THEN
        CALL WriteElement(key="Sigma", float_value_in=sigma_val)
        CALL WriteElement(key="Scaling_Steps", int_value_in=sigma_counter)
@@ -227,46 +227,46 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sub_solver_parameters%threshold = sub_solver_parameters%threshold/sigma_val
 
     !! Power Matrices
-    CALL DistributedGemm(ScaledMat, ScaledMat, B1, &
+    CALL MatrixMultiply(ScaledMat, ScaledMat, B1, &
          & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
-    CALL DistributedGemm(B1, B1, B2, &
+    CALL MatrixMultiply(B1, B1, B2, &
          & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
-    CALL DistributedGemm(B2, B2, B3, &
+    CALL MatrixMultiply(B2, B2, B3, &
          & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
 
     !! Polynomials - 1
-    CALL CopyMatrixDS(IdentityMat, P1)
-    CALL ScaleDistributedSparseMatrix(P1,REAL(17297280.0_16,KIND=NTREAL))
-    CALL IncrementDistributedSparseMatrix(B1, P1, &
+    CALL CopyMatrix(IdentityMat, P1)
+    CALL ScaleMatrix(P1,REAL(17297280.0_16,KIND=NTREAL))
+    CALL IncrementMatrix(B1, P1, &
          & alpha_in=REAL(1995840.0_16,KIND=NTREAL))
-    CALL IncrementDistributedSparseMatrix(B2, P1, &
+    CALL IncrementMatrix(B2, P1, &
          & alpha_in=REAL(25200.0_16,KIND=NTREAL))
-    CALL IncrementDistributedSparseMatrix(B3, P1, &
+    CALL IncrementMatrix(B3, P1, &
          & alpha_in=REAL(56.0_16,KIND=NTREAL))
     !! Polynomials - 2
-    CALL CopyMatrixDS(IdentityMat, TempMat)
-    CALL ScaleDistributedSparseMatrix(TempMat,REAL(8648640.0_16,KIND=NTREAL))
-    CALL IncrementDistributedSparseMatrix(B1, TempMat, &
+    CALL CopyMatrix(IdentityMat, TempMat)
+    CALL ScaleMatrix(TempMat,REAL(8648640.0_16,KIND=NTREAL))
+    CALL IncrementMatrix(B1, TempMat, &
          & alpha_in=REAL(277200.0_16,KIND=NTREAL))
-    CALL IncrementDistributedSparseMatrix(B2, TempMat, &
+    CALL IncrementMatrix(B2, TempMat, &
          & alpha_in=REAL(1512.0_16,KIND=NTREAL))
-    CALL IncrementDistributedSparseMatrix(B3, TempMat)
-    CALL DistributedGemm(ScaledMat, TempMat, P2, &
+    CALL IncrementMatrix(B3, TempMat)
+    CALL MatrixMultiply(ScaledMat, TempMat, P2, &
          & threshold_in=sub_solver_parameters%threshold, memory_pool_in=pool)
 
     !! Left and Right
-    CALL CopyMatrixDS(P1, LeftMat)
-    CALL IncrementDistributedSparseMatrix(P2, LeftMat, REAL(-1.0,NTREAL))
-    CALL CopyMatrixDS(P1, RightMat)
-    CALL IncrementDistributedSparseMatrix(P2, RightMat, REAL(1.0,NTREAL))
+    CALL CopyMatrix(P1, LeftMat)
+    CALL IncrementMatrix(P2, LeftMat, REAL(-1.0,NTREAL))
+    CALL CopyMatrix(P1, RightMat)
+    CALL IncrementMatrix(P2, RightMat, REAL(1.0,NTREAL))
 
     CALL CGSolver(LeftMat, OutputMat, RightMat, sub_solver_parameters)
 
     !! Undo the scaling by squaring at the end.
     DO counter=1,sigma_counter-1
-       CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
+       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,OutputMat)
+       CALL CopyMatrix(TempMat,OutputMat)
     END DO
 
     IF (solver_parameters%be_verbose) THEN
@@ -277,16 +277,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructMatrixDS(ScaledMat)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(B1)
-    CALL DestructMatrixDS(B2)
-    CALL DestructMatrixDS(B3)
-    CALL DestructMatrixDS(P1)
-    CALL DestructMatrixDS(P2)
-    CALL DestructMatrixDS(LeftMat)
-    CALL DestructMatrixDS(RightMat)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(B1)
+    CALL DestructMatrix(B2)
+    CALL DestructMatrix(B3)
+    CALL DestructMatrix(P1)
+    CALL DestructMatrix(P2)
+    CALL DestructMatrix(LeftMat)
+    CALL DestructMatrix(RightMat)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE ComputeExponentialPade
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a taylor series expansion.
@@ -344,12 +344,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL CopyMatrixDS(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    CALL CopyMatrix(InputMat, ScaledMat)
+    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
 
-    CALL ConstructEmptyMatrixDS(OutputMat, &
+    CALL ConstructEmptyMatrix(OutputMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(OutputMat)
+    CALL FillMatrixIdentity(OutputMat)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -361,19 +361,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Expand Taylor Series
     taylor_denom = 1.0
-    CALL CopyMatrixDS(OutputMat, Ak)
+    CALL CopyMatrix(OutputMat, Ak)
     DO counter=1,10
        taylor_denom = taylor_denom * counter
-       CALL DistributedGemm(Ak,ScaledMat,TempMat, &
+       CALL MatrixMultiply(Ak,ScaledMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,Ak)
-       CALL IncrementDistributedSparseMatrix(Ak,OutputMat)
+       CALL CopyMatrix(TempMat,Ak)
+       CALL IncrementMatrix(Ak,OutputMat)
     END DO
 
     DO counter=1,sigma_counter-1
-       CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
+       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,OutputMat)
+       CALL CopyMatrix(TempMat,OutputMat)
     END DO
 
     IF (solver_parameters%do_load_balancing) THEN
@@ -385,10 +385,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructMatrixDS(ScaledMat)
-    CALL DestructMatrixDS(Ak)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(Ak)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE ComputeExponentialTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
@@ -436,12 +436,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL ConstructEmptyMatrix(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
+    CALL FillMatrixIdentity(IdentityMat)
 
     !! Copy to a temporary matrix for scaling.
-    CALL CopyMatrixDS(InputMat,ScaledMat)
+    CALL CopyMatrix(InputMat,ScaledMat)
 
     !! Compute The Scaling Factor
     sigma_val = 1
@@ -460,7 +460,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_solver_parameters)
 
     !! Shift Scaled Matrix
-    CALL IncrementDistributedSparseMatrix(IdentityMat,ScaledMat, &
+    CALL IncrementMatrix(IdentityMat,ScaledMat, &
          & alpha_in=REAL(-1.0,NTREAL))
 
     !! Expand Chebyshev Series
@@ -534,7 +534,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & f_sub_solver_parameters)
 
     !! Scale Back
-    CALL ScaleDistributedSparseMatrix(OutputMat, &
+    CALL ScaleMatrix(OutputMat, &
          & REAL(2**(sigma_counter-1),NTREAL))
 
     !! Cleanup
@@ -542,9 +542,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     CALL DestructChebyshevPolynomial(polynomial)
-    CALL DestructMatrixDS(ScaledMat)
-    CALL DestructMatrixDS(IdentityMat)
-    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(IdentityMat)
+    CALL DestructMatrix(TempMat)
   END SUBROUTINE ComputeLogarithm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix using a taylor series expansion.
@@ -596,25 +596,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Figure out how much to scale the matrix.
     sigma_val = 1.0
     sigma_counter = 1
-    CALL CopyMatrixDS(InputMat,ScaledMat)
+    CALL CopyMatrix(InputMat,ScaledMat)
     !do while (spectral_radius/sigma_val .gt. 1.1e-5)
     DO WHILE (spectral_radius/sigma_val .GT. 1.1e-7)
        CALL SquareRoot(ScaledMat,TempMat,sub_solver_parameters)
-       CALL CopyMatrixDS(TempMat,ScaledMat)
+       CALL CopyMatrix(TempMat,ScaledMat)
        CALL GershgorinBounds(ScaledMat, e_min, e_max)
        spectral_radius = MAX(ABS(e_min), ABS(e_max))
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL ConstructEmptyMatrix(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
+    CALL FillMatrixIdentity(IdentityMat)
 
     !! Setup Matrices
-    CALL IncrementDistributedSparseMatrix(IdentityMat,ScaledMat, &
+    CALL IncrementMatrix(IdentityMat,ScaledMat, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL CopyMatrixDS(IdentityMat,Ak)
+    CALL CopyMatrix(IdentityMat,Ak)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -625,22 +625,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Expand taylor series.
-    CALL CopyMatrixDS(ScaledMat,OutputMat)
+    CALL CopyMatrix(ScaledMat,OutputMat)
     DO counter=2,10
        IF (MOD(counter,2) .EQ. 0) THEN
           taylor_denom = -1 * counter
        ELSE
           taylor_denom = counter
        END IF
-       CALL DistributedGemm(Ak,ScaledMat,TempMat, &
+       CALL MatrixMultiply(Ak,ScaledMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(TempMat,Ak)
-       CALL IncrementDistributedSparseMatrix(Ak, OutputMat, &
+       CALL CopyMatrix(TempMat,Ak)
+       CALL IncrementMatrix(Ak, OutputMat, &
             & alpha_in=1.0/taylor_denom)
     END DO
 
     !! Undo scaling.
-    CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2**sigma_counter,NTREAL))
+    CALL ScaleMatrix(OutputMat,REAL(2**sigma_counter,NTREAL))
 
     !! Undo load balancing.
     IF (solver_parameters%do_load_balancing) THEN
@@ -652,10 +652,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructMatrixDS(ScaledMat)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(IdentityMat)
-    CALL DestructMatrixDS(Ak)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(ScaledMat)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(IdentityMat)
+    CALL DestructMatrix(Ak)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE ComputeLogarithmTaylor
 END MODULE ExponentialSolversModule

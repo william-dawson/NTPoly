@@ -3,16 +3,14 @@
 MODULE MatrixPSAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p, &
-       & ConstructMatrixMemoryPoolD, CheckMemoryPoolDValidity
+       & CheckMemoryPoolValidity, ConstructMatrixMemoryPool
   USE MatrixPSModule
   USE GemmTasksModule
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
        & ReduceAndComposeData, ReduceAndComposeCleanup, ReduceAndSumData, &
        & ReduceAndSumCleanup, TestReduceSizeRequest, TestReduceOuterRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
-  USE MatrixSAlgebraModule, ONLY : DotMatrix, PairwiseMultiplyMatrix, &
-       & MatrixColumnNorm, ScaleMatrix, IncrementMatrix, &
-       & GemmMatrix, MatrixGrandSum
+  USE MatrixSAlgebraModule
   USE MatrixSModule, ONLY : Matrix_lsr, DestructMatrix,  CopyMatrix, &
        & TransposeMatrix, ComposeMatrixColumns, MatrixToTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -22,22 +20,49 @@ MODULE MatrixPSAlgebraModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !! Basic Linear Algebra
-  PUBLIC :: ComputeSigma
-  PUBLIC :: DistributedGemm
-  PUBLIC :: DistributedGrandSum
-  PUBLIC :: DistributedPairwiseMultiply
-  PUBLIC :: DistributedSparseNorm
-  PUBLIC :: DotDistributedSparseMatrix
-  PUBLIC :: IncrementDistributedSparseMatrix
-  PUBLIC :: ScaleDistributedSparseMatrix
-  PUBLIC :: Trace
+  PUBLIC :: ComputeMatrixSigma
+  PUBLIC :: MatrixMultiply
+  PUBLIC :: MatrixGrandSum
+  PUBLIC :: PairwiseMultiplyMatrix
+  PUBLIC :: MatrixNorm
+  PUBLIC :: DotMatrix
+  PUBLIC :: IncrementMatrix
+  PUBLIC :: ScaleMatrix
+  PUBLIC :: MatrixTrace
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE ComputeMatrixSigma
+    MODULE PROCEDURE ComputeMatrixSigma_ps
+  END INTERFACE
+  INTERFACE MatrixMultiply
+    MODULE PROCEDURE MatrixMultiply_ps
+  END INTERFACE
+  INTERFACE MatrixGrandSum
+    MODULE PROCEDURE MatrixGrandSum_ps
+  END INTERFACE
+  INTERFACE PairwiseMultiplyMatrix
+    MODULE PROCEDURE PairwiseMultiplyMatrix_ps
+  END INTERFACE
+  INTERFACE MatrixNorm
+    MODULE PROCEDURE MatrixNorm_ps
+  END INTERFACE
+  INTERFACE DotMatrix
+    MODULE PROCEDURE DotMatrix_ps
+  END INTERFACE
+  INTERFACE IncrementMatrix
+    MODULE PROCEDURE IncrementMatrix_ps
+  END INTERFACE
+  INTERFACE ScaleMatrix
+    MODULE PROCEDURE ScaleMatrix_ps
+  END INTERFACE
+  INTERFACE MatrixTrace
+    MODULE PROCEDURE MatrixTrace_ps
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute sigma for the inversion method.
   !! See \cite ozaki2001efficient for details.
   !! @param[in] this the matrix to compute the sigma value of.
   !! @param[out] sigma_value sigma.
-  SUBROUTINE ComputeSigma(this, sigma_value)
+  SUBROUTINE ComputeMatrixSigma_ps(this, sigma_value)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: sigma_value
@@ -49,7 +74,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Merge all the local data
-    CALL MergeLocalBlocks(this, merged_local_data)
+    CALL MergeMatrixLocalBlocks(this, merged_local_data)
 
     ALLOCATE(column_sigma_contribution(merged_local_data%columns))
     column_sigma_contribution = 0
@@ -70,7 +95,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     DEALLOCATE(column_sigma_contribution)
     CALL DestructMatrix(merged_local_data)
-  END SUBROUTINE ComputeSigma
+  END SUBROUTINE ComputeMatrixSigma_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !! C := alpha*matA*matB+ beta*matC
@@ -81,7 +106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] beta_in scales matrix we sum on to
   !! @param[in] threshold_in for flushing values to zero (Optional, default=0).
   !! @param[inout] memory_pool_in a memory pool for the calculation (Optional).
-  SUBROUTINE DistributedGemm(matA, matB ,matC, alpha_in, beta_in, threshold_in,&
+  SUBROUTINE MatrixMultiply_ps(matA, matB ,matC, alpha_in, beta_in, threshold_in,&
        & memory_pool_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)    :: matA
@@ -153,7 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct The Temporary Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(matAB, &
+    CALL ConstructEmptyMatrix(matAB, &
          & matA%actual_matrix_dimension, matA%process_grid)
 
     ALLOCATE(AdjacentABlocks(matAB%process_grid%number_of_blocks_rows, &
@@ -206,8 +231,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup AB Tasks
     IF (PRESENT(memory_pool_in)) THEN
-       IF (.NOT. CheckMemoryPoolDValidity(memory_pool_in)) THEN
-          CALL ConstructMatrixMemoryPoolD(memory_pool_in, matAB)
+       IF (.NOT. CheckMemoryPoolValidity(memory_pool_in)) THEN
+          CALL ConstructMatrixMemoryPool(memory_pool_in, matAB)
        END IF
     END IF
 
@@ -345,14 +370,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 ABTasks(II,JJ) = TaskRunningAB
                 !$OMP TASK DEFAULT(shared), FIRSTPRIVATE(II,JJ)
                 IF (PRESENT(memory_pool_in)) THEN
-                   CALL GemmMatrix(GatheredRowContributionT(II), &
+                   CALL MatrixMultiply(GatheredRowContributionT(II), &
                         & GatheredColumnContribution(JJ), &
                         & SliceContribution(II,JJ), &
                         & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
                         & alpha_in=alpha, threshold_in=working_threshold, &
                         & blocked_memory_pool_in=memory_pool_in%grid(II,JJ))
                 ELSE
-                   CALL GemmMatrix(GatheredRowContributionT(II), &
+                   CALL MatrixMultiply(GatheredRowContributionT(II), &
                         & GatheredColumnContribution(JJ), &
                         & SliceContribution(II,JJ), &
                         & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
@@ -407,14 +432,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Copy to output matrix.
     IF (beta .EQ. 0.0) THEN
-       CALL CopyDistributedSparseMatrix(matAB,matC)
+       CALL CopyMatrix(matAB,matC)
     ELSE
-       CALL ScaleDistributedSparseMatrix(MatC,beta)
-       CALL IncrementDistributedSparseMatrix(MatAB,MatC)
+       CALL ScaleMatrix(MatC,beta)
+       CALL IncrementMatrix(MatAB,MatC)
     END IF
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(matAB)
+    CALL DestructMatrix(matAB)
     DEALLOCATE(row_helper)
     DEALLOCATE(column_helper)
     DEALLOCATE(slice_helper)
@@ -459,12 +484,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(SliceContribution)
 
     CALL StopTimer("GEMM")
-  END SUBROUTINE DistributedGemm
+  END SUBROUTINE MatrixMultiply_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the elements in a matrix into a single value.
   !! @param[in] this matrix to compute.
   !! @result sum the sum of all elements.
-  FUNCTION DistributedGrandSum(this) RESULT(sum)
+  FUNCTION MatrixGrandSum_ps(this) RESULT(sum)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: this
     REAL(NTREAL) :: sum
@@ -484,14 +509,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Sum Among Process Slice
     CALL MPI_Allreduce(MPI_IN_PLACE, sum, 1, MPINTREAL, &
          & MPI_SUM, this%process_grid%within_slice_comm, ierr)
-  END FUNCTION DistributedGrandSum
+  END FUNCTION MatrixGrandSum_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication. C_ij = A_ij * B_ij.
   !! Also known as a Hadamard product.
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @param[inout] matC = MatA mult MatB.
-  SUBROUTINE DistributedPairwiseMultiply(matA, matB, matC)
+  SUBROUTINE PairwiseMultiplyMatrix_ps(matA, matB, matC)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: matA
     TYPE(Matrix_ps), INTENT(IN)  :: matB
@@ -499,7 +524,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: II, JJ
 
-    CALL ConstructEmptyDistributedSparseMatrix(matC, &
+    CALL ConstructEmptyMatrix(matC, &
          & matA%actual_matrix_dimension, matA%process_grid)
 
     !$omp parallel
@@ -512,12 +537,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     !$omp end do
     !$omp end parallel
-  END SUBROUTINE DistributedPairwiseMultiply
+  END SUBROUTINE PairwiseMultiplyMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a distributed sparse matrix along the rows.
   !! @param[in] this the matrix to compute the norm of.
   !! @return the norm value of the full distributed sparse matrix.
-  FUNCTION DistributedSparseNorm(this) RESULT(norm_value)
+  FUNCTION MatrixNorm_ps(this) RESULT(norm_value)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     REAL(NTREAL) :: norm_value
@@ -527,7 +552,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Merge all the local data
-    CALL MergeLocalBlocks(this, merged_local_data)
+    CALL MergeMatrixLocalBlocks(this, merged_local_data)
     ALLOCATE(local_norm(merged_local_data%columns))
 
     !! Sum Along Columns
@@ -542,7 +567,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructMatrix(merged_local_data)
     DEALLOCATE(local_norm)
-  END FUNCTION DistributedSparseNorm
+  END FUNCTION MatrixNorm_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(Matrix A,Matrix B)
   !! Note that a dot product is the sum of elementwise multiplication, not
@@ -550,7 +575,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matA Matrix A.
   !! @param[in,out] matB Matrix B.
   !! @result product the dot product.
-  FUNCTION DotDistributedSparseMatrix(matA, matB) RESULT(product)
+  FUNCTION DotMatrix_ps(matA, matB) RESULT(product)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: matA
     TYPE(Matrix_ps), INTENT(IN)  :: matB
@@ -558,10 +583,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_ps)  :: matC
 
-    CALL DistributedPairwiseMultiply(matA,matB,matC)
-    product = DistributedGrandSum(matC)
-    CALL DestructDistributedSparseMatrix(matC)
-  END FUNCTION DotDistributedSparseMatrix
+    CALL PairwiseMultiplyMatrix(matA,matB,matC)
+    product = MatrixGrandSum(matC)
+    CALL DestructMatrix(matC)
+  END FUNCTION DotMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   !! This will utilize the sparse vector increment routine.
@@ -569,7 +594,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matB Matrix B.
   !! @param[in] alpha_in multiplier. (Optional, default= 1.0)
   !! @param[in] threshold_in for flushing values to zero. (Optional, default=0)
-  SUBROUTINE IncrementDistributedSparseMatrix(matA, matB, alpha_in,threshold_in)
+  SUBROUTINE IncrementMatrix_ps(matA, matB, alpha_in,threshold_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: matA
     TYPE(Matrix_ps), INTENT(INOUT)  :: matB
@@ -603,12 +628,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$omp end do
     !$omp end parallel
 
-  END SUBROUTINE IncrementDistributedSparseMatrix
+  END SUBROUTINE IncrementMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
   !! @param[inout] this Matrix to scale.
   !! @param[in] constant scale factor.
-  SUBROUTINE ScaleDistributedSparseMatrix(this,constant)
+  SUBROUTINE ScaleMatrix_ps(this,constant)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     REAL(NTREAL), INTENT(IN) :: constant
@@ -623,12 +648,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     !$omp end do
     !$omp end parallel
-  END SUBROUTINE ScaleDistributedSparseMatrix
+  END SUBROUTINE ScaleMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
   !! @param[in] this the matrix to compute the trace of.
   !! @return the trace value of the full distributed sparse matrix.
-  FUNCTION Trace(this) RESULT(trace_value)
+  FUNCTION MatrixTrace_ps(this) RESULT(trace_value)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     REAL(NTREAL) :: trace_value
@@ -640,7 +665,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Merge all the local data
-    CALL MergeLocalBlocks(this, merged_local_data)
+    CALL MergeMatrixLocalBlocks(this, merged_local_data)
 
     !! Compute The Local Contribution
     trace_value = 0
@@ -657,5 +682,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_SUM, this%process_grid%within_slice_comm, ierr)
 
     CALL DestructMatrix(merged_local_data)
-  END FUNCTION Trace
+  END FUNCTION MatrixTrace_ps
 END MODULE MatrixPSAlgebraModule

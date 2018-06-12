@@ -20,6 +20,7 @@ set(Fsrc
     InverseSolversModule.f90
     IterativeSolversModule.f90
     LinearSolversModule.f90
+    LoadBalancerModule.f90
     MinimizerSolversModule.f90
     ParameterConverterModule.f90
     PermutationModule.f90
@@ -47,7 +48,6 @@ set(FDistributed
 set(FHelpers
     ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/ErrorModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/GemmTasksModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/LoadBalancerModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/LoggingModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/MatrixMarketModule.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/TimerModule.f90

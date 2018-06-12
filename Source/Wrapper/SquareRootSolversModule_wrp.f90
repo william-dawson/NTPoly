@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the square root solvers module for calling from other languages.
 MODULE SquareRootSolversModule_wrp
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
   USE WrapperModule, ONLY : SIZE_wrp
@@ -19,8 +19,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseSquareRootMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
-    TYPE(DistributedSparseMatrix_wrp) :: h_InverseSquareRootMat
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_InverseSquareRootMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
@@ -38,8 +38,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_SquareRootMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
-    TYPE(DistributedSparseMatrix_wrp) :: h_SquareRootMat
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_SquareRootMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)

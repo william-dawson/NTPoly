@@ -56,17 +56,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrice
-    CALL ConstructEmptyMatrixDS(InverseMat, &
+    CALL ConstructEmptyMatrix(InverseMat, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp1, &
+    CALL ConstructEmptyMatrix(Temp1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp2, &
+    CALL ConstructEmptyMatrix(Temp2, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(BalancedMat1, &
+    CALL ConstructEmptyMatrix(BalancedMat1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
     CALL StartTimer("Load Balance")
@@ -76,16 +76,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(Mat1, BalancedMat1, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     ELSE
-       CALL CopyMatrixDS(Mat1,BalancedMat1)
+       CALL CopyMatrix(Mat1,BalancedMat1)
     END IF
     CALL StopTimer("Load Balance")
 
     !! Compute Sigma
-    CALL ComputeSigma(BalancedMat1,sigma)
+    CALL ComputeMatrixSigma(BalancedMat1,sigma)
 
     !! Create Inverse Guess
-    CALL CopyMatrixDS(BalancedMat1,InverseMat)
-    CALL ScaleDistributedSparseMatrix(InverseMat,sigma)
+    CALL CopyMatrix(BalancedMat1,InverseMat)
+    CALL ScaleMatrix(InverseMat,sigma)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -103,24 +103,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ExitSubLog
        END IF
 
-       CALL DistributedGemm(InverseMat,BalancedMat1,Temp1, &
+       CALL MatrixMultiply(InverseMat,BalancedMat1,Temp1, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
        !! Check if Converged
-       CALL CopyMatrixDS(Identity,Temp2)
-       CALL IncrementDistributedSparseMatrix(Temp1,Temp2,REAL(-1.0,NTREAL))
-       norm_value = DistributedSparseNorm(Temp2)
+       CALL CopyMatrix(Identity,Temp2)
+       CALL IncrementMatrix(Temp1,Temp2,REAL(-1.0,NTREAL))
+       norm_value = MatrixNorm(Temp2)
 
-       CALL DestructDistributedSparseMatrix(Temp2)
-       CALL DistributedGemm(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
+       CALL DestructMatrix(Temp2)
+       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
 
        !! Save a copy of the last inverse matrix
-       CALL CopyMatrixDS(InverseMat,Temp1)
+       CALL CopyMatrix(InverseMat,Temp1)
 
-       CALL ScaleDistributedSparseMatrix(InverseMat,TWO)
+       CALL ScaleMatrix(InverseMat,TWO)
 
-       CALL IncrementDistributedSparseMatrix(Temp2,InverseMat, &
+       CALL IncrementMatrix(Temp2,InverseMat, &
             & threshold_in=solver_parameters%threshold)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
@@ -147,10 +147,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(Temp1)
-    CALL DestructDistributedSparseMatrix(Temp2)
-    CALL DestructDistributedSparseMatrix(BalancedMat1)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(Temp1)
+    CALL DestructMatrix(Temp2)
+    CALL DestructMatrix(BalancedMat1)
+    CALL DestructMatrixMemoryPool(pool1)
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
@@ -193,17 +193,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(InverseMat, &
+    CALL ConstructEmptyMatrix(InverseMat, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp1, &
+    CALL ConstructEmptyMatrix(Temp1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp2, &
+    CALL ConstructEmptyMatrix(Temp2, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(BalancedMat1, &
+    CALL ConstructEmptyMatrix(BalancedMat1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -212,15 +212,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(Mat1, BalancedMat1, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     ELSE
-       CALL CopyMatrixDS(Mat1,BalancedMat1)
+       CALL CopyMatrix(Mat1,BalancedMat1)
     END IF
 
     !! Compute Sigma
-    CALL ComputeSigma(BalancedMat1,sigma)
+    CALL ComputeMatrixSigma(BalancedMat1,sigma)
 
     !! Create Inverse Guess
-    CALL CopyMatrixDS(BalancedMat1,InverseMat)
-    CALL ScaleDistributedSparseMatrix(InverseMat,sigma)
+    CALL CopyMatrix(BalancedMat1,InverseMat)
+    CALL ScaleMatrix(InverseMat,sigma)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -237,21 +237,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ExitSubLog
        END IF
 
-       CALL DistributedGemm(InverseMat,BalancedMat1,Temp1, &
+       CALL MatrixMultiply(InverseMat,BalancedMat1,Temp1, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL DistributedGemm(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
+       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
 
        !! Save a copy of the last inverse matrix
-       CALL CopyMatrixDS(InverseMat,Temp1)
+       CALL CopyMatrix(InverseMat,Temp1)
 
-       CALL ScaleDistributedSparseMatrix(InverseMat,TWO)
-       CALL IncrementDistributedSparseMatrix(Temp2,InverseMat, &
+       CALL ScaleMatrix(InverseMat,TWO)
+       CALL IncrementMatrix(Temp2,InverseMat, &
             & threshold_in=solver_parameters%threshold)
 
        !! Check if Converged
-       CALL IncrementDistributedSparseMatrix(InverseMat,Temp1,REAL(-1.0,NTREAL))
-       norm_value = DistributedSparseNorm(Temp1)
+       CALL IncrementMatrix(InverseMat,Temp1,REAL(-1.0,NTREAL))
+       norm_value = MatrixNorm(Temp1)
 
        !! Sometimes the first few values don't change so much, so that's why
        !! I added the outer counter check
@@ -277,9 +277,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(Temp1)
-    CALL DestructDistributedSparseMatrix(Temp2)
-    CALL DestructDistributedSparseMatrix(BalancedMat1)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(Temp1)
+    CALL DestructMatrix(Temp2)
+    CALL DestructMatrix(BalancedMat1)
+    CALL DestructMatrixMemoryPool(pool1)
   END SUBROUTINE PseudoInverse
 END MODULE InverseSolversModule

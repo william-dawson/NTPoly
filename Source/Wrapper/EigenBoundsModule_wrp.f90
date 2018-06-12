@@ -2,8 +2,8 @@
 !> Wraps the eigenbounds module for calling from other languages.
 MODULE EigenBoundsModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
@@ -21,7 +21,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(INOUT) :: min_value
     REAL(NTREAL), INTENT(INOUT) :: max_value
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
 
@@ -34,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(INOUT) :: max_value
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_this
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)

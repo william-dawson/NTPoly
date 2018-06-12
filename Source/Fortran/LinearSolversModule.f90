@@ -69,20 +69,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup all the matrices
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL FillDistributedIdentity(Identity)
-    CALL ConstructEmptyMatrixDS(ABalanced, &
+    CALL FillMatrixIdentity(Identity)
+    CALL ConstructEmptyMatrix(ABalanced, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyMatrixDS(BBalanced, &
+    CALL ConstructEmptyMatrix(BBalanced, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyMatrixDS(RMat, &
+    CALL ConstructEmptyMatrix(RMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyMatrixDS(PMat, &
+    CALL ConstructEmptyMatrix(PMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyMatrixDS(QMat, &
+    CALL ConstructEmptyMatrix(QMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
-    CALL ConstructEmptyMatrixDS(TempMat, &
+    CALL ConstructEmptyMatrix(TempMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! Load Balancing Step
@@ -95,20 +95,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(BMat, BBalanced, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyMatrixDS(AMat,ABalanced)
-       CALL CopyMatrixDS(BMat,BBalanced)
+       CALL CopyMatrix(AMat,ABalanced)
+       CALL CopyMatrix(BMat,BBalanced)
     END IF
     CALL StopTimer("Load Balance")
 
     !! Initial Matrix Values
-    CALL CopyMatrixDS(Identity, XMat)
+    CALL CopyMatrix(Identity, XMat)
     !! Compute residual
-    CALL DistributedGemm(ABalanced, Xmat, TempMat, &
+    CALL MatrixMultiply(ABalanced, Xmat, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL CopyMatrixDS(BBalanced,RMat)
-    CALL IncrementDistributedSparseMatrix(TempMat, RMat, &
+    CALL CopyMatrix(BBalanced,RMat)
+    CALL IncrementMatrix(TempMat, RMat, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL CopyMatrixDS(RMat,PMat)
+    CALL CopyMatrix(RMat,PMat)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -128,33 +128,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute the Step Size
-       CALL DistributedGemm(ABalanced, PMat, QMat, &
+       CALL MatrixMultiply(ABalanced, PMat, QMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
-       CALL TransposeDistributedSparseMatrix(RMat,RMatT)
-       CALL DistributedGemm(RMatT, RMat, TempMat, &
+       CALL TransposeMatrix(RMat,RMatT)
+       CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       top = Trace(TempMat)
-       CALL TransposeDistributedSparseMatrix(PMat,PMatT)
-       CALL DistributedGemm(PMatT, QMat, TempMat, &
+       top = MatrixTrace(TempMat)
+       CALL TransposeMatrix(PMat,PMatT)
+       CALL MatrixMultiply(PMatT, QMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       bottom = Trace(TempMat)
+       bottom = MatrixTrace(TempMat)
        step_size = top/bottom
 
        !! Update
-       CALL IncrementDistributedSparseMatrix(PMat, XMat, alpha_in=step_size)
-       norm_value = ABS(step_size*DistributedSparseNorm(PMat))
-       CALL IncrementDistributedSparseMatrix(QMat, RMat, alpha_in=-1.0*step_size)
+       CALL IncrementMatrix(PMat, XMat, alpha_in=step_size)
+       norm_value = ABS(step_size*MatrixNorm(PMat))
+       CALL IncrementMatrix(QMat, RMat, alpha_in=-1.0*step_size)
 
        !! Update PMat
-       !!new_top = DotDistributedSparseMatrix(RMat,RMat)
-       CALL TransposeDistributedSparseMatrix(RMat,RMatT)
-       CALL DistributedGemm(RMatT, RMat, TempMat, &
+       CALL TransposeMatrix(RMat,RMatT)
+       CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       new_top = Trace(TempMat)
+       new_top = MatrixTrace(TempMat)
        step_size = new_top / top
-       CALL ScaleDistributedSparseMatrix(PMat, step_size)
-       CALL IncrementDistributedSparseMatrix(RMat, PMat)
+       CALL ScaleMatrix(PMat, step_size)
+       CALL IncrementMatrix(RMat, PMat)
 
     END DO
     IF (solver_parameters%be_verbose) THEN
@@ -175,14 +174,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(TempMat)
-    CALL DestructDistributedSparseMatrix(RMat)
-    CALL DestructDistributedSparseMatrix(PMat)
-    CALL DestructDistributedSparseMatrix(QMat)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructDistributedSparseMatrix(ABalanced)
-    CALL DestructDistributedSparseMatrix(BBalanced)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(RMat)
+    CALL DestructMatrix(PMat)
+    CALL DestructMatrix(QMat)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(ABalanced)
+    CALL DestructMatrix(BBalanced)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE CGSolver
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
@@ -229,12 +228,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyMatrixDS(LMat, &
+    CALL ConstructEmptyMatrix(LMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! First get the local matrix in a dense recommendation for quick lookup
-    CALL MergeLocalBlocks(AMat, sparse_a)
-    CALL ConstructDenseFromSparse(sparse_a, dense_a)
+    CALL MergeMatrixLocalBlocks(AMat, sparse_a)
+    CALL ConstructMatrixDFromS(sparse_a, dense_a)
 
     !! Root Lookups
     ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
@@ -313,7 +312,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintMatrixInformation(LMat)
        CALL ExitSubLog
     END IF
-    CALL DestructDenseMatrix(dense_a)
+    CALL DestructMatrix(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
     DEALLOCATE(values_l)
@@ -321,7 +320,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(recv_values)
     DEALLOCATE(dot_values)
     DEALLOCATE(col_root_lookup)
-    CALL DestructSparseMatrix(sparse_a)
+    CALL DestructMatrix(sparse_a)
   END SUBROUTINE CholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.
@@ -386,7 +385,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyMatrixDS(LMat, &
+    CALL ConstructEmptyMatrix(LMat, &
          & AMat%actual_matrix_dimension, AMat%process_grid)
 
     !! Construct the pivot vector
@@ -396,8 +395,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! First get the local matrix in a dense recommendation for quick lookup
-    CALL MergeLocalBlocks(AMat, sparse_a)
-    CALL ConstructDenseFromSparse(sparse_a, dense_a)
+    CALL MergeMatrixLocalBlocks(AMat, sparse_a)
+    CALL ConstructMatrixDFromS(sparse_a, dense_a)
     ALLOCATE(local_pivots(sparse_a%columns))
 
     !! Extract the diagonal
@@ -502,7 +501,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(local_pivots)
     DEALLOCATE(pivot_vector)
     DEALLOCATE(diag)
-    CALL DestructDenseMatrix(dense_a)
+    CALL DestructMatrix(dense_a)
     DEALLOCATE(values_per_column_l)
     DEALLOCATE(index_l)
     DEALLOCATE(values_l)
@@ -511,7 +510,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(dot_values)
     DEALLOCATE(a_buf)
     DEALLOCATE(col_root_lookup)
-    CALL DestructSparseMatrix(sparse_a)
+    CALL DestructMatrix(sparse_a)
   END SUBROUTINE PivotedCholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE UnpackCholesky(values_per_column, index, values, LMat)
@@ -541,7 +540,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END DO
        END DO
     END IF
-    CALL FillFromTripletList(LMat, local_triplets)
+    CALL FillMatrixFromTripletList(LMat, local_triplets)
 
     !! Cleanup
     CALL DestructTripletList(local_triplets)
@@ -791,7 +790,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: local_matrixT
     INTEGER :: mpi_err
 
-    CALL TransposeSparseMatrix(local_matrix, local_matrixT)
+    CALL TransposeMatrix(local_matrix, local_matrixT)
     CALL ReduceSizes(local_matrixT, process_grid%column_comm, gather_helper)
     CALL MPI_Wait(gather_helper%size_request, mpi_status, mpi_err)
     CALL ReduceAndComposeData(local_matrixT, process_grid%column_comm, &
@@ -802,6 +801,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ReduceAndComposeCleanup(local_matrixT, column_matrix, &
          & gather_helper)
 
-    CALL DestructSparseMatrix(local_matrixT)
+    CALL DestructMatrix(local_matrixT)
   END SUBROUTINE GatherMatrixColumn
 END MODULE LinearSolversModule

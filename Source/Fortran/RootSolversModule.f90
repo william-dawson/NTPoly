@@ -55,18 +55,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle base cases, or call to general implementation.
     IF (root .EQ. 1) THEN
-       CALL CopyMatrixDS(InputMat, OutputMat)
+       CALL CopyMatrix(InputMat, OutputMat)
     ELSE IF (root .EQ. 2) THEN
        CALL SquareRoot(InputMat, OutputMat, solver_parameters)
     ELSE IF (root .EQ. 3) THEN
-       CALL DistributedGemm(InputMat, InputMat, TempMat, &
+       CALL MatrixMultiply(InputMat, InputMat, TempMat, &
             & threshold_in=solver_parameters%threshold)
        CALL ComputeRootImplementation(TempMat, OutputMat, 6, &
             & solver_parameters)
     ELSE IF (root .EQ. 4) THEN
        CALL SquareRoot(InputMat, TempMat, solver_parameters)
        CALL SquareRoot(TempMat, OutputMat, solver_parameters)
-       CALL DestructDistributedSparseMatrix(TempMat)
+       CALL DestructMatrix(TempMat)
     ELSE
        CALL ComputeRootImplementation(InputMat, OutputMat, root, &
             & solver_parameters)
@@ -119,12 +119,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeInverseRoot(RaisedMat, TempMat, root, solver_parameters)
 
     !! Multiply by the original matrix
-    CALL DistributedGemm(InputMat, TempMat, OutputMat, &
+    CALL MatrixMultiply(InputMat, TempMat, OutputMat, &
          & threshold_in=solver_parameters%threshold)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(RaisedMat)
-    CALL DestructDistributedSparseMatrix(TempMat)
+    CALL DestructMatrix(RaisedMat)
+    CALL DestructMatrix(TempMat)
   END SUBROUTINE ComputeRootImplementation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general inverse matrix root.
@@ -170,7 +170,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE IF (root .EQ. 4) THEN
        CALL SquareRoot(InputMat, TempMat, solver_parameters)
        CALL InverseSquareRoot(TempMat, OutputMat, solver_parameters)
-       CALL DestructDistributedSparseMatrix(TempMat)
+       CALL DestructMatrix(TempMat)
     ELSE
        CALL ComputeInverseRootImplemention(InputMat, OutputMat, root, &
             & solver_parameters)
@@ -245,12 +245,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Fourth Root Matrix
     CALL SquareRoot(InputMat, SqrtMat, solver_parameters)
     CALL SquareRoot(SqrtMat, FthrtMat, solver_parameters)
-    CALL DestructDistributedSparseMatrix(SqrtMat)
+    CALL DestructMatrix(SqrtMat)
 
     !! Setup the Matrices
-    CALL ConstructEmptyMatrixDS(IdentityMat, &
+    CALL ConstructEmptyMatrix(IdentityMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(IdentityMat)
+    CALL FillMatrixIdentity(IdentityMat)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -260,18 +260,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
 
-    CALL CopyMatrixDS(IdentityMat, OutputMat)
-    CALL ScaleDistributedSparseMatrix(OutputMat, 1.0/scaling_factor)
+    CALL CopyMatrix(IdentityMat, OutputMat)
+    CALL ScaleMatrix(OutputMat, 1.0/scaling_factor)
 
-    CALL CopyMatrixDS(FthrtMat, Mk)
-    CALL ScaleDistributedSparseMatrix(Mk, 1.0/(scaling_factor**target_root))
-    CALL DestructDistributedSparseMatrix(FthrtMat)
+    CALL CopyMatrix(FthrtMat, Mk)
+    CALL ScaleMatrix(Mk, 1.0/(scaling_factor**target_root))
+    CALL DestructMatrix(FthrtMat)
 
-    CALL ConstructEmptyMatrixDS(IntermediateMat, &
+    CALL ConstructEmptyMatrix(IntermediateMat, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyMatrixDS(IntermediateMatP, &
+    CALL ConstructEmptyMatrix(IntermediateMatP, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp, &
+    CALL ConstructEmptyMatrix(Temp, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
 
     outer_counter = 1
@@ -288,32 +288,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ExitSubLog
        END IF
 
-       CALL CopyMatrixDS(IdentityMat, IntermediateMat)
-       CALL ScaleDistributedSparseMatrix(IntermediateMat, &
+       CALL CopyMatrix(IdentityMat, IntermediateMat)
+       CALL ScaleMatrix(IntermediateMat, &
             & REAL(target_root+1,NTREAL))
-       CALL IncrementDistributedSparseMatrix(Mk, IntermediateMat, &
+       CALL IncrementMatrix(Mk, IntermediateMat, &
             & alpha_in=NEGATIVE_ONE)
-       CALL ScaleDistributedSparseMatrix(IntermediateMat, &
+       CALL ScaleMatrix(IntermediateMat, &
             & REAL(1.0,NTREAL)/target_root)
 
-       CALL DistributedGemm(OutputMat, IntermediateMat, Temp, &
+       CALL MatrixMultiply(OutputMat, IntermediateMat, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(Temp, OutputMat)
+       CALL CopyMatrix(Temp, OutputMat)
 
-       CALL CopyMatrixDS(IntermediateMat, IntermediateMatP)
+       CALL CopyMatrix(IntermediateMat, IntermediateMatP)
        DO inner_counter = 1, target_root-1
-          CALL DistributedGemm(IntermediateMat, IntermediateMatP, Temp, &
+          CALL MatrixMultiply(IntermediateMat, IntermediateMatP, Temp, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-          CALL CopyMatrixDS(Temp, IntermediateMatP)
+          CALL CopyMatrix(Temp, IntermediateMatP)
        END DO
 
-       CALL DistributedGemm(IntermediateMatP, Mk, Temp, &
+       CALL MatrixMultiply(IntermediateMatP, Mk, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(Temp, Mk)
+       CALL CopyMatrix(Temp, Mk)
 
-       CALL IncrementDistributedSparseMatrix(IdentityMat, Temp, &
+       CALL IncrementMatrix(IdentityMat, Temp, &
             & alpha_in=NEGATIVE_ONE)
-       norm_value = DistributedSparseNorm(Temp)
+       norm_value = MatrixNorm(Temp)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -326,14 +326,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     IF (MOD(root,4) .EQ. 1 .OR. MOD(root,4) .EQ. 3) THEN
-       CALL DistributedGemm(OutputMat, OutputMat, Temp, &
+       CALL MatrixMultiply(OutputMat, OutputMat, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL DistributedGemm(Temp, Temp, OutputMat, &
+       CALL MatrixMultiply(Temp, Temp, OutputMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
     ELSE IF (MOD(root,4) .NE. 0) THEN
-       CALL DistributedGemm(OutputMat, OutputMat, Temp, &
+       CALL MatrixMultiply(OutputMat, OutputMat, Temp, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrixDS(Temp, OutputMat)
+       CALL CopyMatrix(Temp, OutputMat)
     END IF
 
     !! Undo Load Balancing Step
@@ -348,11 +348,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters_in%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructDistributedSparseMatrix(IdentityMat)
-    CALL DestructDistributedSparseMatrix(Mk)
-    CALL DestructDistributedSparseMatrix(IntermediateMat)
-    CALL DestructDistributedSparseMatrix(IntermediateMatP)
-    CALL DestructDistributedSparseMatrix(Temp)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(IdentityMat)
+    CALL DestructMatrix(Mk)
+    CALL DestructMatrix(IntermediateMat)
+    CALL DestructMatrix(IntermediateMatP)
+    CALL DestructMatrix(Temp)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE ComputeInverseRootImplemention
 END MODULE RootSolversModule

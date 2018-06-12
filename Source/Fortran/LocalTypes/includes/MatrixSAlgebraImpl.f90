@@ -427,20 +427,20 @@
     END IF
 
     !! Convert Forward
-    CALL ConstructDenseFromSparse(untransposedMatA, DenseA)
-    CALL ConstructDenseFromSparse(untransposedMatB, DenseB)
+    CALL ConstructMatrixDFromS(untransposedMatA, DenseA)
+    CALL ConstructMatrixDFromS(untransposedMatB, DenseB)
 
     !! Multiply
-    CALL MultiplyDense(DenseA, DenseB, DenseC)
+    CALL MultiplyMatrix(DenseA, DenseB, DenseC)
 
     !! Convert Back
-    CALL ConstructSparseFromDense(DenseC, matC, threshold)
-    CALL ScaleMatrixS(matC,alpha)
+    CALL ConstructMatrixSFromD(DenseC, matC, threshold)
+    CALL ScaleMatrix(matC,alpha)
 
     !! Cleanup
-    CALL DestructDenseMatrix(DenseA)
-    CALL DestructDenseMatrix(DenseB)
-    CALL DestructDenseMatrix(DenseC)
+    CALL DestructMatrix(DenseA)
+    CALL DestructMatrix(DenseB)
+    CALL DestructMatrix(DenseC)
   END SUBROUTINE DenseBranch
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE MultiplyBlock(matAT,matBT,memorypool)

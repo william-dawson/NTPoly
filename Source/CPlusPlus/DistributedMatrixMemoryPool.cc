@@ -12,11 +12,11 @@ namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 DistributedMatrixMemoryPool::DistributedMatrixMemoryPool(
     const DistributedSparseMatrix &Matrix) {
-  ConstructDistributedMatrixMemoryPool_wrp(ih_this, Matrix.ih_this);
+  ConstructMatrixMemoryPool_p_wrp(ih_this, Matrix.ih_this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 DistributedMatrixMemoryPool::~DistributedMatrixMemoryPool() {
-  DestructDistributedMatrixMemoryPool_wrp(ih_this);
+  DestructMatrixMemoryPool_p_wrp(ih_this);
 }
 } // namespace NTPoly

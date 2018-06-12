@@ -67,23 +67,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(NewDensity, &
+    CALL ConstructEmptyMatrix(NewDensity, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL ConstructEmptyMatrixDS(WorkingDensity, &
+    CALL ConstructEmptyMatrix(WorkingDensity, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL ConstructEmptyMatrixDS(WorkingOverlap, &
+    CALL ConstructEmptyMatrix(WorkingOverlap, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & PreviousDensity%actual_matrix_dimension, &
          & PreviousDensity%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL CopyMatrixDS(PreviousDensity, WorkingDensity)
-    CALL CopyMatrixDS(Overlap, WorkingOverlap)
+    CALL CopyMatrix(PreviousDensity, WorkingDensity)
+    CALL CopyMatrix(Overlap, WorkingOverlap)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -96,9 +96,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Finish Setup
-    CALL CopyMatrixDS(WorkingDensity, NewDensity)
-    CALL CopyMatrixDS(WorkingDensity, AddBranch)
-    CALL CopyMatrixDS(WorkingDensity, SubtractBranch)
+    CALL CopyMatrix(WorkingDensity, NewDensity)
+    CALL CopyMatrix(WorkingDensity, AddBranch)
+    CALL CopyMatrix(WorkingDensity, SubtractBranch)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -110,30 +110,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO outer_counter = 1,solver_parameters%max_iterations
        !! Figure Out Sigma Value. After which, XnS is stored in TempMat
        IF (outer_counter .GT. 1) THEN
-          CALL DistributedGemm(AddBranch, WorkingOverlap, TempMat1, &
+          CALL MatrixMultiply(AddBranch, WorkingOverlap, TempMat1, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-          add_trace = Trace(TempMat1)
-          CALL DistributedGemm(SubtractBranch, WorkingOverlap, TempMat2, &
+          add_trace = MatrixTrace(TempMat1)
+          CALL MatrixMultiply(SubtractBranch, WorkingOverlap, TempMat2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-          subtract_trace = Trace(TempMat2)
+          subtract_trace = MatrixTrace(TempMat2)
           IF (ABS(nel - add_trace) .GT. ABS(nel - subtract_trace)) THEN
              !! Subtract Branch
              trace_value = subtract_trace
-             CALL IncrementDistributedSparseMatrix(AddBranch, NewDensity, &
+             CALL IncrementMatrix(AddBranch, NewDensity, &
                   & NEGATIVE_ONE)
-             norm_value = DistributedSparseNorm(NewDensity)
-             CALL CopyMatrixDS(AddBranch, NewDensity)
-             CALL CopyMatrixDS(TempMat2, TempMat1)
+             norm_value = MatrixNorm(NewDensity)
+             CALL CopyMatrix(AddBranch, NewDensity)
+             CALL CopyMatrix(TempMat2, TempMat1)
           ELSE
              !! Add Branch
              trace_value = add_trace
-             CALL IncrementDistributedSparseMatrix(SubtractBranch, NewDensity, &
+             CALL IncrementMatrix(SubtractBranch, NewDensity, &
                   & NEGATIVE_ONE)
-             norm_value = DistributedSparseNorm(NewDensity)
-             CALL CopyMatrixDS(SubtractBranch, NewDensity)
+             norm_value = MatrixNorm(NewDensity)
+             CALL CopyMatrix(SubtractBranch, NewDensity)
           END IF
        ELSE
-          CALL DistributedGemm(NewDensity, WorkingOverlap, TempMat1, &
+          CALL MatrixMultiply(NewDensity, WorkingOverlap, TempMat1, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        END IF
 
@@ -152,20 +152,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute (I - XnS)Xn
-       CALL IncrementDistributedSparseMatrix(Identity, TempMat1, &
+       CALL IncrementMatrix(Identity, TempMat1, &
             & alpha_in=NEGATIVE_ONE)
-       CALL ScaleDistributedSparseMatrix(TempMat1, NEGATIVE_ONE)
-       CALL DistributedGemm(TempMat1, NewDensity, TempMat2, &
+       CALL ScaleMatrix(TempMat1, NEGATIVE_ONE)
+       CALL MatrixMultiply(TempMat1, NewDensity, TempMat2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
        !! Subtracted Version Xn - (I - XnS)Xn
-       CALL CopyMatrixDS(NewDensity, SubtractBranch)
-       CALL IncrementDistributedSparseMatrix(TempMat2, SubtractBranch, &
+       CALL CopyMatrix(NewDensity, SubtractBranch)
+       CALL IncrementMatrix(TempMat2, SubtractBranch, &
             & NEGATIVE_ONE)
 
        !! Added Version Xn + (I - XnS)Xn
-       CALL CopyMatrixDS(NewDensity, AddBranch)
-       CALL IncrementDistributedSparseMatrix(TempMat2, AddBranch)
+       CALL CopyMatrix(NewDensity, AddBranch)
+       CALL IncrementMatrix(TempMat2, AddBranch)
 
     END DO
     total_iterations = outer_counter-1
@@ -182,14 +182,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructMatrixDS(WorkingDensity)
-    CALL DestructMatrixDS(WorkingOverlap)
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(TempMat1)
-    CALL DestructMatrixDS(TempMat2)
-    CALL DestructMatrixDS(AddBranch)
-    CALL DestructMatrixDS(SubtractBranch)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(WorkingDensity)
+    CALL DestructMatrix(WorkingOverlap)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat1)
+    CALL DestructMatrix(TempMat2)
+    CALL DestructMatrix(AddBranch)
+    CALL DestructMatrix(SubtractBranch)
+    CALL DestructMatrixMemoryPool(pool1)
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
@@ -239,18 +239,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SquareRoot(OldOverlap, SQRMat, solver_parameters)
     CALL InverseSquareRoot(NewOverlap, ISQMat, solver_parameters)
 
-    CALL DistributedGemm(SQRMat, PreviousDensity, TempMat, &
+    CALL MatrixMultiply(SQRMat, PreviousDensity, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat, SQRMat, NewDensity, &
+    CALL MatrixMultiply(TempMat, SQRMat, NewDensity, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(ISQMat, NewDensity, TempMat, &
+    CALL MatrixMultiply(ISQMat, NewDensity, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat, ISQMat, NewDensity, &
+    CALL MatrixMultiply(TempMat, ISQMat, NewDensity, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
-    CALL DestructMatrixDS(SQRMat)
-    CALL DestructMatrixDS(ISQMat)
-    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrix(SQRMat)
+    CALL DestructMatrix(ISQMat)
+    CALL DestructMatrix(TempMat)
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog

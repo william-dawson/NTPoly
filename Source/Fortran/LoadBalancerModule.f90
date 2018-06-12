@@ -2,9 +2,9 @@
 !> Module for load balancing the matrix multiplication calculation.
 MODULE LoadBalancerModule
   USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p
-  USE MatrixPSAlgebraModule, ONLY : DistributedGemm
-  USE MatrixPSModule, ONLY : Matrix_ps, ConstructEmptyMatrixDS, &
-       & DestructMatrixDS, FillDistributedPermutation
+  USE MatrixPSAlgebraModule, ONLY : MatrixMultiply
+  USE MatrixPSModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
+       & DestructMatrix, FillMatrixPermutation
   USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
   PRIVATE
@@ -28,31 +28,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(PermuteRows, &
+    CALL ConstructEmptyMatrix(PermuteRows, &
          & mat%actual_matrix_dimension, mat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(PermuteColumns, &
+    CALL ConstructEmptyMatrix(PermuteColumns, &
          & mat%actual_matrix_dimension, mat%process_grid)
-    CALL FillDistributedPermutation(PermuteRows, permutation%index_lookup, &
+    CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
          & permuterows=.TRUE.)
-    CALL FillDistributedPermutation(PermuteColumns, permutation%index_lookup, &
+    CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
          & permuterows=.FALSE.)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp, &
+    CALL ConstructEmptyMatrix(Temp, &
          mat%actual_matrix_dimension, mat%process_grid)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
-       CALL DistributedGemm(PermuteRows, mat, Temp, &
+       CALL MatrixMultiply(PermuteRows, mat, Temp, &
             & memory_pool_in=memorypool_in)
-       CALL DistributedGemm(Temp, PermuteColumns, mat_out, &
+       CALL MatrixMultiply(Temp, PermuteColumns, mat_out, &
             & memory_pool_in=memorypool_in)
     ELSE
-       CALL DistributedGemm(PermuteRows, mat, Temp)
-       CALL DistributedGemm(Temp, PermuteColumns, mat_out)
+       CALL MatrixMultiply(PermuteRows, mat, Temp)
+       CALL MatrixMultiply(Temp, PermuteColumns, mat_out)
     END IF
 
-    CALL DestructDistributedSparseMatrix(PermuteRows)
-    CALL DestructDistributedSparseMatrix(PermuteColumns)
-    CALL DestructDistributedSparseMatrix(Temp)
+    CALL DestructMatrix(PermuteRows)
+    CALL DestructMatrix(PermuteColumns)
+    CALL DestructMatrix(Temp)
   END SUBROUTINE PermuteMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Undo a permutation applied to a matrix.
@@ -71,32 +71,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
-    CALL ConstructEmptyDistributedSparseMatrix(PermuteRows, &
+    CALL ConstructEmptyMatrix(PermuteRows, &
          & mat%actual_matrix_dimension, mat%process_grid)
-    CALL ConstructEmptyDistributedSparseMatrix(PermuteColumns, &
+    CALL ConstructEmptyMatrix(PermuteColumns, &
          mat%actual_matrix_dimension, mat%process_grid)
-    CALL FillDistributedPermutation(PermuteRows, permutation%index_lookup, &
+    CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
          & permuterows=.TRUE.)
-    CALL FillDistributedPermutation(PermuteColumns, permutation%index_lookup, &
+    CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
          & permuterows=.FALSE.)
-    CALL ConstructEmptyDistributedSparseMatrix(Temp, &
+    CALL ConstructEmptyMatrix(Temp, &
          & mat%actual_matrix_dimension, mat%process_grid)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
-       CALL DistributedGemm(PermuteColumns, mat, Temp, &
+       CALL MatrixMultiply(PermuteColumns, mat, Temp, &
             & memory_pool_in=memorypool_in)
-       CALL DistributedGemm(Temp, PermuteRows, mat_out, &
+       CALL MatrixMultiply(Temp, PermuteRows, mat_out, &
             & memory_pool_in=memorypool_in)
     ELSE
-       CALL DistributedGemm(PermuteColumns, mat, Temp)
-       CALL DistributedGemm(Temp, PermuteRows, mat_out)
+       CALL MatrixMultiply(PermuteColumns, mat, Temp)
+       CALL MatrixMultiply(Temp, PermuteRows, mat_out)
     END IF
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(PermuteRows)
-    CALL DestructDistributedSparseMatrix(PermuteColumns)
-    CALL DestructDistributedSparseMatrix(Temp)
+    CALL DestructMatrix(PermuteRows)
+    CALL DestructMatrix(PermuteColumns)
+    CALL DestructMatrix(Temp)
   END SUBROUTINE UndoPermuteMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LoadBalancerModule

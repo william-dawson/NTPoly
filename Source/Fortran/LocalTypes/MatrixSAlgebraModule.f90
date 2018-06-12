@@ -22,7 +22,7 @@ MODULE MatrixSAlgebraModule
   PUBLIC :: IncrementMatrix
   PUBLIC :: DotMatrix
   PUBLIC :: PairwiseMultiplyMatrix
-  PUBLIC :: GemmMatrix
+  PUBLIC :: MatrixMultiply
   PUBLIC :: MatrixColumnNorm
   PUBLIC :: MatrixNorm
   PUBLIC :: MatrixGrandSum
@@ -43,7 +43,7 @@ MODULE MatrixSAlgebraModule
      MODULE PROCEDURE PairwiseMultiplyMatrix_lsr
      MODULE PROCEDURE PairwiseMultiplyMatrix_lsc
   END INTERFACE
-  INTERFACE GemmMatrix
+  INTERFACE MatrixMultiply
      MODULE PROCEDURE GemmMatrix_lsr
      MODULE PROCEDURE GemmMatrix_lsc
   END INTERFACE

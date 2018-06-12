@@ -76,24 +76,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(Density, &
+    CALL ConstructEmptyMatrix(Density, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(X_k, &
+    CALL ConstructEmptyMatrix(X_k, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(X_k2, &
+    CALL ConstructEmptyMatrix(X_k2, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(TempMat, &
+    CALL ConstructEmptyMatrix(TempMat, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL DistributedGemm(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Load Balancing Step
@@ -108,10 +108,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
 
     !! Initialize
-    CALL CopyMatrixDS(WorkingHamiltonian,X_k)
-    CALL ScaleDistributedSparseMatrix(X_k,REAL(-1.0,NTREAL))
-    CALL IncrementDistributedSparseMatrix(Identity,X_k,alpha_in=e_max)
-    CALL ScaleDistributedSparseMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
+    CALL CopyMatrix(WorkingHamiltonian,X_k)
+    CALL ScaleMatrix(X_k,REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(Identity,X_k,alpha_in=e_max)
+    CALL ScaleMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -135,7 +135,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute Sigma
-       trace_value = Trace(X_k)
+       trace_value = MatrixTrace(X_k)
        IF (nel*0.5 - trace_value .LT. REAL(0.0,NTREAL)) THEN
           sigma_array(outer_counter) = REAL(-1.0,NTREAL)
        ELSE
@@ -143,22 +143,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute X_k2
-       CALL DistributedGemm(X_k,X_k,X_k2, &
+       CALL MatrixMultiply(X_k,X_k,X_k2, &
             & threshold_in=solver_parameters%threshold, &
             & memory_pool_in=pool1)
 
        !! Subtract from X_k
-       CALL CopyMatrixDS(X_k,TempMat)
-       CALL IncrementDistributedSparseMatrix(X_k2,TempMat,REAL(-1.0,NTREAL))
+       CALL CopyMatrix(X_k,TempMat)
+       CALL IncrementMatrix(X_k2,TempMat,REAL(-1.0,NTREAL))
 
        !! Add To X_k
-       CALL CopyMatrixDS(X_k,X_k2)
-       CALL IncrementDistributedSparseMatrix(TempMat,X_k, &
+       CALL CopyMatrix(X_k,X_k2)
+       CALL IncrementMatrix(TempMat,X_k, &
             & sigma_array(outer_counter))
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2*DotMatrix(X_k, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -175,18 +175,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL DistributedGemm(InverseSquareRoot,X_k,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructMatrixDS(WorkingHamiltonian)
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(X_k)
-    CALL DestructMatrixDS(X_k2)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(X_k)
+    CALL DestructMatrix(X_k2)
+    CALL DestructMatrixMemoryPool(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN
@@ -285,28 +285,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(Density, &
+    CALL ConstructEmptyMatrix(Density, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(X_k, &
+    CALL ConstructEmptyMatrix(X_k, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(X_k2, &
+    CALL ConstructEmptyMatrix(X_k2, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(TempMat, &
+    CALL ConstructEmptyMatrix(TempMat, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(Fx_right, &
+    CALL ConstructEmptyMatrix(Fx_right, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(Gx_right, &
+    CALL ConstructEmptyMatrix(Gx_right, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL DistributedGemm(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Load Balancing Step
@@ -321,10 +321,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
 
     !! Initialize
-    CALL CopyMatrixDS(WorkingHamiltonian,X_k)
-    CALL ScaleDistributedSparseMatrix(X_k,REAL(-1.0,NTREAL))
-    CALL IncrementDistributedSparseMatrix(Identity,X_k,alpha_in=e_max)
-    CALL ScaleDistributedSparseMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
+    CALL CopyMatrix(WorkingHamiltonian,X_k)
+    CALL ScaleMatrix(X_k,REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(Identity,X_k,alpha_in=e_max)
+    CALL ScaleMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -348,48 +348,48 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute X_k2
-       CALL DistributedGemm(X_k, X_k, X_k2, &
+       CALL MatrixMultiply(X_k, X_k, X_k2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        !! Compute Fx_right
-       CALL CopyMatrixDS(X_k2,Fx_right)
-       CALL ScaleDistributedSparseMatrix(Fx_right,REAL(-3.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(X_k,Fx_right, &
+       CALL CopyMatrix(X_k2,Fx_right)
+       CALL ScaleMatrix(Fx_right,REAL(-3.0,NTREAL))
+       CALL IncrementMatrix(X_k,Fx_right, &
             & alpha_in=REAL(4.0,NTREAL))
        !! Compute Gx_right
-       CALL CopyMatrixDS(Identity,Gx_right)
-       CALL IncrementDistributedSparseMatrix(X_k,Gx_right, &
+       CALL CopyMatrix(Identity,Gx_right)
+       CALL IncrementMatrix(X_k,Gx_right, &
             & alpha_in=REAL(-2.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(X_k2,Gx_right)
+       CALL IncrementMatrix(X_k2,Gx_right)
 
        !! Compute Traces
-       trace_fx = DotDistributedSparseMatrix(X_k2,Fx_right)
-       trace_gx = DotDistributedSparseMatrix(X_k2,Gx_right)
+       trace_fx = DotMatrix(X_k2,Fx_right)
+       trace_gx = DotMatrix(X_k2,Gx_right)
 
        !! Compute Sigma
        sigma_array(outer_counter) = (nel*0.5-trace_fx)/trace_gx
 
        !! Update The Matrix
        IF (sigma_array(outer_counter) .GT. sigma_max) THEN
-          CALL CopyMatrixDS(X_k, TempMat)
-          CALL ScaleDistributedSparseMatrix(TempMat, REAL(2.0,NTREAL))
-          CALL IncrementDistributedSparseMatrix(X_k2, TempMat, &
+          CALL CopyMatrix(X_k, TempMat)
+          CALL ScaleMatrix(TempMat, REAL(2.0,NTREAL))
+          CALL IncrementMatrix(X_k2, TempMat, &
                & alpha_in=REAL(-1.0,NTREAL))
        ELSE IF (sigma_array(outer_counter) .LT. sigma_min) THEN
-          CALL CopyMatrixDS(X_k2, TempMat)
+          CALL CopyMatrix(X_k2, TempMat)
        ELSE
-          CALL ScaleDistributedSparseMatrix(Gx_right,sigma_array(outer_counter))
-          CALL IncrementDistributedSparseMatrix(Fx_right,Gx_right)
-          CALL DistributedGemm(X_k2, Gx_right, TempMat, &
+          CALL ScaleMatrix(Gx_right,sigma_array(outer_counter))
+          CALL IncrementMatrix(Fx_right,Gx_right)
+          CALL MatrixMultiply(X_k2, Gx_right, TempMat, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        END IF
 
-       CALL IncrementDistributedSparseMatrix(TempMat,X_k, &
+       CALL IncrementMatrix(TempMat,X_k, &
             & alpha_in=REAL(-1.0,NTREAL))
-       CALL CopyMatrixDS(TempMat,X_k)
+       CALL CopyMatrix(TempMat,X_k)
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2*DotMatrix(X_k, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -405,20 +405,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL DistributedGemm(InverseSquareRoot,X_k,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructMatrixDS(WorkingHamiltonian)
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(X_k)
-    CALL DestructMatrixDS(X_k2)
-    CALL DestructMatrixDS(Fx_right)
-    CALL DestructMatrixDS(Gx_right)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(X_k)
+    CALL DestructMatrix(X_k2)
+    CALL DestructMatrix(Fx_right)
+    CALL DestructMatrix(Gx_right)
+    CALL DestructMatrixMemoryPool(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN
@@ -528,28 +528,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(Density, matrix_dimension, &
+    CALL ConstructEmptyMatrix(Density, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
          & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(TempMat, matrix_dimension, &
+    CALL ConstructEmptyMatrix(TempMat, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(D1, matrix_dimension, &
+    CALL ConstructEmptyMatrix(D1, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(DH, matrix_dimension, &
+    CALL ConstructEmptyMatrix(DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(DDH, matrix_dimension, &
+    CALL ConstructEmptyMatrix(DDH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(D2DH, matrix_dimension, &
+    CALL ConstructEmptyMatrix(D2DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, matrix_dimension, &
+    CALL ConstructEmptyMatrix(Identity, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL DistributedGemm(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Load Balancing Step
@@ -562,7 +562,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the initial matrix.
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
-    mu = Trace(WorkingHamiltonian)/matrix_dimension
+    mu = MatrixTrace(WorkingHamiltonian)/matrix_dimension
     sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
     sigma = 1.0 - sigma_bar
     beta = sigma/((e_max) - mu)
@@ -571,14 +571,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     beta_2 = MIN(beta,beta_bar)
 
     !! Initialize
-    CALL CopyMatrixDS(Identity,D1)
-    CALL ScaleDistributedSparseMatrix(D1,beta_1)
-    CALL CopyMatrixDS(Identity,TempMat)
-    CALL ScaleDistributedSparseMatrix(TempMat,mu)
-    CALL IncrementDistributedSparseMatrix(WorkingHamiltonian, TempMat, &
+    CALL CopyMatrix(Identity,D1)
+    CALL ScaleMatrix(D1,beta_1)
+    CALL CopyMatrix(Identity,TempMat)
+    CALL ScaleMatrix(TempMat,mu)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, &
          & NEGATIVE_ONE)
-    CALL ScaleDistributedSparseMatrix(TempMat,beta_2)
-    CALL IncrementDistributedSparseMatrix(TempMat,D1)
+    CALL ScaleMatrix(TempMat,beta_2)
+    CALL IncrementMatrix(TempMat,D1)
     trace_value = 0.0d+0
 
     !! Iterate
@@ -604,36 +604,36 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute the hole matrix DH
-       CALL CopyMatrixDS(D1,DH)
-       CALL IncrementDistributedSparseMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
-       CALL ScaleDistributedSparseMatrix(DH,NEGATIVE_ONE)
+       CALL CopyMatrix(D1,DH)
+       CALL IncrementMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
+       CALL ScaleMatrix(DH,NEGATIVE_ONE)
 
        !! Compute DDH, as well as convergence check
-       CALL DistributedGemm(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
+       CALL MatrixMultiply(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
             & memory_pool_in=pool1)
-       trace_value = Trace(DDH)
+       trace_value = MatrixTrace(DDH)
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
-       CALL DistributedGemm(D1,DDH,D2DH, &
+       CALL MatrixMultiply(D1,DDH,D2DH, &
             & threshold_in=solver_parameters%threshold, &
             & memory_pool_in=pool1)
 
        !! Compute Sigma
-       sigma_array(outer_counter) = Trace(D2DH)/trace_value
+       sigma_array(outer_counter) = MatrixTrace(D2DH)/trace_value
 
-       CALL CopyMatrixDS(D1,TempMat)
+       CALL CopyMatrix(D1,TempMat)
 
        !! Compute D1 + 2*D2DH
-       CALL IncrementDistributedSparseMatrix(D2DH,D1,alpha_in=TWO)
+       CALL IncrementMatrix(D2DH,D1,alpha_in=TWO)
 
        !! Compute D1 + 2*D2DH -2*Sigma*DDH
-       CALL IncrementDistributedSparseMatrix(DDH, D1, &
+       CALL IncrementMatrix(DDH, D1, &
             & alpha_in=NEGATIVE_ONE*TWO*sigma_array(outer_counter))
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       energy_value = 2*DotMatrix(D1, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -649,20 +649,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL DistributedGemm(InverseSquareRoot,D1,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,D1,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructMatrixDS(WorkingHamiltonian)
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(D1)
-    CALL DestructMatrixDS(DH)
-    CALL DestructMatrixDS(DDH)
-    CALL DestructMatrixDS(D2DH)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(D1)
+    CALL DestructMatrix(DH)
+    CALL DestructMatrix(DDH)
+    CALL DestructMatrix(D2DH)
+    CALL DestructMatrixMemoryPool(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN
@@ -766,28 +766,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(Density, matrix_dimension, &
+    CALL ConstructEmptyMatrix(Density, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(WorkingHamiltonian, &
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
          & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(TempMat, matrix_dimension, &
+    CALL ConstructEmptyMatrix(TempMat, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(D1, matrix_dimension, &
+    CALL ConstructEmptyMatrix(D1, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(DH, matrix_dimension, &
+    CALL ConstructEmptyMatrix(DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(DDH, matrix_dimension, &
+    CALL ConstructEmptyMatrix(DDH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(D2DH, matrix_dimension, &
+    CALL ConstructEmptyMatrix(D2DH, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, matrix_dimension, &
+    CALL ConstructEmptyMatrix(Identity, matrix_dimension, &
          & Hamiltonian%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL DistributedGemm(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Load Balancing Step
@@ -800,7 +800,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the initial matrix.
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
-    mu = Trace(WorkingHamiltonian)/matrix_dimension
+    mu = MatrixTrace(WorkingHamiltonian)/matrix_dimension
     sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
     sigma = 1.0 - sigma_bar
     beta = sigma/((e_max) - mu)
@@ -811,30 +811,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     beta_2_h = -1.0*MAX(beta,beta_bar)
 
     !! Initialize
-    CALL CopyMatrixDS(Identity,D1)
-    CALL ScaleDistributedSparseMatrix(D1,beta_1)
-    CALL CopyMatrixDS(Identity,TempMat)
-    CALL ScaleDistributedSparseMatrix(TempMat,mu)
-    CALL IncrementDistributedSparseMatrix(WorkingHamiltonian, TempMat, &
+    CALL CopyMatrix(Identity,D1)
+    CALL ScaleMatrix(D1,beta_1)
+    CALL CopyMatrix(Identity,TempMat)
+    CALL ScaleMatrix(TempMat,mu)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, &
          & NEGATIVE_ONE)
-    CALL ScaleDistributedSparseMatrix(TempMat,beta_2)
-    CALL IncrementDistributedSparseMatrix(TempMat,D1)
+    CALL ScaleMatrix(TempMat,beta_2)
+    CALL IncrementMatrix(TempMat,D1)
 
-    CALL CopyMatrixDS(Identity,DH)
-    CALL ScaleDistributedSparseMatrix(DH,beta_1_h)
-    CALL CopyMatrixDS(Identity,TempMat)
-    CALL ScaleDistributedSparseMatrix(TempMat,mu)
-    CALL IncrementDistributedSparseMatrix(WorkingHamiltonian,TempMat, &
+    CALL CopyMatrix(Identity,DH)
+    CALL ScaleMatrix(DH,beta_1_h)
+    CALL CopyMatrix(Identity,TempMat)
+    CALL ScaleMatrix(TempMat,mu)
+    CALL IncrementMatrix(WorkingHamiltonian,TempMat, &
          & REAL(-1.0,NTREAL))
-    CALL ScaleDistributedSparseMatrix(TempMat,beta_2_h)
-    CALL IncrementDistributedSparseMatrix(TempMat,DH)
+    CALL ScaleMatrix(TempMat,beta_2_h)
+    CALL IncrementMatrix(TempMat,DH)
 
-    CALL CopyMatrixDS(Identity,TempMat)
-    CALL IncrementDistributedSparseMatrix(DH,TempMat,REAL(-1.0,NTREAL))
+    CALL CopyMatrix(Identity,TempMat)
+    CALL IncrementMatrix(DH,TempMat,REAL(-1.0,NTREAL))
 
-    a = DotDistributedSparseMatrix(D1,D1)
-    b = DotDistributedSparseMatrix(TempMat,TempMat)
-    c = DotDistributedSparseMatrix(D1,TempMat)
+    a = DotMatrix(D1,D1)
+    b = DotMatrix(TempMat,TempMat)
+    c = DotMatrix(D1,TempMat)
     IF (sigma < (0.3333333333)) THEN
        d = (nel*0.5) - 0.66666666*(nel*0.5)
     ELSE
@@ -847,10 +847,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        mixing_value = ((2*b - 2*c) - mixing_interior)/(2*(a+b - 2*c))
     ENDIF
 
-    CALL ScaleDistributedSparseMatrix(D1,REAL(mixing_value,ntreal))
-    CALL CopyMatrixDS(Identity,TempMat)
-    CALL IncrementDistributedSparseMatrix(DH,TempMat,REAL(-1.0,NTREAL))
-    CALL IncrementDistributedSparseMatrix(TempMat,D1, &
+    CALL ScaleMatrix(D1,REAL(mixing_value,ntreal))
+    CALL CopyMatrix(Identity,TempMat)
+    CALL IncrementMatrix(DH,TempMat,REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(TempMat,D1, &
          & REAL(1.0-mixing_value,ntreal))
 
     !! Iterate
@@ -875,35 +875,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute the hole matrix DH
-       CALL CopyMatrixDS(D1,DH)
-       CALL IncrementDistributedSparseMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
-       CALL ScaleDistributedSparseMatrix(DH,NEGATIVE_ONE)
+       CALL CopyMatrix(D1,DH)
+       CALL IncrementMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
+       CALL ScaleMatrix(DH,NEGATIVE_ONE)
 
        !! Compute DDH, as well as convergence check
-       CALL DistributedGemm(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
+       CALL MatrixMultiply(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
             & memory_pool_in=pool1)
-       trace_value = Trace(DDH)
+       trace_value = MatrixTrace(DDH)
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
-       CALL DistributedGemm(D1,DDH,D2DH,threshold_in=solver_parameters%threshold,&
+       CALL MatrixMultiply(D1,DDH,D2DH,threshold_in=solver_parameters%threshold,&
             & memory_pool_in=pool1)
 
        !! Compute Sigma
-       sigma_array(outer_counter) = Trace(D2DH)/trace_value
+       sigma_array(outer_counter) = MatrixTrace(D2DH)/trace_value
 
-       CALL CopyMatrixDS(D1,TempMat)
+       CALL CopyMatrix(D1,TempMat)
 
        !! Compute D1 + 2*D2DH
-       CALL IncrementDistributedSparseMatrix(D2DH,D1,alpha_in=TWO)
+       CALL IncrementMatrix(D2DH,D1,alpha_in=TWO)
 
        !! Compute D1 + 2*D2DH -2*Sigma*DDH
-       CALL IncrementDistributedSparseMatrix(DDH, D1, &
+       CALL IncrementMatrix(DDH, D1, &
             & alpha_in=NEGATIVE_ONE*TWO*sigma_array(outer_counter))
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       energy_value = 2*DotMatrix(D1, WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -919,20 +919,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL DistributedGemm(InverseSquareRoot,D1,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot,D1,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL DistributedGemm(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
     !! Cleanup
-    CALL DestructMatrixDS(WorkingHamiltonian)
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(D1)
-    CALL DestructMatrixDS(DH)
-    CALL DestructMatrixDS(DDH)
-    CALL DestructMatrixDS(D2DH)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(D1)
+    CALL DestructMatrix(DH)
+    CALL DestructMatrix(DDH)
+    CALL DestructMatrix(D2DH)
+    CALL DestructMatrixMemoryPool(pool1)
 
     !! Compute The Chemical Potential
     IF (PRESENT(chemical_potential_out)) THEN

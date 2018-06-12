@@ -19,7 +19,7 @@ public:
   TripletList(int size=0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
-  TripletList(const DistributedSparseMatrix &matrix);
+  // TripletList(const DistributedSparseMatrix &matrix);
   //! Increase the size of a triplet list.
   //!\param size the new size.
   void Resize(int size);

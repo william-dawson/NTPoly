@@ -2,8 +2,8 @@
 !> Wraps the polynomial solvers module for calling from other languages.
 MODULE PolynomialSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE PolynomialSolversModule, ONLY : Polynomial_t, ConstructPolynomial, &
        & DestructPolynomial, SetCoefficient, HornerCompute, &
@@ -68,8 +68,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_polynomial(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
-    TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
+    TYPE(Matrix_ps_wrp) :: h_InputMat
+    TYPE(Matrix_ps_wrp) :: h_OutputMat
     TYPE(Polynomial_wrp)              :: h_polynomial
     TYPE(FixedSolverParameters_wrp)   :: h_solver_parameters
 
@@ -90,8 +90,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_polynomial(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_InputMat
-    TYPE(DistributedSparseMatrix_wrp) :: h_OutputMat
+    TYPE(Matrix_ps_wrp) :: h_InputMat
+    TYPE(Matrix_ps_wrp) :: h_OutputMat
     TYPE(Polynomial_wrp)              :: h_polynomial
     TYPE(FixedSolverParameters_wrp)   :: h_solver_parameters
 

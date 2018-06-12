@@ -85,10 +85,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CoreComputation(Mat1, Umat, solver_parameters, .TRUE.)
 
     IF (PRESENT(Hmat)) THEN
-       CALL TransposeDistributedSparseMatrix(Umat, UmatT)
-       CALL DistributedGemm(UmatT, Mat1, Hmat, &
+       CALL TransposeMatrix(Umat, UmatT)
+       CALL MatrixMultiply(UmatT, Mat1, Hmat, &
             & threshold_in=solver_parameters%threshold)
-       CALL DestructDistributedSparseMatrix(UmatT)
+       CALL DestructMatrix(UmatT)
     END IF
 
     !! Cleanup
@@ -122,13 +122,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: outer_counter
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp1, &
+    CALL ConstructEmptyMatrix(Temp1, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp2, &
+    CALL ConstructEmptyMatrix(Temp2, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
     CALL StartTimer("Load Balance")
@@ -139,14 +139,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PermuteMatrix(Mat1, OutMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyMatrixDS(Mat1,OutMat)
+       CALL CopyMatrix(Mat1,OutMat)
     END IF
     CALL StopTimer("Load Balance")
 
     !! Initialize
     CALL GershgorinBounds(Mat1,e_min,e_max)
     xk = ABS(e_min/e_max)
-    CALL ScaleDistributedSparseMatrix(OutMat,1.0/ABS(e_max))
+    CALL ScaleMatrix(OutMat,1.0/ABS(e_max))
 
     !! Iterate.
     IF (solver_parameters%be_verbose) THEN
@@ -168,24 +168,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        xk = 0.5*alpha_k*xk*(3.0-(alpha_k**2)*xk**2)
 
        IF (needs_transpose) THEN
-          CALL TransposeDistributedSparseMatrix(OutMat, OutMatT)
-          CALL DistributedGemm(OutMatT, OutMat, Temp1, &
+          CALL TransposeMatrix(OutMat, OutMatT)
+          CALL MatrixMultiply(OutMatT, OutMat, Temp1, &
                & alpha_in=-1.0*alpha_k**2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        ELSE
-          CALL DistributedGemm(OutMat, OutMat, Temp1, &
+          CALL MatrixMultiply(OutMat, OutMat, Temp1, &
                & alpha_in=-1.0*alpha_k**2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        END IF
-       CALL IncrementDistributedSparseMatrix(Identity,Temp1,alpha_in=THREE)
+       CALL IncrementMatrix(Identity,Temp1,alpha_in=THREE)
 
-       CALL DistributedGemm(OutMat, Temp1, Temp2, alpha_in=0.5*alpha_k, &
+       CALL MatrixMultiply(OutMat, Temp1, Temp2, alpha_in=0.5*alpha_k, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
-       CALL IncrementDistributedSparseMatrix(Temp2, OutMat, &
+       CALL IncrementMatrix(Temp2, OutMat, &
             & alpha_in=NEGATIVE_ONE)
-       norm_value = DistributedSparseNorm(OutMat)
-       CALL CopyMatrixDS(Temp2,OutMat)
+       norm_value = MatrixNorm(OutMat)
+       CALL CopyMatrix(Temp2,OutMat)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -205,10 +205,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     CALL StopTimer("Load Balance")
 
-    CALL DestructDistributedSparseMatrix(Temp1)
-    CALL DestructDistributedSparseMatrix(Temp2)
-    CALL DestructDistributedSparseMatrix(OutMatT)
-    CALL DestructDistributedSparseMatrix(Identity)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(Temp1)
+    CALL DestructMatrix(Temp2)
+    CALL DestructMatrix(OutMatT)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE CoreComputation
 END MODULE SignSolversModule

@@ -247,7 +247,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ind
 
     !! The Matrices We'll Build
-    CALL ConstructEmptyMatrixDS(V, exa%mat_dim)
+    CALL ConstructEmptyMatrix(V, exa%mat_dim)
 
     !! Get The Eigenvectors
     row_start = eigen_loop_start(1, exa%proc_rows, exa%rowid)
@@ -276,7 +276,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("EigenExaFilter")
 
     CALL StartTimer("EigenFill")
-    CALL FillFromTripletList(V, triplet_v)
+    CALL FillMatrixFromTripletList(V, triplet_v)
     CALL StopTimer("EigenFill")
 
     !! Cleanup
@@ -304,7 +304,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     !! The Matrices We'll Build
-    CALL ConstructEmptyMatrixDS(W, exa%mat_dim)
+    CALL ConstructEmptyMatrix(W, exa%mat_dim)
 
     !! Copy To Triplet List
     wsize = MAX(CEILING((1.0*exa%mat_dim)/exa%num_procs), 1)

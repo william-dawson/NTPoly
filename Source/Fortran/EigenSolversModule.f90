@@ -124,7 +124,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ReduceDimension(this, num_values, solver_parameters, &
             & fixed_param, ReducedMat)
     ELSE
-       CALL CopyMatrixDS(this, ReducedMat)
+       CALL CopyMatrix(this, ReducedMat)
     END IF
     CALL StopTimer("Initial Purify")
 
@@ -133,14 +133,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & fixed_param)
 
     !! Compute the eigenvalues
-    CALL TransposeDistributedSparseMatrix(eigenvectors, eigenvectorsT)
-    CALL DistributedGemm(eigenvectorsT, ReducedMat, TempMat, &
+    CALL TransposeMatrix(eigenvectors, eigenvectorsT)
+    CALL MatrixMultiply(eigenvectorsT, ReducedMat, TempMat, &
          & threshold_in=solver_parameters%threshold)
-    CALL DistributedGemm(TempMat, eigenvectors, eigenvalues, &
+    CALL MatrixMultiply(TempMat, eigenvectors, eigenvalues, &
          & threshold_in=solver_parameters%threshold)
 
     !! Get rid of the off diagonal elements
-    CALL GetTripletList(eigenvalues,triplet_list)
+    CALL GetMatrixTripletList(eigenvalues,triplet_list)
     CALL ConstructTripletList(new_list)
     DO counter=1,triplet_list%CurrentSize
        CALL GetTripletAt(triplet_list,counter,temporary)
@@ -148,11 +148,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL AppendToTripletList(new_list,temporary)
        END IF
     END DO
-    CALL DestructMatrixDS(this)
-    CALL ConstructEmptyMatrixDS(this, &
+    CALL DestructMatrix(this)
+    CALL ConstructEmptyMatrix(this, &
          & eigenvectorsT%actual_matrix_dimension, &
          & eigenvectorsT%process_grid)
-    CALL FillFromTripletList(eigenvalues, new_list, preduplicated_in=.TRUE.)
+    CALL FillMatrixFromTripletList(eigenvalues, new_list, &
+         & preduplicated_in=.TRUE.)
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(new_list)
 
@@ -161,9 +162,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    CALL DestructMatrixDS(eigenvectorsT)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(ReducedMat)
+    CALL DestructMatrix(eigenvectorsT)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(ReducedMat)
   END SUBROUTINE SplittingEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the singular values and singular vectors of a matrix.
@@ -208,7 +209,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & solver_parameters_in=solver_parameters)
 
     !! Compute the left singular vectors
-    CALL DistributedGemm(UMat, right_vectors, left_vectors, &
+    CALL MatrixMultiply(UMat, right_vectors, left_vectors, &
          & threshold_in=solver_parameters%threshold)
 
     !! Cleanup
@@ -216,8 +217,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    CALL DestructMatrixDS(UMat)
-    CALL DestructMatrixDS(HMat)
+    CALL DestructMatrix(UMat)
+    CALL DestructMatrix(HMat)
   END SUBROUTINE SingularValueDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The recursive workhorse routine for the eigendecompositon.
@@ -253,9 +254,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Permutation_t) :: permutation
 
     mat_dim = this%actual_matrix_dimension
-    CALL ConstructEmptyMatrixDS(Identity, mat_dim, &
+    CALL ConstructEmptyMatrix(Identity, mat_dim, &
          & process_grid_in=this%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteListElement(key="Iteration_Size", int_value_in=mat_dim)
@@ -263,7 +264,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintMatrixInformation(this)
        CALL ExitSubLog
     END IF
-    sparsity = REAL(GetSize(this),KIND=NTREAL) / &
+    sparsity = REAL(GetMatrixSize(this),KIND=NTREAL) / &
          & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
 
     !! Base Case
@@ -292,8 +293,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Purify
        CALL StartTimer("Purify")
        CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=balanced_it)
-       CALL CopyMatrixDS(Identity, PHoleMat)
-       CALL IncrementDistributedSparseMatrix(PMat, PHoleMat, &
+       CALL CopyMatrix(Identity, PHoleMat)
+       CALL IncrementMatrix(PMat, PHoleMat, &
             & alpha_in=REAL(-1.0,NTREAL), threshold_in=it_param%threshold)
        CALL StopTimer("Purify")
 
@@ -304,7 +305,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
             & solver_parameters_in=fixed_param)
        CALL StopTimer("Cholesky")
-       CALL ConstructEmptyMatrixDS(StackV, &
+       CALL ConstructEmptyMatrix(StackV, &
             & this%actual_matrix_dimension, process_grid_in=this%process_grid)
        CALL StartTimer("Stack")
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
@@ -312,10 +313,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Rotate to the divided subspace
        CALL StartTimer("Rotate")
-       CALL DistributedGemm(this, StackV, TempMat, &
+       CALL MatrixMultiply(this, StackV, TempMat, &
             & threshold_in=it_param%threshold)
-       CALL TransposeDistributedSparseMatrix(StackV, StackVT)
-       CALL DistributedGemm(StackVT, TempMat, VAV, &
+       CALL TransposeMatrix(StackV, StackVT)
+       CALL MatrixMultiply(StackVT, TempMat, VAV, &
             & threshold_in=it_param%threshold)
        CALL StopTimer("Rotate")
 
@@ -325,7 +326,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & split_slice)
           CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
                & fixed_param)
-          CALL ConstructEmptyMatrixDS(TempMat, &
+          CALL ConstructEmptyMatrix(TempMat, &
                & this%actual_matrix_dimension, this%process_grid)
           CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
        ELSE
@@ -334,7 +335,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & fixed_param)
           CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
                & fixed_param)
-          CALL ConstructEmptyMatrixDS(TempMat, &
+          CALL ConstructEmptyMatrix(TempMat, &
                & this%actual_matrix_dimension, this%process_grid)
           CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
                & TempMat)
@@ -342,27 +343,27 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Recombine
        CALL StartTimer("Recombine")
-       CALL DistributedGemm(StackV, TempMat, eigenvectors, &
+       CALL MatrixMultiply(StackV, TempMat, eigenvectors, &
             & threshold_in=it_param%threshold)
        CALL StopTimer("Recombine")
 
        !! Cleanup
-       CALL DestructMatrixDS(SubMat)
-       CALL DestructMatrixDS(SubVec)
-       CALL DestructMatrixDS(PMat)
-       CALL DestructMatrixDS(PHoleMat)
-       CALL DestructMatrixDS(PVec)
-       CALL DestructMatrixDS(PHoleVec)
-       CALL DestructMatrixDS(StackV)
-       CALL DestructMatrixDS(StackVT)
-       CALL DestructMatrixDS(VAV)
-       CALL DestructMatrixDS(TempMat)
-       CALL DestructMatrixDS(LeftMat)
-       CALL DestructMatrixDS(RightMat)
-       CALL DestructMatrixDS(LeftVectors)
-       CALL DestructMatrixDS(RightVectors)
+       CALL DestructMatrix(SubMat)
+       CALL DestructMatrix(SubVec)
+       CALL DestructMatrix(PMat)
+       CALL DestructMatrix(PHoleMat)
+       CALL DestructMatrix(PVec)
+       CALL DestructMatrix(PHoleVec)
+       CALL DestructMatrix(StackV)
+       CALL DestructMatrix(StackVT)
+       CALL DestructMatrix(VAV)
+       CALL DestructMatrix(TempMat)
+       CALL DestructMatrix(LeftMat)
+       CALL DestructMatrix(RightMat)
+       CALL DestructMatrix(LeftVectors)
+       CALL DestructMatrix(RightVectors)
     END IF
-    CALL DestructMatrixDS(Identity)
+    CALL DestructMatrix(Identity)
 
   END SUBROUTINE EigenRecursive
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -384,8 +385,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! Basic Triplet Lists
-    CALL GetTripletList(LeftMat, left_triplets)
-    CALL GetTripletList(RightMat, right_triplets)
+    CALL GetMatrixTripletList(LeftMat, left_triplets)
+    CALL GetMatrixTripletList(RightMat, right_triplets)
     left_size = left_triplets%CurrentSize
     right_size = right_triplets%CurrentSize
     total_size = left_size + right_size
@@ -403,7 +404,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     combined_triplets%data(:left_size) = left_triplets%data(:left_size)
     combined_triplets%data(left_size+1:total_size) = &
          & right_triplets%data(:right_size)
-    CALL FillFromTripletList(Combined, combined_triplets, .TRUE.)
+    CALL FillMatrixFromTripletList(Combined, combined_triplets, .TRUE.)
 
     !! Cleanup
     CALL DestructTripletList(left_triplets)
@@ -423,7 +424,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! Basic Triplet Lists
-    CALL GetTripletList(SubMat, sub_triplets)
+    CALL GetMatrixTripletList(SubMat, sub_triplets)
 
     !! Adjust right triplets
     IF (color .EQ. 1) THEN
@@ -439,7 +440,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Combine
-    CALL FillFromTripletList(FullMat, sub_triplets, .FALSE.)
+    CALL FillMatrixFromTripletList(FullMat, sub_triplets, .FALSE.)
 
     !! Cleanup
     CALL DestructTripletList(sub_triplets)
@@ -463,7 +464,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! Get Triplet Lists
-    CALL GetTripletList(this, combined_triplets)
+    CALL GetMatrixTripletList(this, combined_triplets)
     CALL ConstructTripletList(left_triplets)
     CALL ConstructTripletList(right_triplets)
 
@@ -482,12 +483,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Fill
-    CALL ConstructEmptyMatrixDS(LeftMat, left_dim, &
+    CALL ConstructEmptyMatrix(LeftMat, left_dim, &
          & this%process_grid)
-    CALL ConstructEmptyMatrixDS(RightMat, right_dim, &
+    CALL ConstructEmptyMatrix(RightMat, right_dim, &
          & this%process_grid)
-    CALL FillFromTripletList(LeftMat, left_triplets, .TRUE.)
-    CALL FillFromTripletList(RightMat, right_triplets, .TRUE.)
+    CALL FillMatrixFromTripletList(LeftMat, left_triplets, .TRUE.)
+    CALL FillMatrixFromTripletList(RightMat, right_triplets, .TRUE.)
 
     !! Cleanup
     CALL DestructTripletList(left_triplets)
@@ -511,10 +512,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     !! First Duplicate Across Process Grids
-    CALL CommSplitDistributedSparseMatrix(this, TempMat, color, split_slice)
+    CALL CommSplitMatrix(this, TempMat, color, split_slice)
 
     !! Extract The Corner
-    CALL GetTripletList(TempMat, full_triplets)
+    CALL GetMatrixTripletList(TempMat, full_triplets)
 
     !! Extract Triplets
     CALL ConstructTripletList(extracted_triplets)
@@ -533,16 +534,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill
     IF (color .EQ. 0) THEN
-       CALL ConstructEmptyMatrixDS(SubMat, left_dim, &
+       CALL ConstructEmptyMatrix(SubMat, left_dim, &
             & process_grid_in=TempMat%process_grid)
     ELSE
-       CALL ConstructEmptyMatrixDS(SubMat, right_dim, &
+       CALL ConstructEmptyMatrix(SubMat, right_dim, &
             & process_grid_in=TempMat%process_grid)
     END IF
-    CALL FillFromTripletList(SubMat,extracted_triplets,preduplicated_in=.TRUE.)
+    CALL FillMatrixFromTripletList(SubMat,extracted_triplets,preduplicated_in=.TRUE.)
 
     !! Cleanup
-    CALL DestructMatrixDS(TempMat)
+    CALL DestructMatrix(TempMat)
     CALL DestructTripletList(full_triplets)
     CALL DestructTripletList(extracted_triplets)
 
@@ -574,9 +575,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Permutation_t) :: permutation
 
     !! Compute Identity Matrix
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & this%actual_matrix_dimension, process_grid_in=this%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Setup special parameters for purification
     CALL ConstructRandomPermutation(permutation, &
@@ -595,21 +596,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & solver_parameters_in=fixed_param)
 
     !! Rotate to the divided subspace
-    CALL DistributedGemm(this, PVec, TempMat, &
+    CALL MatrixMultiply(this, PVec, TempMat, &
          & threshold_in=it_param%threshold)
-    CALL TransposeDistributedSparseMatrix(PVec, PVecT)
-    CALL DistributedGemm(PVecT, TempMat, VAV, &
+    CALL TransposeMatrix(PVec, PVecT)
+    CALL MatrixMultiply(PVecT, TempMat, VAV, &
          & threshold_in=it_param%threshold)
 
     !! Extract
     CALL ExtractCorner(VAV, dim, dim, ReducedMat, TempMat)
 
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(PMat)
-    CALL DestructMatrixDS(PVec)
-    CALL DestructMatrixDS(PVecT)
-    CALL DestructMatrixDS(TempMat)
-    CALL DestructMatrixDS(VAV)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(PMat)
+    CALL DestructMatrix(PVec)
+    CALL DestructMatrix(PVecT)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(VAV)
   END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
@@ -644,7 +645,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     mat_dim = this%actual_matrix_dimension
 
     !! Gather on a single processor
-    CALL GetTripletList(this, triplet_list)
+    CALL GetMatrixTripletList(this, triplet_list)
     ALLOCATE(send_list(this%process_grid%slice_size))
     CALL ConstructTripletList(send_list(1), triplet_list%CurrentSize)
     DO counter = 2, this%process_grid%slice_size
@@ -661,12 +662,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
        CALL SortTripletList(triplet_list, mat_dim, mat_dim, &
             & sorted_triplet_list, .TRUE.)
-       CALL ConstructFromTripletList(local_a, sorted_triplet_list, mat_dim, &
+       CALL ConstructMatrixFromTripletList(local_a, sorted_triplet_list, mat_dim, &
             & mat_dim)
 
-       CALL ConstructDenseFromSparse(local_a, dense_a)
+       CALL ConstructMatrixDFromS(local_a, dense_a)
        IF (PRESENT(eigenvalues_out)) THEN
-          CALL DenseEigenDecomposition(dense_a, dense_v, dense_w)
+          CALL EigenDecomposition(dense_a, dense_v, dense_w)
           CALL ConstructTripletList(triplet_w, mat_dim)
           DO counter = 1, mat_dim
              triplet_w%data(counter)%index_row = counter
@@ -674,29 +675,29 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              triplet_w%data(counter)%point_value = dense_w%data(counter,1)
           END DO
        ELSE
-          CALL DenseEigenDecomposition(dense_a, dense_v)
+          CALL EigenDecomposition(dense_a, dense_v)
        END IF
 
-       CALL ConstructSparseFromDense(dense_v, local_v, fixed_params%threshold)
+       CALL ConstructMatrixSFromD(dense_v, local_v, fixed_params%threshold)
        CALL MatrixToTripletList(local_v, triplet_list)
     END IF
 
     !! Build The Full Matrices
-    CALL ConstructEmptyMatrixDS(eigenvectors, mat_dim, &
+    CALL ConstructEmptyMatrix(eigenvectors, mat_dim, &
          & process_grid_in=this%process_grid)
-    CALL FillFromTripletList(eigenvectors, triplet_list, .TRUE.)
+    CALL FillMatrixFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
     IF (PRESENT(eigenvalues_out)) THEN
-      CALL ConstructEmptyMatrixDS(eigenvalues_out, mat_dim, &
+      CALL ConstructEmptyMatrix(eigenvalues_out, mat_dim, &
            & process_grid_in=this%process_grid)
-      CALL FillFromTripletList(eigenvalues_out, triplet_w, .TRUE.)
+      CALL FillMatrixFromTripletList(eigenvalues_out, triplet_w, .TRUE.)
     END IF
 
     !! Cleanup
-    CALL DestructDenseMatrix(dense_a)
-    CALL DestructDenseMatrix(dense_v)
-    CALL DestructDenseMatrix(dense_w)
-    CALL DestructSparseMatrix(sparse)
+    CALL DestructMatrix(dense_a)
+    CALL DestructMatrix(dense_v)
+    CALL DestructMatrix(dense_w)
+    CALL DestructMatrix(sparse)
     CALL DestructTripletList(triplet_list)
     CALL DestructTripletList(triplet_w)
     CALL DestructTripletList(sorted_triplet_list)

@@ -103,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Build Storage
-    CALL ConstructEmptySparseMatrix(gathered_matrix, &
+    CALL ConstructEmptyMatrix(gathered_matrix, &
          & matrix%columns*helper%comm_size,matrix%rows)
     total_values = SUM(helper%values_per_process)
     ALLOCATE(gathered_matrix%values(total_values))

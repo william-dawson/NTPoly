@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the matrix inversion module for calling from other languages.
 MODULE InverseSolversModule_wrp
-  USE DistributedSparseMatrixModule_wrp, ONLY : &
-       & DistributedSparseMatrix_wrp
+  USE MatrixPSModule_wrp, ONLY : &
+       & Matrix_ps_wrp
   USE InverseSolversModule, ONLY : Invert, PseudoInverse
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -19,8 +19,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
-    TYPE(DistributedSparseMatrix_wrp) :: h_InverseMat
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_InverseMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
@@ -36,8 +36,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
-    TYPE(DistributedSparseMatrix_wrp) :: h_Mat1
-    TYPE(DistributedSparseMatrix_wrp) :: h_InverseMat
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_InverseMat
     TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)

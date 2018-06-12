@@ -106,10 +106,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL FillDistributedIdentity(Identity)
-    CALL CopyMatrixDS(InputMat,BalancedInput)
+    CALL FillMatrixIdentity(Identity)
+    CALL CopyMatrix(InputMat,BalancedInput)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -120,30 +120,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Recursive expansion
-    CALL CopyMatrixDS(Identity, Hkminus1)
-    CALL CopyMatrixDS(Hkminus1, OutputMat)
-    CALL ScaleDistributedSparseMatrix(OutputMat, poly%coefficients(1))
+    CALL CopyMatrix(Identity, Hkminus1)
+    CALL CopyMatrix(Hkminus1, OutputMat)
+    CALL ScaleMatrix(OutputMat, poly%coefficients(1))
     IF (degree .GT. 1) THEN
-       CALL CopyMatrixDS(BalancedInput, Hk)
-       CALL ScaleDistributedSparseMatrix(Hk, REAL(2.0,KIND=NTREAL))
-       CALL IncrementDistributedSparseMatrix(Hk, OutputMat, &
+       CALL CopyMatrix(BalancedInput, Hk)
+       CALL ScaleMatrix(Hk, REAL(2.0,KIND=NTREAL))
+       CALL IncrementMatrix(Hk, OutputMat, &
             & alpha_in=poly%coefficients(2))
        IF (degree .GT. 2) THEN
-          CALL CopyMatrixDS(Hkminus1, Hkprime)
-          CALL ScaleDistributedSparseMatrix(Hkprime, REAL(2.0,NTREAL))
+          CALL CopyMatrix(Hkminus1, Hkprime)
+          CALL ScaleMatrix(Hkprime, REAL(2.0,NTREAL))
           DO counter = 3, degree
-             CALL DistributedGemm(BalancedInput, Hk, Hkplus1, &
+             CALL MatrixMultiply(BalancedInput, Hk, Hkplus1, &
                   & alpha_in=REAL(2.0,NTREAL), &
                   & threshold_in=solver_parameters%threshold, &
                   & memory_pool_in=pool)
-             CALL IncrementDistributedSparseMatrix(Hkprime, Hkplus1, &
+             CALL IncrementMatrix(Hkprime, Hkplus1, &
                   & alpha_in=REAL(-1.0,NTREAL))
-             CALL CopyMatrixDS(Hk, Hkprime)
-             CALL ScaleDistributedSparseMatrix(Hkprime, &
+             CALL CopyMatrix(Hk, Hkprime)
+             CALL ScaleMatrix(Hkprime, &
                   & REAL(2*(counter-1),KIND=NTREAL))
-             CALL CopyMatrixDS(Hk, Hkminus1)
-             CALL CopyMatrixDS(Hkplus1, Hk)
-             CALL IncrementDistributedSparseMatrix(Hk, OutputMat, &
+             CALL CopyMatrix(Hk, Hkminus1)
+             CALL CopyMatrix(Hkplus1, Hk)
+             CALL IncrementMatrix(Hk, OutputMat, &
                   & alpha_in=poly%coefficients(counter))
           END DO
        END IF
@@ -162,12 +162,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    CALL DestructMatrixDS(Identity)
-    CALL DestructMatrixDS(Hk)
-    CALL DestructMatrixDS(Hkminus1)
-    CALL DestructMatrixDS(Hkplus1)
-    CALL DestructMatrixDS(Hkprime)
-    CALL DestructMatrixDS(BalancedInput)
-    CALL DestructMatrixMemoryPoolD(pool)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(Hk)
+    CALL DestructMatrix(Hkminus1)
+    CALL DestructMatrix(Hkplus1)
+    CALL DestructMatrix(Hkprime)
+    CALL DestructMatrix(BalancedInput)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE HermiteCompute
 END MODULE HermiteSolversModule

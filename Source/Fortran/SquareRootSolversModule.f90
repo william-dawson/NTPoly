@@ -102,19 +102,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrixDS(X_k, &
+    CALL ConstructEmptyMatrix(X_k, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(SquareRootMat, &
+    CALL ConstructEmptyMatrix(SquareRootMat, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(InverseSquareRootMat, &
+    CALL ConstructEmptyMatrix(InverseSquareRootMat, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(T_k, &
+    CALL ConstructEmptyMatrix(T_k, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Temp, &
+    CALL ConstructEmptyMatrix(Temp, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrixDS(Identity, &
+    CALL ConstructEmptyMatrix(Identity, &
          & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL FillDistributedIdentity(Identity)
+    CALL FillMatrixIdentity(Identity)
 
     !! Compute the lambda scaling value.
     CALL GershgorinBounds(Mat1,e_min,e_max)
@@ -122,8 +122,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     lambda = 1.0/max_between
 
     !! Initialize
-    CALL FillDistributedIdentity(InverseSquareRootMat)
-    CALL CopyMatrixDS(Mat1,SquareRootMat)
+    CALL FillMatrixIdentity(InverseSquareRootMat)
+    CALL CopyMatrix(Mat1,SquareRootMat)
 
     !! Load Balancing Step
     CALL StartTimer("Load Balance")
@@ -153,36 +153,36 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute X_k
-       CALL DistributedGemm(SquareRootMat,InverseSquareRootMat,X_k, &
+       CALL MatrixMultiply(SquareRootMat,InverseSquareRootMat,X_k, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        CALL GershgorinBounds(X_k,e_min,e_max)
        max_between = MAX(ABS(e_min),ABS(e_max))
        lambda = 1.0/max_between
 
-       CALL ScaleDistributedSparseMatrix(X_k,lambda)
+       CALL ScaleMatrix(X_k,lambda)
 
        !! Check if Converged
-       CALL CopyMatrixDS(Identity,Temp)
-       CALL IncrementDistributedSparseMatrix(X_k,Temp,REAL(-1.0,NTREAL))
-       norm_value = DistributedSparseNorm(Temp)
+       CALL CopyMatrix(Identity,Temp)
+       CALL IncrementMatrix(X_k,Temp,REAL(-1.0,NTREAL))
+       norm_value = MatrixNorm(Temp)
 
        !! Compute T_k
-       CALL CopyMatrixDS(Identity,T_k)
-       CALL ScaleDistributedSparseMatrix(T_k,REAL(3.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(X_k,T_k,REAL(-1.0,NTREAL))
-       CALL ScaleDistributedSparseMatrix(T_k,REAL(0.5,NTREAL))
+       CALL CopyMatrix(Identity,T_k)
+       CALL ScaleMatrix(T_k,REAL(3.0,NTREAL))
+       CALL IncrementMatrix(X_k,T_k,REAL(-1.0,NTREAL))
+       CALL ScaleMatrix(T_k,REAL(0.5,NTREAL))
 
        !! Compute Z_k+1
-       CALL CopyMatrixDS(InverseSquareRootMat,Temp)
-       CALL DistributedGemm(Temp,T_k,InverseSquareRootMat, &
+       CALL CopyMatrix(InverseSquareRootMat,Temp)
+       CALL MatrixMultiply(Temp,T_k,InverseSquareRootMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL ScaleDistributedSparseMatrix(InverseSquareRootMat,SQRT(lambda))
+       CALL ScaleMatrix(InverseSquareRootMat,SQRT(lambda))
 
        !! Compute Y_k+1
-       CALL CopyMatrixDS(SquareRootMat, Temp)
-       CALL DistributedGemm(T_k,Temp,SquareRootMat, &
+       CALL CopyMatrix(SquareRootMat, Temp)
+       CALL MatrixMultiply(T_k,Temp,SquareRootMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL ScaleDistributedSparseMatrix(SquareRootMat,SQRT(lambda))
+       CALL ScaleMatrix(SquareRootMat,SQRT(lambda))
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -195,9 +195,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     IF (compute_inverse) THEN
-       CALL CopyMatrixDS(InverseSquareRootMat, OutMat)
+       CALL CopyMatrix(InverseSquareRootMat, OutMat)
     ELSE
-       CALL CopyMatrixDS(SquareRootMat, OutMat)
+       CALL CopyMatrix(SquareRootMat, OutMat)
     END IF
 
     !! Undo Load Balancing Step
@@ -213,11 +213,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    CALL DestructDistributedSparseMatrix(Temp)
-    CALL DestructDistributedSparseMatrix(X_k)
-    CALL DestructDistributedSparseMatrix(SquareRootMat)
-    CALL DestructDistributedSparseMatrix(InverseSquareRootMat)
-    CALL DestructDistributedSparseMatrix(T_k)
-    CALL DestructMatrixMemoryPoolD(pool1)
+    CALL DestructMatrix(Temp)
+    CALL DestructMatrix(X_k)
+    CALL DestructMatrix(SquareRootMat)
+    CALL DestructMatrix(InverseSquareRootMat)
+    CALL DestructMatrix(T_k)
+    CALL DestructMatrixMemoryPool(pool1)
   END SUBROUTINE NewtonSchultzISR
 END MODULE SquareRootSolversModule
