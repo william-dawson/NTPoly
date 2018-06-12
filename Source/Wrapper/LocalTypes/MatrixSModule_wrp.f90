@@ -180,8 +180,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
-  SUBROUTINE PrintMatrix_lsr_wrp(ih_this, file_name, name_size) &
-       & bind(c,name="PrintMatrix_lsr_wrp")
+  SUBROUTINE PrintMatrixF_lsr_wrp(ih_this, file_name, name_size) &
+       & bind(c,name="PrintMatrixF_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
@@ -196,17 +196,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     CALL PrintMatrix(h_this%data,local_string)
-  END SUBROUTINE PrintMatrix_lsr_wrp
+  END SUBROUTINE PrintMatrixF_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
-  SUBROUTINE PrintMatrixF_lsr_wrp(ih_this) &
-       & bind(c,name="PrintMatrixF_lsr_wrp")
+  SUBROUTINE PrintMatrix_lsr_wrp(ih_this) &
+       & bind(c,name="PrintMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
     CALL PrintMatrix(h_this%data)
-  END SUBROUTINE PrintMatrixF_lsr_wrp
+  END SUBROUTINE PrintMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the routine that constructs a triplet list from a matrix.
   SUBROUTINE MatrixToTripletList_lsr_wrp(ih_this, ih_triplet_list) &
