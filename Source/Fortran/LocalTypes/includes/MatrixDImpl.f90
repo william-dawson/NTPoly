@@ -188,66 +188,6 @@
     MatB%data = MatB%data + alpha*MatA%data
   END SUBROUTINE IncrementMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the eigenvectors of a dense matrix.
-  !! Wraps a standard dense linear algebra routine.
-  !! @param[in] MatA the matrix to decompose.
-  !! @param[out] MatV the eigenvectors.
-  !! @param[out] MatV the eigenvalues.
-  SUBROUTINE EigenDecomposition(MatA, MatV, MatW)
-    !! Parameters
-    TYPE(DMTYPE), INTENT(IN) :: MatA
-    TYPE(DMTYPE), INTENT(INOUT) :: MatV
-    TYPE(DMTYPE), INTENT(INOUT), OPTIONAL :: MatW
-    !! Local variables
-    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
-    INTEGER :: N, LDA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
-    DOUBLE PRECISION :: WORKTEMP
-    INTEGER :: LWORK
-    INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
-    INTEGER :: IWORKTEMP
-    INTEGER :: LIWORK
-    INTEGER :: INFO
-    INTEGER :: II
-
-    CALL ConstructEmptyMatrix(MatV,MatA%columns,MatA%rows)
-    MatV%data = MatA%data
-
-    N = SIZE(MatA%data,DIM=1)
-    LDA = N
-
-    !! Allocations
-    ALLOCATE(W(N))
-
-    !! Determine the scratch space size
-    LWORK = -1
-    CALL DSYEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
-         & LIWORK, INFO)
-    N = LDA
-    LWORK = INT(WORKTEMP)
-    ALLOCATE(WORK(LWORK))
-    LIWORK = INT(IWORKTEMP)
-    ALLOCATE(IWORK(LIWORK))
-
-    !! Run Lapack For Real
-    CALL DSYEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, IWORK, LIWORK, &
-         & INFO)
-
-    !! Extract Eigenvalues
-    IF (PRESENT(MatW)) THEN
-      CALL ConstructEmptyMatrix(MatW,1,MatA%rows)
-      DO II = 1, N
-        MatW%data(II,1) = W(II)
-      END DO
-    END IF
-
-    !! Cleanup
-    DEALLOCATE(W)
-    DEALLOCATE(Work)
-
-  END SUBROUTINE EigenDecomposition
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a dense matrix.
   !! Computes the Frobenius norm.
   !! @param[in] this the matrix to compute the norm of.
