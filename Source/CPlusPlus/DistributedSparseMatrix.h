@@ -9,7 +9,7 @@ namespace NTPoly {
 class DistributedMatrixMemoryPool;
 class Permutation;
 class SolverBase;
-class TripletList;
+template <class T> class TripletList;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Module For Performing Distributed Sparse Matrix Operations.
 class DistributedSparseMatrix {
@@ -36,7 +36,8 @@ public:
 public:
   //! Fill in the matrix based on the contents of triplet lists.
   //!\param triplet_list list of values. Need to be absolute coordinates.
-  void FillFromTripletList(const TripletList &triplet_list);
+  template <class T>
+  void FillFromTripletList(const TripletList<T> &triplet_list);
   //! Fill the matrix based on a permutation.
   //!\param lb the permutation.
   //!\param permuterows true if this is a row permutation matrix.
@@ -53,7 +54,7 @@ public:
   //! Extracts a triplet list of the data that is stored on this process.
   //! Data is returned with absolute coordinates.
   //! \param triplet_list the list to fill.
-  void GetTripletList(TripletList &triplet_list);
+  template <class T> void GetTripletList(TripletList<T> &triplet_list);
   //! Extract an arbitrary block of a matrix into a triplet list. Block is
   //! defined by the row/column start/end values.
   //! This is slower than GetTripletList, because communication is required.
@@ -63,7 +64,8 @@ public:
   //! \param end_row the ending row for data to store on this process.
   //! \param start_column the starting col for data to store on this process
   //! \param end_column the ending col for data to store on this process
-  void GetMatrixBlock(TripletList &triplet_list, int start_row, int end_row,
+  template <class T>
+  void GetMatrixBlock(TripletList<T> &triplet_list, int start_row, int end_row,
                       int start_column, int end_column);
 
 public:
@@ -118,7 +120,7 @@ private:
   DistributedSparseMatrix &operator=(const DistributedSparseMatrix &);
   friend class LoadBalancer;
   friend class SolverBase;
-  friend class TripletList;
+  template <class T> friend class TripletList;
   friend class DistributedMatrixMemoryPool;
 };
 } // namespace NTPoly

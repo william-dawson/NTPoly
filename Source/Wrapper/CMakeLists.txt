@@ -2,9 +2,9 @@ subdirs(Communication)
 subdirs(DistributedTypes)
 subdirs(LocalTypes)
 
-include_directories(${CMAKE_BINARY_DIR}/Source/Wrappers/Communication)
-include_directories(${CMAKE_BINARY_DIR}/Source/Wrappers/DistributedTypes)
-include_directories(${CMAKE_BINARY_DIR}/Source/Wrappers/LocalTypes)
+include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/Communication)
+include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/DistributedTypes)
+include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/LocalTypes)
 
 set(Wsrc
     ChebyshevSolversModule_wrp.f90

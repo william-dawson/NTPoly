@@ -6,14 +6,14 @@
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Storing Triplets of Integer, Integer, Double.
-class Triplet {
+template <class T> class Triplet {
 public:
   //! Column location.
   int index_column;
   //! Row location.
   int index_row;
   //! Value at that location.
-  double point_value;
+  T point_value;
 };
 
 } // namespace NTPoly

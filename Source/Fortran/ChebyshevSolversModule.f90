@@ -198,8 +198,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: degree
     INTEGER :: log2degree
     INTEGER :: counter
-    INTEGER :: min_size, max_size
-    REAL(NTREAL) :: sparsity
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN

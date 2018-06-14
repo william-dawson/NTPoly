@@ -57,8 +57,9 @@ void DistributedSparseMatrix::WriteToMatrixMarket(string file_name) const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+template <>
 void DistributedSparseMatrix::FillFromTripletList(
-    const TripletList &triplet_list) {
+    const TripletList<double> &triplet_list) {
   FillMatrixFromTripletList_ps_wrp(ih_this, triplet_list.ih_this);
 }
 
@@ -88,12 +89,15 @@ int DistributedSparseMatrix::GetActualDimension() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void DistributedSparseMatrix::GetTripletList(TripletList &triplet_list) {
+template <>
+void DistributedSparseMatrix::GetTripletList(
+    TripletList<double> &triplet_list) {
   GetMatrixTripletList_ps_wrp(ih_this, triplet_list.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void DistributedSparseMatrix::GetMatrixBlock(TripletList &triplet_list,
+template <>
+void DistributedSparseMatrix::GetMatrixBlock(TripletList<double> &triplet_list,
                                              int start_row, int end_row,
                                              int start_column, int end_column) {
   GetMatrixBlock_ps_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,

@@ -63,3 +63,8 @@ using namespace NTPoly;
 %include "TrigonometrySolvers.h"
 %include "Triplet.h"
 %include "TripletList.h"
+
+%template(MatrixMemoryPool_r) NTPoly::MatrixMemoryPool<double>;
+%template(SparseMatrix_r) NTPoly::SparseMatrix<double>;
+%template(TripletList_r) NTPoly::TripletList<double>;
+%template(Triplet_r) NTPoly::Triplet<double>;

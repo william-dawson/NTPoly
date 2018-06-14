@@ -36,4 +36,40 @@ void PrintMatrixF_lsr_wrp(const int *ih_this, const char *file_name,
 void MatrixToTripletList_lsr_wrp(const int *ih_this, int *ih_triplet_list);
 void EigenDecomposition_lsr_wrp(const int *ih_this, int *ih_matV,
                                 const double *threshold);
+
+void ConstructMatrixFromFile_lsc_wrp(int *ih_this, const char *file_name,
+                                     const int *name_size);
+void ConstructMatrixFromTripletList_lsc_wrp(int *ih_this,
+                                            const int *ih_triplet_list,
+                                            const int *rows,
+                                            const int *columns);
+void ConstructZeroMatrix_lsc_wrp(int *ih_this, const int *rows,
+                                 const int *columns);
+void DestructMatrix_lsc_wrp(int *ih_this);
+void CopyMatrix_lsc_wrp(const int *ih_matA, int *ih_matB);
+void GetMatrixRows_lsc_wrp(const int *ih_this, int *rows);
+void GetMatrixColumns_lsc_wrp(const int *ih_this, int *columns);
+void ExtractMatrixRow_lsc_wrp(const int *ih_this, int *row_number,
+                              int *ih_row_out);
+void ExtractMatrixColumn_lsc_wrp(const int *ih_this, int *column_number,
+                                 int *ih_column_out);
+void ScaleMatrix_lsc_wrp(int *ih_this, const double *constant);
+void IncrementMatrix_lsc_wrp(const int *ih_matA, int *ih_matB,
+                             const double *alpha_in,
+                             const double *threshold_in);
+double DotMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB);
+void PairwiseMultiplyMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB,
+                                    int *ih_matC);
+void MatrixMultiply_lsc_wrp(const int *ih_matA, const int *ih_matB,
+                            int *ih_matC, const bool *IsATransposed,
+                            const bool *IsBTransposed, const double *alpha,
+                            const double *beta, const double *threshold,
+                            int *ih_matrix_memory_pool);
+void TransposeMatrix_lsc_wrp(const int *ih_matA, int *ih_matAT);
+void PrintMatrix_lsc_wrp(const int *ih_this);
+void PrintMatrixF_lsc_wrp(const int *ih_this, const char *file_name,
+                          const int *name_size);
+void MatrixToTripletList_lsc_wrp(const int *ih_this, int *ih_triplet_list);
+void EigenDecomposition_lsc_wrp(const int *ih_this, int *ih_matV,
+                                const double *threshold);
 #endif

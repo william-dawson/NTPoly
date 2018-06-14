@@ -7,16 +7,16 @@
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 class DistributedSparseMatrix;
-class SparseMatrix;
-class Triplet;
+template <class T> class SparseMatrix;
+template <class T> class Triplet;
 //! A data type for a list of triplets.
 //! As this is related to matrix multiplication, the referencing indices are
 //! rows and columns.
-class TripletList {
+template <class T> class TripletList {
 public:
   //! Construct the triplet list.
   //!\param size the size of the list.
-  TripletList(int size=0);
+  TripletList(int size = 0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
   // TripletList(const DistributedSparseMatrix &matrix);
@@ -25,14 +25,14 @@ public:
   void Resize(int size);
   //! Add a value to the end of the triplet list.
   //!\param value the triplet value to append.
-  void Append(const Triplet &value);
+  void Append(const Triplet<T> &value);
   //! Set a triplet value.
   //!\param index location to set the triplet at.
   //!\param value the triplet value to set.
-  void SetTripletAt(int index, const Triplet &value);
+  void SetTripletAt(int index, const Triplet<T> &value);
   //! Get the triplet value at a given index.
   //!\param index location to get the triplet at.
-  Triplet GetTripletAt(int index) const;
+  Triplet<T> GetTripletAt(int index) const;
   //! Get the number of entries in a triplet list.
   //!\result the number of entries in the list.
   int GetSize() const;
@@ -42,8 +42,8 @@ public:
   //!\param list to be sorted.
   //!\param matrix_columns this is the highest column value in the list
   //!\param sorted a now sorted version of the list.
-  static void SortTripletList(const TripletList &list, int matrix_columns,
-                              TripletList &sorted);
+  static void SortTripletList(const TripletList<T> &list, int matrix_columns,
+                              TripletList<T> &sorted);
 
 private:
   //! Handle to the actual data.
@@ -51,12 +51,12 @@ private:
 
 private:
   //! Copy constructor, locked.
-  TripletList(const TripletList &);
+  TripletList(const TripletList<T> &);
   //! Assignment operator, locked.
-  TripletList &operator=(const TripletList &);
+  TripletList<T> &operator=(const TripletList<T> &);
 
 private:
-  friend class SparseMatrix;
+  template <class T2> friend class SparseMatrix;
   friend class DistributedSparseMatrix;
 };
 } // namespace NTPoly

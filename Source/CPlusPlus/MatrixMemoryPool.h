@@ -5,11 +5,11 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class SparseMatrix;
+template<class T> class SparseMatrix;
 ////////////////////////////////////////////////////////////////////////////////
 //! A memory pool datatype that can be reused for matrix matrix multiplication
 //! this is to prevent excessive alloc/dealloc.
-class MatrixMemoryPool {
+template <class T> class MatrixMemoryPool {
 public:
   //! Constructor.
   //!\param columns number of columns for the matrix.
@@ -28,7 +28,7 @@ private:
   MatrixMemoryPool &operator=(const MatrixMemoryPool &);
 
 private:
-  friend class SparseMatrix;
+  template<class T2> friend class SparseMatrix;
 };
 } // namespace NTPoly
 #endif
