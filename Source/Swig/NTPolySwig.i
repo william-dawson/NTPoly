@@ -68,3 +68,8 @@ using namespace NTPoly;
 %template(SparseMatrix_r) NTPoly::SparseMatrix<double>;
 %template(TripletList_r) NTPoly::TripletList<double>;
 %template(Triplet_r) NTPoly::Triplet<double>;
+
+%template(MatrixMemoryPool_c) NTPoly::MatrixMemoryPool<double _Complex>;
+%template(SparseMatrix_c) NTPoly::SparseMatrix<double _Complex>;
+%template(TripletList_c) NTPoly::TripletList<double _Complex>;
+%template(Triplet_c) NTPoly::Triplet<double _Complex>;

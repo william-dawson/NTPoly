@@ -36,6 +36,18 @@ class TestParameters:
         # Matrix sparsity.
         self.sparsity = sparsity
 
+    def create_matrix(self, square=False, complex=False):
+        r = self.rows
+        c = self.columns
+        s = self.sparsity
+        if square:
+            r = c
+        if complex:
+            return random(r, c, s, format="csr") + 1j * \
+                random(r, c, s, format="csr")
+        else:
+            return random(r, c, s, format="csr")
+
 
 class TestLocalMatrix(unittest.TestCase):
     '''A test class for the local matrix module.'''
@@ -45,6 +57,7 @@ class TestLocalMatrix(unittest.TestCase):
     scratch_dir = os.environ['SCRATCHDIR']
     SparseMatrix = nt.SparseMatrix_r
     MatrixMemoryPool = nt.MatrixMemoryPool_r
+    complex = False
 
     def setUp(self):
         '''Set up tests.'''
@@ -61,8 +74,7 @@ class TestLocalMatrix(unittest.TestCase):
     def test_read(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             matrix2 = self.SparseMatrix(
                 self.scratch_dir + "/matrix1.mtx")
@@ -74,8 +86,7 @@ class TestLocalMatrix(unittest.TestCase):
     def test_readsymmetric(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.rows,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex, square=True)
             matrix1 = matrix1 + matrix1.T
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             matrix2 = self.SparseMatrix(
@@ -88,10 +99,8 @@ class TestLocalMatrix(unittest.TestCase):
     def test_addition(self):
         '''Test our ability to add together matrices.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
-            matrix2 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             alpha = uniform(1.0, 2.0)
@@ -109,8 +118,7 @@ class TestLocalMatrix(unittest.TestCase):
     def test_addzero(self):
         '''Test our ability to add together a matrix and zero.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             CheckMat = matrix1
@@ -127,8 +135,7 @@ class TestLocalMatrix(unittest.TestCase):
     def test_addzeroreverse(self):
         '''Test our ability to add together a matrix and zero.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             CheckMat = matrix1
@@ -145,10 +152,8 @@ class TestLocalMatrix(unittest.TestCase):
     def test_dot(self):
         '''Test our ability to dot two matrices.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
-            matrix2 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             check = sum(multiply(matrix1.todense(), matrix2.todense()))
@@ -163,8 +168,7 @@ class TestLocalMatrix(unittest.TestCase):
     def test_transpose(self):
         '''Test our ability to transpose a matrix.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             matrix2 = self.SparseMatrix(
@@ -182,10 +186,8 @@ class TestLocalMatrix(unittest.TestCase):
     def test_pairwise(self):
         '''Test our ability to pairwise multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
-            matrix2 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             CheckMat = csr_matrix(
@@ -196,7 +198,7 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix2 = self.SparseMatrix(
                 self.scratch_dir + "/matrix2.mtx")
             ntmatrix3 = self.SparseMatrix(ntmatrix1.GetColumns(),
-                                                     ntmatrix1.GetRows())
+                                          ntmatrix1.GetRows())
             ntmatrix3.PairwiseMultiply(ntmatrix1, ntmatrix2)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
@@ -207,10 +209,8 @@ class TestLocalMatrix(unittest.TestCase):
     def test_multiply(self):
         '''Test our ability to multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
-            matrix2 = random(param.columns, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex).T
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             alpha = uniform(1.0, 2.0)
@@ -225,9 +225,9 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix2 = self.SparseMatrix(
                 self.scratch_dir + "/matrix2.mtx")
             ntmatrix3 = self.SparseMatrix(ntmatrix2.GetColumns(),
-                                                     ntmatrix1.GetRows())
+                                          ntmatrix1.GetRows())
             memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
-                                                           ntmatrix1.GetRows())
+                                                ntmatrix1.GetRows())
             ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta,
                            0.0, memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
@@ -239,23 +239,27 @@ class TestLocalMatrix(unittest.TestCase):
     def test_multiply_zero(self):
         '''Test our ability to multiply two matrices where one is zero.'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
-            matrix2 = random(param.columns, param.columns, 0, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = 0 * param.create_matrix(complex=self.complex).T
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
-            CheckMat = matrix1.dot(matrix2)
+            alpha = uniform(1.0, 2.0)
+            beta = 0.0
+            if abs(beta) > THRESHOLD:
+                CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
+            else:
+                CheckMat = alpha * matrix1.dot(matrix2)
 
             ntmatrix1 = self.SparseMatrix(
                 self.scratch_dir + "/matrix1.mtx")
             ntmatrix2 = self.SparseMatrix(
-                ntmatrix1.GetColumns(), ntmatrix1.GetColumns())
+                self.scratch_dir + "/matrix2.mtx")
             ntmatrix3 = self.SparseMatrix(ntmatrix2.GetColumns(),
-                                                     ntmatrix1.GetRows())
+                                          ntmatrix1.GetRows())
             memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
-                                                           ntmatrix1.GetRows())
-            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, 1.0, 0.0, 0.0,
-                           memory_pool)
+                                                ntmatrix1.GetRows())
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta,
+                           0.0, memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
 
             ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
@@ -265,7 +269,7 @@ class TestLocalMatrix(unittest.TestCase):
     def test_eigendecomposition(self):
         '''Test the dense eigen decomposition'''
         for param in self.parameters:
-            matrix1 = random(param.rows, param.rows, 1.0, format="csr")
+            matrix1 = param.create_matrix(square=True)
             matrix1 = matrix1 + matrix1.T
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             w, vdense = eigh(matrix1.todense())
@@ -291,8 +295,7 @@ class TestLocalMatrix(unittest.TestCase):
         for param in self.parameters:
             if param.rows == 0:
                 continue
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             row_num = randint(0, param.rows - 1)
             CheckMat = matrix1[row_num, :]
@@ -312,8 +315,7 @@ class TestLocalMatrix(unittest.TestCase):
         for param in self.parameters:
             if param.columns == 0:
                 continue
-            matrix1 = random(param.rows, param.columns,
-                             param.sparsity, format="csr")
+            matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             column_num = randint(0, param.columns - 1)
             CheckMat = matrix1[:, column_num]
@@ -327,6 +329,12 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
+
+
+class TestLocalMatrix_c(TestLocalMatrix):
+    SparseMatrix = nt.SparseMatrix_c
+    MatrixMemoryPool = nt.MatrixMemoryPool_c
+    complex = True
 
 
 ###############################################################################
