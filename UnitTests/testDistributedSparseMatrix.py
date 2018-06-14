@@ -2,7 +2,6 @@
 A test suite for the Distributed Sparse Matrix module.'''
 import unittest
 import NTPolySwig as nt
-
 from random import randrange, seed, sample
 import scipy
 import scipy.sparse
@@ -12,12 +11,11 @@ from scipy.io import mmread, mmwrite
 import os
 import sys
 from mpi4py import MPI
-# MPI global communicator.
-comm = MPI.COMM_WORLD
-
 from Helpers import THRESHOLD
 from Helpers import result_file
 from Helpers import scratch_dir
+# MPI global communicator.
+comm = MPI.COMM_WORLD
 
 
 class TestParameters:
@@ -44,6 +42,8 @@ class TestDistributedMatrix(unittest.TestCase):
     CheckMat = 0
     # Rank of the current process.
     my_rank = 0
+    # Type of triplets to use
+    TripletList = nt.TripletList_r
 
     @classmethod
     def setUpClass(self):
@@ -128,7 +128,7 @@ class TestDistributedMatrix(unittest.TestCase):
                     scratch_dir + "/matrix1.mtx", False)
             else:
                 ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
-            triplet_list = nt.TripletList(0)
+            triplet_list = self.TripletList(0)
             if self.myslice == 0:
                 ntmatrix1.GetTripletList(triplet_list)
             ntmatrix2 = nt.DistributedSparseMatrix(
@@ -173,7 +173,7 @@ class TestDistributedMatrix(unittest.TestCase):
             for i in range(1, len(col_end_list)):
                 col_start_list.append(col_end_list[i - 1])
 
-            triplet_list = nt.TripletList(0)
+            triplet_list = self.TripletList(0)
             if self.myslice == 0:
                 ntmatrix1.GetMatrixBlock(triplet_list,
                                          row_start_list[self.myrow],
