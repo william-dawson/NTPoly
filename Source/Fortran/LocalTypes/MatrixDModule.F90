@@ -114,6 +114,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "includes/MatrixDImpl.f90"
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A wrapper for multiplying two dense matrices.
+  !! @param[in] MatA the first matrix.
+  !! @param[in] MatB the second matrix.
+  !! @param[inout] MatC = MatA*MatB.
+  SUBROUTINE MultiplyMatrix(MatA,MatB,MatC)
+    !! Parameters
+    TYPE(DMTYPE), INTENT(IN) :: MatA
+    TYPE(DMTYPE), INTENT(IN) :: MatB
+    TYPE(DMTYPE), INTENT(INOUT) :: MatC
+    !! Local variables
+    CHARACTER, PARAMETER :: TRANSA = 'N'
+    CHARACTER, PARAMETER :: TRANSB = 'N'
+    INTEGER :: M
+    INTEGER :: N
+    INTEGER :: K
+    DOUBLE PRECISION, PARAMETER :: ALPHA = 1.0
+    INTEGER :: LDA
+    INTEGER :: LDB
+    DOUBLE PRECISION, PARAMETER :: BETA = 0.0
+    INTEGER :: LDC
+
+    MatC = ConstructEmptyMatrix(MatA%rows,MatB%columns)
+
+    !! Setup Lapack
+    M = MatA%rows
+    N = MatB%columns
+    K = MatA%columns
+    LDA = M
+    LDB = K
+    LDC = M
+
+    CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
+         & LDB, BETA, MatC%data, LDC)
+
+  END SUBROUTINE MultiplyMatrix
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
   !! Wraps a standard dense linear algebra routine.
   !! @param[in] MatA the matrix to decompose.
@@ -211,6 +248,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define TransposeMatrix TransposeMatrix_ldc
 
 #include "includes/MatrixDImpl.f90"
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A wrapper for multiplying two dense matrices.
+  !! @param[in] MatA the first matrix.
+  !! @param[in] MatB the second matrix.
+  !! @param[inout] MatC = MatA*MatB.
+  SUBROUTINE MultiplyMatrix(MatA,MatB,MatC)
+    !! Parameters
+    TYPE(DMTYPE), INTENT(IN) :: MatA
+    TYPE(DMTYPE), INTENT(IN) :: MatB
+    TYPE(DMTYPE), INTENT(INOUT) :: MatC
+    !! Local variables
+    CHARACTER, PARAMETER :: TRANSA = 'N'
+    CHARACTER, PARAMETER :: TRANSB = 'N'
+    INTEGER :: M
+    INTEGER :: N
+    INTEGER :: K
+    COMPLEX*16, PARAMETER :: ALPHA = 1.0
+    INTEGER :: LDA
+    INTEGER :: LDB
+    COMPLEX*16, PARAMETER :: BETA = 0.0
+    INTEGER :: LDC
+
+    MatC = ConstructEmptyMatrix(MatA%rows,MatB%columns)
+
+    !! Setup Lapack
+    M = MatA%rows
+    N = MatB%columns
+    K = MatA%columns
+    LDA = M
+    LDB = K
+    LDC = M
+
+    CALL ZGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
+         & LDB, BETA, MatC%data, LDC)
+
+  END SUBROUTINE MultiplyMatrix
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
