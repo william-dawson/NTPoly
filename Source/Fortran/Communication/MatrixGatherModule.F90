@@ -2,9 +2,8 @@
 !> Module for gathering matrices across processes.
 MODULE MatrixGatherModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE MatrixDModule, ONLY : Matrix_ldr, ConstructEmptyMatrix
-  USE MatrixSModule, ONLY : Matrix_lsr, ConstructEmptyMatrix, &
-       & DestructMatrix, CopyMatrix
+  USE MatrixDModule, ONLY : Matrix_ldr
+  USE MatrixSModule, ONLY : Matrix_lsr, DestructMatrix, CopyMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -190,8 +189,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Unpack into the list
     DO II = 1, helper%comm_size
        !! Allocate Memory
-       CALL ConstructEmptyMatrix(temporary_matrix, &
-            & helper%matrix_data(3*(II-1)+2), helper%matrix_data(3*(II-1)+2))
+       temporary_matrix = Matrix_lsr(helper%matrix_data(3*(II-1)+2), &
+            & helper%matrix_data(3*(II-1)+2))
        ALLOCATE(temporary_matrix%values(helper%value_sizes(II)))
        ALLOCATE(temporary_matrix%inner_index(helper%value_sizes(II)))
 
@@ -328,8 +327,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Unpack into the list
     DO II = 1, helper%comm_size
        !! Allocate Memory
-       CALL ConstructEmptyMatrix(matrix_list(II), &
-            & helper%matrix_data(3*(II-1)+2), helper%matrix_data(3*(II-1)+2))
+       matrix_list(II) = Matrix_ldr(helper%matrix_data(3*(II-1)+2), &
+            & helper%matrix_data(3*(II-1)+2))
 
        !! Copy Values
        matrix_list(II)%data = RESHAPE(helper%value_buffer( &

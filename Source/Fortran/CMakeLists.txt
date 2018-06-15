@@ -9,63 +9,63 @@ include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/Helpers)
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/LocalTypes)
 
 set(Fsrc
-    ChebyshevSolversModule.f90
-    DensityMatrixSolversModule.f90
-    EigenBoundsModule.f90
-    EigenSolversModule.f90
-    ExponentialSolversModule.f90
-    FixedSolversModule.f90
-    GeometryOptimizationModule.f90
-    HermiteSolversModule.f90
-    InverseSolversModule.f90
-    IterativeSolversModule.f90
-    LinearSolversModule.f90
-    LoadBalancerModule.f90
-    MinimizerSolversModule.f90
-    ParameterConverterModule.f90
-    PermutationModule.f90
-    PolynomialSolversModule.f90
-    RootSolversModule.f90
-    SignSolversModule.f90
-    SquareRootSolversModule.f90
-    TrigonometrySolversModule.f90
+    ChebyshevSolversModule.F90
+    DensityMatrixSolversModule.F90
+    EigenBoundsModule.F90
+    EigenSolversModule.F90
+    ExponentialSolversModule.F90
+    FixedSolversModule.F90
+    GeometryOptimizationModule.F90
+    HermiteSolversModule.F90
+    InverseSolversModule.F90
+    IterativeSolversModule.F90
+    LinearSolversModule.F90
+    LoadBalancerModule.F90
+    MinimizerSolversModule.F90
+    ParameterConverterModule.F90
+    PermutationModule.F90
+    PolynomialSolversModule.F90
+    RootSolversModule.F90
+    SignSolversModule.F90
+    SquareRootSolversModule.F90
+    TrigonometrySolversModule.F90
 )
 
 set(FCommunication
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixBroadcastModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixGatherModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixReduceModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixSendRecvModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixBroadcastModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixGatherModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixReduceModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixSendRecvModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule.F90
 )
 
 set(FDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule.F90
 )
 
 set(FHelpers
-    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/ErrorModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/GemmTasksModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/LoggingModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/MatrixMarketModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/TimerModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/ErrorModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/GemmTasksModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/LoggingModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/MatrixMarketModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/TimerModule.F90
 )
 
 set(FTypes
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DataTypesModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixDModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSAlgebraModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/VectorSModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DataTypesModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixDModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSAlgebraModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/VectorSModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule.F90
 )
 
 IF (EIGEN_EXA)
-  LIST(APPEND Fsrc EigenExaModule.f90)
+  LIST(APPEND Fsrc EigenExaModule.F90)
   include_directories(${EIGEN_EXA})
 ENDIF()
 

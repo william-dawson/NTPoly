@@ -13,10 +13,10 @@ extern "C" {
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 template <> SparseMatrix<double>::SparseMatrix(int columns, int rows) {
-  ConstructZeroMatrix_lsr_wrp(ih_this, &columns, &rows);
+  ConstructZeroMatrix_lsr_wrp(ih_this, &rows, &columns);
 }
 template <> SparseMatrix<double _Complex>::SparseMatrix(int columns, int rows) {
-  ConstructZeroMatrix_lsc_wrp(ih_this, &columns, &rows);
+  ConstructZeroMatrix_lsc_wrp(ih_this, &rows, &columns);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

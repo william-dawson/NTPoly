@@ -9,7 +9,8 @@ MODULE TripletListModule
   USE MPI
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructTripletList
+  PUBLIC :: TripletList_r
+  PUBLIC :: TripletList_c
   PUBLIC :: DestructTripletList
   PUBLIC :: ResizeTripletList
   PUBLIC :: AppendToTripletList
@@ -22,8 +23,10 @@ MODULE TripletListModule
   PUBLIC :: RedistributeTripletLists
   PUBLIC :: ShiftTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE ConstructTripletList
+  INTERFACE TripletList_r
      MODULE PROCEDURE ConstructTripletList_r
+  END INTERFACE
+  INTERFACE TripletList_c
      MODULE PROCEDURE ConstructTripletList_c
   END INTERFACE
   INTERFACE DestructTripletList

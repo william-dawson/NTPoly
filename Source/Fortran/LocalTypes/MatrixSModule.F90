@@ -4,7 +4,7 @@ MODULE MatrixSModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
   USE MatrixMarketModule, ONLY : ParseMMHeader
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
-       & ConstructTripletList, DestructTripletList, SetTripletAt, &
+       & DestructTripletList, SetTripletAt, &
        & AppendToTripletList, SymmetrizeTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE TimerModule, ONLY : StartTimer, StopTimer
@@ -31,10 +31,6 @@ MODULE MatrixSModule
   END TYPE Matrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Construct/Destruct
-  PUBLIC :: ConstructEmptyMatrix
-  PUBLIC :: ConstructMatrixFromFile
-  PUBLIC :: ConstructZeroMatrix
-  PUBLIC :: ConstructMatrixFromTripletList
   PUBLIC :: DestructMatrix
   PUBLIC :: CopyMatrix
   !! Basic Accessors
@@ -52,20 +48,14 @@ MODULE MatrixSModule
   PUBLIC :: PrintMatrix
   PUBLIC :: MatrixToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE ConstructEmptyMatrix
+  INTERFACE Matrix_lsr
      MODULE PROCEDURE ConstructEmptyMatrix_lsr
-     MODULE PROCEDURE ConstructEmptyMatrix_lsc
-  END INTERFACE
-  INTERFACE ConstructMatrixFromFile
      MODULE PROCEDURE ConstructMatrixFromFile_lsr
-     MODULE PROCEDURE ConstructMatrixFromFile_lsc
-  END INTERFACE
-  INTERFACE ConstructZeroMatrix
-     MODULE PROCEDURE ConstructZeroMatrix_lsr
-     MODULE PROCEDURE ConstructZeroMatrix_lsc
-  END INTERFACE
-  INTERFACE ConstructMatrixFromTripletList
      MODULE PROCEDURE ConstructMatrixFromTripletList_lsr
+  END INTERFACE
+  INTERFACE Matrix_lsc
+     MODULE PROCEDURE ConstructEmptyMatrix_lsc
+     MODULE PROCEDURE ConstructMatrixFromFile_lsc
      MODULE PROCEDURE ConstructMatrixFromTripletList_lsc
   END INTERFACE
   INTERFACE DestructMatrix

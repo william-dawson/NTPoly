@@ -3,7 +3,7 @@
 MODULE MatrixMemoryPoolPModule_wrp
   USE MatrixPSModule_wrp, ONLY : Matrix_ps_wrp
   USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p, &
-       & ConstructMatrixMemoryPool, DestructMatrixMemoryPool
+       & DestructMatrixMemoryPool
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -29,7 +29,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matrix = TRANSFER(ih_matrix,h_matrix)
 
     ALLOCATE(h_this%data)
-    CALL ConstructMatrixMemoryPool(h_this%data, h_matrix%data)
+    h_this%data = MatrixMemoryPool_p(h_matrix%data)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_p_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

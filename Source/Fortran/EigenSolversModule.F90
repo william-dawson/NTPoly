@@ -141,7 +141,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Get rid of the off diagonal elements
     CALL GetMatrixTripletList(eigenvalues,triplet_list)
-    CALL ConstructTripletList(new_list)
+    new_list = TripletList_r()
     DO counter=1,triplet_list%CurrentSize
        CALL GetTripletAt(triplet_list,counter,temporary)
        IF (temporary%index_row .EQ. temporary%index_column) THEN
@@ -390,7 +390,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     left_size = left_triplets%CurrentSize
     right_size = right_triplets%CurrentSize
     total_size = left_size + right_size
-    CALL ConstructTripletList(combined_triplets, total_size)
+    combined_triplets = TripletList_r(total_size)
 
     !! Adjust right triplets
     DO counter = 1, right_size
@@ -436,7 +436,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END IF
     IF (SubMat%process_grid%my_slice .GT. 0) THEN
-       CALL ConstructTripletList(sub_triplets)
+       sub_triplets = TripletList_r()
     END IF
 
     !! Combine
@@ -465,8 +465,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Get Triplet Lists
     CALL GetMatrixTripletList(this, combined_triplets)
-    CALL ConstructTripletList(left_triplets)
-    CALL ConstructTripletList(right_triplets)
+    left_triplets = TripletList_r()
+    right_triplets = TripletList_r()
 
     !! Extract Triplets
     DO counter = 1, combined_triplets%CurrentSize
@@ -518,7 +518,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetMatrixTripletList(TempMat, full_triplets)
 
     !! Extract Triplets
-    CALL ConstructTripletList(extracted_triplets)
+    extracted_triplets = TripletList_r()
     DO counter = 1, full_triplets%CurrentSize
        CALL GetTripletAt(full_triplets, counter, temp_triplet)
        IF (temp_triplet%index_row .LE. left_dim .AND. &
@@ -647,9 +647,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Gather on a single processor
     CALL GetMatrixTripletList(this, triplet_list)
     ALLOCATE(send_list(this%process_grid%slice_size))
-    CALL ConstructTripletList(send_list(1), triplet_list%CurrentSize)
+    send_list(1) = TripletList_r(triplet_list%CurrentSize)
     DO counter = 2, this%process_grid%slice_size
-       CALL ConstructTripletList(send_list(counter))
+       send_list(counter) = TripletList_r()
     END DO
     list_size = triplet_list%CurrentSize
     send_list(1)%data(:list_size) = triplet_list%data(:list_size)
@@ -658,17 +658,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%within_slice_comm, triplet_list)
 
     !! Perform the local decomposition
-    CALL ConstructTripletList(triplet_w)
+    triplet_w = TripletList_r()
     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
        CALL SortTripletList(triplet_list, mat_dim, mat_dim, &
             & sorted_triplet_list, .TRUE.)
-       CALL ConstructMatrixFromTripletList(local_a, sorted_triplet_list, mat_dim, &
-            & mat_dim)
+       local_a = Matrix_lsr(sorted_triplet_list, mat_dim, mat_dim)
 
        CALL ConstructMatrixDFromS(local_a, dense_a)
        IF (PRESENT(eigenvalues_out)) THEN
           CALL EigenDecomposition(dense_a, dense_v, dense_w)
-          CALL ConstructTripletList(triplet_w, mat_dim)
+          triplet_w = TripletList_r(mat_dim)
           DO counter = 1, mat_dim
              triplet_w%data(counter)%index_row = counter
              triplet_w%data(counter)%index_column = counter

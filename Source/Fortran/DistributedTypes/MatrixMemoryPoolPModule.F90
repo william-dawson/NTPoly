@@ -14,11 +14,10 @@ MODULE MatrixMemoryPoolPModule
      TYPE(MatrixMemoryPool_lr), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: grid
   END TYPE MatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructMatrixMemoryPool
   PUBLIC :: DestructMatrixMemoryPool
   PUBLIC :: CheckMemoryPoolValidity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE ConstructMatrixMemoryPool
+  INTERFACE MatrixMemoryPool_p
     MODULE PROCEDURE ConstructMatrixMemoryPool_p
   END INTERFACE
   INTERFACE DestructMatrixMemoryPool
@@ -31,16 +30,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
   !> @param[out] this a constructed Matrix Memory Pool object.
   !! @param[in] matrix the associated distributed sparse matrix.
-  PURE SUBROUTINE ConstructMatrixMemoryPool_p(this, matrix)
+  PURE FUNCTION ConstructMatrixMemoryPool_p(matrix) RESULT(this)
     !! Parameters
-    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
+    TYPE(MatrixMemoryPool_p) :: this
     TYPE(Matrix_ps), INTENT(IN) :: matrix
 
     !! Allocate
-    CALL DestructMatrixMemoryPool(this)
     ALLOCATE(this%grid(matrix%process_grid%number_of_blocks_rows, &
          & matrix%process_grid%number_of_blocks_columns))
-  END SUBROUTINE ConstructMatrixMemoryPool_p
+  END FUNCTION ConstructMatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Distributed Matrix Memory Pool object.
   !> @param[out] this Distributed Matrix Memory Pool object to destroy.

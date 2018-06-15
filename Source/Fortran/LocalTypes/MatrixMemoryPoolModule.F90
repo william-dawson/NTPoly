@@ -53,13 +53,14 @@ MODULE MatrixMemoryPoolModule
      INTEGER, PUBLIC :: hash_size
   END TYPE MatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructMatrixMemoryPool
   PUBLIC :: DestructMatrixMemoryPool
   PUBLIC :: CheckMemoryPoolValidity
   PUBLIC :: SetPoolSparsity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE ConstructMatrixMemoryPool
+  INTERFACE MatrixMemoryPool_lr
      MODULE PROCEDURE ConstructMatrixMemoryPool_lr
+  END INTERFACE
+  INTERFACE MatrixMemoryPool_lc
      MODULE PROCEDURE ConstructMatrixMemoryPool_lc
   END INTERFACE
   INTERFACE DestructMatrixMemoryPool

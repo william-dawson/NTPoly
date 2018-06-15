@@ -3,7 +3,7 @@
 MODULE TripletListModule_wrp
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & ConstructTripletList, AppendToTripletList, ResizeTripletList, &
+       & AppendToTripletList, ResizeTripletList, &
        & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList, &
        & GetTripletListSize
   USE TripletModule, ONLY : Triplet_r, Triplet_c
@@ -50,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL ConstructTripletList(h_this%data,size)
+    h_this%data = TripletList_r(size)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -172,7 +172,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL ConstructTripletList(h_this%data,size)
+    h_this%data = TripletList_c(size)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

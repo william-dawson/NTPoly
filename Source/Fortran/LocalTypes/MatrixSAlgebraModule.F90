@@ -5,15 +5,13 @@ MODULE MatrixSAlgebraModule
   USE MatrixDModule, ONLY : Matrix_ldr, Matrix_ldc, ConstructMatrixDFromS, &
        & ConstructMatrixSFromD, MultiplyMatrix, DestructMatrix
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, MatrixMemoryPool_lc, &
-       & ConstructMatrixMemoryPool, DestructMatrixMemoryPool, &
-       & CheckMemoryPoolValidity, SetPoolSparsity
-  USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix, &
-       & DestructMatrix, ConstructMatrixFromTripletList, CopyMatrix, &
+       & DestructMatrixMemoryPool, CheckMemoryPoolValidity, SetPoolSparsity
+  USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix, &
        & TransposeMatrix, PrintMatrix
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
-       & ConstructTripletList, DestructTripletList
+       & DestructTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   IMPLICIT NONE
   PRIVATE

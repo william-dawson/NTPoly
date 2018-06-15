@@ -121,7 +121,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%actual_matrix_dimension, this%process_grid)
 
     !! Guess Vector
-    CALL ConstructTripletList(temp_list)
+    temp_list = TripletList_r()
     IF (this%process_grid%global_rank .EQ. 0) THEN
        temp_triplet%index_row = 1
        temp_triplet%index_column = 1

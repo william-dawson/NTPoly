@@ -4,9 +4,9 @@
   !> @param[in] columns number of columns in the matrix.
   !> @param[in] rows number of rows in the matrix.
   !> @param[in] sparsity_in estimated sparsity (optional).
-  SUBROUTINE ConstructMatrixMemoryPool(this, columns, rows, sparsity_in)
+  FUNCTION ConstructMatrixMemoryPool(columns, rows, sparsity_in) RESULT(this)
     !! Parameters
-    TYPE(MPOOLTYPE), INTENT(OUT), TARGET :: this
+    TYPE(MPOOLTYPE), TARGET :: this
     INTEGER(kind=c_int), INTENT(IN) :: columns
     INTEGER(kind=c_int), INTENT(IN) :: rows
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
@@ -38,7 +38,7 @@
     this%hash_index = 0
     this%inserted_per_bucket = 0
     this%dirty_array = .FALSE.
-  END SUBROUTINE ConstructMatrixMemoryPool
+  END FUNCTION ConstructMatrixMemoryPool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A destructor for a matrix memory pool
   !> @param[inout] this the matrix being destructed.

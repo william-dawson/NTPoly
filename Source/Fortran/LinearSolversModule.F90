@@ -527,7 +527,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     local_columns = LMat%local_columns
 
-    CALL ConstructTripletList(local_triplets)
+    local_triplets = TripletList_r()
     IF (LMat%process_grid%my_slice .EQ. 0) THEN
        DO JJ = 1, local_columns
           !! note transpose

@@ -15,7 +15,7 @@ MODULE MatrixPSModule
   USE MatrixSModule
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, GetMPITripletType_r
-  USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
+  USE TripletListModule, ONLY : TripletList_r, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
        & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
        & ShiftTripletList
@@ -183,8 +183,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Build local storage
     ALLOCATE(this%local_data(this%process_grid%number_of_blocks_rows, &
          & this%process_grid%number_of_blocks_columns))
-    CALL ConstructZeroMatrix(zeromatrix, this%local_rows, &
-         & this%local_columns)
+    zeromatrix = Matrix_lsr(this%local_rows, this%local_columns)
     CALL SplitMatrixToLocalBlocks(this, zeromatrix)
     CALL DestructMatrix(zeromatrix)
   END SUBROUTINE ConstructEmptyMatrix_ps
@@ -361,7 +360,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (local_data_size_plus_buffer .EQ. 0) THEN
        end_of_buffer = .TRUE.
     END IF
-    CALL ConstructTripletList(triplet_list)
+    triplet_list = TripletList_r()
     DO WHILE(.NOT. end_of_buffer)
        current_line_length = INDEX(mpi_input_buffer(full_buffer_counter:),&
             new_line('A'))
@@ -468,7 +467,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_triplets = INT(total_values) - INT(local_offset)
     END IF
     local_offset = local_offset*(bytes_per_int*2+bytes_per_double) + header_size
-    CALL ConstructTripletList(triplet_list,local_triplets)
+    triplet_list = TripletList_r(local_triplets)
 
     !! Do The Actual Reading
     triplet_mpi_type = GetMPITripletType_r()
@@ -737,8 +736,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & sorted_triplet_list)
 
     !! Now we can just construct a local matrix.
-    CALL ConstructMatrixFromTripletList(local_matrix,sorted_triplet_list, &
-         & this%local_rows, this%local_columns)
+    local_matrix = Matrix_lsr(sorted_triplet_list, this%local_rows, &
+         & this%local_columns)
     !! And reduce over the Z dimension. This can be accomplished by
     !! summing up.
     IF (.NOT. PRESENT(preduplicated_in) .OR. .NOT. preduplicated_in) THEN
@@ -780,7 +779,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: local_matrix
 
     !! There can't be more than one entry per row
-    CALL ConstructTripletList(triplet_list,this%local_rows)
+    triplet_list = TripletList_r(this%local_rows)
 
     total_values = 0
     !! Find local identity values
@@ -797,12 +796,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO row_iter
 
     !! Finish constructing
-    CALL ConstructTripletList(unsorted_triplet_list,total_values)
+    unsorted_triplet_list = TripletList_r(total_values)
     unsorted_triplet_list%data = triplet_list%data(:total_values)
     CALL SortTripletList(unsorted_triplet_list,this%local_columns,&
          & this%local_rows, sorted_triplet_list)
-    CALL ConstructMatrixFromTripletList(local_matrix,sorted_triplet_list, &
-         & this%local_rows,this%local_columns)
+    local_matrix = Matrix_lsr(sorted_triplet_list, this%local_rows, &
+         & this%local_columns)
 
     CALL SplitMatrixToLocalBlocks(this, local_matrix)
 
@@ -842,7 +841,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Build Local Triplet List
     !! There can't be more than one entry per row
-    CALL ConstructTripletList(triplet_list,this%local_rows)
+    triplet_list = TripletList_r(this%local_rows)
     total_values = 0
     IF (rows) THEN
        DO counter=this%start_row,this%end_row-1
@@ -871,12 +870,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Finish constructing
-    CALL ConstructTripletList(unsorted_triplet_list,total_values)
+    unsorted_triplet_list = TripletList_r(total_values)
     unsorted_triplet_list%data = triplet_list%data(:total_values)
     CALL SortTripletList(unsorted_triplet_list, this%local_columns, &
          & this%local_rows, sorted_triplet_list)
-    CALL ConstructMatrixFromTripletList(local_matrix,sorted_triplet_list, &
-         & this%local_rows,this%local_columns)
+    local_matrix = Matrix_lsr(sorted_triplet_list, this%local_rows, &
+         & this%local_columns)
 
     CALL SplitMatrixToLocalBlocks(this, local_matrix)
 
@@ -1049,7 +1048,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPINTREAL, this%process_grid%within_slice_comm, ierr)
 
     !! Convert receive buffer to triplet list
-    CALL ConstructTripletList(triplet_list, size_in=SUM(recv_per_proc))
+    triplet_list = TripletList_r(size_in=SUM(recv_per_proc))
     DO counter=1, SUM(recv_per_proc)
        triplet_list%data(counter)%index_row = recv_buffer_row(counter)
        triplet_list%data(counter)%index_column = recv_buffer_col(counter)
@@ -1200,7 +1199,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ProcessGrid_t) :: grid_temp
 
     CALL GetMatrixTripletList(this,triplet_list)
-    CALL ConstructTripletList(new_list)
+    new_list = TripletList_r()
     DO counter=1,triplet_list%CurrentSize
        CALL GetTripletAt(triplet_list,counter,temporary)
        IF (ABS(temporary%point_value) .GT. threshold) THEN
@@ -1282,7 +1281,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r) :: temporary, temporary_t
     INTEGER :: counter
 
-    CALL ConstructTripletList(new_list)
+    new_list = TripletList_r()
     CALL GetMatrixTripletList(AMat,triplet_list)
     DO counter=1,triplet_list%CurrentSize
        IF (MOD(counter, AMat%process_grid%num_process_slices) .EQ. &
@@ -1348,22 +1347,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ALLOCATE(send_list(between_grid_size))
           IF (my_color .EQ. 0) THEN
              !! The smaller process grid only needs to send to process 2
-             CALL ConstructTripletList(send_list(1))
-             CALL ConstructTripletList(send_list(2), full_list%CurrentSize)
+             send_list(1) = TripletList_r()
+             send_list(2) = TripletList_r(full_list%CurrentSize)
              send_list(2)%data(:fsize) = full_list%data(:fsize)
              DO counter = 3, between_grid_size
-                CALL ConstructTripletList(send_list(counter))
+                send_list(counter) = TripletList_r()
              END DO
           ELSE
              !! The larger process grid only needs to send to process 1
-             CALL ConstructTripletList(send_list(1), full_list%CurrentSize)
+             send_list(1) = TripletList_r(full_list%CurrentSize)
              send_list(1)%data(:fsize) = full_list%data(:fsize)
              DO counter = 2, between_grid_size
-                CALL ConstructTripletList(send_list(counter))
+                send_list(counter) = TripletList_r()
              END DO
           END IF
-          CALL ConstructTripletList(send_list(between_grid_rank+1), &
-               & full_list%CurrentSize)
+          send_list(between_grid_rank+1) = TripletList_r(full_list%CurrentSize)
           send_list(between_grid_rank+1)%data(:fsize) = full_list%data(:fsize)
           CALL RedistributeTripletLists(send_list, between_grid_comm, new_list)
        END IF
@@ -1445,7 +1443,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Build A Send Buffer
     DO counter = 1, this%process_grid%slice_size
-       CALL ConstructTripletList(send_triplet_lists(counter))
+       send_triplet_lists(counter) = TripletList_r()
     END DO
     DO counter = 1, initial_triplet_list%CurrentSize
        process_id = location_list_within_slice(counter)

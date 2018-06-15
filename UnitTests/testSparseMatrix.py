@@ -124,8 +124,8 @@ class TestLocalMatrix(unittest.TestCase):
             CheckMat = matrix1
             matrix1 = self.SparseMatrix(
                 self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SparseMatrix(
-                matrix1.GetRows(), matrix1.GetColumns())
+            matrix2 = self.SparseMatrix(matrix1.GetColumns(),
+                                        matrix1.GetRows())
             matrix2.Increment(matrix1, 1.0, 0.0)
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
@@ -141,8 +141,8 @@ class TestLocalMatrix(unittest.TestCase):
             CheckMat = matrix1
             matrix1 = self.SparseMatrix(
                 self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SparseMatrix(
-                matrix1.GetRows(), matrix1.GetColumns())
+            matrix2 = self.SparseMatrix(matrix1.GetColumns(),
+                                        matrix1.GetRows())
             matrix1.Increment(matrix2, 1.0, 0.0)
             matrix1.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
@@ -330,11 +330,11 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
-
-class TestLocalMatrix_c(TestLocalMatrix):
-    SparseMatrix = nt.SparseMatrix_c
-    MatrixMemoryPool = nt.MatrixMemoryPool_c
-    complex = True
+#
+# class TestLocalMatrix_c(TestLocalMatrix):
+#     SparseMatrix = nt.SparseMatrix_c
+#     MatrixMemoryPool = nt.MatrixMemoryPool_c
+#     complex = True
 
 
 ###############################################################################

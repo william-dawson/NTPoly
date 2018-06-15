@@ -5,29 +5,28 @@
 !! performance.
 MODULE MatrixDModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE MatrixSModule, ONLY : Matrix_lsr, Matrix_lsc, &
-       & ConstructMatrixFromTripletList
+  USE MatrixSModule, ONLY : Matrix_lsr, Matrix_lsc
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & ConstructTripletList, AppendToTripletList
+       & AppendToTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for storing a dense matrix.
   TYPE, PUBLIC :: Matrix_ldr
-     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix
-     INTEGER :: rows !< Matrix dimension: rows
-     INTEGER :: columns !< Matrix dimension: columns
+     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix.
+     INTEGER :: rows !< Matrix dimension: rows.
+     INTEGER :: columns !< Matrix dimension: columns.
   END TYPE Matrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for storing a dense matrix.
   TYPE, PUBLIC :: Matrix_ldc
-     COMPLEX(NTCOMPLEX), DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix
-     INTEGER :: rows !< Matrix dimension: rows
-     INTEGER :: columns !< Matrix dimension: columns
+     !> values of the matrix.
+     COMPLEX(NTCOMPLEX), DIMENSION(:,:), ALLOCATABLE :: DATA
+     INTEGER :: rows !< Matrix dimension: rows.
+     INTEGER :: columns !< Matrix dimension: columns.
   END TYPE Matrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructEmptyMatrix
   PUBLIC :: ConstructMatrixDFromS
   PUBLIC :: ConstructMatrixSFromD
   PUBLIC :: CopyMatrix
@@ -42,8 +41,10 @@ MODULE MatrixDModule
   PUBLIC :: MultiplyMatrix
   PUBLIC :: TransposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE ConstructEmptyMatrix
+  INTERFACE Matrix_ldr
      MODULE PROCEDURE ConstructEmptyMatrix_ldr
+  END INTERFACE
+  INTERFACE Matrix_ldc
      MODULE PROCEDURE ConstructEmptyMatrix_ldc
   END INTERFACE
   INTERFACE ConstructMatrixDFromS
@@ -136,7 +137,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: INFO
     INTEGER :: II
 
-    CALL ConstructEmptyMatrix(MatV,MatA%columns,MatA%rows)
+    MatV = ConstructEmptyMatrix(MatA%columns,MatA%rows)
     MatV%data = MatA%data
 
     N = SIZE(MatA%data,DIM=1)
@@ -161,7 +162,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       CALL ConstructEmptyMatrix(MatW,1,MatA%rows)
+       MatW = ConstructEmptyMatrix(1,MatA%rows)
        DO II = 1, N
           MatW%data(II,1) = W(II)
        END DO
@@ -239,7 +240,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: IWORKTEMP
     INTEGER :: II
 
-    CALL ConstructEmptyMatrix(MatV,MatA%columns,MatA%rows)
+    MatV = ConstructEmptyMatrix(MatA%columns,MatA%rows)
     MatV%data = MatA%data
 
     N = SIZE(MatA%data,DIM=1)
@@ -266,7 +267,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       CALL ConstructEmptyMatrix(MatW,1,MatA%rows)
+       MatW = ConstructEmptyMatrix(1,MatA%rows)
        DO II = 1, N
           MatW%data(II,1) = W(II)
        END DO

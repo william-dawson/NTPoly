@@ -3,7 +3,7 @@
 MODULE MatrixPSAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p, &
-       & CheckMemoryPoolValidity, ConstructMatrixMemoryPool
+       & CheckMemoryPoolValidity, DestructMatrixMemoryPool
   USE MatrixPSModule
   USE GemmTasksModule
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
@@ -232,7 +232,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Setup AB Tasks
     IF (PRESENT(memory_pool_in)) THEN
        IF (.NOT. CheckMemoryPoolValidity(memory_pool_in)) THEN
-          CALL ConstructMatrixMemoryPool(memory_pool_in, matAB)
+          CALL DestructMatrixMemoryPool(memory_pool_in)
+          memory_pool_in = MatrixMemoryPool_p(matAB)
        END IF
     END IF
 

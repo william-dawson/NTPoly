@@ -1,9 +1,9 @@
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
   !! @param[in] size_in the length of the triplet list (optional, default=0).
-  PURE SUBROUTINE ConstructTripletList(this,size_in)
+  PURE FUNCTION ConstructTripletList(size_in) RESULT(this)
     !! Parameters
-    TYPE(TLISTTYPE), INTENT(INOUT) :: this
+    TYPE(TLISTTYPE) :: this
     INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: size_in
     !! Local data
     INTEGER :: size
@@ -18,7 +18,7 @@
     this%CurrentSize = size
 
     ALLOCATE(this%data(size))
-  END SUBROUTINE ConstructTripletList
+  END FUNCTION ConstructTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructs a triplet list.
   !! @param[inout] this the triplet list to destruct.
@@ -187,7 +187,7 @@
             & sorted_list)
     ELSE
        !! Data Allocation
-       CALL ConstructTripletList(sorted_list,list_length)
+       sorted_list = ConstructTripletList(list_length)
        ALLOCATE(values_per_row(matrix_columns), stat=alloc_stat)
        ALLOCATE(offset_array(matrix_columns), stat=alloc_stat)
        ALLOCATE(inserted_per_row(matrix_columns), stat=alloc_stat)
@@ -376,7 +376,7 @@
     CALL StopTimer("AllToAllV")
 
     !! Unpack Into The Output Triplet List
-    CALL ConstructTripletList(local_data_out,size_in=SUM(recv_per_process))
+    local_data_out = ConstructTripletList(size_in=SUM(recv_per_process))
     DO counter = 1, SUM(recv_per_process)
        local_data_out%data(counter)%index_column = recv_buffer_col(counter)
        local_data_out%data(counter)%index_row = recv_buffer_row(counter)
@@ -445,7 +445,7 @@
     value_buffer = 0
     dirty_buffer = 0
     list_length = input_list%CurrentSize
-    CALL ConstructTripletList(sorted_list,list_length)
+    sorted_list = ConstructTripletList(list_length)
 
     !! Unpack
     DO II = 1, list_length

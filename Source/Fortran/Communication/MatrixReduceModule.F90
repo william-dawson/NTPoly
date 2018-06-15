@@ -3,7 +3,7 @@
 MODULE MatrixReduceModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX
   USE MatrixSAlgebraModule, ONLY : IncrementMatrix
-  USE MatrixSModule, ONLY : Matrix_lsr, ConstructEmptyMatrix, DestructMatrix
+  USE MatrixSModule, ONLY : Matrix_lsr, DestructMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -103,8 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Build Storage
-    CALL ConstructEmptyMatrix(gathered_matrix, &
-         & matrix%columns*helper%comm_size,matrix%rows)
+    gathered_matrix = Matrix_lsr(matrix%rows,matrix%columns*helper%comm_size)
     total_values = SUM(helper%values_per_process)
     ALLOCATE(gathered_matrix%values(total_values))
     ALLOCATE(gathered_matrix%inner_index(total_values))
@@ -211,8 +210,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: temporary_total_values
 
     !! Build Matrix Objects
-    CALL ConstructEmptyMatrix(temporary_matrix,matrix%columns,matrix%rows)
-    CALL ConstructEmptyMatrix(gathered_matrix,matrix%columns,matrix%rows)
+    temporary_matrix = Matrix_lsr(matrix%rows,matrix%columns)
+    gathered_matrix = Matrix_lsr(matrix%rows,matrix%columns)
 
     !! Sum
     DO counter = 1, helper%comm_size

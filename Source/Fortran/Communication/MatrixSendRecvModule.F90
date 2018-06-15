@@ -2,8 +2,8 @@
 !> Module for sending matrices between processes.
 MODULE MatrixSendRecvModule
   USE DataTypesModule, ONLY : MPINTREAL
-  USE MatrixDModule, ONLY : Matrix_ldr, ConstructEmptyMatrix
-  USE MatrixSModule, ONLY : Matrix_lsr, ConstructEmptyMatrix
+  USE MatrixDModule, ONLY : Matrix_ldr
+  USE MatrixSModule, ONLY : Matrix_lsr
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -126,8 +126,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Build Storage
-    CALL ConstructEmptyMatrixS(outmat, helper%matrix_data(3), &
-         & helper%matrix_data(2))
+    outmat =  Matrix_lsr(helper%matrix_data(3), helper%matrix_data(2))
     ALLOCATE(outmat%values(helper%matrix_data(1)))
     ALLOCATE(outmat%inner_index(helper%matrix_data(1)))
     outmat%outer_index(1) = 0
@@ -227,8 +226,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Build Storage
-    CALL ConstructEmptyMatrixD(outmat, helper%matrix_data(3), &
-         & helper%matrix_data(2))
+    outmat = Matrix_ldr(helper%matrix_data(3), helper%matrix_data(2))
 
     !! Receive the data
     CALL MPI_Irecv(outmat%data, helper%matrix_data(1), MPINTREAL, &
