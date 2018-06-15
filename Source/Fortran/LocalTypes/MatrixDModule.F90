@@ -137,7 +137,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: INFO
     INTEGER :: II
 
-    MatV = ConstructEmptyMatrix(MatA%columns,MatA%rows)
+    MatV = ConstructEmptyMatrix(MatA%rows,MatA%columns)
     MatV%data = MatA%data
 
     N = SIZE(MatA%data,DIM=1)
@@ -162,7 +162,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       MatW = ConstructEmptyMatrix(1,MatA%rows)
+       MatW = ConstructEmptyMatrix(MatA%rows,1)
        DO II = 1, N
           MatW%data(II,1) = W(II)
        END DO
@@ -240,7 +240,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: IWORKTEMP
     INTEGER :: II
 
-    MatV = ConstructEmptyMatrix(MatA%columns,MatA%rows)
+    MatV = ConstructEmptyMatrix(MatA%rows,MatA%columns)
     MatV%data = MatA%data
 
     N = SIZE(MatA%data,DIM=1)
@@ -262,12 +262,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
-    CALL ZHEEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, RWORK, LWORK, &
+    CALL ZHEEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, RWORK, LRWORK, &
          & IWORK, LIWORK, INFO)
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       MatW = ConstructEmptyMatrix(1,MatA%rows)
+       MatW = ConstructEmptyMatrix(MatA%rows, 1)
        DO II = 1, N
           MatW%data(II,1) = W(II)
        END DO

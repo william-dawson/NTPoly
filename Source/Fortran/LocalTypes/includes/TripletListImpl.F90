@@ -239,44 +239,6 @@
 
   END SUBROUTINE SortTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Symmetrizes an unsymmetric triplet list according to the specified
-  !! symmetry type.
-  !! @param[inout] triplet_list list to be symmetrized.
-  !! @param[in] pattern_type type of symmetry.
-  SUBROUTINE SymmetrizeTripletList(triplet_list, pattern_type)
-    !! Parameters
-    TYPE(TLISTTYPE), INTENT(INOUT)  :: triplet_list
-    INTEGER, INTENT(IN) :: pattern_type
-    !! Local variables
-    TYPE(TTYPE) :: temporary, temporary_transpose
-    INTEGER :: counter
-    INTEGER :: initial_size
-
-    initial_size = triplet_list%CurrentSize
-    SELECT CASE(pattern_type)
-    CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    END SELECT
-  END SUBROUTINE SymmetrizeTripletList
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of entries in a triplet list.
   !! @param[in] triplet_list list to get the size of.
   !! @return list_size the number of entries in the triplet list.

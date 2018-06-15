@@ -32,8 +32,11 @@
 #include "TrigonometrySolvers.h"
 #include "Triplet.h"
 #include "TripletList.h"
+#include <complex.h>
 using namespace NTPoly;
 %}
+
+%include <complex.i>
 %include "std_string.i"
 
 %include "SolverBase.h"
@@ -63,13 +66,3 @@ using namespace NTPoly;
 %include "TrigonometrySolvers.h"
 %include "Triplet.h"
 %include "TripletList.h"
-
-%template(MatrixMemoryPool_r) NTPoly::MatrixMemoryPool<double>;
-%template(SparseMatrix_r) NTPoly::SparseMatrix<double>;
-%template(TripletList_r) NTPoly::TripletList<double>;
-%template(Triplet_r) NTPoly::Triplet<double>;
-
-%template(MatrixMemoryPool_c) NTPoly::MatrixMemoryPool<double _Complex>;
-%template(SparseMatrix_c) NTPoly::SparseMatrix<double _Complex>;
-%template(TripletList_c) NTPoly::TripletList<double _Complex>;
-%template(Triplet_c) NTPoly::Triplet<double _Complex>;

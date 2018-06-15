@@ -5,30 +5,53 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-template<class T> class SparseMatrix;
+class SparseMatrix;
 ////////////////////////////////////////////////////////////////////////////////
 //! A memory pool datatype that can be reused for matrix matrix multiplication
 //! this is to prevent excessive alloc/dealloc.
-template <class T> class MatrixMemoryPool {
+class MatrixMemoryPool_r {
 public:
   //! Constructor.
   //!\param columns number of columns for the matrix.
   //!\param rows number of rows for the matrix.
-  MatrixMemoryPool(int columns, int rows);
+  MatrixMemoryPool_r(int columns, int rows);
   //! Destructor
-  ~MatrixMemoryPool();
+  ~MatrixMemoryPool_r();
 
 private:
   int ih_this[SIZE_wrp];
 
 private:
   //! Copy constructor, locked.
-  MatrixMemoryPool(const MatrixMemoryPool &);
+  MatrixMemoryPool_r(const MatrixMemoryPool_r &);
   //! Assignment operator, locked.
-  MatrixMemoryPool &operator=(const MatrixMemoryPool &);
+  MatrixMemoryPool_r &operator=(const MatrixMemoryPool_r &);
 
 private:
-  template<class T2> friend class SparseMatrix;
+  friend class SparseMatrix_r;
+};
+//! A memory pool datatype that can be reused for matrix matrix multiplication
+//! this is to prevent excessive alloc/dealloc.
+class MatrixMemoryPool_c {
+public:
+  //! Constructor.
+  //!\param columns number of columns for the matrix.
+  //!\param rows number of rows for the matrix.
+  MatrixMemoryPool_c(int columns, int rows);
+  //! Destructor
+  ~MatrixMemoryPool_c();
+
+private:
+  int ih_this[SIZE_wrp];
+
+private:
+  //! Copy constructor, locked.
+  MatrixMemoryPool_c(const MatrixMemoryPool_c &);
+  //! Assignment operator, locked.
+  MatrixMemoryPool_c &operator=(const MatrixMemoryPool_c &);
+
+private:
+  friend class SparseMatrix_c;
 };
 } // namespace NTPoly
 #endif

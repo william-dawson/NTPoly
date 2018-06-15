@@ -135,7 +135,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define PrintMatrix PrintMatrix_lsr
 #define MatrixToTripletList MatrixToTripletList_lsr
 
-#include "includes/MatrixSImpl.f90"
+#include "includes/MatrixSImpl.F90"
 
 #undef ConstructEmptyMatrix
 #undef ConstructMatrixFromFile
@@ -183,7 +183,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define PrintMatrix PrintMatrix_lsc
 #define MatrixToTripletList MatrixToTripletList_lsc
 
-#include "includes/MatrixSImpl.f90"
+#define ISCOMPLEX 1
+#include "includes/MatrixSImpl.F90"
+#undef ISCOMPLEX
 
 #undef ConstructEmptyMatrix
 #undef ConstructMatrixFromFile

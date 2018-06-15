@@ -43,6 +43,9 @@ FUNCTION ConstructMatrixFromFile(file_name) RESULT(this)
   INTEGER :: counter
   LOGICAL :: found_comment_line
   LOGICAL :: error_occured
+#ifdef ISCOMPLEX
+  REAL(NTREAL) :: real_val, comp_val
+#endif
   file_handler = 16
 
   OPEN(file_handler,file=file_name,status='old')
@@ -68,12 +71,18 @@ FUNCTION ConstructMatrixFromFile(file_name) RESULT(this)
 
   !! Read Values
   DO counter = 1, temp_total_values
+#ifdef ISCOMPLEX
+     READ(file_handler,*) temporary%index_row, temporary%index_column, &
+          & real_val, comp_val
+     temporary%point_value = CMPLX(real_val, comp_val, KIND=NTCOMPLEX)
+#else
      READ(file_handler,*) temporary%index_row, temporary%index_column, &
           & temporary%point_value
+#endif
      CALL AppendToTripletList(triplet_list,temporary)
   END DO
-  CLOSE(file_handler)
 
+  CLOSE(file_handler)
   CALL SymmetrizeTripletList(triplet_list, pattern_type)
   CALL SortTripletList(triplet_list, temp_columns, temp_rows, &
        & sorted_triplet_list)
@@ -606,13 +615,25 @@ SUBROUTINE PrintMatrix(this, file_name_in)
 
   size_of_this = this%outer_index(this%columns+1)
 
+#ifdef ISCOMPLEX
+  WRITE(file_handler,'(A)') "%%MatrixMarket matrix coordinate complex general"
+#else
   WRITE(file_handler,'(A)') "%%MatrixMarket matrix coordinate real general"
+#endif
+
   WRITE(file_handler,'(A)') "%"
   WRITE(file_handler,*) this%rows, this%columns, size_of_this
   DO counter = 1,size_of_this
+#ifdef ISCOMPLEX
+     WRITE(file_handler,*) triplet_list%data(counter)%index_row, &
+          & triplet_list%data(counter)%index_column, &
+          & REAL(triplet_list%data(counter)%point_value), &
+          & AIMAG(triplet_list%data(counter)%point_value)
+#else
      WRITE(file_handler,*) triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & triplet_list%data(counter)%point_value
+#endif
   END DO
 
   IF (PRESENT(file_name_in)) THEN

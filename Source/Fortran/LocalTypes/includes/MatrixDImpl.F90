@@ -3,7 +3,7 @@
 !! @param[inout] this the matrix to construct.
 !! @param[in] columns of the matrix.
 !! @parma[in] rows of the matrix
-PURE FUNCTION ConstructEmptyMatrix(columns, rows) RESULT(this)
+PURE FUNCTION ConstructEmptyMatrix(rows, columns) RESULT(this)
   !! Parameters
   TYPE(DMTYPE) :: this
   INTEGER, INTENT(IN) :: rows
@@ -29,8 +29,8 @@ PURE SUBROUTINE ConstructMatrixDFromS(sparse_matrix, dense_matrix)
   INTEGER :: total_counter
   TYPE(TTYPE) :: temporary
 
-  dense_matrix = ConstructEmptyMatrix(sparse_matrix%columns, &
-       & sparse_matrix%rows)
+  dense_matrix = ConstructEmptyMatrix(sparse_matrix%rows, &
+       & sparse_matrix%columns)
 
   !! Loop over elements.
   dense_matrix%data = 0
@@ -106,7 +106,7 @@ PURE SUBROUTINE CopyMatrix(matA, matB)
   TYPE(DMTYPE), INTENT(IN) :: matA
   TYPE(DMTYPE), INTENT(INOUT) :: matB
 
-  matB = ConstructEmptyMatrix(matA%columns,matA%rows)
+  matB = ConstructEmptyMatrix(matA%rows,matA%columns)
   matB%data = matA%data
 END SUBROUTINE CopyMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -142,7 +142,7 @@ SUBROUTINE MultiplyMatrix(MatA,MatB,MatC)
   DOUBLE PRECISION, PARAMETER :: BETA = 0.0
   INTEGER :: LDC
 
-  MatC = ConstructEmptyMatrix(MatB%columns,MatA%rows)
+  MatC = ConstructEmptyMatrix(MatB%rows,MatA%columns)
 
   !! Setup Lapack
   M = MatA%rows

@@ -11,22 +11,22 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-template<>
-MatrixMemoryPool<double>::MatrixMemoryPool(int columns, int rows) {
+
+MatrixMemoryPool_r::MatrixMemoryPool_r(int columns, int rows) {
   ConstructMatrixMemoryPool_lr_wrp(ih_this, &columns, &rows);
 }
-template<>
-MatrixMemoryPool<double _Complex>::MatrixMemoryPool(int columns, int rows) {
+
+MatrixMemoryPool_c::MatrixMemoryPool_c(int columns, int rows) {
   ConstructMatrixMemoryPool_lc_wrp(ih_this, &columns, &rows);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template<>
-MatrixMemoryPool<double>::~MatrixMemoryPool() {
+
+MatrixMemoryPool_r::~MatrixMemoryPool_r() {
   DestructMatrixMemoryPool_lc_wrp(ih_this);
 }
-template<>
-MatrixMemoryPool<double _Complex>::~MatrixMemoryPool() {
+
+MatrixMemoryPool_c::~MatrixMemoryPool_c() {
   DestructMatrixMemoryPool_lc_wrp(ih_this);
 }
 } // namespace NTPoly

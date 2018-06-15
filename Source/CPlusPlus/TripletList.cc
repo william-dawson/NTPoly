@@ -1,5 +1,6 @@
 #include "Triplet.h"
 #include "TripletList.h"
+
 #include <complex.h>
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -10,10 +11,10 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-template <> TripletList<double>::TripletList(int size) {
+TripletList_r::TripletList_r(int size) {
   ConstructTripletList_r_wrp(ih_this, &size);
 }
-template <> TripletList<double _Complex>::TripletList(int size) {
+TripletList_c::TripletList_c(int size) {
   ConstructTripletList_c_wrp(ih_this, &size);
 }
 
@@ -23,86 +24,78 @@ template <> TripletList<double _Complex>::TripletList(int size) {
 // }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <> void TripletList<double>::Resize(int size) {
+void TripletList_r::Resize(int size) {
   ResizeTripletList_r_wrp(ih_this, &size);
 }
-template <> void TripletList<double _Complex>::Resize(int size) {
+void TripletList_c::Resize(int size) {
   ResizeTripletList_c_wrp(ih_this, &size);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <> void TripletList<double>::Append(const Triplet<double> &value) {
+void TripletList_r::Append(const Triplet_r &value) {
   AppendToTripletList_r_wrp(ih_this, &(value.index_column), &(value.index_row),
                             &(value.point_value));
 }
-template <>
-void TripletList<double _Complex>::Append(
-    const Triplet<double _Complex> &value) {
+
+void TripletList_c::Append(const Triplet_c &value) {
+  double _Complex temp;
+  temp = value.point_value.real() + value.point_value.imag()*I;
   AppendToTripletList_c_wrp(ih_this, &(value.index_column), &(value.index_row),
-                            &(value.point_value));
+                            &temp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <>
-void TripletList<double>::SetTripletAt(int index,
-                                       const Triplet<double> &value) {
+
+void TripletList_r::SetTripletAt(int index, const Triplet_r &value) {
   int adjusted_index = index + 1;
   SetTripletAt_r_wrp(ih_this, &adjusted_index, &(value.index_column),
                      &(value.index_row), &(value.point_value));
 }
-template <>
-void TripletList<double _Complex>::SetTripletAt(
-    int index, const Triplet<double _Complex> &value) {
+
+void TripletList_c::SetTripletAt(int index, const Triplet_c &value) {
+  double _Complex temp;
+  temp = value.point_value.real() + value.point_value.imag()*I;
   int adjusted_index = index + 1;
   SetTripletAt_c_wrp(ih_this, &adjusted_index, &(value.index_column),
-                     &(value.index_row), &(value.point_value));
+                     &(value.index_row), &temp);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <> Triplet<double> TripletList<double>::GetTripletAt(int index) const {
-  Triplet<double> temp;
+Triplet_r TripletList_r::GetTripletAt(int index) const {
+  Triplet_r temp;
   int adjusted_index = index + 1;
   GetTripletAt_r_wrp(ih_this, &adjusted_index, &(temp.index_column),
                      &(temp.index_row), &(temp.point_value));
   return temp;
 }
-template <>
-Triplet<double _Complex>
-TripletList<double _Complex>::GetTripletAt(int index) const {
-  Triplet<double _Complex> temp;
+
+Triplet_c TripletList_c::GetTripletAt(int index) const {
+  Triplet_c temp;
+  double _Complex tempc;
   int adjusted_index = index + 1;
   GetTripletAt_c_wrp(ih_this, &adjusted_index, &(temp.index_column),
-                     &(temp.index_row), &(temp.point_value));
+                     &(temp.index_row), &tempc);
+  temp.point_value = std::complex<double>(__real__ tempc, __imag__ tempc);
   return temp;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <> int TripletList<double>::GetSize() const {
-  return GetTripletListSize_r_wrp(ih_this);
-}
-template <> int TripletList<double _Complex>::GetSize() const {
-  return GetTripletListSize_c_wrp(ih_this);
-}
+int TripletList_r::GetSize() const { return GetTripletListSize_r_wrp(ih_this); }
+int TripletList_c::GetSize() const { return GetTripletListSize_c_wrp(ih_this); }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <> TripletList<double>::~TripletList() {
-  DestructTripletList_r_wrp(ih_this);
-}
-template <> TripletList<double _Complex>::~TripletList() {
-  DestructTripletList_c_wrp(ih_this);
-}
+TripletList_r::~TripletList_r() { DestructTripletList_r_wrp(ih_this); }
+TripletList_c::~TripletList_c() { DestructTripletList_c_wrp(ih_this); }
 
 ////////////////////////////////////////////////////////////////////////////////
-template <>
-void TripletList<double>::SortTripletList(const TripletList<double> &input,
-                                          int matrix_columns,
-                                          TripletList<double> &sorted) {
+
+void TripletList_r::SortTripletList(const TripletList_r &input,
+                                    int matrix_columns, TripletList_r &sorted) {
   SortTripletList_r_wrp(input.ih_this, &matrix_columns, sorted.ih_this);
 }
-template <>
-void TripletList<double _Complex>::SortTripletList(
-    const TripletList<double _Complex> &input, int matrix_columns,
-    TripletList<double _Complex> &sorted) {
+
+void TripletList_c::SortTripletList(const TripletList_c &input,
+                                    int matrix_columns, TripletList_c &sorted) {
   SortTripletList_c_wrp(input.ih_this, &matrix_columns, sorted.ih_this);
 }
 } // namespace NTPoly

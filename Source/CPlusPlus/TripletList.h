@@ -7,16 +7,18 @@
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 class DistributedSparseMatrix;
-template <class T> class SparseMatrix;
-template <class T> class Triplet;
+class SparseMatrix_r;
+class SparseMatrix_c;
+class Triplet_r;
+class Triplet_c;
 //! A data type for a list of triplets.
 //! As this is related to matrix multiplication, the referencing indices are
 //! rows and columns.
-template <class T> class TripletList {
+class TripletList_r {
 public:
   //! Construct the triplet list.
   //!\param size the size of the list.
-  TripletList(int size = 0);
+  TripletList_r(int size = 0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
   // TripletList(const DistributedSparseMatrix &matrix);
@@ -25,25 +27,25 @@ public:
   void Resize(int size);
   //! Add a value to the end of the triplet list.
   //!\param value the triplet value to append.
-  void Append(const Triplet<T> &value);
+  void Append(const Triplet_r &value);
   //! Set a triplet value.
   //!\param index location to set the triplet at.
   //!\param value the triplet value to set.
-  void SetTripletAt(int index, const Triplet<T> &value);
+  void SetTripletAt(int index, const Triplet_r &value);
   //! Get the triplet value at a given index.
   //!\param index location to get the triplet at.
-  Triplet<T> GetTripletAt(int index) const;
+  Triplet_r GetTripletAt(int index) const;
   //! Get the number of entries in a triplet list.
   //!\result the number of entries in the list.
   int GetSize() const;
   //! Standard destructor.
-  ~TripletList();
+  ~TripletList_r();
   //! Sort a triplet list
   //!\param list to be sorted.
   //!\param matrix_columns this is the highest column value in the list
   //!\param sorted a now sorted version of the list.
-  static void SortTripletList(const TripletList<T> &list, int matrix_columns,
-                              TripletList<T> &sorted);
+  static void SortTripletList(const TripletList_r &list, int matrix_columns,
+                              TripletList_r &sorted);
 
 private:
   //! Handle to the actual data.
@@ -51,12 +53,62 @@ private:
 
 private:
   //! Copy constructor, locked.
-  TripletList(const TripletList<T> &);
+  TripletList_r(const TripletList_r &);
   //! Assignment operator, locked.
-  TripletList<T> &operator=(const TripletList<T> &);
+  TripletList_r &operator=(const TripletList_r &);
 
 private:
-  template <class T2> friend class SparseMatrix;
+  friend class SparseMatrix_r;
+  friend class DistributedSparseMatrix;
+};
+//! A data type for a list of triplets.
+//! As this is related to matrix multiplication, the referencing indices are
+//! rows and columns.
+class TripletList_c {
+public:
+  //! Construct the triplet list.
+  //!\param size the size of the list.
+  TripletList_c(int size = 0);
+  //! Construct a triplet list from a distributed sparse matrix.
+  //!\param matrix to construct from.
+  // TripletList(const DistributedSparseMatrix &matrix);
+  //! Increase the size of a triplet list.
+  //!\param size the new size.
+  void Resize(int size);
+  //! Add a value to the end of the triplet list.
+  //!\param value the triplet value to append.
+  void Append(const Triplet_c &value);
+  //! Set a triplet value.
+  //!\param index location to set the triplet at.
+  //!\param value the triplet value to set.
+  void SetTripletAt(int index, const Triplet_c &value);
+  //! Get the triplet value at a given index.
+  //!\param index location to get the triplet at.
+  Triplet_c GetTripletAt(int index) const;
+  //! Get the number of entries in a triplet list.
+  //!\result the number of entries in the list.
+  int GetSize() const;
+  //! Standard destructor.
+  ~TripletList_c();
+  //! Sort a triplet list
+  //!\param list to be sorted.
+  //!\param matrix_columns this is the highest column value in the list
+  //!\param sorted a now sorted version of the list.
+  static void SortTripletList(const TripletList_c &list, int matrix_columns,
+                              TripletList_c &sorted);
+
+private:
+  //! Handle to the actual data.
+  int ih_this[SIZE_wrp];
+
+private:
+  //! Copy constructor, locked.
+  TripletList_c(const TripletList_c &);
+  //! Assignment operator, locked.
+  TripletList_c &operator=(const TripletList_c &);
+
+private:
+  friend class SparseMatrix_c;
   friend class DistributedSparseMatrix;
 };
 } // namespace NTPoly

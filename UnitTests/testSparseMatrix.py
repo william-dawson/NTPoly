@@ -87,7 +87,7 @@ class TestLocalMatrix(unittest.TestCase):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex, square=True)
-            matrix1 = matrix1 + matrix1.T
+            matrix1 = matrix1 + matrix1.H
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             matrix2 = self.SparseMatrix(
                 self.scratch_dir + "/matrix1.mtx")
@@ -210,7 +210,7 @@ class TestLocalMatrix(unittest.TestCase):
         '''Test our ability to multiply two matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = param.create_matrix(complex=self.complex).T
+            matrix2 = param.create_matrix(complex=self.complex).H
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             alpha = uniform(1.0, 2.0)
@@ -240,7 +240,7 @@ class TestLocalMatrix(unittest.TestCase):
         '''Test our ability to multiply two matrices where one is zero.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = 0 * param.create_matrix(complex=self.complex).T
+            matrix2 = 0 * param.create_matrix(complex=self.complex).H
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             alpha = uniform(1.0, 2.0)
@@ -269,8 +269,8 @@ class TestLocalMatrix(unittest.TestCase):
     def test_eigendecomposition(self):
         '''Test the dense eigen decomposition'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(square=True)
-            matrix1 = matrix1 + matrix1.T
+            matrix1 = param.create_matrix(square=True, complex=self.complex)
+            matrix1 = matrix1 + matrix1.H
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             w, vdense = eigh(matrix1.todense())
             CheckV = csr_matrix(vdense)
@@ -284,8 +284,8 @@ class TestLocalMatrix(unittest.TestCase):
             V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
 
             ResultV = mmread(self.scratch_dir + "/vmat.mtx")
-            CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
-            ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+            CheckD = diag((CheckV.H.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
             normvalv = abs(normd(CheckD - ResultD))
 
             self.assertLessEqual(normvalv, THRESHOLD)
@@ -330,11 +330,11 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
-#
-# class TestLocalMatrix_c(TestLocalMatrix):
-#     SparseMatrix = nt.SparseMatrix_c
-#     MatrixMemoryPool = nt.MatrixMemoryPool_c
-#     complex = True
+
+class TestLocalMatrix_c(TestLocalMatrix):
+    SparseMatrix = nt.SparseMatrix_c
+    MatrixMemoryPool = nt.MatrixMemoryPool_c
+    complex = True
 
 
 ###############################################################################
