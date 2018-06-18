@@ -113,8 +113,8 @@
     DATATYPE, DIMENSION(:), INTENT(IN)    :: values_b
     DATATYPE :: product
     !! Temporary Variables
-    INTEGER :: working_index_a, working_index_b
     DATATYPE :: working_value_a, working_value_b
+    INTEGER :: working_index_a, working_index_b
     !! Counter Variables
     INTEGER :: counter_a, counter_b
 
@@ -161,8 +161,8 @@
     DATATYPE, DIMENSION(:), INTENT(OUT) :: values_c
     INTEGER, INTENT(OUT) :: total_values_c
     !! Temporary Variables
-    INTEGER :: working_index_a, working_index_b
     DATATYPE :: working_value_a, working_value_b
+    INTEGER :: working_index_a, working_index_b
     !! Counter Variables
     INTEGER :: counter_a, counter_b, counter_c
 

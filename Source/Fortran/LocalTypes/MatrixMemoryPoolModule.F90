@@ -76,38 +76,114 @@ MODULE MatrixMemoryPoolModule
      MODULE PROCEDURE SetPoolSparsity_lc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct Matrix Memory Pool object.
+  !> @param[out] this a constructed Matrix Memory Pool object.
+  !> @param[in] columns number of columns in the matrix.
+  !> @param[in] rows number of rows in the matrix.
+  !> @param[in] sparsity_in estimated sparsity (optional).
+  FUNCTION ConstructMatrixMemoryPool_lr(columns, rows, sparsity_in) RESULT(this)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lr), TARGET :: this
+    INTEGER(kind=c_int), INTENT(IN) :: columns
+    INTEGER(kind=c_int), INTENT(IN) :: rows
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-#define DATATYPE REAL(NTREAL)
-#define MPOOLTYPE MatrixMemoryPool_lr
-#define ConstructMatrixMemoryPool ConstructMatrixMemoryPool_lr
-#define DestructMatrixMemoryPool DestructMatrixMemoryPool_lr
-#define CheckMemoryPoolValidity CheckMemoryPoolValidity_lr
-#define SetPoolSparsity SetPoolSparsity_lr
+    INCLUDE "includes/ConstructMatrixMemoryPool.f90"
 
-#include "includes/MatrixMemoryPoolImpl.f90"
+  END FUNCTION ConstructMatrixMemoryPool_lr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A destructor for a matrix memory pool
+  !> @param[inout] this the matrix being destructed.
+  PURE SUBROUTINE DestructMatrixMemoryPool_lr(this)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: this
 
-#undef ConstructMatrixMemoryPool
-#undef DestructMatrixMemoryPool
-#undef CheckMemoryPoolValidity
-#undef SetPoolSparsity
-#undef MPOOLTYPE
-#undef TTYPE
-#undef DATATYPE
+    INCLUDE "includes/DestructMatrixMemoryPool.f90"
 
-#define DATATYPE COMPLEX(NTCOMPLEX)
-#define MPOOLTYPE MatrixMemoryPool_lc
-#define ConstructMatrixMemoryPool ConstructMatrixMemoryPool_lc
-#define DestructMatrixMemoryPool DestructMatrixMemoryPool_lc
-#define CheckMemoryPoolValidity CheckMemoryPoolValidity_lc
-#define SetPoolSparsity SetPoolSparsity_lc
+  END SUBROUTINE DestructMatrixMemoryPool_lr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Checks if a given memory pool has been validly allocated to handle
+  !! the given parameters.
+  !> @param[in] this the memory pool to check.
+  !> @param[in] columns number of columns in the matrix.
+  !> @param[in] rows number of rows in the matrix.
+  !> @return true if the memory pool is valid.
+  PURE FUNCTION CheckMemoryPoolValidity_lr(this, columns, rows) RESULT(isvalid)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lr), INTENT(in) :: this
+    INTEGER, INTENT(IN) :: columns
+    INTEGER, INTENT(IN) :: rows
+    LOGICAL :: isvalid
 
-#include "includes/MatrixMemoryPoolImpl.f90"
-#undef ConstructMatrixMemoryPool
-#undef DestructMatrixMemoryPool
-#undef CheckMemoryPoolValidity
-#undef SetPoolSparsity
-#undef MPOOLTYPE
-#undef TTYPE
-#undef DATATYPE
+    INCLUDE "includes/CheckMemoryPoolValidity.f90"
 
+  END FUNCTION CheckMemoryPoolValidity_lr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Sets the expected sparsity of the matrix, which helps with hashing.
+  !! @param[inout] this the memory pool to set the sparsity of.
+  !! @param[in] sparsity the sparsity value.
+  SUBROUTINE SetPoolSparsity_lr(this,sparsity)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lr), INTENT(INOUT), TARGET :: this
+    REAL(NTREAL), INTENT(IN) :: sparsity
+
+    INCLUDE "includes/SetPoolSparsity.f90"
+
+  END SUBROUTINE SetPoolSparsity_lr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct Matrix Memory Pool object.
+  !> @param[out] this a constructed Matrix Memory Pool object.
+  !> @param[in] columns number of columns in the matrix.
+  !> @param[in] rows number of rows in the matrix.
+  !> @param[in] sparsity_in estimated sparsity (optional).
+  FUNCTION ConstructMatrixMemoryPool_lc(columns, rows, sparsity_in) RESULT(this)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lc), TARGET :: this
+    INTEGER(kind=c_int), INTENT(IN) :: columns
+    INTEGER(kind=c_int), INTENT(IN) :: rows
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
+
+    INCLUDE "includes/ConstructMatrixMemoryPool.f90"
+
+  END FUNCTION ConstructMatrixMemoryPool_lc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A destructor for a matrix memory pool
+  !> @param[inout] this the matrix being destructed.
+  PURE SUBROUTINE DestructMatrixMemoryPool_lc(this)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: this
+
+    INCLUDE "includes/DestructMatrixMemoryPool.f90"
+
+  END SUBROUTINE DestructMatrixMemoryPool_lc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Checks if a given memory pool has been validly allocated to handle
+  !! the given parameters.
+  !> @param[in] this the memory pool to check.
+  !> @param[in] columns number of columns in the matrix.
+  !> @param[in] rows number of rows in the matrix.
+  !> @return true if the memory pool is valid.
+  PURE FUNCTION CheckMemoryPoolValidity_lc(this, columns, rows) RESULT(isvalid)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lc), INTENT(in) :: this
+    INTEGER, INTENT(IN) :: columns
+    INTEGER, INTENT(IN) :: rows
+    LOGICAL :: isvalid
+
+    INCLUDE "includes/CheckMemoryPoolValidity.f90"
+
+  END FUNCTION CheckMemoryPoolValidity_lc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Sets the expected sparsity of the matrix, which helps with hashing.
+  !! @param[inout] this the memory pool to set the sparsity of.
+  !! @param[in] sparsity the sparsity value.
+  SUBROUTINE SetPoolSparsity_lc(this,sparsity)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lc), INTENT(INOUT), TARGET :: this
+    REAL(NTREAL), INTENT(IN) :: sparsity
+
+    INCLUDE "includes/SetPoolSparsity.f90"
+
+  END SUBROUTINE SetPoolSparsity_lc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixMemoryPoolModule
