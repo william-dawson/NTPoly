@@ -6,6 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
 #include "TripletList_c.h"
+extern double _Complex real_to_complex(double x, double y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +40,7 @@ void TripletList_r::Append(const Triplet_r &value) {
 
 void TripletList_c::Append(const Triplet_c &value) {
   double _Complex temp;
-  temp = value.point_value.real() + value.point_value.imag()*I;
+  temp = real_to_complex(value.point_value.real(), value.point_value.imag());
   AppendToTripletList_c_wrp(ih_this, &(value.index_column), &(value.index_row),
                             &temp);
 }
@@ -54,7 +55,7 @@ void TripletList_r::SetTripletAt(int index, const Triplet_r &value) {
 
 void TripletList_c::SetTripletAt(int index, const Triplet_c &value) {
   double _Complex temp;
-  temp = value.point_value.real() + value.point_value.imag()*I;
+  temp = real_to_complex(value.point_value.real(), value.point_value.imag());
   int adjusted_index = index + 1;
   SetTripletAt_c_wrp(ih_this, &adjusted_index, &(value.index_column),
                      &(value.index_row), &temp);

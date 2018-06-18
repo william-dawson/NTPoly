@@ -19,6 +19,7 @@ set(Csrc
     Permutation.cc
     Polynomial.cc
     ProcessGrid.cc
+    real_to_complex.c
     RootSolvers.cc
     SignSolvers.cc
     SolverBase.cc
