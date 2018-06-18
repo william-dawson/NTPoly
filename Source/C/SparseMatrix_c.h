@@ -66,6 +66,7 @@ void MatrixMultiply_lsc_wrp(const int *ih_matA, const int *ih_matB,
                             const double *beta, const double *threshold,
                             int *ih_matrix_memory_pool);
 void TransposeMatrix_lsc_wrp(const int *ih_matA, int *ih_matAT);
+void ConjugateMatrix_lsc_wrp(int* ih_matA);
 void PrintMatrix_lsc_wrp(const int *ih_this);
 void PrintMatrixF_lsc_wrp(const int *ih_this, const char *file_name,
                           const int *name_size);

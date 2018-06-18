@@ -336,6 +336,25 @@ class TestLocalMatrix_c(TestLocalMatrix):
     MatrixMemoryPool = nt.MatrixMemoryPool_c
     complex = True
 
+    def test_conjugatetranspose(self):
+        '''Test our ability to compute the conjugate transpose of a matrix.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(complex=self.complex)
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+
+            matrix2 = self.SparseMatrix(
+                self.scratch_dir + "/matrix1.mtx")
+            matrix2T = self.SparseMatrix(
+                matrix2.GetRows(), matrix2.GetColumns())
+            matrix2T.Transpose(matrix2)
+            matrix2T.Conjugate()
+            matrix2T.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+
+            CheckMat = matrix1.H
+            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
+            normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
+
 
 ###############################################################################
 if __name__ == '__main__':

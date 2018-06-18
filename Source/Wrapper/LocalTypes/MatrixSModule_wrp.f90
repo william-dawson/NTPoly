@@ -46,6 +46,7 @@ MODULE MatrixSModule_wrp
   PUBLIC :: ExtractMatrixRow_lsc_wrp
   PUBLIC :: ExtractMatrixColumn_lsc_wrp
   PUBLIC :: TransposeMatrix_lsc_wrp
+  PUBLIC :: ConjugateMatrix_lsc_wrp
   PUBLIC :: PrintMatrix_lsc_wrp
   PUBLIC :: PrintMatrixF_lsc_wrp
   PUBLIC :: MatrixToTripletList_lsc_wrp
@@ -417,6 +418,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matAT = TRANSFER(ih_matAT,h_matAT)
     CALL TransposeMatrix(h_matA%data,h_matAT%data)
   END SUBROUTINE TransposeMatrix_lsc_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the matrix transpose function.
+  PURE SUBROUTINE ConjugateMatrix_lsc_wrp(ih_matA) &
+       & bind(c,name="ConjugateMatrix_lsc_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
+    TYPE(Matrix_lsc_wrp) :: h_matA
+
+    h_matA  = TRANSFER(ih_matA,h_matA)
+    CALL ConjugateMatrix(h_matA%data)
+  END SUBROUTINE ConjugateMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
   SUBROUTINE PrintMatrixF_lsc_wrp(ih_this, file_name, name_size) &

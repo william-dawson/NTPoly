@@ -45,6 +45,7 @@ MODULE MatrixSModule
   PUBLIC :: ComposeMatrixColumns
   !! ETC
   PUBLIC :: TransposeMatrix
+  PUBLIC :: ConjugateMatrix
   PUBLIC :: PrintMatrix
   PUBLIC :: MatrixToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -101,6 +102,9 @@ MODULE MatrixSModule
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_lsr
      MODULE PROCEDURE TransposeMatrix_lsc
+  END INTERFACE
+  INTERFACE ConjugateMatrix
+     MODULE PROCEDURE ConjugateMatrix_lsc
   END INTERFACE
   INTERFACE PrintMatrix
      MODULE PROCEDURE PrintMatrix_lsr
@@ -186,6 +190,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define ISCOMPLEX 1
 #include "includes/MatrixSImpl.F90"
 #undef ISCOMPLEX
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!> Every value in the matrix is changed into its complex conjugate.
+!! @param[inout] this the matrix to compute the complex conjugate of.
+PURE SUBROUTINE ConjugateMatrix_lsc(this)
+  !! Parameters
+  TYPE(SMTYPE), INTENT(INOUT) :: this
+
+  this%values = CONJG(this%values)
+END SUBROUTINE ConjugateMatrix_lsc
 
 #undef ConstructEmptyMatrix
 #undef ConstructMatrixFromFile

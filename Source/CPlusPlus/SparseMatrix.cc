@@ -180,40 +180,44 @@ void SparseMatrix_c::Transpose(const SparseMatrix_c &matA) {
   TransposeMatrix_lsc_wrp(matA.ih_this, ih_this);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-void SparseMatrix_r::Print() { PrintMatrix_lsr_wrp(ih_this); }
-void SparseMatrix_c::Print() { PrintMatrix_lsc_wrp(ih_this); }
+void SparseMatrix_c::Conjugate() {
+  ConjugateMatrix_lsc_wrp(ih_this);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-void SparseMatrix_r::WriteToMatrixMarket(string file_name) {
+void SparseMatrix_r::Print() const { PrintMatrix_lsr_wrp(ih_this); }
+void SparseMatrix_c::Print() const { PrintMatrix_lsc_wrp(ih_this); }
+
+////////////////////////////////////////////////////////////////////////////////
+void SparseMatrix_r::WriteToMatrixMarket(string file_name) const {
   int string_length = file_name.length();
   PrintMatrixF_lsr_wrp(ih_this, &file_name.c_str()[0], &string_length);
 }
 
-void SparseMatrix_c::WriteToMatrixMarket(string file_name) {
+void SparseMatrix_c::WriteToMatrixMarket(string file_name) const {
   int string_length = file_name.length();
   PrintMatrixF_lsc_wrp(ih_this, &file_name.c_str()[0], &string_length);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void SparseMatrix_r::MatrixToTripletList(TripletList_r &triplet_list) {
+void SparseMatrix_r::MatrixToTripletList(TripletList_r &triplet_list) const {
   MatrixToTripletList_lsr_wrp(ih_this, triplet_list.ih_this);
 }
 
-void SparseMatrix_c::MatrixToTripletList(TripletList_c &triplet_list) {
+void SparseMatrix_c::MatrixToTripletList(TripletList_c &triplet_list) const {
   MatrixToTripletList_lsc_wrp(ih_this, triplet_list.ih_this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void SparseMatrix_r::EigenDecomposition(NTPoly::SparseMatrix_r &MatV,
-                                        double threshold) {
+                                        double threshold) const {
   EigenDecomposition_lsr_wrp(ih_this, MatV.ih_this, &threshold);
 }
 
 void SparseMatrix_c::EigenDecomposition(NTPoly::SparseMatrix_c &MatV,
-                                        double threshold) {
+                                        double threshold) const {
   EigenDecomposition_lsc_wrp(ih_this, MatV.ih_this, &threshold);
 }
 } // namespace NTPoly

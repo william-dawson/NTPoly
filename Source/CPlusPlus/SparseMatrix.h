@@ -81,7 +81,7 @@ public:
   //! Compute the eigen vectors of a matrix.
   //!\param MatV the eigenvectors.
   //!\param threshold for pruning small values.
-  void EigenDecomposition(NTPoly::SparseMatrix_r &MatV, double threshold);
+  void EigenDecomposition(NTPoly::SparseMatrix_r &MatV, double threshold) const;
 
 public:
   //! Transpose a sparse matrix.
@@ -90,15 +90,15 @@ public:
 
 public:
   //! Print the sparse matrix to the console.
-  void Print();
+  void Print() const;
   //! Write the sparse matrix to file.
   //!\param file_name file to print to.
-  void WriteToMatrixMarket(std::string file_name);
+  void WriteToMatrixMarket(std::string file_name) const;
 
 public:
   //! Compute a triplet list from the entries in a matrix.
   //!\param triplet_list output.
-  void MatrixToTripletList(NTPoly::TripletList_r &triplet_list);
+  void MatrixToTripletList(NTPoly::TripletList_r &triplet_list) const;
 
 public:
   //! Standard destructor.
@@ -182,24 +182,26 @@ public:
   //! Compute the eigen vectors of a matrix.
   //!\param MatV the eigenvectors.
   //!\param threshold for pruning small values.
-  void EigenDecomposition(NTPoly::SparseMatrix_c &MatV, double threshold);
+  void EigenDecomposition(NTPoly::SparseMatrix_c &MatV, double threshold) const;
 
 public:
   //! Transpose a sparse matrix.
   //\param matA matrix to compute the transpose of.
   void Transpose(const NTPoly::SparseMatrix_c &matA);
+  //! Compute the complex conjugate of a matrix
+  void Conjugate();
 
 public:
   //! Print the sparse matrix to the console.
-  void Print();
+  void Print() const;
   //! Write the sparse matrix to file.
   //!\param file_name file to print to.
-  void WriteToMatrixMarket(std::string file_name);
+  void WriteToMatrixMarket(std::string file_name) const;
 
 public:
   //! Compute a triplet list from the entries in a matrix.
   //!\param triplet_list output.
-  void MatrixToTripletList(NTPoly::TripletList_c &triplet_list);
+  void MatrixToTripletList(NTPoly::TripletList_c &triplet_list) const;
 
 public:
   //! Standard destructor.
