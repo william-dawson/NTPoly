@@ -33,6 +33,7 @@ export PROCESSES="$4"
 if [ $PROCESSES == "1" ]
 then
   @PYTHON_EXECUTABLE@ -m unittest -v testSparseMatrix.TestLocalMatrix
+  @PYTHON_EXECUTABLE@ -m unittest -v testSparseMatrix.TestLocalMatrix_c
 fi
 
 ## MPI Tests

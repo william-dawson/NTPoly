@@ -10,7 +10,7 @@
   value_buffer = 0
   dirty_buffer = 0
   list_length = input_list%CurrentSize
-  sorted_list = ConstructTripletList(list_length)
+  CALL ConstructTripletList(sorted_list, list_length)
 
   !! Unpack
   DO II = 1, list_length

@@ -23,7 +23,7 @@
           & sorted_list)
   ELSE
      !! Data Allocation
-     sorted_list = ConstructTripletList(list_length)
+     CALL ConstructTripletList(sorted_list, list_length)
      ALLOCATE(values_per_row(matrix_columns), stat=alloc_stat)
      ALLOCATE(offset_array(matrix_columns), stat=alloc_stat)
      ALLOCATE(inserted_per_row(matrix_columns), stat=alloc_stat)

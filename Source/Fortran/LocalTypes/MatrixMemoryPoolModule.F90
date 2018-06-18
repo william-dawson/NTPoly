@@ -29,6 +29,8 @@ MODULE MatrixMemoryPoolModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: inserted_per_bucket
      !> Size of the buckets.
      INTEGER, PUBLIC :: hash_size
+   CONTAINS
+     FINAL :: DestructMatrixMemoryPool_lr
   END TYPE MatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A memory pool datatype that can be reused for matrix matrix multiplication.
@@ -51,8 +53,11 @@ MODULE MatrixMemoryPoolModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: inserted_per_bucket
      !> Size of the buckets.
      INTEGER, PUBLIC :: hash_size
+   CONTAINS
+     FINAL :: DestructMatrixMemoryPool_lc
   END TYPE MatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ConstructMatrixMemoryPool
   PUBLIC :: DestructMatrixMemoryPool
   PUBLIC :: CheckMemoryPoolValidity
   PUBLIC :: SetPoolSparsity
@@ -62,6 +67,10 @@ MODULE MatrixMemoryPoolModule
   END INTERFACE
   INTERFACE MatrixMemoryPool_lc
      MODULE PROCEDURE ConstructMatrixMemoryPool_lc
+  END INTERFACE
+  INTERFACE ConstructMatrixMemoryPool
+     MODULE PROCEDURE ConstructMatrixMemoryPoolSub_lr
+     MODULE PROCEDURE ConstructMatrixMemoryPoolSub_lc
   END INTERFACE
   INTERFACE DestructMatrixMemoryPool
      MODULE PROCEDURE DestructMatrixMemoryPool_lr
@@ -76,6 +85,20 @@ MODULE MatrixMemoryPoolModule
      MODULE PROCEDURE SetPoolSparsity_lc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ConstructMatrixMemoryPoolSub_lr(this, columns, rows, sparsity_in)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lr), TARGET :: this
+    INTEGER(kind=c_int), INTENT(IN) :: columns
+    INTEGER(kind=c_int), INTENT(IN) :: rows
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
+
+    IF (PRESENT(sparsity_in)) THEN
+       this = MatrixMemoryPool_lr(columns, rows, sparsity_in)
+    ELSE
+       this = MatrixMemoryPool_lr(columns, rows)
+    END IF
+  END SUBROUTINE ConstructMatrixMemoryPoolSub_lr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Matrix Memory Pool object.
   !> @param[out] this a constructed Matrix Memory Pool object.
   !> @param[in] columns number of columns in the matrix.
@@ -88,7 +111,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: rows
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    INCLUDE "includes/ConstructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/ConstructMatrixMemoryPool.f90"
 
   END FUNCTION ConstructMatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -98,7 +121,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: this
 
-    INCLUDE "includes/DestructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
 
   END SUBROUTINE DestructMatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -115,7 +138,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: rows
     LOGICAL :: isvalid
 
-    INCLUDE "includes/CheckMemoryPoolValidity.f90"
+    INCLUDE "dense_includes/CheckMemoryPoolValidity.f90"
 
   END FUNCTION CheckMemoryPoolValidity_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -127,9 +150,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT), TARGET :: this
     REAL(NTREAL), INTENT(IN) :: sparsity
 
-    INCLUDE "includes/SetPoolSparsity.f90"
+    INCLUDE "dense_includes/SetPoolSparsity.f90"
 
   END SUBROUTINE SetPoolSparsity_lr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ConstructMatrixMemoryPoolSub_lc(this, columns, rows, sparsity_in)
+    !! Parameters
+    TYPE(MatrixMemoryPool_lc), TARGET :: this
+    INTEGER(kind=c_int), INTENT(IN) :: columns
+    INTEGER(kind=c_int), INTENT(IN) :: rows
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
+
+    IF (PRESENT(sparsity_in)) THEN
+       this = MatrixMemoryPool_lc(columns, rows, sparsity_in)
+    ELSE
+       this = MatrixMemoryPool_lc(columns, rows)
+    END IF
+  END SUBROUTINE ConstructMatrixMemoryPoolSub_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Matrix Memory Pool object.
   !> @param[out] this a constructed Matrix Memory Pool object.
@@ -143,7 +180,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: rows
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    INCLUDE "includes/ConstructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/ConstructMatrixMemoryPool.f90"
 
   END FUNCTION ConstructMatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -153,7 +190,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: this
 
-    INCLUDE "includes/DestructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
 
   END SUBROUTINE DestructMatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -170,7 +207,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: rows
     LOGICAL :: isvalid
 
-    INCLUDE "includes/CheckMemoryPoolValidity.f90"
+    INCLUDE "dense_includes/CheckMemoryPoolValidity.f90"
 
   END FUNCTION CheckMemoryPoolValidity_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -182,7 +219,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT), TARGET :: this
     REAL(NTREAL), INTENT(IN) :: sparsity
 
-    INCLUDE "includes/SetPoolSparsity.f90"
+    INCLUDE "dense_includes/SetPoolSparsity.f90"
 
   END SUBROUTINE SetPoolSparsity_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

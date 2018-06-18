@@ -73,7 +73,7 @@
   CALL StopTimer("AllToAllV")
 
   !! Unpack Into The Output Triplet List
-  local_data_out = ConstructTripletList(size_in=SUM(recv_per_process))
+  CALL ConstructTripletList(local_data_out, size_in=SUM(recv_per_process))
   DO counter = 1, SUM(recv_per_process)
      local_data_out%data(counter)%index_column = recv_buffer_col(counter)
      local_data_out%data(counter)%index_row = recv_buffer_row(counter)
