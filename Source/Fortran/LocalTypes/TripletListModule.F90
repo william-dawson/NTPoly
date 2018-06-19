@@ -88,8 +88,6 @@ MODULE TripletListModule
      TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list
      INTEGER :: CurrentSize
-   CONTAINS
-     FINAL :: DestructTripletList_r
   END TYPE TripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
@@ -98,8 +96,6 @@ MODULE TripletListModule
      TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list
      INTEGER :: CurrentSize
-   CONTAINS
-     FINAL :: DestructTripletList_c
   END TYPE TripletList_c
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)

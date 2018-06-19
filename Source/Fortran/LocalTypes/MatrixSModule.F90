@@ -19,8 +19,6 @@ MODULE MatrixSModule
      REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: values !< Values
      INTEGER :: rows !< Matrix dimension: rows
      INTEGER :: columns !< Matrix dimension: columns
-   CONTAINS
-     FINAL :: DestructMatrix_lsr
   END TYPE Matrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for storing a local, complex CSR matrix.
@@ -30,8 +28,6 @@ MODULE MatrixSModule
      COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: values !< Values
      INTEGER :: rows !< Matrix dimension: rows
      INTEGER :: columns !< Matrix dimension: columns
-   CONTAINS
-     FINAL :: DestructMatrix_lsc
   END TYPE Matrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Construct/Destruct

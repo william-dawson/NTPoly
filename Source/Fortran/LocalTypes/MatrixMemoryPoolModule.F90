@@ -29,8 +29,6 @@ MODULE MatrixMemoryPoolModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: inserted_per_bucket
      !> Size of the buckets.
      INTEGER, PUBLIC :: hash_size
-   CONTAINS
-     FINAL :: DestructMatrixMemoryPool_lr
   END TYPE MatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A memory pool datatype that can be reused for matrix matrix multiplication.
@@ -53,8 +51,6 @@ MODULE MatrixMemoryPoolModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: inserted_per_bucket
      !> Size of the buckets.
      INTEGER, PUBLIC :: hash_size
-   CONTAINS
-     FINAL :: DestructMatrixMemoryPool_lc
   END TYPE MatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructMatrixMemoryPool

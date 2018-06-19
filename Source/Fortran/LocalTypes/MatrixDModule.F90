@@ -17,8 +17,6 @@ MODULE MatrixDModule
      REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: DATA !< values of the matrix.
      INTEGER :: rows !< Matrix dimension: rows.
      INTEGER :: columns !< Matrix dimension: columns.
-   CONTAINS
-     FINAL :: DestructMatrix_ldr
   END TYPE Matrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype for storing a dense matrix.
