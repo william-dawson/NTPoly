@@ -6,9 +6,10 @@ MODULE MatrixPSAlgebraModule
        & CheckMemoryPoolValidity, DestructMatrixMemoryPool
   USE MatrixPSModule
   USE GemmTasksModule
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
-       & ReduceAndComposeData, ReduceAndComposeCleanup, ReduceAndSumData, &
-       & ReduceAndSumCleanup, TestReduceSizeRequest, TestReduceOuterRequest, &
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
+       & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup, &
+       & TestReduceSizeRequest, TestReduceOuterRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
   USE MatrixSAlgebraModule
   USE MatrixSModule, ONLY : Matrix_lsr, DestructMatrix,  CopyMatrix, &
@@ -266,13 +267,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !$OMP END TASK
           CASE(SendSizeA)
              !! Then Start A Global Gather
-             CALL ReduceSizes(LocalRowContribution(II), &
+             CALL ReduceMatrixSizes(LocalRowContribution(II), &
                   & matAB%process_grid%blocked_row_comm(II), &
                   & row_helper(II))
              ATasks(II) = ComposeA
           CASE(ComposeA)
              IF (TestReduceSizeRequest(row_helper(II))) THEN
-                CALL ReduceAndComposeData(LocalRowContribution(II), &
+                CALL ReduceAndComposeMatrixData(LocalRowContribution(II), &
                      & matAB%process_grid%blocked_row_comm(II), &
                      & GatheredRowContribution(II), row_helper(II))
                 ATasks(II) = WaitOuterA
@@ -292,7 +293,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CASE(AdjustIndicesA)
              ATasks(II) = TaskRunningA
              !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(II)
-             CALL ReduceAndComposeCleanup(LocalRowContribution(II), &
+             CALL ReduceAndComposeMatrixCleanup(LocalRowContribution(II), &
                   & GatheredRowContribution(II), row_helper(II))
              CALL TransposeMatrix(GatheredRowContribution(II), &
                   & GatheredRowContributionT(II))
@@ -323,13 +324,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !$OMP END TASK
           CASE(SendSizeB)
              !! Then A Global Gather
-             CALL ReduceSizes(LocalColumnContribution(JJ), &
+             CALL ReduceMatrixSizes(LocalColumnContribution(JJ), &
                   & matAB%process_grid%blocked_column_comm(JJ), &
                   & column_helper(JJ))
              BTasks(JJ) = LocalComposeB
           CASE(LocalComposeB)
              IF (TestReduceSizeRequest(column_helper(JJ))) THEN
-                CALL ReduceAndComposeData(LocalColumnContribution(JJ),&
+                CALL ReduceAndComposeMatrixData(LocalColumnContribution(JJ),&
                      & matAB%process_grid%blocked_column_comm(JJ), &
                      & GatheredColumnContribution(JJ), column_helper(JJ))
                 BTasks(JJ) = WaitOuterB
@@ -349,7 +350,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CASE(AdjustIndicesB)
              BTasks(JJ) = TaskRunningB
              !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(JJ)
-             CALL ReduceAndComposeCleanup(LocalColumnContribution(JJ), &
+             CALL ReduceAndComposeMatrixCleanup(LocalColumnContribution(JJ), &
                   & GatheredColumnContribution(JJ), column_helper(JJ))
              BTasks(JJ) = CleanupB
              !$OMP END TASK
@@ -387,14 +388,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 ABTasks(II,JJ) = SendSizeAB
                 !$OMP END TASK
              CASE(SendSizeAB)
-                CALL ReduceSizes(SliceContribution(II,JJ),&
+                CALL ReduceMatrixSizes(SliceContribution(II,JJ),&
                      & matAB%process_grid%blocked_between_slice_comm(II,JJ), &
                      & slice_helper(II,JJ))
                 ABTasks(II,JJ) = GatherAndSumAB
              CASE (GatherAndSumAB)
                 IF (TestReduceSizeRequest(&
                      & slice_helper(II,JJ))) THEN
-                   CALL ReduceAndSumData(SliceContribution(II,JJ), &
+                   CALL ReduceAndSumMatrixData(SliceContribution(II,JJ), &
+                        & matAB%local_data(II,JJ), &
                         & matAB%process_grid%blocked_between_slice_comm(II,JJ),&
                         & slice_helper(II,JJ))
                    ABTasks(II,JJ) = WaitOuterAB
@@ -417,7 +419,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CASE(LocalSumAB)
                 ABTasks(II,JJ) = TaskRunningAB
                 !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(II,JJ)
-                CALL ReduceAndSumCleanup(SliceContribution(II,JJ), &
+                CALL ReduceAndSumMatrixCleanup(SliceContribution(II,JJ), &
                      & matAB%local_data(II,JJ), threshold, slice_helper(II,JJ))
                 ABTasks(II,JJ) = CleanupAB
                 !$OMP END TASK

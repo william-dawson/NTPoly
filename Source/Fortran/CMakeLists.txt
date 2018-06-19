@@ -32,10 +32,7 @@ set(Fsrc
 )
 
 set(FCommunication
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixBroadcastModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixGatherModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixReduceModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixSendRecvModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule.F90
 )
 

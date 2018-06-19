@@ -29,6 +29,7 @@ MODULE MatrixDModule
      FINAL :: DestructMatrix_ldc
   END TYPE Matrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ConstructEmptyMatrix
   PUBLIC :: ConstructMatrixDFromS
   PUBLIC :: ConstructMatrixSFromD
   PUBLIC :: CopyMatrix

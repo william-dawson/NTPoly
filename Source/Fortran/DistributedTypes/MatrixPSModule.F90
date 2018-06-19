@@ -4,9 +4,10 @@ MODULE MatrixPSModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE LoggingModule, ONLY : &
        & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceSizes, &
-       & ReduceAndComposeData, ReduceAndComposeCleanup, ReduceAndSumData, &
-       & ReduceAndSumCleanup, TestReduceSizeRequest, TestReduceOuterRequest, &
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
+       & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup, &
+       & TestReduceSizeRequest, TestReduceOuterRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
   USE MatrixMarketModule
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
@@ -741,11 +742,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! And reduce over the Z dimension. This can be accomplished by
     !! summing up.
     IF (.NOT. PRESENT(preduplicated_in) .OR. .NOT. preduplicated_in) THEN
-       CALL ReduceSizes(local_matrix, this%process_grid%between_slice_comm,&
+       CALL ReduceMatrixSizes(local_matrix, this%process_grid%between_slice_comm,&
             & gather_helper)
        DO WHILE(.NOT. TestReduceSizeRequest(gather_helper))
        END DO
-       CALL ReduceAndSumData(local_matrix, &
+       CALL ReduceAndSumMatrixData(local_matrix, gathered_matrix, &
             & this%process_grid%between_slice_comm, gather_helper)
        DO WHILE(.NOT. TestReduceOuterRequest(gather_helper))
        END DO
@@ -753,7 +754,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
        DO WHILE(.NOT. TestReduceDataRequest(gather_helper))
        END DO
-       CALL ReduceAndSumCleanUp(local_matrix, gathered_matrix, threshold, &
+       CALL ReduceAndSumMatrixCleanup(local_matrix, gathered_matrix, threshold, &
             & gather_helper)
        CALL SplitMatrixToLocalBlocks(this, gathered_matrix)
     ELSE
@@ -1141,28 +1142,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Merge Columns
     CALL TransposeMatrix(merged_local_data, merged_local_dataT)
-    CALL ReduceSizes(merged_local_dataT, this%process_grid%column_comm, &
+    CALL ReduceMatrixSizes(merged_local_dataT, this%process_grid%column_comm, &
          & column_helper)
     CALL MPI_Wait(column_helper%size_request ,mpi_status,ierr)
-    CALL ReduceAndComposeData(merged_local_dataT, &
+    CALL ReduceAndComposeMatrixData(merged_local_dataT, &
          & this%process_grid%column_comm,merged_columns, &
          & column_helper)
     CALL MPI_Wait(column_helper%outer_request,mpi_status,ierr)
     CALL MPI_Wait(column_helper%inner_request,mpi_status,ierr)
     CALL MPI_Wait(column_helper%data_request,mpi_status,ierr)
-    CALL ReduceAndComposeCleanup(merged_local_dataT,merged_columns, &
+    CALL ReduceAndComposeMatrixCleanup(merged_local_dataT,merged_columns, &
          & column_helper)
 
     !! Merge Rows
     CALL TransposeMatrix(merged_columns,merged_columnsT)
-    CALL ReduceSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
+    CALL ReduceMatrixSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
     CALL MPI_Wait(row_helper%size_request,mpi_status,ierr)
-    CALL ReduceAndComposeData(merged_columnsT, this%process_grid%row_comm, &
+    CALL ReduceAndComposeMatrixData(merged_columnsT, this%process_grid%row_comm, &
          & full_gathered,row_helper)
     CALL MPI_Wait(row_helper%outer_request,mpi_status,ierr)
     CALL MPI_Wait(row_helper%inner_request,mpi_status,ierr)
     CALL MPI_Wait(row_helper%data_request,mpi_status,ierr)
-    CALL ReduceAndComposeCleanup(merged_columnsT,full_gathered,row_helper)
+    CALL ReduceAndComposeMatrixCleanup(merged_columnsT,full_gathered,row_helper)
 
     !! Make these changes so that it prints the logical rows/columns
     full_gathered%rows = this%actual_matrix_dimension

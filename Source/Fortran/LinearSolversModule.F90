@@ -791,14 +791,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_err
 
     CALL TransposeMatrix(local_matrix, local_matrixT)
-    CALL ReduceSizes(local_matrixT, process_grid%column_comm, gather_helper)
+    CALL ReduceMatrixSizes(local_matrixT, process_grid%column_comm, gather_helper)
     CALL MPI_Wait(gather_helper%size_request, mpi_status, mpi_err)
-    CALL ReduceAndComposeData(local_matrixT, process_grid%column_comm, &
+    CALL ReduceAndComposeMatrixData(local_matrixT, process_grid%column_comm, &
          & column_matrix, gather_helper)
     CALL MPI_Wait(gather_helper%outer_request,mpi_status,mpi_err)
     CALL MPI_Wait(gather_helper%inner_request,mpi_status,mpi_err)
     CALL MPI_Wait(gather_helper%data_request,mpi_status,mpi_err)
-    CALL ReduceAndComposeCleanup(local_matrixT, column_matrix, &
+    CALL ReduceAndComposeMatrixCleanup(local_matrixT, column_matrix, &
          & gather_helper)
 
     CALL DestructMatrix(local_matrixT)
