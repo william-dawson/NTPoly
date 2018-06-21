@@ -2,197 +2,188 @@
 !> A Module For Storing Lists of Triplets.
 MODULE TripletListModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
-  USE TripletModule, ONLY : Triplet_r, Triplet_c, CompareTriplets
+  USE TripletModule, ONLY : Triplet, Triplet_r, Triplet_c
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC, MM_HERMITIAN
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE ISO_C_BINDING, ONLY : c_int
   USE MPI
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: TripletList_r
-  PUBLIC :: TripletList_c
-  PUBLIC :: DestructTripletList
-  PUBLIC :: ResizeTripletList
-  PUBLIC :: AppendToTripletList
-  PUBLIC :: AccumulateTripletList
-  PUBLIC :: SetTripletAt
-  PUBLIC :: GetTripletAt
-  PUBLIC :: SortTripletList
-  PUBLIC :: SymmetrizeTripletList
-  PUBLIC :: GetTripletListSize
-  PUBLIC :: RedistributeTripletLists
-  PUBLIC :: ShiftTripletList
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE TripletList_r
-     MODULE PROCEDURE ConstructTripletList_r
-  END INTERFACE
-  INTERFACE TripletList_c
-     MODULE PROCEDURE ConstructTripletList_c
-  END INTERFACE
-  INTERFACE ConstructTripletList
-     MODULE PROCEDURE ConstructTripletListSup_r
-     MODULE PROCEDURE ConstructTripletListSup_c
-  END INTERFACE
-  INTERFACE DestructTripletList
-     MODULE PROCEDURE DestructTripletList_r
-     MODULE PROCEDURE DestructTripletList_c
-  END INTERFACE
-  INTERFACE ResizeTripletList
-     MODULE PROCEDURE ResizeTripletList_r
-     MODULE PROCEDURE ResizeTripletList_c
-  END INTERFACE
-  INTERFACE AppendToTripletList
-     MODULE PROCEDURE AppendToTripletList_r
-     MODULE PROCEDURE AppendToTripletList_c
-  END INTERFACE
-  INTERFACE AccumulateTripletList
-     MODULE PROCEDURE AccumulateTripletList_r
-     MODULE PROCEDURE AccumulateTripletList_c
-  END INTERFACE
-  INTERFACE SetTripletAt
-     MODULE PROCEDURE SetTripletAt_r
-     MODULE PROCEDURE SetTripletAt_c
-  END INTERFACE
-  INTERFACE GetTripletAt
-     MODULE PROCEDURE GetTripletAt_r
-     MODULE PROCEDURE GetTripletAt_c
-  END INTERFACE
-  INTERFACE SortTripletList
-     MODULE PROCEDURE SortTripletList_r
-     MODULE PROCEDURE SortTripletList_c
-  END INTERFACE
-  INTERFACE SortDenseTripletList
-     MODULE PROCEDURE SortDenseTripletList_r
-     MODULE PROCEDURE SortDenseTripletList_c
-  END INTERFACE
-  INTERFACE SymmetrizeTripletList
-     MODULE PROCEDURE SymmetrizeTripletList_r
-     MODULE PROCEDURE SymmetrizeTripletList_c
-  END INTERFACE
-  INTERFACE GetTripletListSize
-     MODULE PROCEDURE GetTripletListSize_r
-     MODULE PROCEDURE GetTripletListSize_c
-  END INTERFACE
-  INTERFACE RedistributeTripletLists
-     MODULE PROCEDURE RedistributeTripletLists_r
-     MODULE PROCEDURE RedistributeTripletLists_c
-  END INTERFACE
-  INTERFACE ShiftTripletList
-     MODULE PROCEDURE ShiftTripletList_r
-     MODULE PROCEDURE ShiftTripletList_c
-  END INTERFACE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a list of triplets.
-  TYPE, PUBLIC :: TripletList_r
-     !> Internal representation of the data.
-     TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: DATA
+  TYPE, PUBLIC :: TripletList
+     !> Internal representation of the data (real).
+     TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: data_r
+     !> Internal representation of the data (complex).
+     TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: data_c
      !> Current number of elements in the triplet list
      INTEGER :: CurrentSize
-  END TYPE TripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a list of triplets.
-  TYPE, PUBLIC :: TripletList_c
-     !> Internal representation of the data.
-     TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: DATA
-     !> Current number of elements in the triplet list
-     INTEGER :: CurrentSize
-  END TYPE TripletList_c
+     !> Whether we're storing real or complex data.
+     LOGICAL :: IsReal
+   CONTAINS
+     PROCEDURE :: Init => ConstructTripletList
+     PROCEDURE :: Destruct => DestructTripletList
+     PROCEDURE :: Resize => ResizeTripletList
+     PROCEDURE :: Append => AppendToTripletList
+     PROCEDURE :: Set => SetTripletAt
+     PROCEDURE :: Get => GetTripletAt
+     PROCEDURE, NOPASS :: Sort => SortTripletList
+     PROCEDURE :: Symmetrize => SymmetrizeTripletList
+     PROCEDURE :: GetSize => GetTripletListSize
+     PROCEDURE, NOPASS :: Redistribute => RedistributeTripletLists
+     PROCEDURE :: Shift => ShiftTripletList
+  END TYPE TripletList
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)
-    !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: this
-    INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: size_in
-
-    IF (PRESENT(size_in)) THEN
-       this = ConstructTripletList_r(size_in)
-    ELSE
-       this = ConstructTripletList_r()
-    END IF
-  END SUBROUTINE ConstructTripletListSup_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.
   !! @param[inout] this the triplet list to construct.
   !! @param[in] size_in the length of the triplet list (optional, default=0).
-  PURE FUNCTION ConstructTripletList_r(size_in) RESULT(this)
+  !! @param[in] is_real whether or not the triplet list stores real data.
+  PURE SUBROUTINE ConstructTripletList(this, size_in, is_real)
     !! Parameters
-    TYPE(TripletList_r) :: this
+    CLASS(TripletList), INTENT(INOUT) :: this
     INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: size_in
+    LOGICAL, INTENT(IN), OPTIONAL :: is_real
 
-    INCLUDE "triplet_includes/ConstructTripletList.f90"
+    CALL this%Destruct
 
-  END FUNCTION ConstructTripletList_r
+    IF (PRESENT(size_in)) THEN
+       this%CurrentSize  = size_in
+    ELSE
+       this%CurrentSize  = 0
+    END IF
+    IF (PRESENT(is_real)) THEN
+       this%IsReal = is_real
+    ELSE
+       this%IsReal = .TRUE.
+    END IF
+
+    IF (this%IsReal) THEN
+       ALLOCATE(this%data_r(this%CurrentSize))
+    ELSE
+       ALLOCATE(this%data_c(this%CurrentSize))
+    END IF
+
+  END SUBROUTINE ConstructTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructs a triplet list.
   !! @param[inout] this the triplet list to destruct.
-  PURE SUBROUTINE DestructTripletList_r(this)
+  PURE SUBROUTINE DestructTripletList(this)
     !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: this
+    CLASS(TripletList), INTENT(INOUT) :: this
 
-    INCLUDE "triplet_includes/DestructTripletList.f90"
+    IF (ALLOCATED(this%data_r)) DEALLOCATE(this%data_r)
+    IF (ALLOCATED(this%data_c)) DEALLOCATE(this%data_c)
+    this%CurrentSize = 0
 
-  END SUBROUTINE DestructTripletList_r
+  END SUBROUTINE DestructTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   !! @param[inout] this the triplet list to resize.
   !! @param[in] size to resize to.
-  PURE SUBROUTINE ResizeTripletList_r(this, size)
+  PURE SUBROUTINE ResizeTripletList(this, size)
     !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: this
+    CLASS(TripletList), INTENT(INOUT) :: this
     INTEGER(KIND=c_int), INTENT(IN) :: size
     !! Local Data
-    TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: temporary_data
+    TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: temporary_data_r
+    TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: temporary_data_c
 
-    INCLUDE "triplet_includes/ResizeTripletList.f90"
+    IF (this%IsReal) THEN
+#define temporary_data temporary_data_r
+#define DATA data_r
+#include "triplet_includes/ResizeTripletList.f90"
+#undef DATA
+#undef temporary_data
+    ELSE
+#define temporary_data temporary_data_c
+#define DATA data_c
+#include "triplet_includes/ResizeTripletList.f90"
+#undef DATA
+#undef temporary_data
+    END IF
 
-  END SUBROUTINE ResizeTripletList_r
+  END SUBROUTINE ResizeTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
   !! @param[inout] this the triplet list to append to.
   !! @param[in] triplet_value the value to append.
-  PURE SUBROUTINE AppendToTripletList_r(this, triplet_value)
+  PURE SUBROUTINE AppendToTripletList(this, triplet_value)
     !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: this
-    TYPE(Triplet_r), INTENT(IN)        :: triplet_value
+    CLASS(TripletList), INTENT(INOUT) :: this
+    CLASS(Triplet), INTENT(IN)         :: triplet_value
+    !! Local data
+    INTEGER :: new_size
+    INTEGER :: old_size
 
-    INCLUDE "triplet_includes/AppendToTripletList.f90"
+    IF (this%IsReal) THEN
+       old_size = SIZE(this%data_r)
+    ELSE
+       old_size = SIZE(this%data_c)
+    END IF
 
-  END SUBROUTINE AppendToTripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> (Just for a related project)
-  PURE SUBROUTINE AccumulateTripletList_r(this, triplet_value)
-    !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: this
-    TYPE(Triplet_r), INTENT(IN)        :: triplet_value
+    !! First, check if we need to allocate more memory
+    IF (this%CurrentSize+1 .GT. old_size) THEN
+       IF (old_size .EQ. 0) THEN
+          new_size = 1
+       ELSE IF (old_size .EQ. 1) THEN
+          new_size = 2
+       ELSE
+          new_size = INT(old_size*1.5)
+       END IF
+       CALL this%Resize(new_size)
+    END IF
 
-    INCLUDE "triplet_includes/AccumulateTripletList.f90"
+    !! Append
+    this%CurrentSize = this%CurrentSize+1
 
-  END SUBROUTINE AccumulateTripletList_r
+    SELECT TYPE(triplet_value)
+    CLASS IS (Triplet_r)
+      this%data_r(this%CurrentSize) = triplet_value
+    CLASS IS (Triplet_c)
+      this%data_c(this%CurrentSize) = triplet_value
+    END SELECT
+
+  END SUBROUTINE AppendToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
   !! @param[inout] this the triplet list to set.
   !! @param[in] index the index at which to set the triplet.
   !! @param[in] triplet_value the value of the triplet to set.
-  PURE SUBROUTINE SetTripletAt_r(this,index,triplet_value)
+  PURE SUBROUTINE SetTripletAt(this,index,triplet_value)
     !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: this
+    CLASS(TripletList), INTENT(INOUT) :: this
     INTEGER(KIND=c_int), INTENT(IN)    :: index
-    TYPE(Triplet_r), INTENT(IN)        :: triplet_value
+    CLASS(Triplet), INTENT(IN)        :: triplet_value
 
-    INCLUDE "triplet_includes/SetTripletAt.f90"
-  END SUBROUTINE SetTripletAt_r
+    SELECT TYPE(triplet_value)
+    CLASS IS (Triplet_r)
+      this%data_r(index) = triplet_value
+    CLASS IS (Triplet_c)
+      this%data_c(index) = triplet_value
+    END SELECT
+
+  END SUBROUTINE SetTripletAt
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
   !! @param[in] this the triplet list to get the value from.
   !! @param[in] index the index from which to get the triplet.
   !! @param[out] triplet_value the extracted triplet value.
-  PURE SUBROUTINE GetTripletAt_r(this,index,triplet_value)
+  PURE SUBROUTINE GetTripletAt(this,index,triplet_value)
     !! Parameters
-    TYPE(TripletList_r), INTENT(IN) :: this
+    CLASS(TripletList), INTENT(IN) :: this
     INTEGER(kind=c_int), INTENT(IN) :: index
-    TYPE(Triplet_r), INTENT(OUT)    :: triplet_value
+    CLASS(Triplet), INTENT(INOUT)   :: triplet_value
 
-    INCLUDE "triplet_includes/GetTripletAt.f90"
-  END SUBROUTINE GetTripletAt_r
+    SELECT TYPE(triplet_value)
+    CLASS IS (Triplet_r)
+      triplet_value%index_row = this%data_r(index)%index_row
+      triplet_value%index_column = this%data_r(index)%index_column
+      triplet_value%point_value = this%data_r(index)%point_value
+    CLASS IS (Triplet_c)
+      triplet_value%index_row = this%data_c(index)%index_row
+      triplet_value%index_column = this%data_c(index)%index_column
+      triplet_value%point_value = this%data_c(index)%point_value
+    END SELECT
+
+  END SUBROUTINE GetTripletAt
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.
   !! Implementation is based on bucket sort. This is why it needs the number of
@@ -203,32 +194,140 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] bubble_in false if you don't need the final bubble sort.
   !! @param[out] sorted_list a now sorted version of the list. This routine
   !! will allocate it.
-  PURE SUBROUTINE SortTripletList_r(input_list, matrix_columns, matrix_rows, &
+  PURE SUBROUTINE SortTripletList(input_list, matrix_columns, matrix_rows, &
        & sorted_list, bubble_in)
     !! Parameters
-    TYPE(TripletList_r), INTENT(IN)  :: input_list
+    CLASS(TripletList), INTENT(IN)  :: input_list
     INTEGER, INTENT(IN) :: matrix_columns
     INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_r), INTENT(OUT) :: sorted_list
+    TYPE(TripletList), INTENT(OUT) :: sorted_list
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
-    TYPE(Triplet_r) :: temporary
+    TYPE(Triplet_r) :: temporary_r
+    TYPE(Triplet_c) :: temporary_c
+    !! Local Data
+    LOGICAL :: bubble
+    LOGICAL :: swap_occured
+    INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
+    INTEGER, DIMENSION(:), ALLOCATABLE :: inserted_per_row
+    !! Counters and temporary variables
+    INTEGER :: counter
+    INTEGER :: temp_index
+    INTEGER :: alloc_stat
+    INTEGER :: list_length
 
+    IF (PRESENT(bubble_in)) THEN
+       bubble = bubble_in
+    ELSE
+       bubble = .TRUE.
+    END IF
+
+    list_length = input_list%CurrentSize
+
+    IF (input_list%IsReal) THEN
+#define DATA data_r
+#define temporary temporary_r
 #include "triplet_includes/SortTripletList.f90"
+#undef temporary
+#undef DATA
+    ELSE
+#define DATA data_c
+#define temporary temporary_c
+#include "triplet_includes/SortTripletList.f90"
+#undef temporary
+#undef DATA
+    END IF
 
-  END SUBROUTINE SortTripletList_r
+  END SUBROUTINE SortTripletList
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Sort a triplet list assuming that the matrix it corresponds to is nearly
+  !! dense.
+  !! @param[in] input_list the list
+  !! @param[in] matrix_columns for the corresponding matrix.
+  !! @param[in] matrix_rows for the corresponding matrix.
+  !! @param[out] sorted_list sorted and ready to use for building matrices.
+  PURE SUBROUTINE SortDenseTripletList(input_list, matrix_columns, &
+       & matrix_rows, sorted_list)
+    !! Parameters
+    TYPE(TripletList), INTENT(IN)  :: input_list
+    INTEGER, INTENT(IN) :: matrix_columns
+    INTEGER, INTENT(IN) :: matrix_rows
+    TYPE(TripletList), INTENT(OUT) :: sorted_list
+    !! Local Variables
+    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: value_buffer_r
+    COMPLEX(NTCOMPLEX), DIMENSION(:,:), ALLOCATABLE :: value_buffer_c
+    !! Local Data
+    INTEGER, DIMENSION(:,:), ALLOCATABLE :: dirty_buffer
+    INTEGER :: list_length
+    INTEGER :: row, col, ind
+    INTEGER :: II, JJ
+
+    IF (input_list%IsReal) THEN
+#define DATA data_r
+#define value_buffer value_buffer_r
+#include "triplet_includes/SortDenseTripletList.f90"
+#undef value_buffer
+#undef DATA
+    ELSE
+#define DATA data_c
+#define value_buffer value_buffer_c
+#include "triplet_includes/SortDenseTripletList.f90"
+#undef value_buffer
+#undef DATA
+    END IF
+
+  END SUBROUTINE SortDenseTripletList
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Symmetrizes an unsymmetric triplet list according to the specified
+  !! symmetry type.
+  !! @param[inout] triplet_list list to be symmetrized.
+  !! @param[in] pattern_type type of symmetry.
+  SUBROUTINE SymmetrizeTripletList(this, pattern_type)
+    !! Parameters
+    CLASS(TripletList), INTENT(INOUT)  :: this
+    INTEGER, INTENT(IN) :: pattern_type
+    !! Local variables
+    CLASS(Triplet), POINTER :: temporary
+    TYPE(Triplet_r), TARGET :: temporary_r
+    TYPE(Triplet_c), TARGET :: temporary_c
+    INTEGER :: counter
+    INTEGER :: initial_size
+
+    initial_size = this%CurrentSize
+    DO counter = 1, initial_size
+       IF (this%IsReal) THEN
+          CALL this%Get(counter,temporary_r)
+          temporary => temporary_r
+       ELSE
+          CALL this%Get(counter,temporary_c)
+          temporary => temporary_c
+       END IF
+       IF (temporary%index_row .EQ. temporary%index_column) CONTINUE
+       CALL temporary%Transpose()
+
+       SELECT CASE(pattern_type)
+       CASE(MM_HERMITIAN)
+           CALL temporary%Conjg()
+       CASE(MM_SKEW_SYMMETRIC)
+           CALL temporary%Scale(REAL(-1.0,NTREAL))
+       END SELECT
+
+       CALL this%Append(temporary)
+    END DO
+  END SUBROUTINE SymmetrizeTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of entries in a triplet list.
   !! @param[in] triplet_list list to get the size of.
   !! @return list_size the number of entries in the triplet list.
-  PURE FUNCTION GetTripletListSize_r(triplet_list) RESULT(list_size)
+  PURE FUNCTION GetTripletListSize(triplet_list) RESULT(list_size)
     !! Parameters
-    TYPE(TripletList_r), INTENT(IN)  :: triplet_list
+    CLASS(TripletList), INTENT(IN)  :: triplet_list
     INTEGER :: list_size
 
-    INCLUDE "triplet_includes/GetTripletListSize.f90"
+    list_size = triplet_list%CurrentSize
 
-  END FUNCTION GetTripletListSize_r
+  END FUNCTION GetTripletListSize
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Redistribute some triplet lists amongst a set of processors.
   !! Takes in a list of triplet lists, one list for each processor. Then the
@@ -236,331 +335,131 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] triplet_lists a list of triplet lists, one for each process.
   !! @param[inout] comm the mpi communicator to redistribute along.
   !! @param[out] local_data_out the resulting local triplet list.
-  SUBROUTINE RedistributeTripletLists_r(triplet_lists, comm, local_data_out)
+  SUBROUTINE RedistributeTripletLists(triplet_lists, comm, local_data_out)
     !! Parameters
-    TYPE(TripletList_r), DIMENSION(:), INTENT(IN) :: triplet_lists
+    CLASS(TripletList), DIMENSION(:), INTENT(IN) :: triplet_lists
     INTEGER, INTENT(INOUT) :: comm
-    TYPE(TripletList_r), INTENT(INOUT) :: local_data_out
+    CLASS(TripletList), INTENT(INOUT) :: local_data_out
     !! Local data (type specific)
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: send_buffer_val
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
-    TYPE(Triplet_r) :: temp_triplet
+    TYPE(Triplet_r) :: temp_triplet_r
+    TYPE(Triplet_r) :: temp_triplet_c
+    !! Local Data - Offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_process
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_per_process
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_offsets
+    !! Local Data - Send/Recv Buffers
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
+    !! ETC
+    INTEGER :: num_processes
+    INTEGER :: counter, inner_counter, insert_pt
+    INTEGER :: mpi_error
+    LOGICAL :: is_real
 
-#define MPIDATATYPE MPINTREAL
-#include "triplet_includes/RedistributeTripletLists.f90"
-#undef MPIDATATYPE
-
-  END SUBROUTINE RedistributeTripletLists_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Shift the rows and columns of a triplet list by set values.
-  !! Frequently, we have a triplet list that comes from the global matrix which
-  !! we would like to shift into a local matrix. In that case, just pass
-  !! the negative of the starting row and column (plus 1) to this routine.
-  PURE SUBROUTINE ShiftTripletList_r(triplet_list, row_shift, column_shift)
-    !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
-    INTEGER, INTENT(IN) :: row_shift
-    INTEGER, INTENT(IN) :: column_shift
-    !! Local Variables
-    INTEGER :: counter
-
-    INCLUDE "triplet_includes/ShiftTripletList.f90"
-
-  END SUBROUTINE ShiftTripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Sort a triplet list assuming that the matrix it corresponds to is nearly
-  !! dense.
-  !! @param[in] input_list the list
-  !! @param[in] matrix_columns for the corresponding matrix.
-  !! @param[in] matrix_rows for the corresponding matrix.
-  !! @param[out] sorted_list sorted and ready to use for building matrices.
-  PURE SUBROUTINE SortDenseTripletList_r(input_list, matrix_columns, &
-       & matrix_rows, sorted_list)
-    !! Parameters
-    TYPE(TripletList_r), INTENT(IN)  :: input_list
-    INTEGER, INTENT(IN) :: matrix_columns
-    INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_r), INTENT(OUT) :: sorted_list
-    !! Local Variables
-    REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: value_buffer
-
-#include "triplet_includes/SortDenseTripletList.f90"
-
-  END SUBROUTINE SortDenseTripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Symmetrizes an unsymmetric triplet list according to the specified
-  !! symmetry type.
-  !! @param[inout] triplet_list list to be symmetrized.
-  !! @param[in] pattern_type type of symmetry.
-  SUBROUTINE SymmetrizeTripletList_r(triplet_list, pattern_type)
-    !! Parameters
-    TYPE(TripletList_r), INTENT(INOUT)  :: triplet_list
-    INTEGER, INTENT(IN) :: pattern_type
-    !! Local variables
-    TYPE(Triplet_r) :: temporary, temporary_transpose
-    INTEGER :: counter
-    INTEGER :: initial_size
-
-    initial_size = triplet_list%CurrentSize
-    SELECT CASE(pattern_type)
-    CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    END SELECT
-  END SUBROUTINE SymmetrizeTripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PURE SUBROUTINE ConstructTripletListSup_c(this, size_in)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: this
-    INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: size_in
-
-    IF (PRESENT(size_in)) THEN
-       this = ConstructTripletList_c(size_in)
+    IF (SIZE(triplet_lists) .GT. 0) THEN
+      is_real = triplet_lists(1)%IsReal
     ELSE
-       this = ConstructTripletList_c()
+      is_real = .TRUE.
     END IF
-  END SUBROUTINE ConstructTripletListSup_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct a triplet list.
-  !! @param[inout] this the triplet list to construct.
-  !! @param[in] size_in the length of the triplet list (optional, default=0).
-  PURE FUNCTION ConstructTripletList_c(size_in) RESULT(this)
-    !! Parameters
-    TYPE(TripletList_c) :: this
-    INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: size_in
 
-    INCLUDE "triplet_includes/ConstructTripletList.f90"
+    !! Allocate Size Buffers
+    CALL MPI_COMM_SIZE(comm, num_processes, mpi_error)
+    ALLOCATE(send_per_process(num_processes))
+    ALLOCATE(send_offsets(num_processes))
+    ALLOCATE(recv_per_process(num_processes))
+    ALLOCATE(recv_offsets(num_processes))
 
-  END FUNCTION ConstructTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Destructs a triplet list.
-  !! @param[inout] this the triplet list to destruct.
-  PURE SUBROUTINE DestructTripletList_c(this)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: this
+    !! Figure Out How Much Data Gets Sent
+    DO counter = 1, num_processes
+       send_per_process(counter) = triplet_lists(counter)%CurrentSize
+    END DO
+    send_offsets(1) = 0
+    DO counter = 2, num_processes
+       send_offsets(counter) = send_offsets(counter-1) + &
+            & send_per_process(counter-1)
+    END DO
 
-    INCLUDE "triplet_includes/DestructTripletList.f90"
+    !! Figure Out How Much Data Gets Received
+    CALL MPI_ALLTOALL(send_per_process, 1, MPI_INT, recv_per_process, 1, &
+         & MPI_INT, comm, mpi_error)
+    recv_offsets(1) = 0
+    DO counter = 2, num_processes
+       recv_offsets(counter) = recv_offsets(counter-1) + &
+            & recv_per_process(counter-1)
+    END DO
 
-  END SUBROUTINE DestructTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Increase the size of a triplet list.
-  !! @param[inout] this the triplet list to resize.
-  !! @param[in] size to resize to.
-  PURE SUBROUTINE ResizeTripletList_c(this, size)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: this
-    INTEGER(KIND=c_int), INTENT(IN) :: size
-    !! Local Data
-    TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: temporary_data
+    !! Allocate And Fill Send Buffers
+    ALLOCATE(send_buffer_row(SUM(send_per_process)))
+    ALLOCATE(send_buffer_col(SUM(send_per_process)))
+    ALLOCATE(send_buffer_val(SUM(send_per_process)))
+    ALLOCATE(recv_buffer_row(SUM(recv_per_process)))
+    ALLOCATE(recv_buffer_col(SUM(recv_per_process)))
+    ALLOCATE(recv_buffer_val(SUM(recv_per_process)))
 
-    INCLUDE "triplet_includes/ResizeTripletList.f90"
-
-  END SUBROUTINE ResizeTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Add a value to the end of the triplet list.
-  !! @param[inout] this the triplet list to append to.
-  !! @param[in] triplet_value the value to append.
-  PURE SUBROUTINE AppendToTripletList_c(this, triplet_value)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: this
-    TYPE(Triplet_c), INTENT(IN)        :: triplet_value
-
-    INCLUDE "triplet_includes/AppendToTripletList.f90"
-
-  END SUBROUTINE AppendToTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> (Just for a related project)
-  PURE SUBROUTINE AccumulateTripletList_c(this, triplet_value)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: this
-    TYPE(Triplet_c), INTENT(IN)        :: triplet_value
-
-    INCLUDE "triplet_includes/AccumulateTripletList.f90"
-
-  END SUBROUTINE AccumulateTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Set the value of a triplet at a particular index.
-  !! @param[inout] this the triplet list to set.
-  !! @param[in] index the index at which to set the triplet.
-  !! @param[in] triplet_value the value of the triplet to set.
-  PURE SUBROUTINE SetTripletAt_c(this,index,triplet_value)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: this
-    INTEGER(KIND=c_int), INTENT(IN)    :: index
-    TYPE(Triplet_c), INTENT(IN)        :: triplet_value
-
-    INCLUDE "triplet_includes/SetTripletAt.f90"
-  END SUBROUTINE SetTripletAt_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Get the value of a triplet at a particular index.
-  !! @param[in] this the triplet list to get the value from.
-  !! @param[in] index the index from which to get the triplet.
-  !! @param[out] triplet_value the extracted triplet value.
-  PURE SUBROUTINE GetTripletAt_c(this,index,triplet_value)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(IN) :: this
-    INTEGER(kind=c_int), INTENT(IN) :: index
-    TYPE(Triplet_c), INTENT(OUT)    :: triplet_value
-
-    INCLUDE "triplet_includes/GetTripletAt.f90"
-  END SUBROUTINE GetTripletAt_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Sorts a triplet list by index values.
-  !! Implementation is based on bucket sort. This is why it needs the number of
-  !! matrix columns. Bubble sort is used within a bucket.
-  !! @param[in] input_list list to be sorted.
-  !! @param[in] matrix_columns this is the highest column value in the list.
-  !! @param[in] matrix_rows this is the highest row value in the list.
-  !! @param[in] bubble_in false if you don't need the final bubble sort.
-  !! @param[out] sorted_list a now sorted version of the list. This routine
-  !! will allocate it.
-  PURE SUBROUTINE SortTripletList_c(input_list, matrix_columns, matrix_rows, &
-       & sorted_list, bubble_in)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(IN)  :: input_list
-    INTEGER, INTENT(IN) :: matrix_columns
-    INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_c), INTENT(OUT) :: sorted_list
-    LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
-    !! Local Data
-    TYPE(Triplet_c) :: temporary
-
-#include "triplet_includes/SortTripletList.f90"
-
-  END SUBROUTINE SortTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Get the number of entries in a triplet list.
-  !! @param[in] triplet_list list to get the size of.
-  !! @return list_size the number of entries in the triplet list.
-  PURE FUNCTION GetTripletListSize_c(triplet_list) RESULT(list_size)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(IN)  :: triplet_list
-    INTEGER :: list_size
-
-    INCLUDE "triplet_includes/GetTripletListSize.f90"
-
-  END FUNCTION GetTripletListSize_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Redistribute some triplet lists amongst a set of processors.
-  !! Takes in a list of triplet lists, one list for each processor. Then the
-  !! all to all redistribution is performed along the given communicator.
-  !! @param[in] triplet_lists a list of triplet lists, one for each process.
-  !! @param[inout] comm the mpi communicator to redistribute along.
-  !! @param[out] local_data_out the resulting local triplet list.
-  SUBROUTINE RedistributeTripletLists_c(triplet_lists, comm, local_data_out)
-    !! Parameters
-    TYPE(TripletList_c), DIMENSION(:), INTENT(IN) :: triplet_lists
-    INTEGER, INTENT(INOUT) :: comm
-    TYPE(TripletList_c), INTENT(INOUT) :: local_data_out
-    !! Local data (type specific)
-    COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: send_buffer_val
-    COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
-    TYPE(Triplet_c) :: temp_triplet
-
+    IF (is_real) THEN
+#define DATA data_r
+#define temp_triplet temp_triplet_r
 #define MPIDATATYPE MPINTREAL
 #include "triplet_includes/RedistributeTripletLists.f90"
+#undef temp_triplet
 #undef MPIDATATYPE
+#undef DATA
+    ELSE
+#define DATA data_c
+#define temp_triplet temp_triplet_c
+#define MPIDATATYPE MPINTCOMPLEX
+#include "triplet_includes/RedistributeTripletLists.f90"
+#undef temp_triplet
+#undef MPIDATATYPE
+#undef DATA
+    END IF
 
-  END SUBROUTINE RedistributeTripletLists_c
+    !! Cleanup
+    DEALLOCATE(send_per_process)
+    DEALLOCATE(send_offsets)
+    DEALLOCATE(recv_per_process)
+    DEALLOCATE(recv_offsets)
+    DEALLOCATE(send_buffer_row)
+    DEALLOCATE(send_buffer_col)
+    DEALLOCATE(send_buffer_val)
+    DEALLOCATE(recv_buffer_row)
+    DEALLOCATE(recv_buffer_col)
+    DEALLOCATE(recv_buffer_val)
+
+  END SUBROUTINE RedistributeTripletLists
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Shift the rows and columns of a triplet list by set values.
   !! Frequently, we have a triplet list that comes from the global matrix which
   !! we would like to shift into a local matrix. In that case, just pass
   !! the negative of the starting row and column (plus 1) to this routine.
-  PURE SUBROUTINE ShiftTripletList_c(triplet_list, row_shift, column_shift)
+  PURE SUBROUTINE ShiftTripletList(this, row_shift, column_shift)
     !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
+    CLASS(TripletList), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: row_shift
     INTEGER, INTENT(IN) :: column_shift
     !! Local Variables
-    INTEGER :: counter
+    INTEGER :: II
 
-    INCLUDE "triplet_includes/ShiftTripletList.f90"
+    !! Loop
+    IF (this%IsReal) THEN
+      DO II = 1, this%CurrentSize
+         this%data_r(II)%index_row = this%data_r(II)%index_row + row_shift
+         this%data_r(II)%index_column = &
+              this%data_r(II)%index_column + column_shift
+      END DO
+    ELSE
+      DO II = 1, this%CurrentSize
+         this%data_c(II)%index_row = this%data_c(II)%index_row + row_shift
+         this%data_c(II)%index_column = &
+              this%data_c(II)%index_column + column_shift
+      END DO
+    END IF
 
-  END SUBROUTINE ShiftTripletList_c
+  END SUBROUTINE ShiftTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Sort a triplet list assuming that the matrix it corresponds to is nearly
-  !! dense.
-  !! @param[in] input_list the list
-  !! @param[in] matrix_columns for the corresponding matrix.
-  !! @param[in] matrix_rows for the corresponding matrix.
-  !! @param[out] sorted_list sorted and ready to use for building matrices.
-  PURE SUBROUTINE SortDenseTripletList_c(input_list, matrix_columns, &
-       & matrix_rows, sorted_list)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(IN)  :: input_list
-    INTEGER, INTENT(IN) :: matrix_columns
-    INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_c), INTENT(OUT) :: sorted_list
-    !! Local Variables
-    COMPLEX(NTCOMPLEX), DIMENSION(:,:), ALLOCATABLE :: value_buffer
-
-#include "triplet_includes/SortDenseTripletList.f90"
-
-  END SUBROUTINE SortDenseTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Symmetrizes an unsymmetric triplet list according to the specified
-  !! symmetry type.
-  !! @param[inout] triplet_list list to be symmetrized.
-  !! @param[in] pattern_type type of symmetry.
-  SUBROUTINE SymmetrizeTripletList_c(triplet_list, pattern_type)
-    !! Parameters
-    TYPE(TripletList_c), INTENT(INOUT)  :: triplet_list
-    INTEGER, INTENT(IN) :: pattern_type
-    !! Local variables
-    TYPE(Triplet_c) :: temporary, temporary_transpose
-    INTEGER :: counter
-    INTEGER :: initial_size
-
-    initial_size = triplet_list%CurrentSize
-    SELECT CASE(pattern_type)
-    CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    CASE(MM_HERMITIAN)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = CONJG(temporary%point_value)
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
-          END IF
-       END DO
-    END SELECT
-  END SUBROUTINE SymmetrizeTripletList_c
 END MODULE TripletListModule

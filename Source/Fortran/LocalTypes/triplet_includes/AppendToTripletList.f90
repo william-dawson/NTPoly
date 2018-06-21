@@ -1,18 +1,24 @@
   !! Local data
   INTEGER :: new_size
+  INTEGER :: old_size
+
+  IF (this%IsReal) THEN
+     old_size = SIZE(this%data_r)
+  ELSE
+     old_size = SIZE(this%data_c)
+  END IF
 
   !! First, check if we need to allocate more memory
-  IF (this%CurrentSize+1 .GT. SIZE(this%DATA)) THEN
-     IF (SIZE(this%data) .EQ. 0) THEN
+  IF (this%CurrentSize+1 .GT. old_size) THEN
+     IF (old_size .EQ. 0) THEN
         new_size = 1
-     ELSE IF (SIZE(this%data) .EQ. 1) THEN
+     ELSE IF (old_size .EQ. 1) THEN
         new_size = 2
      ELSE
-        new_size = INT(SIZE(this%data)*1.5)
+        new_size = INT(old_size*1.5)
      END IF
-     CALL ResizeTripletList(this,new_size)
+     CALL this%Resize(new_size,this%IsReal)
   END IF
 
   !! Append
   this%CurrentSize = this%CurrentSize+1
-  this%DATA(this%CurrentSize) = triplet_value
