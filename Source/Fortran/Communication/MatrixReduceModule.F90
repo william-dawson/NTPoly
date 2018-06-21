@@ -3,6 +3,7 @@
 MODULE MatrixReduceModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
   USE MatrixSModule, ONLY : Matrix_lsr, Matrix_lsc
+  USE MatrixSAlgebraModule, ONLY : IncrementMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE

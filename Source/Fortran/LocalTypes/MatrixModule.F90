@@ -23,12 +23,6 @@ MODULE MatrixModule
      PROCEDURE :: GetColumns => GetColumns_l
      PROCEDURE(ExtractMatrixRow_l), DEFERRED :: ExtractRow
      PROCEDURE(ExtractMatrixColumn_l), DEFERRED :: ExtractColumn
-     !! Algebra
-     PROCEDURE(ScaleMatrix_l), DEFERRED :: Scale
-     PROCEDURE(IncrementMatrix_l), DEFERRED :: Increment
-     PROCEDURE(PairwiseMultiplyMatrix_l), DEFERRED :: PairwiseMultiply
-     PROCEDURE(MatrixColumnNorm_l), DEFERRED :: ColumnNorm
-     PROCEDURE(MatrixNorm_l), DEFERRED :: Norm
      !! ETC
      PROCEDURE(ConvertToTripletList_l), DEFERRED :: ConvertToTripletList
      PROCEDURE(TransposeMatrix_l), DEFERRED :: Transpose
@@ -143,73 +137,6 @@ MODULE MatrixModule
        CLASS(Matrix_l), INTENT(IN) :: this
        INTEGER, INTENT(INOUT) :: file_handle
      END SUBROUTINE PrintMatrixHeader_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> Will scale a sparse matrix by a constant.
-     !! @param[inout] matA Matrix A.
-     !! @param[in] constant scale factor.
-     PURE SUBROUTINE ScaleMatrix_l(matA,constant)
-       USE DataTypesModule, ONLY : NTREAL
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(INOUT) :: matA
-       REAL(NTREAL), INTENT(IN) :: constant
-     END SUBROUTINE ScaleMatrix_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> this = alpha*Matrix A + this (AXPY).
-     !! This will utilize the sparse vector addition routine.
-     !! @param[in,out] this.
-     !! @param[in] matA Matrix A.
-     !! @param[in] alpha_in multiplier (optional, default=1.0)
-     !! @param[in] threshold_in for flushing values to zero. (Optional, default=0).
-     PURE SUBROUTINE IncrementMatrix_l(this, matA, alpha_in, threshold_in)
-       USE DataTypesModule, ONLY : NTREAL
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(INOUT)  :: this
-       CLASS(Matrix_l), INTENT(IN) :: matA
-       REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
-       REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
-     END SUBROUTINE IncrementMatrix_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> Pairwise Multiply two matrices.
-     !! This will utilize the sparse vector pairwise routine.
-     !! @param[in] matA Matrix A.
-     !! @param[in] matB Matrix B.
-     !! @param[in,out] this = MatA mult MatB.
-     PURE SUBROUTINE PairwiseMultiplyMatrix_l(this, matA, matB)
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(INOUT)  :: this
-       CLASS(Matrix_l), INTENT(IN) :: matA
-       CLASS(Matrix_l), INTENT(IN) :: matB
-     END SUBROUTINE PairwiseMultiplyMatrix_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> Compute the norm of a sparse matrix along the columns.
-     !! @param[in] this the matrix to compute the norm of.
-     !! @param[out] norm_per_column the norm value for each column in this matrix.
-     PURE SUBROUTINE MatrixColumnNorm_l(this, norm_per_column)
-       USE DataTypesModule, ONLY : NTREAL
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(IN) :: this
-       REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: norm_per_column
-     END SUBROUTINE MatrixColumnNorm_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> Compute the 1 norm of a sparse matrix.
-     !! @param[in] this the matrix to compute the norm of.
-     !! @result norm the matrix.
-     PURE FUNCTION MatrixNorm_l(this) RESULT(norm)
-       USE DataTypesModule, ONLY : NTREAL
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(IN) :: this
-       REAL(NTREAL) :: norm
-     END FUNCTION MatrixNorm_l
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of rows of a matrix.
