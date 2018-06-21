@@ -3,8 +3,8 @@
   INTEGER :: temporary_total_values
 
   !! Build Matrix Objects
-  CALL ConstructEmptyMatrix(temporary_matrix,matrix%rows,matrix%columns)
-  CALL ConstructEmptyMatrix(sum_matrix,matrix%rows,matrix%columns)
+  CALL temporary_matrix%InitEmpty(matrix%rows,matrix%columns)
+  CALL temporary_matrix%InitEmpty(matrix%rows,matrix%columns)
 
   !! Sum
   DO counter = 1, helper%comm_size
@@ -20,17 +20,17 @@
      temporary_matrix%outer_index = gathered_matrix%outer_index(&
           & (matrix%columns+1)*(counter-1)+1:(matrix%columns+1)*(counter))
      IF (counter .EQ. helper%comm_size) THEN
-        CALL IncrementMatrix(temporary_matrix,sum_matrix,threshold_in=threshold)
+        CALL sum_matrix%Increment(temporary_matrix, threshold_in=threshold)
      ELSE
-        CALL IncrementMatrix(temporary_matrix,sum_matrix,&
+        CALL sum_matrix%Increment(temporary_matrix, &
              & threshold_in=REAL(0.0,NTREAL))
      END IF
      DEALLOCATE(temporary_matrix%values)
      DEALLOCATE(temporary_matrix%inner_index)
   END DO
-  CALL CopyMatrix(sum_matrix, gathered_matrix)
-  CALL DestructMatrix(sum_matrix)
+  CALL gathered_matrix%Copy(sum_matrix)
+  CALL sum_matrix%Destruct
 
-  CALL DestructMatrix(temporary_matrix)
+  CALL temporary_Matrix%Destruct
   DEALLOCATE(helper%values_per_process)
   DEALLOCATE(helper%displacement)

@@ -1,11 +1,5 @@
-  !! Helper variables
-  INTEGER :: outer_counter, inner_counter
-  INTEGER :: elements_per_inner
-  INTEGER :: total_counter
-  INTEGER :: size_of_this
-
   size_of_this = this%outer_index(this%columns+1)
-  CALL ConstructTripletList(triplet_list, size_of_this)
+  CALL triplet_list%Init(size_of_this)
 
   total_counter = 1
   DO outer_counter = 1, this%columns

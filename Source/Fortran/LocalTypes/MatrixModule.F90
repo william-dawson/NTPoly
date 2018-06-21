@@ -30,6 +30,7 @@ MODULE MatrixModule
      PROCEDURE(MatrixColumnNorm_l), DEFERRED :: ColumnNorm
      PROCEDURE(MatrixNorm_l), DEFERRED :: Norm
      !! ETC
+     PROCEDURE(ConvertToTripletList_l), DEFERRED :: ConvertToTripletList
      PROCEDURE(TransposeMatrix_l), DEFERRED :: Transpose
      PROCEDURE(PrintMatrix_l), DEFERRED :: Print
      PROCEDURE(PrintMatrixHeader_l), DEFERRED :: PrintHeader
@@ -63,13 +64,13 @@ MODULE MatrixModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !> Copy a sparse matrix in a safe way.
      !! @param[in] matA matrix to copy
-     !! @param[inout] matB = matA
-     PURE SUBROUTINE CopyMatrix_l(matA, matB)
+     !! @param[inout] this = matA
+     PURE SUBROUTINE CopyMatrix_l(this, matA)
        IMPORT :: Matrix_l
        IMPLICIT NONE
        !! Parameters
+       CLASS(Matrix_l), INTENT(INOUT) :: this
        CLASS(Matrix_l), INTENT(IN) :: matA
-       CLASS(Matrix_l), INTENT(INOUT) :: matB
      END SUBROUTINE CopyMatrix_l
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !> Extract a row from the matrix into the compressed vector representation.
@@ -99,18 +100,27 @@ MODULE MatrixModule
      END SUBROUTINE ExtractMatrixColumn_l
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !> Transpose a sparse matrix and return it in a separate matrix.
-     !! The current implementation has you go from matrix to triplet list,
-     !! triplet list to transposed triplet list. The triplet list must then be
-     !! sorted and then the return matrix is constructed.
-     !! @param[in] this the matrix to be transposed.
-     !! @param[out] matT the input matrix transposed.
-     PURE SUBROUTINE TransposeMatrix_l(this, matT)
+     !! @param[in] this = matA.T
+     !! @param[out] matA the matrix to transpose.
+     PURE SUBROUTINE TransposeMatrix_l(this, matA)
        IMPORT :: Matrix_l
        IMPLICIT NONE
        !! Parameters
-       CLASS(Matrix_l), INTENT(IN)  :: this
-       CLASS(Matrix_l), INTENT(INOUT) :: matT
+       CLASS(Matrix_l), INTENT(INOUT)  :: this
+       CLASS(Matrix_l), INTENT(IN) :: matA
      END SUBROUTINE TransposeMatrix_l
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     !> Construct a triplet list from a matrix.
+     !! @param[in] this the matrix to construct the triplet list from.
+     !! @param[out] triplet_list the triplet list we created.
+     PURE SUBROUTINE ConvertToTripletList_l(this, triplet_list)
+       USE TripletListModule, ONLY : TripletList
+       IMPORT :: Matrix_l
+       IMPLICIT NONE
+       !! Parameters
+       CLASS(Matrix_l), INTENT(IN) :: this
+       CLASS(TripletList), INTENT(INOUT) :: Triplet_list
+     END SUBROUTINE ConvertToTripletList_l
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !> Print out a sparse matrix.
      !! @param[in] this the matrix to be printed.
@@ -146,19 +156,19 @@ MODULE MatrixModule
        REAL(NTREAL), INTENT(IN) :: constant
      END SUBROUTINE ScaleMatrix_l
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
+     !> this = alpha*Matrix A + this (AXPY).
      !! This will utilize the sparse vector addition routine.
+     !! @param[in,out] this.
      !! @param[in] matA Matrix A.
-     !! @param[in,out] matB Matrix B.
      !! @param[in] alpha_in multiplier (optional, default=1.0)
      !! @param[in] threshold_in for flushing values to zero. (Optional, default=0).
-     PURE SUBROUTINE IncrementMatrix_l(matA, matB, alpha_in, threshold_in)
+     PURE SUBROUTINE IncrementMatrix_l(this, matA, alpha_in, threshold_in)
        USE DataTypesModule, ONLY : NTREAL
        IMPORT :: Matrix_l
        IMPLICIT NONE
        !! Parameters
-       CLASS(Matrix_l), INTENT(IN)  :: matA
-       CLASS(Matrix_l), INTENT(INOUT) :: matB
+       CLASS(Matrix_l), INTENT(INOUT)  :: this
+       CLASS(Matrix_l), INTENT(IN) :: matA
        REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
        REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
      END SUBROUTINE IncrementMatrix_l

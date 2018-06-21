@@ -19,7 +19,7 @@
      lcolumns = block_sizes(split_counter)
      linner_offset = this%outer_index(loffset)+1
      !! Construct
-     CALL ConstructEmptyMatrix(split_list(split_counter), this%rows, lcolumns)
+     CALL split_list(split_counter)%InitEmpty(this%rows, lcolumns)
      !! Copy Outer Index
      split_list(split_counter)%outer_index =        &
           & this%outer_index(loffset:loffset+lcolumns)

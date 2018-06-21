@@ -31,21 +31,21 @@
   !! Now Split By Rows
   CALL StartTimer("Split Row")
   DO JJ = 1, block_columns
-     CALL TransposeMatrix(column_split(JJ), Temp)
+     CALL Temp%Transpose(column_split(JJ))
      CALL SplitMatrixColumns(Temp, block_rows, block_size_row, &
           & row_split)
      !! Copy into output array
      DO II = 1, block_rows
-        CALL TransposeMatrix(row_split(II), split_array(II,JJ))
+        CALL split_array(II,JJ)%Transpose(row_split(II))
      END DO
   END DO
   CALL StopTimer("Split Row")
 
   !! Cleanup
-  CALL DestructMatrix(Temp)
+  CALL Temp%Destruct
   DO II = 1, block_rows
-     CALL DestructMatrix(row_split(II))
+     CALL row_split(II)%Destruct
   END DO
   DO II = 1, block_columns
-     CALL DestructMatrix(column_split(II))
+     CALL column_split(II)%Destruct
   END DO

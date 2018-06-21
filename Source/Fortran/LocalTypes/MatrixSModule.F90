@@ -6,10 +6,15 @@ MODULE MatrixSModule
   USE MatrixModule, ONLY : Matrix_l
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &
       & PairwiseMultiplyVectors
-  USE TripletListModule, ONLY : TripletList_r, TripletList_c
+  USE TripletListModule, ONLY : TripletList, TripletList_r, TripletList_c
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! PUBLIC :: ComposeMatrix
+  PUBLIC :: ComposeMatrixColumns
+  ! PUBLIC :: SplitMatrix
+  PUBLIC :: SplitMatrixColumns
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TYPE, ABSTRACT, EXTENDS(Matrix_l), PUBLIC :: Matrix_ls
     INTEGER, DIMENSION(:), ALLOCATABLE :: outer_index !< Outer indices
@@ -36,6 +41,7 @@ MODULE MatrixSModule
     PROCEDURE :: Norm => Norm_lsr
     !! ETC
     PROCEDURE :: Transpose => Transpose_lsr
+    PROCEDURE :: ConvertToTripletList => ConvertToTripletList_lsr
     PROCEDURE :: Print => Print_lsr
     PROCEDURE :: PrintHeader => PrintHeader_lsr
   END TYPE
@@ -58,11 +64,30 @@ MODULE MatrixSModule
     PROCEDURE :: PairwiseMultiply => PairwiseMultiply_lsc
     PROCEDURE :: ColumnNorm => ColumnNorm_lsc
     PROCEDURE :: Norm => Norm_lsc
+    PROCEDURE :: Conjg => Conjg_lsc
     !! ETC
     PROCEDURE :: Transpose => Transpose_lsc
+    PROCEDURE :: ConvertToTripletList => ConvertToTripletList_lsc
     PROCEDURE :: Print => Print_lsc
     PROCEDURE :: PrintHeader => PrintHeader_lsc
   END TYPE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ! INTERFACE SplitMatrix
+  !   MODULE PROCEDURE SplitMatrix_lsr
+  !   MODULE PROCEDURE SplitMatrix_lsc
+  ! END INTERFACE
+  INTERFACE SplitMatrixColumns
+    MODULE PROCEDURE SplitMatrixColumns_lsr
+    MODULE PROCEDURE SplitMatrixColumns_lsc
+  END INTERFACE
+  ! INTERFACE ComposeMatrix
+  !   MODULE PROCEDURE ComposeMatrix_lsr
+  !   MODULE PROCEDURE ComposeMatrix_lsc
+  ! END INTERFACE
+  INTERFACE ComposeMatrixColumns
+    MODULE PROCEDURE ComposeMatrixColumns_lsr
+    MODULE PROCEDURE ComposeMatrixColumns_lsc
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Internal only. Create a sparse matrix with a certain number of columns
   !! and rows. Will allocate storage for the outer values, nothing else.
@@ -184,13 +209,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a sparse matrix in a safe way.
   !! @param[in] matA matrix to copy
-  !! @param[inout] matB = matA
-  PURE SUBROUTINE Copy_lsr(matA, matB)
+  !! @param[inout] this = matA
+  PURE SUBROUTINE Copy_lsr(this, matA)
     !! Parameters
-    CLASS(Matrix_lsr), INTENT(IN) :: matA
-    CLASS(Matrix_l), INTENT(INOUT) :: matB
+    CLASS(Matrix_lsr), INTENT(INOUT) :: this
+    CLASS(Matrix_l), INTENT(IN) :: matA
 
-    SELECT TYPE(matB)
+    SELECT TYPE(matA)
     CLASS IS(Matrix_lsr)
       INCLUDE "sparse_includes/CopyMatrix.f90"
     END SELECT
@@ -198,13 +223,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a sparse matrix in a safe way.
   !! @param[in] matA matrix to copy
-  !! @param[inout] matB = matA
-  PURE SUBROUTINE Copy_lsc(matA, matB)
+  !! @param[inout] this = matA
+  PURE SUBROUTINE Copy_lsc(this, matA)
     !! Parameters
-    CLASS(Matrix_lsc), INTENT(IN) :: matA
-    CLASS(Matrix_l), INTENT(INOUT) :: matB
+    CLASS(Matrix_lsC), INTENT(INOUT) :: this
+    CLASS(Matrix_l), INTENT(IN) :: matA
 
-    SELECT TYPE(matB)
+    SELECT TYPE(matA)
     CLASS IS(Matrix_lsc)
       INCLUDE "sparse_includes/CopyMatrix.f90"
     END SELECT
@@ -318,16 +343,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "sparse_includes/ScaleMatrix.f90"
   END SUBROUTINE Scale_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
+  !> this = alpha*Matrix A + this (AXPY).
   !! This will utilize the sparse vector addition routine.
+  !! @param[in,out] this.
   !! @param[in] matA Matrix A.
-  !! @param[in,out] matB Matrix B.
   !! @param[in] alpha_in multiplier (optional, default=1.0)
   !! @param[in] threshold_in for flushing values to zero. (Optional, default=0).
-  PURE SUBROUTINE Increment_lsr(matA, matB, alpha_in, threshold_in)
+  PURE SUBROUTINE Increment_lsr(this, matA, alpha_in, threshold_in)
     !! Parameters
-    CLASS(Matrix_lsr), INTENT(IN)  :: matA
-    CLASS(Matrix_l), INTENT(INOUT) :: matB
+    CLASS(Matrix_lsr), INTENT(INOUT)  :: this
+    CLASS(Matrix_l), INTENT(IN) :: matA
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Variables
@@ -342,22 +367,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: threshold
     INTEGER :: size_of_a, size_of_b
 
-    SELECT TYPE(matB)
+    SELECT TYPE(matA)
     CLASS IS(Matrix_lsr)
       INCLUDE "sparse_includes/IncrementMatrix.f90"
     END SELECT
   END SUBROUTINE Increment_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
+  !> this = alpha*Matrix A + this (AXPY).
   !! This will utilize the sparse vector addition routine.
+  !! @param[in,out] this.
   !! @param[in] matA Matrix A.
-  !! @param[in,out] matB Matrix B.
   !! @param[in] alpha_in multiplier (optional, default=1.0)
   !! @param[in] threshold_in for flushing values to zero. (Optional, default=0).
-  PURE SUBROUTINE Increment_lsc(matA, matB, alpha_in, threshold_in)
+  PURE SUBROUTINE Increment_lsc(this, matA, alpha_in, threshold_in)
     !! Parameters
-    CLASS(Matrix_lsc), INTENT(IN)  :: matA
-    CLASS(Matrix_l), INTENT(INOUT) :: matB
+    CLASS(Matrix_lsc), INTENT(INOUT)  :: this
+    CLASS(Matrix_l), INTENT(IN) :: matA
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Variables
@@ -372,7 +397,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: threshold
     INTEGER :: size_of_a, size_of_b
 
-    SELECT TYPE(matB)
+    SELECT TYPE(matA)
     CLASS IS(Matrix_lsc)
       INCLUDE "sparse_includes/IncrementMatrix.f90"
     END SELECT
@@ -490,53 +515,98 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END FUNCTION Norm_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Transpose a sparse matrix and return it in a separate matrix.
-  !! The current implementation has you go from matrix to triplet list,
-  !! triplet list to transposed triplet list. The triplet list must then be
-  !! sorted and then the return matrix is constructed.
-  !! @param[in] this the matrix to be transposed.
-  !! @param[out] matT the input matrix transposed.
-  PURE SUBROUTINE Transpose_lsr(this, matT)
+  !> Every value in the matrix is changed into its complex conjugate.
+  !! @param[inout] this the matrix to compute the complex conjugate of.
+  PURE SUBROUTINE Conjg_lsc(this)
     !! Parameters
-    CLASS(Matrix_lsr), INTENT(IN)  :: this
-    CLASS(Matrix_l), INTENT(INOUT) :: matT
+    CLASS(Matrix_lsc), INTENT(INOUT) :: this
+
+    this%values = CONJG(this%values)
+  END SUBROUTINE Conjg_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Transpose a sparse matrix and return it in a separate matrix.
+  !! @param[in] this = matA.T
+  !! @param[out] matA the matrix to transpose.
+  PURE SUBROUTINE Transpose_lsr(this, matA)
+    !! Parameters
+    CLASS(Matrix_lsr), INTENT(INOUT)  :: this
+    CLASS(Matrix_l), INTENT(IN) :: matA
     !! Local Data
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
     !! Temporary Variables
     INTEGER :: II, JJ
-    INTEGER :: inner_index, insert_pt, this_offset
+    INTEGER :: inner_index, insert_pt, mata_offset
     INTEGER :: num_values, elements_per_inner
 
-    SELECT TYPE(matT)
+    SELECT TYPE(matA)
     CLASS IS (Matrix_lsr)
       INCLUDE "sparse_includes/TransposeMatrix.f90"
     END SELECT
   END SUBROUTINE Transpose_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix and return it in a separate matrix.
-  !! The current implementation has you go from matrix to triplet list,
-  !! triplet list to transposed triplet list. The triplet list must then be
-  !! sorted and then the return matrix is constructed.
-  !! @param[in] this the matrix to be transposed.
-  !! @param[out] matT the input matrix transposed.
-  PURE SUBROUTINE Transpose_lsc(this, matT)
+  !! @param[in] this = matA.T
+  !! @param[out] matA the matrix to transpose.
+  PURE SUBROUTINE Transpose_lsc(this, matA)
     !! Parameters
-    CLASS(Matrix_lsc), INTENT(IN)  :: this
-    CLASS(Matrix_l), INTENT(INOUT) :: matT
+    CLASS(Matrix_lsc), INTENT(INOUT)  :: this
+    CLASS(Matrix_l), INTENT(IN) :: matA
     !! Local Data
     INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
     !! Temporary Variables
     INTEGER :: II, JJ
-    INTEGER :: inner_index, insert_pt, this_offset
+    INTEGER :: inner_index, insert_pt, mata_offset
     INTEGER :: num_values, elements_per_inner
 
-    SELECT TYPE(matT)
+    SELECT TYPE(matA)
     CLASS IS (Matrix_lsc)
       INCLUDE "sparse_includes/TransposeMatrix.f90"
     END SELECT
   END SUBROUTINE Transpose_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a triplet list from a matrix.
+  !! @param[in] this the matrix to construct the triplet list from.
+  !! @param[out] triplet_list the triplet list we created.
+  PURE SUBROUTINE ConvertToTripletList_lsr(this, triplet_list)
+    IMPLICIT NONE
+    !! Parameters
+    CLASS(Matrix_lsr), INTENT(IN) :: this
+    CLASS(TripletList), INTENT(INOUT) :: triplet_list
+    !! Helper variables
+    TYPE(Triplet_r) :: temporary
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: elements_per_inner
+    INTEGER :: total_counter
+    INTEGER :: size_of_this
+
+    SELECT TYPE(triplet_list)
+    CLASS IS (TripletList_r)
+      INCLUDE "sparse_includes/MatrixToTripletList.f90"
+    END SELECT
+  END SUBROUTINE ConvertToTripletList_lsr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a triplet list from a matrix.
+  !! @param[in] this the matrix to construct the triplet list from.
+  !! @param[out] triplet_list the triplet list we created.
+  PURE SUBROUTINE ConvertToTripletList_lsc(this, triplet_list)
+    IMPLICIT NONE
+    !! Parameters
+    CLASS(Matrix_lsc), INTENT(IN) :: this
+    CLASS(TripletList), INTENT(INOUT) :: triplet_list
+    !! Helper variables
+    TYPE(Triplet_c) :: temporary
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: elements_per_inner
+    INTEGER :: total_counter
+    INTEGER :: size_of_this
+
+    SELECT TYPE(triplet_list)
+    CLASS IS (TripletList_c)
+      INCLUDE "sparse_includes/MatrixToTripletList.f90"
+    END SELECT
+  END SUBROUTINE ConvertToTripletList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a sparse matrix.
   !! @param[in] this the matrix to be printed.
@@ -589,7 +659,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     WRITE(file_handle,'(A)') "%%MatrixMarket matrix coordinate complex general"
 
   END SUBROUTINE PrintHeader_lsc
-END MODULE
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !   !> Create a big matrix from an array of matrices by putting them one next
 !   !! to another.
@@ -605,24 +674,57 @@ END MODULE
 !     INTEGER, INTENT(IN) :: block_rows, block_columns
 !     CLASS(Matrix_lsr), INTENT(INOUT) :: out_matrix
 !     !! Local Data
-!     CLASS(Matrix_lsr), DIMENSION(block_columns) :: merged_columns
-!     CLASS(Matrix_lsr) :: Temp
-!     CLASS(Matrix_lsr), DIMENSION(block_rows,block_columns) :: mat_t
+!     TYPE(Matrix_lsr), DIMENSION(block_columns) :: merged_columns
+!     TYPE(Matrix_lsr) :: Temp
+!     TYPE(Matrix_lsr), DIMENSION(block_rows,block_columns) :: mat_t
 !
 !     INCLUDE "sparse_includes/ComposeMatrix.f90"
 !   END SUBROUTINE ComposeMatrix_lsr
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
-!   !! the first matrix are followed by the columns of the matrices in the list.
-!   !! @param[in] mat_list list of matrices to compose.
-!   !! @param[out] out_matrix = [Matrix 1 | Matrix 2, ...] .
-!   PURE SUBROUTINE ComposeMatrixColumns_lsr(mat_list, out_matrix)
+!   !> Create a big matrix from an array of matrices by putting them one next
+!   !! to another.
+!   !! @param[in] mat_array 2d array of matrices to compose.
+!   !! @param[in] block_rows the number of rows of the array of blocks.
+!   !! @param[in] block_columns the number of columns of the array of blocks.
+!   !! @param[out] out_matrix the composed matrix.
+!   PURE SUBROUTINE ComposeMatrix_lsc(mat_array, block_rows, block_columns, &
+!        & out_matrix)
 !     !! Parameters
-!     CLASS(Matrix_lsr), DIMENSION(:), INTENT(IN) :: mat_list
-!     CLASS(Matrix_lsr), INTENT(INOUT) :: out_matrix
+!     CLASS(Matrix_lsc), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
+!          & mat_array
+!     INTEGER, INTENT(IN) :: block_rows, block_columns
+!     CLASS(Matrix_lsc), INTENT(INOUT) :: out_matrix
+!     !! Local Data
+!     TYPE(Matrix_lsc), DIMENSION(block_columns) :: merged_columns
+!     TYPE(Matrix_lsc) :: Temp
+!     TYPE(Matrix_lsc), DIMENSION(block_rows,block_columns) :: mat_t
 !
-!     INCLUDE "sparse_includes/ComposeMatrixColumns.f90"
-!   END SUBROUTINE ComposeMatrixColumns_lsr
+!     INCLUDE "sparse_includes/ComposeMatrix.f90"
+!   END SUBROUTINE ComposeMatrix_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
+  !! the first matrix are followed by the columns of the matrices in the list.
+  !! @param[in] mat_list list of matrices to compose.
+  !! @param[out] out_matrix = [Matrix 1 | Matrix 2, ...] .
+  PURE SUBROUTINE ComposeMatrixColumns_lsr(mat_list, out_matrix)
+    !! Parameters
+    CLASS(Matrix_lsr), DIMENSION(:), INTENT(IN) :: mat_list
+    CLASS(Matrix_lsr), INTENT(INOUT) :: out_matrix
+
+    INCLUDE "sparse_includes/ComposeMatrixColumns.f90"
+  END SUBROUTINE ComposeMatrixColumns_lsr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
+  !! the first matrix are followed by the columns of the matrices in the list.
+  !! @param[in] mat_list list of matrices to compose.
+  !! @param[out] out_matrix = [Matrix 1 | Matrix 2, ...] .
+  PURE SUBROUTINE ComposeMatrixColumns_lsc(mat_list, out_matrix)
+    !! Parameters
+    CLASS(Matrix_lsc), DIMENSION(:), INTENT(IN) :: mat_list
+    CLASS(Matrix_lsc), INTENT(INOUT) :: out_matrix
+
+    INCLUDE "sparse_includes/ComposeMatrixColumns.f90"
+  END SUBROUTINE ComposeMatrixColumns_lsc
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !   !> Split a sparse matrix into an array of sparse matrices.
 !   !! @param[in] this the matrix to split.
@@ -640,49 +742,66 @@ END MODULE
 !     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
 !     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
 !     !! Local Data
-!     CLASS(Matrix_lsr), DIMENSION(block_columns) :: column_split
-!     CLASS(Matrix_lsr), DIMENSION(block_rows) :: row_split
-!     CLASS(Matrix_lsr) :: Temp
+!     TYPE(Matrix_lsr), DIMENSION(block_columns) :: column_split
+!     TYPE(Matrix_lsr), DIMENSION(block_rows) :: row_split
+!     TYPE(Matrix_lsr) :: Temp
 !
 !     INCLUDE "sparse_includes/SplitMatrix.f90"
 !   END SUBROUTINE SplitMatrix_lsr
 ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   !> Split a matrix into into small blocks based on the specified offsets.
-!   !! @param[in] this matrix to perform this operation on.
-!   !! @param[in] num_blocks number of blocks to split into
-!   !! @param[out] block_sizes the sizes used for splitting.
-!   !! @param[out] split_list 1D array of blocks.
-!   PURE SUBROUTINE SplitMatrixColumns_lsr(this, num_blocks, block_sizes, &
-!        & split_list)
+!   !> Split a sparse matrix into an array of sparse matrices.
+!   !! @param[in] this the matrix to split.
+!   !! @param[in] block_rows number of rows to split the matrix into.
+!   !! @param[in] block_columns number of columns to split the matrix into.
+!   !! @param[out] split_array a COLUMNxROW array for the output to go into.
+!   !! @param[in] block_size_row_in specifies the size of the  rows.
+!   !! @param[in] block_size_column_in specifies the size of the columns.
+!   SUBROUTINE SplitMatrix_lsc(this, block_rows, block_columns, &
+!        & split_array, block_size_row_in, block_size_column_in)
 !     !! Parameters
-!     CLASS(Matrix_lsr), INTENT(IN) :: this
-!     INTEGER, INTENT(IN) :: num_blocks
-!     INTEGER, DIMENSION(num_blocks), INTENT(IN) :: block_sizes
-!     CLASS(Matrix_lsr), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
+!     CLASS(Matrix_lsc), INTENT(IN) :: this
+!     INTEGER, INTENT(IN) :: block_rows, block_columns
+!     CLASS(Matrix_lsc), DIMENSION(:,:), INTENT(INOUT) :: split_array
+!     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
+!     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
+!     !! Local Data
+!     TYPE(Matrix_lsc), DIMENSION(block_columns) :: column_split
+!     TYPE(Matrix_lsc), DIMENSION(block_rows) :: row_split
+!     TYPE(Matrix_lsc) :: Temp
 !
-!     INCLUDE "sparse_includes/SplitMatrixColumns.f90"
-!   END SUBROUTINE SplitMatrixColumns_lsr
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   !> Construct a triplet list from a matrix.
-!   !! @param[in] this the matrix to construct the triplet list from.
-!   !! @param[out] triplet_list the triplet list we created.
-!   PURE SUBROUTINE MatrixToTripletList_lsr(this, triplet_list)
-!     !! Parameters
-!     CLASS(Matrix_lsr), INTENT(IN) :: this
-!     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
-!     !! Local Variables
-!     TYPE(Triplet_r) :: temporary
-!
-!     INCLUDE "sparse_includes/MatrixToTripletList.f90"
-!   END SUBROUTINE MatrixToTripletList_lsr
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!   !> Every value in the matrix is changed into its complex conjugate.
-!   !! @param[inout] this the matrix to compute the complex conjugate of.
-!   PURE SUBROUTINE ConjugateMatrix_lsc(this)
-!     !! Parameters
-!     TYPE(Matrix_lsc), INTENT(INOUT) :: this
-!
-!     this%values = CONJG(this%values)
-!   END SUBROUTINE ConjugateMatrix_lsc
-! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! END MODULE MatrixSModule
+!     INCLUDE "sparse_includes/SplitMatrix.f90"
+!   END SUBROUTINE SplitMatrix_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Split a matrix into into small blocks based on the specified offsets.
+  !! @param[in] this matrix to perform this operation on.
+  !! @param[in] num_blocks number of blocks to split into
+  !! @param[out] block_sizes the sizes used for splitting.
+  !! @param[out] split_list 1D array of blocks.
+  PURE SUBROUTINE SplitMatrixColumns_lsr(this, num_blocks, block_sizes, &
+       & split_list)
+    !! Parameters
+    CLASS(Matrix_lsr), INTENT(IN) :: this
+    INTEGER, INTENT(IN) :: num_blocks
+    INTEGER, DIMENSION(num_blocks), INTENT(IN) :: block_sizes
+    CLASS(Matrix_lsr), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
+
+    INCLUDE "sparse_includes/SplitMatrixColumns.f90"
+  END SUBROUTINE SplitMatrixColumns_lsr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Split a matrix into into small blocks based on the specified offsets.
+  !! @param[in] this matrix to perform this operation on.
+  !! @param[in] num_blocks number of blocks to split into
+  !! @param[out] block_sizes the sizes used for splitting.
+  !! @param[out] split_list 1D array of blocks.
+  PURE SUBROUTINE SplitMatrixColumns_lsc(this, num_blocks, block_sizes, &
+       & split_list)
+    !! Parameters
+    CLASS(Matrix_lsc), INTENT(IN) :: this
+    INTEGER, INTENT(IN) :: num_blocks
+    INTEGER, DIMENSION(num_blocks), INTENT(IN) :: block_sizes
+    CLASS(Matrix_lsc), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
+
+    INCLUDE "sparse_includes/SplitMatrixColumns.f90"
+  END SUBROUTINE SplitMatrixColumns_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+END MODULE

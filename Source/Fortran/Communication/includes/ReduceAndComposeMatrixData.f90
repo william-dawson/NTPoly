@@ -14,8 +14,7 @@
   END DO
 
   !! Build Storage
-  CALL ConstructEmptyMatrix(gathered_matrix, &
-       & matrix%rows,matrix%columns*helper%comm_size)
+  CALL gathered_matrix%InitEmpty(matrix%rows,matrix%columns*helper%comm_size)
   total_values = SUM(helper%values_per_process)
   ALLOCATE(gathered_matrix%values(total_values))
   ALLOCATE(gathered_matrix%inner_index(total_values))
