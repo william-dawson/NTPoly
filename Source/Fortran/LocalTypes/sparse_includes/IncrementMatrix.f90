@@ -1,13 +1,3 @@
-  !! Counter Variables
-  INTEGER :: outer_counter
-  INTEGER :: elements_per_inner_a, elements_per_inner_b
-  INTEGER :: total_counter_a, total_counter_b, total_counter_c
-  !! Temporary Variables
-  INTEGER :: indices_added_into_c
-  REAL(NTREAL) :: alpha
-  REAL(NTREAL) :: threshold
-  INTEGER :: size_of_a, size_of_b
-
   !! Process Optional Parameters
   IF (.NOT. PRESENT(alpha_in)) THEN
      alpha = 1.0d+0
@@ -23,7 +13,7 @@
   size_of_a = matA%outer_index(matA%columns+1)
 
   !! Allocate sufficient space for matC
-  CALL ConstructEmptyMatrix(matC, matA%rows, matA%columns)
+  CALL matC%InitEmpty(matA%rows, matA%columns)
   IF (ALLOCATED(matB%values)) THEN
      size_of_b = matB%outer_index(matB%columns+1)
      ALLOCATE(matC%inner_index(size_of_a+size_of_b))
@@ -58,11 +48,12 @@
   END DO
 
   !! Cleanup
-  CALL DestructMatrix(matB)
-  CALL ConstructEmptyMatrix(matB, matC%rows, matC%columns)
+  CALL matB%Destruct
+  CALL matB%InitEmpty(matC%rows, matC%columns)
   matB%outer_index = matC%outer_index
   ALLOCATE(matB%inner_index(matC%outer_index(matC%columns+1)))
   ALLOCATE(matB%values(matC%outer_index(matC%columns+1)))
   matB%inner_index = matC%inner_index(:matC%outer_index(matC%columns+1))
   matB%values = matC%values(:matC%outer_index(matC%columns+1))
-  CALL DestructMatrix(matC)
+
+  CALL matC%Destruct

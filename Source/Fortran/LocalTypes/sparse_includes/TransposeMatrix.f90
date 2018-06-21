@@ -1,14 +1,6 @@
-  !! Local Data
-  INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
-  INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
-  !! Temporary Variables
-  INTEGER :: II, JJ
-  INTEGER :: inner_index, insert_pt, this_offset
-  INTEGER :: num_values, elements_per_inner
-
   !! Allocate New Matrix
   num_values = this%outer_index(this%columns+1)
-  CALL ConstructEmptyMatrix(matT, this%columns, this%rows)
+  CALL matT%InitEmpty(this%columns, this%rows)
   ALLOCATE(matT%inner_index(num_values))
   ALLOCATE(matT%values(num_values))
 

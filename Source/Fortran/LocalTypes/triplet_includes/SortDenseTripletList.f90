@@ -1,10 +1,16 @@
+  !! Local Data
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: dirty_buffer
+  INTEGER :: list_length
+  INTEGER :: row, col, ind
+  INTEGER :: II, JJ
+
   !! Setup Memory
   ALLOCATE(value_buffer(matrix_rows,matrix_columns))
   ALLOCATE(dirty_buffer(matrix_rows,matrix_columns))
   value_buffer = 0
   dirty_buffer = 0
   list_length = input_list%CurrentSize
-  CALL ConstructTripletList(sorted_list, list_length)
+  CALL sorted_list%Init(list_length)
 
   !! Unpack
   DO II = 1, list_length

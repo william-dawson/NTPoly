@@ -17,6 +17,8 @@ MODULE TripletModule
     PROCEDURE :: Transpose => Transpose_base
     PROCEDURE :: Conjg => Conjg_base
     PROCEDURE :: Scale => Scale_base
+    PROCEDURE :: ReadFromFile => Read_base
+    PROCEDURE :: WriteToFile => Write_base
   END TYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a triplet of integer, integer, double.
@@ -25,6 +27,8 @@ MODULE TripletModule
   CONTAINS
      PROCEDURE :: SetTriplet => SetTriplet_r
      PROCEDURE :: GetTriplet => GetTriplet_r
+     PROCEDURE :: ReadFromFile => Read_r
+     PROCEDURE :: WriteToFile => Write_r
   END TYPE Triplet_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a triplet of integer, integer, complex.
@@ -33,6 +37,8 @@ MODULE TripletModule
   CONTAINS
      PROCEDURE :: SetTriplet => SetTriplet_c
      PROCEDURE :: GetTriplet => GetTriplet_c
+     PROCEDURE :: ReadFromFile => Read_c
+     PROCEDURE :: WriteToFile => Write_c
   END TYPE Triplet_c
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Returns an MPI Derived Data Type For A Triplet.
@@ -107,6 +113,83 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%index_column = temp
 
   END SUBROUTINE Transpose_base
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read a line of an open file handle into this triplet.
+  !! @param[inout] this the triplet to read in
+  !! @param[inout] file_handle an open file handle sitting at a line to read.
+  SUBROUTINE Read_base(this, file_handle)
+    !! Parameters
+    CLASS(Triplet), INTENT(INOUT) :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    READ(file_handle,*) this%index_row, this%index_column
+
+  END SUBROUTINE Read_base
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read a line of an open file handle into this triplet.
+  !! @param[inout] this the triplet to read in
+  !! @param[inout] file_handle an open file handle sitting at a line to read.
+  SUBROUTINE Read_r(this, file_handle)
+    !! Parameters
+    CLASS(Triplet_r), INTENT(INOUT) :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    READ(file_handle,*) this%index_row, this%index_column, &
+         & this%point_value
+
+  END SUBROUTINE Read_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read a line of an open file handle into this triplet.
+  !! @param[inout] this the triplet to read in
+  !! @param[inout] file_handle an open file handle sitting at a line to read.
+  SUBROUTINE Read_c(this, file_handle)
+    !! Parameters
+    CLASS(Triplet_c), INTENT(INOUT) :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+    !! Local
+    REAL(NTREAL) :: real_val, comp_val
+
+    READ(file_handle,*) this%index_row, this%index_column, real_val, comp_val
+    this%point_value = CMPLX(real_val, comp_val, KIND=NTCOMPLEX)
+
+  END SUBROUTINE Read_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read a line of an open file handle into this triplet.
+  !! @param[inout] this the triplet to read in
+  !! @param[inout] file_handle an open file handle sitting at a line to read.
+  SUBROUTINE Write_base(this, file_handle)
+    !! Parameters
+    CLASS(Triplet), INTENT(IN) :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    WRITE(file_handle,*) this%index_row, this%index_column
+
+  END SUBROUTINE Write_base
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read a line of an open file handle into this triplet.
+  !! @param[inout] this the triplet to read in
+  !! @param[inout] file_handle an open file handle sitting at a line to read.
+  SUBROUTINE Write_r(this, file_handle)
+    !! Parameters
+    CLASS(Triplet_r), INTENT(IN) :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    WRITE(file_handle,*) this%index_row, this%index_column, this%point_value
+
+  END SUBROUTINE Write_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read a line of an open file handle into this triplet.
+  !! @param[inout] this the triplet to read in
+  !! @param[inout] file_handle an open file handle sitting at a line to read.
+  SUBROUTINE Write_c(this, file_handle)
+    !! Parameters
+    CLASS(Triplet_c), INTENT(IN) :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    WRITE(file_handle,*) this%index_row, this%index_column, &
+         & REAL(this%point_value), AIMAG(this%point_value)
+
+  END SUBROUTINE Write_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
   !! @param[inout] this the triplet to set the values of.

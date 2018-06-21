@@ -1,10 +1,5 @@
-  !! Local variables
-  INTEGER :: number_of_values
-  INTEGER :: start_index
-  INTEGER :: counter
-
   !! Allocate Memory
-  CALL ConstructEmptyMatrix(column_out, this%rows, 1)
+  CALL column_out%InitEmpty(this%rows, 1)
   start_index = this%outer_index(column_number)
   number_of_values = this%outer_index(column_number+1) - &
        & this%outer_index(column_number)

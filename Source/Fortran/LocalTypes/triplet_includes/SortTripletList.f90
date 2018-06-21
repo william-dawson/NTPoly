@@ -1,9 +1,30 @@
+
+  !! Local Data
+  LOGICAL :: bubble
+  LOGICAL :: swap_occured
+  INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
+  INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
+  INTEGER, DIMENSION(:), ALLOCATABLE :: inserted_per_row
+  !! Counters and temporary variables
+  INTEGER :: counter
+  INTEGER :: temp_index
+  INTEGER :: alloc_stat
+  INTEGER :: list_length
+
+  IF (PRESENT(bubble_in)) THEN
+     bubble = bubble_in
+  ELSE
+     bubble = .TRUE.
+  END IF
+
+  list_length = input_list%CurrentSize
+
   IF (bubble .AND. list_length .GT. matrix_rows*matrix_columns*0.1) THEN
      CALL SortDenseTripletList(input_list, matrix_columns, matrix_rows, &
           & sorted_list)
   ELSE
      !! Data Allocation
-     CALL ConstructTripletList(sorted_list, list_length)
+     CALL sorted_list%Init(list_length)
      ALLOCATE(values_per_row(matrix_columns), stat=alloc_stat)
      ALLOCATE(offset_array(matrix_columns), stat=alloc_stat)
      ALLOCATE(inserted_per_row(matrix_columns), stat=alloc_stat)

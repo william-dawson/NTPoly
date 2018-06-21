@@ -26,27 +26,20 @@
 
   !! Main data
   READ(input_buffer,*) temp_rows, temp_columns, temp_total_values
-  CALL ConstructTripletList(triplet_list)
+  CALL triplet_list%Init
 
   !! Read Values
   DO counter = 1, temp_total_values
-#ifdef ISCOMPLEX
-     READ(file_handler,*) temporary%index_row, temporary%index_column, &
-          & real_val, comp_val
-     temporary%point_value = CMPLX(real_val, comp_val, KIND=NTCOMPLEX)
-#else
-     READ(file_handler,*) temporary%index_row, temporary%index_column, &
-          & temporary%point_value
-#endif
-     CALL AppendToTripletList(triplet_list,temporary)
+     CALL temporary%ReadFromFile(file_handler)
+     CALL triplet_list%Append(temporary)
   END DO
 
   CLOSE(file_handler)
-  CALL SymmetrizeTripletList(triplet_list, pattern_type)
+  CALL triplet_list%Symmetrize(pattern_type)
   CALL SortTripletList(triplet_list, temp_columns, temp_rows, &
        & sorted_triplet_list)
   CALL ConstructMatrixFromTripletList(this, sorted_triplet_list, temp_rows, &
        & temp_columns)
 
-  CALL DestructTripletList(triplet_list)
-  CALL DestructTripletList(sorted_triplet_list)
+  CALL triplet_list%Destruct
+  CALL sorted_triplet_list%Destruct
