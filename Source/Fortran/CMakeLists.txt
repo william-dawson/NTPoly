@@ -52,6 +52,7 @@ set(FHelpers
 
 set(FTypes
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DataTypesModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixDAlgebraModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixDModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixModule.F90

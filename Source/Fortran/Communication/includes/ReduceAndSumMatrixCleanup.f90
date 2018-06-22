@@ -20,10 +20,10 @@
      temporary_matrix%outer_index = gathered_matrix%outer_index(&
           & (matrix%columns+1)*(counter-1)+1:(matrix%columns+1)*(counter))
      IF (counter .EQ. helper%comm_size) THEN
-        CALL sum_matrix%Increment(temporary_matrix, threshold_in=threshold)
+        CALL IncrementMatrix(temporary_matrix, sum_matrix, &
+             & threshold_in=threshold)
      ELSE
-        CALL sum_matrix%Increment(temporary_matrix, &
-             & threshold_in=REAL(0.0,NTREAL))
+        CALL IncrementMatrix(temporary_matrix, sum_matrix)
      END IF
      DEALLOCATE(temporary_matrix%values)
      DEALLOCATE(temporary_matrix%inner_index)
