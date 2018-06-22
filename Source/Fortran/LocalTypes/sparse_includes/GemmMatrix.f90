@@ -61,17 +61,17 @@
   ELSE
      !! Setup the memory pool
      IF (.NOT. PRESENT(blocked_memory_pool_in)) THEN
-       CALL ConstructMatrixMemoryPool(blocked_memory_pool, mat_c_columns, &
-            & mat_c_rows, sparsity_estimate)
+        CALL blocked_memory_pool%Init(mat_c_columns, mat_c_rows, &
+             & sparsity_estimate)
         pool_flag = .FALSE.
-     ELSEIF (.NOT. CheckMemoryPoolValidity(blocked_memory_pool_in, &
-          & mat_c_columns, mat_c_rows)) THEN
-        CALL DestructMatrixMemoryPool(blocked_memory_pool_in)
-        CALL ConstructMatrixMemoryPool(blocked_memory_pool_in, mat_c_columns, &
-             & mat_c_rows, sparsity_estimate)
+     ELSEIF (.NOT. &
+        & blocked_memory_pool_in%CheckValidity(mat_c_columns, mat_c_rows)) THEN
+        CALL blocked_memory_pool_in%Destruct
+        CALL blocked_memory_pool_in%Init(mat_c_columns, mat_c_rows, &
+             & sparsity_estimate)
         pool_flag = .TRUE.
      ELSE
-        CALL SetPoolSparsity(blocked_memory_pool_in, sparsity_estimate)
+        CALL blocked_memory_pool_in%SetSparsity(sparsity_estimate)
         pool_flag = .TRUE.
      END IF
      !! Multiply
@@ -90,11 +90,11 @@
         CALL ScaleMatrix(matC,beta)
         CALL IncrementMatrix(matAB,matC)
      ELSE
-        CALL CopyMatrix(matAB,matC)
+        CALL matC%Copy(matAB)
      END IF
   ELSE
-     CALL CopyMatrix(matAB,matC)
+     CALL matC%Copy(matAB)
   END IF
 
-  CALL DestructMatrix(matAB)
-  CALL DestructMatrixMemoryPool(blocked_memory_pool)
+  CALL matAB%Destruct
+  CALL blocked_memory_pool%Destruct

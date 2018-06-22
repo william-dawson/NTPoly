@@ -19,6 +19,12 @@ MODULE MatrixSModule
   TYPE, ABSTRACT, EXTENDS(Matrix_l), PUBLIC :: Matrix_ls
     INTEGER, DIMENSION(:), ALLOCATABLE :: outer_index !< Outer indices
     INTEGER, DIMENSION(:), ALLOCATABLE :: inner_index !< Inner indices
+  CONTAINS
+    !! I/O
+    PROCEDURE(ConstructFromFile_ls), DEFERRED :: InitFromFile
+    !! Triplet Lists
+    PROCEDURE(ConstructFromTripletList_ls), DEFERRED :: InitFromTripletList
+    PROCEDURE(ConvertToTripletList_ls), DEFERRED :: ConvertToTripletList
   END TYPE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   TYPE, EXTENDS(Matrix_ls), PUBLIC :: Matrix_lsr
@@ -59,6 +65,39 @@ MODULE MatrixSModule
     PROCEDURE :: Print => Print_lsc
     PROCEDURE :: PrintHeader => PrintHeader_lsc
   END TYPE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  ABSTRACT INTERFACE
+    SUBROUTINE ConstructFromFile_ls(this, file_name)
+      IMPORT :: Matrix_ls
+      IMPLICIT NONE
+      !! Parameters
+      CLASS(Matrix_ls), INTENT(INOUT) :: this
+      CHARACTER(len=*), INTENT(IN) :: file_name
+    END SUBROUTINE ConstructFromFile_ls
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    PURE SUBROUTINE ConstructFromTripletList_ls(this, triplet_list, &
+         & rows, columns)
+      USE TripletListModule, ONLY : TripletList
+      IMPORT :: Matrix_ls
+      IMPLICIT NONE
+      !! Parameters
+      CLASS(Matrix_ls), INTENT(INOUT) :: this
+      CLASS(TripletList), INTENT(IN) :: triplet_list
+      INTEGER, INTENT(IN) :: rows, columns
+    END SUBROUTINE ConstructFromTripletList_ls
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !> Construct a triplet list from a matrix.
+    !! @param[in] this the matrix to construct the triplet list from.
+    !! @param[out] triplet_list the triplet list we created.
+    PURE SUBROUTINE ConvertToTripletList_ls(this, triplet_list)
+      USE TripletListModule, ONLY : TripletList
+      IMPORT :: Matrix_ls
+      IMPLICIT NONE
+      !! Parameters
+      CLASS(Matrix_ls), INTENT(IN) :: this
+      CLASS(TripletList), INTENT(INOUT) :: Triplet_list
+    END SUBROUTINE ConvertToTripletList_ls
+  END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SplitMatrix
     MODULE PROCEDURE SplitMatrix_lsr
@@ -152,10 +191,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & rows, columns)
     !! Parameters
     CLASS(Matrix_lsr), INTENT(INOUT) :: this
-    TYPE(TripletList_r), INTENT(IN) :: triplet_list
+    CLASS(TripletList), INTENT(IN) :: triplet_list
     INTEGER, INTENT(IN) :: rows, columns
+    !! Local Data
+    INTEGER :: outer_array_ptr
+    INTEGER :: values_counter
 
-    INCLUDE "sparse_includes/ConstructMatrixFromTripletList.f90"
+    SELECT TYPE(triplet_list)
+    CLASS IS(TripletList_r)
+       INCLUDE "sparse_includes/ConstructMatrixFromTripletList.f90"
+    END SELECT
 
   END SUBROUTINE ConstructFromTripletList_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -170,10 +215,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & rows, columns)
     !! Parameters
     CLASS(Matrix_lsc), INTENT(INOUT) :: this
-    TYPE(TripletList_c), INTENT(IN) :: triplet_list
+    CLASS(TripletList), INTENT(IN) :: triplet_list
     INTEGER, INTENT(IN) :: rows, columns
+    !! Local Data
+    INTEGER :: outer_array_ptr
+    INTEGER :: values_counter
 
-    INCLUDE "sparse_includes/ConstructMatrixFromTripletList.f90"
+    SELECT TYPE(triplet_list)
+    CLASS IS(TripletList_c)
+      INCLUDE "sparse_includes/ConstructMatrixFromTripletList.f90"
+    END SELECT
 
   END SUBROUTINE ConstructFromTripletList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

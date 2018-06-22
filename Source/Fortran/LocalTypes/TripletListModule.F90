@@ -404,10 +404,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SortTripletList_r(input_list, matrix_columns, matrix_rows, &
        & sorted_list, bubble_in)
     !! Parameters
-    CLASS(TripletList_r), INTENT(IN)  :: input_list
+    TYPE(TripletList_r), INTENT(IN)  :: input_list
     INTEGER, INTENT(IN) :: matrix_columns
     INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_r), INTENT(OUT) :: sorted_list
+    TYPE(TripletList_r), INTENT(INOUT) :: sorted_list
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     TYPE(Triplet_r) :: temporary
@@ -428,10 +428,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SortTripletList_c(input_list, matrix_columns, matrix_rows, &
        & sorted_list, bubble_in)
     !! Parameters
-    CLASS(TripletList_c), INTENT(IN)  :: input_list
+    TYPE(TripletList_c), INTENT(IN)  :: input_list
     INTEGER, INTENT(IN) :: matrix_columns
     INTEGER, INTENT(IN) :: matrix_rows
-    TYPE(TripletList_c), INTENT(OUT) :: sorted_list
+    TYPE(TripletList_c), INTENT(INOUT) :: sorted_list
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     TYPE(Triplet_c) :: temporary

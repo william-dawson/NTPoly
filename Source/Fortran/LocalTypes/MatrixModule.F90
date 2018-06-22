@@ -15,7 +15,6 @@ MODULE MatrixModule
    CONTAINS
      !! Construct/Destruct
      PROCEDURE(ConstructEmptyMatrix_l), DEFERRED :: InitEmpty
-     PROCEDURE(ConstructFromFile_l), DEFERRED :: InitFromFile
      PROCEDURE(DestructMatrix_l), DEFERRED :: Destruct
      PROCEDURE(CopyMatrix_l), DEFERRED :: Copy
      !! Basic Accessors
@@ -24,7 +23,6 @@ MODULE MatrixModule
      PROCEDURE(ExtractMatrixRow_l), DEFERRED :: ExtractRow
      PROCEDURE(ExtractMatrixColumn_l), DEFERRED :: ExtractColumn
      !! ETC
-     PROCEDURE(ConvertToTripletList_l), DEFERRED :: ConvertToTripletList
      PROCEDURE(TransposeMatrix_l), DEFERRED :: Transpose
      PROCEDURE(PrintMatrix_l), DEFERRED :: Print
      PROCEDURE(PrintMatrixHeader_l), DEFERRED :: PrintHeader
@@ -38,14 +36,6 @@ MODULE MatrixModule
        INTEGER, INTENT(IN) :: columns, rows
        LOGICAL, INTENT(IN), OPTIONAL :: zero_in
      END SUBROUTINE ConstructEmptyMatrix_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     SUBROUTINE ConstructFromFile_l(this, file_name)
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(INOUT) :: this
-       CHARACTER(len=*), INTENT(IN) :: file_name
-     END SUBROUTINE ConstructFromFile_l
  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !> Explicitly destruct a sparse matrix.
      !! @param[inout] this the matrix to free up
@@ -103,18 +93,6 @@ MODULE MatrixModule
        CLASS(Matrix_l), INTENT(INOUT)  :: this
        CLASS(Matrix_l), INTENT(IN) :: matA
      END SUBROUTINE TransposeMatrix_l
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-     !> Construct a triplet list from a matrix.
-     !! @param[in] this the matrix to construct the triplet list from.
-     !! @param[out] triplet_list the triplet list we created.
-     PURE SUBROUTINE ConvertToTripletList_l(this, triplet_list)
-       USE TripletListModule, ONLY : TripletList
-       IMPORT :: Matrix_l
-       IMPLICIT NONE
-       !! Parameters
-       CLASS(Matrix_l), INTENT(IN) :: this
-       CLASS(TripletList), INTENT(INOUT) :: Triplet_list
-     END SUBROUTINE ConvertToTripletList_l
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
      !> Print out a sparse matrix.
      !! @param[in] this the matrix to be printed.

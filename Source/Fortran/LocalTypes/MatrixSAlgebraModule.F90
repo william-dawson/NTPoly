@@ -7,7 +7,7 @@ MODULE MatrixSAlgebraModule
   USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
-  USE TripletListModule, ONLY: TripletList_r, TripletList_c
+  USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   IMPLICIT NONE
   PRIVATE

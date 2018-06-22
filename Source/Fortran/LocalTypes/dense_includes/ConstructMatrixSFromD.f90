@@ -6,7 +6,7 @@
   rows = dense_matrix%rows
 
   IF (PRESENT(threshold_in)) THEN
-     CALL ConstructTripletList(temporary_list)
+     CALL temporary_list%Init
      DO outer_counter = 1, columns
         temporary%index_column = outer_counter
         DO inner_counter = 1, rows
@@ -14,12 +14,12 @@
                 & dense_matrix%data(inner_counter,outer_counter)
            IF (ABS(temporary%point_value) .GT. threshold_in) THEN
               temporary%index_row = inner_counter
-              CALL AppendToTripletList(temporary_list,temporary)
+              CALL temporary_list%Append(temporary)
            END IF
         END DO
      END DO
   ELSE
-     CALL ConstructTripletList(temporary_list, rows*columns)
+     CALL temporary_list%Init(rows*columns)
      DO outer_counter = 1, columns
         temporary%index_column = outer_counter
         DO inner_counter = 1, rows
@@ -32,4 +32,4 @@
      END DO
   END IF
 
-  sparse_matrix = SMTYPE(temporary_list, rows, columns)
+  CALL sparse_matrix%InitFromTripletList(temporary_list, rows, columns)

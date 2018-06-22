@@ -1,7 +1,3 @@
-  !! Local Data
-  INTEGER :: outer_array_ptr
-  INTEGER :: values_counter
-
   this%rows = rows
   this%columns = columns
 

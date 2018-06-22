@@ -1,2 +1,2 @@
-  CALL this%ColumnNorm(column)
+  CALL MatrixColumnNorm(this, column)
   norm = MAXVAL(column)
