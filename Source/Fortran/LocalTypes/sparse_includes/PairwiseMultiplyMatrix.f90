@@ -3,6 +3,13 @@
   INTEGER :: elements_per_inner_a, elements_per_inner_b
   INTEGER :: total_counter_a, total_counter_b, total_counter_c
   INTEGER :: indices_added_into_c
+  INTEGER :: size_of_a, size_of_b
+
+  CALL TempMat%InitEmpty(matA%rows, matA%columns)
+  size_of_a = matA%outer_index(matA%columns+1)
+  size_of_b = matB%outer_index(matB%columns+1)
+  ALLOCATE(TempMat%inner_index(MIN(size_of_a,size_of_b)))
+  ALLOCATE(TempMat%values(MIN(size_of_a,size_of_b)))
 
   !! Perform loops
   total_counter_a = 1

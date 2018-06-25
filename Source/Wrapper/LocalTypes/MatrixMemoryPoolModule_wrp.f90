@@ -1,8 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping the matrix memory pool data type.
 MODULE MatrixMemoryPoolModule_wrp
-  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, &
-       & MatrixMemoryPool_lc, DestructMatrixMemoryPool
+  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, MatrixMemoryPool_lc
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -33,7 +32,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    h_this%data = MatrixMemoryPool_lr(columns,rows)
+    CALL h_this%data%Init(columns, rows)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_lr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -44,7 +43,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrixMemoryPool(h_this%data)
+    CALL h_this%data%Destruct
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructMatrixMemoryPool_lr_wrp
@@ -58,7 +57,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lc_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    h_this%data = MatrixMemoryPool_lc(columns,rows)
+    CALL h_this%data%Init(columns, rows)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_lc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -69,8 +68,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrixMemoryPool(h_this%data)
+    CALL h_this%data%Destruct
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructMatrixMemoryPool_lc_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixMemoryPoolModule_wrp

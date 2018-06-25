@@ -2,7 +2,7 @@
 !> Wraps the triplet module for calling from other languages.
 MODULE TripletModule_wrp
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE TripletModule, ONLY: Triplet_r, Triplet_c, SetTriplet, GetTripletValues
+  USE TripletModule, ONLY: Triplet_r, Triplet_c
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -34,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL SetTriplet(h_this%data,index_column,index_row,point_value)
+    CALL h_this%data%SetTriplet(index_column, index_row, point_value)
   END SUBROUTINE SetTriplet_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the values of a triplet.
@@ -47,7 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL GetTripletValues(h_this%data,index_column,index_row,point_value)
+    CALL h_this%data%GetTriplet(index_column, index_row, point_value)
   END SUBROUTINE GetTripletValues_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
@@ -60,7 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL SetTriplet(h_this%data,index_column,index_row,point_value)
+    CALL h_this%data%SetTriplet(index_column, index_row, point_value)
   END SUBROUTINE SetTriplet_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the values of a triplet.
@@ -73,7 +73,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL GetTripletValues(h_this%data,index_column,index_row,point_value)
+    CALL h_this%data%GetTriplet(index_column, index_row, point_value)
   END SUBROUTINE GetTripletValues_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletModule_wrp

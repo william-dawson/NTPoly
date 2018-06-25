@@ -13,7 +13,7 @@ MODULE TripletModule
     INTEGER(kind=c_int) :: index_row    !< row value.
   CONTAINS
     PROCEDURE, PASS :: LessThan => Compare_base
-    PROCEDURE :: GetMPITripletType => GetMPIType_base
+    PROCEDURE :: GetMPIType => GetMPIType_base
     PROCEDURE :: Transpose => Transpose_base
     PROCEDURE :: Conjg => Conjg_base
     PROCEDURE :: Scale => Scale_base

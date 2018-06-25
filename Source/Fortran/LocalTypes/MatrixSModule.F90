@@ -6,7 +6,8 @@ MODULE MatrixSModule
   USE MatrixModule, ONLY : Matrix_l
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &
       & PairwiseMultiplyVectors
-  USE TripletListModule, ONLY : TripletList, TripletList_r, TripletList_c
+  USE TripletListModule, ONLY : TripletList, TripletList_r, TripletList_c, &
+      & SortTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
@@ -158,7 +159,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
     TYPE(TripletList_r) :: sorted_triplet_list
-    TYPE(Triplet_r) :: temporary
 
      INCLUDE "sparse_includes/ConstructMatrixFromFile.f90"
   END SUBROUTINE ConstructFromFile_lsr
@@ -175,7 +175,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
     TYPE(TripletList_c) :: sorted_triplet_list
-    TYPE(Triplet_c) :: temporary
 
      INCLUDE "sparse_includes/ConstructMatrixFromFile.f90"
   END SUBROUTINE ConstructFromFile_lsc

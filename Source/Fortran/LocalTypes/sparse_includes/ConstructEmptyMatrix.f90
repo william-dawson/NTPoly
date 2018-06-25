@@ -1,5 +1,8 @@
   this%rows = rows
   this%columns = columns
+
+  CALL this%Destruct
+
   ALLOCATE(this%outer_index(this%columns+1))
   this%outer_index = 0
 

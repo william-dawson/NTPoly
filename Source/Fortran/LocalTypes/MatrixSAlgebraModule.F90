@@ -2,7 +2,9 @@
 !> A module for performing linear algebra using sparse matrices.
 MODULE MatrixSAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE MatrixDModule, ONLY : Matrix_ldr, Matrix_ldc
+  USE MatrixDModule, ONLY : Matrix_ldr, Matrix_ldc, ConvertDMatrixToS, &
+       & ConvertSMatrixToD
+  USE MatrixDAlgebraModule, ONLY : MatrixMultiply
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, MatrixMemoryPool_lc
   USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &

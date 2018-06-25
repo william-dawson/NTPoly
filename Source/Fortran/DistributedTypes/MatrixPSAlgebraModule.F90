@@ -2,20 +2,16 @@
 !> A Module For Performing Distributed Sparse Matrix Algebra Operations.
 MODULE MatrixPSAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p, &
-       & CheckMemoryPoolValidity, DestructMatrixMemoryPool
+  USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_pr
   USE MatrixPSModule
   USE GemmTasksModule
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
-       & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup, &
-       & TestReduceSizeRequest, TestReduceOuterRequest, &
-       & TestReduceInnerRequest, TestReduceDataRequest
+       & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup
   USE MatrixSAlgebraModule
-  USE MatrixSModule, ONLY : Matrix_lsr, DestructMatrix,  CopyMatrix, &
-       & TransposeMatrix, ComposeMatrixColumns, MatrixToTripletList
+  USE MatrixSModule, ONLY : Matrix_lsr
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletListModule, ONLY : TripletList_r, DestructTripletList
+  USE TripletListModule, ONLY : TripletList_r
   USE ISO_C_BINDING
   USE MPI
   IMPLICIT NONE
@@ -65,7 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] sigma_value sigma.
   SUBROUTINE ComputeMatrixSigma_ps(this, sigma_value)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_psr), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: sigma_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: column_sigma_contribution
@@ -110,19 +106,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE MatrixMultiply_ps(matA, matB ,matC, alpha_in, beta_in, threshold_in,&
        & memory_pool_in)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN)    :: matA
-    TYPE(Matrix_ps), INTENT(IN)    :: matB
-    TYPE(Matrix_ps), INTENT(INOUT) :: matC
+    TYPE(Matrix_psr), INTENT(IN)    :: matA
+    TYPE(Matrix_psr), INTENT(IN)    :: matB
+    TYPE(Matrix_psr), INTENT(INOUT) :: matC
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: beta_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
-    TYPE(MatrixMemoryPool_p), OPTIONAL, INTENT(inout) :: &
-         & memory_pool_in
+    TYPE(MatrixMemoryPool_pr), OPTIONAL, INTENT(INOUT) :: memory_pool_in
     !! Local Versions of Optional Parameter
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: beta
     REAL(NTREAL) :: threshold
-    TYPE(Matrix_ps) :: matAB
+    TYPE(Matrix_psr) :: matAB
     !! Temporary Matrices
     TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks
     TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: LocalRowContribution
@@ -232,9 +227,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup AB Tasks
     IF (PRESENT(memory_pool_in)) THEN
-       IF (.NOT. CheckMemoryPoolValidity(memory_pool_in)) THEN
-          CALL DestructMatrixMemoryPool(memory_pool_in)
-          memory_pool_in = MatrixMemoryPool_p(matAB)
+       IF (.NOT. memory_pool_in%CheckValidity()) THEN
+          CALL memory_pool_in%Destruct
+          CALL memory_pool_in%Init(matAB)
        END IF
     END IF
 
@@ -272,22 +267,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & row_helper(II))
              ATasks(II) = ComposeA
           CASE(ComposeA)
-             IF (TestReduceSizeRequest(row_helper(II))) THEN
+             IF (row_helper(II)%TestSize()) THEN
                 CALL ReduceAndComposeMatrixData(LocalRowContribution(II), &
                      & matAB%process_grid%blocked_row_comm(II), &
                      & GatheredRowContribution(II), row_helper(II))
                 ATasks(II) = WaitOuterA
              END IF
           CASE(WaitOuterA)
-             IF (TestReduceOuterRequest(row_helper(II))) THEN
+             IF (row_helper(II)%TestOuter()) THEN
                 ATasks(II) = WaitInnerA
              END IF
           CASE(WaitInnerA)
-             IF (TestReduceInnerRequest(row_helper(II))) THEN
+             IF (row_helper(II)%TestInner()) THEN
                 ATasks(II) = WaitDataA
              END IF
           CASE(WaitDataA)
-             IF (TestReduceDataRequest(row_helper(II))) THEN
+             IF (row_helper(II)%TestData()) THEN
                 ATasks(II) = AdjustIndicesA
              END IF
           CASE(AdjustIndicesA)
@@ -329,22 +324,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                   & column_helper(JJ))
              BTasks(JJ) = LocalComposeB
           CASE(LocalComposeB)
-             IF (TestReduceSizeRequest(column_helper(JJ))) THEN
+             IF (column_helper(JJ)%TestSize()) THEN
                 CALL ReduceAndComposeMatrixData(LocalColumnContribution(JJ),&
                      & matAB%process_grid%blocked_column_comm(JJ), &
                      & GatheredColumnContribution(JJ), column_helper(JJ))
                 BTasks(JJ) = WaitOuterB
              END IF
           CASE(WaitOuterB)
-             IF (TestReduceOuterRequest(column_helper(JJ))) THEN
+             IF (column_helper(JJ)%TestOuter()) THEN
                 BTasks(JJ) = WaitInnerB
              END IF
           CASE(WaitInnerB)
-             IF (TestReduceInnerRequest(column_helper(JJ))) THEN
+             IF (column_helper(JJ)%TestInner()) THEN
                 BTasks(JJ) = WaitDataB
              END IF
           CASE(WaitDataB)
-             IF (TestReduceDataRequest(column_helper(JJ))) THEN
+             IF (column_helper(JJ)%TestData()) THEN
                 BTasks(JJ) = AdjustIndicesB
              END IF
           CASE(AdjustIndicesB)
@@ -393,8 +388,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                      & slice_helper(II,JJ))
                 ABTasks(II,JJ) = GatherAndSumAB
              CASE (GatherAndSumAB)
-                IF (TestReduceSizeRequest(&
-                     & slice_helper(II,JJ))) THEN
+                IF (slice_helper(II,JJ)%TestSize()) THEN
                    CALL ReduceAndSumMatrixData(SliceContribution(II,JJ), &
                         & matAB%local_data(II,JJ), &
                         & matAB%process_grid%blocked_between_slice_comm(II,JJ),&
@@ -402,18 +396,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                    ABTasks(II,JJ) = WaitOuterAB
                 END IF
              CASE (WaitOuterAB)
-                IF (TestReduceOuterRequest(&
-                     & slice_helper(II,JJ))) THEN
+                IF (slice_helper(II,JJ)%TestOuter()) THEN
                    ABTasks(II,JJ) = WaitInnerAB
                 END IF
              CASE (WaitInnerAB)
-                IF (TestReduceInnerRequest(&
-                     & slice_helper(II,JJ))) THEN
+                IF (slice_helper(II,JJ)%TestInner()) THEN
                    ABTasks(II,JJ) = WaitDataAB
                 END IF
              CASE (WaitDataAB)
-                IF (TestReduceDataRequest(&
-                     & slice_helper(II,JJ))) THEN
+                IF (slice_helper(II,JJ)%TestData()) THEN
                    ABTasks(II,JJ) = LocalSumAB
                 END IF
              CASE(LocalSumAB)
@@ -494,7 +485,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result sum the sum of all elements.
   FUNCTION MatrixGrandSum_ps(this) RESULT(sum)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN)  :: this
+    TYPE(Matrix_psr), INTENT(IN)  :: this
     REAL(NTREAL) :: sum
     !! Local Data
     INTEGER :: II, JJ
@@ -521,9 +512,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] matC = MatA mult MatB.
   SUBROUTINE PairwiseMultiplyMatrix_ps(matA, matB, matC)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN)  :: matA
-    TYPE(Matrix_ps), INTENT(IN)  :: matB
-    TYPE(Matrix_ps), INTENT(INOUT)  :: matC
+    TYPE(Matrix_psr), INTENT(IN)  :: matA
+    TYPE(Matrix_psr), INTENT(IN)  :: matB
+    TYPE(Matrix_psr), INTENT(INOUT)  :: matC
     !! Local Data
     INTEGER :: II, JJ
 
@@ -547,7 +538,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the norm value of the full distributed sparse matrix.
   FUNCTION MatrixNorm_ps(this) RESULT(norm_value)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_psr), INTENT(IN) :: this
     REAL(NTREAL) :: norm_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: local_norm
@@ -580,11 +571,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @result product the dot product.
   FUNCTION DotMatrix_ps(matA, matB) RESULT(product)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN)  :: matA
-    TYPE(Matrix_ps), INTENT(IN)  :: matB
+    TYPE(Matrix_psr), INTENT(IN)  :: matA
+    TYPE(Matrix_psr), INTENT(IN)  :: matB
     REAL(NTREAL) :: product
     !! Local Data
-    TYPE(Matrix_ps)  :: matC
+    TYPE(Matrix_psr)  :: matC
 
     CALL PairwiseMultiplyMatrix(matA,matB,matC)
     product = MatrixGrandSum(matC)
@@ -599,8 +590,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] threshold_in for flushing values to zero. (Optional, default=0)
   SUBROUTINE IncrementMatrix_ps(matA, matB, alpha_in,threshold_in)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN)  :: matA
-    TYPE(Matrix_ps), INTENT(INOUT)  :: matB
+    TYPE(Matrix_psr), INTENT(IN)  :: matA
+    TYPE(Matrix_psr), INTENT(INOUT)  :: matB
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Data
@@ -638,7 +629,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] constant scale factor.
   SUBROUTINE ScaleMatrix_ps(this,constant)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_psr), INTENT(INOUT) :: this
     REAL(NTREAL), INTENT(IN) :: constant
     INTEGER :: II, JJ
 
@@ -658,7 +649,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return the trace value of the full distributed sparse matrix.
   FUNCTION MatrixTrace_ps(this) RESULT(trace_value)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_psr), INTENT(IN) :: this
     REAL(NTREAL) :: trace_value
     !! Local data
     TYPE(TripletList_r) :: triplet_list

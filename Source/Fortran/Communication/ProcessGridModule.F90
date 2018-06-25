@@ -11,6 +11,12 @@ MODULE ProcessGridModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ConstructProcessGrid
+  PUBLIC :: IsRoot
+  PUBLIC :: GetMySlice
+  PUBLIC :: GetMyRow
+  PUBLIC :: GetMyColumn
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A datatype which stores a process grid and all its communicators.
   TYPE, PUBLIC :: ProcessGrid_t
      !! Describe the grid
@@ -51,20 +57,21 @@ MODULE ProcessGridModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: blocked_within_slice_comm
      !> blocked communicator between slices.
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: blocked_between_slice_comm
+   CONTAINS
+     !! Construct/Destruct
+     PROCEDURE :: Init => ConstructNewProcessGrid
+     PROCEDURE :: Split => SplitProcessGrid
+     PROCEDURE :: Copy => CopyProcessGrid
+     PROCEDURE :: Destruct => DestructProcessGrid
+     !! Accessors for grid information
+     PROCEDURE :: IsRoot => IsRoot_t
+     PROCEDURE :: GetMySlice => GetMySlice_t
+     PROCEDURE :: GetMyRow => GetMyRow_t
+     PROCEDURE :: GetMyColumn => GetMyColumn_t
   END TYPE ProcessGrid_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default process grid.
   TYPE(ProcessGrid_t), PUBLIC :: global_grid
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: ConstructProcessGrid
-  PUBLIC :: IsRoot
-  PUBLIC :: SplitProcessGrid
-  PUBLIC :: CopyProcessGrid
-  PUBLIC :: DestructProcessGrid
-  !! Accessors for grid information
-  PUBLIC :: GetMySlice
-  PUBLIC :: GetMyRow
-  PUBLIC :: GetMyColumn
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
   !! @param[in] world_comm_ a communicator that every process in the grid is
@@ -90,11 +97,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        be_verbose = .FALSE.
     END IF
 
-    CALL ConstructNewProcessGrid(global_grid, world_comm_, process_rows_, &
-         & process_columns_, process_slices_)
+    CALL global_grid%Init(world_comm_, process_rows_, process_columns_, &
+         & process_slices_)
 
     !! Report
-    IF (IsRoot(global_grid)) THEN
+    IF (global_grid%IsRoot()) THEN
        CALL ActivateLogger
     END IF
     IF (be_verbose) THEN
@@ -125,7 +132,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructNewProcessGrid(grid, world_comm_, process_rows_, &
        & process_columns_, process_slices_)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
+    CLASS(ProcessGrid_t), INTENT(INOUT) :: grid
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     INTEGER(kind=c_int), INTENT(IN) :: process_rows_
     INTEGER(kind=c_int), INTENT(IN) :: process_columns_
@@ -244,53 +251,75 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
   !! @param[in] old_grid the grid to copy.
   !! @param[inout] new_grid = old_grid
-  SUBROUTINE CopyProcessGrid(old_grid, new_grid)
+  SUBROUTINE CopyProcessGrid(this, old_grid)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
+    CLASS(ProcessGrid_t), INTENT(INOUT) :: this
+    CLASS(ProcessGrid_t), INTENT(IN) :: old_grid
 
     !! Safe Copy
-    CALL DestructProcessGrid(new_grid)
+    CALL DestructProcessGrid(this)
 
     !! Allocate Blocks
-    ALLOCATE(new_grid%blocked_row_comm(old_grid%number_of_blocks_rows))
-    ALLOCATE(new_grid%blocked_column_comm(old_grid%number_of_blocks_columns))
-    ALLOCATE(new_grid%blocked_within_slice_comm(&
+    ALLOCATE(this%blocked_row_comm(old_grid%number_of_blocks_rows))
+    ALLOCATE(this%blocked_column_comm(old_grid%number_of_blocks_columns))
+    ALLOCATE(this%blocked_within_slice_comm(&
          & old_grid%number_of_blocks_rows, old_grid%number_of_blocks_columns))
-    ALLOCATE(new_grid%blocked_between_slice_comm( &
+    ALLOCATE(this%blocked_between_slice_comm( &
          & old_grid%number_of_blocks_rows, old_grid%number_of_blocks_columns))
 
-    new_grid = old_grid
+    this%total_processors = old_grid%total_processors
+    this%num_process_rows = old_grid%num_process_rows
+    this%num_process_columns = old_grid%num_process_columns
+    this%num_process_slices = old_grid%num_process_slices
+    this%slice_size = old_grid%slice_size
+    this%my_slice = old_grid%my_slice
+    this%my_row = old_grid%my_row
+    this%my_column = old_grid%my_column
+    this%global_rank = old_grid%global_rank
+    this%within_slice_rank = old_grid%within_slice_rank
+    this%between_slice_rank = old_grid%between_slice_rank
+    this%column_rank = old_grid%column_rank
+    this%row_rank = old_grid%row_rank
+    this%global_comm = old_grid%global_comm
+    this%row_comm = old_grid%row_comm
+    this%column_comm = old_grid%column_comm
+    this%within_slice_comm = old_grid%within_slice_comm
+    this%between_slice_comm = old_grid%between_slice_comm
+    this%grid_error = old_grid%grid_error
+    this%RootID = old_grid%RootID
+    this%block_multiplier = old_grid%block_multiplier
+    this%number_of_blocks_columns = old_grid%number_of_blocks_columns
+    this%number_of_blocks_rows = old_grid%number_of_blocks_rows
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
   !! @param[inout] grid the grid to destruct.
-  SUBROUTINE DestructProcessGrid(grid)
+  SUBROUTINE DestructProcessGrid(this)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
+    CLASS(ProcessGrid_t), INTENT(INOUT) :: this
 
     !! Deallocate Blocks
-    IF (ALLOCATED(grid%blocked_row_comm)) THEN
-       DEALLOCATE(grid%blocked_row_comm)
+    IF (ALLOCATED(this%blocked_row_comm)) THEN
+       DEALLOCATE(this%blocked_row_comm)
     END IF
-    IF (ALLOCATED(grid%blocked_column_comm)) THEN
-       DEALLOCATE(grid%blocked_column_comm)
+    IF (ALLOCATED(this%blocked_column_comm)) THEN
+       DEALLOCATE(this%blocked_column_comm)
     END IF
-    IF (ALLOCATED(grid%blocked_within_slice_comm)) THEN
-       DEALLOCATE(grid%blocked_within_slice_comm)
+    IF (ALLOCATED(this%blocked_within_slice_comm)) THEN
+       DEALLOCATE(this%blocked_within_slice_comm)
     END IF
-    IF (ALLOCATED(grid%blocked_between_slice_comm)) THEN
-       DEALLOCATE(grid%blocked_between_slice_comm)
+    IF (ALLOCATED(this%blocked_between_slice_comm)) THEN
+       DEALLOCATE(this%blocked_between_slice_comm)
     END IF
 
   END SUBROUTINE DestructProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a process grid, this splits it into two grids of even size
-  SUBROUTINE SplitProcessGrid(old_grid, new_grid, my_color, split_slice, &
+  SUBROUTINE SplitProcessGrid(this, new_grid, my_color, split_slice, &
        & between_grid_comm)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: old_grid
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
+    CLASS(ProcessGrid_t), INTENT(INOUT) :: this
+    CLASS(ProcessGrid_t), INTENT(INOUT) :: new_grid
     INTEGER, INTENT(OUT) :: my_color
     LOGICAL, INTENT(OUT) :: split_slice
     INTEGER, INTENT(OUT) :: between_grid_comm
@@ -306,76 +335,121 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     split_slice = .FALSE.
     !! Handle base case
-    IF (old_grid%total_processors .EQ. 1) THEN
+    IF (this%total_processors .EQ. 1) THEN
        rows = 1
        cols = 1
        slices = 1
        my_color = 0
        between_rank = 0
        !! First preferentially try to split along slices
-    ELSE IF (old_grid%num_process_slices .GT. 1) THEN
-       midpoint = old_grid%num_process_slices/2
-       cols = old_grid%num_process_columns
-       rows = old_grid%num_process_rows
-       IF (old_grid%my_slice .LT. midpoint) THEN
+    ELSE IF (this%num_process_slices .GT. 1) THEN
+       midpoint = this%num_process_slices/2
+       cols = this%num_process_columns
+       rows = this%num_process_rows
+       IF (this%my_slice .LT. midpoint) THEN
           my_color = 0
           slices = midpoint
        ELSE
           my_color = 1
-          slices = old_grid%num_process_slices - midpoint
+          slices = this%num_process_slices - midpoint
        END IF
-       between_rank = old_grid%my_slice
+       between_rank = this%my_slice
        split_slice = .TRUE.
        left_grid_size = midpoint*cols*rows
        !! Next try to split the bigger direction
-    ELSE IF (old_grid%num_process_rows .GT. old_grid%num_process_columns) THEN
-       midpoint = old_grid%num_process_rows/2
-       cols = old_grid%num_process_columns
+    ELSE IF (this%num_process_rows .GT. this%num_process_columns) THEN
+       midpoint = this%num_process_rows/2
+       cols = this%num_process_columns
        slices = 1
-       IF (old_grid%my_row .LT. midpoint) THEN
+       IF (this%my_row .LT. midpoint) THEN
           my_color = 0
           rows = midpoint
        ELSE
           my_color = 1
-          rows = old_grid%num_process_rows - midpoint
+          rows = this%num_process_rows - midpoint
        END IF
-       between_rank = old_grid%my_row
+       between_rank = this%my_row
        left_grid_size = midpoint*cols*slices
        !! Default Case
     ELSE
-       midpoint = old_grid%num_process_columns/2
+       midpoint = this%num_process_columns/2
        slices = 1
-       rows = old_grid%num_process_rows
-       IF (old_grid%my_column .LT. midpoint) THEN
+       rows = this%num_process_rows
+       IF (this%my_column .LT. midpoint) THEN
           my_color = 0
           cols = midpoint
        ELSE
           my_color = 1
-          cols = old_grid%num_process_columns - midpoint
+          cols = this%num_process_columns - midpoint
        END IF
-       between_rank = old_grid%my_column
+       between_rank = this%my_column
        left_grid_size = midpoint*slices*rows
     END IF
 
     !! Construct
-    CALL MPI_COMM_SPLIT(old_grid%global_comm, my_color, old_grid%global_rank, &
+    CALL MPI_COMM_SPLIT(this%global_comm, my_color, this%global_rank, &
          & new_comm, ierr)
-    CALL ConstructNewProcessGrid(new_grid, new_comm, rows, cols, slices)
+    CALL new_grid%Init(new_comm, rows, cols, slices)
 
     !! For sending data between grids
     between_color = MOD(new_grid%global_rank, left_grid_size)
-    CALL MPI_COMM_SPLIT(old_grid%global_comm, between_color, between_rank, &
+    CALL MPI_COMM_SPLIT(this%global_comm, between_color, between_rank, &
          & between_grid_comm, ierr)
 
   END SUBROUTINE SplitProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Check if the current process is the root process.
   !! @return true if the current process is root.
-  FUNCTION IsRoot(grid) RESULT(is_root)
+  FUNCTION IsRoot_t(this) RESULT(is_root)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(IN) :: grid
+    CLASS(ProcessGrid_t), INTENT(IN) :: this
     LOGICAL :: is_root
-    IF (grid%global_rank == 0) THEN
+    IF (this%global_rank == 0) THEN
+       is_root = .TRUE.
+    ELSE
+       is_root = .FALSE.
+    END IF
+  END FUNCTION IsRoot_t
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the slice of the current process.
+  !! @param[in] grid the process grid
+  !! @return slice number of the current process.
+  FUNCTION GetMySlice_t(this) RESULT(return_val)
+    !! Parameters
+    CLASS(ProcessGrid_t), INTENT(IN) :: this
+    INTEGER :: return_val
+
+    return_val = this%my_slice
+  END FUNCTION GetMySlice_t
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the column of the current process.
+  !! @param[in] grid the process grid (optional).
+  !! @return column number of the current process.
+  FUNCTION GetMyColumn_t(this) RESULT(return_val)
+    !! Parameters
+    CLASS(ProcessGrid_t), INTENT(IN) :: this
+    INTEGER :: return_val
+
+    return_val = this%my_column
+  END FUNCTION GetMyColumn_t
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the row of the current process.
+  !! @param[in] grid the process grid
+  !! @return row number of the current process.
+  FUNCTION GetMyRow_t(this) RESULT(return_val)
+    !! Parameters
+    CLASS(ProcessGrid_t), INTENT(IN) :: this
+    INTEGER :: return_val
+
+    return_val = this%my_row
+  END FUNCTION GetMyRow_t
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Check if the current process is the root process.
+  !! @return true if the current process is root.
+  FUNCTION IsRoot() RESULT(is_root)
+    !! Parameters
+    LOGICAL :: is_root
+    IF (global_grid%global_rank == 0) THEN
        is_root = .TRUE.
     ELSE
        is_root = .FALSE.
@@ -383,47 +457,30 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION IsRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.
-  !! @param[in] grid the process grid (optional).
   !! @return slice number of the current process.
-  FUNCTION GetMySlice(grid) RESULT(return_val)
+  FUNCTION GetMySlice() RESULT(return_val)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid
-
     INTEGER :: return_val
-    IF (PRESENT(grid)) THEN
-       return_val = grid%my_slice
-    ELSE
-       return_val = global_grid%my_slice
-    END IF
+
+    return_val = global_grid%my_slice
   END FUNCTION GetMySlice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the column of the current process.
-  !! @param[in] grid the process grid (optional).
   !! @return column number of the current process.
-  FUNCTION GetMyColumn(grid) RESULT(return_val)
+  FUNCTION GetMyColumn() RESULT(return_val)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid
     INTEGER :: return_val
 
-    IF (PRESENT(grid)) THEN
-       return_val = grid%my_column
-    ELSE
-       return_val = global_grid%my_column
-    END IF
+    return_val = global_grid%my_column
   END FUNCTION GetMyColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the row of the current process.
-  !! @param[in] grid the process grid (optional).
   !! @return row number of the current process.
-  FUNCTION GetMyRow(grid) RESULT(return_val)
+  FUNCTION GetMyRow() RESULT(return_val)
     !! Parameters
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid
     INTEGER :: return_val
 
-    IF (PRESENT(grid)) THEN
-       return_val = grid%my_row
-    ELSE
-       return_val = global_grid%my_row
-    END IF
+    return_val = global_grid%my_row
   END FUNCTION GetMyRow
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ProcessGridModule

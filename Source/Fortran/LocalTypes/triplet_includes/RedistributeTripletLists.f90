@@ -51,7 +51,7 @@
   insert_pt = 1
   DO counter = 1, num_processes
      DO inner_counter = 1, triplet_lists(counter)%CurrentSize
-        CALL GetTripletAt(triplet_lists(counter), inner_counter, temp_triplet)
+        CALL triplet_lists(counter)%Get(inner_counter, temp_triplet)
         send_buffer_row(insert_pt) = temp_triplet%index_row
         send_buffer_col(insert_pt) = temp_triplet%index_column
         send_buffer_val(insert_pt) = temp_triplet%point_value

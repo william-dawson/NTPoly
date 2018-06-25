@@ -1,3 +1,5 @@
+  CALL this%Destruct
+
   this%rows = rows
   this%columns = columns
 

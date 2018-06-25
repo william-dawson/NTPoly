@@ -68,7 +68,7 @@ MODULE MatrixMemoryPoolModule
       REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
     END SUBROUTINE Construct_base
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    SUBROUTINE Destruct_base(this)
+    PURE SUBROUTINE Destruct_base(this)
       USE DataTypesModule, ONLY : NTREAL
       IMPORT :: MatrixMemoryPool_l
       IMPLICIT NONE
@@ -123,7 +123,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A destructor for a matrix memory pool
   !> @param[inout] this the matrix being destructed.
-  SUBROUTINE Destruct_r(this)
+  PURE SUBROUTINE Destruct_r(this)
     CLASS(MatrixMemoryPool_lr), INTENT(INOUT) :: this
 
     INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
@@ -131,7 +131,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A destructor for a matrix memory pool
   !> @param[inout] this the matrix being destructed.
-  SUBROUTINE Destruct_c(this)
+  PURE SUBROUTINE Destruct_c(this)
     CLASS(MatrixMemoryPool_lc), INTENT(INOUT) :: this
 
     INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"

@@ -8,39 +8,40 @@ include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/DistributedTypes)
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/Helpers)
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/LocalTypes)
 
-set(Fsrc
-    ChebyshevSolversModule.F90
-    DensityMatrixSolversModule.F90
-    EigenBoundsModule.F90
-    EigenSolversModule.F90
-    ExponentialSolversModule.F90
-    FixedSolversModule.F90
-    GeometryOptimizationModule.F90
-    HermiteSolversModule.F90
-    InverseSolversModule.F90
-    IterativeSolversModule.F90
-    LinearSolversModule.F90
-    LoadBalancerModule.F90
-    MinimizerSolversModule.F90
-    ParameterConverterModule.F90
-    PermutationModule.F90
-    PolynomialSolversModule.F90
-    RootSolversModule.F90
-    SignSolversModule.F90
-    SquareRootSolversModule.F90
-    TrigonometrySolversModule.F90
-)
+# set(Fsrc
+#     ChebyshevSolversModule.F90
+#     DensityMatrixSolversModule.F90
+#     EigenBoundsModule.F90
+#     EigenSolversModule.F90
+#     ExponentialSolversModule.F90
+#     FixedSolversModule.F90
+#     GeometryOptimizationModule.F90
+#     HermiteSolversModule.F90
+#     InverseSolversModule.F90
+#     IterativeSolversModule.F90
+#     LinearSolversModule.F90
+#     LoadBalancerModule.F90
+#     MinimizerSolversModule.F90
+#     ParameterConverterModule.F90
+#     PermutationModule.F90
+#     PolynomialSolversModule.F90
+#     RootSolversModule.F90
+#     SignSolversModule.F90
+#     SquareRootSolversModule.F90
+#     TrigonometrySolversModule.F90
+# )
 
 set(FCommunication
     ${CMAKE_CURRENT_SOURCE_DIR}/Communication/MatrixReduceModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule.F90
 )
 
-set(FDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule.F90
-)
+# set(FDistributed
+#     ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule.F90
+#     ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPModule.F90
+#     ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule.F90
+#     ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule.F90
+# )
 
 set(FHelpers
     ${CMAKE_CURRENT_SOURCE_DIR}/Helpers/ErrorModule.F90

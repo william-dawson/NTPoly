@@ -3,8 +3,7 @@
 MODULE LoadBalancerModule
   USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p
   USE MatrixPSAlgebraModule, ONLY : MatrixMultiply
-  USE MatrixPSModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
-       & DestructMatrix, FillMatrixPermutation
+  USE MatrixPSModule, ONLY : Matrix_ps
   USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
   PRIVATE
@@ -19,30 +18,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] memorypool_in memory pool to use. Optional.
   SUBROUTINE PermuteMatrix(mat, mat_out, permutation, memorypool_in)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: mat
-    TYPE(Matrix_ps), INTENT(INOUT) :: mat_out
+    CLASS(Matrix_ps), INTENT(IN) :: mat
+    CLASS(Matrix_ps), INTENT(INOUT) :: mat_out
     TYPE(Permutation_t), INTENT(IN) :: permutation
-    TYPE(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
+    CLASS(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
     !! Local Variables
     TYPE(Matrix_ps) :: PermuteRows, PermuteColumns
     TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
-    CALL ConstructEmptyMatrix(PermuteRows, &
-         & mat%actual_matrix_dimension, mat%process_grid)
-    CALL ConstructEmptyMatrix(PermuteColumns, &
-         & mat%actual_matrix_dimension, mat%process_grid)
-    CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
+    CALL PermuteRows%InitEmpty(mat%actual_matrix_dimension, mat%process_grid)
+    CALL PermuteColumns%InitEmpty(mat%actual_matrix_dimension, mat%process_grid)
+    CALL PermuteRows%FillPermutation(permutation%index_lookup, &
          & permuterows=.TRUE.)
-    CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
+    CALL PermuteColumns%FillPermutation(permutation%index_lookup, &
          & permuterows=.FALSE.)
-    CALL ConstructEmptyMatrix(Temp, &
-         mat%actual_matrix_dimension, mat%process_grid)
+    CALL Temp%InitEmpty(mat%actual_matrix_dimension, mat%process_grid)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
-       CALL MatrixMultiply(PermuteRows, mat, Temp, &
-            & memory_pool_in=memorypool_in)
+       CALL MatrixMultiply(PermuteRows, mat, Temp, memory_pool_in=memorypool_in)
        CALL MatrixMultiply(Temp, PermuteColumns, mat_out, &
             & memory_pool_in=memorypool_in)
     ELSE
@@ -50,9 +45,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(Temp, PermuteColumns, mat_out)
     END IF
 
-    CALL DestructMatrix(PermuteRows)
-    CALL DestructMatrix(PermuteColumns)
-    CALL DestructMatrix(Temp)
+    !! Cleanup
+    CALL PermuteRows%Destruct
+    CALL PermuteColumns%Destruct
+    CALL Temp%Destruct
   END SUBROUTINE PermuteMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Undo a permutation applied to a matrix.
@@ -62,25 +58,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] memorypool_in memory pool to use. Optional.
   SUBROUTINE UndoPermuteMatrix(mat, mat_out, permutation, memorypool_in)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: mat
-    TYPE(Matrix_ps), INTENT(INOUT) :: mat_out
+    CLASS(Matrix_ps), INTENT(IN) :: mat
+    CLASS(Matrix_ps), INTENT(INOUT) :: mat_out
     TYPE(Permutation_t), INTENT(IN) :: permutation
-    TYPE(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
+    CLASS(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
     !! Local Variables
     TYPE(Matrix_ps) :: PermuteRows, PermuteColumns
     TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
-    CALL ConstructEmptyMatrix(PermuteRows, &
-         & mat%actual_matrix_dimension, mat%process_grid)
-    CALL ConstructEmptyMatrix(PermuteColumns, &
-         mat%actual_matrix_dimension, mat%process_grid)
-    CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
+    CALL PermuteRows%InitEmpty(mat%actual_matrix_dimension, mat%process_grid)
+    CALL PermuteColumns%InitEmpty(mat%actual_matrix_dimension, mat%process_grid)
+    CALL PermuteRows%FillPermutation(permutation%index_lookup, &
          & permuterows=.TRUE.)
-    CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
+    CALL PermuteColumns%FillPermutation(permutation%index_lookup, &
          & permuterows=.FALSE.)
-    CALL ConstructEmptyMatrix(Temp, &
-         & mat%actual_matrix_dimension, mat%process_grid)
+    CALL Temp%InitEmpty(mat%actual_matrix_dimension, mat%process_grid)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
@@ -94,9 +87,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
-    CALL DestructMatrix(PermuteRows)
-    CALL DestructMatrix(PermuteColumns)
-    CALL DestructMatrix(Temp)
+    CALL PermuteRows%Destruct
+    CALL PermuteColumns%Destruct
+    CALL Temp%Destruct
   END SUBROUTINE UndoPermuteMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LoadBalancerModule

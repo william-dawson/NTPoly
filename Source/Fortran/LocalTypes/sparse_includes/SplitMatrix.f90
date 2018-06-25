@@ -23,13 +23,10 @@
   END IF
 
   !! First split by columns which is easy with the CSR format
-  CALL StartTimer("Split Column")
   CALL SplitMatrixColumns(this, block_columns, block_size_column, &
        & column_split)
-  CALL StopTimer("Split Column")
 
   !! Now Split By Rows
-  CALL StartTimer("Split Row")
   DO JJ = 1, block_columns
      CALL Temp%Transpose(column_split(JJ))
      CALL SplitMatrixColumns(Temp, block_rows, block_size_row, &
@@ -39,7 +36,6 @@
         CALL split_array(II,JJ)%Transpose(row_split(II))
      END DO
   END DO
-  CALL StopTimer("Split Row")
 
   !! Cleanup
   CALL Temp%Destruct

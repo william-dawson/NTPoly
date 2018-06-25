@@ -2,10 +2,11 @@
   INTEGER :: temp_rows, temp_columns, temp_total_values
   CHARACTER(len=81) :: input_buffer
   INTEGER :: file_handler
-  INTEGER :: counter
   LOGICAL :: found_comment_line
   LOGICAL :: error_occured
   file_handler = 16
+
+  CALL this%Destruct
 
   OPEN(file_handler,file=file_name,status='old')
 
@@ -26,20 +27,16 @@
 
   !! Main data
   READ(input_buffer,*) temp_rows, temp_columns, temp_total_values
-  CALL triplet_list%Init
 
   !! Read Values
-  DO counter = 1, temp_total_values
-     CALL temporary%ReadFromFile(file_handler)
-     CALL triplet_list%Append(temporary)
-  END DO
+  CALL triplet_list%Init(temp_total_values)
+  CALL triplet_list%ReadFromFile(file_handler)
 
   CLOSE(file_handler)
   CALL triplet_list%Symmetrize(pattern_type)
   CALL SortTripletList(triplet_list, temp_columns, temp_rows, &
        & sorted_triplet_list)
-  CALL ConstructMatrixFromTripletList(this, sorted_triplet_list, temp_rows, &
-       & temp_columns)
+  CALL this%InitFromTripletList(sorted_triplet_list, temp_rows, temp_columns)
 
   CALL triplet_list%Destruct
   CALL sorted_triplet_list%Destruct

@@ -21,6 +21,9 @@ MODULE TripletListModule
      PROCEDURE(Destruct_base), DEFERRED :: Destruct
      PROCEDURE(Resize_base), DEFERRED :: Resize
      PROCEDURE :: GetSize => GetTripletListSize_b
+     !! IO Routines
+     PROCEDURE(WriteTripletList_base), DEFERRED :: WriteToFile
+     PROCEDURE(ReadTripletList_base), DEFERRED :: ReadFromFile
      !! Manipulate Elements
      PROCEDURE(Append_base), DEFERRED :: Append
      PROCEDURE(Set_base), DEFERRED :: Set
@@ -38,6 +41,9 @@ MODULE TripletListModule
      PROCEDURE :: Init => ConstructTripletList_r
      PROCEDURE :: Destruct => DestructTripletList_r
      PROCEDURE :: Resize => ResizeTripletList_r
+     !! IO Routines
+     PROCEDURE :: WriteToFile => WriteTripletList_r
+     PROCEDURE :: ReadFromFile => ReadTripletList_r
      !! Manipulate Elements
      PROCEDURE :: Append => AppendToTripletList_r
      PROCEDURE :: Set => SetTripletAt_r
@@ -55,6 +61,9 @@ MODULE TripletListModule
      PROCEDURE :: Init => ConstructTripletList_c
      PROCEDURE :: Destruct => DestructTripletList_c
      PROCEDURE :: Resize => ResizeTripletList_c
+     !! IO Routines
+     PROCEDURE :: WriteToFile => WriteTripletList_c
+     PROCEDURE :: ReadFromFile => ReadTripletList_c
      !! Manipulate Elements
      PROCEDURE :: Append => AppendToTripletList_c
      PROCEDURE :: Set => SetTripletAt_c
@@ -99,6 +108,20 @@ MODULE TripletListModule
       CLASS(TripletList), INTENT(INOUT) :: this
       INTEGER(KIND=c_int), INTENT(IN) :: size
     END SUBROUTINE Resize_base
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    SUBROUTINE WriteTripletList_base(this, file_handle)
+      IMPORT :: TripletList
+      IMPLICIT NONE
+      CLASS(TripletList), INTENT(IN)  :: this
+      INTEGER, INTENT(INOUT):: file_handle
+    END SUBROUTINE WriteTripletList_base
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    SUBROUTINE ReadTripletList_base(this, file_handle)
+      IMPORT :: TripletList
+      IMPLICIT NONE
+      CLASS(TripletList), INTENT(INOUT)  :: this
+      INTEGER, INTENT(INOUT):: file_handle
+    END SUBROUTINE ReadTripletList_base
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     SUBROUTINE Append_base(this, triplet_value)
       USE TripletModule, ONLY : Triplet
@@ -227,6 +250,50 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     list_size = triplet_list%CurrentSize
 
   END FUNCTION GetTripletListSize_b
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out each element of the list.
+  !! @param[in] this the list to write
+  SUBROUTINE WriteTripletList_r(this, file_handle)
+    !! Parameters
+    CLASS(TripletList_r), INTENT(IN)  :: this
+    INTEGER, INTENT(INOUT):: file_handle
+
+    INCLUDE "triplet_includes/WriteTripletList.f90"
+
+  END SUBROUTINE WriteTripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out each element of the list.
+  !! @param[in] this the list to write
+  SUBROUTINE WriteTripletList_c(this, file_handle)
+    !! Parameters
+    CLASS(TripletList_c), INTENT(IN)  :: this
+    INTEGER, INTENT(INOUT):: file_handle
+
+    INCLUDE "triplet_includes/WriteTripletList.f90"
+
+  END SUBROUTINE WriteTripletList_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read in each element of the list.
+  !! @param[in] this the list to write
+  SUBROUTINE ReadTripletList_r(this, file_handle)
+    !! Parameters
+    CLASS(TripletList_r), INTENT(INOUT)  :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    INCLUDE "triplet_includes/ReadTripletList.f90"
+
+  END SUBROUTINE ReadTripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Read in each element of the list.
+  !! @param[in] this the list to write
+  SUBROUTINE ReadTripletList_c(this, file_handle)
+    !! Parameters
+    CLASS(TripletList_c), INTENT(INOUT)  :: this
+    INTEGER, INTENT(INOUT) :: file_handle
+
+    INCLUDE "triplet_includes/ReadTripletList.f90"
+
+  END SUBROUTINE ReadTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
   !! @param[inout] this the triplet list to append to.
