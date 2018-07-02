@@ -179,8 +179,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct The Temporary Matrices
-    CALL ConstructEmptyMatrix(matAB, &
-         & matA%actual_matrix_dimension, matA%process_grid)
+    CALL ConstructEmptyMatrix(matAB, matA%actual_matrix_dimension, &
+         & matA%process_grid, matA%is_complex)
 
     ALLOCATE(AdjacentABlocks(matAB%process_grid%number_of_blocks_rows, &
          & matAB%process_grid%number_of_blocks_columns/&
@@ -256,7 +256,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              DO JJ2=1, &
                   & matAB%process_grid%number_of_blocks_columns/ &
                   & matAB%process_grid%num_process_slices
-                CALL CopyMatrix(matA%local_data(II, &
+                CALL CopyMatrix(matA%local_data_r(II, &
                      & duplicate_start_column+duplicate_offset_column*(JJ2-1)),&
                      & AdjacentABlocks(II,JJ2))
              END DO
@@ -313,7 +313,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              !! First Transpose The Data We're Working With
              DO II2=1, matAB%process_grid%number_of_blocks_rows/&
                   & matAB%process_grid%num_process_slices
-                CALL TransposeMatrix(matB%local_data(duplicate_start_row+&
+                CALL TransposeMatrix(matB%local_data_r(duplicate_start_row+&
                      & duplicate_offset_row*(II2-1),JJ), &
                      & TransposedBBlocks(II2,JJ))
              END DO
@@ -396,7 +396,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 IF (TestReduceSizeRequest(&
                      & slice_helper(II,JJ))) THEN
                    CALL ReduceAndSumMatrixData(SliceContribution(II,JJ), &
-                        & matAB%local_data(II,JJ), &
+                        & matAB%local_data_r(II,JJ), &
                         & matAB%process_grid%blocked_between_slice_comm(II,JJ),&
                         & slice_helper(II,JJ))
                    ABTasks(II,JJ) = WaitOuterAB
@@ -420,7 +420,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 ABTasks(II,JJ) = TaskRunningAB
                 !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(II,JJ)
                 CALL ReduceAndSumMatrixCleanup(SliceContribution(II,JJ), &
-                     & matAB%local_data(II,JJ), threshold, slice_helper(II,JJ))
+                     & matAB%local_data_r(II,JJ), threshold, slice_helper(II,JJ))
                 ABTasks(II,JJ) = CleanupAB
                 !$OMP END TASK
              CASE(CleanupAB)
@@ -504,7 +504,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sum = 0
     DO JJ = 1, this%process_grid%number_of_blocks_columns
        DO II = 1, this%process_grid%number_of_blocks_rows
-          temp = MatrixGrandSum(this%local_data(II,JJ))
+          temp = MatrixGrandSum(this%local_data_r(II,JJ))
           sum = sum + temp
        END DO
     END DO
@@ -527,15 +527,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: II, JJ
 
-    CALL ConstructEmptyMatrix(matC, &
-         & matA%actual_matrix_dimension, matA%process_grid)
+    CALL ConstructEmptyMatrix(matC, matA%actual_matrix_dimension, &
+         & matA%process_grid, matA%is_complex)
 
     !$omp parallel
     !$omp do collapse(2)
     DO JJ = 1, matA%process_grid%number_of_blocks_columns
        DO II = 1, matA%process_grid%number_of_blocks_rows
-          CALL PairwiseMultiplyMatrix(matA%local_data(II,JJ), &
-               & matB%local_data(II,JJ), matC%local_data(II,JJ))
+          CALL PairwiseMultiplyMatrix(matA%local_data_r(II,JJ), &
+               & matB%local_data_r(II,JJ), matC%local_data_r(II,JJ))
        END DO
     END DO
     !$omp end do
@@ -624,8 +624,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$omp do collapse(2)
     DO JJ = 1, matA%process_grid%number_of_blocks_columns
        DO II = 1, matA%process_grid%number_of_blocks_rows
-          CALL IncrementMatrix(matA%local_data(II,JJ), &
-               & matB%local_data(II,JJ), alpha, threshold)
+          CALL IncrementMatrix(matA%local_data_r(II,JJ), &
+               & matB%local_data_r(II,JJ), alpha, threshold)
        END DO
     END DO
     !$omp end do
@@ -646,7 +646,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !$omp do collapse(2)
     DO JJ = 1, this%process_grid%number_of_blocks_columns
        DO II = 1, this%process_grid%number_of_blocks_rows
-          CALL ScaleMatrix(this%local_data(II,JJ),constant)
+          CALL ScaleMatrix(this%local_data_r(II,JJ),constant)
        END DO
     END DO
     !$omp end do

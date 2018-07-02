@@ -106,8 +106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyMatrix(Identity, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(Identity, InputMat)
     CALL FillMatrixIdentity(Identity)
     CALL CopyMatrix(InputMat,BalancedInput)
 

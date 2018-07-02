@@ -248,8 +248,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(SqrtMat)
 
     !! Setup the Matrices
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Load Balancing Step
@@ -267,12 +266,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleMatrix(Mk, 1.0/(scaling_factor**target_root))
     CALL DestructMatrix(FthrtMat)
 
-    CALL ConstructEmptyMatrix(IntermediateMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyMatrix(IntermediateMatP, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyMatrix(Temp, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IntermediateMat, InputMat)
+    CALL ConstructEmptyMatrix(IntermediateMatP, InputMat)
+    CALL ConstructEmptyMatrix(Temp, InputMat)
 
     outer_counter = 1
     IF (solver_parameters%be_verbose) THEN

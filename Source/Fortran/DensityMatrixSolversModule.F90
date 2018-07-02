@@ -76,18 +76,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Density, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(X_k, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(X_k2, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(TempMat, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(Identity, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k2, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -285,22 +279,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Density, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(X_k, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(X_k2, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(TempMat, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(Fx_right, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(Gx_right, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(Identity, &
-         & Hamiltonian%actual_matrix_dimension, Hamiltonian%process_grid)
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k2, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(Fx_right, Hamiltonian)
+    CALL ConstructEmptyMatrix(Gx_right, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -528,22 +514,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Density, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
-         & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(TempMat, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(D1, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(DH, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(DDH, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(D2DH, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(Identity, matrix_dimension, &
-         & Hamiltonian%process_grid)
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(D1, Hamiltonian)
+    CALL ConstructEmptyMatrix(DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(DDH, Hamiltonian)
+    CALL ConstructEmptyMatrix(D2DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
@@ -766,22 +744,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     matrix_dimension = Hamiltonian%actual_matrix_dimension
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Density, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(WorkingHamiltonian, &
-         & matrix_dimension, Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(TempMat, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(D1, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(DH, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(DDH, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(D2DH, matrix_dimension, &
-         & Hamiltonian%process_grid)
-    CALL ConstructEmptyMatrix(Identity, matrix_dimension, &
-         & Hamiltonian%process_grid)
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(D1, Hamiltonian)
+    CALL ConstructEmptyMatrix(DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(DDH, Hamiltonian)
+    CALL ConstructEmptyMatrix(D2DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.

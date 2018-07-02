@@ -34,8 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Shift
     CALL CopyMatrix(InputMat,ShiftedMat)
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
     CALL IncrementMatrix(IdentityMat,ShiftedMat, &
          & alpha_in=REAL(-1.0*PI/2.0,NTREAL))
@@ -118,11 +117,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL CopyMatrix(InputMat, ScaledMat)
     CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmptyMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(OutputMat, InputMat)
     CALL FillMatrixIdentity(OutputMat)
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Load Balancing Step
@@ -238,10 +235,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL CopyMatrix(InputMat, ScaledMat)
     CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
-    CALL ConstructEmptyMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(OutputMat, InputMat)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Load Balancing Step

@@ -70,8 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintFixedSolverParameters(solver_parameters)
     END IF
 
-    CALL ConstructEmptyMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(OutputMat, InputMat)
 
     !! Scale the matrix
     CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
@@ -203,8 +202,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Scale the matrix
@@ -347,8 +345,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyMatrix(InputMat, ScaledMat)
     CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
 
-    CALL ConstructEmptyMatrix(OutputMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(OutputMat, InputMat)
     CALL FillMatrixIdentity(OutputMat)
 
     !! Load Balancing Step
@@ -436,8 +433,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Setup
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Copy to a temporary matrix for scaling.
@@ -607,8 +603,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
 
-    CALL ConstructEmptyMatrix(IdentityMat, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Setup Matrices

@@ -28,16 +28,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
-    CALL ConstructEmptyMatrix(PermuteRows, &
-         & mat%actual_matrix_dimension, mat%process_grid)
-    CALL ConstructEmptyMatrix(PermuteColumns, &
-         & mat%actual_matrix_dimension, mat%process_grid)
+    CALL ConstructEmptyMatrix(PermuteRows, mat)
+    CALL ConstructEmptyMatrix(PermuteColumns, mat)
     CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
          & permuterows=.TRUE.)
     CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
          & permuterows=.FALSE.)
-    CALL ConstructEmptyMatrix(Temp, &
-         mat%actual_matrix_dimension, mat%process_grid)
+    CALL ConstructEmptyMatrix(Temp, mat)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
@@ -71,16 +68,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp
 
     !! Build Permutation Matrices
-    CALL ConstructEmptyMatrix(PermuteRows, &
-         & mat%actual_matrix_dimension, mat%process_grid)
-    CALL ConstructEmptyMatrix(PermuteColumns, &
-         mat%actual_matrix_dimension, mat%process_grid)
+    CALL ConstructEmptyMatrix(PermuteRows, mat)
+    CALL ConstructEmptyMatrix(PermuteColumns, mat)
     CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
          & permuterows=.TRUE.)
     CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
          & permuterows=.FALSE.)
-    CALL ConstructEmptyMatrix(Temp, &
-         & mat%actual_matrix_dimension, mat%process_grid)
+    CALL ConstructEmptyMatrix(Temp, mat)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN

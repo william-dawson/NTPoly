@@ -55,17 +55,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintIterativeSolverParameters(solver_parameters)
     END IF
 
-    !! Construct All The Necessary Matrice
-    CALL ConstructEmptyMatrix(InverseMat, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp1, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp2, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Identity, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(BalancedMat1, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(InverseMat, Mat1)
+    CALL ConstructEmptyMatrix(Temp1, Mat1)
+    CALL ConstructEmptyMatrix(Temp2, Mat1)
+    CALL ConstructEmptyMatrix(Identity, Mat1)
+    CALL ConstructEmptyMatrix(BalancedMat1, Mat1)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
@@ -193,16 +188,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(InverseMat, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp1, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp2, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Identity, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(BalancedMat1, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
+    CALL ConstructEmptyMatrix(InverseMat, Mat1)
+    CALL ConstructEmptyMatrix(Temp1, Mat1)
+    CALL ConstructEmptyMatrix(Temp2, Mat1)
+    CALL ConstructEmptyMatrix(Identity, Mat1)
+    CALL ConstructEmptyMatrix(BalancedMat1, Mat1)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step

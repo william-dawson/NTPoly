@@ -67,18 +67,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(NewDensity, &
-         & PreviousDensity%actual_matrix_dimension, &
-         & PreviousDensity%process_grid)
-    CALL ConstructEmptyMatrix(WorkingDensity, &
-         & PreviousDensity%actual_matrix_dimension, &
-         & PreviousDensity%process_grid)
-    CALL ConstructEmptyMatrix(WorkingOverlap, &
-         & PreviousDensity%actual_matrix_dimension, &
-         & PreviousDensity%process_grid)
-    CALL ConstructEmptyMatrix(Identity, &
-         & PreviousDensity%actual_matrix_dimension, &
-         & PreviousDensity%process_grid)
+    CALL ConstructEmptyMatrix(NewDensity, PreviousDensity)
+    CALL ConstructEmptyMatrix(WorkingDensity, PreviousDensity)
+    CALL ConstructEmptyMatrix(WorkingOverlap, PreviousDensity)
+    CALL ConstructEmptyMatrix(Identity, PreviousDensity)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.

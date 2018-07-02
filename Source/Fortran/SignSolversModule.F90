@@ -122,12 +122,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: outer_counter
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Identity, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp1, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp2, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
+    CALL ConstructEmptyMatrix(Identity, Mat1)
+    CALL ConstructEmptyMatrix(Temp1, Mat1)
+    CALL ConstructEmptyMatrix(Temp2, Mat1)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step

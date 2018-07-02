@@ -149,9 +149,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END DO
     CALL DestructMatrix(this)
-    CALL ConstructEmptyMatrix(this, &
-         & eigenvectorsT%actual_matrix_dimension, &
-         & eigenvectorsT%process_grid)
+    CALL ConstructEmptyMatrix(this, eigenvectorsT)
     CALL FillMatrixFromTripletList(eigenvalues, new_list, &
          & preduplicated_in=.TRUE.)
     CALL DestructTripletList(triplet_list)
@@ -254,8 +252,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Permutation_t) :: permutation
 
     mat_dim = this%actual_matrix_dimension
-    CALL ConstructEmptyMatrix(Identity, mat_dim, &
-         & process_grid_in=this%process_grid)
+    CALL ConstructEmptyMatrix(Identity, this)
     CALL FillMatrixIdentity(Identity)
 
     IF (solver_parameters%be_verbose) THEN
@@ -305,8 +302,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
             & solver_parameters_in=fixed_param)
        CALL StopTimer("Cholesky")
-       CALL ConstructEmptyMatrix(StackV, &
-            & this%actual_matrix_dimension, process_grid_in=this%process_grid)
+       CALL ConstructEmptyMatrix(StackV, this)
        CALL StartTimer("Stack")
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
        CALL StopTimer("Stack")
@@ -326,8 +322,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & split_slice)
           CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
                & fixed_param)
-          CALL ConstructEmptyMatrix(TempMat, &
-               & this%actual_matrix_dimension, this%process_grid)
+          CALL ConstructEmptyMatrix(TempMat, this)
           CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
        ELSE
           CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
@@ -335,8 +330,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & fixed_param)
           CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
                & fixed_param)
-          CALL ConstructEmptyMatrix(TempMat, &
-               & this%actual_matrix_dimension, this%process_grid)
+          CALL ConstructEmptyMatrix(TempMat, this)
           CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
                & TempMat)
        END IF
@@ -483,10 +477,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Fill
-    CALL ConstructEmptyMatrix(LeftMat, left_dim, &
-         & this%process_grid)
-    CALL ConstructEmptyMatrix(RightMat, right_dim, &
-         & this%process_grid)
+    CALL ConstructEmptyMatrix(LeftMat, left_dim, this%process_grid, &
+         & this%is_complex)
+    CALL ConstructEmptyMatrix(RightMat, right_dim, this%process_grid, &
+         & this%is_complex)
     CALL FillMatrixFromTripletList(LeftMat, left_triplets, .TRUE.)
     CALL FillMatrixFromTripletList(RightMat, right_triplets, .TRUE.)
 
@@ -534,11 +528,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill
     IF (color .EQ. 0) THEN
-       CALL ConstructEmptyMatrix(SubMat, left_dim, &
-            & process_grid_in=TempMat%process_grid)
+       CALL ConstructEmptyMatrix(SubMat, left_dim, TempMat%process_grid, &
+            & TempMat%is_complex)
     ELSE
-       CALL ConstructEmptyMatrix(SubMat, right_dim, &
-            & process_grid_in=TempMat%process_grid)
+       CALL ConstructEmptyMatrix(SubMat, right_dim, TempMat%process_grid, &
+            & TempMat%is_complex)
     END IF
     CALL FillMatrixFromTripletList(SubMat,extracted_triplets,preduplicated_in=.TRUE.)
 
@@ -575,8 +569,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Permutation_t) :: permutation
 
     !! Compute Identity Matrix
-    CALL ConstructEmptyMatrix(Identity, &
-         & this%actual_matrix_dimension, process_grid_in=this%process_grid)
+    CALL ConstructEmptyMatrix(Identity, this)
     CALL FillMatrixIdentity(Identity)
 
     !! Setup special parameters for purification
@@ -682,13 +675,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Build The Full Matrices
-    CALL ConstructEmptyMatrix(eigenvectors, mat_dim, &
-         & process_grid_in=this%process_grid)
+    CALL ConstructEmptyMatrix(eigenvectors this)
     CALL FillMatrixFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
     IF (PRESENT(eigenvalues_out)) THEN
-      CALL ConstructEmptyMatrix(eigenvalues_out, mat_dim, &
-           & process_grid_in=this%process_grid)
+      CALL ConstructEmptyMatrix(eigenvalues_out, this)
       CALL FillMatrixFromTripletList(eigenvalues_out, triplet_w, .TRUE.)
     END IF
 

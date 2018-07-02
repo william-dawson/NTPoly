@@ -96,10 +96,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("EigenExaCompute")
 
     CALL StartTimer("EigenToNT")
+    CALL ConstructEmptyMatrix(eigenvectors, A)
     CALL EigenToNT(VD, eigenvectors, solver_parameters, exa)
     CALL StopTimer("EigenToNT")
 
     IF (PRESENT(eigenvalues_out)) THEN
+       CALL ConstructEmptyMatrix(eigenvalues_out, A)
        CALL ExtractEigenvalues(WD, eigenvalues_out, exa)
     END IF
 
@@ -246,9 +248,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: VD1
     INTEGER :: ind
 
-    !! The Matrices We'll Build
-    CALL ConstructEmptyMatrix(V, exa%mat_dim)
-
     !! Get The Eigenvectors
     row_start = eigen_loop_start(1, exa%proc_rows, exa%rowid)
     row_end = eigen_loop_end(exa%mat_dim, exa%proc_rows, exa%rowid)
@@ -302,9 +301,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r) :: trip
     INTEGER :: wstart, wend, wsize
     INTEGER :: II
-
-    !! The Matrices We'll Build
-    CALL ConstructEmptyMatrix(W, exa%mat_dim)
 
     !! Copy To Triplet List
     wsize = MAX(CEILING((1.0*exa%mat_dim)/exa%num_procs), 1)

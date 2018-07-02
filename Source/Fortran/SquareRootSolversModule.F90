@@ -102,18 +102,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(X_k, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(SquareRootMat, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(InverseSquareRootMat, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(T_k, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Temp, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
-    CALL ConstructEmptyMatrix(Identity, &
-         & Mat1%actual_matrix_dimension, Mat1%process_grid)
+    CALL ConstructEmptyMatrix(X_k, Mat1)
+    CALL ConstructEmptyMatrix(SquareRootMat, Mat1)
+    CALL ConstructEmptyMatrix(InverseSquareRootMat, Mat1)
+    CALL ConstructEmptyMatrix(T_k, Mat1)
+    CALL ConstructEmptyMatrix(Temp, Mat1)
+    CALL ConstructEmptyMatrix(Identity, Mat1)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the lambda scaling value.

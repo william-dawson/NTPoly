@@ -101,11 +101,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Initial values for matrices
-    CALL ConstructEmptyMatrix(Identity, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(Identity, InputMat)
     CALL FillMatrixIdentity(Identity)
-    CALL ConstructEmptyMatrix(Temporary, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(Temporary, InputMat)
     CALL CopyMatrix(InputMat,BalancedInput)
 
     !! Load Balancing Step
@@ -201,13 +199,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(x_powers(s_value+1))
 
     !! Initial values for matrices
-    CALL ConstructEmptyMatrix(Identity, &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(Identity, InputMat)
     CALL FillMatrixIdentity(Identity)
 
     !! Create the X Powers
-    CALL ConstructEmptyMatrix(x_powers(1), &
-         & InputMat%actual_matrix_dimension, InputMat%process_grid)
+    CALL ConstructEmptyMatrix(x_powers(1), InputMat)
     CALL FillMatrixIdentity(x_powers(1))
     DO counter=1,s_value+1-1
        CALL MatrixMultiply(InputMat,x_powers(counter-1+1),x_powers(counter+1),&

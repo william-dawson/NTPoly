@@ -115,10 +115,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Diagonal matrices serve as vectors.
-    CALL ConstructEmptyMatrix(vector, &
-         & this%actual_matrix_dimension, this%process_grid)
-    CALL ConstructEmptyMatrix(vector2, &
-         & this%actual_matrix_dimension, this%process_grid)
+    CALL ConstructEmptyMatrix(vector, this)
+    CALL ConstructEmptyMatrix(vector2, this)
 
     !! Guess Vector
     temp_list = TripletList_r()
