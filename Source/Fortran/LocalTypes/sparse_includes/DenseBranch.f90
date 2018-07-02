@@ -1,28 +1,27 @@
   !! Handle Transposed Case
   IF (IsATransposed) THEN
-     CALL untransposedMatA%Transpose(matA)
+     CALL TransposeMatrix(matA,untransposedMatA)
   ELSE
-     CALL untransposedMatA%Copy(matA)
+     CALL CopyMatrix(matA,untransposedMatA)
   END IF
   IF (IsBTransposed) THEN
-     CALL untransposedMatB%Transpose(matB)
+     CALL TransposeMatrix(matB,untransposedMatB)
   ELSE
-     CALL untransposedMatB%Copy(matB)
+     CALL CopyMatrix(matB,untransposedMatB)
   END IF
 
   !! Convert Forward
-  CALL ConvertSMatrixToD(untransposedMatA, DenseA)
-  CALL ConvertSMatrixToD(untransposedMatB, DenseB)
+  CALL ConstructMatrixDFromS(untransposedMatA, DenseA)
+  CALL ConstructMatrixDFromS(untransposedMatB, DenseB)
 
   !! Multiply
-  CALL MatrixMultiply(DenseA, DenseB, DenseC)
+  CALL MultiplyMatrix(DenseA, DenseB, DenseC)
 
   !! Convert Back
-  CALL ConvertDMatrixToS(DenseC, matC, threshold)
+  CALL ConstructMatrixSFromD(DenseC, matC, threshold)
   CALL ScaleMatrix(matC,alpha)
 
-
   !! Cleanup
-  CALL DenseA%Destruct
-  CALL DenseB%Destruct
-  CALL DenseC%Destruct
+  CALL DestructMatrix(DenseA)
+  CALL DestructMatrix(DenseB)
+  CALL DestructMatrix(DenseC)

@@ -1,2 +1,2 @@
-  CALL this%InitEmpty(matA%columns, matA%rows)
-  this%data = TRANSPOSE(matA%data)
+  CALL ConstructEmptyMatrix(matAT, matA%rows, matA%columns)
+  matAT%data = TRANSPOSE(matA%data)

@@ -1,9 +1,13 @@
-  CALL this%Destruct
+  !! Local data
+  INTEGER :: size
 
   IF (PRESENT(size_in)) THEN
-     this%CurrentSize  = size_in
+     size = size_in
   ELSE
-     this%CurrentSize  = 0
+     size = 0
   END IF
 
-  ALLOCATE(this%data(this%CurrentSize))
+  IF (ALLOCATED(this%data)) DEALLOCATE(this%data)
+  this%CurrentSize = size
+
+  ALLOCATE(this%data(size))

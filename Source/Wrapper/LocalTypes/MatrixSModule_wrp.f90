@@ -3,10 +3,8 @@
 MODULE MatrixSModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE MatrixDModule
-  USE MatrixDAlgebraModule
   USE MatrixMemoryPoolModule_wrp
   USE MatrixSModule
-  USE MatrixSAlgebraModule
   USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
@@ -70,7 +68,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     ALLOCATE(h_this%data)
-    CALL h_this%data%InitFromFile(local_string)
+    h_this%data = Matrix_lsr(local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromFile_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -88,7 +86,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     ALLOCATE(h_this%data)
-    CALL h_this%data%InitFromTripletList(h_triplet_list%data, rows, columns)
+    h_this%data = Matrix_lsr(h_triplet_list%data, rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -102,7 +100,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL h_this%data%InitEmpty(rows, columns, .TRUE.)
+    h_this%data = Matrix_lsr(rows, columns, .TRUE.)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructZeroMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -113,7 +111,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Destruct
+    CALL DestructMatrix(h_this%data)
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructMatrix_lsr_wrp
@@ -128,7 +126,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL h_matB%data%Copy(h_matA%data)
+    CALL CopyMatrix(h_matA%data,h_matB%data)
   END SUBROUTINE CopyMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
@@ -139,7 +137,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    rows = h_this%data%GetRows()
+    rows = GetMatrixRows(h_this%data)
   END SUBROUTINE GetMatrixRows_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
@@ -150,7 +148,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    columns = h_this%data%GetColumns()
+    columns = GetMatrixColumns(h_this%data)
   END SUBROUTINE GetMatrixColumns_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a row from the matrix into the compressed vector representation.
@@ -167,7 +165,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ALLOCATE(h_row_out%data)
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%ExtractRow(row_number, h_row_out%data)
+    CALL ExtractMatrixRow(h_this%data, row_number, h_row_out%data)
 
     ih_row_out= TRANSFER(h_row_out,ih_row_out)
   END SUBROUTINE ExtractMatrixRow_lsr_wrp
@@ -186,7 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ALLOCATE(h_column_out%data)
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%ExtractColumn(column_number, h_column_out%data)
+    CALL ExtractMatrixColumn(h_this%data, column_number, h_column_out%data)
 
     ih_column_out= TRANSFER(h_column_out, ih_column_out)
   END SUBROUTINE ExtractMatrixColumn_lsr_wrp
@@ -201,7 +199,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matAT = TRANSFER(ih_matAT,h_matAT)
-    CALL h_matAT%data%Transpose(h_matA%data)
+    CALL TransposeMatrix(h_matA%data,h_matAT%data)
   END SUBROUTINE TransposeMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
@@ -220,7 +218,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Print(local_string)
+    CALL PrintMatrix(h_this%data,local_string)
   END SUBROUTINE PrintMatrixF_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
@@ -229,7 +227,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Print()
+    CALL PrintMatrix(h_this%data)
   END SUBROUTINE PrintMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the routine that constructs a triplet list from a matrix.
@@ -243,7 +241,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     ALLOCATE(h_triplet_list%data)
 
-    CALL h_this%data%ConvertToTripletList(h_triplet_list%data)
+    CALL MatrixToTripletList(h_this%data,h_triplet_list%data)
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_lsr_wrp
@@ -262,13 +260,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matV = TRANSFER(ih_matV,h_matV)
 
-    CALL ConvertSMatrixToD(h_matA%data, dense_a)
+    CALL ConstructMatrixDFromS(h_matA%data, dense_a)
     CALL EigenDecomposition(dense_a, dense_v)
-    CALL ConvertDMatrixToS(dense_v,h_matV%data,threshold)
+    CALL ConstructMatrixSFromD(dense_v,h_matV%data,threshold)
 
     !! Cleanup
-    CALL dense_a%Destruct
-    CALL dense_v%Destruct
+    CALL DestructMatrix(dense_a)
+    CALL DestructMatrix(dense_v)
   END SUBROUTINE EigenDecomposition_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
@@ -287,7 +285,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     ALLOCATE(h_this%data)
-    CALL h_this%data%InitFromFile(local_string)
+    h_this%data = Matrix_lsc(local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromFile_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -305,7 +303,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     ALLOCATE(h_this%data)
-    CALL h_this%data%InitFromTripletList(h_triplet_list%data, rows, columns)
+    h_this%data = Matrix_lsc(h_triplet_list%data, rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -319,7 +317,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL h_this%data%InitEmpty(rows, columns, .TRUE.)
+    h_this%data = Matrix_lsc(rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructZeroMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -330,7 +328,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Destruct
+    CALL DestructMatrix(h_this%data)
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructMatrix_lsc_wrp
@@ -345,7 +343,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL h_matB%data%Copy(h_matA%data)
+    CALL CopyMatrix(h_matA%data,h_matB%data)
   END SUBROUTINE CopyMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
@@ -356,7 +354,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    rows = h_this%data%GetRows()
+    rows = GetMatrixRows(h_this%data)
   END SUBROUTINE GetMatrixRows_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
@@ -367,7 +365,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    columns = h_this%data%GetColumns()
+    columns = GetMatrixColumns(h_this%data)
   END SUBROUTINE GetMatrixColumns_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a row from the matrix into the compressed vector representation.
@@ -384,7 +382,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ALLOCATE(h_row_out%data)
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%ExtractRow(row_number, h_row_out%data)
+    CALL ExtractMatrixRow(h_this%data, row_number, h_row_out%data)
 
     ih_row_out= TRANSFER(h_row_out,ih_row_out)
   END SUBROUTINE ExtractMatrixRow_lsc_wrp
@@ -403,7 +401,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ALLOCATE(h_column_out%data)
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%ExtractColumn(column_number, h_column_out%data)
+    CALL ExtractMatrixColumn(h_this%data, column_number, h_column_out%data)
 
     ih_column_out= TRANSFER(h_column_out, ih_column_out)
   END SUBROUTINE ExtractMatrixColumn_lsc_wrp
@@ -418,7 +416,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matAT = TRANSFER(ih_matAT,h_matAT)
-    CALL h_matAT%data%Transpose(h_matA%data)
+    CALL TransposeMatrix(h_matA%data,h_matAT%data)
   END SUBROUTINE TransposeMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
@@ -428,7 +426,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_matA
 
     h_matA  = TRANSFER(ih_matA,h_matA)
-    CALL h_matA%data%Conjg()
+    CALL ConjugateMatrix(h_matA%data)
   END SUBROUTINE ConjugateMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
@@ -447,7 +445,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Print(local_string)
+    CALL PrintMatrix(h_this%data,local_string)
   END SUBROUTINE PrintMatrixF_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
@@ -456,7 +454,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Print()
+    CALL PrintMatrix(h_this%data)
   END SUBROUTINE PrintMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the routine that constructs a triplet list from a matrix.
@@ -470,7 +468,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     ALLOCATE(h_triplet_list%data)
 
-    CALL h_this%data%ConvertToTripletList(h_triplet_list%data)
+    CALL MatrixToTripletList(h_this%data,h_triplet_list%data)
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_lsc_wrp
@@ -489,13 +487,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matV = TRANSFER(ih_matV,h_matV)
 
-    CALL ConvertSMatrixToD(h_matA%data, dense_a)
+    CALL ConstructMatrixDFromS(h_matA%data, dense_a)
     CALL EigenDecomposition(dense_a, dense_v)
-    CALL ConvertDMatrixToS(dense_v, h_matV%data, threshold)
+    CALL ConstructMatrixSFromD(dense_v,h_matV%data,threshold)
 
     !! Cleanup
-    CALL dense_a%Destruct
-    CALL dense_v%Destruct
+    CALL DestructMatrix(dense_a)
+    CALL DestructMatrix(dense_v)
   END SUBROUTINE EigenDecomposition_lsc_wrp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixSModule_wrp

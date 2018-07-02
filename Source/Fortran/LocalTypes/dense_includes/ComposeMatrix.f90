@@ -20,7 +20,7 @@
   END DO
 
   !! Allocate Memory
-  CALL out_matrix%InitEmpty(out_columns, out_rows)
+  CALL ConstructEmptyMatrix(out_matrix, out_columns, out_rows)
 
   DO JJ = 1, block_columns
      DO II = 1, block_rows

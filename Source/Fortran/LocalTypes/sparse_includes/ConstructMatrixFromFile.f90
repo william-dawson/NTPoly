@@ -2,11 +2,10 @@
   INTEGER :: temp_rows, temp_columns, temp_total_values
   CHARACTER(len=81) :: input_buffer
   INTEGER :: file_handler
+  INTEGER :: counter
   LOGICAL :: found_comment_line
   LOGICAL :: error_occured
   file_handler = 16
-
-  CALL this%Destruct
 
   OPEN(file_handler,file=file_name,status='old')
 
@@ -27,16 +26,27 @@
 
   !! Main data
   READ(input_buffer,*) temp_rows, temp_columns, temp_total_values
+  CALL ConstructTripletList(triplet_list)
 
   !! Read Values
-  CALL triplet_list%Init(temp_total_values)
-  CALL triplet_list%ReadFromFile(file_handler)
+  DO counter = 1, temp_total_values
+#ifdef ISCOMPLEX
+     READ(file_handler,*) temporary%index_row, temporary%index_column, &
+          & real_val, comp_val
+     temporary%point_value = CMPLX(real_val, comp_val, KIND=NTCOMPLEX)
+#else
+     READ(file_handler,*) temporary%index_row, temporary%index_column, &
+          & temporary%point_value
+#endif
+     CALL AppendToTripletList(triplet_list,temporary)
+  END DO
 
   CLOSE(file_handler)
-  CALL triplet_list%Symmetrize(pattern_type)
+  CALL SymmetrizeTripletList(triplet_list, pattern_type)
   CALL SortTripletList(triplet_list, temp_columns, temp_rows, &
        & sorted_triplet_list)
-  CALL this%InitFromTripletList(sorted_triplet_list, temp_rows, temp_columns)
+  CALL ConstructMatrixFromTripletList(this, sorted_triplet_list, temp_rows, &
+       & temp_columns)
 
-  CALL triplet_list%Destruct
-  CALL sorted_triplet_list%Destruct
+  CALL DestructTripletList(triplet_list)
+  CALL DestructTripletList(sorted_triplet_list)

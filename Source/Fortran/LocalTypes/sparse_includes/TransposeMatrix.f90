@@ -1,36 +1,44 @@
+  !! Local Data
+  INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_row
+  INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
+  !! Temporary Variables
+  INTEGER :: II, JJ
+  INTEGER :: inner_index, insert_pt, this_offset
+  INTEGER :: num_values, elements_per_inner
+
   !! Allocate New Matrix
-  num_values = matA%outer_index(matA%columns+1)
-  CALL this%InitEmpty(matA%columns, matA%rows)
-  ALLOCATE(this%inner_index(num_values))
-  ALLOCATE(this%values(num_values))
+  num_values = this%outer_index(this%columns+1)
+  CALL ConstructEmptyMatrix(matT, this%columns, this%rows)
+  ALLOCATE(matT%inner_index(num_values))
+  ALLOCATE(matT%values(num_values))
 
   !! Temporary Arrays
-  ALLOCATE(values_per_row(matA%rows))
-  ALLOCATE(offset_array(matA%rows))
+  ALLOCATE(values_per_row(this%rows))
+  ALLOCATE(offset_array(this%rows))
 
   !! Count the values per row
   values_per_row = 0
   DO II = 1, num_values
-     inner_index = matA%inner_index(II)
+     inner_index = this%inner_index(II)
      values_per_row(inner_index) = values_per_row(inner_index) + 1
   END DO
   offset_array(1) = 0
-  DO II = 2, matA%rows
+  DO II = 2, this%rows
      offset_array(II) = offset_array(II-1) + values_per_row(II-1)
   END DO
 
   !! Insert
-  this%outer_index(:matA%rows) = offset_array(:matA%rows)
-  this%outer_index(matA%rows+1) = offset_array(matA%rows) + &
-       & values_per_row(matA%rows)
-  DO II = 1, matA%columns
-     elements_per_inner = matA%outer_index(II+1) - matA%outer_index(II)
-     matA_offset = matA%outer_index(II)
+  matT%outer_index(:this%rows) = offset_array(:this%rows)
+  matT%outer_index(this%rows+1) = offset_array(this%rows) + &
+       & values_per_row(this%rows)
+  DO II = 1, this%columns
+     elements_per_inner = this%outer_index(II+1) - this%outer_index(II)
+     this_offset = this%outer_index(II)
      DO JJ = 1, elements_per_inner
-        inner_index = matA%inner_index(matA_offset+JJ)
+        inner_index = this%inner_index(this_offset+JJ)
         insert_pt = offset_array(inner_index)+1
-        this%inner_index(insert_pt) = II
-        this%values(insert_pt) = matA%values(matA_offset+JJ)
+        matT%inner_index(insert_pt) = II
+        matT%values(insert_pt) = this%values(this_offset+JJ)
         offset_array(inner_index) = offset_array(inner_index) +1
      END DO
   END DO

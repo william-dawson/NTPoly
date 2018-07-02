@@ -1,9 +1,9 @@
   !! Block A and B
   IF (.NOT. IsATransposed) THEN
-     CALL matAT%Transpose(matA)
+     CALL TransposeMatrix(matA,matAT)
   END IF
   IF (.NOT. IsBTransposed) THEN
-     CALL matBT%Transpose(matB)
+     CALL TransposeMatrix(matB,matBT)
   END IF
 
   IF (IsATransposed .AND. IsBTransposed) THEN

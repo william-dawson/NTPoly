@@ -17,7 +17,7 @@
   !! Build Storage
   sum_total_values = SUM(helper%values_per_process)
   sum_outer_indices = (matrix%columns+1)*helper%comm_size
-  CALL gathered_matrix%Destruct
+  CALL DestructMatrix(gathered_matrix)
   ALLOCATE(gathered_matrix%values(sum_total_values))
   ALLOCATE(gathered_matrix%inner_index(sum_total_values))
   ALLOCATE(gathered_matrix%outer_index(sum_outer_indices+1))

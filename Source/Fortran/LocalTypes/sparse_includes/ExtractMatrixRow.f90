@@ -1,5 +1,11 @@
+  !! Temporary Variables
+  INTEGER :: values_found
+  INTEGER :: total_counter, elements_per_inner
+  INTEGER :: outer_counter
+  INTEGER :: inner_counter
+
   !! Fill a value buffer
-  CALL row_out%InitEmpty(1, this%columns)
+  CALL ConstructEmptyMatrix(row_out, 1, this%columns)
   ALLOCATE(value_buffer(this%columns))
   values_found = 0
   total_counter = 1

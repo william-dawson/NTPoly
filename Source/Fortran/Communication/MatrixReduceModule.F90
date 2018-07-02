@@ -2,8 +2,9 @@
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
-  USE MatrixSModule, ONLY : Matrix_lsr, Matrix_lsc
   USE MatrixSAlgebraModule, ONLY : IncrementMatrix
+  USE MatrixSModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix, &
+       & DestructMatrix, CopyMatrix
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -34,11 +35,6 @@ MODULE MatrixReduceModule
      INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_process
      !> The displacements for where those gathered values should go.
      INTEGER, DIMENSION(:), ALLOCATABLE :: displacement
-   CONTAINS
-     PROCEDURE :: TestSize => TestReduceSizeRequest
-     PROCEDURE :: TestOuter => TestReduceOuterRequest
-     PROCEDURE :: TestInner => TestReduceInnerRequest
-     PROCEDURE :: TestData => TestReduceDataRequest
   END TYPE ReduceHelper_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ReduceMatrixSizes
@@ -238,7 +234,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestReduceSizeRequest(helper) RESULT(request_completed)
     !! Parameters
-    CLASS(ReduceHelper_t), INTENT(INOUT) :: helper
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%size_request, request_completed, &
@@ -250,7 +246,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestReduceOuterRequest(helper) RESULT(request_completed)
     !! Parameters
-    CLASS(ReduceHelper_t), INTENT(INOUT) :: helper
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%outer_request, request_completed, &
@@ -262,7 +258,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestReduceInnerRequest(helper) RESULT(request_completed)
     !! Parameters
-    CLASS(ReduceHelper_t), INTENT(INOUT) :: helper
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%inner_request, request_completed, &
@@ -274,7 +270,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @return request_completed true if the request is finished.
   FUNCTION TestReduceDataRequest(helper) RESULT(request_completed)
     !! Parameters
-    CLASS(ReduceHelper_t), INTENT(INOUT) :: helper
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%data_request, request_completed, &

@@ -1,5 +1,3 @@
-  REAL(NTREAL) :: alpha
-
   !! Process Optional Parameters
   IF (.NOT. PRESENT(alpha_in)) THEN
      alpha = 1.0d+0

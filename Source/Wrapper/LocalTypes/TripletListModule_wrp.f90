@@ -2,7 +2,10 @@
 !> A module for wrapping the triplet list data type.
 MODULE TripletListModule_wrp
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE TripletListModule, ONLY : TripletList_r, TripletList_c, SortTripletList
+  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
+       & AppendToTripletList, ResizeTripletList, &
+       & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList, &
+       & GetTripletListSize
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int
@@ -47,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL h_this%data%Init(size)
+    h_this%data = TripletList_r(size)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -59,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Destruct
+    CALL DestructTripletList(h_this%data)
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructTripletList_r_wrp
@@ -72,7 +75,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Resize(size)
+    CALL ResizeTripletList(h_this%data,size)
   END SUBROUTINE ResizeTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
@@ -90,7 +93,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     temp%point_value = point_value
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Append(temp)
+    CALL AppendToTripletList(h_this%data,temp)
   END SUBROUTINE AppendToTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
@@ -109,7 +112,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     temp%point_value = point_value
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Set(index, temp)
+    CALL SetTripletAt(h_this%data,index,temp)
   END SUBROUTINE SetTripletAt_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
@@ -124,7 +127,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r) :: temp
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Get(index, temp)
+    CALL GetTripletAt(h_this%data,index,temp)
 
     index_column = temp%index_column
     index_row = temp%index_row
@@ -158,7 +161,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    list_size = h_this%data%GetSize()
+    list_size = GetTripletListSize(h_this%data)
   END FUNCTION GetTripletListSize_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the triplet list constructor.
@@ -169,7 +172,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL h_this%data%Init(size)
+    h_this%data = TripletList_c(size)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -181,7 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Destruct
+    CALL DestructTripletList(h_this%data)
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructTripletList_c_wrp
@@ -194,7 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Resize(size)
+    CALL ResizeTripletList(h_this%data,size)
   END SUBROUTINE ResizeTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
@@ -212,7 +215,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     temp%point_value = point_value
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Append(temp)
+    CALL AppendToTripletList(h_this%data,temp)
   END SUBROUTINE AppendToTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
@@ -231,7 +234,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     temp%point_value = point_value
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Set(index, temp)
+    CALL SetTripletAt(h_this%data,index,temp)
   END SUBROUTINE SetTripletAt_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
@@ -246,7 +249,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_c) :: temp
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL h_this%data%Get(index, temp)
+    CALL GetTripletAt(h_this%data,index,temp)
 
     index_column = temp%index_column
     index_row = temp%index_row
@@ -280,6 +283,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    list_size = h_this%data%GetSize()
+    list_size = GetTripletListSize(h_this%data)
   END FUNCTION GetTripletListSize_c_wrp
 END MODULE TripletListModule_wrp

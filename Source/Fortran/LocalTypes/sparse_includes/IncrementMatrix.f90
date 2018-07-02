@@ -23,7 +23,7 @@
   size_of_a = matA%outer_index(matA%columns+1)
 
   !! Allocate sufficient space for matC
-  CALL matC%InitEmpty(matA%rows, matA%columns)
+  CALL ConstructEmptyMatrix(matC, matA%rows, matA%columns)
   IF (ALLOCATED(matB%values)) THEN
      size_of_b = matB%outer_index(matB%columns+1)
      ALLOCATE(matC%inner_index(size_of_a+size_of_b))
@@ -58,12 +58,11 @@
   END DO
 
   !! Cleanup
-  CALL matB%Destruct
-  CALL matB%InitEmpty(matC%rows, matC%columns)
+  CALL DestructMatrix(matB)
+  CALL ConstructEmptyMatrix(matB, matC%rows, matC%columns)
   matB%outer_index = matC%outer_index
   ALLOCATE(matB%inner_index(matC%outer_index(matC%columns+1)))
   ALLOCATE(matB%values(matC%outer_index(matC%columns+1)))
   matB%inner_index = matC%inner_index(:matC%outer_index(matC%columns+1))
   matB%values = matC%values(:matC%outer_index(matC%columns+1))
-
-  CALL matC%Destruct
+  CALL DestructMatrix(matC)

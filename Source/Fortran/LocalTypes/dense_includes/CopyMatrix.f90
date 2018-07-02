@@ -1,2 +1,2 @@
-  CALL this%InitEmpty(matA%rows, matA%columns)
-  this%data = matA%data
+  CALL ConstructEmptyMatrix(matB, matA%rows, matA%columns)
+  matB%data = matA%data

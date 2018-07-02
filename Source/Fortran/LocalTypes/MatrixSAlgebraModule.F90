@@ -2,14 +2,18 @@
 !> A module for performing linear algebra using sparse matrices.
 MODULE MatrixSAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE MatrixDModule, ONLY : Matrix_ldr, Matrix_ldc, ConvertDMatrixToS, &
-       & ConvertSMatrixToD
-  USE MatrixDAlgebraModule, ONLY : MatrixMultiply
-  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, MatrixMemoryPool_lc
-  USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc
+  USE MatrixDModule, ONLY : Matrix_ldr, Matrix_ldc, ConstructMatrixDFromS, &
+       & ConstructMatrixSFromD, MultiplyMatrix, DestructMatrix
+  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, MatrixMemoryPool_lc, &
+       & DestructMatrixMemoryPool, CheckMemoryPoolValidity, SetPoolSparsity, &
+       & ConstructMatrixMemoryPool
+  USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix, &
+       & TransposeMatrix, PrintMatrix, ConstructMatrixFromTripletList, &
+       & ConstructEmptyMatrix
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
-  USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList
+  USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
+       & DestructTripletList, ConstructTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   IMPLICIT NONE
   PRIVATE
@@ -471,4 +475,86 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "sparse_includes/PruneList.f90"
   END SUBROUTINE PruneList_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  ! #define DATATYPE REAL(NTREAL)
+  ! #define DMTYPE Matrix_ldr
+  ! #define MPOOLTYPE MatrixMemoryPool_lr
+  ! #define SMTYPE Matrix_lsr
+  ! #define TTYPE Triplet_r
+  ! #define TLISTTYPE TripletList_r
+  ! #define ScaleMatrix ScaleMatrix_lsr
+  ! #define IncrementMatrix IncrementMatrix_lsr
+  ! #define DotMatrix DotMatrix_lsr
+  ! #define PairwiseMultiplyMatrix PairwiseMultiplyMatrix_lsr
+  ! #define GemmMatrix GemmMatrix_lsr
+  ! #define MatrixColumnNorm MatrixColumnNorm_lsr
+  ! #define MatrixNorm MatrixNorm_lsr
+  ! #define MatrixGrandSum MatrixGrandSum_lsr
+  ! #define SparseBranch SparseBranch_lsr
+  ! #define DenseBranch DenseBranch_lsr
+  ! #define MultiplyBlock MultiplyBlock_lsr
+  ! #define PruneList PruneList_lsr
+  !
+  ! #include "includes/MatrixSAlgebraImpl.f90"
+  !
+  ! #undef ScaleMatrix
+  ! #undef IncrementMatrix
+  ! #undef DotMatrix
+  ! #undef PairwiseMultiplyMatrix
+  ! #undef GemmMatrix
+  ! #undef MatrixColumnNorm
+  ! #undef MatrixNorm
+  ! #undef MatrixGrandSum
+  ! #undef SparseBranch
+  ! #undef DenseBranch
+  ! #undef MultiplyBlock
+  ! #undef PruneList
+  ! #undef TLISTTYPE
+  ! #undef TTYPE
+  ! #undef SMTYPE
+  ! #undef MPOOLTYPE
+  ! #undef DMTYPE
+  ! #undef DATATYPE
+  !
+  ! #define DATATYPE COMPLEX(NTCOMPLEX)
+  ! #define DMTYPE Matrix_ldc
+  ! #define MPOOLTYPE MatrixMemoryPool_lc
+  ! #define SMTYPE Matrix_lsc
+  ! #define TTYPE Triplet_c
+  ! #define TLISTTYPE TripletList_c
+  ! #define ScaleMatrix ScaleMatrix_lsc
+  ! #define IncrementMatrix IncrementMatrix_lsc
+  ! #define DotMatrix DotMatrix_lsc
+  ! #define PairwiseMultiplyMatrix PairwiseMultiplyMatrix_lsc
+  ! #define GemmMatrix GemmMatrix_lsc
+  ! #define MatrixColumnNorm MatrixColumnNorm_lsc
+  ! #define MatrixNorm MatrixNorm_lsc
+  ! #define MatrixGrandSum MatrixGrandSum_lsc
+  ! #define SparseBranch SparseBranch_lsc
+  ! #define DenseBranch DenseBranch_lsc
+  ! #define MultiplyBlock MultiplyBlock_lsc
+  ! #define PruneList PruneList_lsc
+  !
+  ! #include "includes/MatrixSAlgebraImpl.f90"
+  !
+  ! #undef ScaleMatrix
+  ! #undef IncrementMatrix
+  ! #undef DotMatrix
+  ! #undef PairwiseMultiplyMatrix
+  ! #undef GemmMatrix
+  ! #undef MatrixColumnNorm
+  ! #undef MatrixNorm
+  ! #undef MatrixGrandSum
+  ! #undef SparseBranch
+  ! #undef DenseBranch
+  ! #undef MultiplyBlock
+  ! #undef PruneList
+  ! #undef TLISTTYPE
+  ! #undef TTYPE
+  ! #undef SMTYPE
+  ! #undef MPOOLTYPE
+  ! #undef DMTYPE
+  ! #undef DATATYPE
+
 END MODULE MatrixSAlgebraModule

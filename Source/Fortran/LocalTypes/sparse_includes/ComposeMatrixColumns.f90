@@ -6,7 +6,7 @@
   INTEGER :: counter
   INTEGER :: size_of_mat
 
-  CALL out_matrix%Destruct
+  CALL DestructMatrix(out_matrix)
 
   !! Figure Out The Sizes
   total_columns = 0
@@ -18,7 +18,7 @@
   END DO
 
   !! Allocate The Space
-  CALL out_matrix%InitEmpty(mat_list(1)%rows, total_columns)
+  CALL ConstructEmptyMatrix(out_matrix, mat_list(1)%rows, total_columns)
   ALLOCATE(out_matrix%inner_index(total_values))
   ALLOCATE(out_matrix%values(total_values))
 

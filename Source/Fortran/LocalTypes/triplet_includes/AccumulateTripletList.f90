@@ -1,5 +1,15 @@
   !! Local data
   INTEGER :: new_size
+  INTEGER :: idata
+
+  DO idata = 1, this%CurrentSize
+     IF ((this%DATA(idata)%index_row == triplet_value%index_row) .AND. &
+          & (this%DATA(idata)%index_column == triplet_value%index_column)) THEN
+        this%DATA(idata)%point_value = this%DATA(idata)%point_value + &
+             & triplet_value%point_value
+        RETURN
+     END IF
+  END DO
 
   !! First, check if we need to allocate more memory
   IF (this%CurrentSize+1 .GT. SIZE(this%DATA)) THEN
