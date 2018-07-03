@@ -166,10 +166,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Largest Eigenvalue
-    scale_value = DotMatrix(vector,vector)
+    CALL DotMatrix(vector, vector, scale_value)
     CALL MatrixMultiply(this,vector,vector2, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    max_value = DotMatrix(vector,vector2)
+    CALL DotMatrix(vector, vector2, max_value)
     max_value = max_value / scale_value
 
     IF (solver_parameters%be_verbose) THEN

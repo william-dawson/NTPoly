@@ -104,10 +104,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (outer_counter .GT. 1) THEN
           CALL MatrixMultiply(AddBranch, WorkingOverlap, TempMat1, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-          add_trace = MatrixTrace(TempMat1)
+          CALL MatrixTrace(TempMat1, add_trace)
           CALL MatrixMultiply(SubtractBranch, WorkingOverlap, TempMat2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-          subtract_trace = MatrixTrace(TempMat2)
+          CALL MatrixTrace(TempMat2, subtract_trace)
           IF (ABS(nel - add_trace) .GT. ABS(nel - subtract_trace)) THEN
              !! Subtract Branch
              trace_value = subtract_trace

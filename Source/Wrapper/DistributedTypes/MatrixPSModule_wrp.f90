@@ -34,6 +34,7 @@ MODULE MatrixPSModule_wrp
   PUBLIC :: GetMatrixBlock_psr_wrp
   PUBLIC :: GetMatrixBlock_psc_wrp
   PUBLIC :: TransposeMatrix_ps_wrp
+  PUBLIC :: ConjugateMatrix_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps_wrp(ih_this,matrix_dim) &
@@ -293,5 +294,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_transmat = TRANSFER(ih_transmat,h_transmat)
     CALL TransposeMatrix(h_matA%data,h_transmat%data)
   END SUBROUTINE TransposeMatrix_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the matrix conjugate function.
+  PURE SUBROUTINE ConjugateMatrix_ps_wrp(ih_matA) &
+       & bind(c,name="ConjugateMatrix_ps_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_matA
+
+    h_matA  = TRANSFER(ih_matA,h_matA)
+    CALL ConjugateMatrix(h_matA%data)
+  END SUBROUTINE ConjugateMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixPSModule_wrp

@@ -219,6 +219,25 @@ class TestDistributedMatrix(unittest.TestCase):
 class TestDistributedMatrix_c(TestDistributedMatrix):
     TripletList = nt.TripletList_c
     complex = True
+    def test_conjugatetranspose(self):
+        '''Test our ability to compute the conjugate transpose of a matrix.'''
+        for param in self.parameters:
+            if (self.my_rank == 0):
+                matrix1 = param.create_matrix(self.complex)
+                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+                self.CheckMat = matrix1.H
+
+            comm.barrier()
+            ntmatrix1 = nt.DistributedSparseMatrix(
+                scratch_dir + "/matrix1.mtx", False)
+            ntmatrix2 = nt.DistributedSparseMatrix(
+                ntmatrix1.GetActualDimension())
+            ntmatrix2.Transpose(ntmatrix1)
+            ntmatrix2.Conjugate()
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
 
 if __name__ == '__main__':
     unittest.main()

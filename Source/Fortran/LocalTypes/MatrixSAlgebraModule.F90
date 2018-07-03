@@ -9,7 +9,7 @@ MODULE MatrixSAlgebraModule
        & ConstructMatrixMemoryPool
   USE MatrixSModule, ONLY: Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix, &
        & TransposeMatrix, PrintMatrix, ConstructMatrixFromTripletList, &
-       & ConstructEmptyMatrix
+       & ConstructEmptyMatrix, ConjugateMatrix
   USE VectorSModule, ONLY : AddSparseVectors, DotSparseVectors, &
        & PairwiseMultiplyVectors
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
@@ -30,6 +30,7 @@ MODULE MatrixSAlgebraModule
   INTERFACE ScaleMatrix
      MODULE PROCEDURE ScaleMatrix_lsr
      MODULE PROCEDURE ScaleMatrix_lsc
+     MODULE PROCEDURE ScaleMatrix_lsc_c
   END INTERFACE
   INTERFACE IncrementMatrix
      MODULE PROCEDURE IncrementMatrix_lsr
@@ -125,16 +126,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @result product
-  PURE FUNCTION DotMatrix_lsr(matA, matB) RESULT(product)
+  PURE SUBROUTINE DotMatrix_lsr(matA, matB, product)
     !! Parameters
     TYPE(Matrix_lsr), INTENT(IN) :: matA
     TYPE(Matrix_lsr), INTENT(IN) :: matB
-    REAL(NTREAL) :: product
+    REAL(NTREAL), INTENT(OUT) :: product
     !! Local Variables
     TYPE(Matrix_lsr) :: matC
 
-    INCLUDE "sparse_includes/DotMatrix.f90"
-  END FUNCTION DotMatrix_lsr
+    CALL PairwiseMultiplyMatrix(matA,matB,matC)
+
+    CALL MatrixGrandSum(matC, product)
+    CALL DestructMatrix(matC)
+
+  END SUBROUTINE DotMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !! C := alpha*matA*op( matB ) + beta*matC
@@ -202,14 +207,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum the elements of a matrix
   !! @param[in] this the matrix to sum
   !! @result sum_value the sum of the matrix elements
-  PURE FUNCTION MatrixGrandSum_lsr(this) RESULT(sum_value)
+  PURE SUBROUTINE MatrixGrandSum_lsr(this, sum_value)
     !! Parameters
     TYPE(Matrix_lsr), INTENT(IN) :: this
-    REAL(NTREAL) :: sum_value
+    REAL(NTREAL), INTENT(OUT) :: sum_value
 
     INCLUDE "sparse_includes/MatrixGrandSum.f90"
 
-  END FUNCTION MatrixGrandSum_lsr
+  END SUBROUTINE MatrixGrandSum_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SparseBranch_lsr(matA, matB, matC, IsATransposed, IsBTransposed, &
        & alpha, threshold, blocked_memory_pool)
@@ -287,6 +292,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "sparse_includes/ScaleMatrix.f90"
   END SUBROUTINE ScaleMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Will scale a sparse matrix by a constant.
+  !! @param[inout] matA Matrix A.
+  !! @param[in] constant scale factor.
+  PURE SUBROUTINE ScaleMatrix_lsc_c(matA,constant)
+    !! Parameters
+    TYPE(Matrix_lsc), INTENT(INOUT) :: matA
+    COMPLEX(NTCOMPLEX), INTENT(IN) :: constant
+
+    INCLUDE "sparse_includes/ScaleMatrix.f90"
+  END SUBROUTINE ScaleMatrix_lsc_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
   !! This will utilize the sparse vector addition routine.
   !! @param[in] matA Matrix A.
@@ -325,16 +341,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] matA Matrix A.
   !! @param[in] matB Matrix B.
   !! @result product
-  PURE FUNCTION DotMatrix_lsc(matA, matB) RESULT(product)
+  PURE SUBROUTINE DotMatrix_lsc(matA, matB, product)
     !! Parameters
     TYPE(Matrix_lsc), INTENT(IN) :: matA
     TYPE(Matrix_lsc), INTENT(IN) :: matB
-    COMPLEX(NTCOMPLEX) :: product
+    COMPLEX(NTCOMPLEX), INTENT(OUT) :: product
     !! Local Variables
     TYPE(Matrix_lsc) :: matC
+    TYPE(Matrix_lsc) :: matAH
 
-    INCLUDE "sparse_includes/DotMatrix.f90"
-  END FUNCTION DotMatrix_lsc
+    CALL CopyMatrix(matA, matAH)
+    CALL ConjugateMatrix(matAH)
+
+    CALL PairwiseMultiplyMatrix(matAH, matB, matC)
+    CALL MatrixGrandSum(matC, product)
+
+    CALL DestructMatrix(matC)
+    CALL DestructMatrix(matAH)
+
+  END SUBROUTINE DotMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !! C := alpha*matA*op( matB ) + beta*matC
@@ -402,14 +427,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum the elements of a matrix
   !! @param[in] this the matrix to sum
   !! @result sum_value the sum of the matrix elements
-  PURE FUNCTION MatrixGrandSum_lsc(this) RESULT(sum_value)
+  PURE SUBROUTINE MatrixGrandSum_lsc(this, sum_value)
     !! Parameters
     TYPE(Matrix_lsc), INTENT(IN) :: this
-    COMPLEX(NTCOMPLEX) :: sum_value
+    COMPLEX(NTCOMPLEX), INTENT(OUT) :: sum_value
 
     INCLUDE "sparse_includes/MatrixGrandSum.f90"
 
-  END FUNCTION MatrixGrandSum_lsc
+  END SUBROUTINE MatrixGrandSum_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE SparseBranch_lsc(matA, matB, matC, IsATransposed, IsBTransposed, &
        & alpha, threshold, blocked_memory_pool)

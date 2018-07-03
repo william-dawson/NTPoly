@@ -50,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: TempMat, TempMat2
     TYPE(Matrix_ps) :: Identity
     REAL(NTREAL) :: mu
-    REAL(NTREAL) :: gamma
+    REAL(NTREAL) :: gamma, gamma_d
     REAL(NTREAL) :: step_size
     REAL(NTREAL) :: b, c, d
     REAL(NTREAL) :: root1, root2, root_temp
@@ -117,7 +117,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(TempMat,TempMat2,Gradient, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
     CALL ScaleMatrix(Gradient,REAL(6.0,NTREAL))
-    mu = MatrixTrace(Gradient)/matrix_dimension
+    CALL MatrixTrace(Gradient, mu)
+    mu = mu/matrix_dimension
     CALL IncrementMatrix(Identity,Gradient, &
          & REAL(-1.0*mu,NTREAL))
     CALL CopyMatrix(Gradient,H_k)
@@ -142,7 +143,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute The Step Size
-       b = DotMatrix(H_k,Gradient)
+       CALL DotMatrix(H_k, Gradient, b)
        CALL MatrixMultiply(H_k,WorkingHamiltonian,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        CALL MatrixMultiply(H_k,TempMat,TempMat2, &
@@ -150,8 +151,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL CopyMatrix(Identity,TempMat)
        CALL IncrementMatrix(P_k,TempMat,REAL(-2.0,NTREAL))
-       c = 3.0*DotMatrix(TempMat,TempMat2)
-       d = -2.0*DotMatrix(H_k,TempMat2)
+       CALL DotMatrix(TempMat, TempMat2, c)
+       c = 3.0*c
+       CALL DotMatrix(H_k, TempMat2, d)
+       d = -2.0*d
 
        !! Find optimal step size by solving a quadratic equation.
        root_temp = SQRT(c*c - 3.0 * b * d)
@@ -173,15 +176,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(TempMat,TempMat2,Gradient, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        CALL ScaleMatrix(Gradient,REAL(6.0,NTREAL))
-       mu = MatrixTrace(Gradient)/matrix_dimension
+       CALL MatrixTrace(Gradient, mu)
+       mu = mu/matrix_dimension
        CALL IncrementMatrix(Identity,Gradient, &
             & REAL(-1.0*mu,NTREAL))
        CALL CopyMatrix(Gradient,G_kplusone)
        CALL ScaleMatrix(G_kplusone,REAL(-1.0,NTREAL))
 
        !! Compute conjugate direction
-       gamma = DotMatrix(G_kplusone,G_kplusone)
-       gamma = gamma/(DotMatrix(G_k,G_k))
+       CALL DotMatrix(G_kplusone,G_kplusone,gamma)
+       CALL DotMatrix(G_k, G_k, gamma_d)
+       gamma = gamma/gamma_d
        IF (gamma < 0.0) THEN
           gamma = 0
        END IF
@@ -191,10 +196,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotMatrix(P_k, WorkingHamiltonian)
+       CALL DotMatrix(P_k, WorkingHamiltonian, energy_value)
+       energy_value = 2*energy_value
        norm_value = ABS(energy_value - energy_value2)
 
-       trace_value = MatrixTrace(P_k)
+       CALL MatrixTrace(P_k, trace_value)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT

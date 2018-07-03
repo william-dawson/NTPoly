@@ -78,6 +78,7 @@ MODULE MatrixPSModule
   PUBLIC :: MergeMatrixLocalBlocks
   PUBLIC :: SplitMatrixToLocalBlocks
   PUBLIC :: TransposeMatrix
+  PUBLIC :: ConjugateMatrix
   PUBLIC :: CommSplitMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructEmptyMatrix
@@ -155,6 +156,9 @@ MODULE MatrixPSModule
   END INTERFACE
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_ps
+  END INTERFACE
+  INTERFACE ConjugateMatrix
+     MODULE PROCEDURE ConjugateMatrix_ps
   END INTERFACE
   INTERFACE CommSplitMatrix
      MODULE PROCEDURE CommSplitMatrix_ps
@@ -1309,6 +1313,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "includes/TransposeMatrix.f90"
 
   END SUBROUTINE TransposeMatrix_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Every value in the matrix is changed into its complex conjugate.
+  !! @param[inout] this the matrix to compute the complex conjugate of.
+  SUBROUTINE ConjugateMatrix_ps(this)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !! Local Variables
+    TYPE(Matrix_lsc) :: local_matrix
+
+    IF (this%is_complex) THEN
+       CALL MergeMatrixLocalBlocks(this, local_matrix)
+       CALL ConjugateMatrix(local_matrix)
+       CALL SplitMatrixToLocalBlocks(this, local_matrix)
+       CALL DestructMatrix(local_matrix)
+    END IF
+
+  END SUBROUTINE ConjugateMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split the current communicator, and give each group a complete copy of this
   !! @param[in] this the matrix to split.

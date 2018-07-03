@@ -4,7 +4,7 @@ import unittest
 import NTPolySwig as nt
 
 import scipy
-from numpy import sum, multiply
+from numpy import sum, multiply, conj
 import scipy.sparse
 from random import uniform, randint
 from scipy.linalg import eigh
@@ -76,8 +76,7 @@ class TestLocalMatrix(unittest.TestCase):
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            matrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
             normval = abs(norm(matrix1 - ResultMat))
@@ -89,8 +88,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = param.create_matrix(complex=self.complex, square=True)
             matrix1 = matrix1 + matrix1.H
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            matrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
             normval = abs(norm(matrix1 - ResultMat))
@@ -105,10 +103,8 @@ class TestLocalMatrix(unittest.TestCase):
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             alpha = uniform(1.0, 2.0)
             CheckMat = alpha * matrix1 + matrix2
-            matrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix2.mtx")
+            matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             matrix2.Increment(matrix1, alpha, 0.0)
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
@@ -122,8 +118,7 @@ class TestLocalMatrix(unittest.TestCase):
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             CheckMat = matrix1
-            matrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = self.SparseMatrix(matrix1.GetColumns(),
                                         matrix1.GetRows())
             matrix2.Increment(matrix1, 1.0, 0.0)
@@ -139,10 +134,9 @@ class TestLocalMatrix(unittest.TestCase):
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
             CheckMat = matrix1
-            matrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SparseMatrix(matrix1.GetColumns(),
-                                        matrix1.GetRows())
+            matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(
+                matrix1.GetColumns(), matrix1.GetRows())
             matrix1.Increment(matrix2, 1.0, 0.0)
             matrix1.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
@@ -157,10 +151,8 @@ class TestLocalMatrix(unittest.TestCase):
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
             mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
             check = sum(multiply(matrix1.todense(), matrix2.todense()))
-            matrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix2.mtx")
+            matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             result = matrix2.Dot(matrix1)
             normval = result - check
             self.assertLessEqual(normval, THRESHOLD)
@@ -171,8 +163,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
-            matrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2T = self.SparseMatrix(
                 matrix2.GetRows(), matrix2.GetColumns())
             matrix2T.Transpose(matrix2)
@@ -193,10 +184,8 @@ class TestLocalMatrix(unittest.TestCase):
             CheckMat = csr_matrix(
                 multiply(matrix1.todense(), matrix2.todense()))
 
-            ntmatrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            ntmatrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix2.mtx")
+            ntmatrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             ntmatrix3 = self.SparseMatrix(ntmatrix1.GetColumns(),
                                           ntmatrix1.GetRows())
             ntmatrix3.PairwiseMultiply(ntmatrix1, ntmatrix2)
@@ -220,10 +209,8 @@ class TestLocalMatrix(unittest.TestCase):
             else:
                 CheckMat = alpha * matrix1.dot(matrix2)
 
-            ntmatrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            ntmatrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix2.mtx")
+            ntmatrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             ntmatrix3 = self.SparseMatrix(ntmatrix2.GetColumns(),
                                           ntmatrix1.GetRows())
             memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
@@ -250,10 +237,8 @@ class TestLocalMatrix(unittest.TestCase):
             else:
                 CheckMat = alpha * matrix1.dot(matrix2)
 
-            ntmatrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            ntmatrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix2.mtx")
+            ntmatrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
             ntmatrix3 = self.SparseMatrix(ntmatrix2.GetColumns(),
                                           ntmatrix1.GetRows())
             memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
@@ -275,10 +260,8 @@ class TestLocalMatrix(unittest.TestCase):
             w, vdense = eigh(matrix1.todense())
             CheckV = csr_matrix(vdense)
 
-            ntmatrix = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
-            V = self.SparseMatrix(
-                ntmatrix.GetColumns(), ntmatrix.GetColumns())
+            ntmatrix = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            V = self.SparseMatrix(ntmatrix.GetColumns(), ntmatrix.GetColumns())
 
             ntmatrix.EigenDecomposition(V, THRESHOLD)
             V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
@@ -300,8 +283,7 @@ class TestLocalMatrix(unittest.TestCase):
             row_num = randint(0, param.rows - 1)
             CheckMat = matrix1[row_num, :]
 
-            ntmatrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            ntmatrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             ntmatrix2 = self.SparseMatrix(ntmatrix1.GetColumns(), 1)
             ntmatrix1.ExtractRow(row_num, ntmatrix2)
             ntmatrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
@@ -320,8 +302,7 @@ class TestLocalMatrix(unittest.TestCase):
             column_num = randint(0, param.columns - 1)
             CheckMat = matrix1[:, column_num]
 
-            ntmatrix1 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            ntmatrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             ntmatrix2 = self.SparseMatrix(1, ntmatrix1.GetRows())
             ntmatrix1.ExtractColumn(column_num, ntmatrix2)
             ntmatrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
@@ -342,8 +323,7 @@ class TestLocalMatrix_c(TestLocalMatrix):
             matrix1 = param.create_matrix(complex=self.complex)
             mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
 
-            matrix2 = self.SparseMatrix(
-                self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2T = self.SparseMatrix(
                 matrix2.GetRows(), matrix2.GetColumns())
             matrix2T.Transpose(matrix2)
@@ -353,6 +333,20 @@ class TestLocalMatrix_c(TestLocalMatrix):
             CheckMat = matrix1.H
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
             normval = abs(norm(CheckMat - ResultMat))
+            self.assertLessEqual(normval, THRESHOLD)
+
+    def test_dot(self):
+        '''Test our ability to dot two matrices.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex)
+            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            check = sum(multiply(conj(matrix1.todense()), matrix2.todense()))
+            matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
+            result = matrix2.Dot(matrix1)
+            normval = result - check
             self.assertLessEqual(normval, THRESHOLD)
 
 

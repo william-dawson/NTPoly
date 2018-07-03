@@ -108,7 +108,7 @@ void DistributedSparseMatrix::GetMatrixBlock(TripletList_r &triplet_list,
                                              int start_row, int end_row,
                                              int start_column, int end_column) {
   GetMatrixBlock_psr_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
-                        &start_column, &end_column);
+                         &start_column, &end_column);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -116,13 +116,16 @@ void DistributedSparseMatrix::GetMatrixBlock(TripletList_c &triplet_list,
                                              int start_row, int end_row,
                                              int start_column, int end_column) {
   GetMatrixBlock_psc_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
-                        &start_column, &end_column);
+                         &start_column, &end_column);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::Transpose(const DistributedSparseMatrix &matA) {
   TransposeMatrix_ps_wrp(matA.ih_this, ih_this);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void DistributedSparseMatrix::Conjugate() { ConjugateMatrix_ps_wrp(ih_this); }
 
 //////////////////////////////////////////////////////////////////////////////
 double DistributedSparseMatrix::Dot(const DistributedSparseMatrix &matB) {
@@ -163,7 +166,9 @@ double DistributedSparseMatrix::Norm() const {
 
 //////////////////////////////////////////////////////////////////////////////
 double DistributedSparseMatrix::Trace() const {
-  return MatrixTrace_ps_wrp(ih_this);
+  double temp_val;
+  MatrixTrace_ps_wrp(ih_this, &temp_val);
+  return temp_val;
 }
 
 //////////////////////////////////////////////////////////////////////////////

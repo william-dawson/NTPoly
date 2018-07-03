@@ -63,7 +63,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    product = DotMatrix(h_matA%data, h_matB%data)
+    CALL DotMatrix(h_matA%data, h_matB%data, product)
   END FUNCTION DotMatrix_lsr_wrp
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.
@@ -143,13 +143,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & bind(c,name="DotMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
-    REAL(NTREAL) :: product
+    COMPLEX(NTCOMPLEX) :: product
     TYPE(Matrix_lsc_wrp) :: h_matA
     TYPE(Matrix_lsc_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    product = DotMatrix(h_matA%data, h_matB%data)
+    CALL DotMatrix(h_matA%data, h_matB%data, product)
   END FUNCTION DotMatrix_lsc_wrp
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.

@@ -171,7 +171,6 @@ void SparseMatrix_c::Gemm(const SparseMatrix_c &matA,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 void SparseMatrix_r::Transpose(const SparseMatrix_r &matA) {
   TransposeMatrix_lsr_wrp(matA.ih_this, ih_this);
 }
@@ -180,9 +179,8 @@ void SparseMatrix_c::Transpose(const SparseMatrix_c &matA) {
   TransposeMatrix_lsc_wrp(matA.ih_this, ih_this);
 }
 
-void SparseMatrix_c::Conjugate() {
-  ConjugateMatrix_lsc_wrp(ih_this);
-}
+////////////////////////////////////////////////////////////////////////////////
+void SparseMatrix_c::Conjugate() { ConjugateMatrix_lsc_wrp(ih_this); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void SparseMatrix_r::Print() const { PrintMatrix_lsr_wrp(ih_this); }

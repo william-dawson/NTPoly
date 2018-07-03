@@ -129,7 +129,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute Sigma
-       trace_value = MatrixTrace(X_k)
+       CALL MatrixTrace(X_k, trace_value)
        IF (nel*0.5 - trace_value .LT. REAL(0.0,NTREAL)) THEN
           sigma_array(outer_counter) = REAL(-1.0,NTREAL)
        ELSE
@@ -152,7 +152,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotMatrix(X_k, WorkingHamiltonian)
+       CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
+       energy_value = energy_value * 2
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -348,8 +349,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(X_k2,Gx_right)
 
        !! Compute Traces
-       trace_fx = DotMatrix(X_k2,Fx_right)
-       trace_gx = DotMatrix(X_k2,Gx_right)
+       CALL DotMatrix(X_k2, Fx_right, trace_fx)
+       CALL DotMatrix(X_k2, Gx_right, trace_gx)
 
        !! Compute Sigma
        sigma_array(outer_counter) = (nel*0.5-trace_fx)/trace_gx
@@ -375,7 +376,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotMatrix(X_k, WorkingHamiltonian)
+       CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
+       energy_value = energy_value * 2
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -540,7 +542,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the initial matrix.
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
-    mu = MatrixTrace(WorkingHamiltonian)/matrix_dimension
+    CALL MatrixTrace(WorkingHamiltonian, mu)
+    mu = mu/matrix_dimension
     sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
     sigma = 1.0 - sigma_bar
     beta = sigma/((e_max) - mu)
@@ -589,7 +592,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute DDH, as well as convergence check
        CALL MatrixMultiply(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
             & memory_pool_in=pool1)
-       trace_value = MatrixTrace(DDH)
+       CALL MatrixTrace(DDH, trace_value)
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
@@ -598,7 +601,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & memory_pool_in=pool1)
 
        !! Compute Sigma
-       sigma_array(outer_counter) = MatrixTrace(D2DH)/trace_value
+       CALL MatrixTrace(D2DH, sigma_array(outer_counter))
+       sigma_array(outer_counter) = sigma_array(outer_counter)/trace_value
 
        CALL CopyMatrix(D1,TempMat)
 
@@ -611,7 +615,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotMatrix(D1, WorkingHamiltonian)
+       CALL DotMatrix(D1, WorkingHamiltonian, energy_value)
+       energy_value = 2*energy_value
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1
@@ -770,7 +775,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the initial matrix.
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
-    mu = MatrixTrace(WorkingHamiltonian)/matrix_dimension
+    CALL MatrixTrace(WorkingHamiltonian, mu)
+    mu = mu/matrix_dimension
     sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
     sigma = 1.0 - sigma_bar
     beta = sigma/((e_max) - mu)
@@ -802,9 +808,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyMatrix(Identity,TempMat)
     CALL IncrementMatrix(DH,TempMat,REAL(-1.0,NTREAL))
 
-    a = DotMatrix(D1,D1)
-    b = DotMatrix(TempMat,TempMat)
-    c = DotMatrix(D1,TempMat)
+    CALL DotMatrix(D1, D1, a)
+    CALL DotMatrix(TempMat, TempMat, b)
+    CALL DotMatrix(D1, TempMat, c)
     IF (sigma < (0.3333333333)) THEN
        d = (nel*0.5) - 0.66666666*(nel*0.5)
     ELSE
@@ -852,7 +858,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute DDH, as well as convergence check
        CALL MatrixMultiply(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
             & memory_pool_in=pool1)
-       trace_value = MatrixTrace(DDH)
+       CALL MatrixTrace(DDH, trace_value)
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
@@ -860,7 +866,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & memory_pool_in=pool1)
 
        !! Compute Sigma
-       sigma_array(outer_counter) = MatrixTrace(D2DH)/trace_value
+       CALL MatrixTrace(D2DH, sigma_array(outer_counter))
+       sigma_array(outer_counter) = sigma_array(outer_counter)/trace_value
 
        CALL CopyMatrix(D1,TempMat)
 
@@ -873,7 +880,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2*DotMatrix(D1, WorkingHamiltonian)
+       CALL DotMatrix(D1, WorkingHamiltonian, energy_value)
+       energy_value = 2*energy_value
        norm_value = ABS(energy_value - energy_value2)
     END DO
     total_iterations = outer_counter-1

@@ -76,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("Load Balance")
 
     !! Compute Sigma
-    CALL ComputeMatrixSigma(BalancedMat1,sigma)
+    CALL MatrixSigma(BalancedMat1,sigma)
 
     !! Create Inverse Guess
     CALL CopyMatrix(BalancedMat1,InverseMat)
@@ -206,7 +206,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute Sigma
-    CALL ComputeMatrixSigma(BalancedMat1,sigma)
+    CALL MatrixSigma(BalancedMat1,sigma)
 
     !! Create Inverse Guess
     CALL CopyMatrix(BalancedMat1,InverseMat)

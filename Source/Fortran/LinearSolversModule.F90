@@ -127,11 +127,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL TransposeMatrix(RMat,RMatT)
        CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       top = MatrixTrace(TempMat)
+       CALL MatrixTrace(TempMat, top)
        CALL TransposeMatrix(PMat,PMatT)
        CALL MatrixMultiply(PMatT, QMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       bottom = MatrixTrace(TempMat)
+       CALL MatrixTrace(TempMat, bottom)
        step_size = top/bottom
 
        !! Update
@@ -143,7 +143,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL TransposeMatrix(RMat,RMatT)
        CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       new_top = MatrixTrace(TempMat)
+       CALL MatrixTrace(TempMat, new_top)
        step_size = new_top / top
        CALL ScaleMatrix(PMat, step_size)
        CALL IncrementMatrix(RMat, PMat)

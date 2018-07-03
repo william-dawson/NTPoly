@@ -47,7 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    product = DotMatrix(h_matA%data, h_matB%data)
+    CALL DotMatrix(h_matA%data, h_matB%data, product)
   END FUNCTION DotMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication.
@@ -115,13 +115,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION MatrixNorm_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
-  FUNCTION MatrixTrace_ps_wrp(ih_this) bind(c,name="MatrixTrace_ps_wrp") &
-        & RESULT(trace_value)
+  SUBROUTINE MatrixTrace_ps_wrp(ih_this, trace_value) &
+        & bind(c,name="MatrixTrace_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    REAL(NTREAL) :: trace_value
+    REAL(NTREAL), INTENT(OUT) :: trace_value
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    trace_value = MatrixTrace(h_this%data)
-  END FUNCTION MatrixTrace_ps_wrp
+    CALL MatrixTrace(h_this%data, trace_value)
+  END SUBROUTINE MatrixTrace_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixPSAlgebraModule_wrp

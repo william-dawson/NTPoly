@@ -419,7 +419,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL TransposeMatrix(h_matA%data,h_matAT%data)
   END SUBROUTINE TransposeMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Wrap the matrix transpose function.
+  !> Wrap the matrix conjugate function.
   PURE SUBROUTINE ConjugateMatrix_lsc_wrp(ih_matA) &
        & bind(c,name="ConjugateMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)

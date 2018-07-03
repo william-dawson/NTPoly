@@ -57,7 +57,7 @@ void ScaleMatrix_lsc_wrp(int *ih_this, const double *constant);
 void IncrementMatrix_lsc_wrp(const int *ih_matA, int *ih_matB,
                              const double *alpha_in,
                              const double *threshold_in);
-double DotMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB);
+double _Complex DotMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB);
 void PairwiseMultiplyMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB,
                                     int *ih_matC);
 void MatrixMultiply_lsc_wrp(const int *ih_matA, const int *ih_matB,

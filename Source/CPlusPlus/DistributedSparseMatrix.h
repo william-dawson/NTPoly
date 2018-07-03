@@ -89,6 +89,8 @@ public:
   //! Transpose a sparse matrix.
   //\param matA matrix to compute the transpose of.
   void Transpose(const NTPoly::DistributedSparseMatrix &matA);
+  //! Compute the complex conjugate of a matrix
+  void Conjugate();
 
 public:
   //! this = dot(this,matB)
