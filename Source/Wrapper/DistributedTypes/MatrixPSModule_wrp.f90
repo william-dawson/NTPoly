@@ -182,7 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_permutation = TRANSFER(ih_permutation,h_permutation)
 
     CALL FillMatrixPermutation(h_this%data,h_permutation%data%index_lookup, &
-         & permuterows = LOGICAL(permute_rows))
+         & permute_rows_in = LOGICAL(permute_rows))
   END SUBROUTINE FillMatrixPermutation_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Actual Dimension accessor.
@@ -248,4 +248,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_transmat = TRANSFER(ih_transmat,h_transmat)
     CALL TransposeMatrix(h_matA%data,h_transmat%data)
   END SUBROUTINE TransposeMatrix_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixPSModule_wrp

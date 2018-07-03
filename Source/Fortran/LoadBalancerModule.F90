@@ -31,9 +31,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(PermuteRows, mat)
     CALL ConstructEmptyMatrix(PermuteColumns, mat)
     CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
-         & permuterows=.TRUE.)
+         & permute_rows_in=.TRUE.)
     CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
-         & permuterows=.FALSE.)
+         & permute_rows_in=.FALSE.)
     CALL ConstructEmptyMatrix(Temp, mat)
 
     !! Permute Matrices.
@@ -71,9 +71,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(PermuteRows, mat)
     CALL ConstructEmptyMatrix(PermuteColumns, mat)
     CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
-         & permuterows=.TRUE.)
+         & permute_rows_in=.TRUE.)
     CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
-         & permuterows=.FALSE.)
+         & permute_rows_in=.FALSE.)
     CALL ConstructEmptyMatrix(Temp, mat)
 
     !! Permute Matrices.

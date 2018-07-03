@@ -184,7 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & helper)
     !! Parameters
     TYPE(Matrix_lsc), INTENT(IN)    :: matrix
-    TYPE(Matrix_lsr), INTENT(INOUT) :: gathered_matrix
+    TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
 
     INCLUDE "includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&

@@ -15,7 +15,8 @@ MODULE MatrixPSModule
        & SplitProcessGrid, CopyProcessGrid
   USE MatrixSModule
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE TripletModule, ONLY : Triplet_r, Triplet_c, GetMPITripletType_r
+  USE TripletModule, ONLY : Triplet_r, Triplet_c, GetMPITripletType_r, &
+       & GetMPITripletType_c
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & ConstructTripletList, &
        & DestructTripletList, SortTripletList, AppendToTripletList, &
@@ -231,7 +232,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructEmptyMatrix_ps_cp(this, reference_matrix)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
-    TYPE(Matrix_ps), INTENT(INOUT) :: reference_matrix
+    TYPE(Matrix_ps), INTENT(IN) :: reference_matrix
 
     CALL ConstructEmptyMatrix(this, reference_matrix%actual_matrix_dimension, &
          & reference_matrix%process_grid, reference_matrix%is_complex)
@@ -249,12 +250,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        DO JJ = 1, this%process_grid%number_of_blocks_columns
           DO II = 1, this%process_grid%number_of_blocks_rows
              CALL DestructMatrix(this%local_data_r(II,JJ))
-             CALL DestructMatrix(this%local_data_c(II,JJ))
           END DO
        END DO
        DEALLOCATE(this%local_data_r)
+    END IF
+
+    IF (ALLOCATED(this%local_data_c)) THEN
+       DO JJ = 1, this%process_grid%number_of_blocks_columns
+          DO II = 1, this%process_grid%number_of_blocks_rows
+             CALL DestructMatrix(this%local_data_c(II,JJ))
+          END DO
+       END DO
        DEALLOCATE(this%local_data_c)
     END IF
+
   END SUBROUTINE DestructMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
@@ -284,8 +293,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Reading The File
-    TYPE(TripletList_r) :: triplet_list
-    TYPE(Triplet_r) :: temp_triplet
+    TYPE(TripletList_r) :: triplet_list_r
+    TYPE(Triplet_r) :: temp_triplet_r
+    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(Triplet_c) :: temp_triplet_c
     INTEGER :: matrix_rows, matrix_columns, total_values
     !! Length Variables
     INTEGER :: header_length
@@ -299,6 +310,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CHARACTER(len=:), ALLOCATABLE :: mpi_input_buffer
     CHARACTER(len=MAX_LINE_LENGTH) :: temp_substring
     !! Temporary Variables
+    REAL(NTREAL) :: realval, cval
     INTEGER :: bytes_per_character
     CHARACTER(len=1) :: temp_char
     LOGICAL :: found_comment_line
@@ -362,7 +374,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & global_grid%global_comm, ierr)
 
     !! Build Local Storage
-    CALL ConstructEmptyMatrix(this, matrix_rows, global_grid)
+    CALL ConstructEmptyMatrix(this, matrix_rows, global_grid, &
+         & is_complex_in = (sparsity_type .EQ. MM_COMPLEX))
 
     !! Global read
     CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
@@ -411,7 +424,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (local_data_size_plus_buffer .EQ. 0) THEN
        end_of_buffer = .TRUE.
     END IF
-    triplet_list = TripletList_r()
+
+    IF (this%is_complex) THEN
+       CALL ConstructTripletList(triplet_list_c)
+    ELSE
+       CALL ConstructTripletList(triplet_list_r)
+    END IF
     DO WHILE(.NOT. end_of_buffer)
        current_line_length = INDEX(mpi_input_buffer(full_buffer_counter:),&
             new_line('A'))
@@ -422,10 +440,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           temp_substring = mpi_input_buffer( &
                & full_buffer_counter:full_buffer_counter+current_line_length-1)
           IF (current_line_length .GT. 1) THEN
-             READ(temp_substring(:current_line_length-1),*) &
-                  & temp_triplet%index_row, temp_triplet%index_column, &
-                  & temp_triplet%point_value
-             CALL AppendToTripletList(triplet_list, temp_triplet)
+             IF (data_type .EQ. MM_COMPLEX) THEN
+                READ(temp_substring(:current_line_length-1),*) &
+                     & temp_triplet_c%index_row, temp_triplet_c%index_column, &
+                     & realval, cval
+                temp_triplet_c%point_value = CMPLX(realval,cval,KIND=NTCOMPLEX)
+                CALL AppendToTripletList(triplet_list_c, temp_triplet_c)
+             ELSE
+                READ(temp_substring(:current_line_length-1),*) &
+                     & temp_triplet_r%index_row, temp_triplet_r%index_column, &
+                     & temp_triplet_r%point_value
+                CALL AppendToTripletList(triplet_list_r, temp_triplet_r)
+             END IF
           END IF
 
           IF (full_buffer_counter + current_line_length .GE. &
@@ -445,11 +471,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Barrier(this%process_grid%global_comm,ierr)
 
     !! Redistribute The Matrix
-    CALL SymmetrizeTripletList(triplet_list, pattern_type)
-    CALL FillMatrixFromTripletList(this,triplet_list)
 
-    CALL DestructTripletList(triplet_list)
+    IF (this%is_complex) THEN
+       CALL SymmetrizeTripletList(triplet_list_c, pattern_type)
+       CALL FillMatrixFromTripletList(this,triplet_list_c)
+       CALL DestructTripletList(triplet_list_c)
+    ELSE
+       CALL SymmetrizeTripletList(triplet_list_r, pattern_type)
+       CALL FillMatrixFromTripletList(this,triplet_list_r)
+       CALL DestructTripletList(triplet_list_r)
+    END IF
+
     DEALLOCATE(mpi_input_buffer)
+
   END SUBROUTINE ConstructMatrixFromMatrixMarket_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
@@ -460,24 +494,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
+    !! Local Data
+    INTEGER :: triplet_mpi_type
+    TYPE(TripletList_r) :: triplet_list_r
+    TYPE(TripletList_c) :: triplet_list_c
+    REAL(NTREAL) :: temp_data
     !! File Handles
     INTEGER :: mpi_file_handler
     !! Reading The File
-    TYPE(TripletList_r) :: triplet_list
-    INTEGER :: matrix_rows, matrix_columns, total_values
-    INTEGER, DIMENSION(3) :: matrix_information
+    INTEGER :: matrix_rows, matrix_columns, total_values, complex_flag
+    INTEGER, DIMENSION(4) :: matrix_information
     INTEGER :: local_triplets
     INTEGER(KIND=MPI_OFFSET_KIND) :: local_offset
     INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
-    INTEGER :: bytes_per_int, bytes_per_double
-    INTEGER :: triplet_mpi_type
+    INTEGER :: bytes_per_int, bytes_per_data
     !! Temporary variables
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
 
     CALL StartTimer("MPI Read Binary")
-    CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
-    CALL MPI_Type_extent(MPINTREAL,bytes_per_double,ierr)
 
     CALL MPI_File_open(global_grid%global_comm,file_name,MPI_MODE_RDONLY,&
          & MPI_INFO_NULL,mpi_file_handler,ierr)
@@ -492,10 +527,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsRoot(global_grid)) THEN
        local_offset = 0
        CALL MPI_File_read_at(mpi_file_handler, local_offset, &
-            & matrix_information, 3, MPI_INT, mpi_status, ierr)
+            & matrix_information, 4, MPI_INT, mpi_status, ierr)
        matrix_rows = matrix_information(1)
        matrix_columns = matrix_information(2)
        total_values = matrix_information(3)
+       complex_flag = matrix_information(4)
     END IF
 
     !! Broadcast Parameters
@@ -505,34 +541,60 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & global_grid%global_comm, ierr)
     CALL MPI_Bcast(total_values, 1, MPI_INT ,global_grid%RootID, &
          & global_grid%global_comm, ierr)
+    CALL MPI_Bcast(complex_flag, 1, MPI_INT ,global_grid%RootID, &
+         & global_grid%global_comm, ierr)
 
     !! Build Local Storage
-    CALL ConstructEmptyMatrix(this, matrix_rows, global_grid)
+    IF (complex_flag .EQ. 1) THEN
+       CALL ConstructEmptyMatrix(this, matrix_rows, global_grid, &
+            & is_complex_in=.TRUE.)
+    ELSE
+       CALL ConstructEmptyMatrix(this, matrix_rows, global_grid, &
+            & is_complex_in=.FALSE.)
+    END IF
+
+    CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
+    IF (this%is_complex) THEN
+       CALL MPI_Type_extent(MPINTCOMPLEX,bytes_per_data,ierr)
+       triplet_mpi_type = GetMPITripletType_c()
+    ELSE
+       CALL MPI_Type_extent(MPINTREAL,bytes_per_data,ierr)
+       triplet_mpi_type = GetMPITripletType_r()
+    END IF
 
     !! Compute Offset
     local_triplets = total_values/this%process_grid%total_processors
     local_offset = local_triplets * (this%process_grid%global_rank)
-    header_size = 3 * bytes_per_int
+    header_size = 4 * bytes_per_int
     IF (this%process_grid%global_rank .EQ. &
          & this%process_grid%total_processors - 1) THEN
        local_triplets = INT(total_values) - INT(local_offset)
     END IF
-    local_offset = local_offset*(bytes_per_int*2+bytes_per_double) + header_size
-    triplet_list = TripletList_r(local_triplets)
+    local_offset = local_offset*(bytes_per_int*2+bytes_per_data) + header_size
 
     !! Do The Actual Reading
-    triplet_mpi_type = GetMPITripletType_r()
     CALL MPI_File_set_view(mpi_file_handler,local_offset,triplet_mpi_type,&
          & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
-    CALL MPI_File_read_all(mpi_file_handler,triplet_list%data,local_triplets,&
-         & triplet_mpi_type,mpi_status,ierr)
+    IF (this%is_complex) THEN
+       CALL ConstructTripletList(triplet_list_c, local_triplets)
+       CALL MPI_File_read_all(mpi_file_handler, triplet_list_c%data, &
+            & local_triplets, triplet_mpi_type, mpi_status,ierr)
+    ELSE
+       CALL ConstructTripletList(triplet_list_r, local_triplets)
+       CALL MPI_File_read_all(mpi_file_handler, triplet_list_r%data, &
+            & local_triplets, triplet_mpi_type, mpi_status,ierr)
+    END IF
     CALL MPI_File_close(mpi_file_handler,ierr)
     CALL StopTimer("MPI Read Binary")
 
-    CALL FillMatrixFromTripletList(this,triplet_list)
+    IF (this%is_complex) THEN
+       CALL FillMatrixFromTripletList(this,triplet_list_c)
+       CALL DestructTripletList(triplet_list_c)
+    ELSE
+       CALL FillMatrixFromTripletList(this,triplet_list_r)
+       CALL DestructTripletList(triplet_list_r)
+    END IF
 
-    !! Cleanup
-    CALL DestructTripletList(triplet_list)
   END SUBROUTINE ConstructMatrixFromBinary_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a binary file.
@@ -544,80 +606,52 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
-    INTEGER, DIMENSION(:), ALLOCATABLE :: local_values_buffer
-    INTEGER :: mpi_file_handler
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_data_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: write_offset
-    !! For The Special Datatype
     INTEGER :: triplet_mpi_type
-    !! Temporary Variables
-    INTEGER :: temp_int
-    REAL(NTREAL) :: temp_double
-    INTEGER :: bytes_per_int, bytes_per_double
-    INTEGER, DIMENSION(3) :: header_buffer
-    INTEGER :: mpi_status(MPI_STATUS_SIZE)
-    INTEGER(KIND=MPI_OFFSET_KIND) :: zero_offset = 0
-    INTEGER :: counter
-    TYPE(Matrix_lsr) :: merged_local_data
-    INTEGER :: ierr
 
-    !! Merge all the local data
-    CALL MergeMatrixLocalBlocks(this, merged_local_data)
-
-    !! Determine Write Location
-    bytes_per_int = sizeof(temp_int)
-    bytes_per_double = sizeof(temp_double)
-    local_data_size = SIZE(merged_local_data%values)*(bytes_per_int*2 + &
-         & bytes_per_double*1)
-    header_size = bytes_per_int*3
-    ALLOCATE(local_values_buffer(this%process_grid%slice_size))
-    CALL MPI_Allgather(SIZE(merged_local_data%values),1,MPI_INT,&
-         & local_values_buffer,1,MPI_INT,&
-         & this%process_grid%within_slice_comm,ierr)
-    write_offset = 0
-    write_offset = write_offset + header_size
-    DO counter = 1,this%process_grid%within_slice_rank
-       write_offset = write_offset + &
-            & local_values_buffer(counter)*(bytes_per_int*2+bytes_per_double*1)
-    END DO
-
-    !! Write The File
-    IF (this%process_grid%between_slice_rank .EQ. 0) THEN
-       !! Create Special MPI Type
+    IF (this%is_complex) THEN
+       triplet_mpi_type = GetMPITripletType_c()
+       CALL WriteMatrixToBinary_psc(this, file_name, triplet_mpi_type)
+    ELSE
        triplet_mpi_type = GetMPITripletType_r()
-
-       CALL MatrixToTripletList(merged_local_data, triplet_list)
-       !! Absolute Positions
-       CALL ShiftTripletList(triplet_list, this%start_row - 1, &
-            & this%start_column - 1)
-       CALL MPI_File_open(this%process_grid%within_slice_comm,file_name,&
-            & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
-            & mpi_file_handler, ierr)
-       !! Write Header
-       IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-          header_buffer(1) = this%actual_matrix_dimension
-          header_buffer(2) = this%actual_matrix_dimension
-          header_buffer(3) = SUM(local_values_buffer)
-          CALL MPI_File_write_at(mpi_file_handler,zero_offset,header_buffer,3,&
-               & MPI_INT,mpi_status,ierr)
-       END IF
-       !! Write The Rest
-       CALL MPI_File_set_view(mpi_file_handler,write_offset,triplet_mpi_type,&
-            & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
-       CALL MPI_File_write(mpi_file_handler,triplet_list%data, &
-            & triplet_list%CurrentSize, triplet_mpi_type,MPI_STATUS_IGNORE, &
-            & ierr)
-
-       !! Cleanup
-       CALL MPI_File_close(mpi_file_handler,ierr)
-       CALL DestructTripletList(triplet_list)
+       CALL WriteMatrixToBinary_psr(this, file_name, triplet_mpi_type)
     END IF
-    DEALLOCATE(local_values_buffer)
-    CALL MPI_Barrier(this%process_grid%global_comm,ierr)
-    CALL DestructMatrix(merged_local_data)
   END SUBROUTINE WriteMatrixToBinary_ps
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Save a distributed sparse matrix to a binary file.
+  !! Faster than text, so this is good for check pointing.
+  !! @param[in] this the Matrix to write.
+  !! @param[in] file_name name of the file to write to.
+  SUBROUTINE WriteMatrixToBinary_psr(this, file_name, triplet_mpi_type)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    CHARACTER(len=*), INTENT(IN) :: file_name
+    INTEGER, INTENT(IN) :: triplet_mpi_type
+    !! Local Data
+    TYPE(TripletList_r) :: triplet_list
+    TYPE(Matrix_lsr) :: merged_local_data
+    REAL(NTREAL) :: temp_data
+
+    INCLUDE "includes/WriteMatrixToBinary.f90"
+
+  END SUBROUTINE WriteMatrixToBinary_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Save a distributed sparse matrix to a binary file.
+  !! Faster than text, so this is good for check pointing.
+  !! @param[in] this the Matrix to write.
+  !! @param[in] file_name name of the file to write to.
+  SUBROUTINE WriteMatrixToBinary_psc(this, file_name, triplet_mpi_type)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    CHARACTER(len=*), INTENT(IN) :: file_name
+    INTEGER, INTENT(IN) :: triplet_mpi_type
+    !! Local Data
+    TYPE(TripletList_c) :: triplet_list
+    TYPE(Matrix_lsc) :: merged_local_data
+    COMPLEX(NTCOMPLEX) :: temp_data
+
+    INCLUDE "includes/WriteMatrixToBinary.f90"
+
+  END SUBROUTINE WriteMatrixToBinary_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write a distributed sparse matrix to a matrix market file.
   !! Read \cite boisvert1996matrix for the details.
@@ -627,128 +661,47 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     CHARACTER(len=*), INTENT(IN) :: file_name
-    INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
-    !! Local MPI Variables
-    INTEGER :: mpi_file_handler
-    INTEGER :: mpi_status(MPI_STATUS_SIZE)
-    INTEGER, DIMENSION(:), ALLOCATABLE :: local_values_buffer
+
+    IF (this%is_complex) THEN
+       CALL WriteMatrixToMatrixMarket_psc(this, file_name)
+    ELSE
+       CALL WriteMatrixToMatrixMarket_psr(this, file_name)
+    END IF
+  END SUBROUTINE WriteMatrixToMatrixMarket_ps
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a distributed sparse matrix to a matrix market file.
+  !! Read \cite boisvert1996matrix for the details.
+  !! @param[in] this the Matrix to write.
+  !! @param[in] file_name name of the file to write to.
+  SUBROUTINE WriteMatrixToMatrixMarket_psr(this,file_name)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
-    INTEGER :: triplet_list_string_length
-    INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: write_offset
-    INTEGER(KIND=MPI_OFFSET_KIND) :: header_offset
-    INTEGER(KIND=MPI_OFFSET_KIND), PARAMETER :: zero_size = 0
-    !! Strings
-    CHARACTER(len=:), ALLOCATABLE :: header_line1
-    CHARACTER(len=:), ALLOCATABLE :: header_line2
-    CHARACTER(len=:), ALLOCATABLE :: write_buffer
-    !! Temporary Values
-    INTEGER :: counter
-    INTEGER :: offset_counter
-    INTEGER :: NEW_LINE_LENGTH
-    CHARACTER(len=MAX_LINE_LENGTH*2) :: temp_string1
-    CHARACTER(len=MAX_LINE_LENGTH) :: temp_string2
-    INTEGER :: temp_length
-    INTEGER :: bytes_per_character
-    CHARACTER(len=1) :: temp_char
     TYPE(Matrix_lsr) :: merged_local_data
-    INTEGER :: ierr
 
-    !! Merge all the local data
-    CALL MergeMatrixLocalBlocks(this, merged_local_data)
+#include "includes/WriteToMatrixMarket.f90"
 
-    bytes_per_character = sizeof(temp_char)
-
-    !! Create the matrix size line
-    NEW_LINE_LENGTH = LEN(new_line('A'))
-    WRITE(temp_string1,'(A)') "%%MatrixMarket matrix coordinate real general" &
-         & //new_line('A')//"%"//new_line('A')
-    ALLOCATE(CHARACTER(&
-         & len=LEN_TRIM(temp_string1)) :: header_line1)
-    header_line1 = TRIM(temp_string1)
-
-    WRITE(temp_string2,*) this%actual_matrix_dimension, &
-         & this%actual_matrix_dimension, GetMatrixSize(this)
-    !! I don't understand why the +1 is needed, but it is.
-    ALLOCATE(CHARACTER(&
-         & len=LEN_TRIM(temp_string2)+NEW_LINE_LENGTH+1) :: header_line2)
-    WRITE(header_line2,*) TRIM(temp_string2)//new_line('A')
-
-    header_size = LEN(header_line1) + LEN(header_line2)
-
+  END SUBROUTINE WriteMatrixToMatrixMarket_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a distributed sparse matrix to a matrix market file.
+  !! Read \cite boisvert1996matrix for the details.
+  !! @param[in] this the Matrix to write.
+  !! @param[in] file_name name of the file to write to.
+  SUBROUTINE WriteMatrixToMatrixMarket_psc(this,file_name)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
-    CALL MatrixToTripletList(merged_local_data, triplet_list)
+    TYPE(TripletList_c) :: triplet_list
+    TYPE(Matrix_lsc) :: merged_local_data
 
-    !! Absolute Positions
-    CALL ShiftTripletList(triplet_list, this%start_row - 1, &
-         & this%start_column - 1)
+#define ISCOMPLEX
+#include "includes/WriteToMatrixMarket.f90"
+#undef ISCOMPLEX
 
-    !! Figure out the length of the string for storing.
-    triplet_list_string_length = 0
-    DO counter = 1, triplet_list%CurrentSize
-       WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
-            & triplet_list%data(counter)%index_column, &
-            & triplet_list%data(counter)%point_value, &
-            & new_line('A')
-       triplet_list_string_length = triplet_list_string_length + &
-            & LEN_TRIM(temp_string2)
-       triplet_list_string_length = triplet_list_string_length + NEW_LINE_LENGTH
-    END DO
-
-    !! Write that string to the write buffer
-    ALLOCATE(CHARACTER(len=triplet_list_string_length+1) :: write_buffer)
-    offset_counter = 1
-    DO counter = 1, triplet_list%CurrentSize
-       WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
-            & triplet_list%data(counter)%index_column, &
-            & triplet_list%data(counter)%point_value, &
-            & new_line('A')
-       temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
-       WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
-            & temp_string2(1:temp_length)
-       offset_counter = offset_counter + temp_length
-    END DO
-
-    !! Figure out the offset sizes
-    ALLOCATE(local_values_buffer(this%process_grid%slice_size))
-    CALL MPI_Allgather(triplet_list_string_length,1,MPI_INT,&
-         & local_values_buffer,1,MPI_INT,this%process_grid%within_slice_comm,&
-         & ierr)
-    write_offset = 0
-    write_offset = write_offset + header_size
-    DO counter = 1,this%process_grid%within_slice_rank
-       write_offset = write_offset + &
-            & local_values_buffer(counter)
-    END DO
-
-    !! Global Write
-    IF (this%process_grid%between_slice_rank .EQ. 0) THEN
-       CALL MPI_File_open(this%process_grid%within_slice_comm,file_name, &
-            & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
-            & mpi_file_handler,ierr)
-       CALL MPI_File_set_size(mpi_file_handler,zero_size,ierr)
-       !! Write Header
-       IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-          header_offset = 0
-          CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line1, &
-               & LEN(header_line1), MPI_CHARACTER,mpi_status,ierr)
-          header_offset = header_offset + LEN(header_line1)
-          CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line2, &
-               & LEN(header_line2), MPI_CHARACTER,mpi_status,ierr)
-       END IF
-       !! Write Local Data
-       CALL MPI_File_set_view(mpi_file_handler,write_offset,MPI_CHARACTER,&
-            & MPI_CHARACTER,"native",MPI_INFO_NULL,ierr)
-       CALL MPI_File_write(mpi_file_handler,write_buffer, &
-            & triplet_list_string_length,&
-            & MPI_CHARACTER,MPI_STATUS_IGNORE,ierr)
-
-       !! Cleanup
-       CALL MPI_File_close(mpi_file_handler,ierr)
-    END IF
-    CALL MPI_Barrier(this%process_grid%global_comm,ierr)
-  END SUBROUTINE WriteMatrixToMatrixMarket_ps
+  END SUBROUTINE WriteMatrixToMatrixMarket_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
   !! should pass in triplet lists with global coordinates. It doesn't matter
@@ -1112,9 +1065,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: threshold
 
     IF (this%is_complex) THEN
-       CALL Filter_Matrix_psc(this, threshold)
+       CALL FilterMatrix_psc(this, threshold)
     ELSE
-       CALL Filter_Matrix_psr(this, threshold)
+       CALL FilterMatrix_psr(this, threshold)
     END IF
   END SUBROUTINE FilterMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1180,6 +1133,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Global Sum
     CALL MPI_Allreduce(local_size,temp_size,1,MPINTREAL,MPI_SUM,&
          & this%process_grid%within_slice_comm, ierr)
+
+    total_size = INT(temp_size,kind=c_long)
+
   END FUNCTION GetMatrixSize_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get a measure of how load balanced this matrix is. For each process, the
@@ -1227,7 +1183,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(OUT) :: TransMat
 
     IF (AMat%is_complex) THEN
-       CALL TransposeMatrix_psr(AMat, TransMat)
+       CALL TransposeMatrix_psc(AMat, TransMat)
     ELSE
        CALL TransposeMatrix_psr(AMat, TransMat)
     END IF

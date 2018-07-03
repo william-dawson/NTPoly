@@ -675,7 +675,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Build The Full Matrices
-    CALL ConstructEmptyMatrix(eigenvectors this)
+    CALL ConstructEmptyMatrix(eigenvectors, this)
     CALL FillMatrixFromTripletList(eigenvectors, triplet_list, .TRUE.)
 
     IF (PRESENT(eigenvalues_out)) THEN
