@@ -83,10 +83,18 @@
   ALLOCATE(CHARACTER(len=triplet_list_string_length+1) :: write_buffer)
   offset_counter = 1
   DO counter = 1, triplet_list%CurrentSize
+#ifdef ISCOMPLEX
+     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+          & triplet_list%data(counter)%index_column, &
+          & REAL(triplet_list%data(counter)%point_value), &
+          & AIMAG(triplet_list%data(counter)%point_value), &
+          & new_line('A')
+#else
      WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & triplet_list%data(counter)%point_value, &
           & new_line('A')
+#endif
      temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
      WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
           & temp_string2(1:temp_length)

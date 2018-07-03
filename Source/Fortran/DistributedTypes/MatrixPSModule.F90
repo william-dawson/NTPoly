@@ -375,7 +375,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Build Local Storage
     CALL ConstructEmptyMatrix(this, matrix_rows, global_grid, &
-         & is_complex_in = (sparsity_type .EQ. MM_COMPLEX))
+         & is_complex_in = (data_type .EQ. MM_COMPLEX))
 
     !! Global read
     CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
@@ -471,7 +471,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Barrier(this%process_grid%global_comm,ierr)
 
     !! Redistribute The Matrix
-
     IF (this%is_complex) THEN
        CALL SymmetrizeTripletList(triplet_list_c, pattern_type)
        CALL FillMatrixFromTripletList(this,triplet_list_c)
@@ -498,7 +497,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: triplet_mpi_type
     TYPE(TripletList_r) :: triplet_list_r
     TYPE(TripletList_c) :: triplet_list_c
-    REAL(NTREAL) :: temp_data
     !! File Handles
     INTEGER :: mpi_file_handler
     !! Reading The File

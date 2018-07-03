@@ -475,7 +475,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
     TYPE(Triplet_c) :: temp_triplet
 
-#define MPIDATATYPE MPINTREAL
+#define MPIDATATYPE MPINTCOMPLEX
 #include "triplet_includes/RedistributeTripletLists.f90"
 #undef MPIDATATYPE
 

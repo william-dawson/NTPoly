@@ -31,6 +31,16 @@ class TestParameters:
         self.columns = columns
         self.sparsity = sparsity
 
+    def create_matrix(self, complex=False):
+        r = self.rows
+        c = self.columns
+        s = self.sparsity
+        if complex:
+            return random(r, c, s, format="csr") + \
+                1j * random(r, c, s, format="csr")
+        else:
+            return random(r, c, s, format="csr")
+
 
 class TestDistributedMatrix(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
@@ -44,6 +54,8 @@ class TestDistributedMatrix(unittest.TestCase):
     my_rank = 0
     # Type of triplets to use
     TripletList = nt.TripletList_r
+    # Whether the matrix is complex or not
+    complex = False
 
     @classmethod
     def setUpClass(self):
@@ -79,8 +91,7 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = random(param.rows, param.columns,
-                                 param.sparsity, format="csr")
+                matrix1 = param.create_matrix(self.complex)
                 mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
@@ -96,8 +107,7 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test our ability to read and write binary.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = random(param.rows, param.columns,
-                                 param.sparsity, format="csr")
+                matrix1 = param.create_matrix(self.complex)
                 mmwrite(scratch_dir + "/matrix1.mtx",
                         csr_matrix(matrix1), symmetry="general")
                 self.CheckMat = matrix1
@@ -117,8 +127,7 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test extraction of triplet list.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = random(param.rows, param.columns,
-                                 param.sparsity, format="csr")
+                matrix1 = param.create_matrix(self.complex)
                 mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
@@ -143,8 +152,7 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test extraction of triplet list via repartition function.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = random(param.rows, param.columns,
-                                 param.sparsity, format="csr")
+                matrix1 = param.create_matrix(self.complex)
                 mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1
 
@@ -193,8 +201,7 @@ class TestDistributedMatrix(unittest.TestCase):
         '''Test our ability to transpose matrices.'''
         for param in self.parameters:
             if (self.my_rank == 0):
-                matrix1 = random(param.rows, param.columns,
-                                 param.sparsity, format="csr")
+                matrix1 = param.create_matrix(self.complex)
                 mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
                 self.CheckMat = matrix1.T
 
@@ -209,6 +216,9 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
+class TestDistributedMatrix_c(TestDistributedMatrix):
+    TripletList = nt.TripletList_c
+    complex = True
 
 if __name__ == '__main__':
     unittest.main()

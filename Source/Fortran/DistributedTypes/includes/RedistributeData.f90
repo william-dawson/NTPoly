@@ -32,7 +32,7 @@
 
   !! Build A Send Buffer
   DO counter = 1, this%process_grid%slice_size
-     CALL ConstructTripletList(send_Triplet_lists(counter))
+     CALL ConstructTripletList(send_triplet_lists(counter))
   END DO
   DO counter = 1, initial_triplet_list%CurrentSize
      process_id = location_list_within_slice(counter)
