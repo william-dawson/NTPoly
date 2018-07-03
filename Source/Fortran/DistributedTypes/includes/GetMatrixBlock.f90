@@ -1,49 +1,30 @@
-  !! Local Data
-  INTEGER, DIMENSION(:), ALLOCATABLE :: row_start_list
-  INTEGER, DIMENSION(:), ALLOCATABLE :: column_start_list
-  INTEGER, DIMENSION(:), ALLOCATABLE :: row_end_list
-  INTEGER, DIMENSION(:), ALLOCATABLE :: column_end_list
-  !! Send Buffer
-  INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_proc
-  INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
-  INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
-  INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
-  !! Receive Buffer
-  INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_offsets
-  INTEGER, DIMENSION(:), ALLOCATABLE :: recv_per_proc
-  INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
-  INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
-  !! Temporary
-  INTEGER :: counter, p_counter
-  INTEGER :: ierr
-
   !! Merge all the local data
-  CALL MergeMatrixLocalBlocks(this, merged_local_data)
+  CALL MergeMatrixLocalBlocks(working_matrix, merged_local_data)
   CALL MatrixToTripletList(merged_local_data, local_triplet_list)
 
   !! Share the start row/column information across processes
-  ALLOCATE(row_start_list(this%process_grid%slice_size))
-  ALLOCATE(column_start_list(this%process_grid%slice_size))
-  ALLOCATE(row_end_list(this%process_grid%slice_size))
-  ALLOCATE(column_end_list(this%process_grid%slice_size))
+  ALLOCATE(row_start_list(working_matrix%process_grid%slice_size))
+  ALLOCATE(column_start_list(working_matrix%process_grid%slice_size))
+  ALLOCATE(row_end_list(working_matrix%process_grid%slice_size))
+  ALLOCATE(column_end_list(working_matrix%process_grid%slice_size))
   CALL MPI_Allgather(start_row, 1, MPI_INT, row_start_list, 1, MPI_INT, &
-       & this%process_grid%within_slice_comm, ierr)
+       & working_matrix%process_grid%within_slice_comm, ierr)
   CALL MPI_Allgather(start_column, 1, MPI_INT, column_start_list, 1, MPI_INT,&
-       & this%process_grid%within_slice_comm, ierr)
+       & working_matrix%process_grid%within_slice_comm, ierr)
   CALL MPI_Allgather(end_row, 1, MPI_INT, row_end_list, 1, MPI_INT, &
-       & this%process_grid%within_slice_comm, ierr)
+       & working_matrix%process_grid%within_slice_comm, ierr)
   CALL MPI_Allgather(end_column, 1, MPI_INT, column_end_list, 1, MPI_INT,&
-       & this%process_grid%within_slice_comm, ierr)
+       & working_matrix%process_grid%within_slice_comm, ierr)
 
   !! Count The Number of Elements To Send To Each Process
-  ALLOCATE(send_per_proc(this%process_grid%slice_size))
+  ALLOCATE(send_per_proc(working_matrix%process_grid%slice_size))
   send_per_proc = 0
   DO counter = 1, local_triplet_list%CurrentSize
      CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
-     temp_triplet%index_row = temp_triplet%index_row + this%start_row - 1
+     temp_triplet%index_row = temp_triplet%index_row + working_matrix%start_row - 1
      temp_triplet%index_column = temp_triplet%index_column + &
-          & this%start_column - 1
-     DO p_counter = 1, this%process_grid%slice_size
+          & working_matrix%start_column - 1
+     DO p_counter = 1, working_matrix%process_grid%slice_size
         IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
              & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
              & temp_triplet%index_column .GE. column_start_list(p_counter) .AND. &
@@ -54,9 +35,9 @@
      END DO
   END DO
   !! Compute send buffer offsets
-  ALLOCATE(send_buffer_offsets(this%process_grid%slice_size))
+  ALLOCATE(send_buffer_offsets(working_matrix%process_grid%slice_size))
   send_buffer_offsets(1) = 1
-  DO counter = 2, this%process_grid%slice_size
+  DO counter = 2, working_matrix%process_grid%slice_size
      send_buffer_offsets(counter) = send_buffer_offsets(counter-1) + &
           & send_per_proc(counter-1)
   END DO
@@ -67,10 +48,10 @@
   ALLOCATE(send_buffer_val(local_triplet_list%CurrentSize))
   DO counter = 1, local_triplet_list%CurrentSize
      CALL GetTripletAt(local_triplet_list, counter, temp_triplet)
-     temp_triplet%index_row = temp_triplet%index_row + this%start_row - 1
+     temp_triplet%index_row = temp_triplet%index_row + working_matrix%start_row - 1
      temp_triplet%index_column = temp_triplet%index_column + &
-          & this%start_column - 1
-     DO p_counter = 1, this%process_grid%slice_size
+          & working_matrix%start_column - 1
+     DO p_counter = 1, working_matrix%process_grid%slice_size
         IF (temp_triplet%index_row .GE. row_start_list(p_counter) .AND. &
              & temp_triplet%index_row .LT. row_end_list(p_counter) .AND. &
              & temp_triplet%index_column .GE. column_start_list(p_counter) .AND. &
@@ -89,18 +70,18 @@
   !! Reset send buffer offsets. But since we're using MPI now, use zero
   !! based indexing.
   send_buffer_offsets(1) = 0
-  DO counter = 2, this%process_grid%slice_size
+  DO counter = 2, working_matrix%process_grid%slice_size
      send_buffer_offsets(counter) = send_buffer_offsets(counter-1) + &
           & send_per_proc(counter-1)
   END DO
 
   !! Build a receive buffer
-  ALLOCATE(recv_per_proc(this%process_grid%slice_size))
+  ALLOCATE(recv_per_proc(working_matrix%process_grid%slice_size))
   CALL MPI_Alltoall(send_per_proc, 1, MPI_INT, recv_per_proc, 1, MPI_INT, &
-       & this%process_grid%within_slice_comm, ierr)
-  ALLOCATE(recv_buffer_offsets(this%process_grid%slice_size))
+       & working_matrix%process_grid%within_slice_comm, ierr)
+  ALLOCATE(recv_buffer_offsets(working_matrix%process_grid%slice_size))
   recv_buffer_offsets(1) = 0
-  DO counter = 2, this%process_grid%slice_size
+  DO counter = 2, working_matrix%process_grid%slice_size
      recv_buffer_offsets(counter) = recv_buffer_offsets(counter-1) + &
           & recv_per_proc(counter-1)
   END DO
@@ -111,13 +92,13 @@
   !! Send
   CALL MPI_Alltoallv(send_buffer_row, send_per_proc, send_buffer_offsets, &
        & MPI_INT, recv_buffer_row, recv_per_proc, recv_buffer_offsets, &
-       & MPI_INT, this%process_grid%within_slice_comm, ierr)
+       & MPI_INT, working_matrix%process_grid%within_slice_comm, ierr)
   CALL MPI_Alltoallv(send_buffer_col, send_per_proc, send_buffer_offsets, &
        & MPI_INT, recv_buffer_col, recv_per_proc, recv_buffer_offsets, &
-       & MPI_INT, this%process_grid%within_slice_comm, ierr)
+       & MPI_INT, working_matrix%process_grid%within_slice_comm, ierr)
   CALL MPI_Alltoallv(send_buffer_val, send_per_proc, send_buffer_offsets, &
        & MPIDATATYPE, recv_buffer_val, recv_per_proc, recv_buffer_offsets, &
-       & MPIDATATYPE, this%process_grid%within_slice_comm, ierr)
+       & MPIDATATYPE, working_matrix%process_grid%within_slice_comm, ierr)
 
   !! Convert receive buffer to triplet list
   CALL ConstructTripletList(triplet_list, SUM(recv_per_proc))
@@ -142,3 +123,5 @@
   IF (ALLOCATED(send_buffer_row)) DEALLOCATE(send_buffer_row)
   IF (ALLOCATED(send_buffer_offsets)) DEALLOCATE(send_buffer_offsets)
   IF (ALLOCATED(send_per_proc)) DEALLOCATE(send_per_proc)
+
+  CALL DestructMatrix(working_matrix)

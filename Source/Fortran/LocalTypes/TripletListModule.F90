@@ -2,7 +2,8 @@
 !> A Module For Storing Lists of Triplets.
 MODULE TripletListModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
-  USE TripletModule, ONLY : Triplet_r, Triplet_c, CompareTriplets
+  USE TripletModule, ONLY : Triplet_r, Triplet_c, CompareTriplets, &
+      & ConvertTripletType
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC, MM_HERMITIAN
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE ISO_C_BINDING, ONLY : c_int
@@ -23,6 +24,7 @@ MODULE TripletListModule
   PUBLIC :: GetTripletListSize
   PUBLIC :: RedistributeTripletLists
   PUBLIC :: ShiftTripletList
+  PUBLIC :: ConvertTripletListType
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE TripletList_r
      MODULE PROCEDURE ConstructTripletList_r
@@ -81,6 +83,10 @@ MODULE TripletListModule
   INTERFACE ShiftTripletList
      MODULE PROCEDURE ShiftTripletList_r
      MODULE PROCEDURE ShiftTripletList_c
+  END INTERFACE
+  INTERFACE ConvertTripletListType
+     MODULE PROCEDURE ConvertTripletListToReal
+     MODULE PROCEDURE ConvertTripletListToComplex
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
@@ -564,4 +570,39 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END SELECT
   END SUBROUTINE SymmetrizeTripletList_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a complex triplet list to a real triplet list.
+  !! @param[in] cin_triplet the starting triplet list.
+  !! @param[out] rout_triplet real valued triplet list.
+  SUBROUTINE ConvertTripletListToReal(cin_triplet, rout_triplet)
+    !! Parameters
+    TYPE(TripletList_c), INTENT(IN)    :: cin_triplet
+    TYPE(TripletList_r), INTENT(INOUT) :: rout_triplet
+    !! Local Variables
+    INTEGER :: II
+
+    CALL ConstructTripletList(rout_triplet, cin_triplet%CurrentSize)
+    DO II = 1, cin_triplet%CurrentSize
+       CALL ConvertTripletType(cin_triplet%data(II), rout_triplet%data(II))
+    END DO
+
+  END SUBROUTINE ConvertTripletListToReal
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a real triplet to a complex triplet list.
+  !! @param[in] rin_triplet the starting triplet list.
+  !! @param[out] cout_triplet complex valued triplet list.
+  SUBROUTINE ConvertTripletListToComplex(rin_triplet, cout_triplet)
+    !! Parameters
+    TYPE(TripletList_r), INTENT(IN)    :: rin_triplet
+    TYPE(TripletList_c), INTENT(INOUT) :: cout_triplet
+    !! Local Variables
+    INTEGER :: II
+
+    CALL ConstructTripletList(cout_triplet, rin_triplet%CurrentSize)
+    DO II = 1, rin_triplet%CurrentSize
+       CALL ConvertTripletType(rin_triplet%data(II), cout_triplet%data(II))
+    END DO
+
+  END SUBROUTINE ConvertTripletListToComplex
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletListModule

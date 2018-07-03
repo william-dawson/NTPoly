@@ -5,7 +5,7 @@ MODULE MatrixPSModule_wrp
   USE MatrixPSAlgebraModule
   USE MatrixPSModule
   USE PermutationModule_wrp, ONLY : Permutation_wrp
-  USE TripletListModule_wrp, ONLY : TripletList_r_wrp
+  USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
   IMPLICIT NONE
@@ -23,13 +23,16 @@ MODULE MatrixPSModule_wrp
   PUBLIC :: ConstructMatrixFromBinary_ps_wrp
   PUBLIC :: WriteMatrixToBinary_ps_wrp
   PUBLIC :: WriteMatrixToMatrixMarket_ps_wrp
-  PUBLIC :: FillMatrixFromTripletList_ps_wrp
+  PUBLIC :: FillMatrixFromTripletList_psr_wrp
+  PUBLIC :: FillMatrixFromTripletList_psc_wrp
   PUBLIC :: FillMatrixPermutation_ps_wrp
   PUBLIC :: FillMatrixIdentity_ps_wrp
   PUBLIC :: GetMatrixActualDimension_ps_wrp
   PUBLIC :: GetMatrixLogicalDimension_ps_wrp
-  PUBLIC :: GetMatrixTripletList_ps_wrp
-  PUBLIC :: GetMatrixBlock_ps_wrp
+  PUBLIC :: GetMatrixTripletList_psr_wrp
+  PUBLIC :: GetMatrixTripletList_psc_wrp
+  PUBLIC :: GetMatrixBlock_psr_wrp
+  PUBLIC :: GetMatrixBlock_psc_wrp
   PUBLIC :: TransposeMatrix_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
@@ -147,8 +150,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToMatrixMarket_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists.
-  SUBROUTINE FillMatrixFromTripletList_ps_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="FillMatrixFromTripletList_ps_wrp")
+  SUBROUTINE FillMatrixFromTripletList_psr_wrp(ih_this, ih_triplet_list) &
+       & bind(c,name="FillMatrixFromTripletList_psr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
@@ -157,7 +160,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     CALL FillMatrixFromTripletList(h_this%data, h_triplet_list%data)
-  END SUBROUTINE FillMatrixFromTripletList_ps_wrp
+  END SUBROUTINE FillMatrixFromTripletList_psr_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This routine fills in a matrix based on local triplet lists.
+  SUBROUTINE FillMatrixFromTripletList_psc_wrp(ih_this, ih_triplet_list) &
+       & bind(c,name="FillMatrixFromTripletList_psc_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(TripletList_c_wrp) :: h_triplet_list
+
+    h_this = TRANSFER(ih_this,h_this)
+    h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
+    CALL FillMatrixFromTripletList(h_this%data, h_triplet_list%data)
+  END SUBROUTINE FillMatrixFromTripletList_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
   SUBROUTINE FillMatrixIdentity_ps_wrp(ih_this) &
@@ -208,8 +224,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixLogicalDimension_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
-  PURE SUBROUTINE GetMatrixTripletList_ps_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="GetMatrixTripletList_ps_wrp")
+  PURE SUBROUTINE GetMatrixTripletList_psr_wrp(ih_this, ih_triplet_list) &
+       & bind(c,name="GetMatrixTripletList_psr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
@@ -218,11 +234,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     CALL GetMatrixTripletList(h_this%data,h_triplet_list%data)
-  END SUBROUTINE GetMatrixTripletList_ps_wrp
+  END SUBROUTINE GetMatrixTripletList_psr_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extracts a triplet list of the data that is stored on this process.
+  PURE SUBROUTINE GetMatrixTripletList_psc_wrp(ih_this, ih_triplet_list) &
+       & bind(c,name="GetMatrixTripletList_psc_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(TripletList_c_wrp) :: h_triplet_list
+
+    h_this = TRANSFER(ih_this,h_this)
+    h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
+    CALL GetMatrixTripletList(h_this%data,h_triplet_list%data)
+  END SUBROUTINE GetMatrixTripletList_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list.
-  SUBROUTINE GetMatrixBlock_ps_wrp(ih_this, ih_triplet_list, start_row, &
-       & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_ps_wrp")
+  SUBROUTINE GetMatrixBlock_psr_wrp(ih_this, ih_triplet_list, start_row, &
+       & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_psr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
@@ -234,7 +263,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     CALL GetMatrixBlock(h_this%data,h_triplet_list%data, start_row, end_row,&
          & start_column, end_column)
-  END SUBROUTINE GetMatrixBlock_ps_wrp
+  END SUBROUTINE GetMatrixBlock_psr_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extract an arbitrary block of a matrix into a triplet list.
+  SUBROUTINE GetMatrixBlock_psc_wrp(ih_this, ih_triplet_list, start_row, &
+       & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_psc_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
+    INTEGER(kind=c_int), INTENT(IN) :: start_column, end_column
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(TripletList_c_wrp) :: h_triplet_list
+
+    h_this = TRANSFER(ih_this,h_this)
+    h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
+    CALL GetMatrixBlock(h_this%data,h_triplet_list%data, start_row, end_row,&
+         & start_column, end_column)
+  END SUBROUTINE GetMatrixBlock_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix.
   SUBROUTINE TransposeMatrix_ps_wrp(ih_matA,ih_transmat) &

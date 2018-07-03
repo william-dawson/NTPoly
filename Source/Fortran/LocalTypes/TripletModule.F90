@@ -12,6 +12,7 @@ MODULE TripletModule
   PUBLIC :: CompareTriplets
   PUBLIC :: GetMPITripletType_r
   PUBLIC :: GetMPITripletType_c
+  PUBLIC :: ConvertTripletType
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SetTriplet
      MODULE PROCEDURE SetTriplet_r
@@ -24,6 +25,10 @@ MODULE TripletModule
   INTERFACE CompareTriplets
      MODULE PROCEDURE CompareTriplets_r
      MODULE PROCEDURE CompareTriplets_c
+  END INTERFACE
+  INTERFACE ConvertTripletType
+     MODULE PROCEDURE ConvertTripletToReal
+     MODULE PROCEDURE ConvertTripletToComplex
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a triplet of integer, integer, double.
@@ -205,5 +210,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Type_commit(mpi_triplet_type,ierr)
 
   END FUNCTION GetMPITripletType_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a complex triplet to a real triplet.
+  !! @param[in] cin_triplet the starting triplet
+  !! @param[out] rout_triplet real valued triplet.
+  SUBROUTINE ConvertTripletToReal(cin_triplet, rout_triplet)
+    !! Parameters
+    TYPE(Triplet_c), INTENT(IN)    :: cin_triplet
+    TYPE(Triplet_r), INTENT(INOUT) :: rout_triplet
+
+    rout_triplet%index_row = cin_triplet%index_row
+    rout_triplet%index_column = cin_triplet%index_column
+    rout_triplet%point_value = REAL(cin_triplet%point_value)
+  END SUBROUTINE ConvertTripletToReal
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a real triplet to a complex triplet.
+  !! @param[in] rin_triplet the starting triplet.
+  !! @param[out] cout_triplet complex valued triplet.
+  SUBROUTINE ConvertTripletToComplex(rin_triplet, cout_triplet)
+    !! Parameters
+    TYPE(Triplet_r), INTENT(IN)    :: rin_triplet
+    TYPE(Triplet_c), INTENT(INOUT) :: cout_triplet
+
+    cout_triplet%index_row = rin_triplet%index_row
+    cout_triplet%index_column = rin_triplet%index_column
+    cout_triplet%point_value = CMPLX(rin_triplet%point_value, 0, KIND=NTCOMPLEX)
+  END SUBROUTINE ConvertTripletToComplex
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletModule

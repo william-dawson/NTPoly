@@ -1,9 +1,3 @@
-  !! Local Data
-  TYPE(Permutation_t) :: basic_permutation
-  TYPE(ReduceHelper_t) :: gather_helper
-  REAL(NTREAL), PARAMETER :: threshold = 0.0
-  LOGICAL :: preduplicated
-
   IF (.NOT. PRESENT(preduplicated_in)) THEN
      preduplicated = .FALSE.
   ELSE

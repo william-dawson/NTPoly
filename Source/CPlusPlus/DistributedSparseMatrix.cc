@@ -59,7 +59,13 @@ void DistributedSparseMatrix::WriteToMatrixMarket(string file_name) const {
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::FillFromTripletList(
     const TripletList_r &triplet_list) {
-  FillMatrixFromTripletList_ps_wrp(ih_this, triplet_list.ih_this);
+  FillMatrixFromTripletList_psr_wrp(ih_this, triplet_list.ih_this);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void DistributedSparseMatrix::FillFromTripletList(
+    const TripletList_c &triplet_list) {
+  FillMatrixFromTripletList_psc_wrp(ih_this, triplet_list.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -88,16 +94,28 @@ int DistributedSparseMatrix::GetActualDimension() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void DistributedSparseMatrix::GetTripletList(
-    TripletList_r &triplet_list) {
-  GetMatrixTripletList_ps_wrp(ih_this, triplet_list.ih_this);
+void DistributedSparseMatrix::GetTripletList(TripletList_r &triplet_list) {
+  GetMatrixTripletList_psr_wrp(ih_this, triplet_list.ih_this);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void DistributedSparseMatrix::GetTripletList(TripletList_c &triplet_list) {
+  GetMatrixTripletList_psc_wrp(ih_this, triplet_list.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void DistributedSparseMatrix::GetMatrixBlock(TripletList_r &triplet_list,
                                              int start_row, int end_row,
                                              int start_column, int end_column) {
-  GetMatrixBlock_ps_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
+  GetMatrixBlock_psr_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
+                        &start_column, &end_column);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void DistributedSparseMatrix::GetMatrixBlock(TripletList_c &triplet_list,
+                                             int start_row, int end_row,
+                                             int start_column, int end_column) {
+  GetMatrixBlock_psc_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
                         &start_column, &end_column);
 }
 

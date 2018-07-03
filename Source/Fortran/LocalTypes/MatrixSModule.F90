@@ -5,7 +5,7 @@ MODULE MatrixSModule
   USE MatrixMarketModule, ONLY : ParseMMHeader
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
        & DestructTripletList, SetTripletAt, ConstructTripletList, &
-       & AppendToTripletList, SymmetrizeTripletList
+       & AppendToTripletList, SymmetrizeTripletList, ConvertTripletListType
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE MPI
@@ -46,6 +46,7 @@ MODULE MatrixSModule
   PUBLIC :: ComposeMatrix
   PUBLIC :: ComposeMatrixColumns
   !! ETC
+  PUBLIC :: ConvertMatrixType
   PUBLIC :: TransposeMatrix
   PUBLIC :: ConjugateMatrix
   PUBLIC :: PrintMatrix
@@ -127,6 +128,10 @@ MODULE MatrixSModule
   INTERFACE MatrixToTripletList
      MODULE PROCEDURE MatrixToTripletList_lsr
      MODULE PROCEDURE MatrixToTripletList_lsc
+  END INTERFACE
+  INTERFACE ConvertMatrixType
+     MODULE PROCEDURE ConvertMatrixType_lsrtolsc
+     MODULE PROCEDURE ConvertMatrixType_lsctolsr
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructEmptyMatrixSub_lsr(this, rows, columns, zero_in)
@@ -671,5 +676,45 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     this%values = CONJG(this%values)
   END SUBROUTINE ConjugateMatrix_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a complex matrix to a real matrix.
+  !! @param[in] cin the starting matrix.
+  !! @param[out] rout real valued matrix.
+  SUBROUTINE ConvertMatrixType_lsrtolsc(cin, rout)
+    !! Parameters
+    TYPE(Matrix_lsc), INTENT(IN)    :: cin
+    TYPE(Matrix_lsr), INTENT(INOUT) :: rout
+    !! Local Variables
+    TYPE(TripletList_c) :: in_list
+    TYPE(TripletList_r) :: out_list
+
+    CALL MatrixToTripletList(cin, in_list)
+    CALL ConvertTripletListType(in_list, out_list)
+    CALL ConstructMatrixFromTripletList(rout, out_list, cin%rows, cin%columns)
+
+    CALL DestructTripletList(in_list)
+    CALL DestructTripletList(out_list)
+
+  END SUBROUTINE ConvertMatrixType_lsrtolsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Convert a real matrix to a complex matrix.
+  !! @param[in] rin the starting matrix.
+  !! @param[out] cout complex valued matrix.
+  SUBROUTINE ConvertMatrixType_lsctolsr(rin, cout)
+    !! Parameters
+    TYPE(Matrix_lsr), INTENT(IN)    :: rin
+    TYPE(Matrix_lsc), INTENT(INOUT) :: cout
+    !! Local Variables
+    TYPE(TripletList_r) :: in_list
+    TYPE(TripletList_c) :: out_list
+
+    CALL MatrixToTripletList(rin, in_list)
+    CALL ConvertTripletListType(in_list, out_list)
+    CALL ConstructMatrixFromTripletList(cout, out_list, rin%rows, rin%columns)
+
+    CALL DestructTripletList(in_list)
+    CALL DestructTripletList(out_list)
+
+  END SUBROUTINE ConvertMatrixType_lsctolsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixSModule

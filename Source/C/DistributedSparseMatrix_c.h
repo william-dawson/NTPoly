@@ -12,15 +12,21 @@ void WriteMatrixToBinary_ps_wrp(const int *ih_this, const char *file_name,
                                 const int *name_size);
 void WriteMatrixToMatrixMarket_ps_wrp(const int *ih_this, const char *file_name,
                                       const int *name_size);
-void FillMatrixFromTripletList_ps_wrp(const int *ih_this,
-                                      const int *ih_triplet_list);
+void FillMatrixFromTripletList_psr_wrp(const int *ih_this,
+                                       const int *ih_triplet_list);
+void FillMatrixFromTripletList_psc_wrp(const int *ih_this,
+                                       const int *ih_triplet_list);
 void FillMatrixPermutation_ps_wrp(int *ih_this, const int *ih_permutation,
                                   const bool *permuterows);
 void FillMatrixIdentity_ps_wrp(int *ih_this);
 void GetMatrixActualDimension_ps_wrp(const int *ih_this, int *size);
 void GetMatrixLogicalDimension_ps_wrp(const int *ih_this, int *size);
-void GetMatrixTripletList_ps_wrp(const int *ih_this, int *ih_triplet_list);
-void GetMatrixBlock_ps_wrp(const int *ih_this, int *ih_triplet_list,
+void GetMatrixTripletList_psr_wrp(const int *ih_this, int *ih_triplet_list);
+void GetMatrixTripletList_psc_wrp(const int *ih_this, int *ih_triplet_list);
+void GetMatrixBlock_psr_wrp(const int *ih_this, int *ih_triplet_list,
+                           int *start_row, int *end_row, int *start_column,
+                           int *end_column);
+void GetMatrixBlock_psc_wrp(const int *ih_this, int *ih_triplet_list,
                            int *start_row, int *end_row, int *start_column,
                            int *end_column);
 void TransposeMatrix_ps_wrp(const int *ih_matA, int *ih_transmat);

@@ -70,6 +70,8 @@ MODULE MatrixPSModule
   PUBLIC :: PrintMatrix
   PUBLIC :: PrintMatrixInformation
   !! Utilities
+  PUBLIC :: ConvertMatrixToReal
+  PUBLIC :: ConvertMatrixToComplex
   PUBLIC :: GetMatrixLoadBalance
   PUBLIC :: GetMatrixSize
   PUBLIC :: FilterMatrix
@@ -714,9 +716,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: triplet_list
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !! Local Data
+    TYPE(Matrix_ps) :: temp_matrix
     TYPE(TripletList_r) :: sorted_triplet_list
     TYPE(Matrix_lsr) :: local_matrix
     TYPE(Matrix_lsr) :: gathered_matrix
+    !! Local Data
+    TYPE(Permutation_t) :: basic_permutation
+    TYPE(ReduceHelper_t) :: gather_helper
+    REAL(NTREAL), PARAMETER :: threshold = 0.0
+    LOGICAL :: preduplicated
+
+    IF (this%is_complex) THEN
+       CALL ConvertMatrixToReal(this, temp_matrix)
+       CALL CopyMatrix(temp_matrix, this)
+       CALL DestructMatrix(temp_matrix)
+    END IF
 
     INCLUDE "includes/FillMatrixFromTripletList.f90"
   END SUBROUTINE FillMatrixFromTripletList_psr
@@ -737,6 +751,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: sorted_triplet_list
     TYPE(Matrix_lsc) :: local_matrix
     TYPE(Matrix_lsc) :: gathered_matrix
+    !! Local Data
+    TYPE(Matrix_ps) :: temp_matrix
+    TYPE(Permutation_t) :: basic_permutation
+    TYPE(ReduceHelper_t) :: gather_helper
+    REAL(NTREAL), PARAMETER :: threshold = 0.0
+    LOGICAL :: preduplicated
+
+    IF (.NOT. this%is_complex) THEN
+       CALL ConvertMatrixToComplex(this, temp_matrix)
+       CALL CopyMatrix(temp_matrix, this)
+       CALL DestructMatrix(temp_matrix)
+    END IF
 
     INCLUDE "includes/FillMatrixFromTripletList.f90"
   END SUBROUTINE FillMatrixFromTripletList_psc
@@ -862,7 +888,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN) :: this
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
     !! Local Data
+    TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsr) :: merged_local_data
+
+    IF (this%is_complex) THEN
+       CALL ConvertMatrixToReal(this, working_matrix)
+    ELSE
+       CALL CopyMatrix(this, working_matrix)
+    END IF
 
     INCLUDE "includes/GetMatrixTripletList.f90"
   END SUBROUTINE GetMatrixTripletList_psr
@@ -876,7 +909,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN) :: this
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
     !! Local Data
+    TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsc) :: merged_local_data
+
+    IF (.NOT. this%is_complex) THEN
+       CALL ConvertMatrixToComplex(this, working_matrix)
+    ELSE
+       CALL CopyMatrix(this, working_matrix)
+    END IF
 
     INCLUDE "includes/GetMatrixTripletList.f90"
   END SUBROUTINE GetMatrixTripletList_psc
@@ -899,6 +939,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: start_row, end_row
     INTEGER :: start_column, end_column
     !! Local Data
+    TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsr) :: merged_local_data
     TYPE(TripletList_r) :: local_triplet_list
     !! Send Buffer
@@ -907,6 +948,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
     !! Temp Values
     TYPE(Triplet_r) :: temp_triplet
+    !! Local Data
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_start_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: column_start_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_end_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: column_end_list
+    !! Send Buffer
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_proc
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
+    !! Receive Buffer
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_per_proc
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
+    !! Temporary
+    INTEGER :: counter, p_counter
+    INTEGER :: ierr
+
+    IF (this%is_complex) THEN
+       CALL ConvertMatrixToReal(this, working_matrix)
+    ELSE
+       CALL CopyMatrix(this, working_matrix)
+    END IF
 
 #define MPIDATATYPE MPINTREAL
 #include "includes/GetMatrixBlock.f90"
@@ -932,6 +997,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: start_row, end_row
     INTEGER :: start_column, end_column
     !! Local Data
+    TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsc) :: merged_local_data
     TYPE(TripletList_c) :: local_triplet_list
     !! Send Buffer
@@ -940,6 +1006,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
     !! Temp Values
     TYPE(Triplet_c) :: temp_triplet
+    !! Local Data
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_start_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: column_start_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: row_end_list
+    INTEGER, DIMENSION(:), ALLOCATABLE :: column_end_list
+    !! Send Buffer
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_per_proc
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: send_buffer_col
+    !! Receive Buffer
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_offsets
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_per_proc
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
+    INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
+    !! Temporary
+    INTEGER :: counter, p_counter
+    INTEGER :: ierr
+
+    IF (.NOT. this%is_complex) THEN
+       CALL ConvertMatrixToComplex(this, working_matrix)
+    ELSE
+       CALL CopyMatrix(this, working_matrix)
+    END IF
 
 #define MPIDATATYPE MPINTCOMPLEX
 #include "includes/GetMatrixBlock.f90"
@@ -1419,5 +1509,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef LOCALMATRIX
 
   END SUBROUTINE MergeMatrixLocalBlocks_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Converts the current matrix to a real type matrix.
+  !! @param[in] in the matrix to convert.
+  !! @param[inout] out real version of the matrix.
+  PURE SUBROUTINE ConvertMatrixToReal(in, out)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN) :: in
+    TYPE(Matrix_ps), INTENT(INOUT) :: out
+    LOGICAL, PARAMETER :: convert_to_complex = .FALSE.
+    !! Local Variables
+    TYPE(Matrix_lsc) :: local_matrix
+    TYPE(Matrix_lsr) :: converted_matrix
+
+   INCLUDE "includes/ConvertMatrixType.f90"
+  END SUBROUTINE ConvertMatrixToReal
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Converts the current matrix to a complex type matrix.
+  !! @param[in] in the matrix to convert.
+  !! @param[inout] out complex version of the matrix.
+  PURE SUBROUTINE ConvertMatrixToComplex(in, out)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN) :: in
+    TYPE(Matrix_ps), INTENT(INOUT) :: out
+    LOGICAL, PARAMETER :: convert_to_complex = .TRUE.
+    !! Local Variables
+    TYPE(Matrix_lsr) :: local_matrix
+    TYPE(Matrix_lsc) :: converted_matrix
+
+   INCLUDE "includes/ConvertMatrixType.f90"
+  END SUBROUTINE ConvertMatrixToComplex
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixPSModule
