@@ -48,4 +48,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL Cosine(h_InputMat%data, h_OutputMat%data, &
          & h_solver_parameters%data)
   END SUBROUTINE Cosine_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TrigonometrySolversModule_wrp

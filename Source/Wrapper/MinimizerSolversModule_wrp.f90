@@ -36,4 +36,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConjugateGradient(h_Hamiltonian%data, h_InverseSquareRoot%data, nel, &
          & h_Density%data, chemical_potential_out, h_solver_parameters%data)
   END SUBROUTINE ConjugateGradient_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MinimizerSolversModule_wrp

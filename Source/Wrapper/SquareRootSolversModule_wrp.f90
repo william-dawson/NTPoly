@@ -49,4 +49,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SquareRoot(h_Mat1%data, h_SquareRootMat%data, &
          & h_solver_parameters%data)
   END SUBROUTINE SquareRoot_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SquareRootSolversModule_wrp

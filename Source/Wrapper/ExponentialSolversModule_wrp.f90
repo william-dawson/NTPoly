@@ -68,4 +68,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeLogarithm(h_InputMat%data, h_OutputMat%data, &
          & h_solver_parameters%data)
   END SUBROUTINE ComputeLogarithm_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ExponentialSolversModule_wrp

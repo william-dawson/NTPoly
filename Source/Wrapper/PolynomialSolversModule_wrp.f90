@@ -103,4 +103,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL PatersonStockmeyerCompute(h_InputMat%data, h_OutputMat%data, &
          & h_polynomial%data, h_solver_parameters%data)
   END SUBROUTINE PatersonStockmeyerCompute_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PolynomialSolversModule_wrp

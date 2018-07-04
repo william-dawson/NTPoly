@@ -73,4 +73,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL PivotedCholeskyDecomposition(h_AMat%data, h_LMat%data, rank_in, &
          & h_solver_parameters%data)
   END SUBROUTINE PivotedCholeskyDecomposition_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LinearSolversModule_wrp

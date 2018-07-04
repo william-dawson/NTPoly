@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 31
+    mat_dim = 127
 
     @classmethod
     def setUpClass(self):
@@ -130,7 +130,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_pseudoinverse(self):
+    def a_test_pseudoinverse(self):
         '''Test routines to compute the pseudoinverse of matrices.'''
         # Starting Matrix.
         matrix1 = self.create_matrix()
@@ -637,7 +637,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_cholesky(self):
+    def a_test_cholesky(self):
         '''Test subroutine that computes the cholesky decomposition.'''
         # Starting Matrix
         matrix1 = self.create_matrix(SPD=True)
@@ -659,7 +659,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_pivotedcholesky(self):
+    def a_test_pivotedcholesky(self):
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
         matrix1 = mmread(os.environ["CholTest"])
         rank = 2
@@ -713,7 +713,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_splittingeigendecomposition(self):
+    def a_test_splittingeigendecomposition(self):
         '''
         Test routines to compute the eigen decomposition using the
         spectrum splitting approach.
@@ -742,7 +742,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_denseeigendecomposition(self):
+    def a_test_denseeigendecomposition(self):
         '''Test the dense eigen decomposition'''
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -786,7 +786,7 @@ class TestSolvers(unittest.TestCase):
         global_error = comm.bcast(relative_error2, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
-    def test_eigendecompositionhalf(self):
+    def a_test_eigendecompositionhalf(self):
         '''
         Test routines to compute the eigen decomposition for select
         eigenvalues.
@@ -816,7 +816,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_svd(self):
+    def a_test_svd(self):
         '''Test routines to compute the singular value decomposition.'''
         # Starting Matrix
         matrix1 = self.create_matrix()

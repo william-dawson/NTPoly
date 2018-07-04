@@ -50,4 +50,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeInverseRoot(h_InputMat%data, h_OutputMat%data, root, &
          & h_solver_parameters%data)
   END SUBROUTINE ComputeInverseRoot_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE RootSolversModule_wrp

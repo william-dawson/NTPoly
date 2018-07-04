@@ -62,4 +62,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL LowdinExtrapolate(h_PreviousDensity%data, h_OldOverlap%data, &
          & h_NewOverlap%data, h_NewDensity%data, h_solver_parameters%data)
   END SUBROUTINE LowdinExtrapolate_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE GeometryOptimizationModule_wrp

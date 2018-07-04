@@ -25,8 +25,6 @@ MODULE MatrixDModule
      COMPLEX(NTCOMPLEX), DIMENSION(:,:), ALLOCATABLE :: DATA
      INTEGER :: rows !< Matrix dimension: rows.
      INTEGER :: columns !< Matrix dimension: columns.
-   CONTAINS
-     FINAL :: DestructMatrix_ldc
   END TYPE Matrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructEmptyMatrix

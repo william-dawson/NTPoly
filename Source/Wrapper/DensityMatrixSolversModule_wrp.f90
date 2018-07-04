@@ -87,4 +87,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL HPCP(h_Hamiltonian%data, h_InverseSquareRoot%data, nel, &
          & h_Density%data, chemical_potential_out, h_solver_parameters%data)
   END SUBROUTINE HPCP_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DensityMatrixSolversModule_wrp
