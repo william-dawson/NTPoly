@@ -24,9 +24,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE Invert(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: Mat1
-    TYPE(Matrix_ps), INTENT(inout) :: InverseMat
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat1
+    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
@@ -156,9 +156,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE PseudoInverse(Mat1, InverseMat, solver_parameters_in)
     !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: Mat1
-    TYPE(Matrix_ps), INTENT(inout) :: InverseMat
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat1
+    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0

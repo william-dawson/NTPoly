@@ -32,7 +32,8 @@
                    & (temp_index_b-1)/memorypool%hash_size+1,outer_counter) = &
                    & temp_inserted_values
               memorypool%hash_index(temp_inserted_values+ &
-                   & ((temp_index_b-1)/memorypool%hash_size)*memorypool%hash_size, &
+                   & ((temp_index_b-1)/memorypool%hash_size)&
+                   & *memorypool%hash_size, &
                    & outer_counter) = temp_index_b
            END IF
            memorypool%value_array(temp_index_b,outer_counter) = &

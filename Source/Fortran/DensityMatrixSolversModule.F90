@@ -36,7 +36,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
@@ -657,7 +658,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
           polynomial:DO inner_counter=1,total_iterations
-             zero_value = zero_value + 2*((zero_value*zero_value)*(1-zero_value) - &
+             zero_value = zero_value + &
+                  & 2*((zero_value*zero_value)*(1-zero_value) - &
                   & sigma_array(inner_counter)*(zero_value*(1-zero_value)))
           END DO polynomial
           !! Change bracketing.
@@ -922,7 +924,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
           polynomial:DO inner_counter=1,total_iterations
-             zero_value = zero_value + 2*((zero_value*zero_value)*(1-zero_value) - &
+             zero_value = zero_value + &
+                  & 2*((zero_value*zero_value)*(1-zero_value) - &
                   & sigma_array(inner_counter)*(zero_value*(1-zero_value)))
           END DO polynomial
           !! Change bracketing.

@@ -1,4 +1,4 @@
-
+  
   !! Allocate Space For Result
   ALLOCATE(per_column_min(this%local_columns))
   ALLOCATE(per_column_max(this%local_columns))

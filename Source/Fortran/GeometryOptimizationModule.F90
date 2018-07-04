@@ -31,7 +31,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: PreviousDensity, Overlap
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices
@@ -135,7 +136,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL WriteListElement(key="Convergence", float_value_in=norm_value)
           CALL WriteListElement(key="Trace", float_value_in=trace_value)
           CALL WriteListElement(key="AddTrace", float_value_in=add_trace)
-          CALL WriteListElement(key="SubtractTrace", float_value_in=subtract_trace)
+          CALL WriteListElement(key="SubtractTrace", &
+               & float_value_in=subtract_trace)
           CALL ExitSubLog
        END IF
 
@@ -203,7 +205,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: OldOverlap
     TYPE(Matrix_ps), INTENT(IN)  :: NewOverlap
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+         & solver_parameters_in
     !! Handling Optional Parameters
     TYPE(IterativeSolverParameters_t) :: solver_parameters
     !! Local Matrices

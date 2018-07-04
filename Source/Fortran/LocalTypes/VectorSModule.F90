@@ -53,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL) :: working_value_a, working_value_b
 
-    include "sparse_includes/AddSparseVectors.f90"
+    INCLUDE "sparse_includes/AddSparseVectors.f90"
 
   END SUBROUTINE AddSparseVectors_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -73,7 +73,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: working_value_a, working_value_b
 
-    include "sparse_includes/DotSparseVectors.f90"
+    INCLUDE "sparse_includes/DotSparseVectors.f90"
 
   END FUNCTION DotSparseVectors_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -85,8 +85,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] inner_index_c list of indices computed for C.
   !! @param[out] values_c list of values computed for C.
   !! @param[out] total_values_c this is the total number of values in C.
-  PURE SUBROUTINE PairwiseMultiplyVectors_r(inner_index_a,values_a,inner_index_b,&
-       & values_b,inner_index_c,values_c,total_values_c)
+  PURE SUBROUTINE PairwiseMultiplyVectors_r(inner_index_a,values_a, &
+       & inner_index_b,values_b,inner_index_c,values_c,total_values_c)
     !! Parameters
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
@@ -98,7 +98,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: working_value_a, working_value_b
 
-    include "sparse_includes/PairwiseMultiplyVectors.f90"
+    INCLUDE "sparse_includes/PairwiseMultiplyVectors.f90"
 
   END SUBROUTINE PairwiseMultiplyVectors_r
 
@@ -132,7 +132,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     COMPLEX(NTCOMPLEX) :: working_value_a, working_value_b
 
-    include "sparse_includes/AddSparseVectors.f90"
+    INCLUDE "sparse_includes/AddSparseVectors.f90"
 
   END SUBROUTINE AddSparseVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -152,7 +152,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     COMPLEX(NTCOMPLEX) :: working_value_a, working_value_b
 
-    include "sparse_includes/DotSparseVectors.f90"
+    INCLUDE "sparse_includes/DotSparseVectors.f90"
 
   END FUNCTION DotSparseVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,8 +164,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] inner_index_c list of indices computed for C.
   !! @param[out] values_c list of values computed for C.
   !! @param[out] total_values_c this is the total number of values in C.
-  PURE SUBROUTINE PairwiseMultiplyVectors_c(inner_index_a,values_a,inner_index_b,&
-       & values_b,inner_index_c,values_c,total_values_c)
+  PURE SUBROUTINE PairwiseMultiplyVectors_c(inner_index_a,values_a, &
+       & inner_index_b, values_b,inner_index_c,values_c,total_values_c)
     !! Parameters
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_a
     INTEGER, DIMENSION(:), INTENT(IN)  :: inner_index_b
@@ -177,7 +177,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     COMPLEX(NTCOMPLEX) :: working_value_a, working_value_b
 
-    include "sparse_includes/PairwiseMultiplyVectors.f90"
+    INCLUDE "sparse_includes/PairwiseMultiplyVectors.f90"
 
   END SUBROUTINE PairwiseMultiplyVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

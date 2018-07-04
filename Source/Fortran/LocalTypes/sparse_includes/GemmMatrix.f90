@@ -61,8 +61,8 @@
   ELSE
      !! Setup the memory pool
      IF (.NOT. PRESENT(blocked_memory_pool_in)) THEN
-       CALL ConstructMatrixMemoryPool(blocked_memory_pool, mat_c_columns, &
-            & mat_c_rows, sparsity_estimate)
+        CALL ConstructMatrixMemoryPool(blocked_memory_pool, mat_c_columns, &
+             & mat_c_rows, sparsity_estimate)
         pool_flag = .FALSE.
      ELSEIF (.NOT. CheckMemoryPoolValidity(blocked_memory_pool_in, &
           & mat_c_columns, mat_c_rows)) THEN

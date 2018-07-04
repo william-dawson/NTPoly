@@ -6,7 +6,7 @@
 
   CALL GetMatrixTripletList(this, triplet_list)
   CALL ConstructTripletList(new_list)
-  
+
   DO counter=1,triplet_list%CurrentSize
      CALL GetTripletAt(triplet_list, counter, temporary)
      IF (ABS(temporary%point_value) .GT. threshold) THEN

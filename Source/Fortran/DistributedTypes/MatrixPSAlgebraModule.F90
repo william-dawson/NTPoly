@@ -138,15 +138,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Setup Memory Pool
     IF (PRESENT(memory_pool_in)) THEN
        IF (matA%is_complex) THEN
-         IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matA)) THEN
-            CALL DestructMatrixMemoryPool(memory_pool_in)
-            memory_pool_in = MatrixMemoryPool_p(matA)
-         END IF
+          IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matA)) THEN
+             CALL DestructMatrixMemoryPool(memory_pool_in)
+             memory_pool_in = MatrixMemoryPool_p(matA)
+          END IF
        ELSE
-         IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matB)) THEN
-            CALL DestructMatrixMemoryPool(memory_pool_in)
-            memory_pool_in = MatrixMemoryPool_p(matB)
-         END IF
+          IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matB)) THEN
+             CALL DestructMatrixMemoryPool(memory_pool_in)
+             memory_pool_in = MatrixMemoryPool_p(matB)
+          END IF
        END IF
     ELSE
        memory_pool = MatrixMemoryPool_p(matA)
