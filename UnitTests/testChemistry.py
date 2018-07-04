@@ -1,4 +1,5 @@
-''' @package testDistributedSparseMatrix
+'''
+@package testDistributedSparseMatrix
 A test suite for the Distributed Sparse Matrix module.
 '''
 from Helpers import THRESHOLD, EXTRAPTHRESHOLD
@@ -17,9 +18,7 @@ comm = MPI.COMM_WORLD
 
 
 class TestChemistry(unittest.TestCase):
-    '''A test class for the distributed matrix module.'''
-    # Parameters for the tests
-    parameters = []
+    '''A test class for the chemistry solvers.'''
     # Matrix to compare to
     CheckMat = 0
     # Rank of the current process
@@ -81,20 +80,6 @@ class TestChemistry(unittest.TestCase):
         else:
             self.assertTrue(False)
         pass
-
-    def testrealio(self):
-        '''Test our ability to read data produced by a real chemistry program.'''
-        density_matrix = nt.DistributedSparseMatrix(self.realio)
-        density_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        normval = 0
-        if (self.my_rank == 0):
-            ResultMat = mmread(result_file)
-            self.CheckMat = mmread(self.realio)
-            normval = abs(norm(self.CheckMat - ResultMat))
-        global_norm = comm.bcast(normval, root=0)
-        self.assertLessEqual(global_norm, THRESHOLD)
 
     def test_trs2(self):
         '''Test our ability to compute the density matrix with TRS2.'''
@@ -177,6 +162,50 @@ class TestChemistry(unittest.TestCase):
         self.check_full()
         self.check_cp(chemical_potential)
 
+    def test_cg(self):
+        '''Test our ability to compute the density matrix with conjugate
+           gradient.'''
+        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
+        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
+        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
+            fock_matrix.GetActualDimension())
+        density_matrix = nt.DistributedSparseMatrix(
+            fock_matrix.GetActualDimension())
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+        chemical_potential = nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
+                                                                   inverse_sqrt_matrix,
+                                                                   self.nel, density_matrix,
+                                                                   self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
+        self.check_cp(chemical_potential)
+
+
+class TestChemistry_r(TestChemistry):
+    def testrealio(self):
+        '''Test our ability to read data produced by a real chemistry program.'''
+        density_matrix = nt.DistributedSparseMatrix(self.realio)
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            self.CheckMat = mmread(self.realio)
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
+
     def test_PExtrapolate(self):
         '''Test the density extrapolation routine.'''
         f1 = nt.DistributedSparseMatrix(self.geomh1)
@@ -227,33 +256,19 @@ class TestChemistry(unittest.TestCase):
 
         self.check_full_extrap()
 
-    def test_cg(self):
-        '''Test our ability to compute the density matrix with conjugate
-           gradient.'''
-        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
 
-        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.solver_parameters.SetLoadBalance(permutation)
+class TestChemistry_c(TestChemistry):
+    '''A test class for complex chemistry solvers.'''
 
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-                                               inverse_sqrt_matrix,
-                                               self.solver_parameters)
-        chemical_potential = nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
-                                                                   inverse_sqrt_matrix,
-                                                                   self.nel, density_matrix,
-                                                                   self.solver_parameters)
-
-        density_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_full()
-        self.check_cp(chemical_potential)
+    def setUp(self):
+        '''Set up an individual test.'''
+        self.my_rank = comm.Get_rank()
+        self.solver_parameters = nt.IterativeSolverParameters()
+        self.solver_parameters.SetVerbosity(True)
+        self.hamiltonian = os.environ["HCOMPLEX"]
+        self.overlap = os.environ["SCOMPLEX"]
+        self.density = os.environ["DCOMPLEX"]
+        self.nel = 10
 
 
 if __name__ == '__main__':

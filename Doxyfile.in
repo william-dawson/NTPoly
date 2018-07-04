@@ -281,7 +281,7 @@ OPTIMIZE_OUTPUT_VHDL   = NO
 # Note that for custom extensions you also need to set FILE_PATTERNS otherwise
 # the files are not read by doxygen.
 
-EXTENSION_MAPPING      = f=FortranFixed f90=FortranFree
+EXTENSION_MAPPING      = f=FortranFixed f90=FortranFree F90=FortranFree
 
 # If the MARKDOWN_SUPPORT tag is enabled then doxygen pre-processes all comments
 # according to the Markdown format, which allows for more readable
@@ -826,7 +826,14 @@ EXCLUDE_SYMLINKS       = NO
 # Note that the wildcards are matched against the file with absolute path, so to
 # exclude all test directories for example use the pattern */test/*
 
-EXCLUDE_PATTERNS       =
+EXCLUDE_PATTERNS       = @CMAKE_SOURCE_DIR@/Source/Fortran/Communication/includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/DistributedTypes/algebra_includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/DistributedTypes/includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/DistributedTypes/pool_includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/LocalTypes/dense_includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/LocalTypes/sparse_includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/LocalTypes/triplet_includes \
+     @CMAKE_SOURCE_DIR@/Source/Fortran/SolverSupport/includes
 
 # The EXCLUDE_SYMBOLS tag can be used to specify one or more symbol names
 # (namespaces, classes, functions, etc.) that should be excluded from the
@@ -1031,7 +1038,7 @@ COLS_IN_ALPHA_INDEX    = 5
 # while generating the index headers.
 # This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
 
-IGNORE_PREFIX          =
+IGNORE_PREFIX          = 
 
 #---------------------------------------------------------------------------
 # Configuration options related to the HTML output

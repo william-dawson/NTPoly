@@ -16,6 +16,9 @@ export GEOMO2=@CMAKE_SOURCE_DIR@/UnitTests/Data/S2.mtx
 export GEOMD2=@CMAKE_SOURCE_DIR@/UnitTests/Data/D2.mtx
 export REALIO=@CMAKE_SOURCE_DIR@/UnitTests/Data/realio.mtx
 export CholTest=@CMAKE_SOURCE_DIR@/UnitTests/Data/CholTest.mtx
+export HCOMPLEX=@CMAKE_SOURCE_DIR@/UnitTests/Data/complexH.mtx
+export SCOMPLEX=@CMAKE_SOURCE_DIR@/UnitTests/Data/complexS.mtx
+export DCOMPLEX=@CMAKE_SOURCE_DIR@/UnitTests/Data/complexD.mtx
 cd @CMAKE_BINARY_DIR@/UnitTests
 
 # Get Parameters
@@ -50,4 +53,9 @@ fi
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
 -m unittest -v testSolvers.TestSolvers
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testChemistry.TestChemistry
+-m unittest -v testSolvers.TestSolvers_r
+
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
+-m unittest -v testChemistry.TestChemistry_r
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
+-m unittest -v testChemistry.TestChemistry_c
