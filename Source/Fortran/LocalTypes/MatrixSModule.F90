@@ -341,7 +341,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
   !! @param[in] block_size_row_in specifies the size of the  rows.
   !! @param[in] block_size_column_in specifies the size of the columns.
-  SUBROUTINE SplitMatrix_lsr(this, block_rows, block_columns, &
+  PURE SUBROUTINE SplitMatrix_lsr(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(Matrix_lsr), INTENT(IN) :: this
@@ -608,7 +608,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
   !! @param[in] block_size_row_in specifies the size of the  rows.
   !! @param[in] block_size_column_in specifies the size of the columns.
-  SUBROUTINE SplitMatrix_lsc(this, block_rows, block_columns, &
+  PURE SUBROUTINE SplitMatrix_lsc(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
     TYPE(Matrix_lsc), INTENT(IN) :: this

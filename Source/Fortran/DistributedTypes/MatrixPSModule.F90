@@ -887,7 +887,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Data is returned with absolute coordinates.
   !! @param[in] this the distributed sparse matrix.
   !! @param[inout] triplet_list the list to fill.
-  PURE SUBROUTINE GetMatrixTripletList_psr(this, triplet_list)
+  SUBROUTINE GetMatrixTripletList_psr(this, triplet_list)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
@@ -908,7 +908,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Data is returned with absolute coordinates.
   !! @param[in] this the distributed sparse matrix.
   !! @param[inout] triplet_list the list to fill.
-  PURE SUBROUTINE GetMatrixTripletList_psc(this, triplet_list)
+  SUBROUTINE GetMatrixTripletList_psc(this, triplet_list)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
@@ -1316,7 +1316,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Every value in the matrix is changed into its complex conjugate.
   !! @param[inout] this the matrix to compute the complex conjugate of.
-  SUBROUTINE ConjugateMatrix_ps(this)
+  PURE SUBROUTINE ConjugateMatrix_ps(this)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Variables
@@ -1478,7 +1478,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take a local matrix, and use it to fill the local block matrix structure.
   !! @param[inout] this the distributed sparse matrix.
   !! @param[in] matrix_to_split the matrix to split up.
-  SUBROUTINE SplitMatrixToLocalBlocks_psr(this, matrix_to_split)
+  PURE SUBROUTINE SplitMatrixToLocalBlocks_psr(this, matrix_to_split)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_lsr), INTENT(IN) :: matrix_to_split
@@ -1492,7 +1492,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take a local matrix, and use it to fill the local block matrix structure.
   !! @param[inout] this the distributed sparse matrix.
   !! @param[in] matrix_to_split the matrix to split up.
-  SUBROUTINE SplitMatrixToLocalBlocks_psc(this, matrix_to_split)
+  PURE SUBROUTINE SplitMatrixToLocalBlocks_psc(this, matrix_to_split)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_lsc), INTENT(IN) :: matrix_to_split
@@ -1534,7 +1534,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the current matrix to a real type matrix.
   !! @param[in] in the matrix to convert.
   !! @param[inout] out real version of the matrix.
-  PURE SUBROUTINE ConvertMatrixToReal(in, out)
+  SUBROUTINE ConvertMatrixToReal(in, out)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: in
     TYPE(Matrix_ps), INTENT(INOUT) :: out
@@ -1549,7 +1549,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the current matrix to a complex type matrix.
   !! @param[in] in the matrix to convert.
   !! @param[inout] out complex version of the matrix.
-  PURE SUBROUTINE ConvertMatrixToComplex(in, out)
+  SUBROUTINE ConvertMatrixToComplex(in, out)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: in
     TYPE(Matrix_ps), INTENT(INOUT) :: out

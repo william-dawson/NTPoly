@@ -1,5 +1,7 @@
-'''@package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.'''
+'''
+@package testDistributedSparseMatrix
+A test suite for the Distributed Sparse Matrix module.
+'''
 import unittest
 import NTPolySwig as nt
 from random import randrange, seed, sample
@@ -36,16 +38,23 @@ class TestParameters:
         c = self.columns
         s = self.sparsity
         if complex:
-            return random(r, c, s, format="csr") + \
-                1j * random(r, c, s, format="csr")
+            mat = random(r, c, s, format="csr")
+            mat += 1j * random(r, c, s, format="csr")
         else:
-            return random(r, c, s, format="csr")
+            mat = random(r, c, s, format="csr")
+        return csr_matrix(mat)
 
 
 class TestDistributedMatrix(unittest.TestCase):
     '''A test class for the distributed matrix module.'''
     # Parameters for the tests
     parameters = []
+    # Input file name 1
+    input_file1 = scratch_dir + "/matrix1.mtx"
+    # Input file name 2
+    input_file2 = scratch_dir + "/matrix2.mtx"
+    # Input file name 3
+    input_file3 = scratch_dir + "/matrix3.mtx"
     # Where to store the result file
     result_file = scratch_dir + "/result.mtx"
     # Matrix to compare against
@@ -56,6 +65,11 @@ class TestDistributedMatrix(unittest.TestCase):
     TripletList = nt.TripletList_r
     # Whether the matrix is complex or not
     complex = False
+
+    def write_matrix(self, mat, file_name):
+        if self.my_rank == 0:
+            mmwrite(file_name, csr_matrix(mat))
+        comm.barrier()
 
     @classmethod
     def setUpClass(self):
@@ -90,14 +104,11 @@ class TestDistributedMatrix(unittest.TestCase):
     def test_read(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
-            if (self.my_rank == 0):
-                matrix1 = param.create_matrix(self.complex)
-                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-                self.CheckMat = matrix1
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
 
-            comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
+            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
             ntmatrix1.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
@@ -106,18 +117,13 @@ class TestDistributedMatrix(unittest.TestCase):
     def test_readwritebinary(self):
         '''Test our ability to read and write binary.'''
         for param in self.parameters:
-            if (self.my_rank == 0):
-                matrix1 = param.create_matrix(self.complex)
-                mmwrite(scratch_dir + "/matrix1.mtx",
-                        csr_matrix(matrix1), symmetry="general")
-                self.CheckMat = matrix1
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
 
-            comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
-            ntmatrix1.WriteToBinary(scratch_dir + "/matrix2.mtx")
-            ntmatrix2 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix2.mtx", True)
+            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+            ntmatrix1.WriteToBinary(self.input_file2)
+            ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, True)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
@@ -126,17 +132,15 @@ class TestDistributedMatrix(unittest.TestCase):
     def test_gettripletlist(self):
         '''Test extraction of triplet list.'''
         for param in self.parameters:
-            if (self.my_rank == 0):
-                matrix1 = param.create_matrix(self.complex)
-                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-                self.CheckMat = matrix1
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
 
-            comm.barrier()
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(
-                    scratch_dir + "/matrix1.mtx", False)
+                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
             else:
                 ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+
             triplet_list = self.TripletList(0)
             if self.myslice == 0:
                 ntmatrix1.GetTripletList(triplet_list)
@@ -151,16 +155,12 @@ class TestDistributedMatrix(unittest.TestCase):
     def test_repartition(self):
         '''Test extraction of triplet list via repartition function.'''
         for param in self.parameters:
-            if (self.my_rank == 0):
-                matrix1 = param.create_matrix(self.complex)
-                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-                self.CheckMat = matrix1
-
-            comm.barrier()
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
 
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(
-                    scratch_dir + "/matrix1.mtx", False)
+                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
             else:
                 ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
 
@@ -200,14 +200,11 @@ class TestDistributedMatrix(unittest.TestCase):
     def test_transpose(self):
         '''Test our ability to transpose matrices.'''
         for param in self.parameters:
-            if (self.my_rank == 0):
-                matrix1 = param.create_matrix(self.complex)
-                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-                self.CheckMat = matrix1.T
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
 
-            comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
+            self.CheckMat = matrix1.T
+            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
             ntmatrix2 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.Transpose(ntmatrix1)
@@ -216,20 +213,20 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
+
 class TestDistributedMatrix_c(TestDistributedMatrix):
     TripletList = nt.TripletList_c
     complex = True
+
     def test_conjugatetranspose(self):
         '''Test our ability to compute the conjugate transpose of a matrix.'''
         for param in self.parameters:
-            if (self.my_rank == 0):
-                matrix1 = param.create_matrix(self.complex)
-                mmwrite(scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-                self.CheckMat = matrix1.H
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
 
-            comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(
-                scratch_dir + "/matrix1.mtx", False)
+            self.CheckMat = matrix1.H
+
+            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
             ntmatrix2 = nt.DistributedSparseMatrix(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.Transpose(ntmatrix1)
@@ -238,6 +235,7 @@ class TestDistributedMatrix_c(TestDistributedMatrix):
             comm.barrier()
 
             self.check_result()
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,5 +1,7 @@
-'''@package testSparseMatrix
-A test suite for the Sparse Matrix module.'''
+'''
+@package testSparseMatrix
+A test suite for the Sparse Matrix module.
+'''
 import unittest
 import NTPolySwig as nt
 
@@ -37,16 +39,21 @@ class TestParameters:
         self.sparsity = sparsity
 
     def create_matrix(self, square=False, complex=False):
+        '''
+        Function to create a matrix for a given set of parameters.
+        '''
         r = self.rows
         c = self.columns
         s = self.sparsity
         if square:
             r = c
         if complex:
-            return random(r, c, s, format="csr") + 1j * \
-                random(r, c, s, format="csr")
+            mat = random(r, c, s, format="csr")
+            mat += 1j * random(r, c, s, format="csr")
         else:
-            return random(r, c, s, format="csr")
+            mat = random(r, c, s, format="csr")
+
+        return csr_matrix(mat)
 
 
 class TestLocalMatrix(unittest.TestCase):
@@ -72,10 +79,10 @@ class TestLocalMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(8, 8, 1.0))
 
     def test_read(self):
-        '''Test our ability to read and write matrices.'''
+        '''Test routines to read and write matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
             matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
@@ -83,11 +90,11 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_readsymmetric(self):
-        '''Test our ability to read and write matrices.'''
+        '''Test routines to read and write matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex, square=True)
             matrix1 = matrix1 + matrix1.H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
             matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
             ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
@@ -95,12 +102,12 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_addition(self):
-        '''Test our ability to add together matrices.'''
+        '''Test routines to add together matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
             alpha = uniform(1.0, 2.0)
             CheckMat = alpha * matrix1 + matrix2
             matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
@@ -112,10 +119,10 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_addzero(self):
-        '''Test our ability to add together a matrix and zero.'''
+        '''Test routines to add together a matrix and zero.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
 
             CheckMat = matrix1
             matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
@@ -128,10 +135,10 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_addzeroreverse(self):
-        '''Test our ability to add together a matrix and zero.'''
+        '''Test routines to add together a matrix and zero.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
 
             CheckMat = matrix1
             matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
@@ -144,12 +151,12 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_dot(self):
-        '''Test our ability to dot two matrices.'''
+        '''Test routines to dot two matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
             check = sum(multiply(matrix1.todense(), matrix2.todense()))
             matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")
@@ -158,10 +165,10 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_transpose(self):
-        '''Test our ability to transpose a matrix.'''
+        '''Test routines to transpose a matrix.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
 
             matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2T = self.SparseMatrix(
@@ -175,12 +182,12 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_pairwise(self):
-        '''Test our ability to pairwise multiply two matrices.'''
+        '''Test routines to pairwise multiply two matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
             CheckMat = csr_matrix(
                 multiply(matrix1.todense(), matrix2.todense()))
 
@@ -196,12 +203,12 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_multiply(self):
-        '''Test our ability to multiply two matrices.'''
+        '''Test routines to multiply two matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex).H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
             alpha = uniform(1.0, 2.0)
             beta = 0.0
             if abs(beta) > THRESHOLD:
@@ -224,12 +231,12 @@ class TestLocalMatrix(unittest.TestCase):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_multiply_zero(self):
-        '''Test our ability to multiply two matrices where one is zero.'''
+        '''Test routines to multiply two matrices where one is zero.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = 0 * param.create_matrix(complex=self.complex).H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
             alpha = uniform(1.0, 2.0)
             beta = 0.0
             if abs(beta) > THRESHOLD:
@@ -256,7 +263,7 @@ class TestLocalMatrix(unittest.TestCase):
         for param in self.parameters:
             matrix1 = param.create_matrix(square=True, complex=self.complex)
             matrix1 = matrix1 + matrix1.H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
             w, vdense = eigh(matrix1.todense())
             CheckV = csr_matrix(vdense)
 
@@ -279,7 +286,7 @@ class TestLocalMatrix(unittest.TestCase):
             if param.rows == 0:
                 continue
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
             row_num = randint(0, param.rows - 1)
             CheckMat = matrix1[row_num, :]
 
@@ -298,7 +305,7 @@ class TestLocalMatrix(unittest.TestCase):
             if param.columns == 0:
                 continue
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
             column_num = randint(0, param.columns - 1)
             CheckMat = matrix1[:, column_num]
 
@@ -318,10 +325,10 @@ class TestLocalMatrix_c(TestLocalMatrix):
     complex = True
 
     def test_conjugatetranspose(self):
-        '''Test our ability to compute the conjugate transpose of a matrix.'''
+        '''Test routines to compute the conjugate transpose of a matrix.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
 
             matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2T = self.SparseMatrix(
@@ -336,12 +343,12 @@ class TestLocalMatrix_c(TestLocalMatrix):
             self.assertLessEqual(normval, THRESHOLD)
 
     def test_dot(self):
-        '''Test our ability to dot two matrices.'''
+        '''Test routines to dot two matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", csr_matrix(matrix1))
-            mmwrite(self.scratch_dir + "/matrix2.mtx", csr_matrix(matrix2))
+            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
             check = sum(multiply(conj(matrix1.todense()), matrix2.todense()))
             matrix1 = self.SparseMatrix(self.scratch_dir + "/matrix1.mtx")
             matrix2 = self.SparseMatrix(self.scratch_dir + "/matrix2.mtx")

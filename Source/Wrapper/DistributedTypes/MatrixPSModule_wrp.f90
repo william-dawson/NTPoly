@@ -225,7 +225,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixLogicalDimension_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
-  PURE SUBROUTINE GetMatrixTripletList_psr_wrp(ih_this, ih_triplet_list) &
+  SUBROUTINE GetMatrixTripletList_psr_wrp(ih_this, ih_triplet_list) &
        & bind(c,name="GetMatrixTripletList_psr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
@@ -238,7 +238,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixTripletList_psr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
-  PURE SUBROUTINE GetMatrixTripletList_psc_wrp(ih_this, ih_triplet_list) &
+  SUBROUTINE GetMatrixTripletList_psc_wrp(ih_this, ih_triplet_list) &
        & bind(c,name="GetMatrixTripletList_psc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
