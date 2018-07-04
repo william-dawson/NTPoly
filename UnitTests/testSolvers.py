@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    matrix_dimension = 31
+    matrix_dimension = 127
 
     @classmethod
     def setUpClass(self):
@@ -48,6 +48,24 @@ class TestSolvers(unittest.TestCase):
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(rows, columns, slices)
+
+    def create_matrix(self, SPD=None, scaled=None, diag_dom=None):
+        mat = rand(self.matrix_dimension, self.matrix_dimension, density=1.0)
+        mat = mat + mat.T
+        if SPD:
+            mat = mat.T.dot(mat)
+        if scaled:
+            mat = (1.0 / self.matrix_dimension) * mat
+        if diag_dom:
+            identity_matrix = identity(self.matrix_dimension)
+            mat = mat + identity_matrix * self.matrix_dimension
+
+        return csr_matrix(mat)
+
+    def write_matrix(self, mat, file_name):
+        if self.my_rank == 0:
+            mmwrite(file_name, csr_matrix(mat))
+        comm.barrier()
 
     def setUp(self):
         '''Set up all of the tests.'''
@@ -92,21 +110,11 @@ class TestSolvers(unittest.TestCase):
     def test_invert(self):
         '''Test our ability to invert matrices.'''
         # Starting Matrix
-        temp_mat = zeros((self.matrix_dimension, self.matrix_dimension))
-        for j in range(0, self.matrix_dimension):
-            for i in range(0, self.matrix_dimension):
-                if i == j:
-                    temp_mat[j, i] = 1.0
-                else:
-                    temp_mat[j, i] = random() / (float(i - j)**2)
-        temp_mat = (temp_mat.T + temp_mat) * 0.5
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         self.CheckMat = inv(csc_matrix(matrix1))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         overlap_matrix = nt.DistributedSparseMatrix(
@@ -128,18 +136,15 @@ class TestSolvers(unittest.TestCase):
     def test_pseudoinverse(self):
         '''Test our ability to compute the pseudoinverse of matrices.'''
         # Starting Matrix.
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix()
+
         # Make it rank deficient
         k = int(self.matrix_dimension / 2)
         matrix1 = matrix1[k:].dot(matrix1[k:].T)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         self.CheckMat = csr_matrix(pinv(matrix1.todense()))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         overlap_matrix = nt.DistributedSparseMatrix(
@@ -161,19 +166,12 @@ class TestSolvers(unittest.TestCase):
     def test_inversesquareroot(self):
         '''Test our ability to compute the inverse square root of matrices.'''
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (temp_mat.T + temp_mat)
-        identity_matrix = identity(self.matrix_dimension)
-        temp_mat = temp_mat + identity_matrix * self.matrix_dimension
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(SPD=True, diag_dom=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: 1.0 / sqrt(x))
+        dense_check = funm(matrix1.todense(), lambda x: 1.0 / sqrt(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         overlap_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -193,19 +191,12 @@ class TestSolvers(unittest.TestCase):
     def test_squareroot(self):
         '''Test our ability to compute the square root of matrices.'''
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (temp_mat.T + temp_mat)
-        identity_matrix = identity(self.matrix_dimension)
-        temp_mat = temp_mat + identity_matrix * self.matrix_dimension
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(SPD=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: sqrt(x))
+        dense_check = funm(matrix1.todense(), lambda x: sqrt(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -228,20 +219,13 @@ class TestSolvers(unittest.TestCase):
             print("Root:", root)
             # Starting Matrix. Care taken to make sure eigenvalues are
             # positive.
-            temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                            density=1.0)
-            temp_mat = (temp_mat.T + temp_mat)
-            identity_matrix = identity(self.matrix_dimension)
-            temp_mat = temp_mat + identity_matrix * self.matrix_dimension
-            matrix1 = csr_matrix(temp_mat)
+            matrix1 = self.create_matrix(diag_dom=True)
+            self.write_matrix(matrix1, self.input_file)
 
             # Check Matrix
-            dense_check = funm(temp_mat.todense(),
+            dense_check = funm(matrix1.todense(),
                                lambda x: power(x, -1.0 / root))
             self.CheckMat = csr_matrix(dense_check)
-            if self.my_rank == 0:
-                mmwrite(self.input_file, csr_matrix(matrix1))
-            comm.barrier()
 
             # Result Matrix
             input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -265,20 +249,13 @@ class TestSolvers(unittest.TestCase):
             print("Root", root)
             # Starting Matrix. Care taken to make sure eigenvalues are
             # positive.
-            temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                            density=1.0)
-            temp_mat = (temp_mat.T + temp_mat)
-            identity_matrix = identity(self.matrix_dimension)
-            temp_mat = temp_mat + identity_matrix * self.matrix_dimension
-            matrix1 = csr_matrix(temp_mat)
+            matrix1 = self.create_matrix(diag_dom=True)
+            self.write_matrix(matrix1, self.input_file)
 
             # Check Matrix
-            dense_check = funm(temp_mat.todense(),
+            dense_check = funm(matrix1.todense(),
                                lambda x: power(x, 1.0 / root))
             self.CheckMat = csr_matrix(dense_check)
-            if self.my_rank == 0:
-                mmwrite(self.input_file, csr_matrix(matrix1))
-            comm.barrier()
 
             # Result Matrix
             input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -296,17 +273,12 @@ class TestSolvers(unittest.TestCase):
     def test_signfunction(self):
         '''Test our ability to compute the matrix sign function.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: sign(x))
+        dense_check = funm(matrix1.todense(), lambda x: sign(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -325,17 +297,12 @@ class TestSolvers(unittest.TestCase):
     def test_exponentialfunction(self):
         '''Test our ability to compute the matrix exponential.'''
         # Starting Matrix
-        temp_mat = rand(
-            self.matrix_dimension, self.matrix_dimension, density=1.0)
-        temp_mat = 8 * (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = 8*self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: exp(x))
+        dense_check = funm(matrix1.todense(), lambda x: exp(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -355,17 +322,12 @@ class TestSolvers(unittest.TestCase):
         '''Test our ability to compute the matrix exponential using the
         pade method.'''
         # Starting Matrix
-        temp_mat = rand(
-            self.matrix_dimension, self.matrix_dimension, density=1.0)
-        temp_mat = 8 * (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = 8*self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: exp(x))
+        dense_check = funm(matrix1.todense(), lambda x: exp(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -392,13 +354,11 @@ class TestSolvers(unittest.TestCase):
         temp_mat = 4 * (1.0 / self.matrix_dimension) * \
             (temp_mat + identity_matrix * self.matrix_dimension)
         matrix1 = csr_matrix(temp_mat)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         dense_check = funm(temp_mat.todense(), lambda x: log(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -446,17 +406,12 @@ class TestSolvers(unittest.TestCase):
     def test_sinfunction(self):
         '''Test our ability to compute the matrix sine.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: sin(x))
+        dense_check = funm(matrix1.todense(), lambda x: sin(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -475,18 +430,12 @@ class TestSolvers(unittest.TestCase):
     def test_cosfunction(self):
         '''Test our ability to compute the matrix cosine.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(),
-                           lambda x: cos(x))
+        dense_check = funm(matrix1.todense(), lambda x: cos(x))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -509,13 +458,11 @@ class TestSolvers(unittest.TestCase):
         coef = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
 
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        val, vec = eigh(temp_mat.todense())
+        val, vec = eigh(matrix1.todense())
         for i in range(0, len(val)):
             temp = val[i]
             val[i] = 0
@@ -523,9 +470,6 @@ class TestSolvers(unittest.TestCase):
                 val[i] = val[i] + coef[j] * (temp**j)
         temp_poly = dot(dot(vec, diag(val)), vec.T)
         self.CheckMat = csr_matrix(temp_poly)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -553,13 +497,11 @@ class TestSolvers(unittest.TestCase):
         coef = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
 
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        val, vec = eigh(temp_mat.todense())
+        val, vec = eigh(matrix1.todense())
         for i in range(0, len(val)):
             temp = val[i]
             val[i] = 0
@@ -567,9 +509,6 @@ class TestSolvers(unittest.TestCase):
                 val[i] = val[i] + coef[j] * (temp**j)
         temp_poly = dot(dot(vec, diag(val)), vec.T)
         self.CheckMat = csr_matrix(temp_poly)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -593,10 +532,8 @@ class TestSolvers(unittest.TestCase):
     def test_chebyshevfunction(self):
         '''Test our ability to compute using Chebyshev polynomials.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Function
         x = linspace(-1.0, 1.0, 200)
@@ -604,11 +541,8 @@ class TestSolvers(unittest.TestCase):
         coef = chebfit(x, y, 10)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: chebval(x, coef))
+        dense_check = funm(matrix1.todense(), lambda x: chebval(x, coef))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -633,10 +567,8 @@ class TestSolvers(unittest.TestCase):
         '''Test our ability to compute using Chebyshev polynomials
         recursively.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat.T + temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Function
         x = linspace(-1.0, 1.0, 200)
@@ -645,11 +577,8 @@ class TestSolvers(unittest.TestCase):
         coef = chebfit(x, y, 16 - 1)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: chebval(x, coef))
+        dense_check = funm(matrix1.todense(), lambda x: chebval(x, coef))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -673,17 +602,14 @@ class TestSolvers(unittest.TestCase):
     def test_cgsolve(self):
         '''Test our ability to solve general matrix equations with CG.'''
         # Starting Matrix
-        A = rand(self.matrix_dimension, self.matrix_dimension, density=1.0)
-        B = rand(self.matrix_dimension, self.matrix_dimension, density=1.0)
-        A = A.T.dot(A)
+        A = self.create_matrix(SPD=True)
+        B = self.create_matrix()
+        self.write_matrix(A, self.input_file)
+        self.write_matrix(B, self.input_file2)
 
         # Check Matrix
         Ainv = inv(A)
         self.CheckMat = csr_matrix(Ainv.dot(B))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(A))
-            mmwrite(self.input_file2, csr_matrix(B))
-        comm.barrier()
 
         # Result Matrix
         AMat = nt.DistributedSparseMatrix(self.input_file, False)
@@ -704,23 +630,17 @@ class TestSolvers(unittest.TestCase):
     def test_powermethod(self):
         '''Test our ability to compute eigenvalues with the power method.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (temp_mat.T + temp_mat)
-
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(temp_mat))
-        comm.barrier()
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Result Matrix
         max_value = 0.0
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        max_value = nt.EigenBounds.PowerBounds(
-            input_matrix,
+        max_value = nt.EigenBounds.PowerBounds(input_matrix,
             self.iterative_solver_parameters)
         comm.barrier()
 
-        vals, vec = eigsh(temp_mat, which="LM", k=1)
+        vals, vec = eigsh(matrix1, which="LM", k=1)
         relative_error = abs(max_value - vals[0])
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
@@ -728,11 +648,8 @@ class TestSolvers(unittest.TestCase):
     def test_hermitefunction(self):
         '''Test our ability to compute using Hermite polynomials.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension,
-                        self.matrix_dimension,
-                        density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Function
         x = linspace(-1.0, 1.0, 200)
@@ -740,11 +657,8 @@ class TestSolvers(unittest.TestCase):
         coef = hermfit(x, y, 10)
 
         # Check Matrix
-        dense_check = funm(temp_mat.todense(), lambda x: hermval(x, coef))
+        dense_check = funm(matrix1.todense(), lambda x: hermval(x, coef))
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -768,19 +682,12 @@ class TestSolvers(unittest.TestCase):
     def test_cholesky(self):
         '''Test subroutine that computes the cholesky decomposition.'''
         # Starting Matrix
-        temp_mat = scipy.sparse.rand(self.matrix_dimension,
-                                     self.matrix_dimension,
-                                     density=1.0)
-        temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
-        # Symmetric Positive Definite
-        matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
+        matrix1 = self.create_matrix(SPD=True)
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         dense_check = cholesky(matrix1.todense(), lower=True)
         self.CheckMat = csr_matrix(dense_check)
-        if self.my_rank == 0:
-            scipy.io.mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -797,23 +704,11 @@ class TestSolvers(unittest.TestCase):
 
     def test_pivotedcholesky(self):
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
-        # Starting Matrix
-        # temp_mat = scipy.sparse.rand(self.matrix_dimension,
-        #                              self.matrix_dimension,
-        #                              density=1.0, random_state=2)
-        # temp_mat = (1.0 / self.matrix_dimension) * (temp_mat)
-        # rand2 = 10*rand(self.matrix_dimension, self.matrix_dimension,
-        #              density=0.1)
-        # temp_mat = temp_mat + rand2 + rand2.T
-        # Symmetric Positive Definite
-        # matrix1 = csr_matrix(temp_mat.T.dot(temp_mat))
         matrix1 = mmread(os.environ["CholTest"])
         rank = 2
+        self.write_matrix(matrix1, self.input_file)
 
         self.CheckMat = csr_matrix(matrix1)
-        if self.my_rank == 0:
-            scipy.io.mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         A = nt.DistributedSparseMatrix(self.input_file, False)
@@ -835,16 +730,12 @@ class TestSolvers(unittest.TestCase):
     def test_polarfunction(self):
         '''Test our ability to compute the matrix polar decomposition.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        matrix1 = csr_matrix(temp_mat)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         dense_check_u, dense_check_h = polar(matrix1.todense())
         self.CheckMat = csr_matrix(dense_check_h)
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -872,16 +763,12 @@ class TestSolvers(unittest.TestCase):
     def test_splittingeigendecomposition(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0, random_state=2)
-        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         vals, vecs = eigh(matrix1.todense())
         self.CheckMat = csr_matrix(diag(vals))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -901,11 +788,9 @@ class TestSolvers(unittest.TestCase):
 
     def test_denseeigendecomposition(self):
         '''Test the dense eigen decomposition'''
-        matrix1 = rand(self.matrix_dimension, self.matrix_dimension,
-                       density=1.0, random_state=1)
-        matrix1 = 0.5*csr_matrix(matrix1 + matrix1.T)
-        if (self.my_rank == 0):
-            mmwrite(self.input_file, matrix1)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
         w, vdense = eigh(matrix1.todense())
         CheckV = csr_matrix(vdense)
 
@@ -948,17 +833,13 @@ class TestSolvers(unittest.TestCase):
     def test_eigendecompositionhalf(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         vals, vecs = eigh(matrix1.todense())
         valshalf = vals[:int(self.matrix_dimension / 2)]
         self.CheckMat = csr_matrix(diag(valshalf))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
@@ -979,16 +860,12 @@ class TestSolvers(unittest.TestCase):
     def test_svd(self):
         '''Test our ability to compute the eigen decomposition.'''
         # Starting Matrix
-        temp_mat = rand(self.matrix_dimension, self.matrix_dimension,
-                        density=1.0)
-        matrix1 = csr_matrix(temp_mat + temp_mat.T)
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
         u, s, vh = svd(matrix1.todense())
         self.CheckMat = csr_matrix(diag(s))
-        if self.my_rank == 0:
-            mmwrite(self.input_file, csr_matrix(matrix1))
-        comm.barrier()
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
