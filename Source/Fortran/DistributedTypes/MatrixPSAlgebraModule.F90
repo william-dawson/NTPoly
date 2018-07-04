@@ -137,16 +137,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Setup Memory Pool
     IF (PRESENT(memory_pool_in)) THEN
-       IF (.NOT. CheckMemoryPoolValidity(memory_pool_in)) THEN
-          CALL DestructMatrixMemoryPool(memory_pool_in)
-          memory_pool_in = MatrixMemoryPool_p(matA)
+       IF (matA%is_complex) THEN
+         IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matA)) THEN
+            CALL DestructMatrixMemoryPool(memory_pool_in)
+            memory_pool_in = MatrixMemoryPool_p(matA)
+         END IF
+       ELSE
+         IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matB)) THEN
+            CALL DestructMatrixMemoryPool(memory_pool_in)
+            memory_pool_in = MatrixMemoryPool_p(matB)
+         END IF
        END IF
     ELSE
        memory_pool = MatrixMemoryPool_p(matA)
     END IF
 
     !! Perform Upcasting
-    IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
+    IF (matB%is_complex .AND. .NOT. matA%is_complex) THEN
        CALL ConvertMatrixToComplex(matA, matAConverted)
        IF (PRESENT(memory_pool_in)) THEN
           CALL MatrixMultiply_ps_imp(matAConverted, matB, matC, alpha, beta, &
@@ -155,7 +162,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL MatrixMultiply_ps_imp(matAConverted, matB, matC, alpha, beta, &
                & threshold, memory_pool)
        END IF
-    ELSE IF (.NOT. matA%is_complex .AND. matB%is_complex) THEN
+    ELSE IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matB, matBConverted)
        IF (PRESENT(memory_pool_in)) THEN
           CALL MatrixMultiply_ps_imp(matA, matBConverted, matC, alpha, beta, &
@@ -175,6 +182,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     CALL DestructMatrixMemoryPool(memory_pool)
+    CALL DestructMatrix(matAConverted)
+    CALL DestructMatrix(matBConverted)
 
   END SUBROUTINE MatrixMultiply_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -236,6 +245,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define GatheredColumnContribution GatheredColumnContribution_c
 #define SliceContribution SliceContribution_c
 #define LMAT local_data_c
+#define MPGRID memory_pool%grid_c
 #include "algebra_includes/MatrixMultiply.f90"
 #undef AdjacentABlocks
 #undef LocalRowContribution
@@ -246,6 +256,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef GatheredColumnContribution
 #undef SliceContribution
 #undef LMAT
+#undef MPGRID
     ELSE
 #define AdjacentABlocks AdjacentABlocks_r
 #define LocalRowContribution LocalRowContribution_r
@@ -256,6 +267,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define GatheredColumnContribution GatheredColumnContribution_r
 #define SliceContribution SliceContribution_r
 #define LMAT local_data_r
+#define MPGRID memory_pool%grid_r
 #include "algebra_includes/MatrixMultiply.f90"
 #undef AdjacentABlocks
 #undef LocalRowContribution
@@ -266,6 +278,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef GatheredColumnContribution
 #undef SliceContribution
 #undef LMAT
+#undef MPGRID
     END IF
   END SUBROUTINE MatrixMultiply_ps_imp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

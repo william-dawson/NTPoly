@@ -41,8 +41,12 @@ fi
 -m unittest -v testDistributedSparseMatrix.TestDistributedMatrix
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
 -m unittest -v testDistributedSparseMatrix.TestDistributedMatrix_c
+
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
 -m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
+-m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra_c
+
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
 -m unittest -v testSolvers.TestSolvers
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
