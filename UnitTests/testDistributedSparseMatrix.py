@@ -34,6 +34,9 @@ class TestParameters:
         self.sparsity = sparsity
 
     def create_matrix(self, complex=False):
+        '''
+        Create the test matrix with the following parameters.
+        '''
         r = self.rows
         c = self.columns
         s = self.sparsity

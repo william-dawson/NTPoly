@@ -86,6 +86,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (PRESENT(Hmat)) THEN
        CALL TransposeMatrix(Umat, UmatT)
+       IF (UmatT%is_complex) THEN
+          CALL ConjugateMatrix(UmatT)
+       END IF
        CALL MatrixMultiply(UmatT, Mat1, Hmat, &
             & threshold_in=solver_parameters%threshold)
        CALL DestructMatrix(UmatT)
@@ -166,6 +169,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        IF (needs_transpose) THEN
           CALL TransposeMatrix(OutMat, OutMatT)
+          IF (OutMatT%is_complex) THEN
+             CALL ConjugateMatrix(OutMatT)
+          END IF
           CALL MatrixMultiply(OutMatT, OutMat, Temp1, &
                & alpha_in=-1.0*alpha_k**2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)

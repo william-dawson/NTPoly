@@ -9,6 +9,7 @@ include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/Helpers)
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran/LocalTypes)
 
 set(Fsrc
+    ${CMAKE_CURRENT_SOURCE_DIR}/SolverSupport/CholeskyModule.F90
     ChebyshevSolversModule.F90
     DensityMatrixSolversModule.F90
     EigenBoundsModule.F90

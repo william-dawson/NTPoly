@@ -177,33 +177,6 @@ class TestChemistry(unittest.TestCase):
         self.check_full()
         self.check_cp(chemical_potential)
 
-    # def test_HPCPPlus(self):
-    #     '''Test our ability to compute the density matrix with HPCP+.'''
-    #     fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-    #     overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-    #     inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-    #         fock_matrix.GetActualDimension())
-    #     density_matrix = nt.DistributedSparseMatrix(
-    #         fock_matrix.GetActualDimension())
-    #
-    #     permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-    #     permutation.SetRandomPermutation()
-    #     self.solver_parameters.SetLoadBalance(permutation)
-    #
-    #     nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-    #                                            inverse_sqrt_matrix,
-    #                                            self.solver_parameters)
-    #     chemical_potential = nt.DensityMatrixSolvers.HPCPPlus(fock_matrix,
-    #                                                           inverse_sqrt_matrix,
-    #                                                           self.nel, density_matrix,
-    #                                                           self.solver_parameters)
-    #
-    #     density_matrix.WriteToMatrixMarket(result_file)
-    #     comm.barrier()
-    #
-    #     self.check_full()
-    #     self.check_cp(chemical_potential)
-
     def test_PExtrapolate(self):
         '''Test the density extrapolation routine.'''
         f1 = nt.DistributedSparseMatrix(self.geomh1)

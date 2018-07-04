@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
+  USE CholeskyModule
   USE DataTypesModule
   USE MatrixDModule
   USE MatrixMemoryPoolPModule
@@ -10,18 +11,12 @@ MODULE LinearSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE MatrixReduceModule
-  USE ProcessGridModule
   USE MatrixSModule
-  USE VectorSModule
   USE TimerModule
-  USE TripletListModule
-  USE TripletModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !! Solvers
   PUBLIC :: CGSolver
   PUBLIC :: CholeskyDecomposition
   PUBLIC :: PivotedCholeskyDecomposition
@@ -125,10 +120,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
        CALL TransposeMatrix(RMat,RMatT)
+       IF (RMatT%is_complex) THEN
+          CALL ConjugateMatrix(RMatT)
+       END IF
        CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL MatrixTrace(TempMat, top)
        CALL TransposeMatrix(PMat,PMatT)
+       IF (PMatT%is_complex) THEN
+          CALL ConjugateMatrix(PMatT)
+       END IF
        CALL MatrixMultiply(PMatT, QMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL MatrixTrace(TempMat, bottom)
@@ -141,6 +142,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Update PMat
        CALL TransposeMatrix(RMat,RMatT)
+       IF (RMatT%is_complex) THEN
+          CALL ConjugateMatrix(RMatT)
+       END IF
        CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL MatrixTrace(TempMat, new_top)
@@ -503,296 +507,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(col_root_lookup)
     CALL DestructMatrix(sparse_a)
   END SUBROUTINE PivotedCholeskyDecomposition
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE UnpackCholesky(values_per_column, index, values, LMat)
-    !! Parameters
-    INTEGER, DIMENSION(:), INTENT(IN) :: values_per_column
-    INTEGER, DIMENSION(:,:), INTENT(IN) :: index
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values
-    TYPE(Matrix_ps), INTENT(INOUT) :: LMat
-    !! Local Variables
-    INTEGER :: local_columns
-    TYPE(TripletList_r) :: local_triplets
-    TYPE(Triplet_r) :: temp
-    INTEGER :: II, JJ
-
-    local_columns = LMat%local_columns
-
-    local_triplets = TripletList_r()
-    IF (LMat%process_grid%my_slice .EQ. 0) THEN
-       DO JJ = 1, local_columns
-          !! note transpose
-          temp%index_row = JJ + LMat%start_column - 1
-          DO II = 1, values_per_column(JJ)
-             !! note transpose
-             temp%index_column = INDEX(II,JJ) + LMat%start_row - 1
-             temp%point_value = values(II,JJ)
-             CALL AppendToTripletList(local_triplets, temp)
-          END DO
-       END DO
-    END IF
-    CALL FillMatrixFromTripletList(LMat, local_triplets)
-
-    !! Cleanup
-    CALL DestructTripletList(local_triplets)
-  END SUBROUTINE UnpackCholesky
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Helper routine which computes sparse dot products across processors.
-  !! Computes the dot product of one vector with several others.
-  !! @param[in] num_values_i the length of vector i.
-  !! @param[in] indices_i the index value of the sparse vector i.
-  !! @param[in] values_i the values of the sparse vector i.
-  !! @param[in] num_values_j an array with the length of vectors j.
-  !! @param[in] indices_j the indices of the vectors j.
-  !! @param[in] values_j the values of the vectors j.
-  !! @param[out] out_values the dot product values for each vector j.
-  !! @param[in] comm the communicator to reduce along.
-  SUBROUTINE DotAllHelper(num_values_i, indices_i, values_i, num_values_j, &
-       & indices_j, values_j, out_values, comm)
-    !! Parameters
-    INTEGER, INTENT(IN) :: num_values_i
-    INTEGER, DIMENSION(:), INTENT(IN) :: num_values_j
-    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
-    INTEGER, DIMENSION(:,:), INTENT(IN) :: indices_j
-    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values_j
-    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
-    INTEGER, INTENT(INOUT) :: comm
-    !! Local Variables
-    INTEGER :: err
-    INTEGER :: counter
-    INTEGER :: inner_len_j
-
-    !! Local Dot
-    !$omp parallel private(inner_len_j)
-    !$omp do
-    DO counter = 1, SIZE(num_values_j)
-       inner_len_j = num_values_j(counter)
-       out_values(counter) = DotSparseVectors(indices_i(:num_values_i), &
-            & values_i(:num_values_i), indices_j(:inner_len_j, counter), &
-            & values_j(:inner_len_j, counter))
-    END DO
-    !$omp end do
-    !$omp end parallel
-
-    !! Reduce Over Processes
-    CALL MPI_Allreduce(MPI_IN_PLACE, out_values, SIZE(num_values_j), &
-         & MPINTREAL, MPI_SUM, comm, err)
-
-  END SUBROUTINE DotAllHelper
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE DotAllPivoted(num_values_i, indices_i, values_i, num_values_j, &
-       & indices_j, values_j, pivot_vector, num_local_pivots, out_values, comm)
-    !! Parameters
-    INTEGER, INTENT(IN) :: num_values_i
-    INTEGER, DIMENSION(:), INTENT(IN) :: num_values_j
-    INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
-    INTEGER, DIMENSION(:,:), INTENT(IN) :: indices_j
-    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
-    REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values_j
-    INTEGER, DIMENSION(:), INTENT(IN) :: pivot_vector
-    INTEGER, INTENT(IN) :: num_local_pivots
-    REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
-    INTEGER, INTENT(INOUT) :: comm
-    !! Local Variables
-    INTEGER :: err
-    INTEGER :: counter
-    INTEGER :: inner_len_j
-    INTEGER :: local_pi_i
-
-    !! Local Dot
-    !$omp parallel private(inner_len_j, local_pi_i)
-    !$omp do
-    DO counter = 1, num_local_pivots
-       local_pi_i = pivot_vector(counter)
-       inner_len_j = num_values_j(local_pi_i)
-       out_values(counter) = DotSparseVectors(indices_i(:num_values_i), &
-            & values_i(:num_values_i), indices_j(:inner_len_j, local_pi_i), &
-            & values_j(:inner_len_j, local_pi_i))
-    END DO
-    !$omp end do
-    !$omp end parallel
-
-    !! Reduce Over Processes
-    CALL MPI_Allreduce(MPI_IN_PLACE, out_values, SIZE(num_values_j), &
-         & MPINTREAL, MPI_SUM, comm, err)
-
-  END SUBROUTINE DotAllPivoted
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A helper routine to broadcast a sparse vector
-  SUBROUTINE BroadcastVector(num_values, indices, values, root, comm)
-    !! Parameters
-    INTEGER, INTENT(INOUT) :: num_values
-    INTEGER, DIMENSION(:), INTENT(INOUT) :: indices
-    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
-    INTEGER, INTENT(IN) :: root
-    INTEGER, INTENT(INOUT) :: comm
-    !! Local
-    INTEGER :: err
-
-    CALL MPI_Bcast(num_values, 1, MPI_INT, root, comm, err)
-    CALL MPI_Bcast(indices(:num_values), num_values, MPI_INT, root, comm, err)
-    CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
-
-  END SUBROUTINE BroadcastVector
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A helper routine to insert a value into a sparse vector.
-  PURE SUBROUTINE AppendToVector(values_per, indices, values, insert_row, &
-       & insert_value)
-    !! Parameters
-    INTEGER, INTENT(INOUT) :: values_per
-    INTEGER, DIMENSION(:), INTENT(INOUT) :: indices
-    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
-    INTEGER, INTENT(IN) :: insert_row
-    REAL(NTREAL), INTENT(IN) :: insert_value
-
-    values_per = values_per + 1
-    indices(values_per) = insert_row
-    values(values_per) = insert_value
-  END SUBROUTINE AppendToVector
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE GetPivot(AMat, process_grid, start_index, pivot_vector, diag, &
-       & index, value, local_pivots, num_local_pivots)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: AMat
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
-    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
-    INTEGER, INTENT(IN) :: start_index
-    INTEGER, INTENT(OUT) :: index
-    REAL(NTREAL), INTENT(OUT) :: value
-    INTEGER, DIMENSION(:), INTENT(INOUT) :: local_pivots
-    INTEGER, INTENT(OUT) :: num_local_pivots
-    !! Local Variables
-    REAL(NTREAL) :: temp_diag
-    DOUBLE PRECISION, DIMENSION(2) :: max_diag
-    INTEGER :: pind
-    INTEGER :: II
-    INTEGER :: swap
-    INTEGER :: ierr
-
-    !! Search for the maximum pivot
-    max_diag = [0, 0]
-    DO II = start_index, AMat%actual_matrix_dimension
-       pind = pivot_vector(II)
-       IF (pind .GE. AMat%start_column .AND. pind .LT. AMat%end_column) THEN
-          temp_diag = diag(pind - AMat%start_column + 1)
-          IF (temp_diag .GT. max_diag(1)) THEN
-             max_diag(1) = temp_diag
-             max_diag(2) = II
-          END IF
-       END IF
-    END DO
-    CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
-         & MPI_MAXLOC, process_grid%row_comm, ierr)
-    index = INT(max_diag(2))
-    value = max_diag(1)
-
-    swap = pivot_vector(index)
-    pivot_vector(index) = pivot_vector(start_index)
-    pivot_vector(start_index) = swap
-
-    index = swap
-
-    !! Determine local pivots
-    num_local_pivots = 0
-    DO II = start_index + 1, AMat%actual_matrix_dimension
-       pind = pivot_vector(II)
-       IF (pind .GE. AMat%start_column .AND. pind .LT. AMat%end_column) THEN
-          num_local_pivots = num_local_pivots + 1
-          local_pivots(num_local_pivots) = pind - AMat%start_column + 1
-       END IF
-    END DO
-  END SUBROUTINE GetPivot
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct the vector holding the accumulated diagonal values
-  SUBROUTINE ConstructDiag(AMat, process_grid, dense_a, diag)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: AMat
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    TYPE(Matrix_ldr), INTENT(IN) :: dense_a
-    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
-    !! Local Variables
-    INTEGER :: fill_counter
-    INTEGER :: II, JJ, local_JJ, local_II
-    INTEGER, DIMENSION(process_grid%num_process_rows) :: diags_per_proc
-    INTEGER, DIMENSION(process_grid%num_process_rows) :: diag_displ
-    INTEGER :: ierr
-
-    diag = 0
-    fill_counter = 0
-    DO JJ = AMat%start_column, AMat%end_column - 1
-       IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
-          local_JJ = JJ - AMat%start_column + 1
-          local_II = JJ - AMat%start_row + 1
-          diag(local_JJ) = dense_a%data(local_II, local_JJ)
-          fill_counter = fill_counter + 1
-       END IF
-    END DO
-    diags_per_proc(process_grid%my_row+1) = fill_counter
-    !! Duplicate the diagonal entries along the process column (across rows)
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, diags_per_proc, 1, &
-         & MPI_INTEGER, process_grid%column_comm, ierr)
-    diag_displ(1) = 0
-    DO II = 2, process_grid%num_process_rows
-       diag_displ(II) = diag_displ(II-1) + diags_per_proc(II-1)
-    END DO
-    CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(process_grid%my_row+1), &
-         & MPINTREAL, diag, diags_per_proc, diag_displ, MPINTREAL, &
-         & process_grid%column_comm, ierr)
-  END SUBROUTINE ConstructDiag
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ConstructRankLookup(AMat, process_grid, col_root_lookup)
-    !! Root Lookups
-    TYPE(Matrix_ps), INTENT(IN) :: AMat
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    INTEGER, DIMENSION(:), INTENT(INOUT) :: col_root_lookup
-    !! Local Variables
-    INTEGER, DIMENSION(process_grid%num_process_columns) :: cols_per_proc
-    INTEGER, DIMENSION(process_grid%num_process_columns) :: d_cols_per_proc
-    INTEGER :: II
-    INTEGER :: ierr
-
-    cols_per_proc(process_grid%my_column+1) = AMat%local_columns
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
-         & MPI_INTEGER, process_grid%row_comm, ierr)
-    d_cols_per_proc(1) = 0
-    DO II = 2, process_grid%num_process_columns
-       d_cols_per_proc(II) = d_cols_per_proc(II-1) + cols_per_proc(II-1)
-    END DO
-    col_root_lookup(AMat%start_column:AMat%end_column - 1) = process_grid%row_rank
-    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
-         & col_root_lookup, cols_per_proc, d_cols_per_proc, MPI_INTEGER, &
-         & process_grid%row_comm, ierr)
-
-  END SUBROUTINE ConstructRankLookup
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A helper routine that gathers the matrices in the same column into one.
-  !! @param[in] local_matrix the local matrix on each process.
-  !! @param[out] column_matrix the final result.
-  SUBROUTINE GatherMatrixColumn(local_matrix, column_matrix, process_grid)
-    !! Parameters
-    TYPE(Matrix_lsr), INTENT(IN) :: local_matrix
-    TYPE(Matrix_lsr), INTENT(INOUT) :: column_matrix
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    !! Local Variables
-    TYPE(ReduceHelper_t) :: gather_helper
-    INTEGER :: mpi_status(MPI_STATUS_SIZE)
-    TYPE(Matrix_lsr) :: local_matrixT
-    INTEGER :: mpi_err
-
-    CALL TransposeMatrix(local_matrix, local_matrixT)
-    CALL ReduceMatrixSizes(local_matrixT, process_grid%column_comm, gather_helper)
-    CALL MPI_Wait(gather_helper%size_request, mpi_status, mpi_err)
-    CALL ReduceAndComposeMatrixData(local_matrixT, process_grid%column_comm, &
-         & column_matrix, gather_helper)
-    CALL MPI_Wait(gather_helper%outer_request,mpi_status,mpi_err)
-    CALL MPI_Wait(gather_helper%inner_request,mpi_status,mpi_err)
-    CALL MPI_Wait(gather_helper%data_request,mpi_status,mpi_err)
-    CALL ReduceAndComposeMatrixCleanup(local_matrixT, column_matrix, &
-         & gather_helper)
-
-    CALL DestructMatrix(local_matrixT)
-  END SUBROUTINE GatherMatrixColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LinearSolversModule

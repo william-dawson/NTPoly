@@ -13,7 +13,7 @@ void EigenSolvers::ReferenceEigenDecomposition(
     const DistributedSparseMatrix &matrix,
     DistributedSparseMatrix &eigenvectors,
     DistributedSparseMatrix &eigenvalues,
-    const IterativeSolverParameters &solver_parameters) {
+    const FixedSolverParameters &solver_parameters) {
   ReferenceEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
                                   GetIH(eigenvalues), GetIH(solver_parameters));
 }

@@ -34,32 +34,47 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] this the matrix to decompose.
   !! @param[inout] eigenvectors the eigenvectors of a matrix.
   !! @param[in] solver_parameters_in parameters for computing (optional).
-  SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues, &
+  SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues_in, &
        & solver_parameters_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_in
+    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! For Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: iter_params
     TYPE(FixedSolverParameters_t) :: fixed_params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       iter_params = solver_parameters_in
+       fixed_params = solver_parameters_in
     ELSE
-       iter_params = IterativeSolverParameters_t()
+       fixed_params = FixedSolverParameters_t()
     END IF
-    CALL ConvertIterativeToFixed(iter_params, fixed_params)
 
 #if EIGENEXA
-    CALL EigenExa_s(this, eigenvectors, eigenvalues_out=eigenvalues, &
-         & solver_parameters_in=fixed_params)
+    IF (this%is_complex) THEN
+       IF (PRESENT(eigenvalues_in)) THEN
+          CALL EigenSerial(this, eigenvectors, eigenvalues_out=eigenvalues_in, &
+               & solver_parameters_in=fixed_params)
+       ELSE
+          CALL EigenSerial(this, eigenvectors, solver_parameters_in=fixed_params)
+       END IF
+    ELSE
+       IF (PRESENT(eigenvalues_in)) THEN
+          CALL EigenExa_s(this, eigenvectors, eigenvalues_out=eigenvalues_in, &
+               & solver_parameters_in=fixed_params)
+       ELSE
+          CALL EigenExa_s(this, eigenvectors, solver_parameters_in=fixed_params)
+       ENDIF
+    END IF
 #else
-    CALL SerialBase(this, eigenvectors, eigenvalues_out=eigenvalues, &
-         & solver_parameters_in=fixed_params)
+    IF (PRESENT(eigenvalues_in)) THEN
+       CALL EigenSerial(this, eigenvectors, eigenvalues_out=eigenvalues_in, &
+            & solver_parameters_in=fixed_params)
+    ELSE
+       CALL EigenSerial(this, eigenvectors, solver_parameters_in=fixed_params)
+    END IF
 #endif
 
   END SUBROUTINE ReferenceEigenDecomposition
@@ -85,7 +100,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(IterativeSolverParameters_t) :: it_param
     INTEGER :: num_values
     !! Local
-    TYPE(Matrix_ps) :: eigenvectorsT, TempMat
+    TYPE(Matrix_ps) :: eigenvectorsT, TempMat, eigenvalues_r
     TYPE(Matrix_ps) :: ReducedMat
     TYPE(TripletList_r) :: triplet_list
     TYPE(TripletList_r) :: new_list
@@ -134,12 +149,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the eigenvalues
     CALL TransposeMatrix(eigenvectors, eigenvectorsT)
+    IF (eigenvectorsT%is_complex) THEN
+       CALL ConjugateMatrix(eigenvectorsT)
+    END IF
     CALL MatrixMultiply(eigenvectorsT, ReducedMat, TempMat, &
          & threshold_in=solver_parameters%threshold)
     CALL MatrixMultiply(TempMat, eigenvectors, eigenvalues, &
          & threshold_in=solver_parameters%threshold)
 
     !! Get rid of the off diagonal elements
+    IF (eigenvalues%is_complex) THEN
+       CALL ConvertMatrixToReal(eigenvalues, eigenvalues_r)
+       CALL CopyMatrix(eigenvalues_r, eigenvalues)
+    END IF
     CALL GetMatrixTripletList(eigenvalues,triplet_list)
     new_list = TripletList_r()
     DO counter=1,triplet_list%CurrentSize
@@ -162,6 +184,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructMatrix(eigenvectorsT)
     CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(eigenvalues_r)
     CALL DestructMatrix(ReducedMat)
   END SUBROUTINE SplittingEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -267,11 +290,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Base Case
     IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
        CALL StartTimer("Base Case")
-#if EIGENEXA
-       CALL EigenExa_s(this, eigenvectors, solver_parameters_in=fixed_param)
-#else
-       CALL SerialBase(this, eigenvectors, solver_parameters_in=fixed_param)
-#endif
+       CALL ReferenceEigenDecomposition(this, eigenvectors, &
+            & solver_parameters_in=fixed_param)
        CALL StopTimer("Base Case")
     ELSE
        !! Setup
@@ -312,6 +332,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(this, StackV, TempMat, &
             & threshold_in=it_param%threshold)
        CALL TransposeMatrix(StackV, StackVT)
+       IF (StackVT%is_complex) THEN
+          CALL ConjugateMatrix(StackVT)
+       END IF
        CALL MatrixMultiply(StackVT, TempMat, VAV, &
             & threshold_in=it_param%threshold)
        CALL StopTimer("Rotate")
@@ -579,7 +602,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & converge_diff_in = it_param%converge_diff, &
          & threshold_in = it_param%threshold, &
          & max_iterations_in = it_param%max_iterations, &
-         & BalancePermutation_in=permutation)
+         & BalancePermutation_in = permutation)
 
     !! Purify
     CALL TRS2(this, Identity, dim*2, PMat, solver_parameters_in=balanced_it)
@@ -589,11 +612,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & solver_parameters_in=fixed_param)
 
     !! Rotate to the divided subspace
-    CALL MatrixMultiply(this, PVec, TempMat, &
-         & threshold_in=it_param%threshold)
+    CALL MatrixMultiply(this, PVec, TempMat, threshold_in=it_param%threshold)
     CALL TransposeMatrix(PVec, PVecT)
-    CALL MatrixMultiply(PVecT, TempMat, VAV, &
-         & threshold_in=it_param%threshold)
+    IF (PVecT%is_complex) THEN
+       CALL ConjugateMatrix(PVecT)
+    END IF
+    CALL MatrixMultiply(PVecT, TempMat, VAV, threshold_in=it_param%threshold)
 
     !! Extract
     CALL ExtractCorner(VAV, dim, dim, ReducedMat, TempMat)
@@ -611,7 +635,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] eigenvectors the eigenvectors of the matrix.
   !! @param[out] eigenvalues the eigenvalues of the matrix.
   !! @param[in] solver_parameters_in the solve parameters.
-  SUBROUTINE SerialBase(this, eigenvectors, eigenvalues_out, &
+  SUBROUTINE EigenSerial(this, eigenvectors, eigenvalues_out, &
        & solver_parameters_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
@@ -619,13 +643,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
-    TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
-    TYPE(Matrix_lsr) :: sparse
-    INTEGER :: counter, list_size
-    INTEGER :: mat_dim
-    TYPE(Matrix_lsr) :: local_a, local_v
-    TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
     TYPE(FixedSolverParameters_t) :: fixed_params
 
     !! Optional Parameters
@@ -635,66 +652,61 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        fixed_params = FixedSolverParameters_t()
     END IF
 
-    mat_dim = this%actual_matrix_dimension
-
-    !! Gather on a single processor
-    CALL GetMatrixTripletList(this, triplet_list)
-    ALLOCATE(send_list(this%process_grid%slice_size))
-    send_list(1) = TripletList_r(triplet_list%CurrentSize)
-    DO counter = 2, this%process_grid%slice_size
-       send_list(counter) = TripletList_r()
-    END DO
-    list_size = triplet_list%CurrentSize
-    send_list(1)%data(:list_size) = triplet_list%data(:list_size)
-    CALL DestructTripletList(triplet_list)
-    CALL RedistributeTripletLists(send_list, &
-         & this%process_grid%within_slice_comm, triplet_list)
-
-    !! Perform the local decomposition
-    triplet_w = TripletList_r()
-    IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-       CALL SortTripletList(triplet_list, mat_dim, mat_dim, &
-            & sorted_triplet_list, .TRUE.)
-       local_a = Matrix_lsr(sorted_triplet_list, mat_dim, mat_dim)
-
-       CALL ConstructMatrixDFromS(local_a, dense_a)
+    IF (this%is_complex) THEN
        IF (PRESENT(eigenvalues_out)) THEN
-          CALL EigenDecomposition(dense_a, dense_v, dense_w)
-          triplet_w = TripletList_r(mat_dim)
-          DO counter = 1, mat_dim
-             triplet_w%data(counter)%index_row = counter
-             triplet_w%data(counter)%index_column = counter
-             triplet_w%data(counter)%point_value = dense_w%data(counter,1)
-          END DO
+         CALL EigenSerial_c(this, eigenvectors, fixed_params, eigenvalues_out)
        ELSE
-          CALL EigenDecomposition(dense_a, dense_v)
+         CALL EigenSerial_c(this, eigenvectors, fixed_params)
        END IF
-
-       CALL ConstructMatrixSFromD(dense_v, local_v, fixed_params%threshold)
-       CALL MatrixToTripletList(local_v, triplet_list)
+    ELSE
+       IF (PRESENT(eigenvalues_out)) THEN
+         CALL EigenSerial_r(this, eigenvectors, fixed_params, eigenvalues_out)
+       ELSE
+         CALL EigenSerial_r(this, eigenvectors, fixed_params)
+       END IF
     END IF
+  END SUBROUTINE EigenSerial
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The base case: use lapack to solve.
+  !! @param[in] this the matrix to compute.
+  !! @param[out] eigenvectors the eigenvectors of the matrix.
+  !! @param[out] eigenvalues the eigenvalues of the matrix.
+  !! @param[in] solver_parameters_in the solve parameters.
+  SUBROUTINE EigenSerial_r(this, eigenvectors, fixed_params, eigenvalues_out)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_params
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    !! Local Data
+    TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
+    TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(Matrix_lsr) :: sparse
+    TYPE(Matrix_lsr) :: local_a, local_v
+    TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
 
-    !! Build The Full Matrices
-    CALL ConstructEmptyMatrix(eigenvectors, this)
-    CALL FillMatrixFromTripletList(eigenvectors, triplet_list, .TRUE.)
+    INCLUDE "SolverSupport/includes/EigenSerial.f90"
+  END SUBROUTINE EigenSerial_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The base case: use lapack to solve.
+  !! @param[in] this the matrix to compute.
+  !! @param[out] eigenvectors the eigenvectors of the matrix.
+  !! @param[out] eigenvalues the eigenvalues of the matrix.
+  !! @param[in] solver_parameters_in the solve parameters.
+  SUBROUTINE EigenSerial_c(this, eigenvectors, fixed_params, eigenvalues_out)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_params
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    !! Local Data
+    TYPE(TripletList_c) :: triplet_list, sorted_triplet_list, triplet_w
+    TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(Matrix_lsc) :: sparse
+    TYPE(Matrix_lsc) :: local_a, local_v
+    TYPE(Matrix_ldc) :: dense_a, dense_v, dense_w
 
-    IF (PRESENT(eigenvalues_out)) THEN
-      CALL ConstructEmptyMatrix(eigenvalues_out, this)
-      CALL FillMatrixFromTripletList(eigenvalues_out, triplet_w, .TRUE.)
-    END IF
-
-    !! Cleanup
-    CALL DestructMatrix(dense_a)
-    CALL DestructMatrix(dense_v)
-    CALL DestructMatrix(dense_w)
-    CALL DestructMatrix(sparse)
-    CALL DestructTripletList(triplet_list)
-    CALL DestructTripletList(triplet_w)
-    CALL DestructTripletList(sorted_triplet_list)
-    DO counter = 1, this%process_grid%slice_size
-       CALL DestructTripletList(send_list(counter))
-    END DO
-    DEALLOCATE(send_list)
-  END SUBROUTINE SerialBase
+    INCLUDE "SolverSupport/includes/EigenSerial.f90"
+  END SUBROUTINE EigenSerial_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenSolversModule

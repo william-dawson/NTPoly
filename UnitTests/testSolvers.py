@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 127
+    mat_dim = 31
 
     @classmethod
     def setUpClass(self):
@@ -49,7 +49,10 @@ class TestSolvers(unittest.TestCase):
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(rows, columns, slices)
 
-    def create_matrix(self, SPD=None, scaled=None, diag_dom=None):
+    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
+        '''
+        Create the test matrix with the following parameters.
+        '''
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
         mat = mat + mat.T
         if SPD:
@@ -59,6 +62,8 @@ class TestSolvers(unittest.TestCase):
             mat = mat + identity_matrix * self.mat_dim
         if scaled:
             mat = (1.0 / self.mat_dim) * mat
+        if rank:
+            mat = mat[rank:].dot(mat[rank:].T)
 
         return csr_matrix(mat)
 
@@ -130,14 +135,10 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def a_test_pseudoinverse(self):
+    def test_pseudoinverse(self):
         '''Test routines to compute the pseudoinverse of matrices.'''
         # Starting Matrix.
-        matrix1 = self.create_matrix()
-
-        # Make it rank deficient
-        k = int(self.mat_dim / 2)
-        matrix1 = matrix1[k:].dot(matrix1[k:].T)
+        matrix1 = self.create_matrix(rank=int(self.mat_dim / 2))
         self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
@@ -438,7 +439,7 @@ class TestSolvers(unittest.TestCase):
             val[i] = 0
             for j in range(0, len(coef)):
                 val[i] = val[i] + coef[j] * (temp**j)
-        temp_poly = dot(dot(vec, diag(val)), vec.T)
+        temp_poly = dot(dot(vec, diag(val)), vec.H)
         self.CheckMat = csr_matrix(temp_poly)
 
         # Result Matrix
@@ -475,7 +476,7 @@ class TestSolvers(unittest.TestCase):
             val[i] = 0
             for j in range(0, len(coef)):
                 val[i] = val[i] + coef[j] * (temp**j)
-        temp_poly = dot(dot(vec, diag(val)), vec.T)
+        temp_poly = dot(dot(vec, diag(val)), vec.H)
         self.CheckMat = csr_matrix(temp_poly)
 
         # Result Matrix
@@ -570,7 +571,7 @@ class TestSolvers(unittest.TestCase):
         self.write_matrix(B, self.input_file2)
 
         # Check Matrix
-        Ainv = inv(A)
+        Ainv = inv(csc_matrix(A))
         self.CheckMat = csr_matrix(Ainv.dot(B))
 
         # Result Matrix
@@ -637,52 +638,6 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def a_test_cholesky(self):
-        '''Test subroutine that computes the cholesky decomposition.'''
-        # Starting Matrix
-        matrix1 = self.create_matrix(SPD=True)
-        self.write_matrix(matrix1, self.input_file)
-
-        # Check Matrix
-        dense_check = cholesky(matrix1.todense(), lower=True)
-        self.CheckMat = csr_matrix(dense_check)
-
-        # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-
-        cholesky_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        nt.LinearSolvers.CholeskyDecomposition(input_matrix, cholesky_matrix,
-                                               self.fsp)
-
-        cholesky_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_result()
-
-    def a_test_pivotedcholesky(self):
-        '''Test subroutine that computes the pivoted cholesky decomposition.'''
-        matrix1 = mmread(os.environ["CholTest"])
-        rank = 2
-        self.write_matrix(matrix1, self.input_file)
-
-        self.CheckMat = csr_matrix(matrix1)
-
-        # Result Matrix
-        A = nt.DistributedSparseMatrix(self.input_file, False)
-        L = nt.DistributedSparseMatrix(self.mat_dim)
-        LT = nt.DistributedSparseMatrix(self.mat_dim)
-        LLT = nt.DistributedSparseMatrix(self.mat_dim)
-        memory_pool = nt.DistributedMatrixMemoryPool(A)
-
-        nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
-        LT.Transpose(L)
-        LLT.Gemm(L, LT, memory_pool)
-
-        LLT.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_result()
-
     def test_polarfunction(self):
         '''Test routines to compute the matrix polar decomposition.'''
         # Starting Matrix
@@ -713,36 +668,7 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def a_test_splittingeigendecomposition(self):
-        '''
-        Test routines to compute the eigen decomposition using the
-        spectrum splitting approach.
-        '''
-        # Starting Matrix
-        matrix1 = self.create_matrix()
-        self.write_matrix(matrix1, self.input_file)
-
-        # Check Matrix
-        vals, vecs = eigh(matrix1.todense())
-        self.CheckMat = csr_matrix(diag(vals))
-
-        # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.isp.SetLoadBalance(permutation)
-        vec_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        val_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        nt.EigenSolvers.SplittingEigenDecomposition(input_matrix, vec_matrix,
-                                                    val_matrix,
-                                                    self.mat_dim,
-                                                    self.isp)
-        val_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_result()
-
-    def a_test_denseeigendecomposition(self):
+    def test_denseeigendecomposition(self):
         '''Test the dense eigen decomposition'''
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -754,8 +680,7 @@ class TestSolvers(unittest.TestCase):
         V = nt.DistributedSparseMatrix(self.mat_dim)
         W = nt.DistributedSparseMatrix(self.mat_dim)
 
-        nt.EigenSolvers.ReferenceEigenDecomposition(
-            ntmatrix, V, W, self.isp)
+        nt.EigenSolvers.ReferenceEigenDecomposition(ntmatrix, V, W, self.fsp)
         V.WriteToMatrixMarket(result_file)
         W.WriteToMatrixMarket(result_file2)
 
@@ -765,8 +690,8 @@ class TestSolvers(unittest.TestCase):
         relative_error2 = 0
         if (self.my_rank == 0):
             ResultV = mmread(result_file)
-            CheckD = diag((CheckV.T.dot(matrix1).dot(CheckV)).todense())
-            ResultD = diag((ResultV.T.dot(matrix1).dot(ResultV)).todense())
+            CheckD = diag((CheckV.H.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
             normval = abs(normd(CheckD - ResultD))
             relative_error = normval / normd(CheckD)
             print("Norm:", normval)
@@ -786,67 +711,60 @@ class TestSolvers(unittest.TestCase):
         global_error = comm.bcast(relative_error2, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
-    def a_test_eigendecompositionhalf(self):
-        '''
-        Test routines to compute the eigen decomposition for select
-        eigenvalues.
-        '''
+class TestSolvers_r(TestSolvers):
+    def test_cholesky(self):
+        '''Test subroutine that computes the cholesky decomposition.'''
         # Starting Matrix
-        matrix1 = self.create_matrix()
+        matrix1 = self.create_matrix(SPD=True)
         self.write_matrix(matrix1, self.input_file)
 
         # Check Matrix
-        vals, vecs = eigh(matrix1.todense())
-        valshalf = vals[:int(self.mat_dim / 2)]
-        self.CheckMat = csr_matrix(diag(valshalf))
+        dense_check = cholesky(matrix1.todense(), lower=True)
+        self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
         input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.isp.SetLoadBalance(permutation)
-        vec_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        val_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        nt.EigenSolvers.SplittingEigenDecomposition(input_matrix, vec_matrix,
-                                                    val_matrix,
-                                                    int(self.mat_dim / 2),
-                                                    self.isp)
-        val_matrix.WriteToMatrixMarket(result_file)
+
+        cholesky_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        nt.LinearSolvers.CholeskyDecomposition(input_matrix, cholesky_matrix,
+                                               self.fsp)
+
+        cholesky_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
         self.check_result()
 
-    def a_test_svd(self):
-        '''Test routines to compute the singular value decomposition.'''
-        # Starting Matrix
-        matrix1 = self.create_matrix()
+    def test_pivotedcholesky(self):
+        '''Test subroutine that computes the pivoted cholesky decomposition.'''
+        matrix1 = mmread(os.environ["CholTest"])
+        rank = 2
         self.write_matrix(matrix1, self.input_file)
 
-        # Check Matrix
-        u, s, vh = svd(matrix1.todense())
-        self.CheckMat = csr_matrix(diag(s))
+        self.CheckMat = csr_matrix(matrix1)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        permutation = nt.Permutation(input_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.isp.SetLoadBalance(permutation)
-        left_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        right_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        val_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        nt.EigenSolvers.SingularValueDecompostion(input_matrix, left_matrix,
-                                                  right_matrix, val_matrix,
-                                                  self.isp)
-        val_matrix.WriteToMatrixMarket(result_file)
+        A = nt.DistributedSparseMatrix(self.input_file, False)
+        L = nt.DistributedSparseMatrix(self.mat_dim)
+        LT = nt.DistributedSparseMatrix(self.mat_dim)
+        LLT = nt.DistributedSparseMatrix(self.mat_dim)
+        memory_pool = nt.DistributedMatrixMemoryPool(A)
+
+        nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
+        LT.Transpose(L)
+        LLT.Gemm(L, LT, memory_pool)
+
+        LLT.WriteToMatrixMarket(result_file)
         comm.barrier()
 
-        self.check_diag()
-
+        self.check_result()
 
 class TestSolvers_c(TestSolvers):
-    def create_matrix(self, SPD=None, scaled=None, diag_dom=None):
+    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
+        '''
+        Create the test matrix with the following parameters.
+        '''
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
-        mat += 1j*rand(self.mat_dim, self.mat_dim, density=1.0)
+        mat += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
         mat = mat + mat.H
         if SPD:
             mat = mat.H.dot(mat)
@@ -855,8 +773,11 @@ class TestSolvers_c(TestSolvers):
             mat = mat + identity_matrix * self.mat_dim
         if scaled:
             mat = (1.0 / self.mat_dim) * mat
+        if rank:
+            mat = mat[rank:].dot(mat[rank:].H)
 
         return csr_matrix(mat)
+
 
 if __name__ == '__main__':
     unittest.main()

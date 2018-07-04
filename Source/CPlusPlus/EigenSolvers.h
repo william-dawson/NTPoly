@@ -4,8 +4,9 @@
 #include "SolverBase.h"
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class IterativeSolverParameters;
 class DistributedSparseMatrix;
+class FixedSolverParameters;
+class IterativeSolverParameters;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class for computing the eigen and singular value decomposition.
 class EigenSolvers : public SolverBase {
@@ -14,8 +15,8 @@ public:
   static void ReferenceEigenDecomposition(
       const DistributedSparseMatrix &matrix,
       DistributedSparseMatrix &eigenvectors,
-      DistributedSparseMatrix &eigenvalues, 
-      const IterativeSolverParameters &solver_parameters);
+      DistributedSparseMatrix &eigenvalues,
+      const FixedSolverParameters &solver_parameters);
   //! Compute the eigenvalues and eigenvectors of a matrix
   static void SplittingEigenDecomposition(
       const DistributedSparseMatrix &matrix,

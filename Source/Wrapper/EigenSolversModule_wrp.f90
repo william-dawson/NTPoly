@@ -6,6 +6,7 @@ MODULE EigenSolversModule_wrp
        & Matrix_ps_wrp
   USE EigenSolversModule, ONLY : ReferenceEigenDecomposition, &
        & SplittingEigenDecomposition, SingularValueDecomposition
+  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
@@ -75,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_eigenvectors
     TYPE(Matrix_ps_wrp) :: h_eigenvalues
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this, h_this)
     h_eigenvectors = TRANSFER(ih_eigenvectors, h_eigenvectors)
