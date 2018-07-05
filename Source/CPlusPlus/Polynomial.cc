@@ -1,5 +1,5 @@
-#include "FixedSolversParameters.h"
 #include "Polynomial.h"
+#include "SolverParameters.h"
 using namespace NTPoly;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -23,14 +23,14 @@ void Polynomial::SetCoefficient(int degree, double coefficient) {
 //////////////////////////////////////////////////////////////////////////////
 void Polynomial::HornerCompute(
     const Matrix_ps &InputMat, Matrix_ps &OutputMat,
-    const FixedSolverParameters &solver_parameters) const {
+    const SolverParameters &solver_parameters) const {
   HornerCompute_wrp(GetIH(InputMat), GetIH(OutputMat), this->ih_this,
                     GetIH(solver_parameters));
 }
 //////////////////////////////////////////////////////////////////////////////
 void Polynomial::PatersonStockmeyerCompute(
     const Matrix_ps &InputMat, Matrix_ps &OutputMat,
-    const FixedSolverParameters &solver_parameters) const {
+    const SolverParameters &solver_parameters) const {
   PatersonStockmeyerCompute_wrp(GetIH(InputMat), GetIH(OutputMat),
                                 this->ih_this, GetIH(solver_parameters));
 }

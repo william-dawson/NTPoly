@@ -12,10 +12,8 @@ set(Wsrc
     EigenBoundsModule_wrp.f90
     EigenSolversModule_wrp.f90
     ExponentialSolversModule_wrp.f90
-    FixedSolversModule_wrp.f90
     GeometryOptimizationModule_wrp.f90
     HermiteSolversModule_wrp.f90
-    IterativeSolversModule_wrp.f90
     InverseSolversModule_wrp.f90
     LinearSolversModule_wrp.f90
     LoadBalancerModule_wrp.f90
@@ -24,6 +22,7 @@ set(Wsrc
     PolynomialSolversModule_wrp.f90
     RootSolversModule_wrp.f90
     SignSolversModule_wrp.f90
+    SolverParametersModule_wrp.f90
     SquareRootSolversModule_wrp.f90
     TrigonometrySolversModule_wrp.f90
     WrapperModule.f90

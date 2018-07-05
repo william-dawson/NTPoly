@@ -9,16 +9,16 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 //////////////////////////////////////////////////////////////////////////////
-void RootSolvers::ComputeRoot(
-    const Matrix_ps &InputMat, Matrix_ps &OutputMat, int root,
-    const IterativeSolverParameters &solver_parameters) {
+void RootSolvers::ComputeRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
+                              int root,
+                              const SolverParameters &solver_parameters) {
   ComputeRoot_wrp(GetIH(InputMat), GetIH(OutputMat), &root,
                   GetIH(solver_parameters));
 }
 //////////////////////////////////////////////////////////////////////////////
 void RootSolvers::ComputeInverseRoot(
     const Matrix_ps &InputMat, Matrix_ps &OutputMat, int root,
-    const IterativeSolverParameters &solver_parameters) {
+    const SolverParameters &solver_parameters) {
   ComputeInverseRoot_wrp(GetIH(InputMat), GetIH(OutputMat), &root,
                          GetIH(solver_parameters));
 }

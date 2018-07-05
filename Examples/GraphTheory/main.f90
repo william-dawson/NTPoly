@@ -3,12 +3,12 @@
 PROGRAM GraphTheory
   USE DataTypesModule, ONLY : NTREAL
   USE InverseSolversModule, ONLY : Invert
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE ProcessGridModule, ONLY : ConstructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, DestructMatrix, &
        & CopyMatrix, FillMatrixIdentity
   USE PSMatrixAlgebraModule, ONLY: IncrementMatrix
+  USE SolverParametersModule, ONLY : SolverParameters_t
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & SetTripletAt, AppendToTripletList
   USE TripletModule, ONLY : Triplet_r
@@ -22,7 +22,7 @@ PROGRAM GraphTheory
   REAL(NTREAL) :: threshold
   REAL(NTREAL) :: convergence_threshold
   REAL(NTREAL) :: attenuation
-  TYPE(IterativeSolverParameters_t) :: solver_parameters
+  TYPE(SolverParameters_t) :: solver_parameters
   !! MPI Variables
   INTEGER :: rank
   INTEGER :: total_processors
@@ -77,7 +77,7 @@ PROGRAM GraphTheory
        & process_slices)
 
   !! Set Up The Solver Parameters.
-  solver_parameters = IterativeSolverParameters_t( be_verbose_in=.TRUE., &
+  solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   CALL DivideUpWork

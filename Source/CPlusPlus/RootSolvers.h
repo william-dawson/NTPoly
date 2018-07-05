@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class IterativeSolverParameters;
+class SolverParameters;
 class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing General Matrix Roots.
@@ -17,16 +17,15 @@ public:
   //!\param root = which root
   //!\param solver_parameters parameters for the solver
   static void ComputeRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
-                          int root,
-                          const IterativeSolverParameters &solver_parameters);
+                          int root, const SolverParameters &solver_parameters);
   //! Compute the general matrix inverse root.
   //!\param InputMat input matrix.
   //!\param OutputMat = InputMat^(-1/root)
   //!\param root = which root
   //!\param solver_parameters parameters for the solver
-  static void
-  ComputeInverseRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat, int root,
-                     const IterativeSolverParameters &solver_parameters);
+  static void ComputeInverseRoot(const Matrix_ps &InputMat,
+                                 Matrix_ps &OutputMat, int root,
+                                 const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

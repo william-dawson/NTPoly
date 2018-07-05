@@ -2,11 +2,11 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule
-  USE IterativeSolversModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TripletListModule
   USE TripletModule
   USE MPI
@@ -56,10 +56,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: this
     REAL(NTREAL), INTENT(OUT) :: max_value
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Data
     TYPE(Matrix_ps) :: vector, vector2, TempMat
     REAL(NTREAL) :: scale_value
@@ -73,14 +73,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
        solver_parameters%max_iterations = 10
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Power Bounds Solver")
        CALL EnterSubLog
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Diagonal matrices serve as vectors.

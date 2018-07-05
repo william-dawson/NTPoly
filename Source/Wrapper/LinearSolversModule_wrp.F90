@@ -1,11 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the linear solvers module for calling from other languages.
 MODULE LinearSolversModule_wrp
-  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE LinearSolversModule, ONLY : CGSolver, CholeskyDecomposition, &
        & PivotedCholeskyDecomposition
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -25,7 +24,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_AMat
     TYPE(Matrix_ps_wrp) :: h_XMat
     TYPE(Matrix_ps_wrp) :: h_BMat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_AMat = TRANSFER(ih_AMat,h_AMat)
     h_XMat = TRANSFER(ih_XMat,h_XMat)
@@ -44,7 +43,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_AMat
     TYPE(Matrix_ps_wrp) :: h_LMat
-    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_AMat = TRANSFER(ih_AMat,h_AMat)
     h_LMat = TRANSFER(ih_LMat,h_LMat)
@@ -63,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: rank_in
     TYPE(Matrix_ps_wrp) :: h_AMat
     TYPE(Matrix_ps_wrp) :: h_LMat
-    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_AMat = TRANSFER(ih_AMat,h_AMat)
     h_LMat = TRANSFER(ih_LMat,h_LMat)

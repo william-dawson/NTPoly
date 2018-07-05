@@ -1,5 +1,5 @@
 #include "ChebyshevSolvers.h"
-#include "FixedSolversParameters.h"
+#include "SolverParameters.h"
 using namespace NTPoly;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -25,14 +25,14 @@ void ChebyshevPolynomial::SetCoefficient(int degree, double coefficient) {
 //////////////////////////////////////////////////////////////////////////////
 void ChebyshevPolynomial::Compute(
     const Matrix_ps &InputMat, Matrix_ps &OutputMat,
-    const FixedSolverParameters &solver_parameters) const {
+    const SolverParameters &solver_parameters) const {
   ChebyshevCompute_wrp(GetIH(InputMat), GetIH(OutputMat), this->ih_this,
                        GetIH(solver_parameters));
 }
 //////////////////////////////////////////////////////////////////////////////
 void ChebyshevPolynomial::ComputeFactorized(
     const Matrix_ps &InputMat, Matrix_ps &OutputMat,
-    const FixedSolverParameters &solver_parameters) const {
+    const SolverParameters &solver_parameters) const {
   FactorizedChebyshevCompute_wrp(GetIH(InputMat), GetIH(OutputMat),
                                  this->ih_this, GetIH(solver_parameters));
 }

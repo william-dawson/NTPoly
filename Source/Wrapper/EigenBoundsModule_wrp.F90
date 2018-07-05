@@ -3,9 +3,8 @@
 MODULE EigenBoundsModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
-  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -34,7 +33,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(INOUT) :: max_value
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)

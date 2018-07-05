@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the sign solvers module for calling from other languages.
 MODULE SignSolversModule_wrp
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SignSolversModule, ONLY : SignFunction, PolarDecomposition
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -20,7 +20,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_Mat1
     TYPE(Matrix_ps_wrp) :: h_SignMat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
     h_SignMat = TRANSFER(ih_SignMat,h_SignMat)
@@ -39,7 +39,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_Mat1
     TYPE(Matrix_ps_wrp) :: h_Umat
     TYPE(Matrix_ps_wrp) :: h_Hmat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
     h_Umat = TRANSFER(ih_Umat,h_Umat)

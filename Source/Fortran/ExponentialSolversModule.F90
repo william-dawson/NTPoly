@@ -4,16 +4,14 @@ MODULE ExponentialSolversModule
   USE ChebyshevSolversModule
   USE DataTypesModule
   USE EigenBoundsModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
   USE LinearSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE ParameterConverterModule
   USE PSMatrixAlgebraModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixModule
   USE RootSolversModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SquareRootSolversModule
   USE TimerModule
   USE MPI
@@ -35,11 +33,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
-    TYPE(FixedSolverParameters_t) :: sub_solver_parameters
-    TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: sub_solver_parameters
+    TYPE(SolverParameters_t) :: psub_solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: TempMat
@@ -57,23 +55,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
     sub_solver_parameters = solver_parameters
-    CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
-    i_sub_solver_parameters%max_iterations = 10
+    psub_solver_parameters = solver_parameters
+    psub_solver_parameters%max_iterations = 10
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Chebyshev")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     CALL ConstructEmptyMatrix(OutputMat, InputMat)
 
     !! Scale the matrix
-    CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
+    CALL PowerBounds(InputMat,spectral_radius,psub_solver_parameters)
     sigma_val = 1.0
     sigma_counter = 1
     DO WHILE (spectral_radius/sigma_val .GT. 1.0)
@@ -167,11 +165,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
-    TYPE(IterativeSolverParameters_t) :: sub_solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: sub_solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: IdentityMat
@@ -191,14 +189,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Pade")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Setup
@@ -297,11 +295,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
-    TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: psub_solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: Ak
@@ -319,20 +317,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
-    CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
-    i_sub_solver_parameters%max_iterations = 10
+    psub_solver_parameters = solver_parameters
+    psub_solver_parameters%max_iterations = 10
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Taylor")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Compute The Scaling Factor
-    CALL PowerBounds(InputMat,spectral_radius,i_sub_solver_parameters)
+    CALL PowerBounds(InputMat,spectral_radius,psub_solver_parameters)
 
     !! Figure out how much to scale the matrix.
     sigma_val = 1.0
@@ -396,9 +394,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: TempMat
@@ -406,9 +404,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Chebyshev Expansion
     TYPE(ChebyshevPolynomial_t) :: polynomial
     !! Local Variables
-    TYPE(IterativeSolverParameters_t) :: i_sub_solver_parameters
-    TYPE(IterativeSolverParameters_t) :: p_sub_solver_parameters
-    TYPE(FixedSolverParameters_t) :: f_sub_solver_parameters
+    TYPE(SolverParameters_t) :: i_sub_solver_parameters
+    TYPE(SolverParameters_t) :: p_sub_solver_parameters
+    TYPE(SolverParameters_t) :: f_sub_solver_parameters
     REAL(NTREAL) :: spectral_radius
     INTEGER :: sigma_val
     INTEGER :: sigma_counter
@@ -418,10 +416,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
-    CALL ConvertFixedToIterative(solver_parameters, i_sub_solver_parameters)
-    CALL ConvertFixedToIterative(solver_parameters, p_sub_solver_parameters)
+    i_sub_solver_parameters = solver_parameters
+    p_sub_solver_parameters = solver_parameters
     p_sub_solver_parameters%max_iterations=16
     f_sub_solver_parameters = solver_parameters
 
@@ -429,7 +427,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Chebyshev")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Setup
@@ -551,10 +549,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: TempMat
@@ -562,7 +560,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: IdentityMat
     TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
-    TYPE(IterativeSolverParameters_t) :: sub_solver_parameters
+    TYPE(SolverParameters_t) :: sub_solver_parameters
     REAL(NTREAL) :: e_min, e_max, spectral_radius
     REAL(NTREAL) :: sigma_val
     REAL(NTREAL) :: taylor_denom
@@ -574,15 +572,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
-    CALL ConvertFixedToIterative(solver_parameters, sub_solver_parameters)
+    sub_solver_parameters = solver_parameters
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Taylor")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Compute The Scaling Factor

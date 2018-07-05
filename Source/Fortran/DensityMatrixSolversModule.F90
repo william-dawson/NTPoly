@@ -3,12 +3,12 @@
 MODULE DensityMatrixSolversModule
   USE DataTypesModule
   USE EigenBoundsModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -36,12 +36,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: Identity
@@ -63,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -71,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="TRS2")
        CALL WriteCitation("niklasson2002expansion")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
@@ -238,12 +237,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: sigma_min = 0.0
     REAL(NTREAL), PARAMETER :: sigma_max = 6.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: Identity
@@ -266,7 +265,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -274,7 +273,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL WriteElement(key="Method", text_value_in="TRS4")
        CALL WriteCitation("niklasson2002expansion")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
@@ -463,12 +462,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: TempMat
@@ -496,7 +495,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -504,7 +503,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="HPCP")
        CALL WriteCitation("truflandier2016communication")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     ALLOCATE(sigma_array(solver_parameters%max_iterations))
@@ -693,12 +692,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: TempMat
@@ -729,7 +728,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -737,7 +736,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="HPCP+")
        CALL WriteCitation("truflandier2016communication")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     ALLOCATE(sigma_array(solver_parameters%max_iterations))

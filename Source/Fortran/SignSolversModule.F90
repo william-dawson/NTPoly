@@ -3,12 +3,12 @@
 MODULE SignSolversModule
   USE DataTypesModule
   USE EigenBoundsModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -25,23 +25,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: Mat1
     TYPE(Matrix_ps), INTENT(INOUT) :: SignMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Sign Function Solver")
        CALL EnterSubLog
        CALL WriteCitation("nicholas2008functions")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     CALL CoreComputation(Mat1, SignMat, solver_parameters, .FALSE.)
@@ -62,24 +62,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN) :: Mat1
     TYPE(Matrix_ps), INTENT(INOUT) :: Umat
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: Hmat
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     TYPE(Matrix_ps) :: UmatT
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polar Decomposition Solver")
        CALL EnterSubLog
        CALL WriteCitation("nicholas2008functions")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     CALL CoreComputation(Mat1, Umat, solver_parameters, .TRUE.)
@@ -106,7 +106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN) :: Mat1
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     LOGICAL, INTENT(IN) :: needs_transpose
     !! Local Matrices
     TYPE(Matrix_ps) :: Identity

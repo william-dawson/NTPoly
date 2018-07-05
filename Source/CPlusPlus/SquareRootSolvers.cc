@@ -9,15 +9,14 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-void SquareRootSolvers::SquareRoot(
-    const Matrix_ps &Input, Matrix_ps &Output,
-    const IterativeSolverParameters &solver_parameters) {
+void SquareRootSolvers::SquareRoot(const Matrix_ps &Input, Matrix_ps &Output,
+                                   const SolverParameters &solver_parameters) {
   SquareRoot_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
 void SquareRootSolvers::InverseSquareRoot(
     const Matrix_ps &Input, Matrix_ps &Output,
-    const IterativeSolverParameters &solver_parameters) {
+    const SolverParameters &solver_parameters) {
   InverseSquareRoot_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
 }
 } // namespace NTPoly

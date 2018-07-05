@@ -5,8 +5,8 @@ MODULE HermiteSolversModule_wrp
        & ConstructHermitePolynomial, DestructHermitePolynomial, &
        & SetHermiteCoefficient, HermiteCompute
   USE DataTypesModule, ONLY : NTREAL
-  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -69,7 +69,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_InputMat
     TYPE(Matrix_ps_wrp) :: h_OutputMat
     TYPE(HermitePolynomial_wrp)     :: h_polynomial
-    TYPE(FixedSolverParameters_wrp)   :: h_solver_parameters
+    TYPE(SolverParameters_wrp)   :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
     h_OutputMat = TRANSFER(ih_OutputMat, h_OutputMat)

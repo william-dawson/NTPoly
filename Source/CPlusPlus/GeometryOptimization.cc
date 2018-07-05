@@ -1,6 +1,6 @@
 #include "GeometryOptimization.h"
-#include "IterativeSolversParameters.h"
 #include "PSMatrix.h"
+#include "SolverParameters.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
@@ -12,7 +12,7 @@ namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 void GeometryOptimization::PurificationExtrapolate(
     const Matrix_ps &PreviousDensity, const Matrix_ps &Overlap, int nel,
-    Matrix_ps &NewDensity, const IterativeSolverParameters &solver_parameters) {
+    Matrix_ps &NewDensity, const SolverParameters &solver_parameters) {
   PurificationExtrapolate_wrp(GetIH(PreviousDensity), GetIH(Overlap), &nel,
                               GetIH(NewDensity), GetIH(solver_parameters));
 }
@@ -20,7 +20,7 @@ void GeometryOptimization::PurificationExtrapolate(
 void GeometryOptimization::LowdinExtrapolate(
     const Matrix_ps &PreviousDensity, const Matrix_ps &OldOverlap,
     const Matrix_ps &NewOverlap, Matrix_ps &NewDensity,
-    const IterativeSolverParameters &solver_parameters) {
+    const SolverParameters &solver_parameters) {
   LowdinExtrapolate_wrp(GetIH(PreviousDensity), GetIH(OldOverlap),
                         GetIH(NewOverlap), GetIH(NewDensity),
                         GetIH(solver_parameters));

@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class IterativeSolverParameters;
+class SolverParameters;
 class Matrix_ps;
 //! A Class For Solving Chemistry Systems Based On Sparse Matrices.
 class DensityMatrixSolvers : public SolverBase {
@@ -21,7 +21,7 @@ public:
   static void TRS2(const Matrix_ps &Hamiltonian,
                    const Matrix_ps &InverseSquareRoot, int nel,
                    Matrix_ps &Density, double &chemical_potential_out,
-                   const IterativeSolverParameters &solver_parameters);
+                   const SolverParameters &solver_parameters);
   //! Compute the density matrix from a Hamiltonian using the TRS4 method.
   //! Based on the TRS4 algorithm presented in: \cite niklasson2002 .
   //!\param Hamiltonian the matrix to compute the corresponding density from.
@@ -33,7 +33,7 @@ public:
   static void TRS4(const Matrix_ps &Hamiltonian,
                    const Matrix_ps &InverseSquareRoot, int nel,
                    Matrix_ps &Density, double &chemical_potential_out,
-                   const IterativeSolverParameters &solver_parameters);
+                   const SolverParameters &solver_parameters);
   //! Compute the density matrix from a Hamiltonian using the HPCP method.
   //! Based on the algorithm presented in: \cite truflandier2016communication
   //!\param Hamiltonian the matrix to compute the corresponding density from.
@@ -45,7 +45,7 @@ public:
   static void HPCP(const Matrix_ps &Hamiltonian,
                    const Matrix_ps &InverseSquareRoot, int nel,
                    Matrix_ps &Density, double &chemical_potential_out,
-                   const IterativeSolverParameters &solver_parameters);
+                   const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

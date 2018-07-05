@@ -4,9 +4,8 @@ MODULE EigenSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE EigenSolversModule, ONLY : ReferenceEigenDecomposition, &
        & SplittingEigenDecomposition, SingularValueDecomposition
-  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -28,7 +27,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_eigenvectors
     TYPE(Matrix_ps_wrp) :: h_eigenvalues
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
     h_eigenvectors = TRANSFER(ih_eigenvectors,h_eigenvectors)
@@ -52,7 +51,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_leftvectors
     TYPE(Matrix_ps_wrp) :: h_rightvectors
     TYPE(Matrix_ps_wrp) :: h_singularvalues
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
     h_leftvectors = TRANSFER(ih_leftvectors,h_leftvectors)
@@ -75,7 +74,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_eigenvectors
     TYPE(Matrix_ps_wrp) :: h_eigenvalues
-    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this, h_this)
     h_eigenvectors = TRANSFER(ih_eigenvectors, h_eigenvectors)

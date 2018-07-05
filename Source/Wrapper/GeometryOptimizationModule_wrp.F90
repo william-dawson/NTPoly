@@ -4,8 +4,8 @@ MODULE GeometryOptimizationModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE GeometryOptimizationModule, ONLY : PurificationExtrapolate, &
        & LowdinExtrapolate
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -26,7 +26,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_PreviousDensity
     TYPE(Matrix_ps_wrp) :: h_Overlap
     TYPE(Matrix_ps_wrp) :: h_NewDensity
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_PreviousDensity = TRANSFER(ih_PreviousDensity,h_PreviousDensity)
     h_Overlap = TRANSFER(ih_Overlap,h_Overlap)
@@ -50,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_OldOverlap
     TYPE(Matrix_ps_wrp) :: h_NewOverlap
     TYPE(Matrix_ps_wrp) :: h_NewDensity
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_PreviousDensity = TRANSFER(ih_PreviousDensity,h_PreviousDensity)
     h_OldOverlap = TRANSFER(ih_OldOverlap,h_OldOverlap)

@@ -1,5 +1,5 @@
-#ifndef ITERATIVESOLVERPARAMETERS_h
-#define ITERATIVESOLVERPARAMETERS_h
+#ifndef SolverParameters_h
+#define SolverParameters_h
 
 #include "Wrapper.h"
 
@@ -10,10 +10,10 @@ class Permutation;
 class SolverBase;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class to store all the parameters used for solvers.
-class IterativeSolverParameters {
+class SolverParameters {
 public:
   //! Constructor.
-  IterativeSolverParameters();
+  SolverParameters();
   //! When do we consider a calculation converged.
   //!\param new_value
   void SetConvergeDiff(double new_value);
@@ -29,7 +29,7 @@ public:
   //! Load balance settings.
   //!\param new_value
   void SetLoadBalance(const Permutation &new_value);
-  ~IterativeSolverParameters();
+  ~SolverParameters();
 
 private:
   //! Pointer to internal data.
@@ -37,9 +37,9 @@ private:
 
 private:
   //! Copy constructor, locked.
-  IterativeSolverParameters(const IterativeSolverParameters &);
+  SolverParameters(const SolverParameters &);
   //! Assignment operator, locked.
-  IterativeSolverParameters &operator=(const IterativeSolverParameters &);
+  SolverParameters &operator=(const SolverParameters &);
   friend class SolverBase;
 };
 } // namespace NTPoly

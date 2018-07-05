@@ -3,12 +3,12 @@
 MODULE SquareRootSolversModule
   USE DataTypesModule
   USE EigenBoundsModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -25,7 +25,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SquareRoot(InputMat, OutputMat, solver_parameters_in)
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(IterativeSolverParameters_t),INTENT(in),OPTIONAL :: &
+    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: &
          & solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL NewtonSchultzISR(InputMat, OutputMat, .FALSE., &
@@ -42,7 +42,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE InverseSquareRoot(InputMat, OutputMat, solver_parameters_in)
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(IterativeSolverParameters_t),INTENT(in),OPTIONAL :: &
+    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: &
          & solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL NewtonSchultzISR(InputMat, OutputMat, .TRUE., &
@@ -63,12 +63,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(in)  :: Mat1
     TYPE(Matrix_ps), INTENT(inout) :: OutMat
     LOGICAL, INTENT(in), OPTIONAL :: compute_inverse_in
-    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     LOGICAL :: compute_inverse
     !! Local Variables
     REAL(NTREAL) :: lambda
@@ -86,7 +86,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
     IF (PRESENT(compute_inverse_in)) THEN
        compute_inverse = compute_inverse_in
@@ -98,7 +98,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Newton Schultz Inverse Square Root")
        CALL EnterSubLog
        CALL WriteCitation("jansik2007linear")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Construct All The Necessary Matrices

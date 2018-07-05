@@ -77,9 +77,9 @@ class TestSolvers(unittest.TestCase):
         # Rank of the current process.
         self.my_rank = comm.Get_rank()
         # Parameters for iterative solvers.
-        self.isp = nt.IterativeSolverParameters()
+        self.isp = nt.SolverParameters()
         # Parameters for fixed solvers.
-        self.fsp = nt.FixedSolverParameters()
+        self.fsp = nt.SolverParameters()
         self.fsp.SetVerbosity(True)
         self.isp.SetVerbosity(True)
 

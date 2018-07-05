@@ -2,12 +2,12 @@
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
   USE DataTypesModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -26,12 +26,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: Mat1
     TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
     TYPE(Matrix_ps) :: Temp1,Temp2,Identity
@@ -45,14 +45,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
        CALL WriteCitation("palser1998canonical")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Construct All The Necessary Matrices
@@ -158,12 +158,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: Mat1
     TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     REAL(NTREAL) :: sigma
     TYPE(Matrix_ps) :: Temp1,Temp2,Identity
@@ -177,14 +177,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
        CALL WriteCitation("palser1998canonical")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Construct All The Necessary Matrices

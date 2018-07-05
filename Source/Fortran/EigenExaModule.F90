@@ -2,9 +2,9 @@
 !> A module for calling eigenexa
 MODULE EigenExaModule
   USE DataTypesModule
-  USE FixedSolversModule
   USE LoggingModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE TripletModule
   USE TripletListModule
@@ -58,9 +58,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN) :: A
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Helper
     TYPE(ExaHelper_t) :: exa
     !! Dense Matrices
@@ -72,7 +72,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     !! Write info about the solver
@@ -81,7 +81,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="EigenExa")
        CALL WriteCitation("imamura2011development")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Main Routines
@@ -238,7 +238,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: VD
     TYPE(Matrix_ps), INTENT(INOUT) :: V
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
     TYPE(TripletList_r) :: triplet_w, triplet_v

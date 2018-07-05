@@ -2,12 +2,12 @@
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
   USE DataTypesModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SquareRootSolversModule
   USE TimerModule
   USE MPI
@@ -31,10 +31,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: PreviousDensity, Overlap
     INTEGER, INTENT(IN) :: nel
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingDensity
     TYPE(Matrix_ps) :: WorkingOverlap
@@ -56,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -64,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Purification")
        CALL WriteCitation("niklasson2010trace")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Construct All The Necessary Matrices
@@ -205,10 +205,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: OldOverlap
     TYPE(Matrix_ps), INTENT(IN)  :: NewOverlap
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: SQRMat
     TYPE(Matrix_ps) :: ISQMat
@@ -220,7 +220,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -228,7 +228,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Lowdin")
        CALL WriteCitation("exner2002comparison")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     CALL SquareRoot(OldOverlap, SQRMat, solver_parameters)

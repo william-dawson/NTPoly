@@ -35,7 +35,7 @@ class TestChemistry(unittest.TestCase):
     def setUp(self):
         '''Set up an individual test.'''
         self.my_rank = comm.Get_rank()
-        self.solver_parameters = nt.IterativeSolverParameters()
+        self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
         self.hamiltonian = os.environ["HAMILTONIAN"]
         self.overlap = os.environ["OVERLAP"]
@@ -195,7 +195,7 @@ class TestChemistry_c(TestChemistry):
     def setUp(self):
         '''Set up an individual test.'''
         self.my_rank = comm.Get_rank()
-        self.solver_parameters = nt.IterativeSolverParameters()
+        self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
         self.hamiltonian = os.environ["HCOMPLEX"]
         self.overlap = os.environ["SCOMPLEX"]

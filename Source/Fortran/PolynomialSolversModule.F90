@@ -2,12 +2,12 @@
 !> A Module For Computing General Matrix Polynomials.
 MODULE PolynomialSolversModule
   USE DataTypesModule
-  USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -72,9 +72,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(Polynomial_t), INTENT(in) :: poly
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: BalancedInput
@@ -87,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
@@ -96,7 +96,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Horner")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
        CALL WriteElement(key="Degree", int_value_in=degree)
     END IF
 
@@ -158,9 +158,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
     TYPE(Polynomial_t), INTENT(in) :: poly
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps), DIMENSION(:), ALLOCATABLE :: x_powers
@@ -178,7 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     !! Parameters for splitting up polynomial.
@@ -192,7 +192,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Paterson Stockmeyer")
        CALL WriteCitation("paterson1973number")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
        CALL WriteElement(key="Degree", int_value_in=degree)
     END IF
 

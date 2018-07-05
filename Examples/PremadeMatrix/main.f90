@@ -9,6 +9,7 @@ PROGRAM PremadeMatrixProgram
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & WriteMatrixToMatrixMarket, DestructMatrix
+  USE SolverParametersModule, ONLY : SolverParameters_t
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE MPI
   IMPLICIT NONE
@@ -19,7 +20,7 @@ PROGRAM PremadeMatrixProgram
   INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold, convergence_threshold
   INTEGER :: number_of_electrons
-  TYPE(IterativeSolverParameters_t) :: solver_parameters
+  TYPE(SolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
   !! Matrices
   TYPE(Matrix_ps) :: Hamiltonian, Overlap
@@ -31,7 +32,7 @@ PROGRAM PremadeMatrixProgram
   INTEGER :: counter
   INTEGER :: provided, ierr
   INTEGER :: rank
-  REAL(ntreal) :: chemical_potential
+  REAL(NTREAL) :: chemical_potential
 
   !! Setup MPI
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
@@ -88,7 +89,7 @@ PROGRAM PremadeMatrixProgram
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
        & Hamiltonian%logical_matrix_dimension)
-  solver_parameters = IterativeSolverParameters_t(&
+  solver_parameters = SolverParameters_t(&
        & converge_diff_in=convergence_threshold, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 

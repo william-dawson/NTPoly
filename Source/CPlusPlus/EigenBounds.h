@@ -4,7 +4,7 @@
 #include "SolverBase.h"
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class IterativeSolverParameters;
+class SolverParameters;
 class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class for computing eigen bounds matrices.
@@ -23,7 +23,7 @@ public:
   //!\param max_power_eig an upper bound on the eigenspectrum.
   //!\param solver_parameters parameters for the solver
   static void PowerBounds(const Matrix_ps &matrix, double *max_power_eig,
-                          const IterativeSolverParameters &solver_parameters);
+                          const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

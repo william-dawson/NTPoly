@@ -41,7 +41,7 @@ if __name__ == "__main__":
     nt.ConstructProcessGrid(process_rows, process_columns, process_slices)
 
     # Set Up The Solver Parameters.
-    solver_parameters = nt.IterativeSolverParameters()
+    solver_parameters = nt.SolverParameters()
     solver_parameters.SetConvergeDiff(convergence_threshold)
     solver_parameters.SetThreshold(threshold)
     solver_parameters.SetVerbosity(True)

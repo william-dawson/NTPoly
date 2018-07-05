@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the root solvers module for calling from other languages.
 MODULE RootSolversModule_wrp
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE RootSolversModule, ONLY : ComputeRoot, ComputeInverseRoot
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -21,7 +21,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_InputMat
     TYPE(Matrix_ps_wrp) :: h_OutputMat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
     h_OutputMat = TRANSFER(ih_OutputMat,h_OutputMat)
@@ -40,7 +40,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_InputMat
     TYPE(Matrix_ps_wrp) :: h_OutputMat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
     h_OutputMat = TRANSFER(ih_OutputMat,h_OutputMat)

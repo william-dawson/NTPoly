@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the trigonometry solvers module for calling from other languages.
 MODULE TrigonometrySolversModule_wrp
-  USE FixedSolversModule_wrp, ONLY : FixedSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE TrigonometrySolversModule, ONLY : Sine, Cosine
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int, c_bool
@@ -20,7 +20,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp)  :: h_InputMat
     TYPE(Matrix_ps_wrp)  :: h_OutputMat
-    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
     h_OutputMat = TRANSFER(ih_OutputMat, h_OutputMat)
@@ -38,7 +38,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp)  :: h_InputMat
     TYPE(Matrix_ps_wrp)  :: h_OutputMat
-    TYPE(FixedSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
     h_OutputMat = TRANSFER(ih_OutputMat, h_OutputMat)

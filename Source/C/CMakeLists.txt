@@ -4,11 +4,9 @@ set(Csrc
     EigenBounds_c.h
     EigenSolvers_c.h
     ExponentialSolvers_c.h
-    FixedSolversParameters_c.h
     GeometryOptimization_c.h
     HermiteSolvers_c.h
     InverseSolvers_c.h
-    IterativeSolversParameters_c.h
     LinearSolvers_c.h
     LoadBalancer_c.h
     MatrixMemoryPool_c.h
@@ -21,6 +19,7 @@ set(Csrc
     RootSolvers_c.h
     SignSolvers_c.h
     SolverBase_c.h
+    SolverParameters_c.h
     SMatrix_c.h
     SquareRootSolvers_c.h
     TrigonometrySolvers_c.h

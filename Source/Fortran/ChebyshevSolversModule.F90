@@ -2,12 +2,12 @@
 !> A Module For Computing Matrix functions based on Chebyshev polynomials.
 MODULE ChebyshevSolversModule
   USE DataTypesModule
-  USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -73,9 +73,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: BalancedInput
@@ -91,7 +91,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
@@ -101,7 +101,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Standard")
        CALL WriteElement(key="Degree", int_value_in=degree)
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Initial values for matrices
@@ -185,9 +185,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: BalancedInput
@@ -202,7 +202,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
@@ -212,7 +212,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Recursive")
        CALL WriteElement(key="Degree", int_value_in=degree)
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Initial values for matrices
@@ -292,7 +292,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(in) :: depth
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !! Local Data
     INTEGER :: coefficient_midpoint

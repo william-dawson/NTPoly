@@ -7,10 +7,10 @@ using std::string;
 using std::stringstream;
 // NTPoly Headers
 #include "DensityMatrixSolvers.h"
-#include "IterativeSolversParameters.h"
 #include "PSMatrix.h"
 #include "Permutation.h"
 #include "ProcessGrid.h"
+#include "SolverParameters.h"
 #include "SquareRootSolvers.h"
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
   // Set Up The Solver Parameters.
   NTPoly::Permutation permutation(Hamiltonian.GetLogicalDimension());
   permutation.SetRandomPermutation();
-  NTPoly::IterativeSolverParameters solver_parameters;
+  NTPoly::SolverParameters solver_parameters;
   solver_parameters.SetConvergeDiff(convergence_threshold);
   solver_parameters.SetThreshold(threshold);
   solver_parameters.SetLoadBalance(permutation);

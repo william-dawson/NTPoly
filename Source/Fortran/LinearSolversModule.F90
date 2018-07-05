@@ -4,14 +4,13 @@ MODULE LinearSolversModule
   USE CholeskyModule
   USE DataTypesModule
   USE DMatrixModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
   USE SMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -31,10 +30,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: AMat
     TYPE(Matrix_ps), INTENT(INOUT) :: XMat
     TYPE(Matrix_ps), INTENT(IN)  :: BMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: ABalanced
@@ -52,7 +51,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     !! Print out parameters
@@ -60,7 +59,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="CG")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Setup all the matrices
@@ -190,9 +189,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: AMat
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_lsr) :: sparse_a
     TYPE(Matrix_ldr) :: dense_a
@@ -214,7 +213,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     !! Print out parameters
@@ -222,7 +221,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Cholesky Decomposition")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     CALL ConstructEmptyMatrix(LMat, AMat)
@@ -331,9 +330,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: AMat
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
     INTEGER, INTENT(IN) :: rank_in
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! For Pivoting
     INTEGER, DIMENSION(:), ALLOCATABLE :: pivot_vector
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: diag
@@ -368,7 +367,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     !! Print out parameters
@@ -378,7 +377,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Method", &
             & text_value_in="Pivoted Cholesky Decomposition")
        CALL WriteElement(key="Target_Rank", int_value_in=rank_in)
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     CALL ConstructEmptyMatrix(LMat, AMat)

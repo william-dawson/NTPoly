@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the square root solvers module for calling from other languages.
 MODULE SquareRootSolversModule_wrp
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_bool
@@ -20,7 +20,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_Mat1
     TYPE(Matrix_ps_wrp) :: h_InverseSquareRootMat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
     h_InverseSquareRootMat = TRANSFER(ih_InverseSquareRootMat, &
@@ -39,7 +39,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_Mat1
     TYPE(Matrix_ps_wrp) :: h_SquareRootMat
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
     h_SquareRootMat = TRANSFER(ih_SquareRootMat, h_SquareRootMat)

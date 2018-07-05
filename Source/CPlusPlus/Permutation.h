@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class Matrix_ps;
-class IterativeSolverParameters;
+class SolverParameters;
 class LoadBalancer;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -41,8 +41,7 @@ private:
   Permutation &operator=(const Permutation &);
 
 private:
-  friend class IterativeSolverParameters;
-  friend class FixedSolverParameters;
+  friend class SolverParameters;
   friend class LoadBalancer;
   friend class Matrix_ps;
 };

@@ -15,19 +15,17 @@ set(Fsrc
     EigenBoundsModule.F90
     EigenSolversModule.F90
     ExponentialSolversModule.F90
-    FixedSolversModule.F90
     GeometryOptimizationModule.F90
     HermiteSolversModule.F90
     InverseSolversModule.F90
-    IterativeSolversModule.F90
     LinearSolversModule.F90
     LoadBalancerModule.F90
     MinimizerSolversModule.F90
-    ParameterConverterModule.F90
     PermutationModule.F90
     PolynomialSolversModule.F90
     RootSolversModule.F90
     SignSolversModule.F90
+    SolverParametersModule.F90
     SquareRootSolversModule.F90
     TrigonometrySolversModule.F90
 )

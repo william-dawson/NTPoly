@@ -2,11 +2,11 @@
 !> An example that shows how to compute the overlap matrix.
 PROGRAM OverlapExample
   USE DataTypesModule, ONLY : NTREAL
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & WriteMatrixToMatrixMarket, FillMatrixFromTripletList, DestructMatrix
+  USE SolverParametersModule, ONLY : SolverParameters_t
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TimerModule, ONLY : RegisterTimer, StartTimer, StopTimer, PrintAllTimers
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
@@ -17,7 +17,7 @@ PROGRAM OverlapExample
   !! Parameters
   INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold, convergence_threshold
-  TYPE(IterativeSolverParameters_t) :: solver_parameters
+  TYPE(SolverParameters_t) :: solver_parameters
   INTEGER :: basis_functions
   !! Matrices
   TYPE(Matrix_ps) :: Overlap, ISQOverlap
@@ -108,7 +108,7 @@ PROGRAM OverlapExample
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
        & Overlap%logical_matrix_dimension)
-  solver_parameters = IterativeSolverParameters_t(&
+  solver_parameters = SolverParameters_t(&
        & converge_diff_in=convergence_threshold, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 

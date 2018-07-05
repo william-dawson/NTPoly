@@ -48,7 +48,7 @@ if __name__ == "__main__":
     # Set Up The Solver Parameters.
     permutation = nt.Permutation(Hamiltonian.GetLogicalDimension())
     permutation.SetRandomPermutation()
-    solver_parameters = nt.IterativeSolverParameters()
+    solver_parameters = nt.SolverParameters()
     solver_parameters.SetConvergeDiff(convergence_threshold)
     solver_parameters.SetThreshold(threshold)
     solver_parameters.SetLoadBalance(permutation)

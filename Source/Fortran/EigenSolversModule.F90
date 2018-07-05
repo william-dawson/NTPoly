@@ -4,17 +4,15 @@ MODULE EigenSolversModule
   USE DataTypesModule
   USE DensityMatrixSolversModule
   USE DMatrixModule
-  USE FixedSolversModule
-  USE IterativeSolversModule
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LinearSolversModule
   USE PermutationModule
   USE LoggingModule
-  USE ParameterConverterModule
   USE PSMatrixModule
   USE PSMatrixAlgebraModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SMatrixModule
   USE SMatrixAlgebraModule
   USE SignSolversModule
@@ -40,16 +38,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_in
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! For Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: fixed_params
+    TYPE(SolverParameters_t) :: fixed_params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        fixed_params = solver_parameters_in
     ELSE
-       fixed_params = FixedSolverParameters_t()
+       fixed_params = SolverParameters_t()
     END IF
 
 #if EIGENEXA
@@ -92,12 +90,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
     INTEGER, INTENT(IN), OPTIONAL :: num_values_in
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
-    TYPE(FixedSolverParameters_t) :: fixed_param
-    TYPE(IterativeSolverParameters_t) :: it_param
+    TYPE(SolverParameters_t) :: solver_parameters
     INTEGER :: num_values
     !! Local
     TYPE(Matrix_ps) :: eigenvectorsT, TempMat, eigenvalues_r
@@ -111,7 +106,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
     IF (PRESENT(num_values_in)) THEN
        num_values = num_values_in
@@ -123,29 +118,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="recursive")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
-
-    !! Setup the solver parameters
-    it_param = IterativeSolverParameters_t(&
-         & converge_diff_in = solver_parameters%converge_diff, &
-         & threshold_in = solver_parameters%threshold, &
-         & max_iterations_in = solver_parameters%max_iterations)
-    CALL ConvertIterativeToFixed(it_param, fixed_param)
 
     !! Rotate so that we are only computing the target number of values
     CALL StartTimer("Initial Purify")
     IF (num_values .LT. this%actual_matrix_dimension) THEN
-       CALL ReduceDimension(this, num_values, solver_parameters, &
-            & fixed_param, ReducedMat)
+       CALL ReduceDimension(this, num_values, solver_parameters, ReducedMat)
     ELSE
        CALL CopyMatrix(this, ReducedMat)
     END IF
     CALL StopTimer("Initial Purify")
 
     !! Actual Solve
-    CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters, it_param, &
-         & fixed_param)
+    CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters)
 
     !! Compute the eigenvalues
     CALL TransposeMatrix(eigenvectors, eigenvectorsT)
@@ -201,10 +187,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: left_vectors
     TYPE(Matrix_ps), INTENT(INOUT) :: right_vectors
     TYPE(Matrix_ps), INTENT(INOUT) :: singularvalues
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: UMat, HMat
 
@@ -212,14 +198,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Singular Value Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Recursive")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! First compute the polar decomposition of the matrix.
@@ -245,16 +231,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The recursive workhorse routine for the eigendecompositon.
   !! @param[in] this the matrix to decompose.
   !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
-  !! @param[in] it_parameters parameters for the iterative solvers.
-  !! @param[in] it_parameters parameters for the fixed solvers.
-  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters, &
-       & it_param, fixed_param)
+  !! @param[in] solver_parameters for the solvers.
+  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
-    TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
-    TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
+    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     !! Local Variables - matrices
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: PMat, PHoleMat
@@ -271,7 +253,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: split_slice
     REAL(NTREAL) :: sparsity
     !! Special parameters
-    TYPE(IterativeSolverParameters_t) :: balanced_it
+    TYPE(SolverParameters_t) :: balanced_it
     TYPE(Permutation_t) :: permutation
 
     mat_dim = this%actual_matrix_dimension
@@ -291,7 +273,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
        CALL StartTimer("Base Case")
        CALL ReferenceEigenDecomposition(this, eigenvectors, &
-            & solver_parameters_in=fixed_param)
+            & solver_parameters_in=solver_parameters)
        CALL StopTimer("Base Case")
     ELSE
        !! Setup
@@ -301,26 +283,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Setup special parameters for purification
        CALL ConstructRandomPermutation(permutation, &
             & this%logical_matrix_dimension)
-       balanced_it = IterativeSolverParameters_t(&
-            & converge_diff_in = it_param%converge_diff, &
-            & threshold_in = it_param%threshold, &
-            & max_iterations_in = it_param%max_iterations, &
+       balanced_it = SolverParameters_t(&
+            & converge_diff_in = solver_parameters%converge_diff, &
+            & threshold_in = solver_parameters%threshold, &
+            & max_iterations_in = solver_parameters%max_iterations, &
             & BalancePermutation_in=permutation)
 
        !! Purify
        CALL StartTimer("Purify")
        CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=balanced_it)
        CALL CopyMatrix(Identity, PHoleMat)
-       CALL IncrementMatrix(PMat, PHoleMat, &
-            & alpha_in=REAL(-1.0,NTREAL), threshold_in=it_param%threshold)
+       CALL IncrementMatrix(PMat, PHoleMat, alpha_in=REAL(-1.0,NTREAL), &
+            & threshold_in=solver_parameters%threshold)
        CALL StopTimer("Purify")
 
        !! Compute Eigenvectors of the Density Matrix
        CALL StartTimer("Cholesky")
        CALL PivotedCholeskyDecomposition(PMat, PVec, left_dim, &
-            & solver_parameters_in=fixed_param)
+            & solver_parameters_in=solver_parameters)
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
-            & solver_parameters_in=fixed_param)
+            & solver_parameters_in=solver_parameters)
        CALL StopTimer("Cholesky")
        CALL ConstructEmptyMatrix(StackV, this)
        CALL StartTimer("Stack")
@@ -330,29 +312,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Rotate to the divided subspace
        CALL StartTimer("Rotate")
        CALL MatrixMultiply(this, StackV, TempMat, &
-            & threshold_in=it_param%threshold)
+            & threshold_in=solver_parameters%threshold)
        CALL TransposeMatrix(StackV, StackVT)
        IF (StackVT%is_complex) THEN
           CALL ConjugateMatrix(StackVT)
        END IF
        CALL MatrixMultiply(StackVT, TempMat, VAV, &
-            & threshold_in=it_param%threshold)
+            & threshold_in=solver_parameters%threshold)
        CALL StopTimer("Rotate")
 
        !! Iterate Recursively
        IF (this%process_grid%total_processors .GT. 1 .AND. .FALSE.) THEN
           CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color, &
                & split_slice)
-          CALL EigenRecursive(SubMat, SubVec, solver_parameters, it_param,&
-               & fixed_param)
+          CALL EigenRecursive(SubMat, SubVec, solver_parameters)
           CALL ConstructEmptyMatrix(TempMat, this)
           CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
        ELSE
           CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
-          CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters, it_param,&
-               & fixed_param)
-          CALL EigenRecursive(RightMat,RightVectors,solver_parameters,it_param,&
-               & fixed_param)
+          CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters)
+          CALL EigenRecursive(RightMat,RightVectors,solver_parameters)
           CALL ConstructEmptyMatrix(TempMat, this)
           CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
                & TempMat)
@@ -361,7 +340,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Recombine
        CALL StartTimer("Recombine")
        CALL MatrixMultiply(StackV, TempMat, eigenvectors, &
-            & threshold_in=it_param%threshold)
+            & threshold_in=solver_parameters%threshold)
        CALL StopTimer("Recombine")
 
        !! Cleanup
@@ -570,17 +549,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! routine will project out the higher eigenvalues.
   !! @param[in] this the starting matrix.
   !! @param[in] dim the number of eigenvalues ot keep.
-  !! @param[in] it_param the iterative solver parameters.
-  !! @param[in] fixed_param the fixed solver parameters.
+  !! @param[in] parameters the solver parameters.
   !! @param[out] ReducedMat a dimxdim matrix with the same first n eigenvalues
   !! as the first.
-  SUBROUTINE ReduceDimension(this, dim, it_param, fixed_param, ReducedMat)
+  SUBROUTINE ReduceDimension(this, dim, parameters, ReducedMat)
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: dim
     TYPE(Matrix_ps), INTENT(INOUT) :: ReducedMat
-    TYPE(IterativeSolverParameters_t), INTENT(IN) :: it_param
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_param
+    TYPE(SolverParameters_t), INTENT(IN) :: parameters
     !! Local Variables - matrices
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: PMat
@@ -588,7 +565,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: TempMat
     TYPE(Matrix_ps) :: VAV
     !! Special parameters
-    TYPE(IterativeSolverParameters_t) :: balanced_it
+    TYPE(SolverParameters_t) :: balanced_it
     TYPE(Permutation_t) :: permutation
 
     !! Compute Identity Matrix
@@ -598,10 +575,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Setup special parameters for purification
     CALL ConstructRandomPermutation(permutation, &
          & this%logical_matrix_dimension)
-    balanced_it = IterativeSolverParameters_t(&
-         & converge_diff_in = it_param%converge_diff, &
-         & threshold_in = it_param%threshold, &
-         & max_iterations_in = it_param%max_iterations, &
+    balanced_it = SolverParameters_t(&
+         & converge_diff_in = parameters%converge_diff, &
+         & threshold_in = parameters%threshold, &
+         & max_iterations_in = parameters%max_iterations, &
          & BalancePermutation_in = permutation)
 
     !! Purify
@@ -609,15 +586,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute Eigenvectors of the Density Matrix
     CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
-         & solver_parameters_in=fixed_param)
+         & solver_parameters_in=parameters)
 
     !! Rotate to the divided subspace
-    CALL MatrixMultiply(this, PVec, TempMat, threshold_in=it_param%threshold)
+    CALL MatrixMultiply(this, PVec, TempMat, threshold_in=parameters%threshold)
     CALL TransposeMatrix(PVec, PVecT)
     IF (PVecT%is_complex) THEN
        CALL ConjugateMatrix(PVecT)
     END IF
-    CALL MatrixMultiply(PVecT, TempMat, VAV, threshold_in=it_param%threshold)
+    CALL MatrixMultiply(PVecT, TempMat, VAV, threshold_in=parameters%threshold)
 
     !! Extract
     CALL ExtractCorner(VAV, dim, dim, ReducedMat, TempMat)
@@ -641,15 +618,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
-    TYPE(FixedSolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Local Data
-    TYPE(FixedSolverParameters_t) :: fixed_params
+    TYPE(SolverParameters_t) :: fixed_params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        fixed_params = solver_parameters_in
     ELSE
-       fixed_params = FixedSolverParameters_t()
+       fixed_params = SolverParameters_t()
     END IF
 
     IF (this%is_complex) THEN
@@ -676,7 +653,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_params
+    TYPE(SolverParameters_t), INTENT(IN) :: fixed_params
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! Local Data
     TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
@@ -697,7 +674,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
-    TYPE(FixedSolverParameters_t), INTENT(IN) :: fixed_params
+    TYPE(SolverParameters_t), INTENT(IN) :: fixed_params
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! Local Data
     TYPE(TripletList_c) :: triplet_list, sorted_triplet_list, triplet_w

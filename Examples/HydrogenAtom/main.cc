@@ -11,9 +11,9 @@ using std::vector;
 #include <iostream>
 // NTPoly Headers
 #include "DensityMatrixSolvers.h"
-#include "IterativeSolversParameters.h"
 #include "PSMatrix.h"
 #include "ProcessGrid.h"
+#include "SolverParameters.h"
 #include "Triplet.h"
 #include "TripletList.h"
 // ETC
@@ -67,7 +67,7 @@ int main(int argc, char *argv[]) {
   NTPoly::ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns,
                                process_slices, true);
   // Set Up The Solver Parameters.
-  NTPoly::IterativeSolverParameters solver_parameters;
+  NTPoly::SolverParameters solver_parameters;
   solver_parameters.SetConvergeDiff(convergence_threshold);
   solver_parameters.SetThreshold(threshold);
   solver_parameters.SetVerbosity(true);

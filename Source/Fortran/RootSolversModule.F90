@@ -3,15 +3,14 @@
 MODULE RootSolversModule
   USE DataTypesModule
   USE EigenBoundsModule
-  USE FixedSolversModule
   USE InverseSolversModule
-  USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PolynomialSolversModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SquareRootSolversModule
   USE TimerModule
   USE MPI
@@ -32,10 +31,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: TempMat
 
@@ -43,14 +42,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Root Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Root", int_value_in=root)
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Handle base cases, or call to general implementation.
@@ -89,9 +88,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     !! Handling Solver Parameters
-    TYPE(FixedSolverParameters_t) :: fixed_parameters
+    TYPE(SolverParameters_t) :: fixed_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: RaisedMat
     TYPE(Matrix_ps) :: TempMat
@@ -137,10 +136,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
     TYPE(Matrix_ps) :: TempMat
 
@@ -149,14 +148,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Root Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Root", int_value_in=root)
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Handle base cases, or call to general implementation.
@@ -188,11 +187,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     INTEGER, INTENT(IN) :: root
-    TYPE(IterativeSolverParameters_t), INTENT(IN), OPTIONAL :: &
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
          & solver_parameters_in
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
-    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: SqrtMat, FthrtMat
     TYPE(Matrix_ps) :: IdentityMat
@@ -216,14 +215,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = IterativeSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters_in%be_verbose) THEN
        CALL WriteHeader("Root Solver")
        CALL EnterSubLog
        CALL WriteCitation("nicholas2008functions")
-       CALL PrintIterativeSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Compute The Scaling Factor

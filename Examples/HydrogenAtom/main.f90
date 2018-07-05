@@ -3,13 +3,13 @@
 PROGRAM HydrogenAtom
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, CopyMatrix, &
        & FillMatrixIdentity
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix
+  USE SolverParametersModule, ONLY : SolverParameters_t
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & AppendToTripletList
@@ -21,7 +21,7 @@ PROGRAM HydrogenAtom
   CHARACTER(len=80) :: density_file_out
   INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold, convergence_threshold
-  TYPE(IterativeSolverParameters_t) :: solver_parameters
+  TYPE(SolverParameters_t) :: solver_parameters
   !! MPI Variables
   INTEGER :: rank
   INTEGER :: total_processors
@@ -78,7 +78,7 @@ PROGRAM HydrogenAtom
        & process_slices)
 
   !! Set Up The Solver Parameters.
-  solver_parameters = IterativeSolverParameters_t( be_verbose_in=.TRUE., &
+  solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   !! Divide The Work Amongst Processors.

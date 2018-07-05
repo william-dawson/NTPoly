@@ -2,9 +2,9 @@
 !> Wraps the minimizer solvers module for calling from other languages.
 MODULE MinimizerSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
   USE MinimizerSolversModule, ONLY : ConjugateGradient
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
+  USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -25,7 +25,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_Hamiltonian
     TYPE(Matrix_ps_wrp) :: h_InverseSquareRoot
     TYPE(Matrix_ps_wrp) :: h_Density
-    TYPE(IterativeSolverParameters_wrp) :: h_solver_parameters
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_Hamiltonian = TRANSFER(ih_Hamiltonian,h_Hamiltonian)
     h_InverseSquareRoot = TRANSFER(ih_InverseSquareRoot,h_InverseSquareRoot)

@@ -5,11 +5,9 @@ set(Csrc
     EigenBounds.cc
     EigenSolvers.cc
     ExponentialSolvers.cc
-    FixedSolversParameters.cc
     GeometryOptimization.cc
     HermiteSolvers.cc
     InverseSolvers.cc
-    IterativeSolversParameters.cc
     LinearSolvers.cc
     LoadBalancer.cc
     MatrixMemoryPool.cc
@@ -24,6 +22,7 @@ set(Csrc
     SignSolvers.cc
     SMatrix.cc
     SolverBase.cc
+    SolverParameters.cc
     SquareRootSolvers.cc
     TrigonometrySolvers.cc
     TripletList.cc
@@ -35,11 +34,9 @@ set(Chead
     EigenBounds.h
     EigenSolvers.h
     ExponentialSolvers.h
-    FixedSolversParameters.h
     GeometryOptimization.h
     HermiteSolvers.h
     InverseSolvers.h
-    IterativeSolversParameters.h
     LinearSolvers.h
     LoadBalancer.h
     MatrixMemoryPool.h
@@ -53,6 +50,7 @@ set(Chead
     SignSolvers.h
     SMatrix.h
     SolverBase.h
+    SolverParameters.h
     SquareRootSolvers.h
     TrigonometrySolvers.h
     TripletList.h

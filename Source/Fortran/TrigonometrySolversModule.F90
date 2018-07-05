@@ -3,12 +3,12 @@
 MODULE TrigonometrySolversModule
   USE DataTypesModule
   USE EigenBoundsModule
-  USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PMatrixMemoryPoolModule
   USE PSMatrixAlgebraModule
   USE PSMatrixModule
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -26,7 +26,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE Sine(InputMat, OutputMat, solver_parameters_in)
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     !! A temporary matrix to hold the transformation from sine to cosine.
     TYPE(Matrix_ps) :: ShiftedMat
     TYPE(Matrix_ps) :: IdentityMat
@@ -55,7 +55,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE Cosine(InputMat, OutputMat, solver_parameters_in)
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
     IF (PRESENT(solver_parameters_in)) THEN
        CALL ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
     ELSE
@@ -72,9 +72,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: Ak
@@ -92,7 +92,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -100,7 +100,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Taylor")
        CALL WriteCitation("higham2003computing")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Compute The Scaling Factor
@@ -186,9 +186,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(FixedSolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(FixedSolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
     TYPE(Matrix_ps) :: ScaledMat
     TYPE(Matrix_ps) :: TempMat
@@ -210,7 +210,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
     ELSE
-       solver_parameters = FixedSolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -218,7 +218,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Chebyshev")
        CALL WriteCitation("serbin1980algorithm higham2003computing yau1993reducing")
-       CALL PrintFixedSolverParameters(solver_parameters)
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Compute The Scaling Factor

@@ -4,8 +4,7 @@
 #include "SolverBase.h"
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class IterativeSolverParameters;
-class FixedSolverParameters;
+class SolverParameters;
 class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class for solving matrix equations.
@@ -18,15 +17,14 @@ public:
   //!\param solver_parameters parameters for the solver
   static void CGSolver(const Matrix_ps &AMat, Matrix_ps &XMat,
                        const Matrix_ps &BMat,
-                       const IterativeSolverParameters &solver_parameters);
+                       const SolverParameters &solver_parameters);
   //! Compute The Cholesky Decomposition of a Symmetric Positive Definite
   //! matrix.
   //!\param AMat the matrix A, must be symmetric, positive definite.
   //!\param LMat the matrix computed.
   //!\param solver_parameters parameters for the solver
-  static void
-  CholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat,
-                        const FixedSolverParameters &solver_parameters);
+  static void CholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat,
+                                    const SolverParameters &solver_parameters);
   //! Compute The Cholesky Decomposition of a Symmetric Positive Semi-Definite
   //! matrix.
   //!\param AMat the matrix A, must be symmetric, positive definite.
@@ -35,7 +33,7 @@ public:
   //!\param solver_parameters parameters for the solver
   static void
   PivotedCholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat, int rank,
-                               const FixedSolverParameters &solver_parameters);
+                               const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif
