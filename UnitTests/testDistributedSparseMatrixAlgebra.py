@@ -143,6 +143,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             else:
                 ntmatrix2 = nt.Matrix_ps(param.rows)
 
+            result = 0
             result = ntmatrix2.Dot(ntmatrix1)
             comm.barrier()
 

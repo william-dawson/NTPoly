@@ -7,6 +7,7 @@ using std::string;
 using std::cout;
 using std::endl;
 using namespace NTPoly;
+using std::complex;
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
@@ -121,7 +122,18 @@ void Matrix_ps::Conjugate() { ConjugateMatrix_ps_wrp(ih_this); }
 
 //////////////////////////////////////////////////////////////////////////////
 double Matrix_ps::Dot(const Matrix_ps &matB) {
-  return DotMatrix_ps_wrp(ih_this, matB.ih_this);
+   double dot_product;
+   DotMatrix_psr_wrp(ih_this, matB.ih_this, &dot_product);
+   return dot_product;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+complex<double> Matrix_ps::Dot_c(const Matrix_ps &matB) {
+  double temp_real, temp_imag;
+  complex<double> dot_product;
+  DotMatrix_psc_wrp(ih_this, matB.ih_this, &temp_real, &temp_imag);
+  dot_product = complex<double>(temp_real, temp_imag);
+  return dot_product;
 }
 
 //////////////////////////////////////////////////////////////////////////////

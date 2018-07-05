@@ -3,6 +3,7 @@
 
 #include "Wrapper.h"
 #include <string>
+#include <complex>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
@@ -96,6 +97,9 @@ public:
   //! this = dot(this,matB)
   //!\param matB the matrix to dot.
   double Dot(const Matrix_ps &matB);
+  //! this = dot(this,matB)
+  //!\param matB the matrix to dot.
+  std::complex<double> Dot_c(const Matrix_ps &matB);
   //! this = alpha*MatB + this (AXPY)
   //!\param matB the matrix to add.
   //!\param alpha scaling factor.

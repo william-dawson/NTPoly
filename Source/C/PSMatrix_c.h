@@ -24,14 +24,16 @@ void GetMatrixLogicalDimension_ps_wrp(const int *ih_this, int *size);
 void GetMatrixTripletList_psr_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixTripletList_psc_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixBlock_psr_wrp(const int *ih_this, int *ih_triplet_list,
-                           int *start_row, int *end_row, int *start_column,
-                           int *end_column);
+                            int *start_row, int *end_row, int *start_column,
+                            int *end_column);
 void GetMatrixBlock_psc_wrp(const int *ih_this, int *ih_triplet_list,
-                           int *start_row, int *end_row, int *start_column,
-                           int *end_column);
+                            int *start_row, int *end_row, int *start_column,
+                            int *end_column);
 void TransposeMatrix_ps_wrp(const int *ih_matA, int *ih_transmat);
-void ConjugateMatrix_ps_wrp(int* ih_matA);
-double DotMatrix_ps_wrp(const int *ih_matA, const int *ih_matB);
+void ConjugateMatrix_ps_wrp(int *ih_matA);
+void DotMatrix_psr_wrp(const int *ih_matA, const int *ih_matB, double *product);
+void DotMatrix_psc_wrp(const int *ih_matA, const int *ih_matB,
+                       double *product_real, double *product_imag);
 void IncrementMatrix_ps_wrp(const int *ih_matA, int *ih_matB,
                             const double *alpha_in, const double *threshold_in);
 void MatrixPairwiseMultiply_ps_wrp(const int *ih_matA, const int *ih_matB,
@@ -41,6 +43,6 @@ void MatrixMultiply_ps_wrp(const int *ih_matA, const int *ih_matB, int *ih_matC,
                            const double *threshold_in, int *ih_memory_pool_in);
 void ScaleMatrix_ps_wrp(int *ih_this, const double *constant);
 double MatrixNorm_ps_wrp(const int *ih_this);
-void MatrixTrace_ps_wrp(const int *ih_this, double* trace_val);
+void MatrixTrace_ps_wrp(const int *ih_this, double *trace_val);
 
 #endif

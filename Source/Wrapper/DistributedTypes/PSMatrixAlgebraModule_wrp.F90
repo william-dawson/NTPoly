@@ -13,7 +13,8 @@ MODULE PSMatrixAlgebraModule_wrp
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: IncrementMatrix_ps_wrp
-  PUBLIC :: DotMatrix_ps_wrp
+  PUBLIC :: DotMatrix_psr_wrp
+  PUBLIC :: DotMatrix_psc_wrp
   PUBLIC :: MatrixPairwiseMultiply_ps_wrp
   PUBLIC :: MatrixMultiply_ps_wrp
   PUBLIC :: ScaleMatrix_ps_wrp
@@ -36,18 +37,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(matA,matB)
-  FUNCTION DotMatrix_ps_wrp(ih_matA, ih_matB) RESULT(product) &
-       & bind(c,name="DotMatrix_ps_wrp")
+  SUBROUTINE DotMatrix_psr_wrp(ih_matA, ih_matB, product) &
+       & bind(c,name="DotMatrix_psr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
-    REAL(NTREAL) :: product
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
+    REAL(NTREAL), INTENT(OUT) :: product
     TYPE(Matrix_ps_wrp) :: h_matA
     TYPE(Matrix_ps_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
     CALL DotMatrix(h_matA%data, h_matB%data, product)
-  END FUNCTION DotMatrix_ps_wrp
+  END SUBROUTINE DotMatrix_psr_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> product = dot(matA,matB)
+  SUBROUTINE DotMatrix_psc_wrp(ih_matA, ih_matB, product_real, product_imag) &
+       & bind(c,name="DotMatrix_psc_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
+    REAL(NTREAL), INTENT(OUT) :: product_real
+    REAL(NTREAL), INTENT(OUT) :: product_imag
+    COMPLEX(NTREAL) :: product
+    TYPE(Matrix_ps_wrp) :: h_matA
+    TYPE(Matrix_ps_wrp) :: h_matB
+
+    h_matA = TRANSFER(ih_matA,h_matA)
+    h_matB = TRANSFER(ih_matB,h_matB)
+    CALL DotMatrix(h_matA%data, h_matB%data, product)
+
+    product_real = REAL(product)
+    product_imag = AIMAG(product)
+  END SUBROUTINE DotMatrix_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication.
   SUBROUTINE MatrixPairwiseMultiply_ps_wrp(ih_matA, ih_matB, ih_matC) &
