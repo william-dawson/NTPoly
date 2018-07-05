@@ -43,7 +43,6 @@ set(WTypes
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixAlgebraModule_wrp.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixModule_wrp.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule_wrp.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule_wrp.F90
 )
 
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)

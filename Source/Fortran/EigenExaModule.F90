@@ -190,7 +190,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Now Get The Triplet List, and adjust
-    CALL GetTripletList(A, triplet_a)
+    CALL GetMatrixTripletList(A, triplet_a)
     DO II = 1, triplet_a%CurrentSize
        CALL GetTripletAt(triplet_a, II, trip)
 
@@ -314,7 +314,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Go to global matrix
-    CALL FillFromTripletList(W, triplet_w)
+    CALL FillMatrixFromTripletList(W, triplet_w)
 
     !! Cleanup
     CALL DestructTripletList(triplet_w)

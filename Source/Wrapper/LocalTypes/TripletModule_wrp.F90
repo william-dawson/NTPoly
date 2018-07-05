@@ -51,29 +51,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetTripletValues_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
-  PURE SUBROUTINE SetTriplet_c_wrp(ih_this,index_column,index_row,point_value) &
-       & bind(c,name="SetTriplet_c_wrp")
+  PURE SUBROUTINE SetTriplet_c_wrp(ih_this, index_column, index_row, &
+       & point_value_real, point_value_imag) bind(c,name="SetTriplet_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index_column
     INTEGER(kind=c_int), INTENT(IN)    :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(IN) :: point_value
+    REAL(NTREAL), INTENT(IN) :: point_value_real
+    REAL(NTREAL), INTENT(IN) :: point_value_imag
+    COMPLEX(NTCOMPLEX) :: point_value
     TYPE(Triplet_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
+    point_value = COMPLEX(point_value_real, point_value_imag)
     CALL SetTriplet(h_this%data,index_column,index_row,point_value)
   END SUBROUTINE SetTriplet_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the values of a triplet.
-  PURE SUBROUTINE GetTripletValues_c_wrp(ih_this,index_column,index_row, &
-       & point_value) bind(c,name="GetTripletValues_c_wrp")
+  PURE SUBROUTINE GetTripletValues_c_wrp(ih_this, index_column, index_row, &
+       & point_value_real, point_value_imag) &
+       & bind(c,name="GetTripletValues_c_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT)    :: index_column
     INTEGER(kind=c_int), INTENT(OUT)    :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(OUT) :: point_value
+    REAL(NTREAL), INTENT(OUT) :: point_value_real
+    REAL(NTREAL), INTENT(OUT) :: point_value_imag
+    COMPLEX(NTCOMPLEX) :: point_value
     TYPE(Triplet_c_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
     CALL GetTripletValues(h_this%data,index_column,index_row,point_value)
+
+    point_value_real = REAL(point_value)
+    point_value_imag = AIMAG(point_value)
   END SUBROUTINE GetTripletValues_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletModule_wrp
