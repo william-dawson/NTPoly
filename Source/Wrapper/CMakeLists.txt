@@ -49,7 +49,6 @@ set(WTypes
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)
 
 IF (EIGEN_EXA)
-  LIST(APPEND Wsrc EigenExaModule_wrp.F90)
   include_directories(${EIGEN_EXA})
 ENDIF()
 

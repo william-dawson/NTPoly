@@ -60,7 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: insert_row
     REAL(NTREAL), INTENT(IN) :: insert_value
 
-    INCLUDE "includes/AppendToVector.f90"
+    INCLUDE "includes/AppendToVector.F90"
   END SUBROUTINE AppendToVector_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
@@ -74,7 +74,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local
     INTEGER :: err
 
-    INCLUDE "includes/BroadcastVector.f90"
+    INCLUDE "includes/BroadcastVector.F90"
     CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
 
   END SUBROUTINE BroadcastVector_r
@@ -87,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ldr), INTENT(IN) :: dense_a
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
 
-    INCLUDE "includes/ConstructDiag.f90"
+    INCLUDE "includes/ConstructDiag.F90"
     CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(process_grid%my_row+1), &
          & MPINTREAL, diag, diags_per_proc, diag_displ, MPINTREAL, &
          & process_grid%column_comm, ierr)
@@ -141,7 +141,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
     INTEGER, INTENT(INOUT) :: comm
 
-    INCLUDE "includes/DotAllHelper.f90"
+    INCLUDE "includes/DotAllHelper.F90"
 
   END SUBROUTINE DotAllHelper_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -159,7 +159,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
     INTEGER, INTENT(INOUT) :: comm
 
-    INCLUDE "includes/DotAllPivoted.f90"
+    INCLUDE "includes/DotAllPivoted.F90"
 
   END SUBROUTINE DotAllPivoted_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -174,7 +174,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsr) :: local_matrixT
 
-    INCLUDE "includes/GatherMatrixColumn.f90"
+    INCLUDE "includes/GatherMatrixColumn.F90"
   END SUBROUTINE GatherMatrixColumn_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE GetPivot_r(AMat, process_grid, start_index, pivot_vector, diag, &
@@ -193,7 +193,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: temp_diag
     DOUBLE PRECISION, DIMENSION(2) :: max_diag
 
-    INCLUDE "includes/GetPivot.f90"
+    INCLUDE "includes/GetPivot.F90"
 
   END SUBROUTINE GetPivot_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -204,7 +204,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
 
-    INCLUDE "includes/UnpackCholesky.f90"
+    INCLUDE "includes/UnpackCholesky.F90"
   END SUBROUTINE UnpackCholesky_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE CholeskyModule
