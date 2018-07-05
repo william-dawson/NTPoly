@@ -2,6 +2,7 @@
 #include "SMatrix.h"
 #include "TripletList.h"
 using std::string;
+using std::complex;
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
@@ -127,11 +128,17 @@ void Matrix_lsc::Increment(const Matrix_lsc &matB, double alpha,
 ////////////////////////////////////////////////////////////////////////////////
 
 double Matrix_lsr::Dot(const Matrix_lsr &matB) const {
-  return DotMatrix_lsr_wrp(ih_this, matB.ih_this);
+  double val;
+  DotMatrix_lsr_wrp(ih_this, matB.ih_this, &val);
+  return val;
 }
 
-double Matrix_lsc::Dot(const Matrix_lsc &matB) const {
-  return DotMatrix_lsc_wrp(ih_this, matB.ih_this);
+complex<double> Matrix_lsc::Dot(const Matrix_lsc &matB) const {
+  double real, imag;
+  complex<double> val;
+  DotMatrix_lsc_wrp(ih_this, matB.ih_this, &real, &imag);
+  val = complex<double>(real,imag);
+  return val;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

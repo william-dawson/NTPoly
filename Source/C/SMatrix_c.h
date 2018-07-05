@@ -21,7 +21,7 @@ void ScaleMatrix_lsr_wrp(int *ih_this, const double *constant);
 void IncrementMatrix_lsr_wrp(const int *ih_matA, int *ih_matB,
                              const double *alpha_in,
                              const double *threshold_in);
-double DotMatrix_lsr_wrp(const int *ih_matA, const int *ih_matB);
+void DotMatrix_lsr_wrp(const int *ih_matA, const int *ih_matB, double *product);
 void PairwiseMultiplyMatrix_lsr_wrp(const int *ih_matA, const int *ih_matB,
                                     int *ih_matC);
 void MatrixMultiply_lsr_wrp(const int *ih_matA, const int *ih_matB,
@@ -57,7 +57,8 @@ void ScaleMatrix_lsc_wrp(int *ih_this, const double *constant);
 void IncrementMatrix_lsc_wrp(const int *ih_matA, int *ih_matB,
                              const double *alpha_in,
                              const double *threshold_in);
-double _Complex DotMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB);
+void DotMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB,
+                       double *product_real, double *product_complex);
 void PairwiseMultiplyMatrix_lsc_wrp(const int *ih_matA, const int *ih_matB,
                                     int *ih_matC);
 void MatrixMultiply_lsc_wrp(const int *ih_matA, const int *ih_matB,
@@ -66,7 +67,7 @@ void MatrixMultiply_lsc_wrp(const int *ih_matA, const int *ih_matB,
                             const double *beta, const double *threshold,
                             int *ih_matrix_memory_pool);
 void TransposeMatrix_lsc_wrp(const int *ih_matA, int *ih_matAT);
-void ConjugateMatrix_lsc_wrp(int* ih_matA);
+void ConjugateMatrix_lsc_wrp(int *ih_matA);
 void PrintMatrix_lsc_wrp(const int *ih_this);
 void PrintMatrixF_lsc_wrp(const int *ih_this, const char *file_name,
                           const int *name_size);

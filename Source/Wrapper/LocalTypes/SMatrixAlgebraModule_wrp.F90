@@ -53,18 +53,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
-  PURE FUNCTION DotMatrix_lsr_wrp(ih_matA, ih_matB) RESULT(product) &
+  PURE SUBROUTINE DotMatrix_lsr_wrp(ih_matA, ih_matB, product) &
        & bind(c,name="DotMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
-    REAL(NTREAL) :: product
+    REAL(NTREAL), INTENT(OUT) :: product
     TYPE(Matrix_lsr_wrp) :: h_matA
     TYPE(Matrix_lsr_wrp) :: h_matB
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
     CALL DotMatrix(h_matA%data, h_matB%data, product)
-  END FUNCTION DotMatrix_lsr_wrp
+  END SUBROUTINE DotMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.
   SUBROUTINE PairwiseMultiplyMatrix_lsr_wrp(ih_matA, ih_matB, ih_matC) &
@@ -139,10 +139,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
-  PURE FUNCTION DotMatrix_lsc_wrp(ih_matA, ih_matB) RESULT(product) &
-       & bind(c,name="DotMatrix_lsc_wrp")
+  PURE SUBROUTINE DotMatrix_lsc_wrp(ih_matA, ih_matB, product_real, &
+       & product_imag) bind(c,name="DotMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
+    REAL(NTREAL), INTENT(OUT) :: product_real
+    REAL(NTREAL), INTENT(OUT) :: product_imag
     COMPLEX(NTCOMPLEX) :: product
     TYPE(Matrix_lsc_wrp) :: h_matA
     TYPE(Matrix_lsc_wrp) :: h_matB
@@ -150,7 +152,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
     CALL DotMatrix(h_matA%data, h_matB%data, product)
-  END FUNCTION DotMatrix_lsc_wrp
+
+    product_real = REAL(product)
+    product_imag = AIMAG(product)
+  END SUBROUTINE DotMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.
   SUBROUTINE PairwiseMultiplyMatrix_lsc_wrp(ih_matA, ih_matB, ih_matC) &

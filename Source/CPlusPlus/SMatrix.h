@@ -3,6 +3,7 @@
 
 #include "Wrapper.h"
 #include <string>
+#include <complex>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
@@ -155,7 +156,7 @@ public:
   //! Matrix dot product.
   //!\param matB matrix to dot with.
   //!\result the dot product of this and matB.
-  double Dot(const NTPoly::Matrix_lsc &matB) const;
+  std::complex<double> Dot(const NTPoly::Matrix_lsc &matB) const;
   //! Pairwise multiply two sparse matrices.
   //!\param matA
   //!\param matB
