@@ -214,7 +214,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     temp%index_column = index_column
     temp%index_row = index_row
-    temp%point_value = COMPLEX(point_value_real, point_value_imag)
+    temp%point_value = CMPLX(point_value_real, point_value_imag)
 
     h_this = TRANSFER(ih_this,h_this)
     CALL AppendToTripletList(h_this%data,temp)
@@ -234,7 +234,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     temp%index_column = index_column
     temp%index_row = index_row
-    temp%point_value = COMPLEX(point_value_real, point_value_imag)
+    temp%point_value = CMPLX(point_value_real, point_value_imag)
 
     h_this = TRANSFER(ih_this,h_this)
     CALL SetTripletAt(h_this%data,index,temp)
