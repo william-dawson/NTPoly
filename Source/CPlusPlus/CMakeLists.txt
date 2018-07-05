@@ -17,7 +17,6 @@ set(Csrc
     PMatrixMemoryPool.cc
     ProcessGrid.cc
     PSMatrix.cc
-    real_to_complex.c
     RootSolvers.cc
     SignSolvers.cc
     SMatrix.cc

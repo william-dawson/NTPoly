@@ -202,17 +202,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
   PURE SUBROUTINE AppendToTripletList_c_wrp(ih_this, index_column, index_row, &
-       & point_value) bind(c,name="AppendToTripletList_c_wrp")
+       & point_value_real, point_value_imag) &
+       & bind(c,name="AppendToTripletList_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index_column
     INTEGER(kind=c_int), INTENT(IN)    :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(IN) :: point_value
+    REAL(NTREAL), INTENT(IN) :: point_value_real
+    REAL(NTREAL), INTENT(IN) :: point_value_imag
     TYPE(TripletList_c_wrp) :: h_this
     TYPE(Triplet_c) :: temp
 
     temp%index_column = index_column
     temp%index_row = index_row
-    temp%point_value = point_value
+    temp%point_value = COMPLEX(point_value_real, point_value_imag)
 
     h_this = TRANSFER(ih_this,h_this)
     CALL AppendToTripletList(h_this%data,temp)
@@ -220,18 +222,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
   PURE SUBROUTINE SetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
-       & point_value) bind(c,name="SetTripletAt_c_wrp")
+       & point_value_real, point_value_imag) bind(c,name="SetTripletAt_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index
     INTEGER(kind=c_int), INTENT(IN)    :: index_column
     INTEGER(kind=c_int), INTENT(IN)    :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(IN) :: point_value
+    REAL(NTREAL), INTENT(IN) :: point_value_real
+    REAL(NTREAL), INTENT(IN) :: point_value_imag
     TYPE(TripletList_c_wrp) :: h_this
     TYPE(Triplet_c) :: temp
 
     temp%index_column = index_column
     temp%index_row = index_row
-    temp%point_value = point_value
+    temp%point_value = COMPLEX(point_value_real, point_value_imag)
 
     h_this = TRANSFER(ih_this,h_this)
     CALL SetTripletAt(h_this%data,index,temp)
@@ -239,12 +242,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
   PURE SUBROUTINE GetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
-       & point_value) bind(c,name="GetTripletAt_c_wrp")
+       & point_value_real, point_value_imag) bind(c,name="GetTripletAt_c_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT)    :: index
     INTEGER(kind=c_int), INTENT(OUT)    :: index_column
     INTEGER(kind=c_int), INTENT(OUT)    :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(OUT) :: point_value
+    REAL(NTREAL), INTENT(OUT) :: point_value_real
+    REAL(NTREAL), INTENT(OUT) :: point_value_imag
     TYPE(TripletList_c_wrp) :: h_this
     TYPE(Triplet_c) :: temp
 
@@ -253,7 +257,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     index_column = temp%index_column
     index_row = temp%index_row
-    point_value = temp%point_value
+    point_value_real = REAL(temp%point_value)
+    point_value_real = AIMAG(temp%point_value)
   END SUBROUTINE GetTripletAt_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.

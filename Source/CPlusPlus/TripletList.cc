@@ -34,10 +34,10 @@ void TripletList_r::Append(const Triplet_r &value) {
 }
 
 void TripletList_c::Append(const Triplet_c &value) {
-  double _Complex temp;
-  temp = real_to_complex(value.point_value.real(), value.point_value.imag());
+  double temp_real = value.point_value.real();
+  double temp_imag = value.point_value.imag();
   AppendToTripletList_c_wrp(ih_this, &(value.index_column), &(value.index_row),
-                            &temp);
+                            &temp_real, &temp_imag);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,11 +49,11 @@ void TripletList_r::SetTripletAt(int index, const Triplet_r &value) {
 }
 
 void TripletList_c::SetTripletAt(int index, const Triplet_c &value) {
-  double _Complex temp;
-  temp = real_to_complex(value.point_value.real(), value.point_value.imag());
+  double temp_real = value.point_value.real();
+  double temp_imag = value.point_value.imag();
   int adjusted_index = index + 1;
   SetTripletAt_c_wrp(ih_this, &adjusted_index, &(value.index_column),
-                     &(value.index_row), &temp);
+                     &(value.index_row), &temp_real, &temp_imag);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,11 +67,12 @@ Triplet_r TripletList_r::GetTripletAt(int index) const {
 
 Triplet_c TripletList_c::GetTripletAt(int index) const {
   Triplet_c temp;
-  double _Complex tempc;
+  double temp_real;
+  double temp_imag;
   int adjusted_index = index + 1;
   GetTripletAt_c_wrp(ih_this, &adjusted_index, &(temp.index_column),
-                     &(temp.index_row), &tempc);
-  temp.point_value = std::complex<double>(__real__ tempc, __imag__ tempc);
+                     &(temp.index_row), &temp_real, &temp_imag);
+  temp.point_value = std::complex<double>(temp_real, temp_imag);
   return temp;
 }
 
