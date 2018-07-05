@@ -2,8 +2,8 @@
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
-  USE MatrixSAlgebraModule, ONLY : IncrementMatrix
-  USE MatrixSModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix, &
+  USE SMatrixAlgebraModule, ONLY : IncrementMatrix
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix, &
        & DestructMatrix, CopyMatrix
   USE MPI
   IMPLICIT NONE

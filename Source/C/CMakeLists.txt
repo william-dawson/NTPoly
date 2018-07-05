@@ -1,8 +1,6 @@
 set(Csrc
     ChebyshevSolvers_c.h
     DensityMatrixSolvers_c.h
-    DistributedSparseMatrix_c.h
-    DistributedMatrixMemoryPool_c.h
     EigenBounds_c.h
     EigenSolvers_c.h
     ExponentialSolvers_c.h
@@ -15,13 +13,15 @@ set(Csrc
     LoadBalancer_c.h
     MatrixMemoryPool_c.h
     MinimizerSolvers_c.h
+    PMatrixMemoryPool_c.h
+    PSMatrix_c.h
     Permutation_c.h
     Polynomial_c.h
     ProcessGrid_c.h
     RootSolvers_c.h
     SignSolvers_c.h
     SolverBase_c.h
-    SparseMatrix_c.h
+    SMatrix_c.h
     SquareRootSolvers_c.h
     TrigonometrySolvers_c.h
     TripletList_c.h

@@ -3,15 +3,15 @@
 MODULE LinearSolversModule
   USE CholeskyModule
   USE DataTypesModule
-  USE MatrixDModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
+  USE DMatrixModule
   USE FixedSolversModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
-  USE MatrixSModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
+  USE SMatrixModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE

@@ -3,8 +3,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class DistributedMatrixMemoryPool;
-class DistributedSparseMatrix;
+class PMatrixMemoryPool;
+class Matrix_ps;
 class Permutation;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -16,19 +16,17 @@ public:
   //\param[out] mat_out permuted matrix.
   //\param[in] permutation to apply.
   //\param[inout] memorypool_in memory pool to use. Optional.
-  static void PermuteMatrix(const DistributedSparseMatrix &mat_in,
-                            DistributedSparseMatrix &mat_out,
+  static void PermuteMatrix(const Matrix_ps &mat_in, Matrix_ps &mat_out,
                             const Permutation &permutation,
-                            DistributedMatrixMemoryPool &memorypool);
+                            PMatrixMemoryPool &memorypool);
   //! Undo a permutation applied to a matrix.
   //\param[in] mat_in matrix to undo permutation of.
   //\param[out] mat_out unpermuted matrix.
   //\param[in] permutation to remove.
   //\param[inout] memorypool_in memory pool to use. Optional.
-  static void UndoPermuteMatrix(const DistributedSparseMatrix &mat_in,
-                                DistributedSparseMatrix &mat_out,
+  static void UndoPermuteMatrix(const Matrix_ps &mat_in, Matrix_ps &mat_out,
                                 const Permutation &permutation,
-                                DistributedMatrixMemoryPool &memorypool);
+                                PMatrixMemoryPool &memorypool);
 };
 } // namespace NTPoly
 #endif

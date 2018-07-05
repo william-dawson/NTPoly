@@ -1,18 +1,16 @@
 #include "SolverBase.h"
 
-#include "DistributedSparseMatrix.h"
 #include "FixedSolversParameters.h"
 #include "IterativeSolversParameters.h"
+#include "PSMatrix.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-const int *SolverBase::GetIH(const DistributedSparseMatrix &dsm) {
-  return dsm.ih_this;
-}
+const int *SolverBase::GetIH(const Matrix_ps &dsm) { return dsm.ih_this; }
 
 ////////////////////////////////////////////////////////////////////////////////
-int *SolverBase::GetIH(DistributedSparseMatrix &dsm) { return dsm.ih_this; }
+int *SolverBase::GetIH(Matrix_ps &dsm) { return dsm.ih_this; }
 
 ////////////////////////////////////////////////////////////////////////////////
 const int *SolverBase::GetIH(const IterativeSolverParameters &csp) {

@@ -114,8 +114,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             self.CheckMat = matrix1 + matrix2
 
             comm.barrier()
-            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
-            ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, False)
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
             ntmatrix2.Increment(ntmatrix1)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -135,13 +135,13 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             check = comm.bcast(check, root=0)
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
             if param.sparsity2 > 0.0:
-                ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, False)
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
             else:
-                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix2 = nt.Matrix_ps(param.rows)
 
             result = ntmatrix2.Dot(ntmatrix1)
             comm.barrier()
@@ -162,14 +162,14 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             comm.barrier()
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
             if param.sparsity2 > 0.0:
-                ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, False)
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
             else:
-                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
-            ntmatrix3 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix2 = nt.Matrix_ps(param.rows)
+            ntmatrix3 = nt.Matrix_ps(param.rows)
             ntmatrix3.PairwiseMultiply(ntmatrix1, ntmatrix2)
             ntmatrix3.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -188,15 +188,15 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             comm.barrier()
 
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
             if param.sparsity2 > 0.0:
-                ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, False)
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
             else:
-                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
-            ntmatrix3 = nt.DistributedSparseMatrix(param.rows)
-            memory_pool = nt.DistributedMatrixMemoryPool(ntmatrix1)
+                ntmatrix2 = nt.Matrix_ps(param.rows)
+            ntmatrix3 = nt.Matrix_ps(param.rows)
+            memory_pool = nt.PMatrixMemoryPool(ntmatrix1)
             ntmatrix3.Gemm(ntmatrix1, ntmatrix2, memory_pool)
             ntmatrix3.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -213,13 +213,13 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             comm.barrier()
 
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
-            permute_rows = nt.DistributedSparseMatrix(param.rows)
-            permute_columns = nt.DistributedSparseMatrix(param.rows)
-            temp_matrix = nt.DistributedSparseMatrix(param.rows)
-            memory_pool = nt.DistributedMatrixMemoryPool(ntmatrix1)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
+            permute_rows = nt.Matrix_ps(param.rows)
+            permute_columns = nt.Matrix_ps(param.rows)
+            temp_matrix = nt.Matrix_ps(param.rows)
+            memory_pool = nt.PMatrixMemoryPool(ntmatrix1)
             permutation = nt.Permutation(ntmatrix1.GetLogicalDimension())
 
             permutation.SetReversePermutation()
@@ -259,13 +259,13 @@ class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
             comm.barrier()
             check = comm.bcast(check, root=0)
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
             if param.sparsity2 > 0.0:
-                ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, False)
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
             else:
-                ntmatrix2 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix2 = nt.Matrix_ps(param.rows)
 
             result = ntmatrix2.Dot(ntmatrix1)
             comm.barrier()

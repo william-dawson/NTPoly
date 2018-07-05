@@ -122,8 +122,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = inv(csc_matrix(matrix1))
 
         # Result Matrix
-        overlap_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        inverse_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        overlap_matrix = nt.Matrix_ps(self.input_file, False)
+        inverse_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -145,8 +145,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(pinv(matrix1.todense()))
 
         # Result Matrix
-        overlap_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        inverse_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        overlap_matrix = nt.Matrix_ps(self.input_file, False)
+        inverse_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -170,8 +170,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        overlap_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        inverse_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        overlap_matrix = nt.Matrix_ps(self.input_file, False)
+        inverse_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -193,8 +193,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        root_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        root_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -220,8 +220,8 @@ class TestSolvers(unittest.TestCase):
             self.CheckMat = csr_matrix(dense_check)
 
             # Result Matrix
-            input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-            inverse_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+            input_matrix = nt.Matrix_ps(self.input_file, False)
+            inverse_matrix = nt.Matrix_ps(self.mat_dim)
             permutation = nt.Permutation(input_matrix.GetLogicalDimension())
             permutation.SetRandomPermutation()
             self.isp.SetLoadBalance(permutation)
@@ -248,8 +248,8 @@ class TestSolvers(unittest.TestCase):
             self.CheckMat = csr_matrix(dense_check)
 
             # Result Matrix
-            input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-            inverse_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+            input_matrix = nt.Matrix_ps(self.input_file, False)
+            inverse_matrix = nt.Matrix_ps(self.mat_dim)
             permutation = nt.Permutation(input_matrix.GetLogicalDimension())
             permutation.SetRandomPermutation()
             self.isp.SetLoadBalance(permutation)
@@ -270,8 +270,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        sign_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        sign_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -292,8 +292,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        exp_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        exp_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.fsp.SetLoadBalance(permutation)
@@ -317,8 +317,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        exp_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        exp_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -340,8 +340,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        log_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        log_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.fsp.SetLoadBalance(permutation)
@@ -364,9 +364,9 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(matrix1)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        exp_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        round_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        exp_matrix = nt.Matrix_ps(self.mat_dim)
+        round_matrix = nt.Matrix_ps(self.mat_dim)
         nt.ExponentialSolvers.ComputeExponential(input_matrix, exp_matrix,
                                                  self.fsp)
         nt.ExponentialSolvers.ComputeLogarithm(exp_matrix, round_matrix,
@@ -387,8 +387,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        sin_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        sin_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.fsp.SetLoadBalance(permutation)
@@ -409,8 +409,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        cos_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        cos_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.fsp.SetLoadBalance(permutation)
@@ -443,8 +443,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(temp_poly)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        poly_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        poly_matrix = nt.Matrix_ps(self.mat_dim)
 
         polynomial = nt.Polynomial(len(coef))
         for j in range(0, len(coef)):
@@ -480,8 +480,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(temp_poly)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        poly_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        poly_matrix = nt.Matrix_ps(self.mat_dim)
 
         polynomial = nt.Polynomial(len(coef))
         for j in range(0, len(coef)):
@@ -513,8 +513,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        poly_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        poly_matrix = nt.Matrix_ps(self.mat_dim)
 
         polynomial = nt.ChebyshevPolynomial(len(coef))
         for j in range(0, len(coef)):
@@ -546,8 +546,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        poly_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        poly_matrix = nt.Matrix_ps(self.mat_dim)
 
         polynomial = nt.ChebyshevPolynomial(len(coef))
         for j in range(0, len(coef)):
@@ -575,9 +575,9 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(Ainv.dot(B))
 
         # Result Matrix
-        AMat = nt.DistributedSparseMatrix(self.input_file, False)
-        XMat = nt.DistributedSparseMatrix(AMat.GetActualDimension())
-        BMat = nt.DistributedSparseMatrix(self.input_file2, False)
+        AMat = nt.Matrix_ps(self.input_file, False)
+        XMat = nt.Matrix_ps(AMat.GetActualDimension())
+        BMat = nt.Matrix_ps(self.input_file2, False)
         permutation = nt.Permutation(AMat.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -597,7 +597,7 @@ class TestSolvers(unittest.TestCase):
 
         # Result Matrix
         max_value = 0.0
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
         max_value = nt.EigenBounds.PowerBounds(input_matrix, self.isp)
         comm.barrier()
 
@@ -622,8 +622,8 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        poly_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        poly_matrix = nt.Matrix_ps(self.mat_dim)
 
         polynomial = nt.HermitePolynomial(len(coef))
         for j in range(0, len(coef)):
@@ -649,9 +649,9 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check_h)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
-        u_matrix = nt.DistributedSparseMatrix(self.mat_dim)
-        h_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        u_matrix = nt.Matrix_ps(self.mat_dim)
+        h_matrix = nt.Matrix_ps(self.mat_dim)
         permutation = nt.Permutation(input_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
@@ -676,9 +676,9 @@ class TestSolvers(unittest.TestCase):
         w, vdense = eigh(matrix1.todense())
         CheckV = csr_matrix(vdense)
 
-        ntmatrix = nt.DistributedSparseMatrix(self.input_file)
-        V = nt.DistributedSparseMatrix(self.mat_dim)
-        W = nt.DistributedSparseMatrix(self.mat_dim)
+        ntmatrix = nt.Matrix_ps(self.input_file)
+        V = nt.Matrix_ps(self.mat_dim)
+        W = nt.Matrix_ps(self.mat_dim)
 
         nt.EigenSolvers.ReferenceEigenDecomposition(ntmatrix, V, W, self.fsp)
         V.WriteToMatrixMarket(result_file)
@@ -723,9 +723,9 @@ class TestSolvers_r(TestSolvers):
         self.CheckMat = csr_matrix(dense_check)
 
         # Result Matrix
-        input_matrix = nt.DistributedSparseMatrix(self.input_file, False)
+        input_matrix = nt.Matrix_ps(self.input_file, False)
 
-        cholesky_matrix = nt.DistributedSparseMatrix(self.mat_dim)
+        cholesky_matrix = nt.Matrix_ps(self.mat_dim)
         nt.LinearSolvers.CholeskyDecomposition(input_matrix, cholesky_matrix,
                                                self.fsp)
 
@@ -743,11 +743,11 @@ class TestSolvers_r(TestSolvers):
         self.CheckMat = csr_matrix(matrix1)
 
         # Result Matrix
-        A = nt.DistributedSparseMatrix(self.input_file, False)
-        L = nt.DistributedSparseMatrix(self.mat_dim)
-        LT = nt.DistributedSparseMatrix(self.mat_dim)
-        LLT = nt.DistributedSparseMatrix(self.mat_dim)
-        memory_pool = nt.DistributedMatrixMemoryPool(A)
+        A = nt.Matrix_ps(self.input_file, False)
+        L = nt.Matrix_ps(self.mat_dim)
+        LT = nt.Matrix_ps(self.mat_dim)
+        LLT = nt.Matrix_ps(self.mat_dim)
+        memory_pool = nt.PMatrixMemoryPool(A)
 
         nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
         LT.Transpose(L)

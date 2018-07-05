@@ -34,15 +34,15 @@ set(WCommunication
 )
 
 set(WDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PMatrixMemoryPoolModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixAlgebraModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixModule_wrp.f90
 )
 
 set(WTypes
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSAlgebraModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixAlgebraModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixModule_wrp.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule_wrp.f90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule_wrp.f90
 )

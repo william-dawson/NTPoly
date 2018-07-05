@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class FixedSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing General Matrix Polynomials.
 class Polynomial : public SolverBase {
@@ -27,16 +27,14 @@ public:
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver
-  void HornerCompute(const DistributedSparseMatrix &InputMat,
-                     DistributedSparseMatrix &OutputMat,
+  void HornerCompute(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                      const FixedSolverParameters &solver_parameters) const;
   //! Compute A Matrix Polynomial Using Paterson and Stockmeyer's Method.
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver
   void PatersonStockmeyerCompute(
-      const DistributedSparseMatrix &InputMat,
-      DistributedSparseMatrix &OutputMat,
+      const Matrix_ps &InputMat, Matrix_ps &OutputMat,
       const FixedSolverParameters &solver_parameters) const;
 
 public:

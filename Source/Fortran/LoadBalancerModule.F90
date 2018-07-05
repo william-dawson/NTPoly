@@ -1,9 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for load balancing the matrix multiplication calculation.
 MODULE LoadBalancerModule
-  USE MatrixMemoryPoolPModule, ONLY : MatrixMemoryPool_p
-  USE MatrixPSAlgebraModule, ONLY : MatrixMultiply
-  USE MatrixPSModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & DestructMatrix, FillMatrixPermutation
   USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE

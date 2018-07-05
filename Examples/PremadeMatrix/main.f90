@@ -1,14 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> An example based on solving matrices based on premade files.
 PROGRAM PremadeMatrixProgram
-  USE DataTypesModule, ONLY : ntreal
+  USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE DistributedSparseMatrixModule, ONLY : ConstructFromMatrixMarket, &
-       & WriteToMatrixMarket, DistributedSparseMatrix_t
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE LoggingModule
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
+       & WriteMatrixToMatrixMarket, DestructMatrix
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE MPI
   IMPLICIT NONE
@@ -17,14 +17,14 @@ PROGRAM PremadeMatrixProgram
   CHARACTER(len=80) :: overlap_file
   CHARACTER(len=80) :: density_file_out
   INTEGER :: process_rows, process_columns, process_slices
-  REAL(ntreal) :: threshold, convergence_threshold
+  REAL(NTREAL) :: threshold, convergence_threshold
   INTEGER :: number_of_electrons
   TYPE(IterativeSolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
   !! Matrices
-  TYPE(DistributedSparseMatrix_t) :: Hamiltonian, Overlap
-  TYPE(DistributedSparseMatrix_t) :: ISQOverlap
-  TYPE(DistributedSparseMatrix_t) :: Density
+  TYPE(Matrix_ps) :: Hamiltonian, Overlap
+  TYPE(Matrix_ps) :: ISQOverlap
+  TYPE(Matrix_ps) :: Density
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
@@ -82,8 +82,8 @@ PROGRAM PremadeMatrixProgram
   CALL ExitSubLog
 
   !! Read in the matrices from file.
-  CALL ConstructFromMatrixMarket(Hamiltonian,hamiltonian_file)
-  CALL ConstructFromMatrixMarket(Overlap,overlap_file)
+  CALL ConstructMatrixFromMatrixMarket(Hamiltonian,hamiltonian_file)
+  CALL ConstructMatrixFromMatrixMarket(Overlap,overlap_file)
 
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
@@ -99,7 +99,13 @@ PROGRAM PremadeMatrixProgram
        & chemical_potential_out=chemical_potential)
 
   !! Print the density matrix to file.
-  CALL WriteToMatrixMarket(Density,density_file_out)
+  CALL WriteMatrixToMatrixMarket(Density,density_file_out)
+
+  !! Cleanup
+  CALL DestructMatrix(Overlap)
+  CALL DestructMatrix(ISQOverlap)
+  CALL DestructMatrix(Hamiltonian)
+  CALL DestructMatrix(Density)
 
   CALL MPI_Finalize(ierr)
 END PROGRAM PremadeMatrixProgram

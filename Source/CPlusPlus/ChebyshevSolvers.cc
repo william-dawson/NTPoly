@@ -24,14 +24,14 @@ void ChebyshevPolynomial::SetCoefficient(int degree, double coefficient) {
 }
 //////////////////////////////////////////////////////////////////////////////
 void ChebyshevPolynomial::Compute(
-    const DistributedSparseMatrix &InputMat, DistributedSparseMatrix &OutputMat,
+    const Matrix_ps &InputMat, Matrix_ps &OutputMat,
     const FixedSolverParameters &solver_parameters) const {
   ChebyshevCompute_wrp(GetIH(InputMat), GetIH(OutputMat), this->ih_this,
                        GetIH(solver_parameters));
 }
 //////////////////////////////////////////////////////////////////////////////
 void ChebyshevPolynomial::ComputeFactorized(
-    const DistributedSparseMatrix &InputMat, DistributedSparseMatrix &OutputMat,
+    const Matrix_ps &InputMat, Matrix_ps &OutputMat,
     const FixedSolverParameters &solver_parameters) const {
   FactorizedChebyshevCompute_wrp(GetIH(InputMat), GetIH(OutputMat),
                                  this->ih_this, GetIH(solver_parameters));

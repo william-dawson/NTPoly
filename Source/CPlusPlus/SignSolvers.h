@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing The Matrix Sign Function.
 class SignSolvers : public SolverBase {
@@ -15,8 +15,7 @@ public:
   //!\param Mat1 input matrix.
   //!\param SignMat = Sign(Mat1)
   //!\param solver_parameters parameters for the solver
-  static void ComputeSign(const DistributedSparseMatrix &Mat1,
-                          DistributedSparseMatrix &SignMat,
+  static void ComputeSign(const Matrix_ps &Mat1, Matrix_ps &SignMat,
                           const IterativeSolverParameters &solver_parameters);
   //! Computes the polar decomposition of a matrix Mat1 = U*H.
   //!\param Mat1 input matrix.
@@ -24,9 +23,8 @@ public:
   //!\param Hmat the hermitian matrix factor.
   //!\param solver_parameters parameters for the solver
   static void
-  ComputePolarDecomposition(const DistributedSparseMatrix &Mat1,
-                            DistributedSparseMatrix &Umat,
-                            DistributedSparseMatrix &Hmat,
+  ComputePolarDecomposition(const Matrix_ps &Mat1, Matrix_ps &Umat,
+                            Matrix_ps &Hmat,
                             const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

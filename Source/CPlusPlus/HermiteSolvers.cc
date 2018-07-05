@@ -1,5 +1,5 @@
-#include "HermiteSolvers.h"
 #include "FixedSolversParameters.h"
+#include "HermiteSolvers.h"
 using namespace NTPoly;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -24,9 +24,9 @@ void HermitePolynomial::SetCoefficient(int degree, double coefficient) {
 }
 //////////////////////////////////////////////////////////////////////////////
 void HermitePolynomial::Compute(
-    const DistributedSparseMatrix &InputMat, DistributedSparseMatrix &OutputMat,
+    const Matrix_ps &InputMat, Matrix_ps &OutputMat,
     const FixedSolverParameters &solver_parameters) const {
   HermiteCompute_wrp(GetIH(InputMat), GetIH(OutputMat), this->ih_this,
-                       GetIH(solver_parameters));
+                     GetIH(solver_parameters));
 }
 } // namespace NTPoly

@@ -2,12 +2,12 @@
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE

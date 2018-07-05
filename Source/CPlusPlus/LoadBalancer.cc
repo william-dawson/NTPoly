@@ -1,6 +1,6 @@
-#include "DistributedSparseMatrix.h"
-#include "DistributedMatrixMemoryPool.h"
 #include "LoadBalancer.h"
+#include "PMatrixMemoryPool.h"
+#include "PSMatrix.h"
 #include "Permutation.h"
 using namespace NTPoly;
 
@@ -11,17 +11,16 @@ extern "C" {
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-void LoadBalancer::PermuteMatrix(const DistributedSparseMatrix &mat_in,
-                                 DistributedSparseMatrix &mat_out,
+void LoadBalancer::PermuteMatrix(const Matrix_ps &mat_in, Matrix_ps &mat_out,
                                  const Permutation &permutation,
-                                 DistributedMatrixMemoryPool &memorypool) {
+                                 PMatrixMemoryPool &memorypool) {
   PermuteMatrix_wrp(mat_in.ih_this, mat_out.ih_this, permutation.ih_this,
                     memorypool.ih_this);
 }
-void LoadBalancer::UndoPermuteMatrix(const DistributedSparseMatrix &mat_in,
-                                     DistributedSparseMatrix &mat_out,
+void LoadBalancer::UndoPermuteMatrix(const Matrix_ps &mat_in,
+                                     Matrix_ps &mat_out,
                                      const Permutation &permutation,
-                                     DistributedMatrixMemoryPool &memorypool) {
+                                     PMatrixMemoryPool &memorypool) {
   UndoPermuteMatrix_wrp(mat_in.ih_this, mat_out.ih_this, permutation.ih_this,
                         memorypool.ih_this);
 }

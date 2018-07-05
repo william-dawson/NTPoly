@@ -81,14 +81,12 @@ class TestChemistry(unittest.TestCase):
             self.assertTrue(False)
         pass
 
-    def test_trs2(self):
-        '''Test our ability to compute the density matrix with TRS2.'''
-        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
+    def basic_solver(self, SRoutine):
+        '''Test various kinds of density matrix solvers.'''
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
 
         permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
         permutation.SetRandomPermutation()
@@ -97,104 +95,38 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.TRS2(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
+        chemical_potential = SRoutine(fock_matrix, inverse_sqrt_matrix,
+                                      self.nel, density_matrix,
+                                      self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
         self.check_full()
         self.check_cp(chemical_potential)
+
+    def test_trs2(self):
+        '''Test routines to compute the density matrix with TRS2.'''
+        self.basic_solver(nt.DensityMatrixSolvers.TRS2)
 
     def test_trs4(self):
-        '''Test our ability to compute the density matrix with TRS4.'''
-        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-
-        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.solver_parameters.SetLoadBalance(permutation)
-
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-                                               inverse_sqrt_matrix,
-                                               self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.TRS4(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
-
-        density_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_full()
-        self.check_cp(chemical_potential)
+        '''Test routines to compute the density matrix with TRS4.'''
+        self.basic_solver(nt.DensityMatrixSolvers.TRS4)
 
     def test_HPCP(self):
-        '''Test our ability to compute the density matrix with HPCP.'''
-        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-
-        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.solver_parameters.SetLoadBalance(permutation)
-
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-                                               inverse_sqrt_matrix,
-                                               self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.HPCP(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
-
-        density_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_full()
-        self.check_cp(chemical_potential)
+        '''Test routines to compute the density matrix with HPCP.'''
+        self.basic_solver(nt.DensityMatrixSolvers.HPCP)
 
     def test_cg(self):
-        '''Test our ability to compute the density matrix with conjugate
+        '''Test routines to compute the density matrix with conjugate
            gradient.'''
-        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
-        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
-        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-        density_matrix = nt.DistributedSparseMatrix(
-            fock_matrix.GetActualDimension())
-
-        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.solver_parameters.SetLoadBalance(permutation)
-
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-                                               inverse_sqrt_matrix,
-                                               self.solver_parameters)
-        chemical_potential = nt.MinimizerSolvers.ConjugateGradient(fock_matrix,
-                                                                   inverse_sqrt_matrix,
-                                                                   self.nel, density_matrix,
-                                                                   self.solver_parameters)
-
-        density_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_full()
-        self.check_cp(chemical_potential)
+        self.basic_solver(nt.MinimizerSolvers.ConjugateGradient)
 
 
 class TestChemistry_r(TestChemistry):
     def testrealio(self):
-        '''Test our ability to read data produced by a real chemistry program.'''
-        density_matrix = nt.DistributedSparseMatrix(self.realio)
+        '''Test routines to read data produced by a real chemistry program.'''
+        density_matrix = nt.Matrix_ps(self.realio)
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -208,12 +140,12 @@ class TestChemistry_r(TestChemistry):
 
     def test_PExtrapolate(self):
         '''Test the density extrapolation routine.'''
-        f1 = nt.DistributedSparseMatrix(self.geomh1)
-        o1 = nt.DistributedSparseMatrix(self.geomo1)
-        o2 = nt.DistributedSparseMatrix(self.geomo2)
-        isqm1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
-        d1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
-        extrapd = nt.DistributedSparseMatrix(f1.GetActualDimension())
+        f1 = nt.Matrix_ps(self.geomh1)
+        o1 = nt.Matrix_ps(self.geomo1)
+        o2 = nt.Matrix_ps(self.geomo2)
+        isqm1 = nt.Matrix_ps(f1.GetActualDimension())
+        d1 = nt.Matrix_ps(f1.GetActualDimension())
+        extrapd = nt.Matrix_ps(f1.GetActualDimension())
 
         permutation = nt.Permutation(f1.GetLogicalDimension())
         permutation.SetRandomPermutation()
@@ -233,12 +165,12 @@ class TestChemistry_r(TestChemistry):
 
     def test_SExtrapolate(self):
         '''Test the density extrapolation routine.'''
-        f1 = nt.DistributedSparseMatrix(self.geomh1)
-        o1 = nt.DistributedSparseMatrix(self.geomo1)
-        o2 = nt.DistributedSparseMatrix(self.geomo2)
-        isqm1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
-        d1 = nt.DistributedSparseMatrix(f1.GetActualDimension())
-        extrapd = nt.DistributedSparseMatrix(f1.GetActualDimension())
+        f1 = nt.Matrix_ps(self.geomh1)
+        o1 = nt.Matrix_ps(self.geomo1)
+        o2 = nt.Matrix_ps(self.geomo2)
+        isqm1 = nt.Matrix_ps(f1.GetActualDimension())
+        d1 = nt.Matrix_ps(f1.GetActualDimension())
+        extrapd = nt.Matrix_ps(f1.GetActualDimension())
 
         permutation = nt.Permutation(f1.GetLogicalDimension())
         permutation.SetRandomPermutation()

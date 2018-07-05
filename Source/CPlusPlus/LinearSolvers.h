@@ -6,7 +6,7 @@
 namespace NTPoly {
 class IterativeSolverParameters;
 class FixedSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class for solving matrix equations.
 class LinearSolvers : public SolverBase {
@@ -16,9 +16,8 @@ public:
   //!\param XMat the solved for matrix X.
   //!\param BMat the right hand side.
   //!\param solver_parameters parameters for the solver
-  static void CGSolver(const DistributedSparseMatrix &AMat,
-                       DistributedSparseMatrix &XMat,
-                       const DistributedSparseMatrix &BMat,
+  static void CGSolver(const Matrix_ps &AMat, Matrix_ps &XMat,
+                       const Matrix_ps &BMat,
                        const IterativeSolverParameters &solver_parameters);
   //! Compute The Cholesky Decomposition of a Symmetric Positive Definite
   //! matrix.
@@ -26,8 +25,7 @@ public:
   //!\param LMat the matrix computed.
   //!\param solver_parameters parameters for the solver
   static void
-  CholeskyDecomposition(const DistributedSparseMatrix &AMat,
-                        DistributedSparseMatrix &LMat,
+  CholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat,
                         const FixedSolverParameters &solver_parameters);
   //! Compute The Cholesky Decomposition of a Symmetric Positive Semi-Definite
   //! matrix.
@@ -36,8 +34,7 @@ public:
   //!\param rank the target rank
   //!\param solver_parameters parameters for the solver
   static void
-  PivotedCholeskyDecomposition(const DistributedSparseMatrix &AMat,
-                               DistributedSparseMatrix &LMat, int rank,
+  PivotedCholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat, int rank,
                                const FixedSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

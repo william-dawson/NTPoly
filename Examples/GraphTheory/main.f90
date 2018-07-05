@@ -1,19 +1,17 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> An example based on graph theory.
 PROGRAM GraphTheory
-  USE DataTypesModule, ONLY : ntreal
-  USE DistributedSparseMatrixModule, ONLY : &
-       & WriteToMatrixMarket, DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, &
-       & FillFromTripletList, DestructDistributedSparseMatrix, &
-       & CopyDistributedSparseMatrix, FillDistributedIdentity 
-  USE DistributedSparseMatrixAlgebraModule, ONLY: IncrementDistributedSparseMatrix
+  USE DataTypesModule, ONLY : NTREAL
   USE InverseSolversModule, ONLY : Invert
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE ProcessGridModule, ONLY : ConstructProcessGrid
-  USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
+  USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
+       & ConstructEmptyMatrix, FillMatrixFromTripletList, DestructMatrix, &
+       & CopyMatrix, FillMatrixIdentity
+  USE PSMatrixAlgebraModule, ONLY: IncrementMatrix
+  USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & SetTripletAt, AppendToTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE TripletModule, ONLY : Triplet_r
   USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
@@ -21,9 +19,9 @@ PROGRAM GraphTheory
   INTEGER :: number_of_nodes
   INTEGER :: extra_connections
   CHARACTER(len=80) :: output_file
-  REAL(ntreal) :: threshold
-  REAL(ntreal) :: convergence_threshold
-  REAL(ntreal) :: attenuation
+  REAL(NTREAL) :: threshold
+  REAL(NTREAL) :: convergence_threshold
+  REAL(NTREAL) :: attenuation
   TYPE(IterativeSolverParameters_t) :: solver_parameters
   !! MPI Variables
   INTEGER :: rank
@@ -31,8 +29,8 @@ PROGRAM GraphTheory
   INTEGER :: ierr
   INTEGER :: provided
   !! Matrices
-  TYPE(DistributedSparseMatrix_t) :: NetworkMat
-  TYPE(DistributedSparseMatrix_t) :: ResultMat
+  TYPE(Matrix_ps) :: NetworkMat
+  TYPE(Matrix_ps) :: ResultMat
   !! Local Part of the Matrix
   INTEGER :: number_of_local_nodes
   INTEGER, DIMENSION(:), ALLOCATABLE :: local_nodes
@@ -85,19 +83,19 @@ PROGRAM GraphTheory
   CALL DivideUpWork
 
   !! Fill The Matrix
-  CALL ConstructEmptyDistributedSparseMatrix(NetworkMat, number_of_nodes)
-  CALL ConstructEmptyDistributedSparseMatrix(ResultMat, number_of_nodes)
+  CALL ConstructEmptyMatrix(NetworkMat, number_of_nodes)
+  CALL ConstructEmptyMatrix(ResultMat, number_of_nodes)
   CALL FillMatrix
 
   !! Solve
   CALL SolveMatrix
 
   !! Print the density matrix to file.
-  CALL WriteToMatrixMarket(ResultMat,output_file)
+  CALL WriteMatrixToMatrixMarket(ResultMat,output_file)
 
   !! Cleanup
-  CALL DestructDistributedSparseMatrix(NetworkMat)
-  CALL DestructDistributedSparseMatrix(ResultMat)
+  CALL DestructMatrix(NetworkMat)
+  CALL DestructMatrix(ResultMat)
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DivideUpWork()
@@ -115,8 +113,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DivideUpWork
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillMatrix
-    TYPE(TripletList_t) :: triplet_list
-    TYPE(Triplet_t) :: temp_triplet
+    TYPE(TripletList_r) :: triplet_list
+    TYPE(Triplet_r) :: temp_triplet
     INTEGER :: num_of_edges
     INTEGER :: counter
     INTEGER, DIMENSION(:), ALLOCATABLE :: extra_scratch
@@ -193,25 +191,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     !! Finally build the matrix
-    CALL FillFromTripletList(NetworkMat, triplet_list)
+    CALL FillMatrixFromTripletList(NetworkMat, triplet_list)
 
     !! Cleanup
     DEALLOCATE(extra_scratch)
   END SUBROUTINE FillMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SolveMatrix
-    TYPE(DistributedSparseMatrix_t) :: ResMat
+    TYPE(Matrix_ps) :: ResMat
 
     !! Compute attenuation*Identity - Matrix
-    CALL ConstructEmptyDistributedSparseMatrix(ResMat, number_of_nodes)
-    CALL FillDistributedIdentity(ResMat)
-    CALL IncrementDistributedSparseMatrix(NetworkMat, ResMat, &
+    CALL ConstructEmptyMatrix(ResMat, number_of_nodes)
+    CALL FillMatrixIdentity(ResMat)
+    CALL IncrementMatrix(NetworkMat, ResMat, &
          & alpha_in=REAL(-1.0*attenuation,NTREAL))
 
     !! Invert
     CALL Invert(ResMat, ResultMat, solver_parameters)
 
     !! Cleanup
-    CALL DestructDistributedSparseMatrix(ResMat)
+    CALL DestructMatrix(ResMat)
   END SUBROUTINE SolveMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END PROGRAM GraphTheory

@@ -2,13 +2,13 @@
 !> A Module For Computing Trigonometric functions of a Matrix.
 MODULE TrigonometrySolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE LoadBalancerModule
   USE LoggingModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE

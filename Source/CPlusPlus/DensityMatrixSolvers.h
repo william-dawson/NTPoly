@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 //! A Class For Solving Chemistry Systems Based On Sparse Matrices.
 class DensityMatrixSolvers : public SolverBase {
 public:
@@ -18,10 +18,9 @@ public:
   //!\param Density the density matrix computed by this routine.
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
-  static void TRS2(const DistributedSparseMatrix &Hamiltonian,
-                   const DistributedSparseMatrix &InverseSquareRoot, int nel,
-                   DistributedSparseMatrix &Density,
-                   double &chemical_potential_out,
+  static void TRS2(const Matrix_ps &Hamiltonian,
+                   const Matrix_ps &InverseSquareRoot, int nel,
+                   Matrix_ps &Density, double &chemical_potential_out,
                    const IterativeSolverParameters &solver_parameters);
   //! Compute the density matrix from a Hamiltonian using the TRS4 method.
   //! Based on the TRS4 algorithm presented in: \cite niklasson2002 .
@@ -31,10 +30,9 @@ public:
   //!\param Density the density matrix computed by this routine.
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
-  static void TRS4(const DistributedSparseMatrix &Hamiltonian,
-                   const DistributedSparseMatrix &InverseSquareRoot, int nel,
-                   DistributedSparseMatrix &Density,
-                   double &chemical_potential_out,
+  static void TRS4(const Matrix_ps &Hamiltonian,
+                   const Matrix_ps &InverseSquareRoot, int nel,
+                   Matrix_ps &Density, double &chemical_potential_out,
                    const IterativeSolverParameters &solver_parameters);
   //! Compute the density matrix from a Hamiltonian using the HPCP method.
   //! Based on the algorithm presented in: \cite truflandier2016communication
@@ -44,10 +42,9 @@ public:
   //!\param Density the density matrix computed by this routine.
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
-  static void HPCP(const DistributedSparseMatrix &Hamiltonian,
-                   const DistributedSparseMatrix &InverseSquareRoot, int nel,
-                   DistributedSparseMatrix &Density,
-                   double &chemical_potential_out,
+  static void HPCP(const Matrix_ps &Hamiltonian,
+                   const Matrix_ps &InverseSquareRoot, int nel,
+                   Matrix_ps &Density, double &chemical_potential_out,
                    const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class FixedSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing Matrix functions based on Hermite polynomials.
 class HermitePolynomial : public SolverBase {
@@ -27,8 +27,7 @@ public:
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver
-  void Compute(const DistributedSparseMatrix &InputMat,
-               DistributedSparseMatrix &OutputMat,
+  void Compute(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                const FixedSolverParameters &solver_parameters) const;
 
 public:

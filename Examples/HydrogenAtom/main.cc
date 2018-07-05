@@ -11,8 +11,8 @@ using std::vector;
 #include <iostream>
 // NTPoly Headers
 #include "DensityMatrixSolvers.h"
-#include "DistributedSparseMatrix.h"
 #include "IterativeSolversParameters.h"
+#include "PSMatrix.h"
 #include "ProcessGrid.h"
 #include "Triplet.h"
 #include "TripletList.h"
@@ -93,8 +93,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Construct The Kinetic Energy Operator.
-  NTPoly::TripletList triplet_list;
-  NTPoly::Triplet temp_value;
+  NTPoly::TripletList_r triplet_list;
+  NTPoly::Triplet_r temp_value;
   for (int counter = 0; counter < local_grid_points; ++counter) {
     temp_value.index_row = start_row + counter + 1;
     // Stencil Point 1
@@ -131,30 +131,30 @@ int main(int argc, char *argv[]) {
       triplet_list.Append(temp_value);
     }
   }
-  NTPoly::DistributedSparseMatrix KineticEnergy(grid_points);
+  NTPoly::Matrix_ps KineticEnergy(grid_points);
   KineticEnergy.FillFromTripletList(triplet_list);
 
   // Construct The Potential Energy Operator.
-  NTPoly::TripletList potential_triplet_list;
+  NTPoly::TripletList_r potential_triplet_list;
   for (int i = 0; i < local_grid_points; ++i) {
     temp_value.index_row = start_row + i + 1;
     temp_value.index_column = start_row + i + 1;
     temp_value.point_value = -1.0 / fabs(x_values[i]);
     potential_triplet_list.Append(temp_value);
   }
-  NTPoly::DistributedSparseMatrix PotentialEnergy(grid_points);
+  NTPoly::Matrix_ps PotentialEnergy(grid_points);
   PotentialEnergy.FillFromTripletList(potential_triplet_list);
 
   // Construct The Full Hamiltonian.
-  NTPoly::DistributedSparseMatrix Hamiltonian(KineticEnergy);
+  NTPoly::Matrix_ps Hamiltonian(KineticEnergy);
   Hamiltonian.Increment(PotentialEnergy);
 
   // Overlap Matrix is just the identity.
-  NTPoly::DistributedSparseMatrix Identity(grid_points);
+  NTPoly::Matrix_ps Identity(grid_points);
   Identity.FillIdentity();
 
   // Call the solver routine.
-  NTPoly::DistributedSparseMatrix Density(grid_points);
+  NTPoly::Matrix_ps Density(grid_points);
   double chemical_potential;
   NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, Identity, 2, Density,
                                      chemical_potential, solver_parameters);

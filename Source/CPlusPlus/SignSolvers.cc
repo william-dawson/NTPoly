@@ -10,13 +10,12 @@ extern "C" {
 namespace NTPoly {
 //////////////////////////////////////////////////////////////////////////////
 void SignSolvers::ComputeSign(
-    const DistributedSparseMatrix &mat1, DistributedSparseMatrix &SignMat,
+    const Matrix_ps &mat1, Matrix_ps &SignMat,
     const IterativeSolverParameters &solver_parameters) {
   SignFunction_wrp(GetIH(mat1), GetIH(SignMat), GetIH(solver_parameters));
 }
 void SignSolvers::ComputePolarDecomposition(
-    const DistributedSparseMatrix &mat1, DistributedSparseMatrix &Umat,
-    DistributedSparseMatrix &Hmat,
+    const Matrix_ps &mat1, Matrix_ps &Umat, Matrix_ps &Hmat,
     const IterativeSolverParameters &solver_parameters) {
   PolarDecomposition_wrp(GetIH(mat1), GetIH(Umat), GetIH(Hmat),
                          GetIH(solver_parameters));

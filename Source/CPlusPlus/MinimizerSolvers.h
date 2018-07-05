@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A class for computing the density matrix based on minimization methods.
 class MinimizerSolvers : public SolverBase {
@@ -22,10 +22,9 @@ public:
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void
-  ConjugateGradient(const DistributedSparseMatrix &Hamiltonian,
-                    const DistributedSparseMatrix &InverseSquareRoot, int nel,
-                    DistributedSparseMatrix &Density,
-                    double &chemical_potential_out,
+  ConjugateGradient(const Matrix_ps &Hamiltonian,
+                    const Matrix_ps &InverseSquareRoot, int nel,
+                    Matrix_ps &Density, double &chemical_potential_out,
                     const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

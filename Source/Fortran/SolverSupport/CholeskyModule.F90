@@ -2,16 +2,16 @@
 !> Helper Routines for Computing The Cholesky Decomposition
 MODULE CholeskyModule
   USE DataTypesModule
-  USE MatrixDModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
+  USE DMatrixModule
   USE MatrixReduceModule
-  USE MatrixSModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE ProcessGridModule
+  USE SMatrixModule
+  USE SVectorModule
   USE TripletListModule
   USE TripletModule
-  USE VectorSModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

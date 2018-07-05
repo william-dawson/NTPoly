@@ -2,12 +2,12 @@
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
   USE DataTypesModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE SquareRootSolversModule
   USE TimerModule
   USE MPI

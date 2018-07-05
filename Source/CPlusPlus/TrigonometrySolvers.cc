@@ -9,14 +9,13 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-void TrigonometrySolvers::Sine(const DistributedSparseMatrix &Input,
-                               DistributedSparseMatrix &Output,
+void TrigonometrySolvers::Sine(const Matrix_ps &Input, Matrix_ps &Output,
                                const FixedSolverParameters &solver_parameters) {
   Sine_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
 void TrigonometrySolvers::Cosine(
-    const DistributedSparseMatrix &Input, DistributedSparseMatrix &Output,
+    const Matrix_ps &Input, Matrix_ps &Output,
     const FixedSolverParameters &solver_parameters) {
   Cosine_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
 }

@@ -1,6 +1,6 @@
-#include "DistributedSparseMatrix.h"
 #include "GeometryOptimization.h"
 #include "IterativeSolversParameters.h"
+#include "PSMatrix.h"
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
@@ -11,19 +11,15 @@ extern "C" {
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 void GeometryOptimization::PurificationExtrapolate(
-    const DistributedSparseMatrix &PreviousDensity,
-    const DistributedSparseMatrix &Overlap, int nel,
-    DistributedSparseMatrix &NewDensity,
-    const IterativeSolverParameters &solver_parameters) {
+    const Matrix_ps &PreviousDensity, const Matrix_ps &Overlap, int nel,
+    Matrix_ps &NewDensity, const IterativeSolverParameters &solver_parameters) {
   PurificationExtrapolate_wrp(GetIH(PreviousDensity), GetIH(Overlap), &nel,
                               GetIH(NewDensity), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
 void GeometryOptimization::LowdinExtrapolate(
-    const DistributedSparseMatrix &PreviousDensity,
-    const DistributedSparseMatrix &OldOverlap,
-    const DistributedSparseMatrix &NewOverlap,
-    DistributedSparseMatrix &NewDensity,
+    const Matrix_ps &PreviousDensity, const Matrix_ps &OldOverlap,
+    const Matrix_ps &NewOverlap, Matrix_ps &NewDensity,
     const IterativeSolverParameters &solver_parameters) {
   LowdinExtrapolate_wrp(GetIH(PreviousDensity), GetIH(OldOverlap),
                         GetIH(NewOverlap), GetIH(NewDensity),

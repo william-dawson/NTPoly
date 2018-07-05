@@ -20,7 +20,7 @@ TripletList_c::TripletList_c(int size) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TripletList::TripletList(const DistributedSparseMatrix &matrix) {
+// TripletList::TripletList(const Matrix_ps &matrix) {
 //   GetMatrixTripletList_wrp(&matrix.ih_this,&ih_this);
 // }
 

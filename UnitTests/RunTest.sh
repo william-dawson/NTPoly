@@ -57,5 +57,5 @@ fi
 
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
 -m unittest -v testChemistry.TestChemistry_r
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testChemistry.TestChemistry_c
+# @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
+# -m unittest -v testChemistry.TestChemistry_c

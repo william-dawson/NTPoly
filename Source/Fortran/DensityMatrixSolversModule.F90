@@ -2,13 +2,13 @@
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
   USE EigenBoundsModule
   USE IterativeSolversModule
   USE LoadBalancerModule
   USE LoggingModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE TimerModule
   USE MPI
   IMPLICIT NONE
@@ -138,7 +138,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute X_k2
-       CALL MatrixMultiply(X_k,X_k,X_k2, &
+       CALL MatrixMultiply(X_k, X_k, X_k2, &
             & threshold_in=solver_parameters%threshold, &
             & memory_pool_in=pool1)
 
@@ -148,8 +148,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Add To X_k
        CALL CopyMatrix(X_k,X_k2)
-       CALL IncrementMatrix(TempMat,X_k, &
-            & sigma_array(outer_counter))
+       CALL IncrementMatrix(TempMat, X_k, sigma_array(outer_counter))
 
        !! Energy value based convergence
        energy_value2 = energy_value
@@ -339,15 +338,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(X_k, X_k, X_k2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        !! Compute Fx_right
-       CALL CopyMatrix(X_k2,Fx_right)
-       CALL ScaleMatrix(Fx_right,REAL(-3.0,NTREAL))
-       CALL IncrementMatrix(X_k,Fx_right, &
-            & alpha_in=REAL(4.0,NTREAL))
+       CALL CopyMatrix(X_k2, Fx_right)
+       CALL ScaleMatrix(Fx_right, REAL(-3.0,NTREAL))
+       CALL IncrementMatrix(X_k, Fx_right, alpha_in=REAL(4.0,NTREAL))
        !! Compute Gx_right
-       CALL CopyMatrix(Identity,Gx_right)
-       CALL IncrementMatrix(X_k,Gx_right, &
-            & alpha_in=REAL(-2.0,NTREAL))
-       CALL IncrementMatrix(X_k2,Gx_right)
+       CALL CopyMatrix(Identity, Gx_right)
+       CALL IncrementMatrix(X_k, Gx_right, alpha_in=REAL(-2.0,NTREAL))
+       CALL IncrementMatrix(X_k2, Gx_right)
 
        !! Compute Traces
        CALL DotMatrix(X_k2, Fx_right, trace_fx)
@@ -360,19 +357,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (sigma_array(outer_counter) .GT. sigma_max) THEN
           CALL CopyMatrix(X_k, TempMat)
           CALL ScaleMatrix(TempMat, REAL(2.0,NTREAL))
-          CALL IncrementMatrix(X_k2, TempMat, &
-               & alpha_in=REAL(-1.0,NTREAL))
+          CALL IncrementMatrix(X_k2, TempMat, alpha_in=REAL(-1.0,NTREAL))
        ELSE IF (sigma_array(outer_counter) .LT. sigma_min) THEN
           CALL CopyMatrix(X_k2, TempMat)
        ELSE
-          CALL ScaleMatrix(Gx_right,sigma_array(outer_counter))
-          CALL IncrementMatrix(Fx_right,Gx_right)
+          CALL ScaleMatrix(Gx_right, sigma_array(outer_counter))
+          CALL IncrementMatrix(Fx_right, Gx_right)
           CALL MatrixMultiply(X_k2, Gx_right, TempMat, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        END IF
 
-       CALL IncrementMatrix(TempMat,X_k, &
-            & alpha_in=REAL(-1.0,NTREAL))
+       CALL IncrementMatrix(TempMat, X_k, alpha_in=REAL(-1.0,NTREAL))
        CALL CopyMatrix(TempMat,X_k)
 
        !! Energy value based convergence
@@ -557,8 +552,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleMatrix(D1,beta_1)
     CALL CopyMatrix(Identity,TempMat)
     CALL ScaleMatrix(TempMat,mu)
-    CALL IncrementMatrix(WorkingHamiltonian, TempMat, &
-         & NEGATIVE_ONE)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, NEGATIVE_ONE)
     CALL ScaleMatrix(TempMat,beta_2)
     CALL IncrementMatrix(TempMat,D1)
     trace_value = 0.0d+0
@@ -597,7 +591,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
-       CALL MatrixMultiply(D1,DDH,D2DH, &
+       CALL MatrixMultiply(D1, DDH, D2DH, &
             & threshold_in=solver_parameters%threshold, &
             & memory_pool_in=pool1)
 
@@ -793,8 +787,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleMatrix(D1,beta_1)
     CALL CopyMatrix(Identity,TempMat)
     CALL ScaleMatrix(TempMat,mu)
-    CALL IncrementMatrix(WorkingHamiltonian, TempMat, &
-         & NEGATIVE_ONE)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, NEGATIVE_ONE)
     CALL ScaleMatrix(TempMat,beta_2)
     CALL IncrementMatrix(TempMat,D1)
 
@@ -802,8 +795,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleMatrix(DH,beta_1_h)
     CALL CopyMatrix(Identity,TempMat)
     CALL ScaleMatrix(TempMat,mu)
-    CALL IncrementMatrix(WorkingHamiltonian,TempMat, &
-         & REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, REAL(-1.0,NTREAL))
     CALL ScaleMatrix(TempMat,beta_2_h)
     CALL IncrementMatrix(TempMat,DH)
 
@@ -825,11 +817,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        mixing_value = ((2*b - 2*c) - mixing_interior)/(2*(a+b - 2*c))
     ENDIF
 
-    CALL ScaleMatrix(D1,REAL(mixing_value,ntreal))
-    CALL CopyMatrix(Identity,TempMat)
-    CALL IncrementMatrix(DH,TempMat,REAL(-1.0,NTREAL))
-    CALL IncrementMatrix(TempMat,D1, &
-         & REAL(1.0-mixing_value,ntreal))
+    CALL ScaleMatrix(D1, REAL(mixing_value,ntreal))
+    CALL CopyMatrix(Identity, TempMat)
+    CALL IncrementMatrix(DH, TempMat, REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(TempMat, D1, REAL(1.0-mixing_value,ntreal))
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN

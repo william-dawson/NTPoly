@@ -2,11 +2,11 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
   USE IterativeSolversModule
   USE LoggingModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE TripletListModule
   USE TripletModule
   USE MPI

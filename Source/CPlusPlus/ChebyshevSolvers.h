@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class FixedSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing Matrix functions based on Chebyshev polynomials.
 class ChebyshevPolynomial : public SolverBase {
@@ -27,15 +27,13 @@ public:
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver
-  void Compute(const DistributedSparseMatrix &InputMat,
-               DistributedSparseMatrix &OutputMat,
+  void Compute(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                const FixedSolverParameters &solver_parameters) const;
   //! Compute A Matrix Chebyshev Polynomial Recursively.
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver
-  void ComputeFactorized(const DistributedSparseMatrix &InputMat,
-                         DistributedSparseMatrix &OutputMat,
+  void ComputeFactorized(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                          const FixedSolverParameters &solver_parameters) const;
 
 public:

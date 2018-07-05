@@ -107,7 +107,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: rows
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    INCLUDE "dense_includes/ConstructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/ConstructMatrixMemoryPool.F90"
 
   END FUNCTION ConstructMatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -117,7 +117,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: this
 
-    INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/DestructMatrixMemoryPool.F90"
 
   END SUBROUTINE DestructMatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -134,7 +134,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: rows
     LOGICAL :: isvalid
 
-    INCLUDE "dense_includes/CheckMemoryPoolValidity.f90"
+    INCLUDE "dense_includes/CheckMemoryPoolValidity.F90"
 
   END FUNCTION CheckMemoryPoolValidity_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -146,7 +146,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT), TARGET :: this
     REAL(NTREAL), INTENT(IN) :: sparsity
 
-    INCLUDE "dense_includes/SetPoolSparsity.f90"
+    INCLUDE "dense_includes/SetPoolSparsity.F90"
 
   END SUBROUTINE SetPoolSparsity_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -176,7 +176,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: rows
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    INCLUDE "dense_includes/ConstructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/ConstructMatrixMemoryPool.F90"
 
   END FUNCTION ConstructMatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -186,7 +186,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: this
 
-    INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
+    INCLUDE "dense_includes/DestructMatrixMemoryPool.F90"
 
   END SUBROUTINE DestructMatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -203,7 +203,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: rows
     LOGICAL :: isvalid
 
-    INCLUDE "dense_includes/CheckMemoryPoolValidity.f90"
+    INCLUDE "dense_includes/CheckMemoryPoolValidity.F90"
 
   END FUNCTION CheckMemoryPoolValidity_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -215,7 +215,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT), TARGET :: this
     REAL(NTREAL), INTENT(IN) :: sparsity
 
-    INCLUDE "dense_includes/SetPoolSparsity.f90"
+    INCLUDE "dense_includes/SetPoolSparsity.F90"
 
   END SUBROUTINE SetPoolSparsity_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

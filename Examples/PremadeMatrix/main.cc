@@ -7,8 +7,8 @@ using std::string;
 using std::stringstream;
 // NTPoly Headers
 #include "DensityMatrixSolvers.h"
-#include "DistributedSparseMatrix.h"
 #include "IterativeSolversParameters.h"
+#include "PSMatrix.h"
 #include "Permutation.h"
 #include "ProcessGrid.h"
 #include "SquareRootSolvers.h"
@@ -60,10 +60,10 @@ int main(int argc, char *argv[]) {
                                process_slices, true);
 
   // Read in the matrices from file.
-  NTPoly::DistributedSparseMatrix Hamiltonian(hamiltonian_file);
-  NTPoly::DistributedSparseMatrix Overlap(overlap_file);
-  NTPoly::DistributedSparseMatrix ISQOverlap(Hamiltonian.GetActualDimension());
-  NTPoly::DistributedSparseMatrix Density(Hamiltonian.GetActualDimension());
+  NTPoly::Matrix_ps Hamiltonian(hamiltonian_file);
+  NTPoly::Matrix_ps Overlap(overlap_file);
+  NTPoly::Matrix_ps ISQOverlap(Hamiltonian.GetActualDimension());
+  NTPoly::Matrix_ps Density(Hamiltonian.GetActualDimension());
 
   // Set Up The Solver Parameters.
   NTPoly::Permutation permutation(Hamiltonian.GetLogicalDimension());

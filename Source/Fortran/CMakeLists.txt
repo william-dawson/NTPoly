@@ -38,9 +38,9 @@ set(FCommunication
 )
 
 set(FDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixMemoryPoolPModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSAlgebraModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/MatrixPSModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PMatrixMemoryPoolModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixAlgebraModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixModule.F90
 )
 
 set(FHelpers
@@ -53,11 +53,11 @@ set(FHelpers
 
 set(FTypes
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DataTypesModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixDModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/DMatrixModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSAlgebraModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixSModule.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/VectorSModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixAlgebraModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixModule.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SVectorModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule.F90
     ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule.F90
 )

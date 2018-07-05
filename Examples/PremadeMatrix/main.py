@@ -39,10 +39,10 @@ if __name__ == "__main__":
     nt.ConstructProcessGrid(process_rows, process_columns, process_slices)
 
     # Read in the matrices from file.
-    Hamiltonian = nt.DistributedSparseMatrix(hamiltonian_file)
-    Overlap = nt.DistributedSparseMatrix(overlap_file)
-    ISQOverlap = nt.DistributedSparseMatrix(Hamiltonian.GetActualDimension())
-    Density = nt.DistributedSparseMatrix(Hamiltonian.GetActualDimension())
+    Hamiltonian = nt.Matrix_ps(hamiltonian_file)
+    Overlap = nt.Matrix_ps(overlap_file)
+    ISQOverlap = nt.Matrix_ps(Hamiltonian.GetActualDimension())
+    Density = nt.Matrix_ps(Hamiltonian.GetActualDimension())
     chemical_potential = 0
 
     # Set Up The Solver Parameters.
@@ -58,8 +58,9 @@ if __name__ == "__main__":
     nt.SquareRootSolvers.InverseSquareRoot(
         Overlap, ISQOverlap, solver_parameters)
     chemical_potential = nt.DensityMatrixSolvers.TRS2(Hamiltonian, ISQOverlap,
-                                 number_of_electrons,
-                                 Density, solver_parameters)
+                                                      number_of_electrons,
+                                                      Density,
+                                                      solver_parameters)
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)

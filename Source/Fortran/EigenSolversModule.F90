@@ -3,20 +3,20 @@
 MODULE EigenSolversModule
   USE DataTypesModule
   USE DensityMatrixSolversModule
+  USE DMatrixModule
   USE FixedSolversModule
   USE IterativeSolversModule
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LinearSolversModule
-  USE MatrixSModule
-  USE MatrixSAlgebraModule
-  USE MatrixDModule
-  USE MatrixPSModule
-  USE MatrixPSAlgebraModule
   USE PermutationModule
   USE LoggingModule
   USE ParameterConverterModule
+  USE PSMatrixModule
+  USE PSMatrixAlgebraModule
+  USE SMatrixModule
+  USE SMatrixAlgebraModule
   USE SignSolversModule
   USE TimerModule
   USE TripletListModule
@@ -685,7 +685,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: local_a, local_v
     TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
 
-    INCLUDE "SolverSupport/includes/EigenSerial.f90"
+    INCLUDE "SolverSupport/includes/EigenSerial.F90"
   END SUBROUTINE EigenSerial_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
@@ -706,7 +706,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: local_a, local_v
     TYPE(Matrix_ldc) :: dense_a, dense_v, dense_w
 
-    INCLUDE "SolverSupport/includes/EigenSerial.f90"
+    INCLUDE "SolverSupport/includes/EigenSerial.F90"
   END SUBROUTINE EigenSerial_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenSolversModule

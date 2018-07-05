@@ -1,29 +1,26 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> An example based on solving matrices based on a 1D hydrogen molecule.
 PROGRAM HydrogenAtom
-  USE DataTypesModule, ONLY : ntreal
+  USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE DistributedSparseMatrixModule, ONLY : &
-       & WriteToMatrixMarket, DistributedSparseMatrix_t, &
-       & ConstructEmptyDistributedSparseMatrix, &
-       & FillFromTripletList, CopyDistributedSparseMatrix, &
-       & FillDistributedIdentity
-  USE DistributedSparseMatrixAlgebraModule, ONLY : &
-       & IncrementDistributedSparseMatrix
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid
+  USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
+       & ConstructEmptyMatrix, FillMatrixFromTripletList, CopyMatrix, &
+       & FillMatrixIdentity
+  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
-  USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
+  USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & AppendToTripletList
-  USE TripletModule, ONLY : Triplet_t
+  USE TripletModule, ONLY : Triplet_r
   USE MPI
   IMPLICIT NONE
   !! Variables for handling input parameters.
   INTEGER :: grid_points
   CHARACTER(len=80) :: density_file_out
   INTEGER :: process_rows, process_columns, process_slices
-  REAL(ntreal) :: threshold, convergence_threshold
+  REAL(NTREAL) :: threshold, convergence_threshold
   TYPE(IterativeSolverParameters_t) :: solver_parameters
   !! MPI Variables
   INTEGER :: rank
@@ -34,16 +31,16 @@ PROGRAM HydrogenAtom
   INTEGER :: local_grid_points
   INTEGER, DIMENSION(:), ALLOCATABLE :: local_rows
   INTEGER :: start_row
-  REAL(ntreal), PARAMETER :: x_start = -6.28
-  REAL(ntreal), PARAMETER :: x_end = 6.28
-  REAL(ntreal) :: grid_spacing
-  REAL(ntreal), DIMENSION(:), ALLOCATABLE :: x_values
+  REAL(NTREAL), PARAMETER :: x_start = -6.28
+  REAL(NTREAL), PARAMETER :: x_end = 6.28
+  REAL(NTREAL) :: grid_spacing
+  REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: x_values
   !! Matrices
-  TYPE(DistributedSparseMatrix_t) :: KineticEnergy
-  TYPE(DistributedSparseMatrix_t) :: PotentialEnergy
-  TYPE(DistributedSparseMatrix_t) :: Hamiltonian
-  TYPE(DistributedSparseMatrix_t) :: Identity
-  TYPE(DistributedSparseMatrix_t) :: Density
+  TYPE(Matrix_ps) :: KineticEnergy
+  TYPE(Matrix_ps) :: PotentialEnergy
+  TYPE(Matrix_ps) :: Hamiltonian
+  TYPE(Matrix_ps) :: Identity
+  TYPE(Matrix_ps) :: Density
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
@@ -91,28 +88,27 @@ PROGRAM HydrogenAtom
   CALL ConstructLinearSpace()
 
   !! Construct The Kinetic Energy Operator.
-  CALL ConstructEmptyDistributedSparseMatrix(KineticEnergy, grid_points)
+  CALL ConstructEmptyMatrix(KineticEnergy, grid_points)
   CALL FillKineticEnergy()
 
   !! Construct The Potential Energy Operator.
-  CALL ConstructEmptyDistributedSparseMatrix(PotentialEnergy, grid_points)
+  CALL ConstructEmptyMatrix(PotentialEnergy, grid_points)
   CALL FillPotentialEnergy()
 
   !! Construct The Full Hamiltonian.
-  CALL CopyDistributedSparseMatrix(KineticEnergy, Hamiltonian)
-  CALL IncrementDistributedSparseMatrix(PotentialEnergy, Hamiltonian)
+  CALL CopyMatrix(KineticEnergy, Hamiltonian)
+  CALL IncrementMatrix(PotentialEnergy, Hamiltonian)
 
   !! Overlap Matrix is just the identity.
-  CALL ConstructEmptyDistributedSparseMatrix(Identity, &
-       & Hamiltonian%actual_matrix_dimension)
-  CALL FillDistributedIdentity(Identity)
+  CALL ConstructEmptyMatrix(Identity, Hamiltonian%actual_matrix_dimension)
+  CALL FillMatrixIdentity(Identity)
 
   !! Call the solver routine.
   CALL TRS2(Hamiltonian, Identity, 2, Density, &
        & solver_parameters_in=solver_parameters)
 
   !! Print the density matrix to file.
-  CALL WriteToMatrixMarket(Density,density_file_out)
+  CALL WriteMatrixToMatrixMarket(Density,density_file_out)
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DivideUpWork()
@@ -144,9 +140,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillKineticEnergy()
     !! Local Variables
-    TYPE(TripletList_t) :: triplet_list
+    TYPE(TripletList_r) :: triplet_list
     INTEGER :: counter
-    TYPE(Triplet_t) :: temp_value
+    TYPE(Triplet_r) :: temp_value
 
     CALL ConstructTripletList(triplet_list)
 
@@ -182,14 +178,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL AppendToTripletList(triplet_list, temp_value)
        END IF
     END DO fill
-    CALL FillFromTripletList(KineticEnergy, triplet_list)
+    CALL FillMatrixFromTripletList(KineticEnergy, triplet_list)
   END SUBROUTINE FillKineticEnergy
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillPotentialEnergy()
     !! Local Variables
-    TYPE(TripletList_t) :: triplet_list
+    TYPE(TripletList_r) :: triplet_list
     INTEGER :: counter
-    TYPE(Triplet_t) :: temp_value
+    TYPE(Triplet_r) :: temp_value
 
     CALL ConstructTripletList(triplet_list)
     fill: DO counter = 1, local_grid_points
@@ -198,7 +194,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_value%point_value = -1.0/ABS(x_values(counter))
        CALL AppendToTripletList(triplet_list, temp_value)
     END DO fill
-    CALL FillFromTripletList(PotentialEnergy, triplet_list)
+    CALL FillMatrixFromTripletList(PotentialEnergy, triplet_list)
   END SUBROUTINE FillPotentialEnergy
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END PROGRAM HydrogenAtom

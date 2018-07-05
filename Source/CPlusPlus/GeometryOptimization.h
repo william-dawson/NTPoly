@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 //! A Class For Solving Chemistry Systems Based On Sparse Matrices.
 class GeometryOptimization : public SolverBase {
 public:
@@ -18,9 +18,9 @@ public:
   //!\param NewDensity the extrapolated density.
   //!\param solver_parameters parameters for the solver
   static void
-  PurificationExtrapolate(const DistributedSparseMatrix &PreviousDensity,
-                          const DistributedSparseMatrix &Overlap, int nel,
-                          DistributedSparseMatrix &NewDensity,
+  PurificationExtrapolate(const Matrix_ps &PreviousDensity,
+                          const Matrix_ps &Overlap, int nel,
+                          Matrix_ps &NewDensity,
                           const IterativeSolverParameters &solver_parameters);
   //! Create a new guess at the Density Matrix after updating the geometry.
   //! Based on the lowdin algorithm in \cite exner2002comparison .
@@ -30,10 +30,9 @@ public:
   //!\param NewDensity the extrapolated density.
   //!\param solver_parameters parameters for the solver
   static void
-  LowdinExtrapolate(const DistributedSparseMatrix &PreviousDensity,
-                    const DistributedSparseMatrix &OldOverlap,
-                    const DistributedSparseMatrix &NewOverlap,
-                    DistributedSparseMatrix &NewDensity,
+  LowdinExtrapolate(const Matrix_ps &PreviousDensity,
+                    const Matrix_ps &OldOverlap, const Matrix_ps &NewOverlap,
+                    Matrix_ps &NewDensity,
                     const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

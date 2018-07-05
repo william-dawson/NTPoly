@@ -6,9 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-class DistributedSparseMatrix;
-class SparseMatrix_r;
-class SparseMatrix_c;
+class Matrix_ps;
 class Triplet_r;
 class Triplet_c;
 //! A data type for a list of triplets.
@@ -21,7 +19,7 @@ public:
   TripletList_r(int size = 0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
-  // TripletList(const DistributedSparseMatrix &matrix);
+  // TripletList(const Matrix_ps &matrix);
   //! Increase the size of a triplet list.
   //!\param size the new size.
   void Resize(int size);
@@ -58,8 +56,9 @@ private:
   TripletList_r &operator=(const TripletList_r &);
 
 private:
-  friend class SparseMatrix_r;
-  friend class DistributedSparseMatrix;
+  friend class Matrix_lsr;
+  friend class Matrix_lsc;
+  friend class Matrix_ps;
 };
 //! A data type for a list of triplets.
 //! As this is related to matrix multiplication, the referencing indices are
@@ -71,7 +70,7 @@ public:
   TripletList_c(int size = 0);
   //! Construct a triplet list from a distributed sparse matrix.
   //!\param matrix to construct from.
-  // TripletList(const DistributedSparseMatrix &matrix);
+  // TripletList(const Matrix_ps &matrix);
   //! Increase the size of a triplet list.
   //!\param size the new size.
   void Resize(int size);
@@ -108,8 +107,9 @@ private:
   TripletList_c &operator=(const TripletList_c &);
 
 private:
-  friend class SparseMatrix_c;
-  friend class DistributedSparseMatrix;
+  friend class Matrix_lsr;
+  friend class Matrix_lsc;
+  friend class Matrix_ps;
 };
 } // namespace NTPoly
 

@@ -11,10 +11,10 @@ using std::stringstream;
 using std::vector;
 #include <iostream>
 // NTPoly Headers
-#include "DistributedSparseMatrix.h"
 #include "InverseSolvers.h"
 #include "IterativeSolversParameters.h"
 #include "ProcessGrid.h"
+#include "PSMatrix.h"
 #include "Triplet.h"
 #include "TripletList.h"
 
@@ -87,8 +87,8 @@ int main(int argc, char *argv[]) {
   int ending_node = local_nodes[number_of_local_nodes - 1];
 
   // Fill The Matrix
-  NTPoly::TripletList triplet_list;
-  NTPoly::Triplet temp_triplet;
+  NTPoly::TripletList_r triplet_list;
+  NTPoly::Triplet_r temp_triplet;
 
   // First add the connection between each node and itself.
   for (int i = 0; i < number_of_local_nodes; ++i) {
@@ -151,15 +151,15 @@ int main(int argc, char *argv[]) {
   }
 
   // Finally build the matrix
-  NTPoly::DistributedSparseMatrix NetworkMat(number_of_nodes);
+  NTPoly::Matrix_ps NetworkMat(number_of_nodes);
   NetworkMat.FillFromTripletList(triplet_list);
 
   // Solve
-  NTPoly::DistributedSparseMatrix ResMat(number_of_nodes);
+  NTPoly::Matrix_ps ResMat(number_of_nodes);
   ResMat.FillIdentity();
   ResMat.Increment(NetworkMat, -1.0 * attenuation);
 
-  NTPoly::DistributedSparseMatrix ResultMat(number_of_nodes);
+  NTPoly::Matrix_ps ResultMat(number_of_nodes);
   NTPoly::InverseSolvers::Invert(ResMat, ResultMat, solver_parameters);
 
   // Print the density matrix to file.

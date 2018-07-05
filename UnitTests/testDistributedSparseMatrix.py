@@ -111,7 +111,7 @@ class TestDistributedMatrix(unittest.TestCase):
             self.write_matrix(matrix1, self.input_file1)
             self.CheckMat = matrix1
 
-            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
@@ -124,9 +124,9 @@ class TestDistributedMatrix(unittest.TestCase):
             self.write_matrix(matrix1, self.input_file1)
             self.CheckMat = matrix1
 
-            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.WriteToBinary(self.input_file2)
-            ntmatrix2 = nt.DistributedSparseMatrix(self.input_file2, True)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, True)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
@@ -140,14 +140,14 @@ class TestDistributedMatrix(unittest.TestCase):
             self.CheckMat = matrix1
 
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
 
             triplet_list = self.TripletList(0)
             if self.myslice == 0:
                 ntmatrix1.GetTripletList(triplet_list)
-            ntmatrix2 = nt.DistributedSparseMatrix(
+            ntmatrix2 = nt.Matrix_ps(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
@@ -163,9 +163,9 @@ class TestDistributedMatrix(unittest.TestCase):
             self.CheckMat = matrix1
 
             if param.sparsity > 0.0:
-                ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             else:
-                ntmatrix1 = nt.DistributedSparseMatrix(param.rows)
+                ntmatrix1 = nt.Matrix_ps(param.rows)
 
             # Compute a random permutation
             seed_val = randrange(sys.maxsize)
@@ -192,7 +192,7 @@ class TestDistributedMatrix(unittest.TestCase):
                                          col_start_list[self.mycolumn],
                                          col_end_list[self.mycolumn])
 
-            ntmatrix2 = nt.DistributedSparseMatrix(
+            ntmatrix2 = nt.Matrix_ps(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
@@ -207,8 +207,8 @@ class TestDistributedMatrix(unittest.TestCase):
             self.write_matrix(matrix1, self.input_file1)
 
             self.CheckMat = matrix1.T
-            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix2 = nt.Matrix_ps(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.Transpose(ntmatrix1)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
@@ -229,8 +229,8 @@ class TestDistributedMatrix_c(TestDistributedMatrix):
 
             self.CheckMat = matrix1.H
 
-            ntmatrix1 = nt.DistributedSparseMatrix(self.input_file1, False)
-            ntmatrix2 = nt.DistributedSparseMatrix(
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix2 = nt.Matrix_ps(
                 ntmatrix1.GetActualDimension())
             ntmatrix2.Transpose(ntmatrix1)
             ntmatrix2.Conjugate()

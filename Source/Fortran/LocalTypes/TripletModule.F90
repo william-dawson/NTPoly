@@ -61,7 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN)                  :: index_row
     REAL(NTREAL), INTENT(IN)   :: point_value
 
-    INCLUDE "triplet_includes/SetTriplet.f90"
+    INCLUDE "triplet_includes/SetTriplet.F90"
 
   END SUBROUTINE SetTriplet_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -77,7 +77,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(OUT)                  :: index_row
     REAL(NTREAL), INTENT(OUT)   :: point_value
 
-    INCLUDE "triplet_includes/GetTriplet.f90"
+    INCLUDE "triplet_includes/GetTriplet.F90"
 
   END SUBROUTINE GetTripletValues_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -92,7 +92,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r), INTENT(IN) :: tripA, tripB
     LOGICAL :: islessthan
 
-    INCLUDE "triplet_includes/CompareTriplets.f90"
+    INCLUDE "triplet_includes/CompareTriplets.F90"
 
   END FUNCTION CompareTriplets_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -142,7 +142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN)                  :: index_row
     COMPLEX(NTCOMPLEX), INTENT(IN)   :: point_value
 
-    INCLUDE "triplet_includes/SetTriplet.f90"
+    INCLUDE "triplet_includes/SetTriplet.F90"
 
   END SUBROUTINE SetTriplet_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -158,7 +158,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(OUT)                  :: index_row
     COMPLEX(NTCOMPLEX), INTENT(OUT)   :: point_value
 
-    INCLUDE "triplet_includes/GetTriplet.f90"
+    INCLUDE "triplet_includes/GetTriplet.F90"
 
   END SUBROUTINE GetTripletValues_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -173,7 +173,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_c), INTENT(IN) :: tripA, tripB
     LOGICAL :: islessthan
 
-    INCLUDE "triplet_includes/CompareTriplets.f90"
+    INCLUDE "triplet_includes/CompareTriplets.F90"
 
   END FUNCTION CompareTriplets_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

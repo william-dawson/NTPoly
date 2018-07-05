@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing General Matrix Roots.
 class RootSolvers : public SolverBase {
@@ -16,8 +16,8 @@ public:
   //!\param OutputMat = InputMat^(1/root)
   //!\param root = which root
   //!\param solver_parameters parameters for the solver
-  static void ComputeRoot(const DistributedSparseMatrix &InputMat,
-                          DistributedSparseMatrix &OutputMat, int root,
+  static void ComputeRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
+                          int root,
                           const IterativeSolverParameters &solver_parameters);
   //! Compute the general matrix inverse root.
   //!\param InputMat input matrix.
@@ -25,8 +25,7 @@ public:
   //!\param root = which root
   //!\param solver_parameters parameters for the solver
   static void
-  ComputeInverseRoot(const DistributedSparseMatrix &InputMat,
-                     DistributedSparseMatrix &OutputMat, int root,
+  ComputeInverseRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat, int root,
                      const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

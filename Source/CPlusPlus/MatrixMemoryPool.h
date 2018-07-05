@@ -5,7 +5,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class SparseMatrix;
+class Matrix_lsr;
+class Matrix_lsc;
 ////////////////////////////////////////////////////////////////////////////////
 //! A memory pool datatype that can be reused for matrix matrix multiplication
 //! this is to prevent excessive alloc/dealloc.
@@ -28,7 +29,7 @@ private:
   MatrixMemoryPool_r &operator=(const MatrixMemoryPool_r &);
 
 private:
-  friend class SparseMatrix_r;
+  friend class Matrix_lsr;
 };
 //! A memory pool datatype that can be reused for matrix matrix multiplication
 //! this is to prevent excessive alloc/dealloc.
@@ -51,7 +52,7 @@ private:
   MatrixMemoryPool_c &operator=(const MatrixMemoryPool_c &);
 
 private:
-  friend class SparseMatrix_c;
+  friend class Matrix_lsc;
 };
 } // namespace NTPoly
 #endif

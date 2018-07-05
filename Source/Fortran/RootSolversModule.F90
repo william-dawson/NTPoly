@@ -2,9 +2,6 @@
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
   USE DataTypesModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSAlgebraModule
-  USE MatrixPSModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE InverseSolversModule
@@ -12,6 +9,9 @@ MODULE RootSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE PolynomialSolversModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixAlgebraModule
+  USE PSMatrixModule
   USE SquareRootSolversModule
   USE TimerModule
   USE MPI

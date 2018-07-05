@@ -10,9 +10,8 @@ extern "C" {
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 void MinimizerSolvers::ConjugateGradient(
-    const DistributedSparseMatrix &Hamiltonian,
-    const DistributedSparseMatrix &Overlap, int nel,
-    DistributedSparseMatrix &Density, double &chemical_potential_out,
+    const Matrix_ps &Hamiltonian, const Matrix_ps &Overlap, int nel,
+    Matrix_ps &Density, double &chemical_potential_out,
     const IterativeSolverParameters &solver_parameters) {
   ConjugateGradient_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel,
                         GetIH(Density), &chemical_potential_out,

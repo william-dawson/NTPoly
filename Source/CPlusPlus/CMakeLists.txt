@@ -2,8 +2,6 @@
 set(Csrc
     ChebyshevSolvers.cc
     DensityMatrixSolvers.cc
-    DistributedSparseMatrix.cc
-    DistributedMatrixMemoryPool.cc
     EigenBounds.cc
     EigenSolvers.cc
     ExponentialSolvers.cc
@@ -18,12 +16,14 @@ set(Csrc
     MinimizerSolvers.cc
     Permutation.cc
     Polynomial.cc
+    PMatrixMemoryPool.cc
     ProcessGrid.cc
+    PSMatrix.cc
     real_to_complex.c
     RootSolvers.cc
     SignSolvers.cc
+    SMatrix.cc
     SolverBase.cc
-    SparseMatrix.cc
     SquareRootSolvers.cc
     TrigonometrySolvers.cc
     TripletList.cc
@@ -32,8 +32,6 @@ set(Csrc
 set(Chead
     ChebyshevSolvers.h
     DensityMatrixSolvers.h
-    DistributedSparseMatrix.h
-    DistributedMatrixMemoryPool.h
     EigenBounds.h
     EigenSolvers.h
     ExponentialSolvers.h
@@ -47,12 +45,14 @@ set(Chead
     MatrixMemoryPool.h
     MinimizerSolvers.h
     Permutation.h
+    PMatrixMemoryPool.h
     Polynomial.h
     ProcessGrid.h
+    PSMatrix.h
     RootSolvers.h
     SignSolvers.h
+    SMatrix.h
     SolverBase.h
-    SparseMatrix.h
     SquareRootSolvers.h
     TrigonometrySolvers.h
     TripletList.h

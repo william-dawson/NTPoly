@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class DistributedSparseMatrix;
+class Matrix_ps;
 class IterativeSolverParameters;
 class LoadBalancer;
 
@@ -41,10 +41,10 @@ private:
   Permutation &operator=(const Permutation &);
 
 private:
-  friend class DistributedSparseMatrix;
   friend class IterativeSolverParameters;
   friend class FixedSolverParameters;
   friend class LoadBalancer;
+  friend class Matrix_ps;
 };
 } // namespace NTPoly
 #endif

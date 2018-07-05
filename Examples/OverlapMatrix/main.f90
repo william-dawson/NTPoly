@@ -1,27 +1,27 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> An example that shows how to compute the overlap matrix.
 PROGRAM OverlapExample
-  USE DataTypesModule, ONLY : ntreal
-  USE DistributedSparseMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
   USE IterativeSolversModule
   USE PermutationModule
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, my_row, my_column
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid
+  USE PSMatrixModule
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TimerModule
   USE TripletListModule
-  USE mpi
+  USE MPI
   IMPLICIT NONE
   !! Parameters
   INTEGER :: process_rows, process_columns, process_slices
-  REAL(ntreal) :: threshold, convergence_threshold
+  REAL(NTREAL) :: threshold, convergence_threshold
   TYPE(IterativeSolverParameters_t) :: solver_parameters
   INTEGER :: basis_functions
   !! Matrices
-  TYPE(DistributedSparseMatrix_t) :: Overlap, ISQOverlap
+  TYPE(Matrix_ps) :: Overlap, ISQOverlap
   TYPE(Permutation_t) :: permutation
   !! Triplet List
-  TYPE(TripletList_t) :: triplet_list
-  TYPE(Triplet_t) :: temporary_triplet
+  TYPE(TripletList_r) :: triplet_list
+  TYPE(Triplet_r) :: temporary_triplet
   !! For Parallelism
   INTEGER :: start_row, start_column
   INTEGER :: end_row, end_column
@@ -73,14 +73,14 @@ PROGRAM OverlapExample
   !! Figure out which part of the local matrix we will store
   local_rows = basis_functions/process_rows
   local_columns = basis_functions/process_columns
-  start_row = (local_rows)*my_row + 1
-  start_column = (local_columns)*my_column + 1
+  start_row = (local_rows)*global_grid%my_row + 1
+  start_column = (local_columns)*global_grid%my_column + 1
   end_row = start_row + local_rows - 1
   end_column = start_column + local_columns - 1
 
   !! Build The Empty Matrices
-  CALL ConstructEmptyDistributedSparseMatrix(Overlap, basis_functions)
-  CALL ConstructEmptyDistributedSparseMatrix(ISQOverlap, basis_functions)
+  CALL ConstructEmptyMatrix(Overlap, basis_functions)
+  CALL ConstructEmptyMatrix(ISQOverlap, basis_functions)
 
   !! Compute The Overlap Matrix
   CALL StartTimer("Construct Triplet List")
@@ -99,7 +99,7 @@ PROGRAM OverlapExample
   CALL StopTimer("Construct Triplet List")
 
   CALL StartTimer("Fill")
-  CALL FillFromTripletList(Overlap, triplet_list)
+  CALL FillMatrixFromTripletList(Overlap, triplet_list)
   CALL StopTimer("Fill")
 
   !! Set Up The Solver Parameters.
@@ -115,13 +115,13 @@ PROGRAM OverlapExample
   CALL StopTimer("Solve")
 
   !! Write the output to file
-  CALL WriteToMatrixMarket(Overlap,"input.mtx")
-  CALL WriteToMatrixMarket(ISQOverlap,"output.mtx")
+  CALL WriteMatrixToMatrixMarket(Overlap,"input.mtx")
+  CALL WriteMatrixToMatrixMarket(ISQOverlap,"output.mtx")
 
   !! Cleanup
   CALL PrintAllTimers()
-  CALL DestructDistributedSparseMatrix(Overlap)
-  CALL DestructDistributedSparseMatrix(ISQOverlap)
+  CALL DestructMatrix(Overlap)
+  CALL DestructMatrix(ISQOverlap)
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   FUNCTION ComputeIntegral(row,column) RESULT(integral_value)

@@ -2,9 +2,9 @@
 !> A module for calling eigenexa
 MODULE EigenExaModule
   USE DataTypesModule
-  USE MatrixPSModule
   USE FixedSolversModule
   USE LoggingModule
+  USE PSMatrixModule
   USE TimerModule
   USE TripletModule
   USE TripletListModule

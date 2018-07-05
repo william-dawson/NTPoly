@@ -61,11 +61,11 @@ if __name__ == "__main__":
     ending_node = local_nodes[-1]
 
     # Fill the matrix
-    NetworkMat = nt.DistributedSparseMatrix(number_of_nodes)
-    ResultMat = nt.DistributedSparseMatrix(number_of_nodes)
+    NetworkMat = nt.Matrix_ps(number_of_nodes)
+    ResultMat = nt.Matrix_ps(number_of_nodes)
 
-    triplet_list = nt.TripletList(0)
-    temp_triplet = nt.Triplet()
+    triplet_list = nt.TripletList_r(0)
+    temp_triplet = nt.Triplet_r()
 
     # First add the connection between each node and itself.
     for counter in range(0, number_of_local_nodes):
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     NetworkMat.FillFromTripletList(triplet_list)
 
     # Solve
-    ResMat = nt.DistributedSparseMatrix(number_of_nodes)
+    ResMat = nt.Matrix_ps(number_of_nodes)
     ResMat.FillIdentity()
     ResMat.Increment(NetworkMat,alpha=-1.0*attenuation)
 

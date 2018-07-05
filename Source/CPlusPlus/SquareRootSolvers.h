@@ -6,7 +6,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class IterativeSolverParameters;
-class DistributedSparseMatrix;
+class Matrix_ps;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Class For Computing The Square Root of a Matrix.
 class SquareRootSolvers : public SolverBase {
@@ -15,16 +15,14 @@ public:
   //!\param InputMat matrix to compute the inversesquareroot of.
   //!\param OutputMat = InputMat^1/2.
   //!\param solver_parameters parameters for the solver
-  static void SquareRoot(const DistributedSparseMatrix &InputMat,
-                         DistributedSparseMatrix &OutputMat,
+  static void SquareRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                          const IterativeSolverParameters &solver_parameters);
   //! Compute the inverse square root of a matrix.
   //!\param InputMat matrix to compute the inversesquareroot of.
   //!\param OutputMat = InputMat^-1/2.
   //!\param solver_parameters parameters for the solver
   static void
-  InverseSquareRoot(const DistributedSparseMatrix &InputMat,
-                    DistributedSparseMatrix &OutputMat,
+  InverseSquareRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                     const IterativeSolverParameters &solver_parameters);
 };
 } // namespace NTPoly

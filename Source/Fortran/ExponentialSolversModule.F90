@@ -3,9 +3,6 @@
 MODULE ExponentialSolversModule
   USE ChebyshevSolversModule
   USE DataTypesModule
-  USE MatrixPSAlgebraModule
-  USE MatrixMemoryPoolPModule
-  USE MatrixPSModule
   USE EigenBoundsModule
   USE FixedSolversModule
   USE IterativeSolversModule
@@ -13,6 +10,9 @@ MODULE ExponentialSolversModule
   USE LoadBalancerModule
   USE LoggingModule
   USE ParameterConverterModule
+  USE PSMatrixAlgebraModule
+  USE PMatrixMemoryPoolModule
+  USE PSMatrixModule
   USE RootSolversModule
   USE SquareRootSolversModule
   USE TimerModule

@@ -3,7 +3,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
-class DistributedSparseMatrix;
+class Matrix_ps;
 class FixedSolverParameters;
 class IterativeSolverParameters;
 ////////////////////////////////////////////////////////////////////////////////
@@ -12,10 +12,10 @@ class SolverBase {
 protected:
   //! Get the internal handle from a dense sparse matrix.
   //!\param dsm the matrix to get the handle from.
-  static const int *GetIH(const DistributedSparseMatrix &dsm);
+  static const int *GetIH(const Matrix_ps &dsm);
   //! Get the internal handle from a dense sparse matrix.
   //!\param dsm the matrix to get the handle from.
-  static int *GetIH(DistributedSparseMatrix &dsm);
+  static int *GetIH(Matrix_ps &dsm);
   //! Get the internal handle from a chemistry solver parameter set.
   //!\param csp the parameteres to get the handle from.
   static const int *GetIH(const IterativeSolverParameters &csp);
