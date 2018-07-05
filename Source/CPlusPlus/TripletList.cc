@@ -20,11 +20,6 @@ TripletList_c::TripletList_c(int size) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// TripletList::TripletList(const Matrix_ps &matrix) {
-//   GetMatrixTripletList_wrp(&matrix.ih_this,&ih_this);
-// }
-
-////////////////////////////////////////////////////////////////////////////////
 void TripletList_r::Resize(int size) {
   ResizeTripletList_r_wrp(ih_this, &size);
 }

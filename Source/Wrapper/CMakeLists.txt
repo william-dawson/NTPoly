@@ -7,49 +7,49 @@ include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/DistributedTypes)
 include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/LocalTypes)
 
 set(Wsrc
-    ChebyshevSolversModule_wrp.f90
-    DensityMatrixSolversModule_wrp.f90
-    EigenBoundsModule_wrp.f90
-    EigenSolversModule_wrp.f90
-    ExponentialSolversModule_wrp.f90
-    GeometryOptimizationModule_wrp.f90
-    HermiteSolversModule_wrp.f90
-    InverseSolversModule_wrp.f90
-    LinearSolversModule_wrp.f90
-    LoadBalancerModule_wrp.f90
-    MinimizerSolversModule_wrp.f90
-    PermutationModule_wrp.f90
-    PolynomialSolversModule_wrp.f90
-    RootSolversModule_wrp.f90
-    SignSolversModule_wrp.f90
-    SolverParametersModule_wrp.f90
-    SquareRootSolversModule_wrp.f90
-    TrigonometrySolversModule_wrp.f90
-    WrapperModule.f90
+    ChebyshevSolversModule_wrp.F90
+    DensityMatrixSolversModule_wrp.F90
+    EigenBoundsModule_wrp.F90
+    EigenSolversModule_wrp.F90
+    ExponentialSolversModule_wrp.F90
+    GeometryOptimizationModule_wrp.F90
+    HermiteSolversModule_wrp.F90
+    InverseSolversModule_wrp.F90
+    LinearSolversModule_wrp.F90
+    LoadBalancerModule_wrp.F90
+    MinimizerSolversModule_wrp.F90
+    PermutationModule_wrp.F90
+    PolynomialSolversModule_wrp.F90
+    RootSolversModule_wrp.F90
+    SignSolversModule_wrp.F90
+    SolverParametersModule_wrp.F90
+    SquareRootSolversModule_wrp.F90
+    TrigonometrySolversModule_wrp.F90
+    WrapperModule.F90
 )
 
 set(WCommunication
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule_wrp.F90
 )
 
 set(WDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PMatrixMemoryPoolModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixAlgebraModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PMatrixMemoryPoolModule_wrp.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixAlgebraModule_wrp.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixModule_wrp.F90
 )
 
 set(WTypes
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixAlgebraModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule_wrp.f90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule_wrp.f90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule_wrp.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixAlgebraModule_wrp.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixModule_wrp.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule_wrp.F90
+    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletModule_wrp.F90
 )
 
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)
 
 IF (EIGEN_EXA)
-  LIST(APPEND Wsrc EigenExaModule_wrp.f90)
+  LIST(APPEND Wsrc EigenExaModule_wrp.F90)
   include_directories(${EIGEN_EXA})
 ENDIF()
 
