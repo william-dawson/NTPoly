@@ -12,7 +12,6 @@ MODULE ChebyshevSolversModule
        & PrintMatrixInformation, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -24,47 +23,63 @@ MODULE ChebyshevSolversModule
   END TYPE ChebyshevPolynomial_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Polynomial type
-  PUBLIC :: ConstructChebyshevPolynomial
-  PUBLIC :: DestructChebyshevPolynomial
-  PUBLIC :: SetChebyshevCoefficient
+  PUBLIC :: ConstructPolynomial
+  PUBLIC :: DestructPolynomial
+  PUBLIC :: SetCoefficient
   !! Solvers
-  PUBLIC :: ChebyshevCompute
-  PUBLIC :: FactorizedChebyshevCompute
+  PUBLIC :: Compute
+  PUBLIC :: FactorizedCompute
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE ConstructPolynomial
+     MODULE PROCEDURE ConstructPolynomial_cheby
+  END INTERFACE
+  INTERFACE DestructPolynomial
+     MODULE PROCEDURE DestructPolynomial_cheby
+  END INTERFACE
+  INTERFACE SetCoefficient
+     MODULE PROCEDURE SetCoefficient_cheby
+  END INTERFACE
+  INTERFACE Compute
+     MODULE PROCEDURE Compute_cheby
+  END INTERFACE
+  INTERFACE FactorizedCompute
+     MODULE PROCEDURE FactorizedCompute_cheby
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a Chebyshev polynomial object.
   !! @param[inout] this the polynomial to construct.
   !! @param[in] degree of the polynomial.
-  PURE SUBROUTINE ConstructChebyshevPolynomial(this, degree)
+  PURE SUBROUTINE ConstructPolynomial_cheby(this, degree)
     !! Parameters
     TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: degree
 
     ALLOCATE(this%coefficients(degree))
     this%coefficients = 0
-  END SUBROUTINE ConstructChebyshevPolynomial
+  END SUBROUTINE ConstructPolynomial_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
   !! @param[inout] this the polynomial to destruct.
-  PURE SUBROUTINE DestructChebyshevPolynomial(this)
+  PURE SUBROUTINE DestructPolynomial_cheby(this)
     !! Parameters
     TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
     IF (ALLOCATED(this%coefficients)) THEN
        DEALLOCATE(this%coefficients)
     END IF
-  END SUBROUTINE DestructChebyshevPolynomial
+  END SUBROUTINE DestructPolynomial_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set a coefficient of a Chebyshev polynomial.
   !! @param[inout] this the polynomial to set.
   !! @param[in] degree for which to set the coefficient.
   !! @param[in] coefficient value.
-  SUBROUTINE SetChebyshevCoefficient(this, degree, coefficient)
+  SUBROUTINE SetCoefficient_cheby(this, degree, coefficient)
     !! Parameters
     TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
     INTEGER, INTENT(IN) :: degree
     REAL(NTREAL), INTENT(IN) :: coefficient
 
     this%coefficients(degree) = coefficient
-  END SUBROUTINE SetChebyshevCoefficient
+  END SUBROUTINE SetCoefficient_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
   !! This method uses the standard Chebyshev Polynomial expansion.
@@ -72,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat = poly(InputMat)
   !! @param[in] poly the Chebyshev polynomial to compute.
   !! @param[in] solver_parameters_in parameters for the solver (optional).
-  SUBROUTINE ChebyshevCompute(InputMat, OutputMat, poly, solver_parameters_in)
+  SUBROUTINE Compute_cheby(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
@@ -173,7 +188,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Tkminus2)
     CALL DestructMatrix(BalancedInput)
     CALL DestructMatrixMemoryPool(pool)
-  END SUBROUTINE ChebyshevCompute
+  END SUBROUTINE Compute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
   !! This version first factors the Chebyshev Polynomial and computes the
@@ -183,7 +198,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat = poly(InputMat)
   !! @param[in]  poly the Chebyshev polynomial to compute.
   !! @param[in]  solver_parameters_in parameters for the solver (optional).
-  SUBROUTINE FactorizedChebyshevCompute(InputMat, OutputMat, poly, &
+  SUBROUTINE FactorizedCompute_cheby(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
@@ -280,7 +295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrix(BalancedInput)
     CALL DestructMatrixMemoryPool(pool)
-  END SUBROUTINE FactorizedChebyshevCompute
+  END SUBROUTINE FactorizedCompute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The workhorse routine for the factorized chebyshev computation function.
   !! @param[in] T_Powers the precomputed Chebyshev polynomials.

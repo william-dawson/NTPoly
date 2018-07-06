@@ -1,13 +1,17 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for calling eigenexa
 MODULE EigenExaModule
-  USE DataTypesModule
-  USE LoggingModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteCitation, WriteHeader
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
+       & FillMatrixFromTripletList, GetMatrixTripletList, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
-  USE TripletModule
-  USE TripletListModule
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE TripletModule, ONLY : Triplet_r, SetTriplet
+  USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
+       & GetTripletAt, ConstructTripletList, DestructTripletList, &
+       & RedistributeTripletLists
   USE eigen_libs
   USE MPI
   IMPLICIT NONE

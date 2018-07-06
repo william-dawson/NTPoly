@@ -1,9 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the Hermite Solvers Module
 MODULE HermiteSolversModule_wrp
-  USE HermiteSolversModule, ONLY : HermitePolynomial_t, &
-       & ConstructHermitePolynomial, DestructHermitePolynomial, &
-       & SetHermiteCoefficient, HermiteCompute
+  USE HermiteSolversModule, ONLY : HermitePolynomial_t, ConstructPolynomial, &
+       & DestructPolynomial, SetCoefficient, Compute
   USE DataTypesModule, ONLY : NTREAL
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
@@ -32,7 +31,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(HermitePolynomial_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL ConstructHermitePolynomial(h_this%data,degree)
+    CALL ConstructPolynomial(h_this%data,degree)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructHermitePolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -43,7 +42,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(HermitePolynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructHermitePolynomial(h_this%data)
+    CALL DestructPolynomial(h_this%data)
     DEALLOCATE(h_this%data)
   END SUBROUTINE DestructHermitePolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -56,7 +55,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(HermitePolynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL SetHermiteCoefficient(h_this%data, degree, coefficient)
+    CALL SetCoefficient(h_this%data, degree, coefficient)
   END SUBROUTINE SetHermiteCoefficient_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Hermite Polynomial.
@@ -76,8 +75,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL HermiteCompute(h_InputMat%data, h_OutputMat%data, &
-         & h_polynomial%data, h_solver_parameters%data)
+    CALL Compute(h_InputMat%data, h_OutputMat%data, h_polynomial%data, &
+         & h_solver_parameters%data)
   END SUBROUTINE HermiteCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE HermiteSolversModule_wrp

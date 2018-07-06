@@ -1,17 +1,24 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
-  USE CholeskyModule
-  USE DataTypesModule
-  USE DMatrixModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
-  USE SMatrixModule
+  USE CholeskyModule, ONLY : ConstructRankLookup, AppendToVector, &
+       & BroadcastVector, ConstructDiag, DotAllHelper, DotAllPivoted, &
+       & GatherMatrixColumn, GetPivot, UnpackCholesky
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DMatrixModule, ONLY : Matrix_ldr, DestructMatrix, &
+       & ConstructMatrixDFromS
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteHeader, WriteListElement
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixNorm, &
+       & MatrixMultiply, MatrixTrace, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
+       & TransposeMatrix, DestructMatrix, ConjugateMatrix, CopyMatrix, &
+       & FillMatrixIdentity, MergeMatrixLocalBlocks, PrintMatrixInformation
+  USE SMatrixModule, ONLY : Matrix_lsr
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -73,7 +80,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(TempMat, AMat)
 
     !! Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
@@ -85,7 +91,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(AMat,ABalanced)
        CALL CopyMatrix(BMat,BBalanced)
     END IF
-    CALL StopTimer("Load Balance")
 
     !! Initial Matrix Values
     CALL CopyMatrix(Identity, XMat)
@@ -159,12 +164,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Undo Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(XMat,XMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
-    CALL StopTimer("Load Balance")
 
     !! Cleanup
     IF (solver_parameters%be_verbose) THEN

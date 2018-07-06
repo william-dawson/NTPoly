@@ -1,15 +1,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
-  USE DataTypesModule
-  USE EigenBoundsModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
+       & WriteCitation, EnterSubLog, ExitSubLog
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
+       & DotMatrix, MatrixTrace, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
+       & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE

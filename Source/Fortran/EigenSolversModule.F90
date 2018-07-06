@@ -1,24 +1,31 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
-  USE DataTypesModule
-  USE DensityMatrixSolversModule
-  USE DMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE DensityMatrixSolversModule, ONLY : HPCP, TRS2
+  USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, DestructMatrix, &
+       & ConstructMatrixSFromD, ConstructMatrixDFromS, EigenDecomposition
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
-  USE LinearSolversModule
-  USE PermutationModule
-  USE LoggingModule
-  USE PSMatrixModule
-  USE PSMatrixAlgebraModule
+  USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
+  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement, WriteHeader
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
+       & CopyMatrix, ConjugateMatrix, TransposeMatrix, GetMatrixSize, &
+       & FillMatrixFromTripletList, CommSplitMatrix, ConvertMatrixToReal, &
+       & FillMatrixIdentity, GetMatrixTripletList, PrintMatrixInformation
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE SMatrixModule
-  USE SMatrixAlgebraModule
-  USE SignSolversModule
-  USE TimerModule
-  USE TripletListModule
-  USE TripletModule
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList, &
+       & ConstructMatrixFromTripletList
+  USE SignSolversModule, ONLY : PolarDecomposition
+  USE TimerModule, ONLY : StartTimer, StopTimer
+  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
+       & AppendToTripletList, ConstructTripletList, DestructTripletList, &
+       & GetTripletAt, RedistributeTripletLists, SortTripletList
+  USE TripletModule, ONLY : Triplet_r
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

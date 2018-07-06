@@ -24,50 +24,66 @@ MODULE PolynomialSolversModule
   PUBLIC :: DestructPolynomial
   PUBLIC :: SetCoefficient
   !! Solvers
-  PUBLIC :: HornerCompute
-  PUBLIC :: PatersonStockmeyerCompute
+  PUBLIC :: Compute
+  PUBLIC :: FactorizedCompute
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE ConstructPolynomial
+     MODULE PROCEDURE ConstructPolynomial_stand
+  END INTERFACE
+  INTERFACE DestructPolynomial
+     MODULE PROCEDURE DestructPolynomial_stand
+  END INTERFACE
+  INTERFACE SetCoefficient
+     MODULE PROCEDURE SetCoefficient_stand
+  END INTERFACE
+  INTERFACE Compute
+     MODULE PROCEDURE Compute_stand
+  END INTERFACE
+  INTERFACE FactorizedCompute
+     MODULE PROCEDURE FactorizedCompute_stand
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a polynomial.
   !! @param[inout] this the polynomial to construct.
   !! @param[in] degree of the polynomial.
-  PURE SUBROUTINE ConstructPolynomial(this, degree)
+  PURE SUBROUTINE ConstructPolynomial_stand(this, degree)
     !! Parameters
     TYPE(Polynomial_t), INTENT(inout) :: this
     INTEGER, INTENT(in) :: degree
 
     ALLOCATE(this%coefficients(degree))
     this%coefficients = 0
-  END SUBROUTINE ConstructPolynomial
+  END SUBROUTINE ConstructPolynomial_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
   !! @param[inout] this the polynomial to destruct.
-  PURE SUBROUTINE DestructPolynomial(this)
+  PURE SUBROUTINE DestructPolynomial_stand(this)
     !! Parameters
     TYPE(Polynomial_t), INTENT(inout) :: this
     IF (ALLOCATED(this%coefficients)) THEN
        DEALLOCATE(this%coefficients)
     END IF
-  END SUBROUTINE DestructPolynomial
+  END SUBROUTINE DestructPolynomial_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set coefficient of a polynomial.
   !! @param[inout] this the polynomial to set.
   !! @param[in] degree for which to set the coefficient.
   !! @param[in] coefficient value.
-  SUBROUTINE SetCoefficient(this, degree, coefficient)
+  SUBROUTINE SetCoefficient_stand(this, degree, coefficient)
     !! Parameters
     TYPE(Polynomial_t), INTENT(inout) :: this
     INTEGER, INTENT(in) :: degree
     REAL(NTREAL), INTENT(in) :: coefficient
 
     this%coefficients(degree) = coefficient
-  END SUBROUTINE SetCoefficient
+  END SUBROUTINE SetCoefficient_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Horner's Method.
   !! @param[in] InputMat the input matrix
   !! @param[out] OutputMat = poly(InputMat)
   !! @param[in] poly polynomial to compute.
   !! @param[in] solver_parameters_in parameters for the solver (optional).
-  SUBROUTINE HornerCompute(InputMat, OutputMat, poly, solver_parameters_in)
+  SUBROUTINE Compute_stand(InputMat, OutputMat, poly, solver_parameters_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
@@ -143,7 +159,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Temporary)
     CALL DestructMatrix(Identity)
     CALL DestructMatrixMemoryPool(pool)
-  END SUBROUTINE HornerCompute
+  END SUBROUTINE Compute_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
   !! This method first factors the polynomial to reduce the number of
@@ -152,7 +168,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[out] OutputMat = poly(InputMat)
   !! @param[in] poly polynomial to compute.
   !! @param[in] solver_parameters_in parameters for the solver (optional).
-  SUBROUTINE PatersonStockmeyerCompute(InputMat, OutputMat, poly, &
+  SUBROUTINE FactorizedCompute_stand(InputMat, OutputMat, poly, &
        & solver_parameters_in)
     !! Parameters
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
@@ -259,6 +275,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Xs)
     CALL DestructMatrix(Temp)
     CALL DestructMatrixMemoryPool(pool)
-  END SUBROUTINE PatersonStockmeyerCompute
+  END SUBROUTINE FactorizedCompute_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PolynomialSolversModule

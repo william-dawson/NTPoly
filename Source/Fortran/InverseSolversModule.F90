@@ -1,14 +1,17 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
-  USE DataTypesModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
+       & WriteElement, WriteListElement, WriteCitation
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, &
+       & MatrixNorm, MatrixSigma, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
+       & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -64,7 +67,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
@@ -73,7 +75,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL CopyMatrix(Mat1,BalancedMat1)
     END IF
-    CALL StopTimer("Load Balance")
 
     !! Compute Sigma
     CALL MatrixSigma(BalancedMat1,sigma)
@@ -87,7 +88,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    CALL StartTimer("I-Invert")
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
     DO outer_counter = 1,solver_parameters%max_iterations
@@ -127,15 +127,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
        CALL PrintMatrixInformation(InverseMat)
     END IF
-    CALL StopTimer("I-Invert")
 
     !! Undo Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(InverseMat,InverseMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     END IF
-    CALL StopTimer("Load Balance")
 
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog

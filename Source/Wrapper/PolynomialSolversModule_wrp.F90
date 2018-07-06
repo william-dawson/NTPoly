@@ -3,8 +3,7 @@
 MODULE PolynomialSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE PolynomialSolversModule, ONLY : Polynomial_t, ConstructPolynomial, &
-       & DestructPolynomial, SetCoefficient, HornerCompute, &
-       & PatersonStockmeyerCompute
+       & DestructPolynomial, SetCoefficient, Compute, FactorizedCompute
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -77,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL HornerCompute(h_InputMat%data, h_OutputMat%data, &
+    CALL Compute(h_InputMat%data, h_OutputMat%data, &
          & h_polynomial%data, h_solver_parameters%data)
   END SUBROUTINE HornerCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -99,7 +98,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PatersonStockmeyerCompute(h_InputMat%data, h_OutputMat%data, &
+    CALL FactorizedCompute(h_InputMat%data, h_OutputMat%data, &
          & h_polynomial%data, h_solver_parameters%data)
   END SUBROUTINE PatersonStockmeyerCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

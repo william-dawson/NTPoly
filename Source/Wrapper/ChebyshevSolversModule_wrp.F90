@@ -2,8 +2,8 @@
 !> Wraps the Chebyshev Solvers Module
 MODULE ChebyshevSolversModule_wrp
   USE ChebyshevSolversModule, ONLY : ChebyshevPolynomial_t, &
-       & ConstructChebyshevPolynomial, DestructChebyshevPolynomial, &
-       & SetChebyshevCoefficient, ChebyshevCompute, FactorizedChebyshevCompute
+       & ConstructPolynomial, DestructPolynomial, SetCoefficient, Compute, &
+       & FactorizedCompute
   USE DataTypesModule, ONLY : NTREAL
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
@@ -32,7 +32,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ChebyshevPolynomial_wrp) :: h_this
 
     ALLOCATE(h_this%data)
-    CALL ConstructChebyshevPolynomial(h_this%data,degree)
+    CALL ConstructPolynomial(h_this%data,degree)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructChebyshevPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -43,7 +43,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ChebyshevPolynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructChebyshevPolynomial(h_this%data)
+    CALL DestructPolynomial(h_this%data)
     DEALLOCATE(h_this%data)
   END SUBROUTINE DestructChebyshevPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -56,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ChebyshevPolynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL SetChebyshevCoefficient(h_this%data, degree, coefficient)
+    CALL SetCoefficient(h_this%data, degree, coefficient)
   END SUBROUTINE SetChebyshevCoefficient_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Chebyshev Polynomial.
@@ -76,8 +76,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL ChebyshevCompute(h_InputMat%data, h_OutputMat%data, &
-         & h_polynomial%data, h_solver_parameters%data)
+    CALL Compute(h_InputMat%data, h_OutputMat%data, h_polynomial%data, &
+          & h_solver_parameters%data)
   END SUBROUTINE ChebyshevCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Chebyshev Polynomial By Factorization.
@@ -98,7 +98,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL FactorizedChebyshevCompute(h_InputMat%data, h_OutputMat%data, &
+    CALL FactorizedCompute(h_InputMat%data, h_OutputMat%data, &
          & h_polynomial%data, h_solver_parameters%data)
   END SUBROUTINE FactorizedChebyshevCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

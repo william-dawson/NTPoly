@@ -1,15 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Matrix Sign Function.
 MODULE SignSolversModule
-  USE DataTypesModule
-  USE EigenBoundsModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
+       & WriteListElement, WriteElement, WriteCitation
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, &
+       & MatrixNorm, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, CopyMatrix, DestructMatrix, &
+       & FillMatrixIdentity, PrintMatrixInformation, TransposeMatrix, &
+       & ConjugateMatrix, ConstructEmptyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -131,7 +135,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        !! Permute Matrices
        CALL PermuteMatrix(Identity, Identity, &
@@ -141,7 +144,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL CopyMatrix(Mat1,OutMat)
     END IF
-    CALL StopTimer("Load Balance")
 
     !! Initialize
     CALL GershgorinBounds(Mat1,e_min,e_max)
@@ -201,12 +203,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Undo Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutMat,OutMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
-    CALL StopTimer("Load Balance")
 
     CALL DestructMatrix(Temp1)
     CALL DestructMatrix(Temp2)

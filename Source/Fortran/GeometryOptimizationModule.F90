@@ -1,15 +1,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
-  USE DataTypesModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
+       & WriteElement, WriteListElement, WriteCitation
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, &
+       & IncrementMatrix, MatrixTrace, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, ConstructEmptyMatrix, &
+       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE SquareRootSolversModule
-  USE TimerModule
+  USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
   USE MPI
   IMPLICIT NONE
   PRIVATE

@@ -1,14 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
-  USE DataTypesModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement, WriteHeader
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, DotMatrix, &
+       & IncrementMatrix, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
+       & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TripletListModule
-  USE TripletModule
+  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
+       & AppendToTripletList, DestructTripletList
+  USE TripletModule, ONLY : Triplet_r
   USE MPI
   IMPLICIT NONE
   PRIVATE

@@ -110,7 +110,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL SetCoefficient(power_poly,counter,REAL(0.0,NTREAL))
     END DO
     CALL SetCoefficient(power_poly,root,REAL(1.0,NTREAL))
-    CALL PatersonStockmeyerCompute(InputMat, RaisedMat, power_poly, &
+    CALL FactorizedCompute(InputMat, RaisedMat, power_poly, &
          & fixed_parameters)
     CALL DestructPolynomial(power_poly)
 
