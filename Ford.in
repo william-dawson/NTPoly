@@ -1,0 +1,8 @@
+Title: NTPoly
+Summary: Summary goes here
+Authors: William Dawson
+Date: July 6th, 2018
+src_dir: @CMAKE_SOURCE_DIR@/Source/Fortran
+output_dir: @CMAKE_BINARY_DIR@/Documentation
+extensions: F90
+project_github: https://github.com/william-dawson/NTPoly

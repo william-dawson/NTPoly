@@ -30,12 +30,18 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
 
 ################################################################################
 ## Documentation
-if (DOXYGEN_FOUND)
-  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
-                 ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
-  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
-else()
-  MESSAGE("Doxygen not found! No documentation will be generated.")
+#if (DOXYGEN_FOUND)
+#  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
+#                 ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
+#  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
+#else()
+#  MESSAGE("Doxygen not found! No documentation will be generated.")
+#endif()
+find_program ( FORD ford )
+if ( FORD )
+  configure_file(${CMAKE_SOURCE_DIR}/Ford.in
+                 ${CMAKE_BINARY_DIR}/Ford @ONLY)
+  add_custom_target(doc "${FORD}" Ford)
 endif()
 
 ################################################################################
