@@ -1,12 +1,16 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing Matrix functions based on Chebyshev polynomials.
 MODULE ChebyshevSolversModule
-  USE DataTypesModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : WriteElement, WriteHeader, EnterSubLog, &
+       & ExitSubLog
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixIdentity, &
+       & PrintMatrixInformation, ConstructEmptyMatrix, DestructMatrix, &
+       & CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
   USE MPI

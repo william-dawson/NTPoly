@@ -1,17 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Helper Routines for Computing The Cholesky Decomposition
 MODULE CholeskyModule
-  USE DataTypesModule
-  USE DMatrixModule
-  USE MatrixReduceModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
-  USE ProcessGridModule
-  USE SMatrixModule
-  USE SVectorModule
-  USE TripletListModule
-  USE TripletModule
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DMatrixModule, ONLY : Matrix_ldr
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup
+  USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixFromTripletList
+  USE ProcessGridModule, ONLY : ProcessGrid_t
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, TransposeMatrix, &
+       & DestructMatrix
+  USE SVectorModule, ONLY : DotSparseVectors
+  USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
+       & DestructTripletList
+  USE TripletModule, ONLY : Triplet_r
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

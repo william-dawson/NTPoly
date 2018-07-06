@@ -10,8 +10,12 @@ MODULE PSMatrixAlgebraModule
        & TestReduceInnerRequest, TestReduceDataRequest
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & CheckMemoryPoolValidity, DestructMatrixMemoryPool
-  USE PSMatrixModule
-  USE SMatrixAlgebraModule
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
+       & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
+       & MergeMatrixLocalBlocks
+  USE SMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixGrandSum, &
+       & PairwiseMultiplyMatrix, IncrementMatrix, ScaleMatrix, &
+       & MatrixColumnNorm
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix,&
        & TransposeMatrix, ComposeMatrixColumns, MatrixToTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer

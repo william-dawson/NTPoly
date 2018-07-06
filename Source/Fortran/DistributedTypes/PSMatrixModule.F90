@@ -9,11 +9,14 @@ MODULE PSMatrixModule
        & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup, &
        & TestReduceSizeRequest, TestReduceOuterRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
-  USE MatrixMarketModule
+  USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
        & SplitProcessGrid, CopyProcessGrid
-  USE SMatrixModule
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
+       & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
+       & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
+       & ConstructMatrixFromTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, Triplet_c, GetMPITripletType_r, &
        & GetMPITripletType_c
@@ -22,7 +25,7 @@ MODULE PSMatrixModule
        & DestructTripletList, SortTripletList, AppendToTripletList, &
        & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
        & ShiftTripletList
-  USE iso_c_binding
+  USE ISO_C_BINDING
   USE MPI
   IMPLICIT NONE
   PRIVATE

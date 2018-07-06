@@ -3,7 +3,7 @@
 MODULE TimerModule
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
        & WriteHeader
-  USE ProcessGridModule
+  USE ProcessGridModule, ONLY : global_grid
   USE MPI
   IMPLICIT NONE
   PRIVATE

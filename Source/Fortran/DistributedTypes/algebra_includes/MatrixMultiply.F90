@@ -206,8 +206,7 @@
                    & slice_helper(II,JJ))
               ABTasks(II,JJ) = GatherAndSumAB
            CASE (GatherAndSumAB)
-              IF (TestReduceSizeRequest(&
-                   & slice_helper(II,JJ))) THEN
+              IF (TestReduceSizeRequest(slice_helper(II,JJ))) THEN
                  CALL ReduceAndSumMatrixData(SliceContribution(II,JJ), &
                       & matAB%LMAT(II,JJ), &
                       & matAB%process_grid%blocked_between_slice_comm(II,JJ),&
