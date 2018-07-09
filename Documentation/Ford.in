@@ -3,9 +3,9 @@ project: NTPoly
 Authors: William Dawson
 Date: July 6th, 2018
 src_dir: @CMAKE_SOURCE_DIR@/Source/Fortran
-output_dir: @CMAKE_BINARY_DIR@/Documentation
+output_dir: @CMAKE_BINARY_DIR@/Documentation/Fortran
 docmark: <
 extensions: F90
 css: @CMAKE_SOURCE_DIR@/Documentation/doc.css
 
-{!../ReadMe.md!}
+{!@CMAKE_SOURCE_DIR@/ReadMe.md!}

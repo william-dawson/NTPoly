@@ -8,7 +8,6 @@ enable_language(Fortran)
 ################################################################################
 ## Packages
 find_package(MPI REQUIRED)
-find_package(Doxygen)
 find_package(SWIG 3.0)
 
 ################################################################################
@@ -27,22 +26,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/include)
 install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/ DESTINATION include)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
-
-################################################################################
-## Documentation
-#if (DOXYGEN_FOUND)
-#  configure_file(${CMAKE_SOURCE_DIR}/Doxyfile.in
-#                 ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
-#  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
-#else()
-#  MESSAGE("Doxygen not found! No documentation will be generated.")
-#endif()
-find_program ( FORD ford )
-if ( FORD )
-  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Ford.in
-                 ${CMAKE_BINARY_DIR}/Ford @ONLY)
-  add_custom_target(doc "${FORD}" Ford)
-endif()
 
 ################################################################################
 ## Compiler Flags
@@ -69,6 +52,7 @@ ENDIF()
 
 ################################################################################
 ## Get at the source files
+subdirs(Documentation)
 subdirs(Source)
 
 if (NOT FORTRAN_ONLY)
