@@ -49,8 +49,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructEmptyMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
-  SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp(ih_this,file_name,name_size) &
-       & bind(c,name="ConstructMatrixFromMatrixMarket_ps_wrp")
+  SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp(ih_this, file_name, &
+       & name_size) bind(c,name="ConstructMatrixFromMatrixMarket_ps_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size

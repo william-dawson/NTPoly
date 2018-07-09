@@ -55,6 +55,7 @@ MODULE PSMatrixModule
   PUBLIC :: ConstructEmptyMatrix
   PUBLIC :: DestructMatrix
   PUBLIC :: CopyMatrix
+  PUBLIC :: SetMatrixProcessGrid
   !! File I/O
   PUBLIC :: ConstructMatrixFromMatrixMarket
   PUBLIC :: ConstructMatrixFromBinary
@@ -170,7 +171,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim_, process_grid_in, &
        & is_complex_in)
-    !! Parameters
     !> The matrix to be constructed.
     TYPE(Matrix_ps), INTENT(INOUT)            :: this
     !> The dimension of the full matrix.
@@ -282,6 +282,49 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(matB)
     matB = matA
   END SUBROUTINE CopyMatrix_ps
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> When you want to change the process grid of a matrix, you can call
+  !> this routine with the new process grid value. Data will be automatically
+  !> redistributed.
+  SUBROUTINE SetMatrixProcessGrid(this, grid)
+    !> The matrix to set the grid of.
+    TYPE(Matrix_ps), INTENT(INOUT)  :: this
+    !> The grid to set it to.
+    TYPE(ProcessGrid_t), INTENT(IN) :: grid
+    !! Local variables
+    TYPE(TripletList_r) :: triplet_list_r
+    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(Matrix_ps) :: new_mat
+
+    !! Get the data in a triplet list
+    CALL ConstructTripletList(triplet_list_c)
+    CALL ConstructTripletList(triplet_list_r)
+
+    IF (this%process_grid%my_slice .EQ. 0) THEN
+       IF (this%is_complex) THEN
+          CALL GetMatrixTripletList(this, triplet_list_c)
+       ELSE
+          CALL GetMatrixTripletList(this, triplet_list_r)
+       END IF
+    END IF
+
+    !! Fill The New Matrix
+    CALL ConstructEmptyMatrix(new_mat, this%actual_matrix_dimension, grid, &
+         & new_mat%is_complex)
+    IF (this%is_complex) THEN
+       CALL FillMatrixFromTripletList(new_mat, triplet_list_c)
+    ELSE
+       CALL FillMatrixFromTripletList(new_mat, triplet_list_r)
+    END IF
+
+    !! Copy back to finish
+    CALL CopyMatrix(new_mat, this)
+
+    !! Cleanup
+    CALL DestructMatrix(new_mat)
+    CALL DestructTripletList(triplet_list_c)
+    CALL DestructTripletList(triplet_list_r)
+  END SUBROUTINE SetMatrixProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   !> Read \cite boisvert1996matrix for the details.
