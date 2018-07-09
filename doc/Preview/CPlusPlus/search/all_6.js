@@ -1,0 +1,18 @@
+var searchData=
+[
+  ['gemm',['Gemm',['../class_n_t_poly_1_1_matrix__ps.html#a3afba41e2e2141d9626a32d62c49af42',1,'NTPoly::Matrix_ps::Gemm()'],['../class_n_t_poly_1_1_matrix__lsr.html#ac32da4d228d8b4d64e90b3dc0151d34b',1,'NTPoly::Matrix_lsr::Gemm()'],['../class_n_t_poly_1_1_matrix__lsc.html#a223f28d75b3576ab2f2fa15dadbb1486',1,'NTPoly::Matrix_lsc::Gemm()']]],
+  ['geometryoptimization',['GeometryOptimization',['../class_n_t_poly_1_1_geometry_optimization.html',1,'NTPoly']]],
+  ['gershgorinbounds',['GershgorinBounds',['../class_n_t_poly_1_1_eigen_bounds.html#ad47e5a428ae248f443af11a3af9cd1d2',1,'NTPoly::EigenBounds']]],
+  ['getactualdimension',['GetActualDimension',['../class_n_t_poly_1_1_matrix__ps.html#a30fb9d7529b6c20be0360d48d1edee78',1,'NTPoly::Matrix_ps']]],
+  ['getcolumns',['GetColumns',['../class_n_t_poly_1_1_matrix__lsr.html#a625a657f2dbf3b02c6d37893fc32fed9',1,'NTPoly::Matrix_lsr::GetColumns()'],['../class_n_t_poly_1_1_matrix__lsc.html#ab0870a0722f2a6327c134735eaadcc54',1,'NTPoly::Matrix_lsc::GetColumns()']]],
+  ['getih',['GetIH',['../class_n_t_poly_1_1_solver_base.html#ac1628d865eb7f255c9e7e8c38f407e08',1,'NTPoly::SolverBase::GetIH(const Matrix_ps &amp;dsm)'],['../class_n_t_poly_1_1_solver_base.html#a0dd41f38e1ea5eb2fa5555936f473c6c',1,'NTPoly::SolverBase::GetIH(Matrix_ps &amp;dsm)'],['../class_n_t_poly_1_1_solver_base.html#a0034909ea5da85ddeba0be22c4090714',1,'NTPoly::SolverBase::GetIH(const SolverParameters &amp;csp)'],['../class_n_t_poly_1_1_solver_base.html#adca2bfbf4ea70bb3f198d453216be760',1,'NTPoly::SolverBase::GetIH(SolverParameters &amp;csp)']]],
+  ['getlogicaldimension',['GetLogicalDimension',['../class_n_t_poly_1_1_matrix__ps.html#aa3cda6634c985fa6d805e48267f92d29',1,'NTPoly::Matrix_ps']]],
+  ['getmatrixblock',['GetMatrixBlock',['../class_n_t_poly_1_1_matrix__ps.html#ae9052457c1804b385773642fceb01b4f',1,'NTPoly::Matrix_ps::GetMatrixBlock(TripletList_r &amp;triplet_list, int start_row, int end_row, int start_column, int end_column)'],['../class_n_t_poly_1_1_matrix__ps.html#a30479897d50a97cbe7915969085ad1b3',1,'NTPoly::Matrix_ps::GetMatrixBlock(TripletList_c &amp;triplet_list, int start_row, int end_row, int start_column, int end_column)']]],
+  ['getmycolumn',['GetMyColumn',['../namespace_n_t_poly.html#a4a197ce2b9824e0c12ff2396458e60b6',1,'NTPoly']]],
+  ['getmyrow',['GetMyRow',['../namespace_n_t_poly.html#a88a9cedc42aaea89d076e1da0662a8f0',1,'NTPoly']]],
+  ['getmyslice',['GetMySlice',['../namespace_n_t_poly.html#a5ca29bf84204f8d30fb4e9ee45890255',1,'NTPoly']]],
+  ['getrows',['GetRows',['../class_n_t_poly_1_1_matrix__lsr.html#a45730edb29970b7d06bc747786350e12',1,'NTPoly::Matrix_lsr::GetRows()'],['../class_n_t_poly_1_1_matrix__lsc.html#a95afa3bb17e43ab90326447a78449126',1,'NTPoly::Matrix_lsc::GetRows()']]],
+  ['getsize',['GetSize',['../class_n_t_poly_1_1_triplet_list__r.html#adcc25d38e4b9fec302548520423273e0',1,'NTPoly::TripletList_r::GetSize()'],['../class_n_t_poly_1_1_triplet_list__c.html#aadc2ea44fadda1cfe4c0373b6c2dca89',1,'NTPoly::TripletList_c::GetSize()']]],
+  ['gettripletat',['GetTripletAt',['../class_n_t_poly_1_1_triplet_list__r.html#a7fd1a8e13a8665c151b2a651c4bbad1d',1,'NTPoly::TripletList_r::GetTripletAt()'],['../class_n_t_poly_1_1_triplet_list__c.html#ac0ab33c0dcc01f97e0826e0b77ac4743',1,'NTPoly::TripletList_c::GetTripletAt()']]],
+  ['gettripletlist',['GetTripletList',['../class_n_t_poly_1_1_matrix__ps.html#a4ec2557e25cdf8d8843635172b236452',1,'NTPoly::Matrix_ps::GetTripletList(TripletList_r &amp;triplet_list)'],['../class_n_t_poly_1_1_matrix__ps.html#a020b46dbc4ba3b8d1694c98153267058',1,'NTPoly::Matrix_ps::GetTripletList(TripletList_c &amp;triplet_list)']]]
+];

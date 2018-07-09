@@ -224,7 +224,7 @@
 .post-content {
   margin-bottom: $spacing-unit;
 
-  h2 {
+  h1 {
     @include relative-font-size(2);
 
     @include media-query($on-laptop) {
@@ -232,19 +232,27 @@
     }
   }
 
-  h3 {
+  h2 {
     @include relative-font-size(1.625);
 
     @include media-query($on-laptop) {
-      @include relative-font-size(1.375);
+      @include relative-font-size(1.625);
+    }
+  }
+
+  h3 {
+    @include relative-font-size(1.375);
+
+    @include media-query($on-laptop) {
+      @include relative-font-size(1.25);
     }
   }
 
   h4 {
-    @include relative-font-size(1.25);
+    @include relative-font-size(1.125);
 
     @include media-query($on-laptop) {
-      @include relative-font-size(1.125);
+      @include relative-font-size(1.1);
     }
   }
 }

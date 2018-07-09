@@ -1,0 +1,943 @@
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!> A Module For Solving Quantum Chemistry Systems using Purification.
+MODULE DensityMatrixSolversModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
+       & WriteCitation, EnterSubLog, ExitSubLog
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
+       & DotMatrix, MatrixTrace, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
+       & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE MPI
+  IMPLICIT NONE
+  PRIVATE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !! Solvers
+  PUBLIC :: TRS2
+  PUBLIC :: TRS4
+  PUBLIC :: HPCP
+  ! PUBLIC :: HPCPPlus
+CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix from a Hamiltonian using the TRS2 method.
+  !> Based on the TRS2 algorithm presented in \cite niklasson2002
+  SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
+       & chemical_potential_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The chemical potential (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> The parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constant parameters.
+    REAL(NTREAL), PARAMETER :: TWO = 2.0
+    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Matrices
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: X_k, X_k2, TempMat
+    !! Local Variables
+    REAL(NTREAL) :: e_min, e_max
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
+    REAL(NTREAL) :: trace_value
+    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
+    !! For computing the chemical potential
+    REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
+    !! Temporary Variables
+    TYPE(MatrixMemoryPool_p) :: pool1
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: total_iterations
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="TRS2")
+       CALL WriteCitation("niklasson2002expansion")
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    ALLOCATE(sigma_array(solver_parameters%max_iterations))
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k2, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Compute the working hamiltonian.
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(WorkingHamiltonian, WorkingHamiltonian, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+       CALL PermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the lambda scaling value.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+
+    !! Initialize
+    CALL CopyMatrix(WorkingHamiltonian,X_k)
+    CALL ScaleMatrix(X_k,REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(Identity,X_k,alpha_in=e_max)
+    CALL ScaleMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
+
+    !! Iterate
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+    outer_counter = 1
+    norm_value = solver_parameters%converge_diff + 1.0d+0
+    energy_value = 0
+    DO outer_counter = 1,solver_parameters%max_iterations
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL EnterSubLog
+          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
+          CALL ExitSubLog
+       END IF
+
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+
+       !! Compute Sigma
+       CALL MatrixTrace(X_k, trace_value)
+       IF (nel*0.5 - trace_value .LT. REAL(0.0,NTREAL)) THEN
+          sigma_array(outer_counter) = REAL(-1.0,NTREAL)
+       ELSE
+          sigma_array(outer_counter) = REAL(1.0,NTREAL)
+       END IF
+
+       !! Compute X_k2
+       CALL MatrixMultiply(X_k, X_k, X_k2, &
+            & threshold_in=solver_parameters%threshold, &
+            & memory_pool_in=pool1)
+
+       !! Subtract from X_k
+       CALL CopyMatrix(X_k,TempMat)
+       CALL IncrementMatrix(X_k2,TempMat,REAL(-1.0,NTREAL))
+
+       !! Add To X_k
+       CALL CopyMatrix(X_k,X_k2)
+       CALL IncrementMatrix(TempMat, X_k, sigma_array(outer_counter))
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
+       energy_value = energy_value * 2
+       norm_value = ABS(energy_value - energy_value2)
+    END DO
+    total_iterations = outer_counter-1
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL PrintMatrixInformation(X_k)
+    END IF
+
+    !! Undo Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(X_k, X_k, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(X_k)
+    CALL DestructMatrix(X_k2)
+    CALL DestructMatrixMemoryPool(pool1)
+
+    !! Compute The Chemical Potential
+    IF (PRESENT(chemical_potential_out)) THEN
+       interval_a = 0.0d+0
+       interval_b = 1.0d+0
+       midpoint = 0.0d+0
+       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+          midpoint = (interval_b - interval_a)/TWO + interval_a
+          zero_value = midpoint
+          !! Compute polynomial function at the guess point.
+          polynomial:DO inner_counter=1,total_iterations
+             IF (sigma_array(inner_counter) .LT. 0) THEN
+                zero_value = zero_value*zero_value
+             ELSE
+                zero_value = 2*zero_value - zero_value*zero_value
+             END IF
+          END DO polynomial
+          !! Change bracketing.
+          IF (zero_value .LT. 0.5) THEN
+             interval_a = midpoint
+          ELSE
+             interval_b = midpoint
+          END IF
+          !! Check convergence.
+          IF ( ABS(zero_value-0.5) .LT. solver_parameters%converge_diff ) THEN
+             EXIT
+          END IF
+       END DO midpoints
+       !! Undo scaling.
+       chemical_potential_out = e_max + (e_min - e_max)*midpoint
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    !! Cleanup
+    DEALLOCATE(sigma_array)
+  END SUBROUTINE TRS2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix from a Hamiltonian using the TRS4 method.
+  !> Based on the TRS4 algorithm presented in \cite niklasson2002
+  SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
+       & chemical_potential_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The chemical potential (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> The parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constant parameters.
+    REAL(NTREAL), PARAMETER :: sigma_min = 0.0
+    REAL(NTREAL), PARAMETER :: sigma_max = 6.0
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Matrices
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: X_k, X_k2, Fx_right, GX_right, TempMat
+    !! Local Variables
+    REAL(NTREAL) :: e_min, e_max
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
+    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
+    !! For computing the chemical potential
+    REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
+    REAL(NTREAL) :: tempfx,tempgx
+    !! Temporary Variables
+    TYPE(MatrixMemoryPool_p) :: pool1
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: total_iterations
+    REAL(NTREAL) :: trace_fx, trace_gx
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL EnterSubLog
+       CALL WriteHeader("Density Matrix Solver")
+       CALL WriteElement(key="Method", text_value_in="TRS4")
+       CALL WriteCitation("niklasson2002expansion")
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    ALLOCATE(sigma_array(solver_parameters%max_iterations))
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k2, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(Fx_right, Hamiltonian)
+    CALL ConstructEmptyMatrix(Gx_right, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Compute the working hamiltonian.
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(WorkingHamiltonian, WorkingHamiltonian, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+       CALL PermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the lambda scaling value.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+
+    !! Initialize
+    CALL CopyMatrix(WorkingHamiltonian,X_k)
+    CALL ScaleMatrix(X_k,REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(Identity,X_k,alpha_in=e_max)
+    CALL ScaleMatrix(X_k,REAL(1.0,NTREAL)/(e_max-e_min))
+
+    !! Iterate
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+    outer_counter = 1
+    norm_value = solver_parameters%converge_diff + 1.0d+0
+    energy_value = 0
+    DO outer_counter = 1,solver_parameters%max_iterations
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL EnterSubLog
+          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
+          CALL ExitSubLog
+       END IF
+
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+
+       !! Compute X_k2
+       CALL MatrixMultiply(X_k, X_k, X_k2, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+       !! Compute Fx_right
+       CALL CopyMatrix(X_k2, Fx_right)
+       CALL ScaleMatrix(Fx_right, REAL(-3.0,NTREAL))
+       CALL IncrementMatrix(X_k, Fx_right, alpha_in=REAL(4.0,NTREAL))
+       !! Compute Gx_right
+       CALL CopyMatrix(Identity, Gx_right)
+       CALL IncrementMatrix(X_k, Gx_right, alpha_in=REAL(-2.0,NTREAL))
+       CALL IncrementMatrix(X_k2, Gx_right)
+
+       !! Compute Traces
+       CALL DotMatrix(X_k2, Fx_right, trace_fx)
+       CALL DotMatrix(X_k2, Gx_right, trace_gx)
+
+       !! Compute Sigma
+       sigma_array(outer_counter) = (nel*0.5-trace_fx)/trace_gx
+
+       !! Update The Matrix
+       IF (sigma_array(outer_counter) .GT. sigma_max) THEN
+          CALL CopyMatrix(X_k, TempMat)
+          CALL ScaleMatrix(TempMat, REAL(2.0,NTREAL))
+          CALL IncrementMatrix(X_k2, TempMat, alpha_in=REAL(-1.0,NTREAL))
+       ELSE IF (sigma_array(outer_counter) .LT. sigma_min) THEN
+          CALL CopyMatrix(X_k2, TempMat)
+       ELSE
+          CALL ScaleMatrix(Gx_right, sigma_array(outer_counter))
+          CALL IncrementMatrix(Fx_right, Gx_right)
+          CALL MatrixMultiply(X_k2, Gx_right, TempMat, &
+               & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+       END IF
+
+       CALL IncrementMatrix(TempMat, X_k, alpha_in=REAL(-1.0,NTREAL))
+       CALL CopyMatrix(TempMat,X_k)
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
+       energy_value = energy_value * 2
+       norm_value = ABS(energy_value - energy_value2)
+    END DO
+    total_iterations = outer_counter-1
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL PrintMatrixInformation(X_k)
+    END IF
+
+    !! Undo Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(X_k, X_k, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(X_k)
+    CALL DestructMatrix(X_k2)
+    CALL DestructMatrix(Fx_right)
+    CALL DestructMatrix(Gx_right)
+    CALL DestructMatrixMemoryPool(pool1)
+
+    !! Compute The Chemical Potential
+    IF (PRESENT(chemical_potential_out)) THEN
+       interval_a = 0.0d+0
+       interval_b = 1.0d+0
+       midpoint = 0.0d+0
+       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+          midpoint = (interval_b - interval_a)/2.0 + interval_a
+          zero_value = midpoint
+          !! Compute polynomial function at the guess point.
+          polynomial:DO inner_counter=1,total_iterations
+             IF (sigma_array(inner_counter) .GT. sigma_max) THEN
+                zero_value = 2*zero_value - zero_value*zero_value
+             ELSE IF (sigma_array(inner_counter) .LT. sigma_min) THEN
+                zero_value = zero_value*zero_value
+             ELSE
+                tempfx = (zero_value*zero_value) * &
+                     (4*zero_value - 3*zero_value*zero_value)
+                tempgx = (zero_value*zero_value) * (1-zero_value)*(1-zero_value)
+                zero_value = tempfx + sigma_array(inner_counter)*tempgx
+             END IF
+          END DO polynomial
+          !! Change bracketing.
+          IF (zero_value .LT. 0.5) THEN
+             interval_a = midpoint
+          ELSE
+             interval_b = midpoint
+          END IF
+          !! Check convergence.
+          IF ( ABS(zero_value-0.5) .LT. solver_parameters%converge_diff ) THEN
+             EXIT
+          END IF
+       END DO midpoints
+       !! Undo scaling.
+       chemical_potential_out = e_max + (e_min - e_max)*midpoint
+    END IF
+
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    DEALLOCATE(sigma_array)
+  END SUBROUTINE TRS4
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix from a Hamiltonian using the HPCP method.
+  !> Based on the algorithm presented in \cite truflandier2016communication
+  SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
+       & chemical_potential_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The chemical potential (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> The parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constant parameters.
+    REAL(NTREAL), PARAMETER :: TWO = 2.0
+    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Matrices
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: D1, DH, DDH, D2DH
+    !! Local Variables
+    REAL(NTREAL) :: e_min, e_max
+    REAL(NTREAL) :: beta_1, beta_2
+    REAL(NTREAL) :: beta, beta_bar
+    REAL(NTREAL) :: sigma, sigma_bar
+    REAL(NTREAL) :: mu
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
+    REAL(NTREAL) :: trace_value
+    REAL(NTREAL) :: norm_value, norm_value2
+    REAL(NTREAL) :: energy_value, energy_value2
+    !! For computing the chemical potential
+    REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
+    !! Temporary Variables
+    TYPE(MatrixMemoryPool_p) :: pool1
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: total_iterations
+    INTEGER :: matrix_dimension
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="HPCP")
+       CALL WriteCitation("truflandier2016communication")
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    ALLOCATE(sigma_array(solver_parameters%max_iterations))
+
+    matrix_dimension = Hamiltonian%actual_matrix_dimension
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(D1, Hamiltonian)
+    CALL ConstructEmptyMatrix(DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(DDH, Hamiltonian)
+    CALL ConstructEmptyMatrix(D2DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Compute the working hamiltonian.
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(WorkingHamiltonian, WorkingHamiltonian, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+       CALL PermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the initial matrix.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+    CALL MatrixTrace(WorkingHamiltonian, mu)
+    mu = mu/matrix_dimension
+    sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
+    sigma = 1.0 - sigma_bar
+    beta = sigma/((e_max) - mu)
+    beta_bar = sigma_bar/(mu - (e_min))
+    beta_1 = sigma
+    beta_2 = MIN(beta,beta_bar)
+
+    !! Initialize
+    CALL CopyMatrix(Identity,D1)
+    CALL ScaleMatrix(D1,beta_1)
+    CALL CopyMatrix(Identity,TempMat)
+    CALL ScaleMatrix(TempMat,mu)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, NEGATIVE_ONE)
+    CALL ScaleMatrix(TempMat,beta_2)
+    CALL IncrementMatrix(TempMat,D1)
+    trace_value = 0.0d+0
+
+    !! Iterate
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+    outer_counter = 1
+    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value2 = norm_value
+    energy_value = 0
+    DO outer_counter = 1,solver_parameters%max_iterations
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL EnterSubLog
+          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
+          CALL ExitSubLog
+       END IF
+
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+
+       !! Compute the hole matrix DH
+       CALL CopyMatrix(D1,DH)
+       CALL IncrementMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
+       CALL ScaleMatrix(DH,NEGATIVE_ONE)
+
+       !! Compute DDH, as well as convergence check
+       CALL MatrixMultiply(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
+            & memory_pool_in=pool1)
+       CALL MatrixTrace(DDH, trace_value)
+       norm_value = ABS(trace_value)
+
+       !! Compute D2DH
+       CALL MatrixMultiply(D1, DDH, D2DH, &
+            & threshold_in=solver_parameters%threshold, &
+            & memory_pool_in=pool1)
+
+       !! Compute Sigma
+       CALL MatrixTrace(D2DH, sigma_array(outer_counter))
+       sigma_array(outer_counter) = sigma_array(outer_counter)/trace_value
+
+       CALL CopyMatrix(D1,TempMat)
+
+       !! Compute D1 + 2*D2DH
+       CALL IncrementMatrix(D2DH,D1,alpha_in=TWO)
+
+       !! Compute D1 + 2*D2DH -2*Sigma*DDH
+       CALL IncrementMatrix(DDH, D1, &
+            & alpha_in=NEGATIVE_ONE*TWO*sigma_array(outer_counter))
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       CALL DotMatrix(D1, WorkingHamiltonian, energy_value)
+       energy_value = 2*energy_value
+       norm_value = ABS(energy_value - energy_value2)
+    END DO
+    total_iterations = outer_counter-1
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL PrintMatrixInformation(D1)
+    END IF
+
+    !! Undo Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(D1, D1, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot,D1,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(D1)
+    CALL DestructMatrix(DH)
+    CALL DestructMatrix(DDH)
+    CALL DestructMatrix(D2DH)
+    CALL DestructMatrixMemoryPool(pool1)
+
+    !! Compute The Chemical Potential
+    IF (PRESENT(chemical_potential_out)) THEN
+       interval_a = 0.0d+0
+       interval_b = 1.0d+0
+       midpoint = 0.0d+0
+       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+          midpoint = (interval_b - interval_a)/TWO + interval_a
+          zero_value = midpoint
+          !! Compute polynomial function at the guess point.
+          polynomial:DO inner_counter=1,total_iterations
+             zero_value = zero_value + &
+                  & 2*((zero_value*zero_value)*(1-zero_value) - &
+                  & sigma_array(inner_counter)*(zero_value*(1-zero_value)))
+          END DO polynomial
+          !! Change bracketing.
+          IF (zero_value .LT. 0.5) THEN
+             interval_a = midpoint
+          ELSE
+             interval_b = midpoint
+          END IF
+          !! Check convergence.
+          IF ( ABS(zero_value-0.5) .LT. solver_parameters%converge_diff ) THEN
+             EXIT
+          END IF
+       END DO midpoints
+       !! Undo scaling.
+       chemical_potential_out = mu + (beta_1 - midpoint)/beta_2
+    END IF
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+    DEALLOCATE(sigma_array)
+  END SUBROUTINE HPCP
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix from a Hamiltonian using the HPCP+ method.
+  !> Based on the algorithm presented in \cite truflandier2016communication
+  SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
+       & chemical_potential_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The chemical potential (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> The parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constant parameters.
+    REAL(NTREAL), PARAMETER :: TWO = 2.0
+    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Matrices
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: D1, DH, DDH, D2DH
+    !! Local Variables
+    REAL(NTREAL) :: e_min, e_max
+    REAL(NTREAL) :: beta_1, beta_2
+    REAL(NTREAL) :: beta_1_h, beta_2_h
+    REAL(NTREAL) :: a, b, c, d
+    REAL(NTREAL) :: mixing_interior, mixing_value
+    REAL(NTREAL) :: beta, beta_bar
+    REAL(NTREAL) :: sigma, sigma_bar
+    REAL(NTREAL) :: mu
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
+    REAL(NTREAL) :: trace_value
+    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
+    !! For computing the chemical potential
+    REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
+    !! Temporary Variables
+    TYPE(MatrixMemoryPool_p) :: pool1
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: total_iterations
+    INTEGER :: matrix_dimension
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="HPCP+")
+       CALL WriteCitation("truflandier2016communication")
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    ALLOCATE(sigma_array(solver_parameters%max_iterations))
+
+    matrix_dimension = Hamiltonian%actual_matrix_dimension
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(D1, Hamiltonian)
+    CALL ConstructEmptyMatrix(DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(DDH, Hamiltonian)
+    CALL ConstructEmptyMatrix(D2DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Compute the working hamiltonian.
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(WorkingHamiltonian, WorkingHamiltonian, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+       CALL PermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the initial matrix.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+    CALL MatrixTrace(WorkingHamiltonian, mu)
+    mu = mu/matrix_dimension
+    sigma_bar = (matrix_dimension - 0.5*nel)/matrix_dimension
+    sigma = 1.0 - sigma_bar
+    beta = sigma/((e_max) - mu)
+    beta_bar = sigma_bar/(mu - (e_min))
+    beta_1 = sigma
+    beta_1_h = sigma_bar
+    beta_2 = MIN(beta,beta_bar)
+    beta_2_h = -1.0*MAX(beta,beta_bar)
+
+    !! Initialize
+    CALL CopyMatrix(Identity,D1)
+    CALL ScaleMatrix(D1,beta_1)
+    CALL CopyMatrix(Identity,TempMat)
+    CALL ScaleMatrix(TempMat,mu)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, NEGATIVE_ONE)
+    CALL ScaleMatrix(TempMat,beta_2)
+    CALL IncrementMatrix(TempMat,D1)
+
+    CALL CopyMatrix(Identity,DH)
+    CALL ScaleMatrix(DH,beta_1_h)
+    CALL CopyMatrix(Identity,TempMat)
+    CALL ScaleMatrix(TempMat,mu)
+    CALL IncrementMatrix(WorkingHamiltonian, TempMat, REAL(-1.0,NTREAL))
+    CALL ScaleMatrix(TempMat,beta_2_h)
+    CALL IncrementMatrix(TempMat,DH)
+
+    CALL CopyMatrix(Identity,TempMat)
+    CALL IncrementMatrix(DH,TempMat,REAL(-1.0,NTREAL))
+
+    CALL DotMatrix(D1, D1, a)
+    CALL DotMatrix(TempMat, TempMat, b)
+    CALL DotMatrix(D1, TempMat, c)
+    IF (sigma < (0.3333333333)) THEN
+       d = (nel*0.5) - 0.66666666*(nel*0.5)
+    ELSE
+       d = (nel*0.5 - 0.666666666*(matrix_dimension - nel*0.5))
+    END IF
+
+    mixing_interior = SQRT((2*c-2*b)**2 - 4*(a+b-2*c)*(b-d))
+    mixing_value = ((2*b - 2*c) + mixing_interior)/(2*(a+b - 2*c))
+    IF (.NOT. mixing_value .LE. 1.0 .AND. mixing_value .GE. 0) THEN
+       mixing_value = ((2*b - 2*c) - mixing_interior)/(2*(a+b - 2*c))
+    ENDIF
+
+    CALL ScaleMatrix(D1, REAL(mixing_value,ntreal))
+    CALL CopyMatrix(Identity, TempMat)
+    CALL IncrementMatrix(DH, TempMat, REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(TempMat, D1, REAL(1.0-mixing_value,ntreal))
+
+    !! Iterate
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+    outer_counter = 1
+    norm_value = solver_parameters%converge_diff + 1.0d+0
+    energy_value = 0
+    DO outer_counter = 1,solver_parameters%max_iterations
+       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL EnterSubLog
+          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement("Energy_Value", float_value_in=energy_value)
+          CALL ExitSubLog
+       END IF
+
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+
+       !! Compute the hole matrix DH
+       CALL CopyMatrix(D1,DH)
+       CALL IncrementMatrix(Identity,DH,alpha_in=NEGATIVE_ONE)
+       CALL ScaleMatrix(DH,NEGATIVE_ONE)
+
+       !! Compute DDH, as well as convergence check
+       CALL MatrixMultiply(D1,DH,DDH,threshold_in=solver_parameters%threshold,&
+            & memory_pool_in=pool1)
+       CALL MatrixTrace(DDH, trace_value)
+       norm_value = ABS(trace_value)
+
+       !! Compute D2DH
+       CALL MatrixMultiply(D1,DDH,D2DH,threshold_in=solver_parameters%threshold,&
+            & memory_pool_in=pool1)
+
+       !! Compute Sigma
+       CALL MatrixTrace(D2DH, sigma_array(outer_counter))
+       sigma_array(outer_counter) = sigma_array(outer_counter)/trace_value
+
+       CALL CopyMatrix(D1,TempMat)
+
+       !! Compute D1 + 2*D2DH
+       CALL IncrementMatrix(D2DH,D1,alpha_in=TWO)
+
+       !! Compute D1 + 2*D2DH -2*Sigma*DDH
+       CALL IncrementMatrix(DDH, D1, &
+            & alpha_in=NEGATIVE_ONE*TWO*sigma_array(outer_counter))
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       CALL DotMatrix(D1, WorkingHamiltonian, energy_value)
+       energy_value = 2*energy_value
+       norm_value = ABS(energy_value - energy_value2)
+    END DO
+    total_iterations = outer_counter-1
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL PrintMatrixInformation(D1)
+    END IF
+
+    !! Undo Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(D1, D1, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot,D1,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(D1)
+    CALL DestructMatrix(DH)
+    CALL DestructMatrix(DDH)
+    CALL DestructMatrix(D2DH)
+    CALL DestructMatrixMemoryPool(pool1)
+
+    !! Compute The Chemical Potential
+    IF (PRESENT(chemical_potential_out)) THEN
+       interval_a = 0.0d+0
+       interval_b = 1.0d+0
+       midpoint = 0.0d+0
+       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+          midpoint = (interval_b - interval_a)/TWO + interval_a
+          zero_value = midpoint
+          !! Compute polynomial function at the guess point.
+          polynomial:DO inner_counter=1,total_iterations
+             zero_value = zero_value + &
+                  & 2*((zero_value*zero_value)*(1-zero_value) - &
+                  & sigma_array(inner_counter)*(zero_value*(1-zero_value)))
+          END DO polynomial
+          !! Change bracketing.
+          IF (zero_value .LT. 0.5) THEN
+             interval_a = midpoint
+          ELSE
+             interval_b = midpoint
+          END IF
+          !! Check convergence.
+          IF ( ABS(zero_value-0.5) .LT. solver_parameters%converge_diff ) THEN
+             EXIT
+          END IF
+       END DO midpoints
+       !! Undo scaling.
+       chemical_potential_out = mu + (beta_1 - midpoint)/beta_2
+    END IF
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+    DEALLOCATE(sigma_array)
+  END SUBROUTINE HPCPPlus
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+END MODULE DensityMatrixSolversModule

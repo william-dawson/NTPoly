@@ -28,6 +28,15 @@ and type:
 
 > make doc
 
+## Future Documentation Preview
+
+Version 2.0 will involve a change in some of the user interface, and also
+a splitting of the documentation into different Fortran and C++ folders. You
+can see a preview of those changes below.
+
+* [Future Fortran Documentation](../doc/Preview/Fortran/index.html)
+* [Future C++ Documentation](../doc/Preview/CPlusPlus/index.html)
+
 ## Further Help
 
 There is also supplementary documentation available on the [Wiki](https://github.com/william-dawson/NTPoly/wiki). This includes details
