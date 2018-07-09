@@ -19,27 +19,18 @@ to get started.
 Installing NTPoly requires the following software:
 
 * A Fortran Compiler.
-
 * An MPI Installation (MPI-3 Standard+).
-
 * CMake (Version 3.2+).
 
 The following optional software can greatly enhance the NTPoly experience:
 
 * BLAS: for multiplying dense matrices, if they emerge in the calculation.
-
 * A C++ Compiler for building C++ bindings.
-
 * Doxygen: for building documentation.
-
 * Python (Version 2.7+): for testing.
-
 * MPI4PY: for testing.
-
 * SciPy: for testing.
-
 * NumPy: for testing.
-
 * SWIG (Version 3.0+): for building the Python bindings.
 
 NTPoly uses CMake as a build system. First, take a look in the Targets
