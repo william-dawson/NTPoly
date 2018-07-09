@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="11.1% of total for modules and submodules.">914 statements</a>
+    title="10.9% of total for modules and submodules.">941 statements</a>
      </li> 
      
      
@@ -251,6 +251,8 @@
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
   <div class="list-group">
     <div id="subs-0" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/psmatrixmodule.html#proc-setmatrixprocessgrid">SetMatrixProcessGrid</a>
       
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-convertmatrixtoreal">ConvertMatrixToReal</a>
       
@@ -417,6 +419,8 @@
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
   <div class="list-group">
     <div id="subs-1" class="panel-collapse collapse">
+      
+      <a class="list-group-item" href="../module/psmatrixmodule.html#proc-setmatrixprocessgrid">SetMatrixProcessGrid</a>
       
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-convertmatrixtoreal">ConvertMatrixToReal</a>
       
@@ -3227,6 +3231,82 @@ private subroutine CommSplitMatrix_ps(this, split_mat, my_color, split_slice)
     
     <section>
     <h2>Subroutines</h2>
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setmatrixprocessgrid"></span><h3>
+public subroutine <a href='../proc/setmatrixprocessgrid.html'>SetMatrixProcessGrid</a>(this, grid)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>When you want to change the process grid of a matrix, you can call
+ this routine with the new process grid value. Data will be automatically
+ redistributed.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>this</strong></td><td><p>The matrix to set the grid of.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>grid</strong></td><td><p>The grid to set it to.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
     
     
   <div class="panel panel-default">

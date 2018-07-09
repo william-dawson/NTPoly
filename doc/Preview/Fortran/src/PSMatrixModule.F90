@@ -55,6 +55,7 @@ MODULE PSMatrixModule
   PUBLIC :: ConstructEmptyMatrix
   PUBLIC :: DestructMatrix
   PUBLIC :: CopyMatrix
+  PUBLIC :: SetMatrixProcessGrid
   !! File I/O
   PUBLIC :: ConstructMatrixFromMatrixMarket
   PUBLIC :: ConstructMatrixFromBinary
@@ -170,7 +171,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim_, process_grid_in, &
        & is_complex_in)
-    !! Parameters
     !> The matrix to be constructed.
     TYPE(Matrix_ps), INTENT(INOUT)            :: this
     !> The dimension of the full matrix.
@@ -282,6 +282,49 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(matB)
     matB = matA
   END SUBROUTINE CopyMatrix_ps
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> When you want to change the process grid of a matrix, you can call
+  !> this routine with the new process grid value. Data will be automatically
+  !> redistributed.
+  SUBROUTINE SetMatrixProcessGrid(this, grid)
+    !> The matrix to set the grid of.
+    TYPE(Matrix_ps), INTENT(INOUT)  :: this
+    !> The grid to set it to.
+    TYPE(ProcessGrid_t), INTENT(IN) :: grid
+    !! Local variables
+    TYPE(TripletList_r) :: triplet_list_r
+    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(Matrix_ps) :: new_mat
+
+    !! Get the data in a triplet list
+    CALL ConstructTripletList(triplet_list_c)
+    CALL ConstructTripletList(triplet_list_r)
+
+    IF (this%process_grid%my_slice .EQ. 0) THEN
+       IF (this%is_complex) THEN
+          CALL GetMatrixTripletList(this, triplet_list_c)
+       ELSE
+          CALL GetMatrixTripletList(this, triplet_list_r)
+       END IF
+    END IF
+
+    !! Fill The New Matrix
+    CALL ConstructEmptyMatrix(new_mat, this%actual_matrix_dimension, grid, &
+         & new_mat%is_complex)
+    IF (this%is_complex) THEN
+       CALL FillMatrixFromTripletList(new_mat, triplet_list_c)
+    ELSE
+       CALL FillMatrixFromTripletList(new_mat, triplet_list_r)
+    END IF
+
+    !! Copy back to finish
+    CALL CopyMatrix(new_mat, this)
+
+    !! Cleanup
+    CALL DestructMatrix(new_mat)
+    CALL DestructTripletList(triplet_list_c)
+    CALL DestructTripletList(triplet_list_r)
+  END SUBROUTINE SetMatrixProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   !> Read \cite boisvert1996matrix for the details.
@@ -632,7 +675,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: merged_local_data
     REAL(NTREAL) :: temp_data
 
-    INCLUDE "includes/WriteMatrixToBinary.F90"
+    INCLUDE "includes/WriteMatrixToBinary.f90"
 
   END SUBROUTINE WriteMatrixToBinary_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -649,7 +692,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: merged_local_data
     COMPLEX(NTCOMPLEX) :: temp_data
 
-    INCLUDE "includes/WriteMatrixToBinary.F90"
+    INCLUDE "includes/WriteMatrixToBinary.f90"
 
   END SUBROUTINE WriteMatrixToBinary_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -678,7 +721,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: triplet_list
     TYPE(Matrix_lsr) :: merged_local_data
 
-#include "includes/WriteToMatrixMarket.F90"
+#include "includes/WriteToMatrixMarket.f90"
 
   END SUBROUTINE WriteMatrixToMatrixMarket_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -693,7 +736,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: merged_local_data
 
 #define ISCOMPLEX
-#include "includes/WriteToMatrixMarket.F90"
+#include "includes/WriteToMatrixMarket.f90"
 #undef ISCOMPLEX
 
   END SUBROUTINE WriteMatrixToMatrixMarket_psc
@@ -725,7 +768,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DestructMatrix(temp_matrix)
     END IF
 
-    INCLUDE "includes/FillMatrixFromTripletList.F90"
+    INCLUDE "includes/FillMatrixFromTripletList.f90"
   END SUBROUTINE FillMatrixFromTripletList_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
@@ -755,7 +798,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DestructMatrix(temp_matrix)
     END IF
 
-    INCLUDE "includes/FillMatrixFromTripletList.F90"
+    INCLUDE "includes/FillMatrixFromTripletList.f90"
   END SUBROUTINE FillMatrixFromTripletList_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
@@ -781,7 +824,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: sorted_triplet_list
     TYPE(Matrix_lsr) :: local_matrix
 
-    INCLUDE "includes/FillMatrixIdentity.F90"
+    INCLUDE "includes/FillMatrixIdentity.f90"
 
   END SUBROUTINE FillMatrixIdentity_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -795,7 +838,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: sorted_triplet_list
     TYPE(Matrix_lsc) :: local_matrix
 
-    INCLUDE "includes/FillMatrixIdentity.F90"
+    INCLUDE "includes/FillMatrixIdentity.f90"
 
   END SUBROUTINE FillMatrixIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -840,7 +883,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: sorted_triplet_list
     TYPE(Matrix_lsr) :: local_matrix
 
-    INCLUDE "includes/FillMatrixPermutation.F90"
+    INCLUDE "includes/FillMatrixPermutation.f90"
 
   END SUBROUTINE FillMatrixPermutation_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -858,7 +901,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: sorted_triplet_list
     TYPE(Matrix_lsc) :: local_matrix
 
-    INCLUDE "includes/FillMatrixPermutation.F90"
+    INCLUDE "includes/FillMatrixPermutation.f90"
 
   END SUBROUTINE FillMatrixPermutation_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -879,7 +922,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(this, working_matrix)
     END IF
 
-    INCLUDE "includes/GetMatrixTripletList.F90"
+    INCLUDE "includes/GetMatrixTripletList.f90"
   END SUBROUTINE GetMatrixTripletList_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
@@ -899,7 +942,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(this, working_matrix)
     END IF
 
-    INCLUDE "includes/GetMatrixTripletList.F90"
+    INCLUDE "includes/GetMatrixTripletList.f90"
   END SUBROUTINE GetMatrixTripletList_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list. Block is
@@ -956,7 +999,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
 #define MPIDATATYPE MPINTREAL
-#include "includes/GetMatrixBlock.F90"
+#include "includes/GetMatrixBlock.f90"
 #undef MPIDATATYPE
 
   END SUBROUTINE GetMatrixBlock_psr
@@ -1015,7 +1058,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
 #define MPIDATATYPE MPINTCOMPLEX
-#include "includes/GetMatrixBlock.F90"
+#include "includes/GetMatrixBlock.f90"
 #undef MPIDATATYPE
 
   END SUBROUTINE GetMatrixBlock_psc
@@ -1099,7 +1142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: merged_columnsT
     TYPE(Matrix_lsr) :: full_gathered
 
-    INCLUDE "includes/PrintMatrix.F90"
+    INCLUDE "includes/PrintMatrix.f90"
   END SUBROUTINE PrintMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print matrix implementation (complex).
@@ -1115,7 +1158,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: merged_columnsT
     TYPE(Matrix_lsc) :: full_gathered
 
-    INCLUDE "includes/PrintMatrix.F90"
+    INCLUDE "includes/PrintMatrix.f90"
   END SUBROUTINE PrintMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A utility routine that filters a sparse matrix.
@@ -1144,7 +1187,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: new_list
     TYPE(Triplet_r) :: temporary
 
-    INCLUDE "includes/FilterMatrix.F90"
+    INCLUDE "includes/FilterMatrix.f90"
   END SUBROUTINE FilterMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Filter matrix implementation (real).
@@ -1158,7 +1201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: new_list
     TYPE(Triplet_c) :: temporary
 
-    INCLUDE "includes/FilterMatrix.F90"
+    INCLUDE "includes/FilterMatrix.f90"
   END SUBROUTINE FilterMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the total number of non-zero entries in the distributed sparse matrix.
@@ -1256,7 +1299,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: new_list
     TYPE(Triplet_r) :: temporary, temporary_t
 
-    INCLUDE "includes/TransposeMatrix.F90"
+    INCLUDE "includes/TransposeMatrix.f90"
 
   END SUBROUTINE TransposeMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1271,7 +1314,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: new_list
     TYPE(Triplet_c) :: temporary, temporary_t
 
-    INCLUDE "includes/TransposeMatrix.F90"
+    INCLUDE "includes/TransposeMatrix.f90"
 
   END SUBROUTINE TransposeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1324,7 +1367,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: full_list, new_list
     TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
 
-    INCLUDE "includes/CommSplitMatrix.F90"
+    INCLUDE "includes/CommSplitMatrix.f90"
 
   END SUBROUTINE CommSplitMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1342,7 +1385,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: full_list, new_list
     TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: send_list
 
-    INCLUDE "includes/CommSplitMatrix.F90"
+    INCLUDE "includes/CommSplitMatrix.f90"
 
   END SUBROUTINE CommSplitMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1368,7 +1411,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & send_triplet_lists
     TYPE(Triplet_r) :: temp_triplet
 
-    INCLUDE "includes/RedistributeData.F90"
+    INCLUDE "includes/RedistributeData.f90"
 
   END SUBROUTINE RedistributeData_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1394,7 +1437,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & send_triplet_lists
     TYPE(Triplet_c) :: temp_triplet
 
-    INCLUDE "includes/RedistributeData.F90"
+    INCLUDE "includes/RedistributeData.f90"
 
   END SUBROUTINE RedistributeData_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1431,7 +1474,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(IN) :: matrix_to_split
 
 #define LOCALMATRIX this%local_data_r
-#include "includes/SplitMatrixToLocalBlocks.F90"
+#include "includes/SplitMatrixToLocalBlocks.f90"
 #undef LOCALMATRIX
 
   END SUBROUTINE SplitMatrixToLocalBlocks_psr
@@ -1444,7 +1487,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(IN) :: matrix_to_split
 
 #define LOCALMATRIX this%local_data_c
-#include "includes/SplitMatrixToLocalBlocks.F90"
+#include "includes/SplitMatrixToLocalBlocks.f90"
 #undef LOCALMATRIX
 
   END SUBROUTINE SplitMatrixToLocalBlocks_psc
@@ -1457,7 +1500,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(INOUT) :: merged_matrix
 
 #define LOCALMATRIX this%local_data_r
-#include "includes/MergeMatrixLocalBlocks.F90"
+#include "includes/MergeMatrixLocalBlocks.f90"
 #undef LOCALMATRIX
 
   END SUBROUTINE MergeMatrixLocalBlocks_psr
@@ -1472,7 +1515,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(INOUT) :: merged_matrix
 
 #define LOCALMATRIX this%local_data_c
-#include "includes/MergeMatrixLocalBlocks.F90"
+#include "includes/MergeMatrixLocalBlocks.f90"
 #undef LOCALMATRIX
 
   END SUBROUTINE MergeMatrixLocalBlocks_psc
@@ -1488,7 +1531,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: local_matrix
     TYPE(Matrix_lsr) :: converted_matrix
 
-    INCLUDE "includes/ConvertMatrixType.F90"
+    INCLUDE "includes/ConvertMatrixType.f90"
   END SUBROUTINE ConvertMatrixToReal
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the current matrix to a complex type matrix.
@@ -1502,7 +1545,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: local_matrix
     TYPE(Matrix_lsc) :: converted_matrix
 
-    INCLUDE "includes/ConvertMatrixType.F90"
+    INCLUDE "includes/ConvertMatrixType.f90"
   END SUBROUTINE ConvertMatrixToComplex
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule

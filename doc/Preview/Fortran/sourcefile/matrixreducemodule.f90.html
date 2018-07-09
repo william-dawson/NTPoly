@@ -345,7 +345,7 @@
 <a name="ln-80"></a>    <span class="c">!&gt; The  helper associated with this gather.</span>
 <a name="ln-81"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ReduceHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">helper</span>
 <a name="ln-82"></a>
-<a name="ln-83"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceMatrixSizes.F90&quot;</span>
+<a name="ln-83"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceMatrixSizes.f90&quot;</span>
 <a name="ln-84"></a>  <span class="k">END SUBROUTINE </span><span class="n">ReduceMatrixSizes_lsr</span>
 <a name="ln-85"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-86"></a>  <span class="c">!&gt; The first routine to call, gathers the sizes of the data to be sent.</span>
@@ -357,7 +357,7 @@
 <a name="ln-92"></a>    <span class="c">!! The helper associated with this gather.</span>
 <a name="ln-93"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ReduceHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">helper</span>
 <a name="ln-94"></a>
-<a name="ln-95"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceMatrixSizes.F90&quot;</span>
+<a name="ln-95"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceMatrixSizes.f90&quot;</span>
 <a name="ln-96"></a>  <span class="k">END SUBROUTINE </span><span class="n">ReduceMatrixSizes_lsc</span>
 <a name="ln-97"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-98"></a>  <span class="c">!&gt; Second function to call, will gather the data and align it one matrix</span>
@@ -373,7 +373,7 @@
 <a name="ln-108"></a>    <span class="c">!&gt; The communicator to send along.</span>
 <a name="ln-109"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span>              <span class="kd">::</span> <span class="n">communicator</span>
 <a name="ln-110"></a>
-<a name="ln-111"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixData.F90&quot;</span>
+<a name="ln-111"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixData.f90&quot;</span>
 <a name="ln-112"></a>    <span class="k">CALL </span><span class="n">MPI_IAllGatherv</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">),</span> <span class="n">MPINTREAL</span><span class="p">,&amp;</span>
 <a name="ln-113"></a>         <span class="p">&amp;</span> <span class="n">gathered_matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">values_per_process</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-114"></a>         <span class="p">&amp;</span> <span class="n">helper</span><span class="p">%</span><span class="n">displacement</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">communicator</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">data_request</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -397,7 +397,7 @@
 <a name="ln-132"></a>    <span class="c">!&gt; The communicator to send along.</span>
 <a name="ln-133"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span>              <span class="kd">::</span> <span class="n">communicator</span>
 <a name="ln-134"></a>
-<a name="ln-135"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixData.F90&quot;</span>
+<a name="ln-135"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixData.f90&quot;</span>
 <a name="ln-136"></a>    <span class="k">CALL </span><span class="n">MPI_IAllGatherv</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">),</span> <span class="n">MPINTCOMPLEX</span><span class="p">,&amp;</span>
 <a name="ln-137"></a>         <span class="p">&amp;</span> <span class="n">gathered_matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">values_per_process</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-138"></a>         <span class="p">&amp;</span> <span class="n">helper</span><span class="p">%</span><span class="n">displacement</span><span class="p">,</span> <span class="n">MPINTCOMPLEX</span><span class="p">,</span> <span class="n">communicator</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">data_request</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -414,7 +414,7 @@
 <a name="ln-149"></a>    <span class="c">!&gt; The helper associated with this gather.</span>
 <a name="ln-150"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ReduceHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">helper</span>
 <a name="ln-151"></a>
-<a name="ln-152"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixCleanup.F90&quot;</span>
+<a name="ln-152"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixCleanup.f90&quot;</span>
 <a name="ln-153"></a>
 <a name="ln-154"></a>  <span class="k">END SUBROUTINE </span><span class="n">ReduceAndComposeMatrixCleanup_lsr</span>
 <a name="ln-155"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -428,7 +428,7 @@
 <a name="ln-163"></a>    <span class="c">!&gt; The helper associated with this gather.</span>
 <a name="ln-164"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ReduceHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">helper</span>
 <a name="ln-165"></a>
-<a name="ln-166"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixCleanup.F90&quot;</span>
+<a name="ln-166"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndComposeMatrixCleanup.f90&quot;</span>
 <a name="ln-167"></a>
 <a name="ln-168"></a>  <span class="k">END SUBROUTINE </span><span class="n">ReduceAndComposeMatrixCleanup_lsc</span>
 <a name="ln-169"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -444,7 +444,7 @@
 <a name="ln-179"></a>    <span class="c">!&gt; The helper associated with this gather.</span>
 <a name="ln-180"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ReduceHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">helper</span>
 <a name="ln-181"></a>
-<a name="ln-182"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixData.F90&quot;</span>
+<a name="ln-182"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixData.f90&quot;</span>
 <a name="ln-183"></a>    <span class="k">CALL </span><span class="n">MPI_IAllGatherv</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">),</span> <span class="n">MPINTREAL</span><span class="p">,&amp;</span>
 <a name="ln-184"></a>         <span class="p">&amp;</span> <span class="n">gathered_matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">values_per_process</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-185"></a>         <span class="p">&amp;</span> <span class="n">helper</span><span class="p">%</span><span class="n">displacement</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">communicator</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">data_request</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -466,7 +466,7 @@
 <a name="ln-201"></a>    <span class="c">!&gt; The helper associated with this gather.</span>
 <a name="ln-202"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ReduceHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">helper</span>
 <a name="ln-203"></a>
-<a name="ln-204"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixData.F90&quot;</span>
+<a name="ln-204"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixData.f90&quot;</span>
 <a name="ln-205"></a>    <span class="k">CALL </span><span class="n">MPI_IAllGatherv</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">SIZE</span><span class="p">(</span><span class="n">matrix</span><span class="p">%</span><span class="n">values</span><span class="p">),</span> <span class="n">MPINTCOMPLEX</span><span class="p">,&amp;</span>
 <a name="ln-206"></a>         <span class="p">&amp;</span> <span class="n">gathered_matrix</span><span class="p">%</span><span class="n">values</span><span class="p">,</span> <span class="n">helper</span><span class="p">%</span><span class="n">values_per_process</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-207"></a>         <span class="p">&amp;</span> <span class="n">helper</span><span class="p">%</span><span class="n">displacement</span><span class="p">,</span> <span class="n">MPINTCOMPLEX</span><span class="p">,</span> <span class="n">communicator</span><span class="p">,</span> <span class="p">&amp;</span>
@@ -487,7 +487,7 @@
 <a name="ln-222"></a>    <span class="c">!! Local Data</span>
 <a name="ln-223"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_lsr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temporary_matrix</span><span class="p">,</span> <span class="n">sum_matrix</span>
 <a name="ln-224"></a>
-<a name="ln-225"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixCleanup.F90&quot;</span>
+<a name="ln-225"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixCleanup.f90&quot;</span>
 <a name="ln-226"></a>  <span class="k">END SUBROUTINE </span><span class="n">ReduceAndSumMatrixCleanup_lsr</span>
 <a name="ln-227"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-228"></a>  <span class="c">!&gt; Finally routine to sum up the matrices.</span>
@@ -504,7 +504,7 @@
 <a name="ln-239"></a>    <span class="c">!! Local Data</span>
 <a name="ln-240"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_lsc</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temporary_matrix</span><span class="p">,</span> <span class="n">sum_matrix</span>
 <a name="ln-241"></a>
-<a name="ln-242"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixCleanup.F90&quot;</span>
+<a name="ln-242"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ReduceAndSumMatrixCleanup.f90&quot;</span>
 <a name="ln-243"></a>  <span class="k">END SUBROUTINE </span><span class="n">ReduceAndSumMatrixCleanup_lsc</span>
 <a name="ln-244"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-245"></a>  <span class="c">!&gt; Test if a request for the size of the matrices is complete.</span>

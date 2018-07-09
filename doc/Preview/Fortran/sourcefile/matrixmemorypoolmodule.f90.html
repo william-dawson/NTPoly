@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.5% of total for source files.">124 statements</a>
+    title=" 1.4% of total for source files.">124 statements</a>
      </li> 
      
      
@@ -393,7 +393,7 @@
 <a name="ln-128"></a>    <span class="c">!&gt; Estimated sparsity (optional).</span>
 <a name="ln-129"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">sparsity_in</span>
 <a name="ln-130"></a>
-<a name="ln-131"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructMatrixMemoryPool.F90&quot;</span>
+<a name="ln-131"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructMatrixMemoryPool.f90&quot;</span>
 <a name="ln-132"></a>
 <a name="ln-133"></a>  <span class="k">END FUNCTION </span><span class="n">ConstructMatrixMemoryPool_lr</span>
 <a name="ln-134"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -408,7 +408,7 @@
 <a name="ln-143"></a>    <span class="c">!&gt; Estimated sparsity (optional).</span>
 <a name="ln-144"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">sparsity_in</span>
 <a name="ln-145"></a>
-<a name="ln-146"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructMatrixMemoryPool.F90&quot;</span>
+<a name="ln-146"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructMatrixMemoryPool.f90&quot;</span>
 <a name="ln-147"></a>
 <a name="ln-148"></a>  <span class="k">END FUNCTION </span><span class="n">ConstructMatrixMemoryPool_lc</span>
 <a name="ln-149"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -417,7 +417,7 @@
 <a name="ln-152"></a>    <span class="c">!&gt; The matrix being destructed.</span>
 <a name="ln-153"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">MatrixMemoryPool_lr</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">this</span>
 <a name="ln-154"></a>
-<a name="ln-155"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrixMemoryPool.F90&quot;</span>
+<a name="ln-155"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrixMemoryPool.f90&quot;</span>
 <a name="ln-156"></a>
 <a name="ln-157"></a>  <span class="k">END SUBROUTINE </span><span class="n">DestructMatrixMemoryPool_lr</span>
 <a name="ln-158"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -426,7 +426,7 @@
 <a name="ln-161"></a>    <span class="c">!&gt; The matrix being destructed.</span>
 <a name="ln-162"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">MatrixMemoryPool_lc</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">this</span>
 <a name="ln-163"></a>
-<a name="ln-164"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrixMemoryPool.F90&quot;</span>
+<a name="ln-164"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrixMemoryPool.f90&quot;</span>
 <a name="ln-165"></a>
 <a name="ln-166"></a>  <span class="k">END SUBROUTINE </span><span class="n">DestructMatrixMemoryPool_lc</span>
 <a name="ln-167"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -442,7 +442,7 @@
 <a name="ln-177"></a>    <span class="c">!&gt; true if the memory pool is valid.</span>
 <a name="ln-178"></a>    <span class="kt">LOGICAL</span> <span class="kd">::</span> <span class="n">isvalid</span>
 <a name="ln-179"></a>
-<a name="ln-180"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/CheckMemoryPoolValidity.F90&quot;</span>
+<a name="ln-180"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/CheckMemoryPoolValidity.f90&quot;</span>
 <a name="ln-181"></a>
 <a name="ln-182"></a>  <span class="k">END FUNCTION </span><span class="n">CheckMemoryPoolValidity_lr</span>
 <a name="ln-183"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -459,7 +459,7 @@
 <a name="ln-194"></a>    <span class="c">!&gt; true if the memory pool is valid.</span>
 <a name="ln-195"></a>    <span class="kt">LOGICAL</span> <span class="kd">::</span> <span class="n">isvalid</span>
 <a name="ln-196"></a>
-<a name="ln-197"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/CheckMemoryPoolValidity.F90&quot;</span>
+<a name="ln-197"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/CheckMemoryPoolValidity.f90&quot;</span>
 <a name="ln-198"></a>
 <a name="ln-199"></a>  <span class="k">END FUNCTION </span><span class="n">CheckMemoryPoolValidity_lc</span>
 <a name="ln-200"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -470,7 +470,7 @@
 <a name="ln-205"></a>    <span class="c">!&gt; The sparsity value.</span>
 <a name="ln-206"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">sparsity</span>
 <a name="ln-207"></a>
-<a name="ln-208"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/SetPoolSparsity.F90&quot;</span>
+<a name="ln-208"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/SetPoolSparsity.f90&quot;</span>
 <a name="ln-209"></a>
 <a name="ln-210"></a>  <span class="k">END SUBROUTINE </span><span class="n">SetPoolSparsity_lr</span>
 <a name="ln-211"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -481,7 +481,7 @@
 <a name="ln-216"></a>    <span class="c">!&gt; The sparsity value.</span>
 <a name="ln-217"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">sparsity</span>
 <a name="ln-218"></a>
-<a name="ln-219"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/SetPoolSparsity.F90&quot;</span>
+<a name="ln-219"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/SetPoolSparsity.f90&quot;</span>
 <a name="ln-220"></a>
 <a name="ln-221"></a>  <span class="k">END SUBROUTINE </span><span class="n">SetPoolSparsity_lc</span>
 <a name="ln-222"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>

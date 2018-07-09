@@ -80,7 +80,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "includes/ReduceMatrixSizes.F90"
+    INCLUDE "includes/ReduceMatrixSizes.f90"
   END SUBROUTINE ReduceMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
@@ -92,7 +92,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "includes/ReduceMatrixSizes.F90"
+    INCLUDE "includes/ReduceMatrixSizes.f90"
   END SUBROUTINE ReduceMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align it one matrix
@@ -108,7 +108,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
 
-    INCLUDE "includes/ReduceAndComposeMatrixData.F90"
+    INCLUDE "includes/ReduceAndComposeMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
@@ -132,7 +132,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
 
-    INCLUDE "includes/ReduceAndComposeMatrixData.F90"
+    INCLUDE "includes/ReduceAndComposeMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, helper%data_request, &
@@ -149,7 +149,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "includes/ReduceAndComposeMatrixCleanup.F90"
+    INCLUDE "includes/ReduceAndComposeMatrixCleanup.f90"
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -163,7 +163,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "includes/ReduceAndComposeMatrixCleanup.F90"
+    INCLUDE "includes/ReduceAndComposeMatrixCleanup.f90"
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -179,7 +179,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "includes/ReduceAndSumMatrixData.F90"
+    INCLUDE "includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
@@ -201,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "includes/ReduceAndSumMatrixData.F90"
+    INCLUDE "includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, &
@@ -222,7 +222,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_lsr) :: temporary_matrix, sum_matrix
 
-    INCLUDE "includes/ReduceAndSumMatrixCleanup.F90"
+    INCLUDE "includes/ReduceAndSumMatrixCleanup.f90"
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Finally routine to sum up the matrices.
@@ -239,7 +239,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_lsc) :: temporary_matrix, sum_matrix
 
-    INCLUDE "includes/ReduceAndSumMatrixCleanup.F90"
+    INCLUDE "includes/ReduceAndSumMatrixCleanup.f90"
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.

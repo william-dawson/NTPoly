@@ -678,7 +678,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: local_a, local_v
     TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
 
-    INCLUDE "SolverSupport/includes/EigenSerial.F90"
+    INCLUDE "SolverSupport/includes/EigenSerial.f90"
   END SUBROUTINE EigenSerial_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve (COMPLEX).
@@ -698,7 +698,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: local_a, local_v
     TYPE(Matrix_ldc) :: dense_a, dense_v, dense_w
 
-    INCLUDE "SolverSupport/includes/EigenSerial.F90"
+    INCLUDE "SolverSupport/includes/EigenSerial.f90"
   END SUBROUTINE EigenSerial_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenSolversModule

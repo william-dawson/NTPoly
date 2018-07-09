@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.2% of total for source files.">349 statements</a>
+    title=" 6.5% of total for source files.">559 statements</a>
      </li> 
      
      
@@ -383,7 +383,7 @@
 <a name="ln-118"></a>    <span class="c">!&gt; Columns of the matrix.</span>
 <a name="ln-119"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">columns</span>
 <a name="ln-120"></a>
-<a name="ln-121"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructEmptyMatrix.F90&quot;</span>
+<a name="ln-121"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructEmptyMatrix.f90&quot;</span>
 <a name="ln-122"></a>
 <a name="ln-123"></a>  <span class="k">END FUNCTION </span><span class="n">ConstructEmptyMatrix_ldr</span>
 <a name="ln-124"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -396,7 +396,7 @@
 <a name="ln-131"></a>    <span class="c">!! Helper Variables</span>
 <a name="ln-132"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temporary</span>
 <a name="ln-133"></a>
-<a name="ln-134"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixDFromS.F90&quot;</span>
+<a name="ln-134"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixDFromS.f90&quot;</span>
 <a name="ln-135"></a>
 <a name="ln-136"></a>  <span class="k">END SUBROUTINE </span><span class="n">ConstructMatrixDFromS_ldr</span>
 <a name="ln-137"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -414,7 +414,7 @@
 <a name="ln-149"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temporary_list</span>
 <a name="ln-150"></a>
 <a name="ln-151"></a><span class="cp">#define SMTYPE Matrix_lsr</span>
-<a name="ln-152"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixSFromD.F90&quot;</span>
+<a name="ln-152"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixSFromD.f90&quot;</span>
 <a name="ln-153"></a><span class="cp">#undef SMTYPE</span>
 <a name="ln-154"></a>
 <a name="ln-155"></a>  <span class="k">END SUBROUTINE </span><span class="n">ConstructMatrixSFromD_ldr</span>
@@ -426,7 +426,7 @@
 <a name="ln-161"></a>    <span class="c">!&gt; matB = matA</span>
 <a name="ln-162"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldr</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">matB</span>
 <a name="ln-163"></a>
-<a name="ln-164"></a><span class="cp">#include &quot;dense_includes/CopyMatrix.F90&quot;</span>
+<a name="ln-164"></a><span class="cp">#include &quot;dense_includes/CopyMatrix.f90&quot;</span>
 <a name="ln-165"></a>
 <a name="ln-166"></a>  <span class="k">END SUBROUTINE </span><span class="n">CopyMatrix_ldr</span>
 <a name="ln-167"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -435,7 +435,7 @@
 <a name="ln-170"></a>    <span class="c">!&gt; The matrix to delete.</span>
 <a name="ln-171"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldr</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">this</span>
 <a name="ln-172"></a>
-<a name="ln-173"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrix.F90&quot;</span>
+<a name="ln-173"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrix.f90&quot;</span>
 <a name="ln-174"></a>
 <a name="ln-175"></a>  <span class="k">END SUBROUTINE </span><span class="n">DestructMatrix_ldr</span>
 <a name="ln-176"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -450,7 +450,7 @@
 <a name="ln-185"></a>    <span class="c">!! Temporary</span>
 <a name="ln-186"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">alpha</span>
 <a name="ln-187"></a>
-<a name="ln-188"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/IncrementMatrix.F90&quot;</span>
+<a name="ln-188"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/IncrementMatrix.f90&quot;</span>
 <a name="ln-189"></a>
 <a name="ln-190"></a>  <span class="k">END SUBROUTINE </span><span class="n">IncrementMatrix_ldr</span>
 <a name="ln-191"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -482,7 +482,7 @@
 <a name="ln-217"></a>    <span class="c">!&gt; matAT = matA^T.</span>
 <a name="ln-218"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldr</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">matAT</span>
 <a name="ln-219"></a>
-<a name="ln-220"></a><span class="cp">#include &quot;dense_includes/TransposeMatrix.F90&quot;</span>
+<a name="ln-220"></a><span class="cp">#include &quot;dense_includes/TransposeMatrix.f90&quot;</span>
 <a name="ln-221"></a>
 <a name="ln-222"></a>  <span class="k">END SUBROUTINE </span><span class="n">TransposeMatrix_ldr</span>
 <a name="ln-223"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -500,7 +500,7 @@
 <a name="ln-235"></a>    <span class="c">!&gt; The composed matrix.</span>
 <a name="ln-236"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldr</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">out_matrix</span>
 <a name="ln-237"></a>
-<a name="ln-238"></a><span class="cp">#include &quot;dense_includes/ComposeMatrix.F90&quot;</span>
+<a name="ln-238"></a><span class="cp">#include &quot;dense_includes/ComposeMatrix.f90&quot;</span>
 <a name="ln-239"></a>
 <a name="ln-240"></a>  <span class="k">END SUBROUTINE </span><span class="n">ComposeMatrix_ldr</span>
 <a name="ln-241"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -521,7 +521,7 @@
 <a name="ln-256"></a>    <span class="c">!&gt; Specifies the size of the columns.</span>
 <a name="ln-257"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">block_size_column_in</span>
 <a name="ln-258"></a>
-<a name="ln-259"></a><span class="cp">#include &quot;dense_includes/SplitMatrix.F90&quot;</span>
+<a name="ln-259"></a><span class="cp">#include &quot;dense_includes/SplitMatrix.f90&quot;</span>
 <a name="ln-260"></a>
 <a name="ln-261"></a>  <span class="k">END SUBROUTINE </span><span class="n">SplitMatrix_ldr</span>
 <a name="ln-262"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -640,7 +640,7 @@
 <a name="ln-375"></a>    <span class="c">!&gt; Columns of the matrix.</span>
 <a name="ln-376"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">columns</span>
 <a name="ln-377"></a>
-<a name="ln-378"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructEmptyMatrix.F90&quot;</span>
+<a name="ln-378"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/ConstructEmptyMatrix.f90&quot;</span>
 <a name="ln-379"></a>
 <a name="ln-380"></a>  <span class="k">END FUNCTION </span><span class="n">ConstructEmptyMatrix_ldc</span>
 <a name="ln-381"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -653,7 +653,7 @@
 <a name="ln-388"></a>    <span class="c">!! Helper Variables</span>
 <a name="ln-389"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_c</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temporary</span>
 <a name="ln-390"></a>
-<a name="ln-391"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixDFromS.F90&quot;</span>
+<a name="ln-391"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixDFromS.f90&quot;</span>
 <a name="ln-392"></a>
 <a name="ln-393"></a>  <span class="k">END SUBROUTINE </span><span class="n">ConstructMatrixDFromS_ldc</span>
 <a name="ln-394"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -672,7 +672,7 @@
 <a name="ln-407"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_c</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temporary_list</span>
 <a name="ln-408"></a>
 <a name="ln-409"></a><span class="cp">#define SMTYPE Matrix_lsc</span>
-<a name="ln-410"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixSFromD.F90&quot;</span>
+<a name="ln-410"></a><span class="cp">#include &quot;dense_includes/ConstructMatrixSFromD.f90&quot;</span>
 <a name="ln-411"></a><span class="cp">#undef SMTYPE</span>
 <a name="ln-412"></a>
 <a name="ln-413"></a>  <span class="k">END SUBROUTINE </span><span class="n">ConstructMatrixSFromD_ldc</span>
@@ -684,7 +684,7 @@
 <a name="ln-419"></a>    <span class="c">!&gt; matB = matA</span>
 <a name="ln-420"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldc</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">matB</span>
 <a name="ln-421"></a>
-<a name="ln-422"></a><span class="cp">#include &quot;dense_includes/CopyMatrix.F90&quot;</span>
+<a name="ln-422"></a><span class="cp">#include &quot;dense_includes/CopyMatrix.f90&quot;</span>
 <a name="ln-423"></a>
 <a name="ln-424"></a>  <span class="k">END SUBROUTINE </span><span class="n">CopyMatrix_ldc</span>
 <a name="ln-425"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -693,7 +693,7 @@
 <a name="ln-428"></a>    <span class="c">!&gt; This the matrix to delete.</span>
 <a name="ln-429"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldc</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">this</span>
 <a name="ln-430"></a>
-<a name="ln-431"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrix.F90&quot;</span>
+<a name="ln-431"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/DestructMatrix.f90&quot;</span>
 <a name="ln-432"></a>
 <a name="ln-433"></a>  <span class="k">END SUBROUTINE </span><span class="n">DestructMatrix_ldc</span>
 <a name="ln-434"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -708,7 +708,7 @@
 <a name="ln-443"></a>    <span class="c">!! Temporary</span>
 <a name="ln-444"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">alpha</span>
 <a name="ln-445"></a>
-<a name="ln-446"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/IncrementMatrix.F90&quot;</span>
+<a name="ln-446"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;dense_includes/IncrementMatrix.f90&quot;</span>
 <a name="ln-447"></a>
 <a name="ln-448"></a>  <span class="k">END SUBROUTINE </span><span class="n">IncrementMatrix_ldc</span>
 <a name="ln-449"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -739,7 +739,7 @@
 <a name="ln-474"></a>    <span class="c">!&gt; matAT = matA^T.</span>
 <a name="ln-475"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldc</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">matAT</span>
 <a name="ln-476"></a>
-<a name="ln-477"></a><span class="cp">#include &quot;dense_includes/TransposeMatrix.F90&quot;</span>
+<a name="ln-477"></a><span class="cp">#include &quot;dense_includes/TransposeMatrix.f90&quot;</span>
 <a name="ln-478"></a>
 <a name="ln-479"></a>  <span class="k">END SUBROUTINE </span><span class="n">TransposeMatrix_ldc</span>
 <a name="ln-480"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -757,7 +757,7 @@
 <a name="ln-492"></a>    <span class="c">!&gt; The composed matrix.</span>
 <a name="ln-493"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ldc</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">out_matrix</span>
 <a name="ln-494"></a>
-<a name="ln-495"></a><span class="cp">#include &quot;dense_includes/ComposeMatrix.F90&quot;</span>
+<a name="ln-495"></a><span class="cp">#include &quot;dense_includes/ComposeMatrix.f90&quot;</span>
 <a name="ln-496"></a>
 <a name="ln-497"></a>  <span class="k">END SUBROUTINE </span><span class="n">ComposeMatrix_ldc</span>
 <a name="ln-498"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -777,7 +777,7 @@
 <a name="ln-512"></a>    <span class="c">!&gt; Specifies the size of the columns.</span>
 <a name="ln-513"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">block_size_column_in</span>
 <a name="ln-514"></a>
-<a name="ln-515"></a><span class="cp">#include &quot;dense_includes/SplitMatrix.F90&quot;</span>
+<a name="ln-515"></a><span class="cp">#include &quot;dense_includes/SplitMatrix.f90&quot;</span>
 <a name="ln-516"></a>
 <a name="ln-517"></a>  <span class="k">END SUBROUTINE </span><span class="n">SplitMatrix_ldc</span>
 <a name="ln-518"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>

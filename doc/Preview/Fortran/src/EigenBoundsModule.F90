@@ -43,11 +43,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (this%is_complex) THEN
 #define triplet_list triplet_list_c
-#include "SolverSupport/includes/GershgorinBounds.F90"
+#include "SolverSupport/includes/GershgorinBounds.f90"
 #undef triplet_list
     ELSE
 #define triplet_list triplet_list_r
-#include "SolverSupport/includes/GershgorinBounds.F90"
+#include "SolverSupport/includes/GershgorinBounds.f90"
 #undef triplet_list
     END IF
   END SUBROUTINE GershgorinBounds

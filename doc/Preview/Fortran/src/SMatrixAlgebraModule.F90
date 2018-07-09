@@ -84,7 +84,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Constant scale factor.
     REAL(NTREAL), INTENT(IN) :: constant
 
-    INCLUDE "sparse_includes/ScaleMatrix.F90"
+    INCLUDE "sparse_includes/ScaleMatrix.f90"
   END SUBROUTINE ScaleMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
@@ -94,7 +94,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Constant scale factor.
     REAL(NTREAL), INTENT(IN) :: constant
 
-    INCLUDE "sparse_includes/ScaleMatrix.F90"
+    INCLUDE "sparse_includes/ScaleMatrix.f90"
   END SUBROUTINE ScaleMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
@@ -105,7 +105,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Constant scale factor.
     COMPLEX(NTCOMPLEX), INTENT(IN) :: constant
 
-    INCLUDE "sparse_includes/ScaleMatrix.F90"
+    INCLUDE "sparse_includes/ScaleMatrix.f90"
   END SUBROUTINE ScaleMatrix_lsc_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
@@ -122,7 +122,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsr) :: matC
 
-    INCLUDE "sparse_includes/IncrementMatrix.F90"
+    INCLUDE "sparse_includes/IncrementMatrix.f90"
   END SUBROUTINE IncrementMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY).
@@ -139,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsc) :: matC
 
-    INCLUDE "sparse_includes/IncrementMatrix.F90"
+    INCLUDE "sparse_includes/IncrementMatrix.f90"
   END SUBROUTINE IncrementMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Pairwise Multiply two matrices.
@@ -154,7 +154,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsr) :: TempMat
 
-    INCLUDE "sparse_includes/PairwiseMultiplyMatrix.F90"
+    INCLUDE "sparse_includes/PairwiseMultiplyMatrix.f90"
   END SUBROUTINE PairwiseMultiplyMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Pairwise Multiply two matrices.
@@ -169,7 +169,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsc) :: TempMat
 
-    INCLUDE "sparse_includes/PairwiseMultiplyMatrix.F90"
+    INCLUDE "sparse_includes/PairwiseMultiplyMatrix.f90"
   END SUBROUTINE PairwiseMultiplyMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Product = sum(MatA[ij]*MatB[ij])
@@ -244,7 +244,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: threshold
     TYPE(MatrixMemoryPool_lr) :: blocked_memory_pool
 
-    INCLUDE "sparse_includes/GemmMatrix.F90"
+    INCLUDE "sparse_includes/GemmMatrix.f90"
   END SUBROUTINE GemmMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
@@ -279,7 +279,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: threshold
     TYPE(MatrixMemoryPool_lc) :: blocked_memory_pool
 
-    INCLUDE "sparse_includes/GemmMatrix.F90"
+    INCLUDE "sparse_includes/GemmMatrix.f90"
   END SUBROUTINE GemmMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a sparse matrix along the columns.
@@ -291,7 +291,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     REAL(NTREAL) :: temp_value
 
-    INCLUDE "sparse_includes/MatrixColumnNorm.F90"
+    INCLUDE "sparse_includes/MatrixColumnNorm.f90"
   END SUBROUTINE MatrixColumnNorm_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a sparse matrix along the columns.
@@ -303,7 +303,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     COMPLEX(NTCOMPLEX)  :: temp_value
 
-    INCLUDE "sparse_includes/MatrixColumnNorm.F90"
+    INCLUDE "sparse_includes/MatrixColumnNorm.f90"
   END SUBROUTINE MatrixColumnNorm_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the 1 norm of a sparse matrix.
@@ -315,7 +315,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL), DIMENSION(this%columns) :: column
 
-    INCLUDE "sparse_includes/MatrixNorm.F90"
+    INCLUDE "sparse_includes/MatrixNorm.f90"
 
   END FUNCTION MatrixNorm_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -328,7 +328,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL), DIMENSION(this%columns) :: column
 
-    INCLUDE "sparse_includes/MatrixNorm.F90"
+    INCLUDE "sparse_includes/MatrixNorm.f90"
 
   END FUNCTION MatrixNorm_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -339,7 +339,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The sum of the matrix elements
     REAL(NTREAL), INTENT(OUT) :: sum_value
 
-    INCLUDE "sparse_includes/MatrixGrandSum.F90"
+    INCLUDE "sparse_includes/MatrixGrandSum.f90"
 
   END SUBROUTINE MatrixGrandSum_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -350,7 +350,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The sum of the matrix elements
     COMPLEX(NTCOMPLEX), INTENT(OUT) :: sum_value
 
-    INCLUDE "sparse_includes/MatrixGrandSum.F90"
+    INCLUDE "sparse_includes/MatrixGrandSum.f90"
 
   END SUBROUTINE MatrixGrandSum_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -376,7 +376,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_lsr) :: matAT, matBT
 
-    INCLUDE "sparse_includes/SparseBranch.F90"
+    INCLUDE "sparse_includes/SparseBranch.f90"
   END SUBROUTINE SparseBranch_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculates the matrix product if we've determined to do sparse-sparse.
@@ -401,7 +401,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_lsc) :: matAT, matBT
 
-    INCLUDE "sparse_includes/SparseBranch.F90"
+    INCLUDE "sparse_includes/SparseBranch.f90"
   END SUBROUTINE SparseBranch_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculate the matrix product if we've determined to do dense-dense.
@@ -428,7 +428,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ldr) :: DenseB
     TYPE(Matrix_ldr) :: DenseC
 
-    INCLUDE "sparse_includes/DenseBranch.F90"
+    INCLUDE "sparse_includes/DenseBranch.f90"
   END SUBROUTINE DenseBranch_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculate the matrix product if we've determined to do dense-dense.
@@ -455,7 +455,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ldc) :: DenseB
     TYPE(Matrix_ldc) :: DenseC
 
-    INCLUDE "sparse_includes/DenseBranch.F90"
+    INCLUDE "sparse_includes/DenseBranch.f90"
   END SUBROUTINE DenseBranch_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiplies a single block fo sparse-sparse.
@@ -469,7 +469,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temp Variables
     REAL(NTREAL) :: temp_value_a, temp_value_b, temp_value_c
 
-    INCLUDE "sparse_includes/MultiplyBlock.F90"
+    INCLUDE "sparse_includes/MultiplyBlock.f90"
   END SUBROUTINE MultiplyBlock_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiplies a single block fo sparse-sparse.
@@ -483,7 +483,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temp Variables
     COMPLEX(NTCOMPLEX) :: temp_value_a, temp_value_b, temp_value_c
 
-    INCLUDE "sparse_includes/MultiplyBlock.F90"
+    INCLUDE "sparse_includes/MultiplyBlock.f90"
   END SUBROUTINE MultiplyBlock_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prunes out the values of the hash table into the matrix.
@@ -506,7 +506,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: unsorted_pruned_list
     TYPE(TripletList_r) :: sorted_pruned_list
 
-    INCLUDE "sparse_includes/PruneList.F90"
+    INCLUDE "sparse_includes/PruneList.f90"
   END SUBROUTINE PruneList_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prunes out the values of the hash table into the matrix.
@@ -529,7 +529,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: unsorted_pruned_list
     TYPE(TripletList_c) :: sorted_pruned_list
 
-    INCLUDE "sparse_includes/PruneList.F90"
+    INCLUDE "sparse_includes/PruneList.f90"
   END SUBROUTINE PruneList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule

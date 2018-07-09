@@ -331,7 +331,7 @@
 <a name="ln-66"></a>    <span class="c">!&gt; Value to insert.</span>
 <a name="ln-67"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">insert_value</span>
 <a name="ln-68"></a>
-<a name="ln-69"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/AppendToVector.F90&quot;</span>
+<a name="ln-69"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/AppendToVector.f90&quot;</span>
 <a name="ln-70"></a>  <span class="k">END SUBROUTINE </span><span class="n">AppendToVector_r</span>
 <a name="ln-71"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-72"></a>  <span class="c">!&gt; A helper routine to broadcast a sparse vector</span>
@@ -349,7 +349,7 @@
 <a name="ln-84"></a>    <span class="c">!! Local</span>
 <a name="ln-85"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">err</span>
 <a name="ln-86"></a>
-<a name="ln-87"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/BroadcastVector.F90&quot;</span>
+<a name="ln-87"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/BroadcastVector.f90&quot;</span>
 <a name="ln-88"></a>    <span class="k">CALL </span><span class="n">MPI_Bcast</span><span class="p">(</span><span class="n">values</span><span class="p">(:</span><span class="n">num_values</span><span class="p">),</span> <span class="n">num_values</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">root</span><span class="p">,</span> <span class="n">comm</span><span class="p">,</span> <span class="n">err</span><span class="p">)</span>
 <a name="ln-89"></a>
 <a name="ln-90"></a>  <span class="k">END SUBROUTINE </span><span class="n">BroadcastVector_r</span>
@@ -365,7 +365,7 @@
 <a name="ln-100"></a>    <span class="c">!&gt; Diagonal values computed.</span>
 <a name="ln-101"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">diag</span>
 <a name="ln-102"></a>
-<a name="ln-103"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ConstructDiag.F90&quot;</span>
+<a name="ln-103"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/ConstructDiag.f90&quot;</span>
 <a name="ln-104"></a>    <span class="k">CALL </span><span class="n">MPI_Allgatherv</span><span class="p">(</span><span class="n">MPI_IN_PLACE</span><span class="p">,</span> <span class="n">diags_per_proc</span><span class="p">(</span><span class="n">process_grid</span><span class="p">%</span><span class="n">my_row</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="p">&amp;</span>
 <a name="ln-105"></a>         <span class="p">&amp;</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">diags_per_proc</span><span class="p">,</span> <span class="n">diag_displ</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-106"></a>         <span class="p">&amp;</span> <span class="n">process_grid</span><span class="p">%</span><span class="n">column_comm</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
@@ -420,7 +420,7 @@
 <a name="ln-155"></a>    <span class="c">!&gt; The communicator to reduce along.</span>
 <a name="ln-156"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">comm</span>
 <a name="ln-157"></a>
-<a name="ln-158"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/DotAllHelper.F90&quot;</span>
+<a name="ln-158"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/DotAllHelper.f90&quot;</span>
 <a name="ln-159"></a>
 <a name="ln-160"></a>  <span class="k">END SUBROUTINE </span><span class="n">DotAllHelper_r</span>
 <a name="ln-161"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -451,7 +451,7 @@
 <a name="ln-186"></a>    <span class="c">!&gt; The communicator to reduce along.</span>
 <a name="ln-187"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">comm</span>
 <a name="ln-188"></a>
-<a name="ln-189"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/DotAllPivoted.F90&quot;</span>
+<a name="ln-189"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/DotAllPivoted.f90&quot;</span>
 <a name="ln-190"></a>
 <a name="ln-191"></a>  <span class="k">END SUBROUTINE </span><span class="n">DotAllPivoted_r</span>
 <a name="ln-192"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -466,7 +466,7 @@
 <a name="ln-201"></a>    <span class="c">!! Local Variables</span>
 <a name="ln-202"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_lsr</span><span class="p">)</span> <span class="kd">::</span> <span class="n">local_matrixT</span>
 <a name="ln-203"></a>
-<a name="ln-204"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/GatherMatrixColumn.F90&quot;</span>
+<a name="ln-204"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/GatherMatrixColumn.f90&quot;</span>
 <a name="ln-205"></a>  <span class="k">END SUBROUTINE </span><span class="n">GatherMatrixColumn_r</span>
 <a name="ln-206"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-207"></a>  <span class="c">!&gt; Compute the pivot vector.</span>
@@ -494,7 +494,7 @@
 <a name="ln-229"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">temp_diag</span>
 <a name="ln-230"></a>    <span class="kt">DOUBLE PRECISION</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="kd">::</span> <span class="n">max_diag</span>
 <a name="ln-231"></a>
-<a name="ln-232"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/GetPivot.F90&quot;</span>
+<a name="ln-232"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/GetPivot.f90&quot;</span>
 <a name="ln-233"></a>
 <a name="ln-234"></a>  <span class="k">END SUBROUTINE </span><span class="n">GetPivot_r</span>
 <a name="ln-235"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -509,7 +509,7 @@
 <a name="ln-244"></a>    <span class="c">!&gt; Matrix to unpack into.</span>
 <a name="ln-245"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">LMat</span>
 <a name="ln-246"></a>
-<a name="ln-247"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/UnpackCholesky.F90&quot;</span>
+<a name="ln-247"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;includes/UnpackCholesky.f90&quot;</span>
 <a name="ln-248"></a>  <span class="k">END SUBROUTINE </span><span class="n">UnpackCholesky_r</span>
 <a name="ln-249"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-250"></a><span class="k">END MODULE </span><span class="n">CholeskyModule</span>

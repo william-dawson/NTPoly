@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.7% of total for source files.">138 statements</a>
+    title=" 1.6% of total for source files.">138 statements</a>
      </li> 
      
      
@@ -325,7 +325,7 @@
 <a name="ln-60"></a>    <span class="c">!&gt; The value at that point.</span>
 <a name="ln-61"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>       <span class="kd">::</span> <span class="n">point_value</span>
 <a name="ln-62"></a>
-<a name="ln-63"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/SetTriplet.F90&quot;</span>
+<a name="ln-63"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/SetTriplet.f90&quot;</span>
 <a name="ln-64"></a>
 <a name="ln-65"></a>  <span class="k">END SUBROUTINE </span><span class="n">SetTriplet_r</span>
 <a name="ln-66"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -340,7 +340,7 @@
 <a name="ln-75"></a>    <span class="c">!&gt; The value at that point.</span>
 <a name="ln-76"></a>    <span class="kt">COMPLEX</span><span class="p">(</span><span class="n">NTCOMPLEX</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">point_value</span>
 <a name="ln-77"></a>
-<a name="ln-78"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/SetTriplet.F90&quot;</span>
+<a name="ln-78"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/SetTriplet.f90&quot;</span>
 <a name="ln-79"></a>
 <a name="ln-80"></a>  <span class="k">END SUBROUTINE </span><span class="n">SetTriplet_c</span>
 <a name="ln-81"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -355,7 +355,7 @@
 <a name="ln-90"></a>    <span class="c">!&gt; Actual stored value.</span>
 <a name="ln-91"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">OUT</span><span class="p">)</span>   <span class="kd">::</span> <span class="n">point_value</span>
 <a name="ln-92"></a>
-<a name="ln-93"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/GetTriplet.F90&quot;</span>
+<a name="ln-93"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/GetTriplet.f90&quot;</span>
 <a name="ln-94"></a>
 <a name="ln-95"></a>  <span class="k">END SUBROUTINE </span><span class="n">GetTripletValues_r</span>
 <a name="ln-96"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -370,7 +370,7 @@
 <a name="ln-105"></a>    <span class="c">!&gt; Actual stored value.</span>
 <a name="ln-106"></a>    <span class="kt">COMPLEX</span><span class="p">(</span><span class="n">NTCOMPLEX</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">OUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">point_value</span>
 <a name="ln-107"></a>
-<a name="ln-108"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/GetTriplet.F90&quot;</span>
+<a name="ln-108"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/GetTriplet.f90&quot;</span>
 <a name="ln-109"></a>
 <a name="ln-110"></a>  <span class="k">END SUBROUTINE </span><span class="n">GetTripletValues_c</span>
 <a name="ln-111"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -384,7 +384,7 @@
 <a name="ln-119"></a>    <span class="c">!&gt; A &lt; B.</span>
 <a name="ln-120"></a>    <span class="kt">LOGICAL</span> <span class="kd">::</span> <span class="n">islessthan</span>
 <a name="ln-121"></a>
-<a name="ln-122"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/CompareTriplets.F90&quot;</span>
+<a name="ln-122"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/CompareTriplets.f90&quot;</span>
 <a name="ln-123"></a>
 <a name="ln-124"></a>  <span class="k">END FUNCTION </span><span class="n">CompareTriplets_r</span>
 <a name="ln-125"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -398,7 +398,7 @@
 <a name="ln-133"></a>    <span class="c">!&gt; A &lt; B.</span>
 <a name="ln-134"></a>    <span class="kt">LOGICAL</span> <span class="kd">::</span> <span class="n">islessthan</span>
 <a name="ln-135"></a>
-<a name="ln-136"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/CompareTriplets.F90&quot;</span>
+<a name="ln-136"></a>    <span class="k">INCLUDE</span> <span class="s2">&quot;triplet_includes/CompareTriplets.f90&quot;</span>
 <a name="ln-137"></a>
 <a name="ln-138"></a>  <span class="k">END FUNCTION </span><span class="n">CompareTriplets_c</span>
 <a name="ln-139"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
