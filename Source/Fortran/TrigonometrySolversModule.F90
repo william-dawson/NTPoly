@@ -23,13 +23,13 @@ MODULE TrigonometrySolversModule
   PUBLIC :: ScaleSquareTrigonometryTaylor
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the sine of a matrix.
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[out] OutputMat the resulting matrix.
-  !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Sine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(Matrix_ps), INTENT(in)  :: InputMat
-    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> The resulting matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t),INTENT(IN),OPTIONAL :: solver_parameters_in
     !! A temporary matrix to hold the transformation from sine to cosine.
     TYPE(Matrix_ps) :: ShiftedMat
     TYPE(Matrix_ps) :: IdentityMat
@@ -52,13 +52,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Sine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cosine of a matrix.
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[out] OutputMat the resulting matrix.
-  !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE Cosine(InputMat, OutputMat, solver_parameters_in)
-    TYPE(Matrix_ps), INTENT(in)  :: InputMat
-    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> The resulting matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t),INTENT(IN),OPTIONAL :: solver_parameters_in
+
     IF (PRESENT(solver_parameters_in)) THEN
        CALL ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
     ELSE
@@ -67,15 +68,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Cosine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute trigonometric functions of a matrix using a taylor series.
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[out] OutputMat the resulting matrix.
-  !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE ScaleSquareTrigonometryTaylor(InputMat, OutputMat, &
        & solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: InputMat
-    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> The resulting matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t),INTENT(IN),OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
@@ -180,16 +180,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleSquareTrigonometryTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute trigonometric functions of a matrix.
-  !! This method uses Chebyshev polynomials.
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[out] OutputMat the resulting matrix.
-  !! @param[in] compute_cosine_in cosine or sign (optional, default true).
-  !! @param[in] solver_parameters_in parameters for the solver
+  !> This method uses Chebyshev polynomials.
   SUBROUTINE ScaleSquareTrigonometry(InputMat, OutputMat, solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: InputMat
-    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> The resulting matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t),INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices

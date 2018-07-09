@@ -22,14 +22,14 @@ MODULE EigenBoundsModule
   PUBLIC :: PowerBounds
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
-  !! Uses Gershgorin's theorem.
-  !! @param[in] this the matrix to compute the min/max of.
-  !! @param[out] min_value a lower bound on the eigenspectrum.
-  !! @param[out] max_value an uppder bound on the eigenspectrum.
+  !> Uses Gershgorin's theorem.
   SUBROUTINE GershgorinBounds(this,min_value,max_value)
-    !! Parameters
+    !> The matrix to compute the min/max of.
     TYPE(Matrix_ps), INTENT(IN) :: this
-    REAL(NTREAL), INTENT(OUT) :: min_value, max_value
+    !> A lower bound on the eigenspectrum.
+    REAL(NTREAL), INTENT(OUT) :: min_value
+    !> An uppder bound on the eigenspectrum.
+    REAL(NTREAL), INTENT(OUT) :: max_value
     !! Local Data
     TYPE(TripletList_r) :: triplet_list_r
     TYPE(TripletList_c) :: triplet_list_c
@@ -53,16 +53,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GershgorinBounds
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the maximum eigenvalue of a matrix.
-  !! Uses The Power Method.
-  !! @param[in] this the matrix to compute the min/max of.
-  !! @param[out] max_value an upper bound on the eigenspectrum.
-  !! @param[inout] solver_parameters_in solver parameters (optional).
+  !> Uses The Power Method.
   SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute the min/max of.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> An upper bound on the eigenspectrum.
     REAL(NTREAL), INTENT(OUT) :: max_value
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Data

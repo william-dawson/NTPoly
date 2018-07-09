@@ -36,17 +36,16 @@ MODULE EigenSolversModule
   PUBLIC :: SplittingEigenDecomposition
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine uses a dense eigensolver for reference purposes.
-  !! @param[in] this the matrix to decompose.
-  !! @param[inout] eigenvectors the eigenvectors of a matrix.
-  !! @param[in] solver_parameters_in parameters for computing (optional).
   SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues_in, &
        & solver_parameters_in)
-    !! Parameters
+    !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The eigenvectors of a matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> Diagonal matrix of eigenvalues.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_in
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for computing
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! For Handling Optional Parameters
     TYPE(SolverParameters_t) :: fixed_params
 
@@ -85,18 +84,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReferenceEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvalues and eigenvectors of a matrix.
-  !! @param[in] this the matrix to decompose.
-  !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
-  !! @param[out] eigenvalues a diagonal matrix containing the eigenvalues.
-  !! @param[in] num_values_in the number of eigenvalues to compute (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE SplittingEigenDecomposition(this, eigenvectors, eigenvalues, &
        & num_values_in, solver_parameters_in)
-    !! Parameters
+    !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A matrix containing the eigenvectors of a matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> A diagonal matrix containing the eigenvalues.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> The number of eigenvalues to compute
     INTEGER, INTENT(IN), OPTIONAL :: num_values_in
+    !> Parameters for the solve
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -182,20 +180,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplittingEigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the singular values and singular vectors of a matrix.
-  !! @param[in] this the matrix to decompose.
-  !! @param[out] left_vectors a matrix containing the left singular vectors.
-  !! @param[out] right_vectors a matrix containing the right singular vectors.
-  !! @param[out] singularvalues a diagonal matrix containing the singularvalues.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE SingularValueDecomposition(this, left_vectors, &
        & right_vectors, singularvalues, solver_parameters_in)
-    !! Parameters
+    !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> A matrix containing the left singular vectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: left_vectors
+    !> A matrix containing the right singular vectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: right_vectors
+    !> A diagonal matrix containing the singularvalues.
     TYPE(Matrix_ps), INTENT(INOUT) :: singularvalues
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -236,13 +232,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SingularValueDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The recursive workhorse routine for the eigendecompositon.
-  !! @param[in] this the matrix to decompose.
-  !! @param[out] eigenvectors a matrix containing the eigenvectors of a matrix.
-  !! @param[in] solver_parameters for the solvers.
   RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters)
-    !! Parameters
+    !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A matrix containing the eigenvectors of a matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> Parameters for the solvers.
     TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     !! Local Variables - matrices
     TYPE(Matrix_ps) :: Identity
@@ -371,16 +366,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE EigenRecursive
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given two matrices, this stacks one on the left and right. The offsets
-  !! describe how to shift the values of the right mat.
-  !! @param[in] LeftMat the matrix on the left.
-  !! @param[in] RightMat the matrix on the right.
-  !! @param[in] column_offset how many columns over to shift
-  !! @param[in] row_offset how many rows over to shift
-  !! @param[out] Combined the stacked matrix.
+  !> describe how to shift the values of the right mat.
   SUBROUTINE StackMatrices(LeftMat,RightMat,column_offset,row_offset,Combined)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: LeftMat, RightMat
-    INTEGER :: column_offset, row_offset
+    !> The matrix on the left.
+    TYPE(Matrix_ps), INTENT(IN) :: LeftMat
+    !> The matrix on the right.
+    TYPE(Matrix_ps), INTENT(IN) :: RightMat
+    !> How many columns over to shift
+    INTEGER :: column_offset
+    !> How many rows over to shift
+    INTEGER :: row_offset
+    !> The stacked matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Combined
     !! Local Data
     TYPE(TripletList_r) :: left_triplets, right_triplets, combined_triplets
@@ -416,11 +412,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE StackMatrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Given two matrices, this stacks one on the left and right. The offsets
+  !> describe how to shift the values of the right mat.
+  !> Split process grid version.
   SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
-    !! Parameters
+    !> Matrix to stack stored on this group of processes.
     TYPE(Matrix_ps), INTENT(INOUT) :: SubMat
-    INTEGER, INTENT(IN) :: column_offset, row_offset
+    !> How many columns over to shift.
+    INTEGER, INTENT(IN) :: column_offset
+    !> How many rows over to shift.
+    INTEGER, INTENT(IN) :: row_offset
+    !> The color of this process group.
     INTEGER, INTENT(IN) :: color
+    !> The full matrix we construct.
     TYPE(Matrix_ps), INTENT(INOUT) :: FullMat
     !! Local Variables
     TYPE(TripletList_r) :: sub_triplets
@@ -451,16 +455,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE StackMatricesS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract the top left and the bottom right corners of a matrix.
-  !! @param[in] this the matrix to extract from.
-  !! @param[in] left_dim the dimension of the left corner.
-  !! @param[in] right_dim the dimension of the right corner.
-  !! @param[out] LeftMat the top left corner matrix.
-  !! @param[out] RightMat the bottom right corner matirx.
   SUBROUTINE ExtractCorner(this, left_dim, right_dim, LeftMat, RightMat)
-    !! Parameters
+    !> The matrix to extract from.
     TYPE(Matrix_ps), INTENT(IN) :: this
-    TYPE(Matrix_ps), INTENT(INOUT) :: LeftMat, RightMat
-    INTEGER :: left_dim, right_dim
+    !> The top left corner.
+    TYPE(Matrix_ps), INTENT(INOUT) :: LeftMat
+    !> The bottom right corner.
+    TYPE(Matrix_ps), INTENT(INOUT) :: RightMat
+    !> The dimension of the left corner.
+    INTEGER :: left_dim
+    !> The dimension of the right corner.
+    INTEGER :: right_dim
     !! Local Data
     TYPE(TripletList_r) :: left_triplets, right_triplets, combined_triplets
     TYPE(Triplet_r) :: temp_triplet
@@ -500,13 +505,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ExtractCorner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Extract the top left and the bottom right corners of a matrix.
+  !> Process grid splitting version.
   SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color, &
        & split_slice)
-    !! Parameters
+    !> The matrix to extract from.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The extracted sub matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: SubMat
+    !> Whether the split was along slices or not.
     LOGICAL, INTENT(OUT) :: split_slice
-    INTEGER, INTENT(IN) :: left_dim, right_dim
+    !> The dimension fo the left matrix.
+    INTEGER, INTENT(IN) :: left_dim
+    !> The dimension of the right matrix.
+    INTEGER, INTENT(IN) :: right_dim
+    !> Color determining which group this process belongs to.
     INTEGER, INTENT(OUT) :: color
     !! Local Data
     TYPE(Matrix_ps) :: TempMat
@@ -553,17 +566,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ExtractCornerS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> When we want to only compute the first n eigenvalues of a matrix, this
-  !! routine will project out the higher eigenvalues.
-  !! @param[in] this the starting matrix.
-  !! @param[in] dim the number of eigenvalues ot keep.
-  !! @param[in] parameters the solver parameters.
-  !! @param[out] ReducedMat a dimxdim matrix with the same first n eigenvalues
-  !! as the first.
+  !> routine will project out the higher eigenvalues.
   SUBROUTINE ReduceDimension(this, dim, parameters, ReducedMat)
-    !! Parameters
+    !> The starting matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The number of eigenvalues ot keep.
     INTEGER, INTENT(IN) :: dim
+    !> a dimxdim matrix with the same first n eigenvalues as the first.
     TYPE(Matrix_ps), INTENT(INOUT) :: ReducedMat
+    !> The solver parameters.
     TYPE(SolverParameters_t), INTENT(IN) :: parameters
     !! Local Variables - matrices
     TYPE(Matrix_ps) :: Identity
@@ -615,16 +626,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
-  !! @param[in] this the matrix to compute.
-  !! @param[out] eigenvectors the eigenvectors of the matrix.
-  !! @param[out] eigenvalues the eigenvalues of the matrix.
-  !! @param[in] solver_parameters_in the solve parameters.
   SUBROUTINE EigenSerial(this, eigenvectors, eigenvalues_out, &
        & solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The eigenvectors of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    !> The solve parameters.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Local Data
     TYPE(SolverParameters_t) :: fixed_params
@@ -651,16 +661,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE EigenSerial
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> The base case: use lapack to solve.
-  !! @param[in] this the matrix to compute.
-  !! @param[out] eigenvectors the eigenvectors of the matrix.
-  !! @param[out] eigenvalues the eigenvalues of the matrix.
-  !! @param[in] solver_parameters_in the solve parameters.
+  !> The base case: use lapack to solve (REAL).
   SUBROUTINE EigenSerial_r(this, eigenvectors, fixed_params, eigenvalues_out)
-    !! Parameters
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Matrix eigenvectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> The solve parameters.
     TYPE(SolverParameters_t), INTENT(IN) :: fixed_params
+    !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! Local Data
     TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
@@ -672,16 +681,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "SolverSupport/includes/EigenSerial.F90"
   END SUBROUTINE EigenSerial_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> The base case: use lapack to solve.
-  !! @param[in] this the matrix to compute.
-  !! @param[out] eigenvectors the eigenvectors of the matrix.
-  !! @param[out] eigenvalues the eigenvalues of the matrix.
-  !! @param[in] solver_parameters_in the solve parameters.
+  !> The base case: use lapack to solve (COMPLEX).
   SUBROUTINE EigenSerial_c(this, eigenvectors, fixed_params, eigenvalues_out)
-    !! Parameters
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Matrix eigenvectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> The solve parameters.
     TYPE(SolverParameters_t), INTENT(IN) :: fixed_params
+    !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! Local Data
     TYPE(TripletList_c) :: triplet_list, sorted_triplet_list, triplet_w

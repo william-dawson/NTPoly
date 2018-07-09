@@ -1,18 +1,22 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
-  USE DataTypesModule
-  USE EigenBoundsModule
-  USE InverseSolversModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PolynomialSolversModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE InverseSolversModule, ONLY : Invert
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+       & WriteHeader, WriteElement, WriteCitation
+  USE PolynomialSolversModule, ONLY : Polynomial_t, ConstructPolynomial, &
+       & DestructPolynomial, FactorizedCompute, SetCoefficient
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, &
+       & IncrementMatrix, ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
+       & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE SquareRootSolversModule
-  USE TimerModule
+  USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -22,17 +26,15 @@ MODULE RootSolversModule
   PUBLIC :: ComputeInverseRoot
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general matrix root.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = InputMat^1/root.
-  !! @param[in] root which root to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeRoot(InputMat, OutputMat, root, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = InputMat^1/root.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Which root to compute.
     INTEGER, INTENT(IN) :: root
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -78,16 +80,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Actual implementation of computing a general matrix root.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = InputMat^1/root.
-  !! @param[in] root which root to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeRootImplementation(InputMat, OutputMat, root, &
        & solver_parameters)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = InputMat^1/root.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Which root to compute.
     INTEGER, INTENT(IN) :: root
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: fixed_parameters
@@ -127,17 +128,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeRootImplementation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general inverse matrix root.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = InputMat^-1/root.
-  !! @param[in] root which root to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = InputMat^-1/root.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Which root to compute.
     INTEGER, INTENT(IN) :: root
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -183,12 +182,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general inverse matrix root for root > 4.
   SUBROUTINE ComputeInverseRootImplemention(InputMat, OutputMat, root, &
        & solver_parameters_in)
-    !! Parameters
+    !> Matrix to compute the root of.
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> The inverse nth root of that matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Which inverse root to compute.
     INTEGER, INTENT(IN) :: root
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constants.
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -332,12 +334,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Undo Load Balancing Step
-    CALL StartTimer("Load Balance")
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
-    CALL StopTimer("Load Balance")
 
     !! Cleanup
     IF (solver_parameters_in%be_verbose) THEN

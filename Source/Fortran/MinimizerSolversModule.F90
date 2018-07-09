@@ -20,25 +20,23 @@ MODULE MinimizerSolversModule
   PUBLIC :: ConjugateGradient
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the CG method.
-  !! Based on two papers. The first by Scuseria \cite millam1997linear developed
-  !! the initial method, and then Challacombe \cite challacombe1999simplified
-  !! developed a simplified scheme.
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from.
-  !! @param[in] InverseSquareRoot of the overlap matrix.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver.
+  !> Based on two papers. The first by Scuseria \cite millam1997linear developed
+  !> the initial method, and then Challacombe \cite challacombe1999simplified
+  !> developed a simplified scheme.
   SUBROUTINE ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, &
        & chemical_potential_out, solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN)  :: InverseSquareRoot
+    !> The number of electrons.
     INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The chemical potential.
     REAL(NTREAL), INTENT(out), OPTIONAL :: chemical_potential_out
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables

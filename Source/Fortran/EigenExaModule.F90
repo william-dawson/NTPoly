@@ -53,15 +53,14 @@ MODULE EigenExaModule
   END TYPE ExaHelper_t
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa.
-  !! @param[in] A the matrix to decompose.
-  !! @param[out] eigenvectors the eigenvectors computed.
-  !! @param[out] eigenvalues the eigenvalues computed (optional).
-  !! @param[in] solver_parameters_in the parameters for this solver (optional).
   SUBROUTINE EigenExa_s(A, eigenvectors, eigenvalues_out, solver_parameters_in)
-    !! Parameters
+    !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: A
+    !> The eigenvectors computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> The eigenvalues computed.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
+    !> The parameters for this solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -119,17 +118,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE EigenExa_s
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the eigen exa data structures.
-  !! @param[in] A the matrix we're working on.
-  !! @param[inout] AD the dense matrix will be allocated.
-  !! @param[inout] VD the dense matrix of eigenvectors will be allocated.
-  !! @param[inout] WD the dense array of eigenvalues will be allocated.
-  !! @param[inout] exa stores info about the calculation.
   SUBROUTINE InitializeEigenExa(A, AD, VD, WD, exa)
-    !! Parameters
+    !> The matrix we're working on.
     TYPE(Matrix_ps), INTENT(IN) :: A
+    !> The dense matrix will be allocated.
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
+    !> The dense matrix of eigenvectors will be allocated.
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
+    !> The dense array of eigenvalues will be allocated.
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
+    !> Stores info about the calculation.
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
     INTEGER :: ICTXT, INFO
@@ -169,14 +167,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE InitializeEigenExa
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the distributed sparse matrix to a dense matrix in block-cyclic
-  !! distribution.
-  !! @param[in] A the matrix to convert.
-  !! @param[inout] AD the dense, block-cyclic version.
-  !! @param[inout] info about the calculation.
+  !> distribution.
   SUBROUTINE NTToEigen(A, AD, exa)
-    !! Parameters
+    !> The matrix to convert.
     TYPE(Matrix_ps), INTENT(IN) :: A
+    !> The dense, block-cyclic version.
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: AD
+    !> Info about the calculation.
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
     TYPE(TripletList_r) :: triplet_a
@@ -233,16 +230,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE NTToEigen
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the dense eigenvector matrix stored block-cyclicly back to
-  !! a distributed sparse matrix.
-  !! @param[in] VD the dense eigenvector matrix.
-  !! @param[inout] V the distributed sparse matrix.
-  !! @param[in] solver_parameters for thresholding small values.
-  !! @param[inout] info about the calculation.
+  !> a distributed sparse matrix.
   SUBROUTINE EigenToNT(VD, V, solver_parameters, exa)
-    !! Parameters
+    !> The dense eigenvector matrix.
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: VD
+    !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: V
+    !> Parameters for thresholding small values.
     TYPE(SolverParameters_t) :: solver_parameters
+    !> Info about the calculation.
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
     TYPE(TripletList_r) :: triplet_w, triplet_v
@@ -291,14 +287,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE EigenToNT
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the dense eigenvalue matrix stored duplicated across processes.
-  !! @param[in] WD the dense eigenvalue matrix.
-  !! @param[inout] V the distributed sparse matrix.
-  !! @param[in] solver_parameters for thresholding small values.
-  !! @param[inout] info about the calculation.
   SUBROUTINE ExtractEigenvalues(WD, W, exa)
-    !! Parameters
+    !> The dense eigenvalue matrix.
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: WD
+    !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: W
+    !> Info about the calculation.
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
     TYPE(TripletList_r) :: triplet_w
@@ -326,15 +320,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ExtractEigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The routine which calls the eigenexa driver.
-  !! @param[in] A the matrix to decompose.
-  !! @param[inout] V the eigenvectors.
-  !! @param[inout] W the eigenvalues.
-  !! @param[in] exa calculation parameters.
   SUBROUTINE Compute(A, V, W, exa)
-    !! Parameters
+    !> The matrix to decompose.
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: A
+    !> The eigenvectors.
     REAL(NTREAL), DIMENSION(:,:), INTENT(INOUT) :: V
+    !> The eigenvalues.
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: W
+    !> Calculation parameters.
     TYPE(ExaHelper_t), INTENT(IN) :: exa
     !! Local Variables
     INTEGER :: N, LDA, LDZ
@@ -350,12 +343,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Compute
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deallocates and shuts down eigenexa
-  !! @param[inout] AD the matrix.
-  !! @param[inout] VD the eigenvectors.
-  !! @param[inout] W the eigenvalues.
   SUBROUTINE CleanUp(AD, VD, WD)
+    !> The matrix.
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: AD
+    !> The eigenvectors.
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE, INTENT(INOUT) :: VD
+    !> The eigenvalues.
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: WD
 
     IF(ALLOCATED(AD)) DEALLOCATE(AD)

@@ -22,15 +22,13 @@ MODULE SignSolversModule
   PUBLIC :: PolarDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix sign function.
-  !! @param[in] Mat1 the input matrix.
-  !! @param[out] SignMat the sign of Mat1.
-  !! @param[in] solver_parameters_in optional parameters for the routine.
-  SUBROUTINE SignFunction(Mat1, SignMat, solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: Mat1
+  SUBROUTINE SignFunction(Mat, SignMat, solver_parameters_in)
+    !> The input matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    !> The sign of Mat.
     TYPE(Matrix_ps), INTENT(INOUT) :: SignMat
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
 
@@ -48,7 +46,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintParameters(solver_parameters)
     END IF
 
-    CALL CoreComputation(Mat1, SignMat, solver_parameters, .FALSE.)
+    CALL CoreComputation(Mat, SignMat, solver_parameters, .FALSE.)
 
     !! Cleanup
     IF (solver_parameters%be_verbose) THEN
@@ -56,18 +54,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE SignFunction
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Computes the polar decomposition of a matrix Mat1 = U*H.
-  !! @param[in] Mat1 the input matrix.
-  !! @param[out] Umat the unitary polar factor.
-  !! @param[out] Hmat the hermitian matrix factor (optional).
-  !! @param[in] solver_parameters_in optional parameters for the routine.
-  SUBROUTINE PolarDecomposition(Mat1, Umat, Hmat, solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: Mat1
+  !> Computes the polar decomposition of a matrix Mat = U*H.
+  SUBROUTINE PolarDecomposition(Mat, Umat, Hmat, solver_parameters_in)
+    !> The input matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    !> The unitary polar factor.
     TYPE(Matrix_ps), INTENT(INOUT) :: Umat
+    !> The hermitian matrix factor.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: Hmat
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     TYPE(Matrix_ps) :: UmatT
@@ -86,14 +82,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintParameters(solver_parameters)
     END IF
 
-    CALL CoreComputation(Mat1, Umat, solver_parameters, .TRUE.)
+    CALL CoreComputation(Mat, Umat, solver_parameters, .TRUE.)
 
     IF (PRESENT(Hmat)) THEN
        CALL TransposeMatrix(Umat, UmatT)
        IF (UmatT%is_complex) THEN
           CALL ConjugateMatrix(UmatT)
        END IF
-       CALL MatrixMultiply(UmatT, Mat1, Hmat, &
+       CALL MatrixMultiply(UmatT, Mat, Hmat, &
             & threshold_in=solver_parameters%threshold)
        CALL DestructMatrix(UmatT)
     END IF
@@ -105,12 +101,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PolarDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This is the implementation routine for both the sign function and
-  !! polar decomposition.
-  SUBROUTINE CoreComputation(Mat1, OutMat, solver_parameters, needs_transpose)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN) :: Mat1
+  !> polar decomposition.
+  SUBROUTINE CoreComputation(Mat, OutMat, solver_parameters, needs_transpose)
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    !> Output of the routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
+    !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    !> Whether we need to perform transposes in this routine (for polar).
     LOGICAL, INTENT(IN) :: needs_transpose
     !! Local Matrices
     TYPE(Matrix_ps) :: Identity
@@ -129,9 +128,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: outer_counter
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Identity, Mat1)
-    CALL ConstructEmptyMatrix(Temp1, Mat1)
-    CALL ConstructEmptyMatrix(Temp2, Mat1)
+    CALL ConstructEmptyMatrix(Identity, Mat)
+    CALL ConstructEmptyMatrix(Temp1, Mat)
+    CALL ConstructEmptyMatrix(Temp2, Mat)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
@@ -139,14 +138,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Permute Matrices
        CALL PermuteMatrix(Identity, Identity, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
-       CALL PermuteMatrix(Mat1, OutMat, &
+       CALL PermuteMatrix(Mat, OutMat, &
             & solver_parameters%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyMatrix(Mat1,OutMat)
+       CALL CopyMatrix(Mat,OutMat)
     END IF
 
     !! Initialize
-    CALL GershgorinBounds(Mat1,e_min,e_max)
+    CALL GershgorinBounds(Mat,e_min,e_max)
     xk = ABS(e_min/e_max)
     CALL ScaleMatrix(OutMat,1.0/ABS(e_max))
 

@@ -28,17 +28,15 @@ MODULE LinearSolversModule
   PUBLIC :: PivotedCholeskyDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Solve the matrix equation AX = B using the conjugate gradient method.
-  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
-  !! @param[out] XMat the solved for matrix X.
-  !! @param[in] BMat the right hand side.
-  !! @param[in] solver_parameters_in parameters for the solver
   SUBROUTINE CGSolver(AMat, XMat, BMat, solver_parameters_in)
-    !! Parameters
+    !> The matrix A, must be hermitian, positive definite.
     TYPE(Matrix_ps), INTENT(IN)  :: AMat
+    !> The solved for matrix X.
     TYPE(Matrix_ps), INTENT(INOUT) :: XMat
+    !> The right hand side.
     TYPE(Matrix_ps), INTENT(IN)  :: BMat
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -183,15 +181,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE CGSolver
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
-  !! This is a really naive implementation, that might be worth visiting.
-  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
-  !! @param[out] LMat the matrix computed.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !> Compute The Cholesky Decomposition of a Hermitian Positive Definite matrix.
+  !> This is a really naive implementation, that might be worth revisiting.
   SUBROUTINE CholeskyDecomposition(AMat, LMat, solver_parameters_in)
-    !! Parameters
+    !> The matrix A, must be hermitian, positive definite.
     TYPE(Matrix_ps), INTENT(IN)  :: AMat
+    !> The lower diagonal matrix computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -321,18 +318,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(sparse_a)
   END SUBROUTINE CholeskyDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute The Pivoted Cholesky Decomposition of a Symmetric Semi-Definite matrix.
-  !! Pass it either a maximum rank and maximum error tolerance to check against
-  !! @param[in] AMat the matrix A, must be symmetric, positive definite.
-  !! @param[out] LMat the matrix computed.
-  !! @param[in] rank_in the target rank of the matrix.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !> Compute The Pivoted Cholesky Decomposition of a Hermitian Semi-Definite
+  !> matrix. Pass it the target rank of the matrix.
   SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
        & solver_parameters_in)
-    !! Parameters
+    !> The matrix A, must be hermitian, positive semi-definite.
     TYPE(Matrix_ps), INTENT(IN)  :: AMat
+    !> The matrix computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
+    !> The target rank of the matrix.
     INTEGER, INTENT(IN) :: rank_in
+    !> Tarameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters

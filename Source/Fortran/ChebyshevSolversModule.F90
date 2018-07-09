@@ -47,11 +47,10 @@ MODULE ChebyshevSolversModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a Chebyshev polynomial object.
-  !! @param[inout] this the polynomial to construct.
-  !! @param[in] degree of the polynomial.
   PURE SUBROUTINE ConstructPolynomial_cheby(this, degree)
-    !! Parameters
+    !> The polynomial to construct.
     TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
+    !> Degree of the polynomial.
     INTEGER, INTENT(IN) :: degree
 
     ALLOCATE(this%coefficients(degree))
@@ -59,9 +58,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructPolynomial_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
-  !! @param[inout] this the polynomial to destruct.
   PURE SUBROUTINE DestructPolynomial_cheby(this)
-    !! Parameters
+    !> The polynomial to destruct.
     TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
     IF (ALLOCATED(this%coefficients)) THEN
        DEALLOCATE(this%coefficients)
@@ -69,29 +67,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructPolynomial_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set a coefficient of a Chebyshev polynomial.
-  !! @param[inout] this the polynomial to set.
-  !! @param[in] degree for which to set the coefficient.
-  !! @param[in] coefficient value.
   SUBROUTINE SetCoefficient_cheby(this, degree, coefficient)
-    !! Parameters
+    !> The polynomial to set.
     TYPE(ChebyshevPolynomial_t), INTENT(INOUT) :: this
+    !> Degree for which to set the coefficient.
     INTEGER, INTENT(IN) :: degree
+    !> Coefficient value.
     REAL(NTREAL), INTENT(IN) :: coefficient
 
     this%coefficients(degree) = coefficient
   END SUBROUTINE SetCoefficient_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
-  !! This method uses the standard Chebyshev Polynomial expansion.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in] poly the Chebyshev polynomial to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  !> This method uses the standard Chebyshev Polynomial expansion.
   SUBROUTINE Compute_cheby(InputMat, OutputMat, poly, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = poly(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> The Chebyshev polynomial to compute.
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
+    !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -191,19 +187,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Compute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
-  !! This version first factors the Chebyshev Polynomial and computes the
-  !! function using a divide and conquer algorithm. Based on a simplified
-  !! version of the first method in \cite liang2003improved .
-  !! @param[in]  InputMat the input matrix
-  !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in]  poly the Chebyshev polynomial to compute.
-  !! @param[in]  solver_parameters_in parameters for the solver (optional).
+  !> This version first factors the Chebyshev Polynomial and computes the
+  !> function using a divide and conquer algorithm. Based on a simplified
+  !> version of the first method in \cite liang2003improved .
   SUBROUTINE FactorizedCompute_cheby(InputMat, OutputMat, poly, &
        & solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = poly(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> The Chebyshev polynomial to compute.
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
+    !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -298,20 +293,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FactorizedCompute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The workhorse routine for the factorized chebyshev computation function.
-  !! @param[in] T_Powers the precomputed Chebyshev polynomials.
-  !! @param[in] poly polynomial coefficients.
-  !! @param[out] OutputMat = poly(InputMat)
-  !! @param[inout] pool the memory pool.
-  !! @param[in] depth the depth of recursion.
-  !! @param[in] solver_parameters parameters for the solver.
   RECURSIVE SUBROUTINE ComputeRecursive(T_Powers, poly, OutputMat, pool, &
        & depth, solver_parameters)
-    !! Parameters
+    !> The precomputed Chebyshev polynomials.
     TYPE(Matrix_ps), DIMENSION(:), INTENT(IN) :: T_Powers
+    !> Polynomial coefficients.
     TYPE(ChebyshevPolynomial_t), INTENT(IN) :: poly
+    !> OutputMat = poly(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> The depth of recursion.
     INTEGER, INTENT(in) :: depth
+    !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    !> The memory pool.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !! Local Data
     INTEGER :: coefficient_midpoint

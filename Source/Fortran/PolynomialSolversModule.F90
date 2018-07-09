@@ -44,51 +44,47 @@ MODULE PolynomialSolversModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a polynomial.
-  !! @param[inout] this the polynomial to construct.
-  !! @param[in] degree of the polynomial.
   PURE SUBROUTINE ConstructPolynomial_stand(this, degree)
-    !! Parameters
-    TYPE(Polynomial_t), INTENT(inout) :: this
-    INTEGER, INTENT(in) :: degree
+    !> The polynomial to construct.
+    TYPE(Polynomial_t), INTENT(INOUT) :: this
+    !> The degree of the polynomial.
+    INTEGER, INTENT(IN) :: degree
 
     ALLOCATE(this%coefficients(degree))
     this%coefficients = 0
   END SUBROUTINE ConstructPolynomial_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
-  !! @param[inout] this the polynomial to destruct.
   PURE SUBROUTINE DestructPolynomial_stand(this)
-    !! Parameters
-    TYPE(Polynomial_t), INTENT(inout) :: this
+    !> The polynomial to destruct.
+    TYPE(Polynomial_t), INTENT(INOUT) :: this
     IF (ALLOCATED(this%coefficients)) THEN
        DEALLOCATE(this%coefficients)
     END IF
   END SUBROUTINE DestructPolynomial_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set coefficient of a polynomial.
-  !! @param[inout] this the polynomial to set.
-  !! @param[in] degree for which to set the coefficient.
-  !! @param[in] coefficient value.
   SUBROUTINE SetCoefficient_stand(this, degree, coefficient)
-    !! Parameters
-    TYPE(Polynomial_t), INTENT(inout) :: this
-    INTEGER, INTENT(in) :: degree
-    REAL(NTREAL), INTENT(in) :: coefficient
+    !> The polynomial to set.
+    TYPE(Polynomial_t), INTENT(INOUT) :: this
+    !> Degree for which to set the coefficient.
+    INTEGER, INTENT(IN) :: degree
+    !> Coefficient value.
+    REAL(NTREAL), INTENT(IN) :: coefficient
 
     this%coefficients(degree) = coefficient
   END SUBROUTINE SetCoefficient_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Horner's Method.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in] poly polynomial to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE Compute_stand(InputMat, OutputMat, poly, solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: InputMat
-    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(Polynomial_t), INTENT(in) :: poly
-    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = poly(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Polynomial to compute.
+    TYPE(Polynomial_t), INTENT(IN) :: poly
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -162,19 +158,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Compute_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
-  !! This method first factors the polynomial to reduce the number of
-  !! matrix multiplies required.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in] poly polynomial to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  !> This method first factors the polynomial to reduce the number of
+  !> matrix multiplies required.
   SUBROUTINE FactorizedCompute_stand(InputMat, OutputMat, poly, &
        & solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: InputMat
-    TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(Polynomial_t), INTENT(in) :: poly
-    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = poly(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> The polynomial to compute.
+    TYPE(Polynomial_t), INTENT(IN) :: poly
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables

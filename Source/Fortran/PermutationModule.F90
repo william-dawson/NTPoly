@@ -7,10 +7,10 @@ MODULE PermutationModule
   !> A data structure for storing permutations.
   TYPE, PUBLIC :: Permutation_t
      !> For each row/column, what index does it correspond to in the
-     !! unperturbed matrix.
+     !> unperturbed matrix.
      INTEGER, DIMENSION(:), ALLOCATABLE :: index_lookup
      !> For each row/column in the unperturbed, what index does it correspond to
-     !! in this matrix.
+     !> in this matrix.
      INTEGER, DIMENSION(:), ALLOCATABLE :: reverse_index_lookup
   END TYPE Permutation_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -21,11 +21,10 @@ MODULE PermutationModule
   PUBLIC :: DestructPermutation
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that preserves the original order.
-  !! @param[inout] this the permutation to construct.
-  !! @param[in] matrix_dimension size of the matrix.
   SUBROUTINE ConstructDefaultPermutation(this, matrix_dimension)
-    !! Parameters
+    !> The permutation to construct.
     TYPE(Permutation_t), INTENT(inout) :: this
+    !> The dimension of the matrix.
     INTEGER, INTENT(in) :: matrix_dimension
     !! Local Data
     INTEGER :: counter
@@ -42,11 +41,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructDefaultPermutation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that reverses the original order.
-  !! @param[inout] this the permutation to construct.
-  !! @param[in] matrix_dimension size of the matrix.
   SUBROUTINE ConstructReversePermutation(this, matrix_dimension)
-    !! Parameters
+    !> A permutation that reverses the original order.
     TYPE(Permutation_t), INTENT(inout) :: this
+    !> The size of the matrix.
     INTEGER, INTENT(in) :: matrix_dimension
     !! Local Data
     INTEGER :: counter
@@ -63,12 +61,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructReversePermutation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order.
-  !! @param[inout] this the permutation to construct.
-  !! @param[in] matrix_dimension size of the matrix.
-  !! Implements Knuth shuffle.
+  !> Implements Knuth shuffle.
   SUBROUTINE ConstructRandomPermutation(this, matrix_dimension)
-    !! Parameters
+    !> A permutation that reverses the original order.
     TYPE(Permutation_t), INTENT(inout) :: this
+    !> The size of the matrix.
     INTEGER, INTENT(in) :: matrix_dimension
     !! Local Data
     INTEGER :: counter
@@ -103,15 +100,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructRandomPermutation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order, but there is no
-  !! permutation from beyond the actual matrix dimension.
-  !! @param[inout] this the permutation to construct.
-  !! @param[in] actual_matrix_dimension actual size of the matrix.
-  !! @param[in] logical_matrix_dimension padded size of the matrix.
+  !> permutation from beyond the actual matrix dimension.
   SUBROUTINE ConstructLimitedRandomPermutation(this, actual_matrix_dimension, &
        & logical_matrix_dimension)
-    !! Parameters
+    !> The permutation to construct.
     TYPE(Permutation_t), INTENT(inout) :: this
+    !> Actual size of the matrix.
     INTEGER, INTENT(in) :: actual_matrix_dimension
+    !> Padded size of the matrix.
     INTEGER, INTENT(in) :: logical_matrix_dimension
     !! Local Data
     INTEGER :: counter
@@ -147,9 +143,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructLimitedRandomPermutation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
-  !! @param[inout] this the permutation to destruct.
   PURE SUBROUTINE DestructPermutation(this)
-    !! Parameters
+    !> The permutation to destruct.
     TYPE(Permutation_t), INTENT(inout) :: this
 
     IF (ALLOCATED(this%index_lookup)) THEN

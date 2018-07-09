@@ -22,20 +22,19 @@ MODULE GeometryOptimizationModule
   PUBLIC :: LowdinExtrapolate
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
-  !! Based on the purification algorithm in \cite niklasson2010trace .
-  !! @param[in] PreviousDensity to extrapolate from.
-  !! @param[in] Overlap the overlap matrix of the new geometry.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] NewDensity the extrapolated density.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !> Based on the purification algorithm in \cite niklasson2010trace .
   SUBROUTINE PurificationExtrapolate(PreviousDensity, Overlap, nel, NewDensity,&
        & solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(IN)  :: PreviousDensity, Overlap
+    !> Previous density to extrapolate from.
+    TYPE(Matrix_ps), INTENT(IN) :: PreviousDensity
+    !> The overlap matrix of the new geometry.
+    TYPE(Matrix_ps), INTENT(IN) :: Overlap
+    !> The number of electrons.
     INTEGER, INTENT(IN) :: nel
+    !> The extrapolated density.
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
@@ -195,21 +194,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PurificationExtrapolate
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
-  !! Based on the lowdin algorithm in \cite exner2002comparison .
-  !! @param[in] PreviousDensity to extrapolate from.
-  !! @param[in] OldOverlap the overlap matrix of the old geometry.
-  !! @param[in] NewOverlap the overlap matrix of the new geometry.
-  !! @param[out] NewDensity the extrapolated density.
-  !! @param[in] solver_parameters_in parameters for the solver
+  !> Based on the lowdin algorithm in \cite exner2002comparison .
   SUBROUTINE LowdinExtrapolate(PreviousDensity, OldOverlap, NewOverlap, &
        & NewDensity, solver_parameters_in)
-    !! Parameters
+    !> THe previous density to extrapolate from.
     TYPE(Matrix_ps), INTENT(IN)  :: PreviousDensity
+    !> The old overlap matrix from the previous geometry.
     TYPE(Matrix_ps), INTENT(IN)  :: OldOverlap
+    !> The new overlap matrix from the current geometry.
     TYPE(Matrix_ps), INTENT(IN)  :: NewOverlap
+    !> The extrapolated density.
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices

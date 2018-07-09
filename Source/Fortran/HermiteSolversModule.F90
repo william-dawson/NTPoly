@@ -43,11 +43,10 @@ MODULE HermiteSolversModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a Hermite polynomial object.
-  !! @param[inout] this the polynomial to construct.
-  !! @param[in] degree of the polynomial.
   PURE SUBROUTINE ConstructPolynomial_horner(this, degree)
-    !! Parameters
+    !> The polynomial to construct.
     TYPE(HermitePolynomial_t), INTENT(inout) :: this
+    !> The degree of the polynomial.
     INTEGER, INTENT(in) :: degree
 
     ALLOCATE(this%coefficients(degree))
@@ -55,39 +54,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructPolynomial_horner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Hermite polynomial object.
-  !! @param[inout] this the polynomial to destruct.
   PURE SUBROUTINE DestructPolynomial_horner(this)
-    !! Parameters
+    !> The polynomial to destruct.
     TYPE(HermitePolynomial_t), INTENT(inout) :: this
+
     IF (ALLOCATED(this%coefficients)) THEN
        DEALLOCATE(this%coefficients)
     END IF
   END SUBROUTINE DestructPolynomial_horner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set a coefficient of a Hermite polynomial.
-  !! @param[inout] this the polynomial to set.
-  !! @param[in] degree for which to set the coefficient.
-  !! @param[in] coefficient value.
   SUBROUTINE SetCoefficient_horner(this, degree, coefficient)
-    !! Parameters
+    !> The polynomial to set.
     TYPE(HermitePolynomial_t), INTENT(inout) :: this
+    !> The degree for which to set the coefficient.
     INTEGER, INTENT(in) :: degree
+    !> Coefficient value to set.
     REAL(NTREAL), INTENT(in) :: coefficient
 
     this%coefficients(degree) = coefficient
   END SUBROUTINE SetCoefficient_horner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Hermite Polynomial of the matrix.
-  !! This method uses the standard Hermite Polynomial expansion.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = poly(InputMat)
-  !! @param[in] poly polynomial to compute.
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  !> This method uses the standard Hermite Polynomial expansion.
   SUBROUTINE Compute_horner(InputMat, OutputMat, poly, solver_parameters_in)
-    !! Parameters
+    !> The input matrix.
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    !> OutputMat = poly(InputMat)
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
+    !> Polynomial to compute.
     TYPE(HermitePolynomial_t), INTENT(in) :: poly
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters

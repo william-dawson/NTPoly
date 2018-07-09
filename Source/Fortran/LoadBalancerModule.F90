@@ -13,16 +13,15 @@ MODULE LoadBalancerModule
   PUBLIC :: UndoPermuteMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Apply a permutation to a matrix.
-  !! @param[in] mat matrix to permute.
-  !! @param[out] mat_out permuted matrix.
-  !! @param[in] permutation to apply.
-  !! @param[inout] memorypool_in memory pool to use. Optional.
   SUBROUTINE PermuteMatrix(mat, mat_out, permutation, memorypool_in)
-    !! Parameters
+    !> The matrix to permute.
     TYPE(Matrix_ps), INTENT(IN) :: mat
+    !> The permuted matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: mat_out
+    !> The permutation to apply.
     TYPE(Permutation_t), INTENT(IN) :: permutation
-    TYPE(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
+    !> Memory pool to use
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT), OPTIONAL :: memorypool_in
     !! Local Variables
     TYPE(Matrix_ps) :: PermuteRows, PermuteColumns
     TYPE(Matrix_ps) :: Temp
@@ -53,15 +52,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PermuteMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Undo a permutation applied to a matrix.
-  !! @param[in] mat matrix to undo permutation of.
-  !! @param[out] mat_out unpermuted matrix.
-  !! @param[in] permutation to remove.
-  !! @param[inout] memorypool_in memory pool to use. Optional.
   SUBROUTINE UndoPermuteMatrix(mat, mat_out, permutation, memorypool_in)
-    !! Parameters
+    !> Matrix to undo permutation of.
     TYPE(Matrix_ps), INTENT(IN) :: mat
+    !> Unpermuted matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: mat_out
+    !> Permutation to remove.
     TYPE(Permutation_t), INTENT(IN) :: permutation
+    !> Memory pool to use.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT),OPTIONAL :: memorypool_in
     !! Local Variables
     TYPE(Matrix_ps) :: PermuteRows, PermuteColumns

@@ -22,14 +22,14 @@ MODULE SquareRootSolversModule
   PUBLIC :: InverseSquareRoot
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root of a matrix.
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[out] OutputMat the resulting matrix.
-  !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE SquareRoot(InputMat, OutputMat, solver_parameters_in)
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    !> The resulting matrix.
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
+
     IF (PRESENT(solver_parameters_in)) THEN
        CALL NewtonSchultzISR(InputMat, OutputMat, .FALSE., &
             & solver_parameters_in)
@@ -39,14 +39,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[out] OutputMat the resulting matrix.
-  !! @param[in] solver_parameters_in parameters for the solver, optional.
   SUBROUTINE InverseSquareRoot(InputMat, OutputMat, solver_parameters_in)
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(in)  :: InputMat
+    !> The resulting matrix.
     TYPE(Matrix_ps), INTENT(inout) :: OutputMat
-    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t),INTENT(in),OPTIONAL :: solver_parameters_in
+
     IF (PRESENT(solver_parameters_in)) THEN
        CALL NewtonSchultzISR(InputMat, OutputMat, .TRUE., &
             & solver_parameters_in)
@@ -56,18 +56,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE InverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root or inverse square root of a matrix.
-  !! Based on the Newton-Schultz algorithm presented in: \cite jansik2007linear
-  !! @param[in] Mat1 Matrix 1.
-  !! @param[out] InverseSquareRootMat = Mat1^-1/2.
-  !! @param[in] solver_parameters_in parameters for the solver
-  SUBROUTINE NewtonSchultzISR(Mat1, OutMat, compute_inverse_in, &
+  !> Based on the Newton-Schultz algorithm presented in: \cite jansik2007linear
+  SUBROUTINE NewtonSchultzISR(Mat, OutMat, compute_inverse_in, &
        & solver_parameters_in)
-    !! Parameters
-    TYPE(Matrix_ps), INTENT(in)  :: Mat1
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(in)  :: Mat
+    !> OutMat = Mat^-1/2
     TYPE(Matrix_ps), INTENT(inout) :: OutMat
+    !> Whether to compute the inverse or just the square root factor.
     LOGICAL, INTENT(in), OPTIONAL :: compute_inverse_in
-    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: &
-         & solver_parameters_in
+    !> Solver parameters.
+    TYPE(SolverParameters_t), INTENT(in), OPTIONAL :: solver_parameters_in
+    !! Constants.
     REAL(NTREAL), PARAMETER :: TWO = 2.0
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
@@ -105,22 +105,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(X_k, Mat1)
-    CALL ConstructEmptyMatrix(SquareRootMat, Mat1)
-    CALL ConstructEmptyMatrix(InverseSquareRootMat, Mat1)
-    CALL ConstructEmptyMatrix(T_k, Mat1)
-    CALL ConstructEmptyMatrix(Temp, Mat1)
-    CALL ConstructEmptyMatrix(Identity, Mat1)
+    CALL ConstructEmptyMatrix(X_k, Mat)
+    CALL ConstructEmptyMatrix(SquareRootMat, Mat)
+    CALL ConstructEmptyMatrix(InverseSquareRootMat, Mat)
+    CALL ConstructEmptyMatrix(T_k, Mat)
+    CALL ConstructEmptyMatrix(Temp, Mat)
+    CALL ConstructEmptyMatrix(Identity, Mat)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the lambda scaling value.
-    CALL GershgorinBounds(Mat1,e_min,e_max)
+    CALL GershgorinBounds(Mat,e_min,e_max)
     max_between = MAX(ABS(e_min),ABS(e_max))
     lambda = 1.0/max_between
 
     !! Initialize
     CALL FillMatrixIdentity(InverseSquareRootMat)
-    CALL CopyMatrix(Mat1,SquareRootMat)
+    CALL CopyMatrix(Mat,SquareRootMat)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN

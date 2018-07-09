@@ -31,13 +31,12 @@ MODULE ExponentialSolversModule
   PUBLIC :: ComputeLogarithmTaylor
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = exp(InputMat)
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeExponential(InputMat, OutputMat, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -162,16 +161,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a pade approximation.
-  !! Be warned, the pade method can result in a lot of intermediate fill.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = exp(InputMat)
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  !> Be warned, the pade method can result in a lot of intermediate fill.
   SUBROUTINE ComputeExponentialPade(InputMat, OutputMat, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     TYPE(SolverParameters_t) :: sub_solver_parameters
@@ -291,16 +288,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeExponentialPade
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a taylor series expansion.
-  !! This is only really useful if you have a very small spectrum, because
-  !! quite a bit of scaling is required.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = exp(InputMat)
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  !> This is only really useful if you have a very small spectrum, because
+  !> quite a bit of scaling is required.
   SUBROUTINE ComputeExponentialTaylor(InputMat, OutputMat, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constants
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -392,13 +389,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeExponentialTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = log(InputMat)
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithm(InputMat, OutputMat, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -547,14 +543,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeLogarithm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix using a taylor series expansion.
-  !! @param[in] InputMat the input matrix
-  !! @param[out] OutputMat = log(InputMat)
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE ComputeLogarithmTaylor(InputMat, OutputMat, solver_parameters_in)
-    !! Parameters
+    !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Constants
     REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters

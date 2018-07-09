@@ -40,23 +40,19 @@ MODULE SolverParametersModule
   !> The default maximum number of iterations.
   INTEGER, PARAMETER, PUBLIC :: MAX_ITERATIONS_CONST = 1000
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !! Handle the parameters
   !> Construct a data type which stores iterative solver parameters.
-  !! @param[in] converge_diff_in the difference between iterations to consider
-  !! a calculation converged (optional).
-  !! @param[in] threshold_in the zero threshold (optional).
-  !! @param[in] max_iterations_in the maximum number of iterations to perform
-  !! (optional).
-  !! @param[in] be_verbose_in whether to print during the calculation
-  !! (optional, default = False).
-  !! @param[in] BalancePermutation_in for load balancing (optional).
   PURE FUNCTION SolverParameters_init(converge_diff_in, threshold_in, &
        & max_iterations_in, be_verbose_in, BalancePermutation_in) RESULT(this)
-    !! Parameters
+    !> Converge_diff_in the difference between iterations to consider
+    !> a calculation converged.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: converge_diff_in
+    !> The zero threshold
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
+    !> The maximum number of iterations to perform
     INTEGER, INTENT(IN), OPTIONAL :: max_iterations_in
+    !> Whether to print during the calculation (default = False)
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
+    !> For load balancing
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
     TYPE(SolverParameters_t) :: this
 
@@ -90,50 +86,50 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION SolverParameters_init
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the convergence difference.
-  !! @param[inout] this the parameter object.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetParametersConvergeDiff(this,new_value)
+    !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
     REAL(NTREAL), INTENT(IN) :: new_value
 
     this%converge_diff = new_value
   END SUBROUTINE SetParametersConvergeDiff
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the max iterations.
-  !! @param[inout] this the parameter object.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetParametersMaxIterations(this,new_value)
+    !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
     INTEGER, INTENT(IN) :: new_value
 
     this%max_iterations = new_value
   END SUBROUTINE SetParametersMaxIterations
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the threshold.
-  !! @param[inout] this the parameter object.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetParametersThreshold(this,new_value)
+    !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
     REAL(NTREAL), INTENT(IN) :: new_value
 
     this%threshold = new_value
   END SUBROUTINE SetParametersThreshold
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the verbosity.
-  !! @param[inout] this the parameter object.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetParametersBeVerbose(this,new_value)
+    !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
     LOGICAL, INTENT(IN) :: new_value
 
     this%be_verbose = new_value
   END SUBROUTINE SetParametersBeVerbose
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the load balance.
-  !! @param[inout] this the parameter object.
-  !! @param[in] new_value to set it to.
   PURE SUBROUTINE SetParametersLoadBalance(this,new_value)
+    !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
     TYPE(Permutation_t), INTENT(IN) :: new_value
 
     this%do_load_balancing = .TRUE.
@@ -141,8 +137,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersLoadBalance
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the iterative solver parameter values.
-  !! @param[inout] this the parameter object.
   SUBROUTINE PrintParameters(this)
+    !> The parameter object.
     TYPE(SolverParameters_t), INTENT(IN) :: this
 
     CALL WriteHeader("Solver Parameters")
