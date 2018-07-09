@@ -8,7 +8,7 @@ MODULE PMatrixMemoryPoolModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A memory pool datatype that can be reused for matrix matrix multiplication.
-  !! this is to prevent excessive alloc/dealloc.
+  !> this is to prevent excessive alloc/dealloc.
   TYPE, PUBLIC :: MatrixMemoryPool_p
      !> Grid of local pools.
      TYPE(MatrixMemoryPool_lr), DIMENSION(:,:), ALLOCATABLE, PUBLIC :: grid_r
@@ -30,11 +30,10 @@ MODULE PMatrixMemoryPoolModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
-  !> @param[out] this a constructed Matrix Memory Pool object.
-  !! @param[in] matrix the associated distributed sparse matrix.
   PURE FUNCTION ConstructMatrixMemoryPool_p(matrix) RESULT(this)
-    !! Parameters
+    !> A constructed Matrix Memory Pool object.
     TYPE(MatrixMemoryPool_p) :: this
+    !> The associated distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(IN) :: matrix
 
     !! Allocate
@@ -48,9 +47,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION ConstructMatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Distributed Matrix Memory Pool object.
-  !> @param[out] this Distributed Matrix Memory Pool object to destroy.
   PURE SUBROUTINE DestructMatrixMemoryPool_p(this)
-    !! Parameters
+    !> Distributed Matrix Memory Pool object to destroy.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
     !! Local Data
     INTEGER :: row_counter, column_counter
@@ -66,13 +64,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrixMemoryPool_p
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Checks if a given distributed memory pool has been validly allocated to
-  !! handle the given parameters.
-  !> @param[in] this the memory pool to check.
-  !> @return true if the memory pool is valid.
+  !> handle the given parameters.
   PURE FUNCTION CheckMemoryPoolValidity_p(this, matrix) RESULT(isvalid)
-    !! Parameters
+    !> The memory pool to check.
     TYPE(MatrixMemoryPool_p), INTENT(IN) :: this
+    !> The associated matrix to check against.
     TYPE(Matrix_ps), INTENT(IN) :: matrix
+    !> True if the memory pool is valid.
     LOGICAL :: isvalid
 
     isvalid = .TRUE.

@@ -32,8 +32,8 @@ MODULE TripletModule
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a triplet of integer, integer, double.
-  !! As this is related to matrix multiplication, the referencing indices are
-  !! rows and columns.
+  !> As this is related to matrix multiplication, the referencing indices are
+  !> rows and columns.
   TYPE, PUBLIC :: Triplet_r
      INTEGER(kind=c_int) :: index_column !< column value.
      INTEGER(kind=c_int) :: index_row    !< row value.
@@ -41,8 +41,8 @@ MODULE TripletModule
   END TYPE Triplet_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a triplet of integer, integer, complex.
-  !! As this is related to matrix multiplication, the referencing indices are
-  !! rows and columns.
+  !> As this is related to matrix multiplication, the referencing indices are
+  !> rows and columns.
   TYPE, PUBLIC :: Triplet_c
      INTEGER(kind=c_int) :: index_column !< column value.
      INTEGER(kind=c_int) :: index_row    !< row value.
@@ -50,59 +50,99 @@ MODULE TripletModule
   END TYPE Triplet_c
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
-  !! @param[inout] this the triplet to set the values of.
-  !! @param[in] index_column the column value.
-  !! @param[in] index_row the row value.
-  !! @param[in] point_value the value at that point.
   PURE SUBROUTINE SetTriplet_r(this,index_column,index_row,point_value)
-    !! Parameters
-    TYPE(Triplet_r), INTENT(INOUT)       :: this
-    INTEGER, INTENT(IN)                  :: index_column
-    INTEGER, INTENT(IN)                  :: index_row
-    REAL(NTREAL), INTENT(IN)   :: point_value
+    !> The triplet to set the values of.
+    TYPE(Triplet_r), INTENT(INOUT) :: this
+    !> The column value.
+    INTEGER, INTENT(IN)            :: index_column
+    !> The row value.
+    INTEGER, INTENT(IN)            :: index_row
+    !> The value at that point.
+    REAL(NTREAL), INTENT(IN)       :: point_value
 
     INCLUDE "triplet_includes/SetTriplet.F90"
 
   END SUBROUTINE SetTriplet_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the values of a triplet.
+  PURE SUBROUTINE SetTriplet_c(this,index_column,index_row,point_value)
+    !> The triplet to set the values of.
+    TYPE(Triplet_c), INTENT(INOUT) :: this
+    !> The column value.
+    INTEGER, INTENT(IN)            :: index_column
+    !> The row value.
+    INTEGER, INTENT(IN)            :: index_row
+    !> The value at that point.
+    COMPLEX(NTCOMPLEX), INTENT(IN) :: point_value
+
+    INCLUDE "triplet_includes/SetTriplet.F90"
+
+  END SUBROUTINE SetTriplet_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the values of a triplet.
-  !! @param[in] this the triplet to extract the values of.
-  !! @param[out] index_column column value.
-  !! @param[out] index_row row value.
-  !! @param[out] point_value actual stored value.
   PURE SUBROUTINE GetTripletValues_r(this,index_column,index_row,point_value)
-    !! Parameters
-    TYPE(Triplet_r), INTENT(IN)           :: this
-    INTEGER, INTENT(OUT)                  :: index_column
-    INTEGER, INTENT(OUT)                  :: index_row
+    !> The triplet to extract the values of.
+    TYPE(Triplet_r), INTENT(IN) :: this
+    !> Column value.
+    INTEGER, INTENT(OUT)        :: index_column
+    !> Row value.
+    INTEGER, INTENT(OUT)        :: index_row
+    !> Actual stored value.
     REAL(NTREAL), INTENT(OUT)   :: point_value
 
     INCLUDE "triplet_includes/GetTriplet.F90"
 
   END SUBROUTINE GetTripletValues_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the values of a triplet.
+  PURE SUBROUTINE GetTripletValues_c(this,index_column,index_row,point_value)
+    !> The triplet to extract the values of.
+    TYPE(Triplet_c), INTENT(IN)     :: this
+    !> Column value.
+    INTEGER, INTENT(OUT)            :: index_column
+    !> Row value.
+    INTEGER, INTENT(OUT)            :: index_row
+    !> Actual stored value.
+    COMPLEX(NTCOMPLEX), INTENT(OUT) :: point_value
+
+    INCLUDE "triplet_includes/GetTriplet.F90"
+
+  END SUBROUTINE GetTripletValues_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compare two triplets based on their index values, first by column and
-  !! second by row. Returns A < B.
-  !! Used for sorting.
-  !! @param[in] tripA first triplet.
-  !! @param[in] tripB second triplet.
-  !! @return A < B.
+  !> second by row. Returns A < B.
   PURE FUNCTION CompareTriplets_r(tripA, tripB) RESULT(islessthan)
-    !! Parameters
-    TYPE(Triplet_r), INTENT(IN) :: tripA, tripB
+    !> First triplet.
+    TYPE(Triplet_r), INTENT(IN) :: tripA
+    !> Second triplet.
+    TYPE(Triplet_r), INTENT(IN) :: tripB
+    !> A < B.
     LOGICAL :: islessthan
 
     INCLUDE "triplet_includes/CompareTriplets.F90"
 
   END FUNCTION CompareTriplets_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compare two triplets based on their index values, first by column and
+  !> second by row. Returns A < B.
+  PURE FUNCTION CompareTriplets_c(tripA, tripB) RESULT(islessthan)
+    !> First triplet.
+    TYPE(Triplet_c), INTENT(IN) :: tripA
+    !> Second triplet.
+    TYPE(Triplet_c), INTENT(IN) :: tripB
+    !> A < B.
+    LOGICAL :: islessthan
+
+    INCLUDE "triplet_includes/CompareTriplets.F90"
+
+  END FUNCTION CompareTriplets_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Returns an MPI Derived Data Type For A Triplet.
-  !! We statically store this derived type so that we don't have to recreate
-  !! it every time this function is called. Thus this functional call should
-  !! add very little overhead.
-  !! @return the derived type
+  !> We statically store this derived type so that we don't have to recreate
+  !> it every time this function is called. Thus this functional call should
+  !> add very little overhead.
   FUNCTION GetMPITripletType_r() RESULT(mpi_triplet_type)
-    !! Parameters
+    !> MPI Derived Type
     INTEGER :: mpi_triplet_type
     !! Local Data
     INTEGER, DIMENSION(3) :: triplet_sub_types
@@ -130,60 +170,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END FUNCTION GetMPITripletType_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Set the values of a triplet.
-  !! @param[inout] this the triplet to set the values of.
-  !! @param[in] index_column the column value.
-  !! @param[in] index_row the row value.
-  !! @param[in] point_value the value at that point.
-  PURE SUBROUTINE SetTriplet_c(this,index_column,index_row,point_value)
-    !! Parameters
-    TYPE(Triplet_c), INTENT(INOUT)       :: this
-    INTEGER, INTENT(IN)                  :: index_column
-    INTEGER, INTENT(IN)                  :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(IN)   :: point_value
-
-    INCLUDE "triplet_includes/SetTriplet.F90"
-
-  END SUBROUTINE SetTriplet_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Get the values of a triplet.
-  !! @param[in] this the triplet to extract the values of.
-  !! @param[out] index_column column value.
-  !! @param[out] index_row row value.
-  !! @param[out] point_value actual stored value.
-  PURE SUBROUTINE GetTripletValues_c(this,index_column,index_row,point_value)
-    !! Parameters
-    TYPE(Triplet_c), INTENT(IN)           :: this
-    INTEGER, INTENT(OUT)                  :: index_column
-    INTEGER, INTENT(OUT)                  :: index_row
-    COMPLEX(NTCOMPLEX), INTENT(OUT)   :: point_value
-
-    INCLUDE "triplet_includes/GetTriplet.F90"
-
-  END SUBROUTINE GetTripletValues_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compare two triplets based on their index values, first by column and
-  !! second by row. Returns A < B.
-  !! Used for sorting.
-  !! @param[in] tripA first triplet.
-  !! @param[in] tripB second triplet.
-  !! @return A < B.
-  PURE FUNCTION CompareTriplets_c(tripA, tripB) RESULT(islessthan)
-    !! Parameters
-    TYPE(Triplet_c), INTENT(IN) :: tripA, tripB
-    LOGICAL :: islessthan
-
-    INCLUDE "triplet_includes/CompareTriplets.F90"
-
-  END FUNCTION CompareTriplets_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Returns an MPI Derived Data Type For A Triplet.
-  !! We statically store this derived type so that we don't have to recreate
-  !! it every time this function is called. Thus this functional call should
-  !! add very little overhead.
-  !! @return the derived type
+  !> We statically store this derived type so that we don't have to recreate
+  !> it every time this function is called. Thus this functional call should
+  !> add very little overhead.
   FUNCTION GetMPITripletType_c() RESULT(mpi_triplet_type)
-    !! Parameters
+    !> MPI Derived Type
     INTEGER :: mpi_triplet_type
     !! Local Data
     INTEGER, DIMENSION(3) :: triplet_sub_types
@@ -212,11 +204,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMPITripletType_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a complex triplet to a real triplet.
-  !! @param[in] cin_triplet the starting triplet
-  !! @param[out] rout_triplet real valued triplet.
   SUBROUTINE ConvertTripletToReal(cin_triplet, rout_triplet)
-    !! Parameters
+    !> The starting triplet
     TYPE(Triplet_c), INTENT(IN)    :: cin_triplet
+    !> Real valued triplet.
     TYPE(Triplet_r), INTENT(INOUT) :: rout_triplet
 
     rout_triplet%index_row = cin_triplet%index_row
@@ -225,11 +216,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConvertTripletToReal
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a real triplet to a complex triplet.
-  !! @param[in] rin_triplet the starting triplet.
-  !! @param[out] cout_triplet complex valued triplet.
   SUBROUTINE ConvertTripletToComplex(rin_triplet, cout_triplet)
-    !! Parameters
+    !> The starting triplet.
     TYPE(Triplet_r), INTENT(IN)    :: rin_triplet
+    !> Complex valued triplet.
     TYPE(Triplet_c), INTENT(INOUT) :: cout_triplet
 
     cout_triplet%index_row = rin_triplet%index_row

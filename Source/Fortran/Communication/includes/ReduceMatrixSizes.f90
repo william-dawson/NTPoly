@@ -1,5 +1,3 @@
-  INTEGER, INTENT(INOUT)              :: communicator
-  TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
   !! Local Data
   INTEGER :: grid_error
 

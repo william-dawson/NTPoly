@@ -1,8 +1,11 @@
 Title: NTPoly
-Summary: Summary goes here
+project: NTPoly
 Authors: William Dawson
 Date: July 6th, 2018
 src_dir: @CMAKE_SOURCE_DIR@/Source/Fortran
 output_dir: @CMAKE_BINARY_DIR@/Documentation
+docmark: <
 extensions: F90
-project_github: https://github.com/william-dawson/NTPoly
+css: @CMAKE_SOURCE_DIR@/Documentation/doc.css
+
+{!../ReadMe.md!}

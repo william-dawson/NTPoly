@@ -68,12 +68,11 @@ MODULE PSMatrixAlgebraModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute sigma for the inversion method.
-  !! See \cite ozaki2001efficient for details.
-  !! @param[in] this the matrix to compute the sigma value of.
-  !! @param[out] sigma_value sigma.
+  !> See \cite ozaki2001efficient for details.
   SUBROUTINE MatrixSigma_ps(this, sigma_value)
-    !! Parameters
+    !> The matrix to compute the sigma value of.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> Sigma
     REAL(NTREAL), INTENT(OUT) :: sigma_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: column_sigma_contribution
@@ -95,23 +94,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixSigma_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
-  !! C := alpha*matA*matB+ beta*matC
-  !! @param[in] matA Matrix A
-  !! @param[in] matB Matrix B
-  !! @param[out] matC = alpha*matA*matB + beta*matC
-  !! @param[in] alpha_in scales the multiplication
-  !! @param[in] beta_in scales matrix we sum on to
-  !! @param[in] threshold_in for flushing values to zero (Optional, default=0).
-  !! @param[inout] memory_pool_in a memory pool for the calculation (Optional).
+  !> C := alpha*matA*matB+ beta*matC
   SUBROUTINE MatrixMultiply_ps(matA, matB ,matC, alpha_in, beta_in, &
        & threshold_in, memory_pool_in)
-    !! Parameters
+    !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)        :: matA
+    !> Matrix B.
     TYPE(Matrix_ps), INTENT(IN)        :: matB
+    !> matC = alpha*matA*matB + beta*matC
     TYPE(Matrix_ps), INTENT(INOUT)     :: matC
+    !> Scales the multiplication
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    !> Scales matrix we sum on to.
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: beta_in
+    !> For flushing values to zero.
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
+    !> A memory pool for the calculation.
     TYPE(MatrixMemoryPool_p), OPTIONAL, INTENT(INOUT) :: memory_pool_in
     !! Local Versions of Optional Parameter
     TYPE(Matrix_ps) :: matAConverted
@@ -190,6 +188,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE MatrixMultiply_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The actual implementation of matrix multiply is here. Takes the
+  !> same parameters as the standard multiply, but nothing is optional.
   SUBROUTINE MatrixMultiply_ps_imp(matA, matB ,matC, alpha, beta, &
        & threshold, memory_pool)
     !! Parameters
@@ -286,11 +286,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixMultiply_ps_imp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the elements in a matrix into a single value.
-  !! @param[in] this matrix to compute.
-  !! @result sum the sum of all elements.
   SUBROUTINE MatrixGrandSum_psr(this, sum)
-    !! Parameters
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN)  :: this
+    !> The sum of all elements.
     REAL(NTREAL), INTENT(OUT) :: sum
     !! Local Data
     INTEGER :: II, JJ
@@ -316,11 +315,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixGrandSum_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the elements in a matrix into a single value.
-  !! @param[in] this matrix to compute.
-  !! @result sum the sum of all elements.
   SUBROUTINE MatrixGrandSum_psc(this, sum)
     !! Parameters
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN)  :: this
+    !> The sum of all elements.
     COMPLEX(NTCOMPLEX), INTENT(OUT) :: sum
     !! Local Data
     INTEGER :: II, JJ
@@ -346,14 +345,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixGrandSum_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication. C_ij = A_ij * B_ij.
-  !! Also known as a Hadamard product.
-  !! @param[in] matA Matrix A.
-  !! @param[in] matB Matrix B.
-  !! @param[inout] matC = MatA mult MatB.
+  !> Also known as a Hadamard product.
   RECURSIVE SUBROUTINE PairwiseMultiplyMatrix_ps(matA, matB, matC)
     !! Parameters
+    !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)  :: matA
+    !> Matrix B.
     TYPE(Matrix_ps), INTENT(IN)  :: matB
+    !> matC = MatA mult MatB.
     TYPE(Matrix_ps), INTENT(INOUT)  :: matC
     !! Local Data
     TYPE(Matrix_ps) :: converted_matrix
@@ -377,11 +376,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PairwiseMultiplyMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a distributed sparse matrix along the rows.
-  !! @param[in] this the matrix to compute the norm of.
-  !! @return the norm value of the full distributed sparse matrix.
   FUNCTION MatrixNorm_ps(this) RESULT(norm_value)
     !! Parameters
+    !> The matrix to compute the norm of.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The norm value of the full distributed sparse matrix.
     REAL(NTREAL) :: norm_value
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: local_norm
@@ -401,46 +400,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION MatrixNorm_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(Matrix A,Matrix B)
-  !! Note that a dot product is the sum of elementwise multiplication, not
-  !! traditional matrix multiplication.
-  !! @param[in] matA Matrix A.
-  !! @param[in,out] matB Matrix B.
-  !! @result product the dot product.
+  !> Note that a dot product is the sum of elementwise multiplication, not
+  !> traditional matrix multiplication.
   SUBROUTINE DotMatrix_psr(matA, matB, product)
-    !! Parameters
+    !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)  :: matA
+    !> Matrix B.
     TYPE(Matrix_ps), INTENT(IN)  :: matB
+    !> The dot product.
     REAL(NTREAL), INTENT(OUT) :: product
 
     INCLUDE "algebra_includes/DotMatrix.F90"
   END SUBROUTINE DotMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(Matrix A,Matrix B)
-  !! Note that a dot product is the sum of elementwise multiplication, not
-  !! traditional matrix multiplication.
-  !! @param[in] matA Matrix A.
-  !! @param[in,out] matB Matrix B.
-  !! @result product the dot product.
+  !> Note that a dot product is the sum of elementwise multiplication, not
+  !> traditional matrix multiplication.
   SUBROUTINE DotMatrix_psc(matA, matB, product)
-    !! Parameters
+    !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)  :: matA
+    !> Matrix B.
     TYPE(Matrix_ps), INTENT(IN)  :: matB
+    !> The dot product.
     COMPLEX(NTCOMPLEX), INTENT(OUT) :: product
 
     INCLUDE "algebra_includes/DotMatrix.F90"
   END SUBROUTINE DotMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
-  !! This will utilize the sparse vector increment routine.
-  !! @param[in] matA Matrix A.
-  !! @param[inout] matB Matrix B.
-  !! @param[in] alpha_in multiplier. (Optional, default= 1.0)
-  !! @param[in] threshold_in for flushing values to zero. (Optional, default=0)
+  !> This will utilize the sparse vector increment routine.
   RECURSIVE SUBROUTINE IncrementMatrix_ps(matA, matB, alpha_in, threshold_in)
-    !! Parameters
+    !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)  :: matA
+    !> Matrix B.
     TYPE(Matrix_ps), INTENT(INOUT)  :: matB
+    !> Multiplier (default= 1.0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
+    !> For flushing values to zero (default=0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Data
     TYPE(Matrix_ps) :: converted_matrix
@@ -479,11 +475,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
-  !! @param[inout] this Matrix to scale.
-  !! @param[in] constant scale factor.
   SUBROUTINE ScaleMatrix_psr(this, constant)
-    !! Parameters
+    !> Matrix to scale.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A constant scale factor.
     REAL(NTREAL), INTENT(IN) :: constant
     !! Local Data
     INTEGER :: II, JJ
@@ -501,11 +496,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
-  !! @param[inout] this Matrix to scale.
-  !! @param[in] constant scale factor.
   RECURSIVE SUBROUTINE ScaleMatrix_psc(this, constant)
-    !! Parameters
+    !> Matrix to scale.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A constant scale factor.
     COMPLEX(NTCOMPLEX), INTENT(IN) :: constant
     !! Local Data
     TYPE(Matrix_ps) :: this_c
@@ -525,11 +519,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
-  !! @param[in] this the matrix to compute the trace of.
-  !! @param[out] the trace value of the full distributed sparse matrix.
   SUBROUTINE MatrixTrace_psr(this, trace_value)
     !! Parameters
+    !> The matrix to compute the trace of.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The trace value of the full distributed sparse matrix.
     REAL(NTREAL), INTENT(OUT) :: trace_value
     !! Local data
     TYPE(TripletList_r) :: triplet_list_r

@@ -55,11 +55,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to insert a value into a sparse vector.
   PURE SUBROUTINE AppendToVector_r(values_per, indices, values, insert_row, &
        & insert_value)
-    !! Parameters
+    !> Values per row.
     INTEGER, INTENT(INOUT) :: values_per
+    !> Indices associated with each value.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: indices
+    !> Values.
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
+    !> Row to insert into.
     INTEGER, INTENT(IN) :: insert_row
+    !> Value to insert.
     REAL(NTREAL), INTENT(IN) :: insert_value
 
     INCLUDE "includes/AppendToVector.F90"
@@ -67,11 +71,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
   SUBROUTINE BroadcastVector_r(num_values, indices, values, root, comm)
-    !! Parameters
+    !> Number of values we are broadcasting.
     INTEGER, INTENT(INOUT) :: num_values
+    !> Indices to broadcast.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: indices
+    !> Values to broadcast.
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: values
+    !> Root from which we broadcast.
     INTEGER, INTENT(IN) :: root
+    !> Communicator to broadcast along.
     INTEGER, INTENT(INOUT) :: comm
     !! Local
     INTEGER :: err
@@ -83,10 +91,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the vector holding the accumulated diagonal values
   SUBROUTINE ConstructDiag_r(AMat, process_grid, dense_a, diag)
-    !! Parameters
+    !> AMat the matrix we're working on (for meta data).
     TYPE(Matrix_ps), INTENT(IN) :: AMat
+    !> The process grid we're operating on.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
+    !> A dense representation of the values.
     TYPE(Matrix_ldr), INTENT(IN) :: dense_a
+    !> Diagonal values computed.
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
 
     INCLUDE "includes/ConstructDiag.F90"
@@ -97,9 +108,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a lookup for columns
   SUBROUTINE ConstructRankLookup(AMat, process_grid, col_root_lookup)
-    !! Root Lookups
+    !> Matrix we're computing.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
+    !> Grid we're computing along.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
+    !> The lookup we're computing.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: col_root_lookup
     !! Local Variables
     INTEGER, DIMENSION(process_grid%num_process_columns) :: cols_per_proc
@@ -122,43 +135,55 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructRankLookup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Helper routine which computes sparse dot products across processors.
-  !! Computes the dot product of one vector with several others.
-  !! @param[in] num_values_i the length of vector i.
-  !! @param[in] indices_i the index value of the sparse vector i.
-  !! @param[in] values_i the values of the sparse vector i.
-  !! @param[in] num_values_j an array with the length of vectors j.
-  !! @param[in] indices_j the indices of the vectors j.
-  !! @param[in] values_j the values of the vectors j.
-  !! @param[out] out_values the dot product values for each vector j.
-  !! @param[in] comm the communicator to reduce along.
+  !> Computes the dot product of one vector with several others.
   SUBROUTINE DotAllHelper_r(num_values_i, indices_i, values_i, num_values_j, &
        & indices_j, values_j, out_values, comm)
-    !! Parameters
+    !> The length of vector i.
     INTEGER, INTENT(IN) :: num_values_i
+    !> Tn array with the length of vectors j.
     INTEGER, DIMENSION(:), INTENT(IN) :: num_values_j
+    !> The index value of the sparse vector i.
     INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
+    !> The indices of the vectors j.
     INTEGER, DIMENSION(:,:), INTENT(IN) :: indices_j
+    !> The values of the sparse vector i.
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
+    !> The values of the vectors j.
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values_j
+    !> The dot product values for each vector j.
     REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
+    !> The communicator to reduce along.
     INTEGER, INTENT(INOUT) :: comm
 
     INCLUDE "includes/DotAllHelper.F90"
 
   END SUBROUTINE DotAllHelper_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Helper routine which computes sparse dot products across processors.
+  !> Computes the dot product of one vector with several others.
+  !> The pivoted version has the number of local pivots to work on as a
+  !> parameter.
   SUBROUTINE DotAllPivoted_r(num_values_i, indices_i, values_i, num_values_j, &
        & indices_j, values_j, pivot_vector, num_local_pivots, out_values, comm)
-    !! Parameters
+    !> The length of vector i.
     INTEGER, INTENT(IN) :: num_values_i
+    !> Tn array with the length of vectors j.
     INTEGER, DIMENSION(:), INTENT(IN) :: num_values_j
+    !> The index value of the sparse vector i.
     INTEGER, DIMENSION(:), INTENT(IN) :: indices_i
+    !> The indices of the vectors j.
     INTEGER, DIMENSION(:,:), INTENT(IN) :: indices_j
+    !> The values of the sparse vector i.
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: values_i
+    !> The values of the vectors j.
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values_j
+    !> Vector storing the pivot values.
     INTEGER, DIMENSION(:), INTENT(IN) :: pivot_vector
+    !> Number of pivots.
     INTEGER, INTENT(IN) :: num_local_pivots
+    !> The dot product values for each vector j.
     REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
+    !> The communicator to reduce along.
     INTEGER, INTENT(INOUT) :: comm
 
     INCLUDE "includes/DotAllPivoted.F90"
@@ -166,12 +191,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DotAllPivoted_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine that gathers the matrices in the same column into one.
-  !! @param[in] local_matrix the local matrix on each process.
-  !! @param[out] column_matrix the final result.
   SUBROUTINE GatherMatrixColumn_r(local_matrix, column_matrix, process_grid)
-    !! Parameters
+    !> The local matrix on each process.
     TYPE(Matrix_lsr), INTENT(IN) :: local_matrix
+    !> The final result.
     TYPE(Matrix_lsr), INTENT(INOUT) :: column_matrix
+    !> The process grid to operate on.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     !! Local Variables
     TYPE(Matrix_lsr) :: local_matrixT
@@ -179,17 +204,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "includes/GatherMatrixColumn.F90"
   END SUBROUTINE GatherMatrixColumn_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the pivot vector.
   SUBROUTINE GetPivot_r(AMat, process_grid, start_index, pivot_vector, diag, &
        & index, value, local_pivots, num_local_pivots)
-    !! Parameters
+    !> The matrix we're working on.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
+    !> The process grid to compute on.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
+    !> The current pivot vector.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: pivot_vector
+    !> The diagonal values.
     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: diag
+    !> The start index to look
     INTEGER, INTENT(IN) :: start_index
+    !> The pivot index selected.
     INTEGER, INTENT(OUT) :: index
+    !> The pivot value.
     REAL(NTREAL), INTENT(OUT) :: value
+    !> The local pivot values to modify.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: local_pivots
+    !> Number of pivots stored locally.
     INTEGER, INTENT(OUT) :: num_local_pivots
     !! Local Variables
     REAL(NTREAL) :: temp_diag
@@ -199,11 +233,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE GetPivot_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Unpack to a global matrix.
   SUBROUTINE UnpackCholesky_r(values_per_column, index, values, LMat)
-    !! Parameters
+    !> The number of values in a column.
     INTEGER, DIMENSION(:), INTENT(IN) :: values_per_column
+    !> Index values.
     INTEGER, DIMENSION(:,:), INTENT(IN) :: index
+    !> Actual values.
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: values
+    !> Matrix to unpack into.
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
 
     INCLUDE "includes/UnpackCholesky.F90"

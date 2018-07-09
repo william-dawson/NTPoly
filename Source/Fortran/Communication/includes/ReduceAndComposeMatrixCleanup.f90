@@ -1,4 +1,3 @@
-  TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
   !! Local Data
   INTEGER :: counter, inner_counter
   INTEGER :: temp_offset

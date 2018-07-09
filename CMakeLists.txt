@@ -39,7 +39,7 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
 #endif()
 find_program ( FORD ford )
 if ( FORD )
-  configure_file(${CMAKE_SOURCE_DIR}/Ford.in
+  configure_file(${CMAKE_SOURCE_DIR}/Documentation/Ford.in
                  ${CMAKE_BINARY_DIR}/Ford @ONLY)
   add_custom_target(doc "${FORD}" Ford)
 endif()

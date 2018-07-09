@@ -38,9 +38,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ExitSubLog
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a header to the log.
-  !! @param[in] header_value the text of the header.
   SUBROUTINE WriteHeader(header_value)
-    !! Parameters
+    !> The text of the header.
     CHARACTER(LEN=*), INTENT(IN) :: header_value
 
     IF (IsActive) THEN
@@ -51,19 +50,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteHeader
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a element.
-  !! Only specify one of the kinds of values.
-  !! @param[in] key some text to write.
-  !! @param[in] text_value_in a text value to write (optional).
-  !! @param[in] int_value_in an integer value to write (optional).
-  !! @param[in] float_value_in an float value to write (optional).
-  !! @param[in] bool_value_in a bool value to write (optional).
   SUBROUTINE WriteElement(key, text_value_in, int_value_in, float_value_in, &
        & bool_value_in)
-    !! Parameters
+    !> Some text to write.
     CHARACTER(LEN=*), INTENT(IN) :: key
+    !> A text value to write.
     CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: text_value_in
+    !> An integer value to write.
     INTEGER, INTENT(IN), OPTIONAL :: int_value_in
+    !> A float value to write.
     REAL(NTReal), INTENT(IN), OPTIONAL :: float_value_in
+    !> A bool value to write.
     LOGICAL, INTENT(IN), OPTIONAL :: bool_value_in
 
     IF (IsActive) THEN
@@ -96,19 +93,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteElement
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a list element.
-  !! Only specify one of the kinds of values.
-  !! @param[in] key some text to add to the list.
-  !! @param[in] text_value_in a text value to add to the list (optional).
-  !! @param[in] int_value_in an integer value to add to the list (optional).
-  !! @param[in] float_value_in a float value to add to the list (optional).
-  !! @param[in] bool_value_in a bool value to add to the list (optional).
+  !> Only specify one of the kinds of values.
   SUBROUTINE WriteListElement(key, text_value_in, int_value_in, float_value_in,&
        bool_value_in)
-    !! Parameters
+    !> Some text to write.
     CHARACTER(LEN=*), INTENT(IN) :: key
+    !> A text value to write.
     CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: text_value_in
+    !> An integer value to write.
     INTEGER, INTENT(IN), OPTIONAL :: int_value_in
+    !> A float value to write.
     REAL(NTReal), INTENT(IN), OPTIONAL :: float_value_in
+    !> A bool value to write.
     LOGICAL, INTENT(IN), OPTIONAL :: bool_value_in
 
     IF (IsActive) THEN
@@ -142,9 +138,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteListElement
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a citation element.
-  !! @param[in] citation_list list of citations, separated by a space.
   SUBROUTINE WriteCitation(citation_list)
-    !! Parameters
+    !> A list of citations, separated by a space.
     CHARACTER(LEN=*), INTENT(IN) :: citation_list
     INTEGER :: pos1, pos2
 

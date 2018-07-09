@@ -20,10 +20,9 @@ MODULE TimerModule
   PUBLIC :: PrintAllTimersDistributed
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Register a timer with the timer module.  Call this before using that timer.
-  !! @param[in] timer_name name of the timer.
   SUBROUTINE RegisterTimer(timer_name)
-    !! Parameters
-    CHARACTER(len=*), INTENT(in) :: timer_name
+    !> Name of the timer.
+    CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
     CHARACTER(len=20), DIMENSION(:), ALLOCATABLE :: temp_timer_list
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: temp_start_times
@@ -52,10 +51,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE RegisterTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Start the clock running for a given timer.
-  !! @param[in] timer_name name of the timer. Must be registered.
   SUBROUTINE StartTimer(timer_name)
-    !! Parameters
-    CHARACTER(len=*), INTENT(in) :: timer_name
+    !> Name of the timer. Must be registered.
+    CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
     INTEGER :: timer_position
     DOUBLE PRECISION :: temp_time
@@ -68,10 +66,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE StartTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Stop the clock for a given timer.
-  !! @param[in] timer_name name of the timer. Must be registered.
   SUBROUTINE StopTimer(timer_name)
-    !! Parameters
-    CHARACTER(len=*), INTENT(in) :: timer_name
+    !> Name of the timer. Must be registered.
+    CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
     INTEGER :: timer_position
     DOUBLE PRECISION :: temp_elapsed_time
@@ -87,10 +84,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE StopTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the elapsed time for a given timer.
-  !! @param[in] timer_name name of the timer. Must be registered.
   SUBROUTINE PrintTimer(timer_name)
-    !! Parameters
-    CHARACTER(len=*), INTENT(in) :: timer_name
+    !> Name of the timer. Must be registered.
+    CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
     INTEGER :: timer_position
 
@@ -119,7 +115,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintAllTimers
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the elapsed time for each timer based on the max value across
-  !! processes.
+  !> processes.
   SUBROUTINE PrintAllTimersDistributed()
     !! Local Data
     INTEGER          :: timer_position
@@ -142,12 +138,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintAllTimersDistributed
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Figure out the position in the timer list where timer_name is.
-  !! This is a utility routine.
-  !! @param[in] timer_name name of the timer.
-  !! @return the position of the timer. 0 means the timer hasn't been registered.
+  !> This is a utility routine.
   FUNCTION GetTimerPosition(timer_name) RESULT(timer_position)
     !! Parameters
-    CHARACTER(len=*), INTENT(in) :: timer_name
+    !> Name of the timer.
+    CHARACTER(len=*), INTENT(IN) :: timer_name
+    !> The position of the timer. 0 means the timer hasn't been registered.
     INTEGER :: timer_position
     !! Local Data
     INTEGER :: counter

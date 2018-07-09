@@ -168,16 +168,16 @@ MODULE PSMatrixModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
-  !! @param[out] this the matrix to be constructed.
-  !! @param[in] matrix_dim_ the dimension of the full matrix.
-  !! @param[in] process_grid_in a process grid to host the matrix (optional).
-  !! @param[in] is_complex_in true if you want to use complex numbers (optional)
   SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim_, process_grid_in, &
        & is_complex_in)
     !! Parameters
+    !> The matrix to be constructed.
     TYPE(Matrix_ps), INTENT(INOUT)            :: this
+    !> The dimension of the full matrix.
     INTEGER, INTENT(IN)                       :: matrix_dim_
+    !> True if you want to use complex numbers.
     LOGICAL, INTENT(IN), OPTIONAL             :: is_complex_in
+    !> A process grid to host the matrix.
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !! Local Variables
     TYPE(Matrix_lsr) :: zeromatrix_r
@@ -232,15 +232,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructEmptyMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix using another matrix
-  !! to determine the parameters. Note that no data is copied, the matrix
-  !! will be empty.
-  !! @param[out] this the matrix to be constructed.
-  !! @param[in] matrix_dim_ the dimension of the full matrix.
-  !! @param[in] process_grid_in a process grid to host the matrix (optional).
-  !! @param[in] is_complex_in true if you want to use complex numbers (optional)
+  !> to determine the parameters. Note that no data is copied, the matrix
+  !> will be empty.
   SUBROUTINE ConstructEmptyMatrix_ps_cp(this, reference_matrix)
     !! Parameters
+    !> The matrix to be constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The reference matrix to take parameters from.
     TYPE(Matrix_ps), INTENT(IN) :: reference_matrix
 
     CALL ConstructEmptyMatrix(this, reference_matrix%actual_matrix_dimension, &
@@ -248,9 +246,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructEmptyMatrix_ps_cp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix.
-  !! @param[inout] this the matrix to destruct.
   PURE SUBROUTINE DestructMatrix_ps(this)
-    !! Parameters
+    !> The matrix to destruct.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     INTEGER :: II, JJ
@@ -276,11 +273,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
-  !! @param[in] matA matrix to copy
-  !! @param[inout] matB = matA
   PURE SUBROUTINE CopyMatrix_ps(matA, matB)
-    !! Parameters
+    !> The matrix to copy.
     TYPE(Matrix_ps), INTENT(IN)    :: matA
+    !> matB = matA.
     TYPE(Matrix_ps), INTENT(INOUT) :: matB
 
     CALL DestructMatrix(matB)
@@ -288,12 +284,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
-  !! Read \cite boisvert1996matrix for the details.
-  !! @param[out] this the file being constructed.
-  !! @param[in] file_name name of the file to read.
+  !> Read \cite boisvert1996matrix for the details.
   SUBROUTINE ConstructMatrixFromMatrixMarket_ps(this, file_name)
-    !! Parameters
+    !> The file being constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The name of the file to read.
     CHARACTER(len=*), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
@@ -495,12 +490,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromMatrixMarket_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
-  !! Faster than text, so this is good for check pointing.
-  !! @param[out] this the file being constructed.
-  !! @param[in] file_name name of the file to read.
+  !> Faster than text, so this is good for check pointing.
   SUBROUTINE ConstructMatrixFromBinary_ps(this, file_name)
     !! Parameters
+    !> The file being constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The name of the file to read.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     INTEGER :: triplet_mpi_type
@@ -605,12 +600,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromBinary_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a binary file.
-  !! Faster than text, so this is good for check pointing.
-  !! @param[in] this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
+  !> Faster than text, so this is good for check pointing.
   SUBROUTINE WriteMatrixToBinary_ps(this,file_name)
     !! Parameters
+    !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     INTEGER :: triplet_mpi_type
@@ -624,14 +619,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE WriteMatrixToBinary_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Save a distributed sparse matrix to a binary file.
-  !! Faster than text, so this is good for check pointing.
-  !! @param[in] this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
+  !> Implementation of write to binary.
   SUBROUTINE WriteMatrixToBinary_psr(this, file_name, triplet_mpi_type)
-    !! Parameters
+    !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
+    !> The triplet type, which distinguishes real and complex triplets.
     INTEGER, INTENT(IN) :: triplet_mpi_type
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
@@ -642,14 +636,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE WriteMatrixToBinary_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Save a distributed sparse matrix to a binary file.
-  !! Faster than text, so this is good for check pointing.
-  !! @param[in] this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
+  !> Implementation of write to binary.
   SUBROUTINE WriteMatrixToBinary_psc(this, file_name, triplet_mpi_type)
-    !! Parameters
+    !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
+    !> The triplet type, which distinguishes real and complex triplets.
     INTEGER, INTENT(IN) :: triplet_mpi_type
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
@@ -661,12 +654,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToBinary_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write a distributed sparse matrix to a matrix market file.
-  !! Read \cite boisvert1996matrix for the details.
-  !! @param[in] this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
+  !> Read \cite boisvert1996matrix for the details.
   SUBROUTINE WriteMatrixToMatrixMarket_ps(this,file_name)
-    !! Parameters
+    !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
 
     IF (this%is_complex) THEN
@@ -676,13 +668,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE WriteMatrixToMatrixMarket_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Write a distributed sparse matrix to a matrix market file.
-  !! Read \cite boisvert1996matrix for the details.
-  !! @param[in] this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
+  !> Write to matrix market implementation for real data.
   SUBROUTINE WriteMatrixToMatrixMarket_psr(this,file_name)
-    !! Parameters
+    !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
@@ -692,13 +682,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE WriteMatrixToMatrixMarket_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Write a distributed sparse matrix to a matrix market file.
-  !! Read \cite boisvert1996matrix for the details.
-  !! @param[in] this the Matrix to write.
-  !! @param[in] file_name name of the file to write to.
+  !> Write to matrix market implementation for complex data.
   SUBROUTINE WriteMatrixToMatrixMarket_psc(this,file_name)
-    !! Parameters
+    !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
@@ -711,16 +699,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToMatrixMarket_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
-  !! should pass in triplet lists with global coordinates. It doesn't matter
-  !! where each triplet is stored, as long as global coordinates are given.
-  !! @param[inout] this the matrix to fill.
-  !! @param[in] triplet_list the triplet list of values.
-  !! @param[in] preduplicated_in if lists are preduplicated across
-  !! slices set this to true (optional, default=False).
+  !> should pass in triplet lists with global coordinates. It doesn't matter
+  !> where each triplet is stored, as long as global coordinates are given.
   SUBROUTINE FillMatrixFromTripletList_psr(this,triplet_list,preduplicated_in)
-    !! Parameters
+    !> The matrix to fill.
     TYPE(Matrix_ps) :: this
+    !> The triplet list of values.
     TYPE(TripletList_r) :: triplet_list
+    !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !! Local Data
     TYPE(Matrix_ps) :: temp_matrix
@@ -743,16 +729,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixFromTripletList_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
-  !! should pass in triplet lists with global coordinates. It doesn't matter
-  !! where each triplet is stored, as long as global coordinates are given.
-  !! @param[inout] this the matrix to fill.
-  !! @param[in] triplet_list the triplet list of values.
-  !! @param[in] preduplicated_in if lists are preduplicated across
-  !! slices set this to true (optional, default=False).
+  !> should pass in triplet lists with global coordinates. It doesn't matter
+  !> where each triplet is stored, as long as global coordinates are given.
   SUBROUTINE FillMatrixFromTripletList_psc(this,triplet_list,preduplicated_in)
-    !! Parameters
+    !> The matrix to fill.
     TYPE(Matrix_ps) :: this
+    !> The triplet list of values.
     TYPE(TripletList_c) :: triplet_list
+    !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !! Local Data
     TYPE(TripletList_c) :: sorted_triplet_list
@@ -775,9 +759,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixFromTripletList_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
-  !! @param[inout] this the matrix being filled.
   SUBROUTINE FillMatrixIdentity_ps(this)
-    !! Parameters
+    !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
 
     IF (this%is_complex) THEN
@@ -789,9 +772,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixIdentity_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
-  !! @param[inout] this the matrix being filled.
   SUBROUTINE FillMatrixIdentity_psr(this)
-    !! Parameters
+    !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
@@ -804,9 +786,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixIdentity_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
-  !! @param[inout] this the matrix being filled.
   SUBROUTINE FillMatrixIdentity_psc(this)
-    !! Parameters
+    !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
@@ -819,14 +800,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation.
-  !! If you don't specify permuterows, will default to permuting rows.
-  !! @param[inout] this the matrix being filled.
-  !! @param[in] permutation_vector describes for each row/column, where it goes.
-  !! @param[in] permute_rows_in if true permute rows, false permute columns.
+  !> If you don't specify permuterows, will default to permuting rows.
   SUBROUTINE FillMatrixPermutation_ps(this, permutation_vector, permute_rows_in)
-    !! Parameters
+    !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Describes for each row/column, where it goes.
     INTEGER, DIMENSION(:), INTENT(IN) :: permutation_vector
+    !> If true permute rows, false permute columns.
     LOGICAL, OPTIONAL, INTENT(IN) :: permute_rows_in
     !! Local Data
     LOGICAL :: permute_rows
@@ -846,15 +826,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE FillMatrixPermutation_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Fill in the values of a distributed matrix with a permutation.
-  !! If you don't specify permuterows, will default to permuting rows.
-  !! @param[inout] this the matrix being filled.
-  !! @param[in] permutation_vector describes for each row/column, where it goes.
-  !! @param[in] permute_rows_in if true permute rows, false permute columns.
+  !> Fill permutation implementation.
   SUBROUTINE FillMatrixPermutation_psr(this, permutation_vector, rows)
-    !! Parameters
+    !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Describes for each row/column, where it goes.
     INTEGER, DIMENSION(:), INTENT(IN) :: permutation_vector
+    !> If true permute rows, false permute columns.
     LOGICAL, INTENT(IN) :: rows
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
@@ -866,15 +844,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE FillMatrixPermutation_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Fill in the values of a distributed matrix with a permutation.
-  !! If you don't specify permuterows, will default to permuting rows.
-  !! @param[inout] this the matrix being filled.
-  !! @param[in] permutation_vector describes for each row/column, where it goes.
-  !! @param[in] permute_rows_in if true permute rows, false permute columns.
+  !> Fill permutation implementation.
   SUBROUTINE FillMatrixPermutation_psc(this, permutation_vector, rows)
-    !! Parameters
+    !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Describes for each row/column, where it goes.
     INTEGER, DIMENSION(:), INTENT(IN) :: permutation_vector
+    !> If true permute rows, false permute columns.
     LOGICAL, INTENT(IN) :: rows
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
@@ -887,12 +863,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixPermutation_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
-  !! Data is returned with absolute coordinates.
-  !! @param[in] this the distributed sparse matrix.
-  !! @param[inout] triplet_list the list to fill.
+  !> Data is returned with absolute coordinates.
   SUBROUTINE GetMatrixTripletList_psr(this, triplet_list)
-    !! Parameters
+    !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The list to fill.
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
     !! Local Data
     TYPE(Matrix_ps) :: working_matrix
@@ -908,12 +883,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixTripletList_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
-  !! Data is returned with absolute coordinates.
-  !! @param[in] this the distributed sparse matrix.
-  !! @param[inout] triplet_list the list to fill.
+  !> Data is returned with absolute coordinates.
   SUBROUTINE GetMatrixTripletList_psc(this, triplet_list)
-    !! Parameters
+    !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The list to fill.
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
     !! Local Data
     TYPE(Matrix_ps) :: working_matrix
@@ -929,22 +903,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixTripletList_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list. Block is
-  !! defined by the row/column start/end values.
-  !! This is slower than GetMatrixTripletList, because communication is required.
-  !! Data is returned with absolute coordinates.
-  !! @param[in] this the distributed sparse matrix.
-  !! @param[inout] triplet_list the list to fill.
-  !! @param[in] start_row the starting row for data to store on this process.
-  !! @param[in] end_row the ending row for data to store on this process.
-  !! @param[in] start_column the starting col for data to store on this process
-  !! @param[in] end_column the ending col for data to store on this process
+  !> defined by the row/column start/end values.
+  !> This is slower than GetMatrixTripletList, because communication is required
+  !> Data is returned with absolute coordinates.
   SUBROUTINE GetMatrixBlock_psr(this, triplet_list, start_row, end_row, &
        & start_column, end_column)
-    !! Parameters
+    !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The list to fill.
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
-    INTEGER :: start_row, end_row
-    INTEGER :: start_column, end_column
+    !> The starting row for data to store on this process.
+    INTEGER :: start_row
+    !> The ending row for data to store on this process.
+    INTEGER :: end_row
+    !> The starting col for data to store on this process
+    INTEGER :: start_column
+    !> The ending col for data to store on this process
+    INTEGER :: end_column
     !! Local Data
     TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsr) :: merged_local_data
@@ -987,22 +962,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixBlock_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list. Block is
-  !! defined by the row/column start/end values.
-  !! This is slower than GetMatrixTripletList, because communication is required.
-  !! Data is returned with absolute coordinates.
-  !! @param[in] this the distributed sparse matrix.
-  !! @param[inout] triplet_list the list to fill.
-  !! @param[in] start_row the starting row for data to store on this process.
-  !! @param[in] end_row the ending row for data to store on this process.
-  !! @param[in] start_column the starting col for data to store on this process
-  !! @param[in] end_column the ending col for data to store on this process
+  !> defined by the row/column start/end values.
+  !> This is slower than GetMatrixTripletList, because communication is required
+  !> Data is returned with absolute coordinates.
   SUBROUTINE GetMatrixBlock_psc(this, triplet_list, start_row, end_row, &
        & start_column, end_column)
-    !! Parameters
+    !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The list to fill.
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
-    INTEGER :: start_row, end_row
-    INTEGER :: start_column, end_column
+    !> The starting row for data to store on this process.
+    INTEGER :: start_row
+    !> The ending row for data to store on this process.
+    INTEGER :: end_row
+    !> The starting col for data to store on this process
+    INTEGER :: start_column
+    !> The ending col for data to store on this process
+    INTEGER :: end_column
     !! Local Data
     TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsc) :: merged_local_data
@@ -1045,32 +1021,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixBlock_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
-  !! @param[in] this the matrix.
-  !! @result dimension of the matrix;
   PURE FUNCTION GetMatrixActualDimension_ps(this) RESULT(DIMENSION)
     !! Parameters
+    !> The matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> Dimension of the matrix
     INTEGER :: DIMENSION
     DIMENSION = this%actual_matrix_dimension
   END FUNCTION GetMatrixActualDimension_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the logical dimension of the matrix.
-  !! Includes padding.
-  !! @param[in] this the matrix.
-  !! @result dimension of the matrix;
+  !> Includes padding.
   PURE FUNCTION GetMatrixLogicalDimension_ps(this) RESULT(DIMENSION)
-    !! Parameters
+    !> The matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> Dimension of the matrix
     INTEGER :: DIMENSION
     DIMENSION = this%logical_matrix_dimension
   END FUNCTION GetMatrixLogicalDimension_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out information about a distributed sparse matrix.
-  !! Sparsity, and load balancing information.
-  !! @param[in] this the matrix to print information about.
+  !> Sparsity, and load balancing information.
   SUBROUTINE PrintMatrixInformation_ps(this)
-    !! Parameters
+    !> This the matrix to print information about.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !! Local Data
     INTEGER :: min_size, max_size
     REAL(NTREAL) :: sparsity
 
@@ -1088,13 +1063,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintMatrixInformation_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a distributed sparse matrix.
-  !! This is a serial print routine, and should probably only be used for debug
-  !! purposes.
-  !! @param[in] this the matrix to print.
-  !! @param[in] file_name_in optionally, you can pass a file to print to.
+  !> This is a serial print routine, and should probably only be used for debug
+  !> purposes.
   SUBROUTINE PrintMatrix_ps(this, file_name_in)
-    !! Parameters
+    !> The matrix to print.
     TYPE(Matrix_ps) :: this
+    !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
 
     IF (this%is_complex) THEN
@@ -1112,14 +1086,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE PrintMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Print out a distributed sparse matrix.
-  !! This is a serial print routine, and should probably only be used for debug
-  !! purposes.
-  !! @param[in] this the matrix to print.
-  !! @param[in] file_name_in optionally, you can pass a file to print to.
+  !> Print matrix implementation (real).
   SUBROUTINE PrintMatrix_psr(this, file_name_in)
-    !! Parameters
+    !> The matrix to print.
     TYPE(Matrix_ps) :: this
+    !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Temporary Variables
     TYPE(Matrix_lsr) :: merged_local_data
@@ -1131,14 +1102,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "includes/PrintMatrix.F90"
   END SUBROUTINE PrintMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Print out a distributed sparse matrix.
-  !! This is a serial print routine, and should probably only be used for debug
-  !! purposes.
-  !! @param[in] this the matrix to print.
-  !! @param[in] file_name_in optionally, you can pass a file to print to.
+  !> Print matrix implementation (complex).
   SUBROUTINE PrintMatrix_psc(this, file_name_in)
-    !! Parameters
+    !> The matrix to print.
     TYPE(Matrix_ps) :: this
+    !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Temporary Variables
     TYPE(Matrix_lsc) :: merged_local_data
@@ -1151,12 +1119,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PrintMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A utility routine that filters a sparse matrix.
-  !! All (absolute) values below the threshold are set to zero.
-  !! @param[inout] this matrix to filter
-  !! @param[in] threshold (absolute) values below this are filtered
+  !> All (absolute) values below the threshold are set to zero.
   SUBROUTINE FilterMatrix_ps(this, threshold)
-    !! Parameters
+    !> The matrix to filter.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Threshold (absolute) values below this are filtered
     REAL(NTREAL), INTENT(IN) :: threshold
 
     IF (this%is_complex) THEN
@@ -1166,13 +1133,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE FilterMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A utility routine that filters a sparse matrix.
-  !! All (absolute) values below the threshold are set to zero.
-  !! @param[inout] this matrix to filter
-  !! @param[in] threshold (absolute) values below this are filtered
+  !> Filter matrix implementation (real).
   SUBROUTINE FilterMatrix_psr(this, threshold)
-    !! Parameters
+    !> The matrix to filter.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Threshold (absolute) values below this are filtered
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
@@ -1182,13 +1147,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "includes/FilterMatrix.F90"
   END SUBROUTINE FilterMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A utility routine that filters a sparse matrix.
-  !! All (absolute) values below the threshold are set to zero.
-  !! @param[inout] this matrix to filter
-  !! @param[in] threshold (absolute) values below this are filtered
+  !> Filter matrix implementation (real).
   SUBROUTINE FilterMatrix_psc(this, threshold)
-    !! Parameters
+    !> The matrix to filter.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Threshold (absolute) values below this are filtered
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
     TYPE(TripletList_c) :: triplet_list
@@ -1198,13 +1161,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "includes/FilterMatrix.F90"
   END SUBROUTINE FilterMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Get the total number of non zero entries in the distributed sparse matrix.
-  !! @param[in] this the distributed sparse matrix to calculate the non-zero
-  !! entries of.
-  !! @return the number of non-zero entries in the matrix.
+  !> Get the total number of non-zero entries in the distributed sparse matrix.
   FUNCTION GetMatrixSize_ps(this) RESULT(total_size)
-    !! Parameters
+    !> The matrix to calculate the number of non-zero entries of.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The number of non-zero entries in the matrix.
     INTEGER(c_long) :: total_size
     !! Local Data
     !integer :: local_size
@@ -1234,15 +1195,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMatrixSize_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get a measure of how load balanced this matrix is. For each process, the
-  !! number of non-zero entries is calculated. Then, this function returns
-  !! the max and min of those values.
-  !! @param[in] this The matrix to compute the measure on.
-  !! @param[out] min_size the minimum entries contained on a single process.
-  !! @param[out] max_size the maximum entries contained on a single process.
+  !> number of non-zero entries is calculated. Then, this function returns
+  !> the max and min of those values.
   SUBROUTINE GetMatrixLoadBalance_ps(this, min_size, max_size)
-    !! Parameters
+    !> The matrix to compute the measure on.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The minimum entries contained on a single process.
     INTEGER, INTENT(OUT) :: min_size
+    !> The maximum entries contained on a single process.
     INTEGER, INTENT(OUT) :: max_size
     !! Local Data
     INTEGER :: local_size
@@ -1269,12 +1229,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE GetMatrixLoadBalance_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Transpose a sparse matrix.
-  !! @param[in] AMat The matrix to transpose.
-  !! @param[out] TransMat A^T
+  !> Transpose a sparse matrix. Note that this is a pure transpose, there is
+  !> no complex conjugate performed.
   SUBROUTINE TransposeMatrix_ps(AMat, TransMat)
-    !! Parameters
+    !> The matrix to transpose.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
+    !> TransMat = A^T .
     TYPE(Matrix_ps), INTENT(OUT) :: TransMat
 
     IF (AMat%is_complex) THEN
@@ -1285,12 +1245,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE TransposeMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Transpose a sparse matrix.
-  !! @param[in] AMat The matrix to transpose.
-  !! @param[out] TransMat A^T
+  !> Transpose implementation (real).
   SUBROUTINE TransposeMatrix_psr(AMat, TransMat)
-    !! Parameters
+    !> The matrix to transpose.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
+    !> TransMat = A^T .
     TYPE(Matrix_ps), INTENT(OUT) :: TransMat
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
@@ -1301,12 +1260,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE TransposeMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Transpose a sparse matrix.
-  !! @param[in] AMat The matrix to transpose.
-  !! @param[out] TransMat A^T
+  !> Transpose implementation (complex).
   SUBROUTINE TransposeMatrix_psc(AMat, TransMat)
-    !! Parameters
+    !> The matrix to transpose.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
+    !> TransMat = A^T .
     TYPE(Matrix_ps), INTENT(OUT) :: TransMat
     !! Local Variables
     TYPE(TripletList_c) :: triplet_list
@@ -1318,9 +1276,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Every value in the matrix is changed into its complex conjugate.
-  !! @param[inout] this the matrix to compute the complex conjugate of.
   PURE SUBROUTINE ConjugateMatrix_ps(this)
-    !! Parameters
+    !> The matrix to compute the complex conjugate of.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Variables
     TYPE(Matrix_lsc) :: local_matrix
@@ -1335,15 +1292,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConjugateMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split the current communicator, and give each group a complete copy of this
-  !! @param[in] this the matrix to split.
-  !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
-  !! @param[out] my_color distinguishes between the two groups (optional).
-  !! @param[out] split_slice if we split along the slice direction, this is True
   SUBROUTINE CommSplitMatrix_ps(this, split_mat, my_color, split_slice)
-    !! Parameters
+    !> The matrix to split.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A copy of the matrix hosted on a small process grid.
     TYPE(Matrix_ps), INTENT(INOUT) :: split_mat
+    !> Distinguishes between the two groups.
     INTEGER, INTENT(OUT) :: my_color
+    !> If we split along the slice direction, this is True
     LOGICAL, INTENT(OUT) :: split_slice
 
     IF (this%is_complex) THEN
@@ -1354,16 +1310,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE CommSplitMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Split the current communicator, and give each group a complete copy of this
-  !! @param[in] this the matrix to split.
-  !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
-  !! @param[out] my_color distinguishes between the two groups (optional).
-  !! @param[out] split_slice if we split along the slice direction, this is True
+  !> Split implementation for real data.
   SUBROUTINE CommSplitMatrix_psr(this, split_mat, my_color, split_slice)
-    !! Parameters
+    !> The matrix to split.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A copy of the matrix hosted on a small process grid.
     TYPE(Matrix_ps), INTENT(INOUT) :: split_mat
+    !> Distinguishes between the two groups.
     INTEGER, INTENT(OUT) :: my_color
+    !> If we split along the slice direction, this is True.
     LOGICAL, INTENT(OUT) :: split_slice
     !! For Data Redistribution
     TYPE(TripletList_r) :: full_list, new_list
@@ -1373,16 +1328,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE CommSplitMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Split the current communicator, and give each group a complete copy of this
-  !! @param[in] this the matrix to split.
-  !! @param[out] split_mat a copy of the matrix hosted on a small process grid.
-  !! @param[out] my_color distinguishes between the two groups (optional).
-  !! @param[out] split_slice if we split along the slice direction, this is True
+  !> Split implementation for complex data.
   SUBROUTINE CommSplitMatrix_psc(this, split_mat, my_color, split_slice)
-    !! Parameters
+    !> The matrix to split.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A copy of the matrix hosted on a small process grid.
     TYPE(Matrix_ps), INTENT(INOUT) :: split_mat
+    !> Distinguishes between the two groups.
     INTEGER, INTENT(OUT) :: my_color
+    !> If we split along the slice direction, this is True.
     LOGICAL, INTENT(OUT) :: split_slice
     !! For Data Redistribution
     TYPE(TripletList_c) :: full_list, new_list
@@ -1393,23 +1347,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CommSplitMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Redistribute the data in a matrix based on row, column list
-  !! This will redistribute the data so that the local data are entries in
-  !! the rows and columns list. The order of the row list and column list matter
-  !! because local data is filled in the same order.
-  !! @param[inout] this the matrix to redistribute
-  !! @param[in] index_lookup, describing how data is distributed.
-  !! @param[in] reverse_lookup, describing how data is distributed.
-  !! @param[in] initial_triplet_list is the current triplet list of global
-  !! coordinates
-  !! @param[out] sorted_triplet_list returns an allocated triplet list with
-  !! local coordinates in sorted order.
+  !> This will redistribute the data so that the local data are entries in
+  !> the rows and columns list. The order of the row list and column list matter
+  !> because local data is filled in the same order.
   SUBROUTINE RedistributeData_psr(this,index_lookup,reverse_index_lookup,&
        & initial_triplet_list,sorted_triplet_list)
-    !! Parameters
+    !> The matrix to redistribute
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Lookup describing how data is distributed.
     INTEGER, DIMENSION(:), INTENT(IN) :: index_lookup
+    !> Reverse Lookup describing how data is distributed.
     INTEGER, DIMENSION(:), INTENT(IN) :: reverse_index_lookup
+    !> The current triplet list of global coordinates.
     TYPE(TripletList_r), INTENT(IN) :: initial_triplet_list
+    !> returns an allocated triplet list with local coordinates in sorted order.
     TYPE(TripletList_r), INTENT(OUT) :: sorted_triplet_list
     !! Local Data
     TYPE(TripletList_r) :: gathered_list
@@ -1422,23 +1373,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE RedistributeData_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Redistribute the data in a matrix based on row, column list
-  !! This will redistribute the data so that the local data are entries in
-  !! the rows and columns list. The order of the row list and column list matter
-  !! because local data is filled in the same order.
-  !! @param[inout] this the matrix to redistribute
-  !! @param[in] index_lookup, describing how data is distributed.
-  !! @param[in] reverse_lookup, describing how data is distributed.
-  !! @param[in] initial_triplet_list is the current triplet list of global
-  !! coordinates
-  !! @param[out] sorted_triplet_list returns an allocated triplet list with
-  !! local coordinates in sorted order.
+  !> This will redistribute the data so that the local data are entries in
+  !> the rows and columns list. The order of the row list and column list matter
+  !> because local data is filled in the same order.
   SUBROUTINE RedistributeData_psc(this,index_lookup,reverse_index_lookup,&
        & initial_triplet_list,sorted_triplet_list)
-    !! Parameters
+    !> The matrix to redistribute
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> Lookup describing how data is distributed.
     INTEGER, DIMENSION(:), INTENT(IN) :: index_lookup
+    !> Reverse Lookup describing how data is distributed.
     INTEGER, DIMENSION(:), INTENT(IN) :: reverse_index_lookup
+    !> The current triplet list of global coordinates.
     TYPE(TripletList_c), INTENT(IN) :: initial_triplet_list
+    !> returns an allocated triplet list with local coordinates in sorted order.
     TYPE(TripletList_c), INTENT(OUT) :: sorted_triplet_list
     !! Local Data
     TYPE(TripletList_c) :: gathered_list
@@ -1451,15 +1399,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE RedistributeData_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculate a matrix size that can be divided by the number of processors.
-  !! @param[in] matrix_dim the dimension of the actual matrix.
-  !! @return a new dimension which includes padding.
-  !! @todo write a more optimal algorithm using either plain brute force,
-  !! or a prime factor based algorithm.
-  PURE FUNCTION CalculateScaledDimension(this, matrix_dim) &
-       & RESULT(scaled_dim)
-    !! Parameters
+  PURE FUNCTION CalculateScaledDimension(this, matrix_dim) RESULT(scaled_dim)
+    !> The matrix we are calculating for.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The dimension of the actual matrix.
     INTEGER, INTENT(IN) :: matrix_dim
+    !> A new dimension which includes padding.
     INTEGER :: scaled_dim
     !! Local Data
     INTEGER :: size_ratio
@@ -1479,11 +1424,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION CalculateScaledDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take a local matrix, and use it to fill the local block matrix structure.
-  !! @param[inout] this the distributed sparse matrix.
-  !! @param[in] matrix_to_split the matrix to split up.
   PURE SUBROUTINE SplitMatrixToLocalBlocks_psr(this, matrix_to_split)
-    !! Parameters
+    !> The distributed sparse matrix to split into.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The matrix to split up.
     TYPE(Matrix_lsr), INTENT(IN) :: matrix_to_split
 
 #define LOCALMATRIX this%local_data_r
@@ -1493,11 +1437,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitMatrixToLocalBlocks_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take a local matrix, and use it to fill the local block matrix structure.
-  !! @param[inout] this the distributed sparse matrix.
-  !! @param[in] matrix_to_split the matrix to split up.
   PURE SUBROUTINE SplitMatrixToLocalBlocks_psc(this, matrix_to_split)
-    !! Parameters
+    !> The distributed sparse matrix to split into.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The matrix to split up.
     TYPE(Matrix_lsc), INTENT(IN) :: matrix_to_split
 
 #define LOCALMATRIX this%local_data_c
@@ -1507,11 +1450,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitMatrixToLocalBlocks_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Merge together the local matrix blocks into one big matrix.
-  !! @param[inout] this the distributed sparse matrix.
-  !! @param[inout] merged_matrix the merged matrix.
   PURE SUBROUTINE MergeMatrixLocalBlocks_psr(this, merged_matrix)
-    !! Parameters
+    !> The distributed sparse matrix to merge from.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The merged matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: merged_matrix
 
 #define LOCALMATRIX this%local_data_r
@@ -1524,8 +1466,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] this the distributed sparse matrix.
   !! @param[inout] merged_matrix the merged matrix.
   PURE SUBROUTINE MergeMatrixLocalBlocks_psc(this, merged_matrix)
-    !! Parameters
+    !> The distributed sparse matrix to merge from.
     TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The merged matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: merged_matrix
 
 #define LOCALMATRIX this%local_data_c
@@ -1535,11 +1478,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MergeMatrixLocalBlocks_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the current matrix to a real type matrix.
-  !! @param[in] in the matrix to convert.
-  !! @param[inout] out real version of the matrix.
   SUBROUTINE ConvertMatrixToReal(in, out)
-    !! Parameters
+    !> The matrix to convert.
     TYPE(Matrix_ps), INTENT(IN) :: in
+    !> Real version of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: out
     LOGICAL, PARAMETER :: convert_to_complex = .FALSE.
     !! Local Variables
@@ -1550,11 +1492,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConvertMatrixToReal
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the current matrix to a complex type matrix.
-  !! @param[in] in the matrix to convert.
-  !! @param[inout] out complex version of the matrix.
   SUBROUTINE ConvertMatrixToComplex(in, out)
-    !! Parameters
+    !> The matrix to convert.
     TYPE(Matrix_ps), INTENT(IN) :: in
+    !> Complex version of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: out
     LOGICAL, PARAMETER :: convert_to_complex = .TRUE.
     !! Local Variables

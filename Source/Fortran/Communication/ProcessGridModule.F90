@@ -67,19 +67,18 @@ MODULE ProcessGridModule
   PUBLIC :: GetMyColumn
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
-  !! @param[in] world_comm_ a communicator that every process in the grid is
-  !! a part of.
-  !! @param[in] process_rows_ number of grid rows.
-  !! @param[in] process_columns_ number of grid columns.
-  !! @param[in] process_slices_ number of grid slices.
-  !! @param[in] be_verbose_in set true to print process grid info.
   SUBROUTINE ConstructProcessGrid(world_comm_, process_rows_, &
        & process_columns_, process_slices_, be_verbose_in)
     !! Parameters
+    !> A communicator that every process in the grid is a part of.
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    !> The number of grid rows.
     INTEGER(kind=c_int), INTENT(IN) :: process_rows_
+    !> The number of grid columns.
     INTEGER(kind=c_int), INTENT(IN) :: process_columns_
+    !> The number of grid slices.
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
+    !> Set true to print process grid info.
     LOGICAL(kind=c_bool), INTENT(IN), OPTIONAL :: be_verbose_in
     LOGICAL :: be_verbose
 
@@ -116,21 +115,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a process grid.
-  !! @param[out] grid to construct
-  !! @param[in] world_comm_ a communicator that every process in the grid is
-  !! a part of.
-  !! @param[in] process_rows_ number of grid rows.
-  !! @param[in] process_columns_ number of grid columns.
-  !! @param[in] process_slices_ number of grid slices.
   SUBROUTINE ConstructNewProcessGrid(grid, world_comm_, process_rows_, &
        & process_columns_, process_slices_)
-    !! Parameters
+    !> The grid to construct
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
+    !> A communicator that every process in the grid is a part of.
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    !> The number of grid rows.
     INTEGER(kind=c_int), INTENT(IN) :: process_rows_
+    !> The number of grid columns.
     INTEGER(kind=c_int), INTENT(IN) :: process_columns_
+    !> The number of grid slices.
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
-    INTEGER :: ierr
     !! Local Data
     INTEGER :: column_block_multiplier
     INTEGER :: row_block_multiplier
@@ -138,6 +134,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef _OPENMP
     INTEGER :: num_threads
 #endif
+    INTEGER :: ierr
 
     CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
     !! Grid Dimensions
@@ -242,11 +239,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructNewProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
-  !! @param[in] old_grid the grid to copy.
-  !! @param[inout] new_grid = old_grid
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
-    !! Parameters
+    !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
+    !> New_grid = old_grid
     TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
 
     !! Safe Copy
@@ -264,9 +260,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
-  !! @param[inout] grid the grid to destruct.
   SUBROUTINE DestructProcessGrid(grid)
     !! Parameters
+    !> The grid to destruct.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
 
     !! Deallocate Blocks
@@ -288,11 +284,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a process grid, this splits it into two grids of even size
   SUBROUTINE SplitProcessGrid(old_grid, new_grid, my_color, split_slice, &
        & between_grid_comm)
-    !! Parameters
+    !> The old grid to split
     TYPE(ProcessGrid_t), INTENT(INOUT) :: old_grid
+    !> The new grid that we are creating
     TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
+    !> A color value indicating which set this process was split into
     INTEGER, INTENT(OUT) :: my_color
+    !> True if we were able to split along slices.
     LOGICAL, INTENT(OUT) :: split_slice
+    !> A communicator for sending messages between groups.
     INTEGER, INTENT(OUT) :: between_grid_comm
     !! Local Variables - new grid
     INTEGER :: new_comm
@@ -370,10 +370,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Check if the current process is the root process.
-  !! @return true if the current process is root.
   FUNCTION IsRoot(grid) RESULT(is_root)
     !! Parameters
+    !> The process grid.
     TYPE(ProcessGrid_t), INTENT(IN) :: grid
+    !> True if the current process is root.
     LOGICAL :: is_root
     IF (grid%global_rank == 0) THEN
        is_root = .TRUE.
@@ -383,13 +384,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION IsRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.
-  !! @param[in] grid the process grid (optional).
-  !! @return slice number of the current process.
   FUNCTION GetMySlice(grid) RESULT(return_val)
-    !! Parameters
+    !> The process grid.
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid
-
+    !> Slice number of the current process.
     INTEGER :: return_val
+
     IF (PRESENT(grid)) THEN
        return_val = grid%my_slice
     ELSE
@@ -398,11 +398,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMySlice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the column of the current process.
-  !! @param[in] grid the process grid (optional).
-  !! @return column number of the current process.
   FUNCTION GetMyColumn(grid) RESULT(return_val)
-    !! Parameters
+    !> The process grid.
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid
+    !> The column number of the current process.
     INTEGER :: return_val
 
     IF (PRESENT(grid)) THEN
@@ -413,11 +412,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMyColumn
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the row of the current process.
-  !! @param[in] grid the process grid (optional).
-  !! @return row number of the current process.
   FUNCTION GetMyRow(grid) RESULT(return_val)
-    !! Parameters
+    !> The process grid.
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid
+    !> The row number of the current process.
     INTEGER :: return_val
 
     IF (PRESENT(grid)) THEN

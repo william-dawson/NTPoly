@@ -29,19 +29,17 @@ MODULE MatrixMarketModule
   PUBLIC :: ParseMMHeader
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Parse a matrix market header.
-  !! @param[in]  line
-  !! @param[out] sparsity_type sets if coordinate or array type.
-  !! @param[out] data_type sets if real, integer, complex, pattern.
-  !! @param[out] pattern_type sets if general, symmetric, skew_symmetric,
-  !! hermitian.
-  !! @result returns true if no errors.
   FUNCTION ParseMMHeader(line,sparsity_type,data_type,pattern_type) &
        & RESULT(no_error)
-    !! Parameters
+    !> String to parse.
     CHARACTER(len=*), INTENT(IN) :: line
+    !> If coordinate or array type.
     INTEGER, INTENT(OUT) :: sparsity_type
+    !> If real, integer, complex, pattern.
     INTEGER, INTENT(OUT) :: data_type
+    !> If general, symmetric, skew_symmetric, hermitian.
     INTEGER, INTENT(OUT) :: pattern_type
+    !> True if no errors.
     LOGICAL :: no_error
     !! Local Data
     INTEGER :: pos1, pos2

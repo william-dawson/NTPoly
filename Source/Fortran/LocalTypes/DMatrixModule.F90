@@ -97,23 +97,25 @@ MODULE DMatrixModule
      MODULE PROCEDURE TransposeMatrix_ldc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A subroutine wrapper for the empty constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldr(this, rows, columns)
-    !! Parameters
+    !> The matrix to construct
     TYPE(Matrix_ldr), INTENT(INOUT) :: this
+    !> Rows of the matrix
     INTEGER, INTENT(IN) :: rows
+    !> Columns of the matrix
     INTEGER, INTENT(IN) :: columns
 
     this = ConstructEmptyMatrix_ldr(rows, columns)
   END SUBROUTINE ConstructEmptyMatrixSup_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
-  !! @param[inout] this the matrix to construct.
-  !! @param[in] columns of the matrix.
-  !! @parma[in] rows of the matrix
   PURE FUNCTION ConstructEmptyMatrix_ldr(rows, columns) RESULT(this)
-    !! Parameters
+    !> The matrix to construct.
     TYPE(Matrix_ldr) :: this
+    !> Rows of the matrix
     INTEGER, INTENT(IN) :: rows
+    !> Columns of the matrix.
     INTEGER, INTENT(IN) :: columns
 
     INCLUDE "dense_includes/ConstructEmptyMatrix.F90"
@@ -121,11 +123,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION ConstructEmptyMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
-  !! @param[in] sparse_matrix a sparse matrix to convert.
-  !! @param[inout] dense_matrix output. Must be preallocated.
   PURE SUBROUTINE ConstructMatrixDFromS_ldr(sparse_matrix, dense_matrix)
-    !! Parameters
+    !> The sparse matrix to convert.
     TYPE(Matrix_lsr), INTENT(IN) :: sparse_matrix
+    !> Output. Must be preallocated.
     TYPE(Matrix_ldr), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
     TYPE(Triplet_r) :: temporary
@@ -135,14 +136,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixDFromS_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a dense matrix to a sparse matrix.
-  !! @param[in] dense_matrix to convert.
-  !! @param[out] sparse_matrix output matrix.
-  !! @param[in] threshold_in value for pruning values to zero.
   PURE SUBROUTINE ConstructMatrixSFromD_ldr(dense_matrix, sparse_matrix, &
        & threshold_in)
-    !! Parameters
+    !> Matrix to convert.
     TYPE(Matrix_ldr), INTENT(IN) :: dense_matrix
+    !> Output matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: sparse_matrix
+    !> Value for pruning values to zero.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Local Variables
     TYPE(Triplet_r) :: temporary
@@ -155,11 +155,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixSFromD_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy the matrix A into the B.
-  !! @param[in] matA the matrix to copy.
-  !! @param[inout] matB = matA
   PURE SUBROUTINE CopyMatrix_ldr(matA, matB)
-    !! Parameters
+    !> The matrix to copy.
     TYPE(Matrix_ldr), INTENT(IN) :: matA
+    !> matB = matA
     TYPE(Matrix_ldr), INTENT(INOUT) :: matB
 
 #include "dense_includes/CopyMatrix.F90"
@@ -167,9 +166,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deallocate the memory associated with this matrix.
-  !! @param[inout] this the matrix to delete.
   PURE SUBROUTINE DestructMatrix_ldr(this)
-    !! Parameters
+    !> The matrix to delete.
     TYPE(Matrix_ldr), INTENT(INOUT) :: this
 
     INCLUDE "dense_includes/DestructMatrix.F90"
@@ -177,13 +175,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> AXPY for dense matrices. B = B + alpha*A
-  !! @param[in] MatA is added
-  !! @param[inout] MatB is incremented.
-  !! @param[in] alpha_in a scaling parameter (optional).
   PURE SUBROUTINE IncrementMatrix_ldr(MatA,MatB,alpha_in)
-    !! Parameters
+    !> MatA is added
     TYPE(Matrix_ldr), INTENT(IN) :: MatA
+    !> MatB is incremented.
     TYPE(Matrix_ldr), INTENT(INOUT) :: MatB
+    !> A scaling parameter.
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     !! Temporary
     REAL(NTREAL) :: alpha
@@ -193,12 +190,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a dense matrix.
-  !! Computes the Frobenius norm.
-  !! @param[in] this the matrix to compute the norm of.
-  !! @result the norm of the matrix.
+  !> Computes the Frobenius norm.
   FUNCTION MatrixNorm_ldr(this) RESULT(norm)
     !! Parameters
+    !> The matrix to compute the norm of.
     TYPE(Matrix_ldr), INTENT(IN) :: this
+    !> The norm of the matrix.
     REAL(NTREAL) :: norm
     !! Local Variables
     CHARACTER, PARAMETER :: NORMC = 'F'
@@ -214,11 +211,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION MatrixNorm_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.
-  !! @param[in] matA the matrix to transpose.
-  !! @param[inout] matAT = matA^T.
   PURE SUBROUTINE TransposeMatrix_ldr(matA, matAT)
-    !! Parameters
+    !> matA the matrix to transpose.
     TYPE(Matrix_ldr), INTENT(IN) :: matA
+    !> matAT = matA^T.
     TYPE(Matrix_ldr), INTENT(INOUT) :: matAT
 
 #include "dense_includes/TransposeMatrix.F90"
@@ -226,17 +222,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
-  !! to another.
-  !! @param[in] mat_array 2d array of matrices to compose.
-  !! @param[in] block_rows the number of rows of the array of blocks.
-  !! @param[in] block_columns the number of columns of the array of blocks.
-  !! @param[out] out_matrix the composed matrix.
+  !> to another.
   PURE SUBROUTINE ComposeMatrix_ldr(mat_array, block_rows, block_columns, &
        & out_matrix)
-    !! Parameters
+    !> 2d array of matrices to compose.
     TYPE(Matrix_ldr), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
          & mat_array
-    INTEGER, INTENT(IN) :: block_rows, block_columns
+    !> The number of rows of the array of blocks.
+    INTEGER, INTENT(IN) :: block_rows
+    !> The number of columns of the array of blocks.
+    INTEGER, INTENT(IN) :: block_columns
+    !> The composed matrix.
     TYPE(Matrix_ldr), INTENT(INOUT) :: out_matrix
 
 #include "dense_includes/ComposeMatrix.F90"
@@ -244,19 +240,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComposeMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
-  !! @param[in] this the matrix to split.
-  !! @param[in] block_rows number of rows to split the matrix into.
-  !! @param[in] block_columns number of columns to split the matrix into.
-  !! @param[out] split_array a COLUMNxROW array for the output to go into.
-  !! @param[in] block_size_row_in specifies the size of the  rows.
-  !! @param[in] block_size_column_in specifies the size of the columns.
   PURE SUBROUTINE SplitMatrix_ldr(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
+    !> The matrix to split.
     TYPE(Matrix_ldr), INTENT(IN) :: this
-    INTEGER, INTENT(IN) :: block_rows, block_columns
+    !> Number of rows to split the matrix into.
+    INTEGER, INTENT(IN) :: block_rows
+    !> Number of columns to split the matrix into.
+    INTEGER, INTENT(IN) :: block_columns
+    !> A block_columns x block_rows array for the output to go into.
     TYPE(Matrix_ldr), DIMENSION(:,:), INTENT(INOUT) :: split_array
+    !> Specifies the size of the  rows.
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
+    !> Specifies the size of the columns.
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
 
 #include "dense_includes/SplitMatrix.F90"
@@ -264,13 +261,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
-  !! @param[in] MatA the first matrix.
-  !! @param[in] MatB the second matrix.
-  !! @param[inout] MatC = MatA*MatB.
   SUBROUTINE MultiplyMatrix_ldr(MatA,MatB,MatC)
-    !! Parameters
+    !> The first matrix.
     TYPE(Matrix_ldr), INTENT(IN) :: MatA
+    !> The second matrix.
     TYPE(Matrix_ldr), INTENT(IN) :: MatB
+    !> MatC = MatA*MatB.
     TYPE(Matrix_ldr), INTENT(INOUT) :: MatC
     !! Local variables
     CHARACTER, PARAMETER :: TRANSA = 'N'
@@ -300,14 +296,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MultiplyMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
-  !! Wraps a standard dense linear algebra routine.
-  !! @param[in] MatA the matrix to decompose.
-  !! @param[out] MatV the eigenvectors.
-  !! @param[out] MatV the eigenvalues.
+  !> Wraps a standard dense linear algebra routine.
   SUBROUTINE EigenDecomposition_ldr(MatA, MatV, MatW)
-    !! Parameters
+    !> MatA the matrix to decompose.
     TYPE(Matrix_ldr), INTENT(IN) :: MatA
+    !> The eigenvectors.
     TYPE(Matrix_ldr), INTENT(INOUT) :: MatV
+    !> The eigenvalues.
     TYPE(Matrix_ldr), INTENT(INOUT), OPTIONAL :: MatW
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
@@ -359,23 +354,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE EigenDecomposition_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A subroutine style wrapper for the constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldc(this, rows, columns)
-    !! Parameters
+    !> The matrix to construct.
     TYPE(Matrix_ldc), INTENT(INOUT) :: this
+    !> The number of rows of the matrix.
     INTEGER, INTENT(IN) :: rows
+    !> The number of columns o the matrix.
     INTEGER, INTENT(IN) :: columns
 
     this = ConstructEmptyMatrix_ldc(rows, columns)
   END SUBROUTINE ConstructEmptyMatrixSup_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty dense matrix with a set number of rows and columns
-  !! @param[inout] this the matrix to construct.
-  !! @param[in] columns of the matrix.
-  !! @parma[in] rows of the matrix
   PURE FUNCTION ConstructEmptyMatrix_ldc(rows, columns) RESULT(this)
-    !! Parameters
+    !> The matrix to construct.
     TYPE(Matrix_ldc) :: this
+    !> Rows of the matrix
     INTEGER, INTENT(IN) :: rows
+    !> Columns of the matrix.
     INTEGER, INTENT(IN) :: columns
 
     INCLUDE "dense_includes/ConstructEmptyMatrix.F90"
@@ -383,11 +380,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION ConstructEmptyMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
-  !! @param[in] sparse_matrix a sparse matrix to convert.
-  !! @param[inout] dense_matrix output. Must be preallocated.
   PURE SUBROUTINE ConstructMatrixDFromS_ldc(sparse_matrix, dense_matrix)
-    !! Parameters
+    !> The sparse matrix to convert.
     TYPE(Matrix_lsc), INTENT(IN) :: sparse_matrix
+    !> Dense matrix output. Must be preallocated.
     TYPE(Matrix_ldc), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
     TYPE(Triplet_c) :: temporary
@@ -397,14 +393,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixDFromS_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a dense matrix to a sparse matrix.
-  !! @param[in] dense_matrix to convert.
-  !! @param[out] sparse_matrix output matrix.
-  !! @param[in] threshold_in value for pruning values to zero.
   PURE SUBROUTINE ConstructMatrixSFromD_ldc(dense_matrix, sparse_matrix, &
        & threshold_in)
     !! Parameters
+    !> The matrix to convert.
     TYPE(Matrix_ldc), INTENT(IN) :: dense_matrix
+    !> The sparse output matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: sparse_matrix
+    !> Value for pruning values to zero.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Local Variables
     TYPE(Triplet_c) :: temporary
@@ -417,11 +413,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixSFromD_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy the matrix A into the B.
-  !! @param[in] matA the matrix to copy.
-  !! @param[inout] matB = matA
   PURE SUBROUTINE CopyMatrix_ldc(matA, matB)
-    !! Parameters
+    !> The matrix to copy.
     TYPE(Matrix_ldc), INTENT(IN) :: matA
+    !> matB = matA
     TYPE(Matrix_ldc), INTENT(INOUT) :: matB
 
 #include "dense_includes/CopyMatrix.F90"
@@ -429,9 +424,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deallocate the memory associated with this matrix.
-  !! @param[inout] this the matrix to delete.
   PURE SUBROUTINE DestructMatrix_ldc(this)
-    !! Parameters
+    !> This the matrix to delete.
     TYPE(Matrix_ldc), INTENT(INOUT) :: this
 
     INCLUDE "dense_includes/DestructMatrix.F90"
@@ -439,13 +433,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> AXPY for dense matrices. B = B + alpha*A
-  !! @param[in] MatA is added
-  !! @param[inout] MatB is incremented.
-  !! @param[in] alpha_in a scaling parameter (optional).
   PURE SUBROUTINE IncrementMatrix_ldc(MatA,MatB,alpha_in)
-    !! Parameters
+    !> MatA is added
     TYPE(Matrix_ldc), INTENT(IN) :: MatA
+    !> MatB is incremented.
     TYPE(Matrix_ldc), INTENT(INOUT) :: MatB
+    !> A scaling parameter.
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
     !! Temporary
     REAL(NTREAL) :: alpha
@@ -455,12 +448,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a dense matrix.
-  !! Computes the Frobenius norm.
-  !! @param[in] this the matrix to compute the norm of.
-  !! @result the norm of the matrix.
+  !> Computes the Frobenius norm.
   FUNCTION MatrixNorm_ldc(this) RESULT(norm)
-    !! Parameters
+    !> The matrix to compute the norm of.
     TYPE(Matrix_ldc), INTENT(IN) :: this
+    !> The norm of the matrix.
     REAL(NTREAL) :: norm
     !! Local Variables
     CHARACTER, PARAMETER :: NORMC = 'F'
@@ -476,11 +468,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION MatrixNorm_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.
-  !! @param[in] matA the matrix to transpose.
-  !! @param[inout] matAT = matA^T.
   PURE SUBROUTINE TransposeMatrix_ldc(matA, matAT)
-    !! Parameters
+    !> The matrix to transpose.
     TYPE(Matrix_ldc), INTENT(IN) :: matA
+    !> matAT = matA^T.
     TYPE(Matrix_ldc), INTENT(INOUT) :: matAT
 
 #include "dense_includes/TransposeMatrix.F90"
@@ -488,17 +479,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
-  !! to another.
-  !! @param[in] mat_array 2d array of matrices to compose.
-  !! @param[in] block_rows the number of rows of the array of blocks.
-  !! @param[in] block_columns the number of columns of the array of blocks.
-  !! @param[out] out_matrix the composed matrix.
+  !> to another.
   PURE SUBROUTINE ComposeMatrix_ldc(mat_array, block_rows, block_columns, &
        & out_matrix)
-    !! Parameters
+    !> 2d array of matrices to compose.
     TYPE(Matrix_ldc), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
          & mat_array
-    INTEGER, INTENT(IN) :: block_rows, block_columns
+    !> The number of rows of the array of blocks.
+    INTEGER, INTENT(IN) :: block_rows
+    !> The number of columns of the array of blocks.
+    INTEGER, INTENT(IN) :: block_columns
+    !> The composed matrix.
     TYPE(Matrix_ldc), INTENT(INOUT) :: out_matrix
 
 #include "dense_includes/ComposeMatrix.F90"
@@ -506,19 +497,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComposeMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
-  !! @param[in] this the matrix to split.
-  !! @param[in] block_rows number of rows to split the matrix into.
-  !! @param[in] block_columns number of columns to split the matrix into.
-  !! @param[out] split_array a COLUMNxROW array for the output to go into.
-  !! @param[in] block_size_row_in specifies the size of the  rows.
-  !! @param[in] block_size_column_in specifies the size of the columns.
   PURE SUBROUTINE SplitMatrix_ldc(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
-    !! Parameters
+    !> The matrix to split.
     TYPE(Matrix_ldc), INTENT(IN) :: this
-    INTEGER, INTENT(IN) :: block_rows, block_columns
+    !> Number of rows to split the matrix into.
+    INTEGER, INTENT(IN) :: block_rows
+    !> Number of columns to split the matrix into.
+    INTEGER, INTENT(IN) :: block_columns
+    !> A COLUMNxROW array for the output to go into.
     TYPE(Matrix_ldc), DIMENSION(:,:), INTENT(INOUT) :: split_array
+    !> Specifies the size of the  rows.
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_row_in
+    !> Specifies the size of the columns.
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
 
 #include "dense_includes/SplitMatrix.F90"
@@ -526,13 +517,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
-  !! @param[in] MatA the first matrix.
-  !! @param[in] MatB the second matrix.
-  !! @param[inout] MatC = MatA*MatB.
   SUBROUTINE MultiplyMatrix_ldc(MatA,MatB,MatC)
-    !! Parameters
+    !> The first matrix.
     TYPE(Matrix_ldc), INTENT(IN) :: MatA
+    !> The second matrix.
     TYPE(Matrix_ldc), INTENT(IN) :: MatB
+    !> MatC = MatA*MatB.
     TYPE(Matrix_ldc), INTENT(INOUT) :: MatC
     !! Local variables
     CHARACTER, PARAMETER :: TRANSA = 'N'
@@ -562,14 +552,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MultiplyMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a dense matrix.
-  !! Wraps a standard dense linear algebra routine.
-  !! @param[in] MatA the matrix to decompose.
-  !! @param[out] MatV the eigenvectors.
-  !! @param[out] MatV the eigenvalues.
+  !> Wraps a standard dense linear algebra routine.
   SUBROUTINE EigenDecomposition_ldc(MatA, MatV, MatW)
-    !! Parameters
+    !> The matrix to decompose.
     TYPE(Matrix_ldc), INTENT(IN) :: MatA
+    !> The eigenvectors.
     TYPE(Matrix_ldc), INTENT(INOUT) :: MatV
+    !> The eigenvalues.
     TYPE(Matrix_ldc), INTENT(INOUT), OPTIONAL :: MatW
     !! Standard parameters
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'

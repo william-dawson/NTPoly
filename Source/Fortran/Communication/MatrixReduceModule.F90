@@ -72,38 +72,41 @@ MODULE MatrixReduceModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
-  !! @param[in] matrix to send.
-  !! @param[inout] communicator to send along.
-  !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceMatrixSizes_lsr(matrix, communicator, helper)
-    !! Parameters
-    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
+    !> The matrix to send.
+    TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: communicator
+    !> The  helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "includes/ReduceMatrixSizes.F90"
   END SUBROUTINE ReduceMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
-  !! @param[in] matrix to send.
-  !! @param[inout] communicator to send along.
-  !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceMatrixSizes_lsc(matrix, communicator, helper)
-    !! Parameters
-    TYPE(Matrix_lsc), INTENT(IN)      :: matrix
+    !! The matrix to send.
+    TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !! The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: communicator
+    !! The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "includes/ReduceMatrixSizes.F90"
   END SUBROUTINE ReduceMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align it one matrix
-  !! next to another.
-  !! @param[in] matrix to send.
-  !! @param[inout] communicator to send along.
-  !! @param[inout] gathered_matrix the matrix we are gathering.
-  !! @param[inout] helper a helper associated with this gather.
+  !! @param[inout]
   SUBROUTINE ReduceAndComposeMatrixData_lsr(matrix, communicator, &
        & gathered_matrix, helper)
-    !! Parameters
-    TYPE(Matrix_lsr), INTENT(IN)    :: matrix
-    TYPE(Matrix_lsr), INTENT(INOUT) :: gathered_matrix
+    !> The matrix to send.
+    TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The matrix we are gathering.
+    TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
+    !> The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: communicator
 
     INCLUDE "includes/ReduceAndComposeMatrixData.F90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
@@ -120,9 +123,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndComposeMatrixData_lsc(matrix, communicator, &
        & gathered_matrix, helper)
-    !! Parameters
-    TYPE(Matrix_lsc), INTENT(IN)    :: matrix
-    TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
+    !> The matrix to send.
+    TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !> The matrix we are gathering.
+    TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
+    !> The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: communicator
 
     INCLUDE "includes/ReduceAndComposeMatrixData.F90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
@@ -132,42 +140,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndComposeMatrixData_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third function to call, finishes setting up the matrices.
-  !! @param[in] matrix to send.
-  !! @param[in] gathered_matrix matrix we are gathering.
-  !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndComposeMatrixCleanup_lsr(matrix, gathered_matrix, &
        & helper)
-    !! Parameters
+    !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)    :: matrix
+    !> The matrix we are gathering.
     TYPE(Matrix_lsr), INTENT(INOUT) :: gathered_matrix
+    !> The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "includes/ReduceAndComposeMatrixCleanup.F90"
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third function to call, finishes setting up the matrices.
-  !! @param[in] matrix to send.
-  !! @param[in] gathered_matrix matrix we are gathering.
-  !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndComposeMatrixCleanup_lsc(matrix, gathered_matrix, &
        & helper)
-    !! Parameters
+ !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)    :: matrix
+    !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
+    !> The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "includes/ReduceAndComposeMatrixCleanup.F90"
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine to call for gathering and summing up the data.
-  !! @param[in] matrix to send.
-  !! @param[inout] communicator to send along.
-  !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndSumMatrixData_lsr(matrix, gathered_matrix, communicator, &
        & helper)
-    !! Parameters
-    TYPE(Matrix_lsr), INTENT(IN)    :: matrix
-    TYPE(Matrix_lsr), INTENT(INOUT) :: gathered_matrix
+    !> The matrix to send.
+    TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The matrix we are gathering.
+    TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: communicator
+    !> The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "includes/ReduceAndSumMatrixData.F90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
@@ -182,9 +192,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndSumMatrixData_lsc(matrix, gathered_matrix, communicator, &
        & helper)
-    !! Parameters
+    !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)    :: matrix
+    !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: communicator
+    !> The helper associated with this gather.
+    TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "includes/ReduceAndSumMatrixData.F90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
@@ -194,16 +209,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndSumMatrixData_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Finally routine to sum up the matrices.
-  !! @param[in] matrix to send.
-  !! @param[inout] gathered_matrix the matrix being gathered.
-  !! @param[in] threshold the threshold for flushing values.
-  !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndSumMatrixCleanup_lsr(matrix, gathered_matrix, &
        & threshold, helper)
-    !! Parameters
-    TYPE(Matrix_lsr), INTENT(IN)      :: matrix
-    TYPE(Matrix_lsr), INTENT(INOUT)   :: gathered_matrix
-    REAL(NTREAL), INTENT(IN) :: threshold
+    !> The matrix to send.
+    TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The gathered_matrix the matrix being gathered.
+    TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
+    !> The threshold the threshold for flushing values.
+    REAL(NTREAL), INTENT(IN)            :: threshold
+    !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     TYPE(Matrix_lsr) :: temporary_matrix, sum_matrix
@@ -212,16 +226,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Finally routine to sum up the matrices.
-  !! @param[in] matrix to send.
-  !! @param[inout] gathered_matrix the matrix being gathered.
-  !! @param[in] threshold the threshold for flushing values.
-  !! @param[inout] helper a helper associated with this gather.
   PURE SUBROUTINE ReduceAndSumMatrixCleanup_lsc(matrix, gathered_matrix, &
        & threshold, helper)
-    !! Parameters
-    TYPE(Matrix_lsc), INTENT(IN)      :: matrix
-    TYPE(Matrix_lsc), INTENT(INOUT)   :: gathered_matrix
-    REAL(NTREAL), INTENT(IN) :: threshold
+    !> The matrix to send.
+    TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !> The threshold the threshold for flushing values.
+    TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
+    !> The threshold the threshold for flushing values.
+    REAL(NTREAL), INTENT(IN)            :: threshold
+    !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
     TYPE(Matrix_lsc) :: temporary_matrix, sum_matrix
@@ -230,11 +243,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.
-  !! @param[in] helper the gatherer helper structure.
-  !! @return request_completed true if the request is finished.
   FUNCTION TestReduceSizeRequest(helper) RESULT(request_completed)
-    !! Parameters
+    !> The gatherer helper structure.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
+    !> True if the request is finished.
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%size_request, request_completed, &
@@ -242,11 +254,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION TestReduceSizeRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the outer indices of the matrices is complete.
-  !! @param[in] helper the gatherer helper structure.
-  !! @return request_completed true if the request is finished.
   FUNCTION TestReduceOuterRequest(helper) RESULT(request_completed)
-    !! Parameters
+    !> The gatherer helper structure.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
+    !> True if the request is finished.
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%outer_request, request_completed, &
@@ -254,11 +265,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION TestReduceOuterRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the inner indices of the matrices is complete.
-  !! @param[in] helper the gatherer helper structure.
-  !! @return request_completed true if the request is finished.
   FUNCTION TestReduceInnerRequest(helper) RESULT(request_completed)
-    !! Parameters
+    !> The gatherer helper structure.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
+    !> True if the request is finished.
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%inner_request, request_completed, &
@@ -266,11 +276,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION TestReduceInnerRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the data of the matrices is complete.
-  !! @param[in] helper the gatherer helper structure.
-  !! @return request_completed true if the request is finished.
   FUNCTION TestReduceDataRequest(helper) RESULT(request_completed)
-    !! Parameters
+    !> The gatherer helper structure.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
+    !> True if the request is finished.
     LOGICAL :: request_completed
 
     CALL MPI_Test(helper%data_request, request_completed, &
