@@ -1,11 +1,3 @@
-subdirs(Communication)
-subdirs(DistributedTypes)
-subdirs(LocalTypes)
-
-include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/Communication)
-include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/DistributedTypes)
-include_directories(${CMAKE_BINARY_DIR}/Source/Wrapper/LocalTypes)
-
 set(Wsrc
     ChebyshevSolversModule_wrp.F90
     DensityMatrixSolversModule_wrp.F90
@@ -17,32 +9,23 @@ set(Wsrc
     InverseSolversModule_wrp.F90
     LinearSolversModule_wrp.F90
     LoadBalancerModule_wrp.F90
+    MatrixMemoryPoolModule_wrp.F90
     MinimizerSolversModule_wrp.F90
     PermutationModule_wrp.F90
+    PMatrixMemoryPoolModule_wrp.F90
     PolynomialSolversModule_wrp.F90
+    ProcessGridModule_wrp.F90
+    PSMatrixAlgebraModule_wrp.F90
+    PSMatrixModule_wrp.F90
     RootSolversModule_wrp.F90
     SignSolversModule_wrp.F90
+    SMatrixAlgebraModule_wrp.F90
+    SMatrixModule_wrp.F90
     SolverParametersModule_wrp.F90
     SquareRootSolversModule_wrp.F90
     TrigonometrySolversModule_wrp.F90
+    TripletListModule_wrp.F90
     WrapperModule.F90
-)
-
-set(WCommunication
-    ${CMAKE_CURRENT_SOURCE_DIR}/Communication/ProcessGridModule_wrp.F90
-)
-
-set(WDistributed
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PMatrixMemoryPoolModule_wrp.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixAlgebraModule_wrp.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/DistributedTypes/PSMatrixModule_wrp.F90
-)
-
-set(WTypes
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/MatrixMemoryPoolModule_wrp.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixAlgebraModule_wrp.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/SMatrixModule_wrp.F90
-    ${CMAKE_CURRENT_SOURCE_DIR}/LocalTypes/TripletListModule_wrp.F90
 )
 
 include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)
@@ -51,7 +34,6 @@ IF (EIGEN_EXA)
   include_directories(${EIGEN_EXA})
 ENDIF()
 
-add_library(NTPolyWrapper STATIC ${Wsrc} ${WCommunication} ${WDistributed}
-            ${WTypes})
+add_library(NTPolyWrapper STATIC ${Wsrc})
 target_link_libraries(NTPolyWrapper NTPoly)
 install(TARGETS NTPolyWrapper ARCHIVE DESTINATION lib)
