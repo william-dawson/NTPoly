@@ -150,8 +150,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END IF
     ELSE
-       memory_pool = MatrixMemoryPool_p(matA)
+       IF (matA%is_complex) THEN
+          memory_pool = MatrixMemoryPool_p(matA)
+       ELSE
+          memory_pool = MatrixMemoryPool_p(matB)
+       END IF
     END IF
+
 
     !! Perform Upcasting
     IF (matB%is_complex .AND. .NOT. matA%is_complex) THEN

@@ -67,6 +67,16 @@ class TestChemistry(unittest.TestCase):
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, EXTRAPTHRESHOLD)
 
+    def compute_cp(self):
+        '''Compute the chemical potential'''
+        fock_matrix = mmread(self.hamiltonian)
+        overlap_matrix = mmread(self.overlap)
+        eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
+                        eigvals_only=True)
+        homo = int(self.nel / 2) - 1
+        lumo = homo + 1
+        return eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo])/2.0
+
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
         fock_matrix = mmread(self.hamiltonian)
@@ -122,34 +132,34 @@ class TestChemistry(unittest.TestCase):
            gradient.'''
         self.basic_solver(nt.MinimizerSolvers.ConjugateGradient)
 
-    # def test_foe_fixed(self):
-    #     '''Test various kinds of density matrix solvers.'''
-    #     fock_matrix = nt.Matrix_ps(self.hamiltonian)
-    #     overlap_matrix = nt.Matrix_ps(self.overlap)
-    #     inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
-    #     density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
-    #     degree = 128
-    #
-    #     permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-    #     permutation.SetRandomPermutation()
-    #     self.solver_parameters.SetLoadBalance(permutation)
-    #
-    #     nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-    #                                            inverse_sqrt_matrix,
-    #                                            self.solver_parameters)
-    #
-    #     # Compute the chemical potential
-    #
-    #     nt.FermiOperatorExpansion.Compute(fock_matrix, inverse_sqrt_matrix,
-    #                                       self.nel, density_matrix,
-    #                                       degree, chemical_potential,
-    #                                       self.solver_parameters)
-    #
-    #     density_matrix.WriteToMatrixMarket(result_file)
-    #     comm.barrier()
-    #
-    #     self.check_full()
-    #     self.check_cp(chemical_potential)
+    def test_foe_fixed(self):
+        '''Test various kinds of density matrix solvers.'''
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        degree = 4096
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+
+        # Compute the chemical potential
+        chemical_potential = self.compute_cp()
+
+        nt.FermiOperatorExpansion.Compute(fock_matrix, inverse_sqrt_matrix,
+                                          self.nel, density_matrix,
+                                          degree, chemical_potential,
+                                          self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
 
 
 class TestChemistry_r(TestChemistry):

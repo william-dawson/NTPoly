@@ -5,12 +5,14 @@ MODULE FermiOperatorExpansionModule
        & ConstructPolynomial, DestructPolynomial, SetCoefficient, &
        & Compute
   USE DataTypesModule, ONLY : NTREAL
+  USE EigenBoundsModule, ONLY : GershgorinBounds
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteHeader, EnterSubLog, &
        & ExitSubLog
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
-  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, ScaleMatrix
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, &
+       & ScaleMatrix, MatrixTrace
   USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixIdentity, &
        & PrintMatrixInformation, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix
@@ -44,13 +46,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
-    !! Local Matrices
+    !! Local Variables
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: TempMat
-    !! Local Variables
-    REAL(NTREAL), DIMENSION(degree+1) :: moments, damping
-    TYPE(ChebyshevPolynomial_t) :: cheb
-    INTEGER :: II
+    REAL(NTREAL) :: e_min, e_max
+    REAL(NTREAL) :: scaled_cp
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -66,6 +66,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold)
 
+    !! Scale and shift the matrix.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+    CALL ScaleMatrix(WorkingHamiltonian, REAL(1.0,NTREAL)/(e_max-e_min))
+
+    IF (PRESENT(chemical_potential_in)) THEN
+       scaled_cp = (chemical_potential_in)/(e_max - e_min)
+    END IF
+
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
@@ -76,8 +84,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! If we know the chemical potential, do the standard algorithm.
     IF (PRESENT(chemical_potential_in)) THEN
-       CALL ComputeFixed(WorkingHamiltonian, Density, degree, &
-            & chemical_potential_in, solver_parameters)
+       CALL ComputeFixed(WorkingHamiltonian, Density, degree, scaled_cp, &
+            & solver_parameters)
     ELSE
 
     END IF
@@ -128,20 +136,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     !! Local Variables
     REAL(NTREAL), DIMENSION(degree+1) :: moments, damping
+    TYPE(Matrix_ps) :: Identity
     TYPE(ChebyshevPolynomial_t) :: cheb
     INTEGER :: II
 
+    !! Make the coefficients
     CALL ComputeMoments(moments, chemical_potential)
     CALL ComputeDamping(damping)
 
+    !! Call to the chebysehv module
     CALL ConstructPolynomial(cheb, degree+1)
     DO II = 1, degree+1
        CALL SetCoefficient(cheb, II, moments(II)*damping(II))
     END DO
     CALL Compute(Hamiltonian, Density, cheb, solver_parameters)
-    CALL DestructPolynomial(cheb)
-    !! Otherwise, we have to do a search.
 
+    !! Final Increment
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+    CALL IncrementMatrix(Identity, Density, alpha_in=-0.5*moments(1))
+
+    !! Cleanup
+    CALL DestructPolynomial(cheb)
+    CALL DestructMatrix(Identity)
 
   END SUBROUTINE ComputeFixed
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -186,8 +203,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Actual Loop
     DO II = 1, M + 1
-       left = (1 - (II-1)/(Mplus2))*SIN(PI/Mplus2)*COS(((II-1)*PI)/Mplus2)
-       right = (1.0/Mplus2)*COS(PI/Mplus2)*SIN(((II-1)*PI)/Mplus2)
+       left = (1 - (II-1.0)/(Mplus2))*SIN(PI/Mplus2)*COS(((II-1.0)*PI)/Mplus2)
+       right = (1.0/Mplus2)*COS(PI/Mplus2)*SIN(((II-1.0)*PI)/Mplus2)
        denom = SIN(PI/Mplus2)
        damping(II) = (left + right)/denom
     END DO
