@@ -1,7 +1,7 @@
 # Generic modules
 import sys
 
-# NT Poly
+# NTPoly
 import NTPolySwig as nt
 
 # MPI Module
