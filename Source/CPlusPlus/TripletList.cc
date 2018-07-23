@@ -1,7 +1,7 @@
 #include "Triplet.h"
 #include "TripletList.h"
 
-#include <complex.h>
+#include <complex>
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {

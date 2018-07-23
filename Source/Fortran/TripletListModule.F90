@@ -90,7 +90,7 @@ MODULE TripletListModule
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
-  TYPE, PUBLIC :: TripletList_r
+  TYPE :: TripletList_r
      !> Internal representation of the data.
      TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list
@@ -98,7 +98,7 @@ MODULE TripletListModule
   END TYPE TripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
-  TYPE, PUBLIC :: TripletList_c
+  TYPE :: TripletList_c
      !> Internal representation of the data.
      TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list

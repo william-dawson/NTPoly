@@ -31,7 +31,7 @@
 #include "TrigonometrySolvers.h"
 #include "Triplet.h"
 #include "TripletList.h"
-#include <complex.h>
+#include <complex>
 using namespace NTPoly;
 %}
 

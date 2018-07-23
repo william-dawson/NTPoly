@@ -225,13 +225,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> to another.
   PURE SUBROUTINE ComposeMatrix_ldr(mat_array, block_rows, block_columns, &
        & out_matrix)
-    !> 2d array of matrices to compose.
-    TYPE(Matrix_ldr), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
-         & mat_array
     !> The number of rows of the array of blocks.
     INTEGER, INTENT(IN) :: block_rows
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
+    !> 2d array of matrices to compose.
+    TYPE(Matrix_ldr), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
+         & mat_array
     !> The composed matrix.
     TYPE(Matrix_ldr), INTENT(INOUT) :: out_matrix
 
@@ -482,13 +482,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> to another.
   PURE SUBROUTINE ComposeMatrix_ldc(mat_array, block_rows, block_columns, &
        & out_matrix)
-    !> 2d array of matrices to compose.
-    TYPE(Matrix_ldc), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
-         & mat_array
     !> The number of rows of the array of blocks.
     INTEGER, INTENT(IN) :: block_rows
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
+    !> 2d array of matrices to compose.
+    TYPE(Matrix_ldc), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
+         & mat_array
     !> The composed matrix.
     TYPE(Matrix_ldc), INTENT(INOUT) :: out_matrix
 
