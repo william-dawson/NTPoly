@@ -7,6 +7,7 @@ from Helpers import result_file
 from Helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
+from numpy import diag
 import scipy
 from scipy.sparse.linalg import norm
 from scipy.io import mmread
@@ -54,11 +55,6 @@ class TestChemistry(unittest.TestCase):
             ResultMat = 2.0 * mmread(result_file)
             self.CheckMat = mmread(self.density)
             normval = abs(norm(self.CheckMat - ResultMat))
-
-            print(ResultMat.todense())
-            print()
-            print(self.CheckMat.todense())
-            print()
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
@@ -190,6 +186,41 @@ class TestChemistry(unittest.TestCase):
         comm.barrier()
 
         self.check_full()
+
+    def test_foe_eigenvalues(self):
+        '''Test various kinds of density matrix solvers.'''
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        eigenvalues = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        degree = 8192
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+
+        nval = fock_matrix.GetActualDimension()
+        nt.FermiOperatorExpansion.ComputeEigenvalues(fock_matrix,
+                                                     inverse_sqrt_matrix,
+                                                     eigenvalues, degree, nval,
+                                                     self.solver_parameters)
+
+        eigenvalues.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
+                            eigvals_only=True)
+            self.CheckMat = csr_matrix(diag(eig_vals))
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
 
 
 class TestChemistry_r(TestChemistry):

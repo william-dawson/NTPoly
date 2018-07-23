@@ -66,10 +66,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold)
 
-    !! Scale and shift the matrix.
+    !! Scale the matrix.
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
     CALL ScaleMatrix(WorkingHamiltonian, REAL(1.0,NTREAL)/(e_max-e_min))
-
     IF (PRESENT(chemical_potential_in)) THEN
        scaled_cp = (chemical_potential_in)/(e_max - e_min)
     END IF
@@ -108,18 +107,106 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeFOE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Estimate the eigenvalues of a matrix using the Fermi Operator Expansion.
-  SUBROUTINE FOEEigenvalues(InputMat, eigenvalues, degree, solver_parameters_in)
+  SUBROUTINE FOEEigenvalues(InputMat, InverseSquareRoot, Eigenvalues, degree, &
+       & nvals, solver_parameters_in)
     !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
-    !> The eigenvalues of the matrix, preallocated with a length of the number
-    !> of eigenvalues you want to compute.
-    REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: eigenvalues
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN)  :: InverseSquareRoot
+    !> The eigenvalues of the matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: Eigenvalues
     !> Degree to expand to.
     INTEGER, INTENT(IN) :: degree
+    !> The number of eigenvalues to compute
+    INTEGER, INTENT(IN) :: nvals
     !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
     TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Variables
+    TYPE(Matrix_ps), DIMENSION(:), ALLOCATABLE :: PowerArray
+    TYPE(Matrix_ps) :: WorkingHamiltonian, TempMat
+    REAL(NTREAL), DIMENSION(degree+1) :: damping, thresholds
+    REAL(NTREAL), DIMENSION(nvals) :: vals
+    REAL(NTREAL) :: trace_value
+    REAL(NTREAL) :: e_min, e_max
+    INTEGER :: II, IIV
+    REAL(NTREAL) :: step_size, cp
+    INTEGER :: last_trace
+    INTEGER :: num_found
+
+    !! Handle The Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    !! Compute The Working Hamiltonian
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, InputMat)
+    CALL MatrixMultiply(InverseSquareRoot,InputMat,TempMat, &
+         & threshold_in=solver_parameters%threshold)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold)
+    !! Scale the matrix.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+    CALL ScaleMatrix(WorkingHamiltonian, REAL(1.0,NTREAL)/(e_max-e_min))
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Eigen Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", text_value_in="FOE")
+       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    !! Make the coefficients
+    CALL ComputeDamping(damping)
+    CALL ComputeThresholds(thresholds, damping, solver_parameters%threshold)
+
+    !! Core computation of the power arrays
+    ALLOCATE(PowerArray(degree))
+    CALL ComputePowers(WorkingHamiltonian, PowerArray, thresholds, &
+         & solver_parameters)
+
+    !! Sweep
+    step_size = 2.0/degree
+    IIV = 0
+    last_trace = 0
+    DO II = 1, degree
+       cp = step_size*(II-1) - 1.0
+       CALL SumFOE(PowerArray, damping, cp, degree, TempMat)
+       CALL MatrixTrace(TempMat, trace_value)
+
+       IF (INT(trace_value) .GT. last_trace) THEN
+          num_found = INT(trace_value) - last_trace
+          vals(IIV+1:MIN(IIV+num_found,nvals)) = cp
+          WRITE(*,*) trace_value, last_trace, IIV, IIV+num_found
+          IIV = MIN(IIV+num_found,nvals)
+          last_trace = INT(trace_value)
+       END IF
+
+       IF (IIV .GT. nvals) THEN
+          EXIT
+        END IF
+    END DO
+
+    !! Fill The Matrix
+    WRITE(*,*) vals
+    vals = (e_max - e_min) * vals
+    WRITE(*,*) vals
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    !! Cleanup
+    DO II = 1, degree
+       CALL DestructMatrix(PowerArray(II))
+    END DO
+    DEALLOCATE(PowerArray)
+    CALL DestructMatrix(TempMat)
+
   END SUBROUTINE FOEEigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Implementation with a fixed chemical potential.
@@ -145,7 +232,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeMoments(moments, chemical_potential)
     CALL ComputeDamping(damping)
 
-    !! Call to the chebysehv module
+    !! Call to the Chebyshev module
     CALL ConstructPolynomial(cheb, degree+1)
     DO II = 1, degree+1
        CALL SetCoefficient(cheb, II, moments(II)*damping(II))
@@ -201,8 +288,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL SumFOE(PowerArray, damping, cp, degree, Density)
        CALL MatrixTrace(Density, trace_value)
 
-       WRITE(*,*) ":::", cp_left, cp_right, cp, trace_value, target_trace
-
        IF (ABS(trace_value - target_trace) .LT. &
             & solver_parameters%converge_diff) THEN
           finished = .TRUE.
@@ -228,6 +313,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeSearch
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the powers of the Chebysehv polynomial
+  !> note that this routine won't reverse the permutation.
   SUBROUTINE ComputePowers(InputMat, PowerArray, thresholds, solver_parameters)
     !> The starting matrix
     TYPE(Matrix_ps), INTENT(IN) :: InputMat
@@ -280,33 +366,33 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the matrices for a given chemical potential
   SUBROUTINE SumFOE(PowerArray, damping, chemical_potential, degree, Density)
-     !> The Chebyshev polynomials to sum up.
-     TYPE(Matrix_ps), DIMENSION(:), INTENT(INOUT) :: PowerArray
-     !> The damping factor.
-     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: damping
-     !> The chemical potential we are guessing.
-     REAL(NTREAL), INTENT(IN) :: chemical_potential
-     !> The degree of the polynomial.
-     INTEGER, INTENT(IN) :: degree
-     !> The density value computed.
-     TYPE(Matrix_ps), INTENT(INOUT) :: Density
-     !! Local variables
-     INTEGER :: II
-     REAL(NTREAL), DIMENSION(degree) :: moments
+    !> The Chebyshev polynomials to sum up.
+    TYPE(Matrix_ps), DIMENSION(:), INTENT(INOUT) :: PowerArray
+    !> The damping factor.
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: damping
+    !> The chemical potential we are guessing.
+    REAL(NTREAL), INTENT(IN) :: chemical_potential
+    !> The degree of the polynomial.
+    INTEGER, INTENT(IN) :: degree
+    !> The density value computed.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !! Local variables
+    INTEGER :: II
+    REAL(NTREAL), DIMENSION(degree) :: moments
 
-     !! Compute coefficients
-     CALL ComputeMoments(moments,chemical_potential)
+    !! Compute coefficients
+    CALL ComputeMoments(moments,chemical_potential)
 
-     !! Sum Up
-     CALL CopyMatrix(PowerArray(1), Density)
-     CALL ScaleMatrix(Density, moments(1)*damping(1))
-     DO II = 2, degree
-        CALL IncrementMatrix(PowerArray(II), Density, &
-             & alpha_in=moments(II)*damping(II))
-     END DO
+    !! Sum Up
+    CALL CopyMatrix(PowerArray(1), Density)
+    CALL ScaleMatrix(Density, moments(1)*damping(1))
+    DO II = 2, degree
+       CALL IncrementMatrix(PowerArray(II), Density, &
+            & alpha_in=moments(II)*damping(II))
+    END DO
 
-     !! Final increment
-     CALL IncrementMatrix(PowerArray(1), Density, alpha_in=-0.5*moments(1))
+    !! Final increment
+    CALL IncrementMatrix(PowerArray(1), Density, alpha_in=-0.5*moments(1))
   END SUBROUTINE SumFOE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the chebyshev moments to expand the fermi operator.

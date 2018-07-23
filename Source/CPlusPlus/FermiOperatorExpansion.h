@@ -35,6 +35,18 @@ public:
                       const Matrix_ps &InverseSquareRoot, int nel,
                       Matrix_ps &Density, int degree,
                       const SolverParameters &solver_parameters);
+  //! Estimate the eigenvalues of a matrix using the fermi operator expansion.
+  //!\param InputMat the matrix to compute the corresponding density from.
+  //!\param InverseSquareRoot of the overlap matrix.
+  //!\param Eigenvalues the eigenvalues computed by this routine.
+  //!\param degree the degree of the polynomial to use.
+  //!\param nvals the number of values to compute.
+  //!\param solver_parameters parameters for the solver
+  static void ComputeEigenvalues(const Matrix_ps &InputMat,
+                                 const Matrix_ps &InverseSquareRoot,
+                                 const Matrix_ps &Eigenvalues, int degree,
+                                 int nvals,
+                                 const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

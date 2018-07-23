@@ -24,4 +24,13 @@ void FermiOperatorExpansion::Compute(
   ComputeFOESearch_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel, GetIH(Density),
                        &degree, GetIH(solver_parameters));
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void FermiOperatorExpansion::ComputeEigenvalues(
+    const Matrix_ps &InputMat, const Matrix_ps &Overlap,
+    const Matrix_ps &Eigenvalues, int degree, int nvals,
+    const SolverParameters &solver_parameters) {
+  FOEEigenvalues_wrp(GetIH(InputMat), GetIH(Overlap), GetIH(Eigenvalues),
+                     &degree, &nvals, GetIH(solver_parameters));
+}
 } // namespace NTPoly

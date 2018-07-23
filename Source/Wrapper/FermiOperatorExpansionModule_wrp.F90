@@ -12,6 +12,7 @@ MODULE FermiOperatorExpansionModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ComputeFOEFixed_wrp
   PUBLIC :: ComputeFOESearch_wrp
+  PUBLIC :: FOEEigenvalues_wrp
   ! PUBLIC :: FOEEigenvalues_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Density Matrix using the Fermi Operator Expansion.
@@ -66,5 +67,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_Density%data, INT(degree), &
          & solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE ComputeFOESearch_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Estimate the eigenvalues of a matrix using the Fermi Operator Expansion.
+  SUBROUTINE FOEEigenvalues_wrp(ih_InputMat, ih_InverseSquareRoot, &
+       & ih_Eigenvalues, degree, nvals, ih_solver_parameters) &
+       & bind(c,name="FOEEigenvalues_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_InputMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_InverseSquareRoot(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Eigenvalues(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: degree
+    INTEGER(kind=c_int), INTENT(IN) :: nvals
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
+    !! Local
+    TYPE(Matrix_ps_wrp) :: h_InputMat
+    TYPE(Matrix_ps_wrp) :: h_InverseSquareRoot
+    TYPE(Matrix_ps_wrp) :: h_Eigenvalues
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
+
+    h_InputMat = TRANSFER(ih_InputMat,h_InputMat)
+    h_InverseSquareRoot = TRANSFER(ih_InverseSquareRoot,h_InverseSquareRoot)
+    h_Eigenvalues = TRANSFER(ih_Eigenvalues,h_Eigenvalues)
+    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
+
+    CALL FOEEigenvalues(h_InputMat%data, h_InverseSquareRoot%data, &
+         & h_Eigenvalues%data, INT(degree), INT(nvals), &
+         & solver_parameters_in=h_solver_parameters%data)
+  END SUBROUTINE FOEEigenvalues_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE FermiOperatorExpansionModule_wrp
