@@ -87,7 +87,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ComputeFixed(WorkingHamiltonian, Density, degree, scaled_cp, &
             & solver_parameters)
     ELSE
-
+       CALL ComputeSearch(WorkingHamiltonian, Density, nel/2, degree, &
+            & solver_parameters)
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -161,6 +162,152 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
 
   END SUBROUTINE ComputeFixed
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Implementation that has to search for the chemical potential
+  SUBROUTINE ComputeSearch(Hamiltonian, Density, target_trace, degree, &
+       & solver_parameters)
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
+    !> OutputMat = poly(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> Target trace of the matrix.
+    INTEGER, INTENT(IN) :: target_trace
+    !> Degree to expand to.
+    INTEGER, INTENT(IN) :: degree
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    !! Local Variables
+    TYPE(Matrix_ps), DIMENSION(:), ALLOCATABLE :: PowerArray
+    REAL(NTREAL), DIMENSION(degree+1) :: damping, thresholds
+    REAL(NTREAL) :: cp_left, cp_right, cp
+    REAL(NTREAL) :: trace_value
+    INTEGER :: II
+    LOGICAL :: finished
+
+    !! Make the coefficients
+    CALL ComputeDamping(damping)
+    CALL ComputeThresholds(thresholds, damping, solver_parameters%threshold)
+
+    !! Core computation of the power arrays
+    ALLOCATE(PowerArray(degree))
+    CALL ComputePowers(Hamiltonian, PowerArray, thresholds, solver_parameters)
+
+    !! Search
+    cp_left = -1.0
+    cp_right = 1.0
+    finished = .FALSE.
+    DO WHILE(.NOT. finished)
+       cp = cp_left + (cp_right - cp_left)/2.0
+       CALL SumFOE(PowerArray, damping, cp, degree, Density)
+       CALL MatrixTrace(Density, trace_value)
+
+       WRITE(*,*) ":::", cp_left, cp_right, cp, trace_value, target_trace
+
+       IF (ABS(trace_value - target_trace) .LT. &
+            & solver_parameters%converge_diff) THEN
+          finished = .TRUE.
+       ELSE IF (trace_value .GT. target_trace) THEN
+          cp_right = cp
+       ELSE
+          cp_left = cp
+       END IF
+    END DO
+
+    !! Undo load balancing
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(Density, Density, &
+            & solver_parameters%BalancePermutation)
+    END IF
+
+    !! Cleanup
+    DO II = 1, degree
+       CALL DestructMatrix(PowerArray(II))
+    END DO
+    DEALLOCATE(PowerArray)
+
+  END SUBROUTINE ComputeSearch
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the powers of the Chebysehv polynomial
+  SUBROUTINE ComputePowers(InputMat, PowerArray, thresholds, solver_parameters)
+    !> The starting matrix
+    TYPE(Matrix_ps), INTENT(IN) :: InputMat
+    !> An array of Chebysehv polynomials to compute
+    TYPE(Matrix_ps), DIMENSION(:), INTENT(INOUT) :: PowerArray
+    !> Thresholds for each power
+    REAL(NTREAL), DIMENSION(:), INTENT(IN) :: thresholds
+    !> Parameters for the solver.
+    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    !! Local Variables
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: BalancedInput
+    TYPE(MatrixMemoryPool_p) :: pool
+    INTEGER :: II, degree
+
+    !! Basic Setup
+    degree = SIZE(PowerArray)
+    CALL ConstructEmptyMatrix(Identity, InputMat)
+    CALL FillMatrixIdentity(Identity)
+    CALL CopyMatrix(InputMat,BalancedInput)
+
+    !! Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
+       CALL PermuteMatrix(BalancedInput, BalancedInput, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
+    END IF
+
+    !! First matrices
+    IF (degree .GT. 0) THEN
+       CALL CopyMatrix(Identity, PowerArray(1))
+    END IF
+    IF (degree .GT. 1) THEN
+       CALL CopyMatrix(BalancedInput, PowerArray(2))
+    END IF
+
+    !! Full Loop
+    DO II = 3, degree
+       CALL MatrixMultiply(BalancedInput, PowerArray(II-1), PowerArray(II), &
+            & alpha_in=REAL(2.0,NTREAL), threshold_in=thresholds(II), &
+            & memory_pool_in=pool)
+       CALL IncrementMatrix(PowerArray(II-2), PowerArray(II), REAL(-1.0,NTREAL))
+    END DO
+
+    !! Cleanup
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(BalancedInput)
+  END SUBROUTINE ComputePowers
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Sum up the matrices for a given chemical potential
+  SUBROUTINE SumFOE(PowerArray, damping, chemical_potential, degree, Density)
+     !> The Chebyshev polynomials to sum up.
+     TYPE(Matrix_ps), DIMENSION(:), INTENT(INOUT) :: PowerArray
+     !> The damping factor.
+     REAL(NTREAL), DIMENSION(:), INTENT(IN) :: damping
+     !> The chemical potential we are guessing.
+     REAL(NTREAL), INTENT(IN) :: chemical_potential
+     !> The degree of the polynomial.
+     INTEGER, INTENT(IN) :: degree
+     !> The density value computed.
+     TYPE(Matrix_ps), INTENT(INOUT) :: Density
+     !! Local variables
+     INTEGER :: II
+     REAL(NTREAL), DIMENSION(degree) :: moments
+
+     !! Compute coefficients
+     CALL ComputeMoments(moments,chemical_potential)
+
+     !! Sum Up
+     CALL CopyMatrix(PowerArray(1), Density)
+     CALL ScaleMatrix(Density, moments(1)*damping(1))
+     DO II = 2, degree
+        CALL IncrementMatrix(PowerArray(II), Density, &
+             & alpha_in=moments(II)*damping(II))
+     END DO
+
+     !! Final increment
+     CALL IncrementMatrix(PowerArray(1), Density, alpha_in=-0.5*moments(1))
+  END SUBROUTINE SumFOE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the chebyshev moments to expand the fermi operator.
   !> Equation 1 in \cite{jay1999electronic}.

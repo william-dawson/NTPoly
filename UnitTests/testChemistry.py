@@ -54,6 +54,11 @@ class TestChemistry(unittest.TestCase):
             ResultMat = 2.0 * mmread(result_file)
             self.CheckMat = mmread(self.density)
             normval = abs(norm(self.CheckMat - ResultMat))
+
+            print(ResultMat.todense())
+            print()
+            print(self.CheckMat.todense())
+            print()
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
@@ -75,7 +80,7 @@ class TestChemistry(unittest.TestCase):
                         eigvals_only=True)
         homo = int(self.nel / 2) - 1
         lumo = homo + 1
-        return eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo])/2.0
+        return eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo]) / 2.0
 
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
@@ -155,6 +160,31 @@ class TestChemistry(unittest.TestCase):
                                           self.nel, density_matrix,
                                           degree, chemical_potential,
                                           self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
+
+    def test_foe_variable(self):
+        '''Test various kinds of density matrix solvers.'''
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        degree = 4096
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+
+        nt.FermiOperatorExpansion.Compute(fock_matrix, inverse_sqrt_matrix,
+                                          self.nel, density_matrix,
+                                          degree, self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
