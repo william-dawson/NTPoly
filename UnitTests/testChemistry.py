@@ -122,6 +122,35 @@ class TestChemistry(unittest.TestCase):
            gradient.'''
         self.basic_solver(nt.MinimizerSolvers.ConjugateGradient)
 
+    # def test_foe_fixed(self):
+    #     '''Test various kinds of density matrix solvers.'''
+    #     fock_matrix = nt.Matrix_ps(self.hamiltonian)
+    #     overlap_matrix = nt.Matrix_ps(self.overlap)
+    #     inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+    #     density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+    #     degree = 128
+    #
+    #     permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+    #     permutation.SetRandomPermutation()
+    #     self.solver_parameters.SetLoadBalance(permutation)
+    #
+    #     nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+    #                                            inverse_sqrt_matrix,
+    #                                            self.solver_parameters)
+    #
+    #     # Compute the chemical potential
+    #
+    #     nt.FermiOperatorExpansion.Compute(fock_matrix, inverse_sqrt_matrix,
+    #                                       self.nel, density_matrix,
+    #                                       degree, chemical_potential,
+    #                                       self.solver_parameters)
+    #
+    #     density_matrix.WriteToMatrixMarket(result_file)
+    #     comm.barrier()
+    #
+    #     self.check_full()
+    #     self.check_cp(chemical_potential)
+
 
 class TestChemistry_r(TestChemistry):
     def testrealio(self):
