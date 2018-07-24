@@ -65,11 +65,15 @@ MODULE ProcessGridModule
   PUBLIC :: GetMySlice
   PUBLIC :: GetMyRow
   PUBLIC :: GetMyColumn
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE ConstructProcessGrid
+     MODULE PROCEDURE ConstructProcessGrid_full
+     MODULE PROCEDURE ConstructProcessGrid_onlyslice
+  END INTERFACE
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
-  SUBROUTINE ConstructProcessGrid(world_comm_, process_rows_, &
+  SUBROUTINE ConstructProcessGrid_full(world_comm_, process_rows_, &
        & process_columns_, process_slices_, be_verbose_in)
-    !! Parameters
     !> A communicator that every process in the grid is a part of.
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     !> The number of grid rows.
@@ -80,6 +84,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
     !> Set true to print process grid info.
     LOGICAL(kind=c_bool), INTENT(IN), OPTIONAL :: be_verbose_in
+    !! Local Data
     LOGICAL :: be_verbose
 
     !! Process Optional Parameters
@@ -112,7 +117,57 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-  END SUBROUTINE ConstructProcessGrid
+  END SUBROUTINE ConstructProcessGrid_full
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Setup a process grid specifying only the slices
+  SUBROUTINE ConstructProcessGrid_onlyslice(world_comm_, process_slices_in, &
+       & be_verbose_in)
+    !> A communicator that every process in the grid is a part of.
+    INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    !> The number of grid slices.
+    INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: process_slices_in
+    !> Set true to print process grid info.
+    LOGICAL(kind=c_bool), INTENT(IN), OPTIONAL :: be_verbose_in
+    !! Local Data
+    LOGICAL(kind=c_bool) :: be_verbose
+    INTEGER :: process_rows, process_columns, process_slices
+    INTEGER :: slice_size, size_search
+    INTEGER :: total_processors
+    INTEGER :: II
+    INTEGER :: ierr
+
+    !! Total processors
+    CALL MPI_COMM_SIZE(world_comm_, total_processors, ierr)
+
+    !! Process Optional Parameters
+    IF (PRESENT(be_verbose_in)) THEN
+       be_verbose = be_verbose_in
+    ELSE
+       be_verbose = .FALSE.
+    END IF
+    IF (PRESENT(process_slices_in)) THEN
+       process_slices = process_slices_in
+    ELSE
+       process_slices = 1
+    END IF
+
+    !! Create a 3D grid
+    process_rows   = 1
+    process_columns = 1
+    slice_size = total_processors/process_slices
+    size_search = FLOOR(SQRT(REAL(slice_size)))
+    DO II=size_search,1,-1
+       IF (MOD(slice_size,II) .EQ. 0) THEN
+          process_rows = II
+          process_columns = slice_size/II
+          EXIT
+       END IF
+    END DO
+
+    !! Now call the full setup
+    CALL ConstructProcessGrid(world_comm_, process_rows, process_columns, &
+         & process_slices, be_verbose)
+  END SUBROUTINE ConstructProcessGrid_onlyslice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a process grid.
   SUBROUTINE ConstructNewProcessGrid(grid, world_comm_, process_rows_, &
