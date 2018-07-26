@@ -3,7 +3,7 @@
 MODULE FermiOperatorExpansionModule
   USE ChebyshevSolversModule, ONLY : ChebyshevPolynomial_t, &
        & ConstructPolynomial, DestructPolynomial, SetCoefficient, &
-       & Compute
+       & FactorizedCompute
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
@@ -237,7 +237,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, degree+1
        CALL SetCoefficient(cheb, II, moments(II)*damping(II))
     END DO
-    CALL Compute(Hamiltonian, Density, cheb, solver_parameters)
+    CALL FactorizedCompute(Hamiltonian, Density, cheb, solver_parameters)
 
     !! Final Increment
     CALL ConstructEmptyMatrix(Identity, Hamiltonian)
@@ -477,6 +477,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     !! Get the final values
     estimates(bend:) = MAXVAL(estimates(bend:))
+    estimates = threshold
 
     !! Cleanup
     DEALLOCATE(moments)

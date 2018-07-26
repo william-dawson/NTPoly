@@ -318,7 +318,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: RightMat
 
     !! First Handle The Base Case
-    IF (SIZE(poly%coefficients) .EQ. 2) THEN
+    IF (SIZE(poly%coefficients) .EQ. 1) THEN
+       CALL CopyMatrix(T_Powers(1), OutputMat)
+       CALL ScaleMatrix(OutputMat, poly%coefficients(1))
+    ELSE IF (SIZE(poly%coefficients) .EQ. 2) THEN
        CALL CopyMatrix(T_Powers(1), OutputMat)
        CALL ScaleMatrix(OutputMat, poly%coefficients(1))
        CALL IncrementMatrix(T_Powers(2), OutputMat, &
