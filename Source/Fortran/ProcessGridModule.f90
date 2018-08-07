@@ -3,7 +3,7 @@
 MODULE ProcessGridModule
   USE DataTypesModule, ONLY : MPITypeInfoInit
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
-      & WriteHeader, WriteListElement
+       & WriteHeader, WriteListElement
   USE MPI
   USE ISO_C_BINDING, ONLY : c_int, c_bool
 #ifdef _OPENMP
@@ -177,7 +177,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Report
     IF (IsRoot()) THEN
-      CALL ActivateLogger
+       CALL ActivateLogger
     END IF
     IF (be_verbose) THEN
        CALL WriteHeader("Process Grid")
@@ -234,15 +234,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct the process grid.
   SUBROUTINE DestructProcessGrid()
-
     !! Local Data
     INTEGER :: ierr
     INTEGER :: row_counter, column_counter
 
     DO row_counter=1,number_of_blocks_rows
        DO column_counter=1,number_of_blocks_columns
-          CALL MPI_COMM_FREE(blocked_within_slice_comm(column_counter,row_counter), ierr)
-          CALL MPI_COMM_FREE(blocked_between_slice_comm(column_counter,row_counter), ierr)
+          CALL MPI_COMM_FREE( &
+               & blocked_within_slice_comm(column_counter,row_counter), ierr)
+          CALL MPI_COMM_FREE( &
+               & blocked_between_slice_comm(column_counter,row_counter), ierr)
        END DO
     END DO
     DO column_counter=1,number_of_blocks_columns
