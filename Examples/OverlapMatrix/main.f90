@@ -5,7 +5,8 @@ PROGRAM OverlapExample
   USE DistributedSparseMatrixModule
   USE IterativeSolversModule
   USE PermutationModule
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, my_row, my_column
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, my_row, my_column, &
+       & DestructProcessGrid
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TimerModule
   USE TripletListModule
@@ -122,6 +123,7 @@ PROGRAM OverlapExample
   CALL PrintAllTimers()
   CALL DestructDistributedSparseMatrix(Overlap)
   CALL DestructDistributedSparseMatrix(ISQOverlap)
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   FUNCTION ComputeIntegral(row,column) RESULT(integral_value)

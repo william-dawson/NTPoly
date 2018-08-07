@@ -29,16 +29,11 @@ MODULE ProcessGridModule
   INTEGER, PUBLIC :: column_rank !< rank for within column communication.
   INTEGER, PUBLIC :: row_rank !< rank for within row communication.
   !! Communicators for communication
-  !> communicator with every other process
-  INTEGER, PUBLIC :: global_comm = MPI_COMM_NULL
-  !> communicator within a row
-  INTEGER, PUBLIC :: row_comm = MPI_COMM_NULL
-  !> communicator within a column.
-  INTEGER, PUBLIC :: column_comm = MPI_COMM_NULL
-  !> communicator within a slice.
-  INTEGER, PUBLIC :: within_slice_comm = MPI_COMM_NULL
-  !> communicator between slices
-  INTEGER, PUBLIC :: between_slice_comm = MPI_COMM_NULL
+  INTEGER, PUBLIC :: global_comm !< communicator with every other process.
+  INTEGER, PUBLIC :: row_comm !< communicator within a row.
+  INTEGER, PUBLIC :: column_comm !< communicator within a column.
+  INTEGER, PUBLIC :: within_slice_comm !< communicator within a slice.
+  INTEGER, PUBLIC :: between_slice_comm !< communicator between slices.
   INTEGER, PUBLIC :: grid_error !< stores errors from MPI calls.
   INTEGER, PUBLIC :: RootID = 0 !< Which rank is root?
   !! Blocked communication
@@ -84,8 +79,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: row_counter, column_counter
     INTEGER :: num_threads
     LOGICAL :: be_verbose
-
-    CALL DestructProcessGrid
 
     !! Process Optional Parameters
     IF (PRESENT(be_verbose_in)) THEN
@@ -245,39 +238,25 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
     INTEGER :: row_counter, column_counter
 
-    IF (ALLOCATED(blocked_within_slice_comm)) THEN
-       DO row_counter=1,number_of_blocks_rows
-          DO column_counter=1,number_of_blocks_columns
-             CALL MPI_COMM_FREE( &
-                  & blocked_within_slice_comm(column_counter,row_counter), ierr)
-          END DO
-       END DO
-       DEALLOCATE(blocked_within_slice_comm)
-    END IF
-
-    IF (ALLOCATED(blocked_between_slice_comm)) THEN
-       DO row_counter=1,number_of_blocks_rows
-          DO column_counter=1,number_of_blocks_columns
-             CALL MPI_COMM_FREE( &
-                  & blocked_between_slice_comm(column_counter,row_counter), ierr)
-          END DO
-       END DO
-       DEALLOCATE(blocked_between_slice_comm)
-    END IF
-
-    IF (ALLOCATED(blocked_column_comm)) THEN
+    DO row_counter=1,number_of_blocks_rows
        DO column_counter=1,number_of_blocks_columns
-          CALL MPI_COMM_FREE(blocked_column_comm(column_counter), ierr)
+          CALL MPI_COMM_FREE( &
+               & blocked_within_slice_comm(column_counter,row_counter), ierr)
+          CALL MPI_COMM_FREE( &
+               & blocked_between_slice_comm(column_counter,row_counter), ierr)
        END DO
-       DEALLOCATE(blocked_column_comm)
-    END IF
+    END DO
+    DO column_counter=1,number_of_blocks_columns
+       CALL MPI_COMM_FREE(blocked_column_comm(column_counter), ierr)
+    END DO
+    DO row_counter=1,number_of_blocks_rows
+       CALL MPI_COMM_FREE(blocked_row_comm(row_counter), ierr)
+    END DO
 
-    IF (ALLOCATED(blocked_row_comm)) THEN
-       DO row_counter=1,number_of_blocks_rows
-          CALL MPI_COMM_FREE(blocked_row_comm(row_counter), ierr)
-       END DO
-       DEALLOCATE(blocked_row_comm)
-    END IF
+    DEALLOCATE(blocked_row_comm)
+    DEALLOCATE(blocked_column_comm)
+    DEALLOCATE(blocked_within_slice_comm)
+    DEALLOCATE(blocked_between_slice_comm)
 
     CALL MPI_COMM_FREE(row_comm, ierr)
     CALL MPI_COMM_FREE(column_comm, ierr)

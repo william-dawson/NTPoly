@@ -54,8 +54,6 @@ class TestDistributedMatrix(unittest.TestCase):
         nt.ConstructProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
         # Make sure we can destruct without any problems.
-        nt.ConstructProcessGrid(
-            self.process_rows, self.process_columns, self.process_slices)
         nt.DestructProcessGrid()
         nt.ConstructProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)

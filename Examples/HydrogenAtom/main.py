@@ -119,3 +119,4 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)
+    nt.DestructProcessGrid()

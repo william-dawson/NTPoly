@@ -8,7 +8,8 @@ PROGRAM PremadeMatrixProgram
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE LoggingModule
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
+       & DestructProcessGrid
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE MPI
   IMPLICIT NONE
@@ -101,5 +102,7 @@ PROGRAM PremadeMatrixProgram
   !! Print the density matrix to file.
   CALL WriteToMatrixMarket(Density,density_file_out)
 
+  !! Cleanup
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 END PROGRAM PremadeMatrixProgram

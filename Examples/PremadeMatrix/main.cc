@@ -86,6 +86,7 @@ int main(int argc, char *argv[]) {
   Density.WriteToMatrixMarket(density_file_out);
 
   // Cleanup
+  NTPoly::DestructProcessGrid();
   MPI_Finalize();
   return 0;
 }
