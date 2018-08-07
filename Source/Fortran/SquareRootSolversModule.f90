@@ -154,13 +154,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0d+0
     DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
-          CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
-          CALL ExitSubLog
-       END IF
-
        !! Compute X_k
        CALL DistributedGemm(SquareRootMat,InverseSquareRootMat,X_k, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
@@ -193,13 +186,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
        CALL ScaleDistributedSparseMatrix(SquareRootMat,SQRT(lambda))
 
+       IF (solver_parameters%be_verbose) THEN
+          CALL WriteListElement(key="Round", int_value_in=outer_counter)
+          CALL EnterSubLog
+          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL ExitSubLog
+       END IF
+
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 
@@ -229,4 +229,229 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructDistributedSparseMatrix(T_k)
     CALL DestructDistributedMatrixMemoryPool(pool1)
   END SUBROUTINE NewtonSchultzISR
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the square root or inverse square root of a matrix.
+  !! Based on the Newton-Schultz algorithm.
+  !! @param[in] Mat1 Matrix 1.
+  !! @param[out] InverseSquareRootMat = Mat1^-1/2.
+  !! @param[in] solver_parameters_in parameters for the solver
+  SUBROUTINE NewtonSchultzISR2(Mat1, OutMat, taylor_order_in, &
+       & compute_inverse_in, solver_parameters_in)
+    !! Parameters
+    TYPE(DistributedSparseMatrix_t), INTENT(in)  :: Mat1
+    TYPE(DistributedSparseMatrix_t), INTENT(inout) :: OutMat
+    INTEGER, INTENT(in), OPTIONAL :: taylor_order_in
+    LOGICAL, INTENT(in), OPTIONAL :: compute_inverse_in
+    TYPE(IterativeSolverParameters_t), INTENT(in), OPTIONAL :: &
+         & solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(IterativeSolverParameters_t) :: solver_parameters
+    LOGICAL :: compute_inverse
+    INTEGER :: taylor_order
+    !! Local Variables
+    REAL(NTREAL) :: lambda
+    REAL(NTREAL) :: aa,bb,cc,dd
+    REAL(NTREAL) :: a,b,c,d
+    TYPE(DistributedSparseMatrix_t) :: X_k,Temp,Temp2,Identity
+    TYPE(DistributedSparseMatrix_t) :: SquareRootMat
+    TYPE(DistributedSparseMatrix_t) :: InverseSquareRootMat
+    !! Temporary Variables
+    REAL(NTREAL) :: e_min,e_max
+    REAL(NTREAL) :: max_between
+    INTEGER :: outer_counter
+    REAL(NTREAL) :: norm_value
+    TYPE(DistributedMatrixMemoryPool_t) :: pool1
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = IterativeSolverParameters_t()
+    END IF
+    IF (PRESENT(compute_inverse_in)) THEN
+       compute_inverse = compute_inverse_in
+    ELSE
+       compute_inverse = .FALSE.
+    END IF
+    IF (PRESENT(taylor_order_in)) THEN
+       taylor_order = taylor_order_in
+    ELSE
+       taylor_order = 3
+    END IF
+    IF (taylor_order .NE. 3 .AND. taylor_order .NE. 5) THEN
+       taylor_order = 3
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Newton Schultz Inverse Square Root")
+       CALL EnterSubLog
+       CALL WriteCitation("jansik2007linear")
+       CALL PrintIterativeSolverParameters(solver_parameters)
+    END IF
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyDistributedSparseMatrix(X_k, &
+         & Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(SquareRootMat, &
+         & Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(InverseSquareRootMat, &
+         & Mat1%actual_matrix_dimension)
+    CALL ConstructEmptyDistributedSparseMatrix(Temp, &
+         & Mat1%actual_matrix_dimension)
+    IF (taylor_order == 5) THEN
+       CALL ConstructEmptyDistributedSparseMatrix(Temp2, &
+            & Mat1%actual_matrix_dimension)
+    END IF
+    CALL ConstructEmptyDistributedSparseMatrix(Identity, &
+         & Mat1%actual_matrix_dimension)
+    CALL FillDistributedIdentity(Identity)
+
+    !! Compute the lambda scaling value.
+    CALL GershgorinBounds(Mat1,e_min,e_max)
+    max_between = MAX(ABS(e_min),ABS(e_max))
+    lambda = 1.0_NTREAL/max_between
+
+    !! Initialize
+    CALL FillDistributedIdentity(InverseSquareRootMat)
+    CALL CopyDistributedSparseMatrix(Mat1,SquareRootMat)
+    CALL ScaleDistributedSparseMatrix(SquareRootMat,lambda)
+
+    !! Load Balancing Step
+    CALL StartTimer("Load Balance")
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(SquareRootMat,SquareRootMat, &
+            & solver_parameters%BalancePermutation,memorypool_in=pool1)
+       CALL PermuteMatrix(Identity,Identity, &
+            & solver_parameters%BalancePermutation,memorypool_in=pool1)
+       CALL PermuteMatrix(InverseSquareRootMat,InverseSquareRootMat, &
+            & solver_parameters%BalancePermutation,memorypool_in=pool1)
+    END IF
+    CALL StopTimer("Load Balance")
+
+    !! Iterate.
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+    outer_counter = 1
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
+    DO outer_counter = 1,solver_parameters%max_iterations
+       !! Compute X_k = Z_k * Y_k - I
+       CALL DistributedGemm(InverseSquareRootMat,SquareRootMat,X_k, &
+            & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
+       CALL IncrementDistributedSparseMatrix(Identity,X_k,-1.0_NTREAL)
+       norm_value = DistributedSparseNorm(X_k)
+
+       SELECT CASE(taylor_order)
+       CASE(3)
+          !! Compute X_k^2
+          CALL DistributedGemm(X_k,X_k,Temp, &
+               & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
+
+          !! X_k = I - 1/2 X_k + 3/8 X_k^2 + ...
+          CALL ScaleDistributedSparseMatrix(X_k,-0.5_NTREAL)
+          CALL IncrementDistributedSparseMatrix(Identity,X_k)
+          CALL IncrementDistributedSparseMatrix(Temp,X_k,0.375_NTREAL)
+       CASE(5)
+          !! Compute p(x) = x^4 + A*x^3 + B*x^2 + C*x + D
+          !! Scale to make coefficient of x^4 equal to 1
+          aa = -40.0_NTREAL/35.0_NTREAL
+          bb = 48.0_NTREAL/35.0_NTREAL
+          cc = -64.0_NTREAL/35.0_NTREAL
+          dd = 128.0_NTREAL/35.0_NTREAL
+
+          !! Knuth's method
+          !! p = (z+x+b) * (z+c) + d
+          !! z = x * (x+a)
+          !! a = (A-1)/2
+          !! b = B*(a+1) - C - a*(a+1)*(a+1)
+          !! c = B - b - a*(a+1)
+          !! d = D - b*c
+          a = (aa-1.0_NTREAL)/2.0_NTREAL
+          b = bb*(a+1.0_NTREAL)-cc-a*(a+1.0_NTREAL)**2
+          c = bb-b-a*(a+1.0_NTREAL)
+          d = dd-b*c
+
+          !! Compute Temp = z = x * (x+a)
+          CALL DistributedGemm(X_k,X_k,Temp, &
+               & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
+          CALL IncrementDistributedSparseMatrix(X_k,Temp,a)
+
+          !! Compute Temp2 = z + x + b
+          CALL FillDistributedIdentity(Temp2)
+          CALL ScaleDistributedSparseMatrix(Temp2,b)
+          CALL IncrementDistributedSparseMatrix(X_k,Temp2)
+          CALL IncrementDistributedSparseMatrix(Temp,Temp2)
+
+          !! Compute Temp = z + c
+          CALL IncrementDistributedSparseMatrix(Identity,Temp,c)
+
+          !! Compute X_k = (z+x+b) * (z+c) + d = Temp2 * Temp + d
+          CALL DistributedGemm(Temp2,Temp,X_k, &
+               & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
+          CALL IncrementDistributedSparseMatrix(Identity,X_k,d)
+
+          !! Scale back to the target coefficients
+          CALL ScaleDistributedSparseMatrix(X_k,35.0_NTREAL/128.0_NTREAL)
+       END SELECT
+
+       !! Compute Z_k+1 = Z_k * X_k
+       CALL CopyDistributedSparseMatrix(InverseSquareRootMat,Temp)
+       CALL DistributedGemm(X_k,Temp,InverseSquareRootMat, &
+            & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
+
+       !! Compute Y_k+1 = X_k * Y_k
+       CALL CopyDistributedSparseMatrix(SquareRootMat,Temp)
+       CALL DistributedGemm(Temp,X_k,SquareRootMat, &
+            & threshold_in=solver_parameters%threshold,memory_pool_in=pool1)
+
+       IF (solver_parameters%be_verbose) THEN
+          CALL WriteListElement(key="Round",int_value_in=outer_counter)
+          CALL EnterSubLog
+          CALL WriteListElement(key="Convergence",float_value_in=norm_value)
+          CALL ExitSubLog
+       END IF
+
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+    END DO
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter)
+       CALL PrintMatrixInformation(InverseSquareRootMat)
+    END IF
+
+    IF (compute_inverse) THEN
+       CALL ScaleDistributedSparseMatrix(InverseSquareRootMat,SQRT(lambda))
+       CALL CopyDistributedSparseMatrix(InverseSquareRootMat,OutMat)
+    ELSE
+       CALL ScaleDistributedSparseMatrix(SquareRootMat,1.0_NTREAL/SQRT(lambda))
+       CALL CopyDistributedSparseMatrix(SquareRootMat,OutMat)
+    END IF
+
+    !! Undo Load Balancing Step
+    CALL StartTimer("Load Balance")
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(OutMat,OutMat, &
+            & solver_parameters%BalancePermutation,memorypool_in=pool1)
+    END IF
+    CALL StopTimer("Load Balance")
+
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    CALL DestructDistributedSparseMatrix(X_k)
+    CALL DestructDistributedSparseMatrix(SquareRootMat)
+    CALL DestructDistributedSparseMatrix(InverseSquareRootMat)
+    CALL DestructDistributedSparseMatrix(Temp)
+    IF (taylor_order == 5) THEN
+       CALL DestructDistributedSparseMatrix(Temp2)
+    END IF
+    CALL DestructDistributedSparseMatrix(Identity)
+    CALL DestructDistributedMatrixMemoryPool(pool1)
+  END SUBROUTINE NewtonSchultzISR2
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SquareRootSolversModule
