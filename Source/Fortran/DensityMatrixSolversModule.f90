@@ -132,7 +132,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute alpha
     alpha1 = nel*0.5_NTREAL/(e_max-lambda)
     alpha2 = (X_k%actual_matrix_dimension-nel*0.5_NTREAL)/(lambda-e_min)
-    alpha = min(alpha1,alpha2)
+    alpha = MIN(alpha1,alpha2)
 
     factor = -alpha/X_k%actual_matrix_dimension
 
@@ -195,7 +195,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(X_k, &
+            & WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
@@ -253,13 +254,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !! Compute polynomial function at the guess point.
           polynomial:DO inner_counter=1,total_iterations
              IF (sigma_array(inner_counter) .GT. 0.5_NTREAL) THEN
-                zero_value = ((1.0_NTREAL+sigma_array(inner_counter))*zero_value**2) &
-                             & - (zero_value**3)
+                zero_value = ((1.0_NTREAL+ &
+                     & sigma_array(inner_counter))*zero_value**2) &
+                     & - (zero_value**3)
                 zero_value = zero_value/sigma_array(inner_counter)
              ELSE
-                zero_value = ((1.0_NTREAL-2.0_NTREAL*sigma_array(inner_counter))*zero_value) &
-                             & + ((1.0_NTREAL+sigma_array(inner_counter))*zero_value**2) &
-                             & - (zero_value**3)
+                zero_value = ((1.0_NTREAL - 2.0_NTREAL* &
+                     & sigma_array(inner_counter))*zero_value) &
+                     & + ((1.0_NTREAL+sigma_array(inner_counter))* &
+                     & zero_value**2) - (zero_value**3)
                 zero_value = zero_value/(1.0_NTREAL-sigma_array(inner_counter))
              END IF
           END DO polynomial
@@ -270,7 +273,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              interval_b = midpoint
           END IF
           !! Check convergence.
-          IF ( ABS(zero_value-0.5_NTREAL) .LT. solver_parameters%converge_diff ) THEN
+          IF (ABS(zero_value-0.5_NTREAL) .LT. &
+               & solver_parameters%converge_diff) THEN
              EXIT
           END IF
        END DO midpoints
@@ -412,7 +416,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(X_k, &
+            & WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
@@ -481,7 +486,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              interval_b = midpoint
           END IF
           !! Check convergence.
-          IF ( ABS(zero_value-0.5_NTREAL) .LT. solver_parameters%converge_diff ) THEN
+          IF (ABS(zero_value-0.5_NTREAL) .LT. &
+               & solver_parameters%converge_diff) THEN
              EXIT
           END IF
        END DO midpoints
@@ -653,7 +659,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(X_k, WorkingHamiltonian)
+       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(X_k, &
+            & WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
@@ -717,9 +724,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                 zero_value = zero_value*zero_value
              ELSE
                 tempfx = (zero_value*zero_value) &
-                         & * (4.0_NTREAL*zero_value - 3.0_NTREAL*zero_value*zero_value)
+                     & * (4.0_NTREAL*zero_value - &
+                     & 3.0_NTREAL*zero_value*zero_value)
                 tempgx = (zero_value*zero_value) * (1.0_NTREAL-zero_value) &
-                         & * (0.0_NTREAL-zero_value)
+                     & * (0.0_NTREAL-zero_value)
                 zero_value = tempfx + sigma_array(inner_counter)*tempgx
              END IF
           END DO polynomial
@@ -730,7 +738,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              interval_b = midpoint
           END IF
           !! Check convergence.
-          IF ( ABS(zero_value-0.5_NTREAL) .LT. solver_parameters%converge_diff ) THEN
+          IF (ABS(zero_value-0.5_NTREAL) .LT. &
+               & solver_parameters%converge_diff) THEN
              EXIT
           END IF
        END DO midpoints
@@ -757,7 +766,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !! Parameters
-    TYPE(DistributedSparseMatrix_t), INTENT(IN)  :: Hamiltonian, InverseSquareRoot
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: Hamiltonian
+    TYPE(DistributedSparseMatrix_t), INTENT(IN) :: InverseSquareRoot
     INTEGER, INTENT(IN) :: nel
     TYPE(DistributedSparseMatrix_t), INTENT(INOUT) :: Density
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
@@ -895,7 +905,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(D1, &
+            & WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
@@ -953,8 +964,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
           polynomial:DO inner_counter=1,total_iterations
-             zero_value = zero_value + 2.0_NTREAL*((zero_value**2)*(1.0_NTREAL-zero_value) &
-                  & - sigma_array(inner_counter)*zero_value*(1.0_NTREAL-zero_value))
+             zero_value = zero_value + &
+                  & 2.0_NTREAL*((zero_value**2)*(1.0_NTREAL-zero_value) &
+                  & - sigma_array(inner_counter)* &
+                  & zero_value*(1.0_NTREAL-zero_value))
           END DO polynomial
           !! Change bracketing.
           IF (zero_value .LT. 0.5_NTREAL) THEN
@@ -963,7 +976,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              interval_b = midpoint
           END IF
           !! Check convergence.
-          IF ( ABS(zero_value-0.5_NTREAL) .LT. solver_parameters%converge_diff ) THEN
+          IF (ABS(zero_value-0.5_NTREAL) .LT. &
+               & solver_parameters%converge_diff) THEN
              EXIT
           END IF
        END DO midpoints
@@ -1111,16 +1125,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (sigma < one_third) THEN
        d = (nel*0.5_NTREAL) - 2.0_NTREAL*one_third*(nel*0.5_NTREAL)
     ELSE
-       d = (nel*0.5_NTREAL) - 2.0_NTREAL*one_third*(matrix_dimension - nel*0.5_NTREAL)
+       d = (nel*0.5_NTREAL) - &
+            & 2.0_NTREAL*one_third*(matrix_dimension - nel*0.5_NTREAL)
     END IF
 
     mixing_interior = SQRT((2.0_NTREAL*c-2.0_NTREAL*b)**2 &
-                      & - 4.0_NTREAL*(a+b-2.0_NTREAL*c)*(b-d))
+         & - 4.0_NTREAL*(a+b-2.0_NTREAL*c)*(b-d))
     mixing_value = ((2.0_NTREAL*b - 2.0_NTREAL*c) + mixing_interior) &
-                      & / (2.0_NTREAL*(a+b - 2.0_NTREAL*c))
-    IF (.NOT. mixing_value .LE. 1.0_NTREAL .AND. mixing_value .GE. 0.0_NTREAL) THEN
+         & / (2.0_NTREAL*(a+b - 2.0_NTREAL*c))
+    IF (.NOT. mixing_value .LE. 1.0_NTREAL &
+         & .AND. mixing_value .GE. 0.0_NTREAL) THEN
        mixing_value = ((2.0_NTREAL*b - 2.0_NTREAL*c) - mixing_interior) &
-                      & / (2.0_NTREAL*(a+b - 2.0_NTREAL*c))
+            & / (2.0_NTREAL*(a+b - 2.0_NTREAL*c))
     ENDIF
 
     CALL ScaleDistributedSparseMatrix(D1,mixing_value)
@@ -1149,8 +1165,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(trace_value)
 
        !! Compute D2DH
-       CALL DistributedGemm(D1,DDH,D2DH,threshold_in=solver_parameters%threshold,&
-            & memory_pool_in=pool1)
+       CALL DistributedGemm(D1,DDH,D2DH, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
        !! Compute Sigma
        sigma_array(outer_counter) = Trace(D2DH)/trace_value
@@ -1166,7 +1182,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Energy value based convergence
        energy_value2 = energy_value
-       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(D1, WorkingHamiltonian)
+       energy_value = 2.0_NTREAL*DotDistributedSparseMatrix(D1, &
+            & WorkingHamiltonian)
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
@@ -1224,8 +1241,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
           polynomial:DO inner_counter=1,total_iterations
-             zero_value = zero_value + 2.0_NTREAL*((zero_value*zero_value)*(1.0_NTREAL-zero_value) &
-                          & - sigma_array(inner_counter)*(zero_value*(1.0_NTREAL-zero_value)))
+             zero_value = zero_value + &
+                  & 2.0_NTREAL*((zero_value*zero_value)*(1.0_NTREAL-zero_value)&
+                  & - sigma_array(inner_counter)* &
+                  & (zero_value*(1.0_NTREAL-zero_value)))
           END DO polynomial
           !! Change bracketing.
           IF (zero_value .LT. 0.5_NTREAL) THEN
@@ -1234,7 +1253,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              interval_b = midpoint
           END IF
           !! Check convergence.
-          IF ( ABS(zero_value-0.5_NTREAL) .LT. solver_parameters%converge_diff ) THEN
+          IF (ABS(zero_value-0.5_NTREAL) .LT. &
+               & solver_parameters%converge_diff) THEN
              EXIT
           END IF
        END DO midpoints
