@@ -2,7 +2,7 @@
 !> Wraps the density matrix solvers module for calling from other languages.
 MODULE DensityMatrixSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DensityMatrixSolversModule, ONLY : TRS2, TRS4, HPCP
+  USE DensityMatrixSolversModule, ONLY : PM, TRS2, TRS4, HPCP
   USE DistributedSparseMatrixModule_wrp, ONLY : &
        & DistributedSparseMatrix_wrp
   USE IterativeSolversModule_wrp, ONLY : IterativeSolverParameters_wrp
