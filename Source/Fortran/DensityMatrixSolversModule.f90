@@ -31,7 +31,7 @@ MODULE DensityMatrixSolversModule
   ! PUBLIC :: HPCPPlus
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
-  !! Based on the PM algorithm presented in \cite palser1998
+  !! Based on the PM algorithm presented in \cite palser1998canonical
   !! @param[in] Hamiltonian the matrix to compute the corresponding density from
   !! @param[in] InverseSquareRoot of the overlap matrix.
   !! @param[in] nel the number of electrons.
@@ -723,11 +723,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              ELSE IF (sigma_array(inner_counter) .LT. sigma_min) THEN
                 zero_value = zero_value*zero_value
              ELSE
-                tempfx = (zero_value*zero_value) &
-                     & * (4.0_NTREAL*zero_value - &
+                tempfx = (zero_value*zero_value) * &
+                     & (4.0_NTREAL*zero_value - &
                      & 3.0_NTREAL*zero_value*zero_value)
                 tempgx = (zero_value*zero_value) * (1.0_NTREAL-zero_value) &
-                     & * (0.0_NTREAL-zero_value)
+                     & * (1.0_NTREAL-zero_value)
                 zero_value = tempfx + sigma_array(inner_counter)*tempgx
              END IF
           END DO polynomial

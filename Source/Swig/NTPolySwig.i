@@ -1,6 +1,7 @@
 %module NTPolySwig
 %include "typemaps.i"
 %apply double& OUTPUT { double& chemical_potential_out };
+%apply double& OUTPUT { double& energy_value_out };
 %apply double *OUTPUT { double *max_power_eig };
 %apply double *OUTPUT { double *min_ger_eig };
 %apply double *OUTPUT { double *max_ger_eig };
