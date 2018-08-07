@@ -254,9 +254,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !! Compute polynomial function at the guess point.
           polynomial:DO inner_counter=1,total_iterations
              IF (sigma_array(inner_counter) .GT. 0.5_NTREAL) THEN
-                zero_value = ((1.0_NTREAL+ &
-                     & sigma_array(inner_counter))*zero_value**2) &
-                     & - (zero_value**3)
+                zero_value = ((1.0_NTREAL+sigma_array(inner_counter)) &
+                     & *zero_value**2) - (zero_value**3)
                 zero_value = zero_value/sigma_array(inner_counter)
              ELSE
                 zero_value = ((1.0_NTREAL - 2.0_NTREAL* &
@@ -279,7 +278,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END DO midpoints
        !! Undo scaling.
-       chemical_potential_out = (nel*0.5_NTREAL-midpoint)/alpha+lambda
+       chemical_potential_out = lambda - &
+         & (Hamiltonian%actual_matrix_dimension*midpoint - nel*0.5_NTREAL)/alpha
     END IF
 
     IF (solver_parameters%be_verbose) THEN
