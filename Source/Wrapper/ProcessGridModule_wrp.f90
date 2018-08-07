@@ -1,13 +1,14 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A wrapper for the process grid module.
 MODULE ProcessGridModule_wrp
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, &
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
        & GetMySlice, GetMyColumn, GetMyRow
   USE ISO_C_BINDING, ONLY : c_int, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid_wrp
+  PUBLIC :: DestructProcessGrid_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
   SUBROUTINE ConstructProcessGrid_wrp(world_comm_, process_rows_, &
@@ -42,4 +43,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int) :: return_val
     return_val = GetMyRow()
   END FUNCTION GetMyRow_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the process grid construction routine.
+  SUBROUTINE DestructProcessGrid_wrp() bind(c,name="DestructProcessGrid_wrp")
+    CALL DestructProcessGrid
+  END SUBROUTINE DestructProcessGrid_wrp
 END MODULE ProcessGridModule_wrp

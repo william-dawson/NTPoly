@@ -8,4 +8,6 @@ void ConstructProcessGrid_wrp(const int *world_comm, const int *process_rows,
 int GetMySlice_wrp();
 int GetMyColumn_wrp();
 int GetMyRow_wrp();
+void DestructProcessGrid_wrp();
+
 #endif

@@ -28,5 +28,7 @@ int GetMySlice();
 int GetMyColumn();
 //! Get the row of the current process.
 int GetMyRow();
+//! Standard destructor
+void DestructProcessGrid();
 } // namespace NTPoly
 #endif
