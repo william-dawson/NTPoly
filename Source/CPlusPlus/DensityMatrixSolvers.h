@@ -16,6 +16,7 @@ public:
   //!\param InverseSquareRoot of the overlap matrix.
   //!\param nel the number of electrons.
   //!\param Density the density matrix computed by this routine.
+  //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void PM(const DistributedSparseMatrix &Hamiltonian,
@@ -29,6 +30,7 @@ public:
   //!\param InverseSquareRoot of the overlap matrix.
   //!\param nel the number of electrons.
   //!\param Density the density matrix computed by this routine.
+  //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void TRS2(const DistributedSparseMatrix &Hamiltonian,
@@ -42,6 +44,7 @@ public:
   //!\param InverseSquareRoot of the overlap matrix.
   //!\param nel the number of electrons.
   //!\param Density the density matrix computed by this routine.
+  //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void TRS4(const DistributedSparseMatrix &Hamiltonian,
@@ -55,6 +58,7 @@ public:
   //!\param InverseSquareRoot of the overlap matrix.
   //!\param nel the number of electrons.
   //!\param Density the density matrix computed by this routine.
+  //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void HPCP(const DistributedSparseMatrix &Hamiltonian,
