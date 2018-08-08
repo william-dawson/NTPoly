@@ -378,7 +378,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL IncrementDistributedSparseMatrix(X_k,Temp,a)
 
           !! Compute Temp2 = z + x + b
-          CALL FillDistributedIdentity(Temp2)
+          CALL CopyDistributedSparseMatrix(Identity,Temp2)
           CALL ScaleDistributedSparseMatrix(Temp2,b)
           CALL IncrementDistributedSparseMatrix(X_k,Temp2)
           CALL IncrementDistributedSparseMatrix(Temp,Temp2)
