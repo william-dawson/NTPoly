@@ -77,9 +77,9 @@ int main(int argc, char *argv[]) {
   // Call the solver routines.
   NTPoly::SquareRootSolvers::InverseSquareRoot(Overlap, ISQOverlap,
                                                solver_parameters);
-  double chemical_potential;
+  double chemical_potential, energy;
   NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, ISQOverlap,
-                                     number_of_electrons, Density,
+                                     number_of_electrons, Density, energy,
                                      chemical_potential, solver_parameters);
 
   // Print the density matrix to file.
