@@ -86,6 +86,7 @@ class TestChemistry(unittest.TestCase):
                         eigvals_only=True)
         homo = int(self.nel / 2) - 1
         lumo = homo + 1
+
         if computed > eig_vals[homo] and computed < eig_vals[lumo]:
             self.assertTrue(True)
         else:
@@ -106,15 +107,20 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = SRoutine(fock_matrix, inverse_sqrt_matrix,
-                                      self.nel, density_matrix,
-                                      self.solver_parameters)
+        energy_value, chemical_potential = SRoutine(fock_matrix,
+                                                    inverse_sqrt_matrix,
+                                                    self.nel, density_matrix,
+                                                    self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
         self.check_full()
         self.check_cp(chemical_potential)
+
+    def test_pm(self):
+        '''Test our ability to compute the density matrix with PM.'''
+        self.basic_solver(nt.DensityMatrixSolvers.PM)
 
     def test_trs2(self):
         '''Test routines to compute the density matrix with TRS2.'''
@@ -133,7 +139,7 @@ class TestChemistry(unittest.TestCase):
            gradient.'''
         self.basic_solver(nt.MinimizerSolvers.ConjugateGradient)
 
-    def test_foe_fixed(self):
+    def a_test_foe_fixed(self):
         '''Test various kinds of density matrix solvers.'''
         fock_matrix = nt.Matrix_ps(self.hamiltonian)
         overlap_matrix = nt.Matrix_ps(self.overlap)

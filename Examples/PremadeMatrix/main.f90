@@ -6,7 +6,8 @@ PROGRAM PremadeMatrixProgram
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
+       & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & WriteMatrixToMatrixMarket, DestructMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
@@ -108,5 +109,7 @@ PROGRAM PremadeMatrixProgram
   CALL DestructMatrix(Hamiltonian)
   CALL DestructMatrix(Density)
 
+  !! Cleanup
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 END PROGRAM PremadeMatrixProgram

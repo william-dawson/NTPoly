@@ -214,7 +214,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     temp%index_column = index_column
     temp%index_row = index_row
-    temp%point_value = CMPLX(point_value_real, point_value_imag)
+    temp%point_value = CMPLX(point_value_real, point_value_imag,KIND=NTCOMPLEX)
 
     h_this = TRANSFER(ih_this,h_this)
     CALL AppendToTripletList(h_this%data,temp)
@@ -234,7 +234,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     temp%index_column = index_column
     temp%index_row = index_row
-    temp%point_value = CMPLX(point_value_real, point_value_imag)
+    temp%point_value = CMPLX(point_value_real, point_value_imag,KIND=NTCOMPLEX)
 
     h_this = TRANSFER(ih_this,h_this)
     CALL SetTripletAt(h_this%data,index,temp)
@@ -258,7 +258,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     index_column = temp%index_column
     index_row = temp%index_row
     point_value_real = REAL(temp%point_value)
-    point_value_real = AIMAG(temp%point_value)
+    point_value_imag = AIMAG(temp%point_value)
   END SUBROUTINE GetTripletAt_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.

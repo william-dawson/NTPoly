@@ -25,7 +25,7 @@ MODULE FermiOperatorExpansionModule
   PUBLIC :: FOEEigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> PI
-  REAL(NTREAL), PARAMETER, PRIVATE :: PI =  4 * ATAN (1.0_16)
+  REAL(NTREAL), PARAMETER, PRIVATE :: PI =  4 * ATAN (1.0_NTREAL)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Density Matrix using the Fermi Operator Expansion.
   SUBROUTINE ComputeFOE(Hamiltonian, InverseSquareRoot, nel, Density, degree, &

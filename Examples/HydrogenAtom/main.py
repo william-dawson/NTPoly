@@ -114,9 +114,11 @@ if __name__ == "__main__":
 
     # Call the solver routine.
     Density = nt.Matrix_ps(grid_points)
-    chemical_potential = nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 2,
-                                                      Density,
-                                                      solver_parameters)
+    energy_value, chemical_potential = \
+        nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 2,
+                                     Density,
+                                     solver_parameters)
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)
+    nt.DestructProcessGrid()

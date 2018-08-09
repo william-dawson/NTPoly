@@ -82,6 +82,10 @@ class TestDistributedMatrix(unittest.TestCase):
         self.process_slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
+        # Make sure we can destruct without any problems.
+        nt.DestructProcessGrid()
+        nt.ConstructProcessGrid(
+            self.process_rows, self.process_columns, self.process_slices)
         self.myrow = nt.GetMyRow()
         self.mycolumn = nt.GetMyColumn()
         self.myslice = nt.GetMySlice()
@@ -147,8 +151,7 @@ class TestDistributedMatrix(unittest.TestCase):
             triplet_list = self.TripletList(0)
             if self.myslice == 0:
                 ntmatrix1.GetTripletList(triplet_list)
-            ntmatrix2 = nt.Matrix_ps(
-                ntmatrix1.GetActualDimension())
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -192,8 +195,7 @@ class TestDistributedMatrix(unittest.TestCase):
                                          col_start_list[self.mycolumn],
                                          col_end_list[self.mycolumn])
 
-            ntmatrix2 = nt.Matrix_ps(
-                ntmatrix1.GetActualDimension())
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -208,8 +210,7 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.CheckMat = matrix1.T
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
-            ntmatrix2 = nt.Matrix_ps(
-                ntmatrix1.GetActualDimension())
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
             ntmatrix2.Transpose(ntmatrix1)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
@@ -230,8 +231,7 @@ class TestDistributedMatrix_c(TestDistributedMatrix):
             self.CheckMat = matrix1.H
 
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
-            ntmatrix2 = nt.Matrix_ps(
-                ntmatrix1.GetActualDimension())
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
             ntmatrix2.Transpose(ntmatrix1)
             ntmatrix2.Conjugate()
             ntmatrix2.WriteToMatrixMarket(self.result_file)

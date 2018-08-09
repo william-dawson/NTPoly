@@ -19,11 +19,12 @@ public:
   //!\param InverseSquareRoot of the overlap matrix.
   //!\param nel the number of electrons.
   //!\param Density the density matrix computed by this routine.
+  //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void ConjugateGradient(const Matrix_ps &Hamiltonian,
                                 const Matrix_ps &InverseSquareRoot, int nel,
-                                Matrix_ps &Density,
+                                Matrix_ps &Density, double &energy_value_out,
                                 double &chemical_potential_out,
                                 const SolverParameters &solver_parameters);
 };

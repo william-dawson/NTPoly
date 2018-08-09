@@ -3,7 +3,7 @@
 PROGRAM GraphTheory
   USE DataTypesModule, ONLY : NTREAL
   USE InverseSolversModule, ONLY : Invert
-  USE ProcessGridModule, ONLY : ConstructProcessGrid
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, DestructMatrix, &
        & CopyMatrix, FillMatrixIdentity
@@ -96,6 +96,7 @@ PROGRAM GraphTheory
   !! Cleanup
   CALL DestructMatrix(NetworkMat)
   CALL DestructMatrix(ResultMat)
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DivideUpWork()

@@ -366,9 +366,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matB, converted_matrix)
        CALL PairwiseMultiplyMatrix(matA, converted_matrix, matC)
+       CALL DestructMatrix(converted_matrix)
     ELSE IF (.NOT. matA%is_complex .AND. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matA, converted_matrix)
        CALL PairwiseMultiplyMatrix(converted_matrix, matB, matC)
+       CALL DestructMatrix(converted_matrix)
     ELSE IF (matA%is_complex .AND. matB%is_complex) THEN
 #define LMAT local_data_c
 #include "distributed_algebra_includes/PairwiseMultiply.f90"
@@ -464,6 +466,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matB, converted_matrix)
        CALL IncrementMatrix(matA, converted_matrix, alpha, threshold)
+       CALL CopyMatrix(converted_matrix, matB)
     ELSE IF (.NOT. matA%is_complex .AND. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matA, converted_matrix)
        CALL IncrementMatrix(converted_matrix, matB, alpha, threshold)
@@ -476,6 +479,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "distributed_algebra_includes/IncrementMatrix.f90"
 #undef LMAT
     END IF
+
+    CALL DestructMatrix(converted_matrix)
 
   END SUBROUTINE IncrementMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

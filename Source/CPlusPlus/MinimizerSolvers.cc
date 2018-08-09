@@ -11,10 +11,10 @@ namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 void MinimizerSolvers::ConjugateGradient(
     const Matrix_ps &Hamiltonian, const Matrix_ps &Overlap, int nel,
-    Matrix_ps &Density, double &chemical_potential_out,
-    const SolverParameters &solver_parameters) {
+    Matrix_ps &Density, double &energy_value_out,
+    double &chemical_potential_out, const SolverParameters &solver_parameters) {
   ConjugateGradient_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel,
-                        GetIH(Density), &chemical_potential_out,
-                        GetIH(solver_parameters));
+                        GetIH(Density), &energy_value_out,
+                        &chemical_potential_out, GetIH(solver_parameters));
 }
 } // namespace NTPoly

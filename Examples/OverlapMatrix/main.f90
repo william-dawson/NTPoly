@@ -3,7 +3,8 @@
 PROGRAM OverlapExample
   USE DataTypesModule, ONLY : NTREAL
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid, &
+       & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & WriteMatrixToMatrixMarket, FillMatrixFromTripletList, DestructMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
@@ -125,6 +126,7 @@ PROGRAM OverlapExample
   CALL PrintAllTimers()
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   FUNCTION ComputeIntegral(row,column) RESULT(integral_value)
