@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 
   // Call the solver routine.
   NTPoly::Matrix_ps Density(grid_points);
-  double chemical_potential;
+  double chemical_potential, energy;
   NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, Identity, 2, Density, energy
                                      chemical_potential, solver_parameters);
 
