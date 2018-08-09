@@ -430,6 +430,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] block_rows number of rows to split the matrix into.
   !! @param[in] block_columns number of columns to split the matrix into.
   !! @param[out] split_array a COLUMNxROW array for the output to go into.
+  !! @param[in] block_size_row_in specifies the block size (optional)
+  !! @param[in] block_size_column_in specifies the block size (optional)
   PURE SUBROUTINE SplitSparseMatrix(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
     !! Parameters
