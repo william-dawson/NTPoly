@@ -316,7 +316,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
   SUBROUTINE DestructProcessGrid(grid)
-    !! Parameters
     !> The grid to destruct.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
 

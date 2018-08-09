@@ -44,7 +44,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: TempMat1, TempMat2
     TYPE(Matrix_ps) :: Identity
     !! Local Variables
-    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     REAL(NTREAL) :: subtract_trace
     REAL(NTREAL) :: add_trace
     REAL(NTREAL) :: trace_value
@@ -101,7 +100,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        !! Figure Out Sigma Value. After which, XnS is stored in TempMat
        IF (outer_counter .GT. 1) THEN
@@ -114,16 +113,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           IF (ABS(nel - add_trace) .GT. ABS(nel - subtract_trace)) THEN
              !! Subtract Branch
              trace_value = subtract_trace
-             CALL IncrementMatrix(AddBranch, NewDensity, &
-                  & NEGATIVE_ONE)
+             CALL IncrementMatrix(AddBranch, NewDensity, -1.0_NTREAL)
              norm_value = MatrixNorm(NewDensity)
              CALL CopyMatrix(AddBranch, NewDensity)
              CALL CopyMatrix(TempMat2, TempMat1)
           ELSE
              !! Add Branch
              trace_value = add_trace
-             CALL IncrementMatrix(SubtractBranch, NewDensity, &
-                  & NEGATIVE_ONE)
+             CALL IncrementMatrix(SubtractBranch, NewDensity, -1.0_NTREAL)
              norm_value = MatrixNorm(NewDensity)
              CALL CopyMatrix(SubtractBranch, NewDensity)
           END IF
@@ -135,11 +132,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
-          CALL WriteListElement(key="Trace", float_value_in=trace_value)
-          CALL WriteListElement(key="AddTrace", float_value_in=add_trace)
-          CALL WriteListElement(key="SubtractTrace", &
-               & float_value_in=subtract_trace)
+          CALL WriteElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteElement(key="Trace", float_value_in=trace_value)
+          CALL WriteElement(key="AddTrace", float_value_in=add_trace)
+          CALL WriteElement(key="SubtractTrace", float_value_in=subtract_trace)
           CALL ExitSubLog
        END IF
 
@@ -148,16 +144,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute (I - XnS)Xn
-       CALL IncrementMatrix(Identity, TempMat1, &
-            & alpha_in=NEGATIVE_ONE)
-       CALL ScaleMatrix(TempMat1, NEGATIVE_ONE)
+       CALL IncrementMatrix(Identity, TempMat1, -1.0_NTREAL)
+       CALL ScaleMatrix(TempMat1, -1.0_NTREAL)
        CALL MatrixMultiply(TempMat1, NewDensity, TempMat2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
        !! Subtracted Version Xn - (I - XnS)Xn
        CALL CopyMatrix(NewDensity, SubtractBranch)
-       CALL IncrementMatrix(TempMat2, SubtractBranch, &
-            & NEGATIVE_ONE)
+       CALL IncrementMatrix(TempMat2, SubtractBranch, -1.0_NTREAL)
 
        !! Added Version Xn + (I - XnS)Xn
        CALL CopyMatrix(NewDensity, AddBranch)

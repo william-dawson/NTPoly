@@ -96,8 +96,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(ABalanced, Xmat, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
     CALL CopyMatrix(BBalanced,RMat)
-    CALL IncrementMatrix(TempMat, RMat, &
-         & alpha_in=REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(TempMat, RMat, -1.0_NTREAL)
     CALL CopyMatrix(RMat,PMat)
 
     !! Iterate
@@ -105,7 +104,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
@@ -140,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Update
        CALL IncrementMatrix(PMat, XMat, alpha_in=step_size)
        norm_value = ABS(step_size*MatrixNorm(PMat))
-       CALL IncrementMatrix(QMat, RMat, alpha_in=-1.0*step_size)
+       CALL IncrementMatrix(QMat, RMat, alpha_in=-1.0_NTREAL*step_size)
 
        !! Update PMat
        CALL TransposeMatrix(RMat,RMatT)
@@ -261,7 +260,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              local_row = JJ - AMat%start_row + 1
              Aval = dense_a%data(local_row, local_JJ)
              insert_value = SQRT(Aval - dot_values(1))
-             inverse_factor = 1.0/insert_value
+             inverse_factor = 1.0_NTREAL/insert_value
              !! Insert
              CALL AppendToVector(values_per_column_l(local_JJ), &
                   & index_l(:,local_JJ), values_l(:, local_JJ), local_row, &
@@ -429,7 +428,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
           local_pi_j = pi_j - AMat%start_column + 1
           insert_value = SQRT(insert_value)
-          inverse_factor = 1.0/insert_value
+          inverse_factor = 1.0_NTREAL/insert_value
           !! Insert
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              CALL AppendToVector(values_per_column_l(local_pi_j), &

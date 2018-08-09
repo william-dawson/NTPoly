@@ -29,9 +29,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
-    !! Constants
-    REAL(NTREAL), PARAMETER :: TWO = 2.0
-    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -88,7 +85,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
@@ -102,17 +99,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Check if Converged
        CALL CopyMatrix(Identity,Temp2)
-       CALL IncrementMatrix(Temp1,Temp2,REAL(-1.0,NTREAL))
+       CALL IncrementMatrix(Temp1,Temp2,-1.0_NTREAL)
        norm_value = MatrixNorm(Temp2)
 
        CALL DestructMatrix(Temp2)
-       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
+       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=-1.0_NTREAL, &
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool)
 
        !! Save a copy of the last inverse matrix
        CALL CopyMatrix(InverseMat,Temp1)
 
-       CALL ScaleMatrix(InverseMat,TWO)
+       CALL ScaleMatrix(InverseMat,2.0_NTREAL)
 
        CALL IncrementMatrix(Temp2,InverseMat, &
             & threshold_in=solver_parameters%threshold)
@@ -153,9 +150,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
-    !! Constants.
-    REAL(NTREAL), PARAMETER :: TWO = 2.0
-    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
@@ -212,7 +206,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
@@ -223,18 +217,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        CALL MatrixMultiply(InverseMat,BalancedMat,Temp1, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=REAL(-1.0,NTREAL), &
+       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=-1.0_NTREAL, &
             & threshold_in=solver_parameters%threshold,memory_pool_in=pool)
 
        !! Save a copy of the last inverse matrix
        CALL CopyMatrix(InverseMat,Temp1)
 
-       CALL ScaleMatrix(InverseMat,TWO)
+       CALL ScaleMatrix(InverseMat,2.0_NTREAL)
        CALL IncrementMatrix(Temp2,InverseMat, &
             & threshold_in=solver_parameters%threshold)
 
        !! Check if Converged
-       CALL IncrementMatrix(InverseMat,Temp1,REAL(-1.0,NTREAL))
+       CALL IncrementMatrix(InverseMat,Temp1,-1.0_NTREAL)
        norm_value = MatrixNorm(Temp1)
 
        !! Sometimes the first few values don't change so much, so that's why
