@@ -989,10 +989,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Load_Balance")
     CALL EnterSubLog
-    CALL WriteListElement(key="min_size", int_value_in=min_size)
-    CALL WriteListElement(key="max_size", int_value_in=max_size)
+    CALL WriteElement(key="min_size", int_value_in=min_size)
+    CALL WriteElement(key="max_size", int_value_in=max_size)
     CALL ExitSubLog
     CALL WriteElement(key="Sparsity", float_value_in=sparsity)
+    CALL WriteElement(key="Dimension", &
+         & int_value_in=this%actual_matrix_dimension)
   END SUBROUTINE PrintMatrixInformation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a distributed sparse matrix.

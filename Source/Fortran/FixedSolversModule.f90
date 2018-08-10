@@ -2,7 +2,7 @@
 !> Parameters for a fixed size polynomial solver.
 MODULE FixedSolversModule
   USE DataTypesModule, ONLY : NTREAL
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
   USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
@@ -98,9 +98,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(FixedSolverParameters_t), INTENT(IN) :: this
     CALL WriteHeader("Fixed Solver Parameters")
     CALL EnterSubLog
-    CALL WriteListElement(key="be_verbose",bool_value_in=this%be_verbose)
-    CALL WriteListElement(key="threshold",float_value_in=this%threshold)
-    CALL WriteListElement(key="do_load_balancing", &
+    CALL WriteElement(key="be_verbose",bool_value_in=this%be_verbose)
+    CALL WriteElement(key="threshold",float_value_in=this%threshold)
+    CALL WriteElement(key="do_load_balancing", &
          & bool_value_in=this%do_load_balancing)
     CALL ExitSubLog
   END SUBROUTINE PrintFixedSolverParameters

@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to do timings.
 MODULE TimerModule
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
   USE ProcessGridModule
   USE MPI
@@ -100,7 +100,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteHeader("Timers")
     CALL EnterSubLog
     IF (timer_position > 0) THEN
-       CALL WriteListElement(key=timer_name, &
+       CALL WriteElement(key=timer_name, &
             & float_value_in=elapsed_times(timer_position))
     END IF
     CALL ExitSubLog
@@ -114,7 +114,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteHeader("Timers")
     CALL EnterSubLog
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
-       CALL WriteListElement(key=timer_list(timer_position), &
+       CALL WriteElement(key=timer_list(timer_position), &
             & float_value_in=elapsed_times(timer_position))
     END DO
     CALL ExitSubLog
@@ -137,7 +137,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_Allreduce(elapsed,max_time,1,MPI_DOUBLE,MPI_MAX,global_comm, &
             & grid_error)
        IF (IsRoot()) THEN
-          CALL WriteListElement(key=timer_list(timer_position), &
+          CALL WriteElement(key=timer_list(timer_position), &
                & float_value_in=max_time)
        END IF
     END DO
