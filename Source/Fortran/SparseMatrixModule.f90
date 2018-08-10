@@ -343,9 +343,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ComposeSparseMatrix(mat_array, block_rows, block_columns, &
        & out_matrix)
     !! Parameters
+    INTEGER, INTENT(IN) :: block_rows, block_columns
     TYPE(SparseMatrix_t), DIMENSION(block_columns, block_rows), INTENT(IN) :: &
          & mat_array
-    INTEGER, INTENT(IN) :: block_rows, block_columns
     TYPE(SparseMatrix_t), INTENT(INOUT) :: out_matrix
     !! Local Data
     TYPE(SparseMatrix_t), DIMENSION(block_rows) :: rows_of_merged
