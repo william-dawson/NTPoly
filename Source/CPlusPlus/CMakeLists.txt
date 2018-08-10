@@ -57,12 +57,13 @@ set(Chead
 )
 
 ################################################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source/C)
-
 add_library(NTPolyCPP STATIC ${Csrc} ${Chead})
 target_link_libraries(NTPolyCPP NTPolyWrapper)
 
 set_target_properties(NTPolyCPP PROPERTIES PUBLIC_HEADER "${Chead}")
+target_include_directories(NTPolyCPP PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Source/C>
+                           ${CMAKE_BINARY_DIR}/includes)
 
 install(TARGETS NTPolyCPP
         ARCHIVE DESTINATION lib
