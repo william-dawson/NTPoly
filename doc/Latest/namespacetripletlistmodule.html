@@ -110,6 +110,10 @@ Functions/Subroutines</h2></td></tr>
 <tr class="memitem:a7bd710b6e337e39d060f8bd3d165e039"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule.html#a7bd710b6e337e39d060f8bd3d165e039">redistributetripletlists</a> (triplet_lists, comm, local_data_out)</td></tr>
 <tr class="memdesc:a7bd710b6e337e39d060f8bd3d165e039"><td class="mdescLeft">&#160;</td><td class="mdescRight">Redistribute some triplet lists amongst a set of processors. Takes in a list of triplet lists, one list for each processor. Then the all to all redistribution is performed along the given communicator.  <a href="#a7bd710b6e337e39d060f8bd3d165e039">More...</a><br /></td></tr>
 <tr class="separator:a7bd710b6e337e39d060f8bd3d165e039"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6c0f16454ba92124eefe7dab2b86bb1"><td class="memItemLeft" align="right" valign="top"><a id="af6c0f16454ba92124eefe7dab2b86bb1"></a>
+pure subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetripletlistmodule.html#af6c0f16454ba92124eefe7dab2b86bb1">shifttripletlist</a> (triplet_list, row_shift, column_shift)</td></tr>
+<tr class="memdesc:af6c0f16454ba92124eefe7dab2b86bb1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Shift the rows and columns of a triplet list by set values. Frequently, we have a triplet list that comes from the global matrix which we would like to shift into a local matrix. In that case, just pass the negative of the starting row and column (plus 1) to this routine. <br /></td></tr>
+<tr class="separator:af6c0f16454ba92124eefe7dab2b86bb1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Storing Lists of triplets. </p>

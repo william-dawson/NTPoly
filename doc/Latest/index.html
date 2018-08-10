@@ -69,6 +69,21 @@ $(function() {
 <p><a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> is a massively parallel library for computing the functions of sparse, symmetric matrices based on polynomial expansions. For sufficiently sparse matrices, most of the matrix functions in <a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> can be computed in linear time.</p>
 <h2>Set Up Guide </h2>
 <p><a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> is freely available and open source under the MIT license. It can be downloaded from the <a href="https://github.com/william-dawson/NTPoly">Github</a> repository. We of course recommend that you download a <a href="https://github.com/william-dawson/NTPoly/releases">release version</a> to get started.</p>
+<p>Installing <a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> requires the following software:</p><ul>
+<li>A Fortran Compiler.</li>
+<li>An MPI Installation (MPI-3 Standard+).</li>
+<li>CMake (Version 3.2+).</li>
+</ul>
+<p>The following optional software can greatly enhance the <a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> experience:</p><ul>
+<li>BLAS: for multiplying dense matrices, if they emerge in the calculation.</li>
+<li>A C++ Compiler for building C++ bindings.</li>
+<li>Doxygen: for building documentation.</li>
+<li>Python (Version 2.7+): for testing.</li>
+<li>MPI4PY: for testing.</li>
+<li>SciPy: for testing.</li>
+<li>NumPy: for testing.</li>
+<li>SWIG (Version 3.0+): for building the Python bindings.</li>
+</ul>
 <p><a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> uses CMake as a build system. First, take a look in the Targets directory. You'll find a list of <code>.cmake</code> files which have example configurations on popular systems. You should copy one of these files, and create your own mymachine.cmake file. Then, cd into the Build directory, and type: </p><blockquote class="doxtable">
 <p>cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake .. </p>
 </blockquote>

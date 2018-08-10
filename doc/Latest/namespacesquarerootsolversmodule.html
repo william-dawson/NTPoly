@@ -73,18 +73,18 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions/Subroutines</h2></td></tr>
-<tr class="memitem:a6eeabe3f427493766cbdeaa8a141e72b"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesquarerootsolversmodule.html#a6eeabe3f427493766cbdeaa8a141e72b">squareroot</a> (InputMat, OutputMat, solver_parameters_in)</td></tr>
-<tr class="memdesc:a6eeabe3f427493766cbdeaa8a141e72b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the square root of a matrix.  <a href="#a6eeabe3f427493766cbdeaa8a141e72b">More...</a><br /></td></tr>
-<tr class="separator:a6eeabe3f427493766cbdeaa8a141e72b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a40f4ace1e9cfa49dfc4daee8361a8e0c"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesquarerootsolversmodule.html#a40f4ace1e9cfa49dfc4daee8361a8e0c">inversesquareroot</a> (InputMat, OutputMat, solver_parameters_in)</td></tr>
-<tr class="memdesc:a40f4ace1e9cfa49dfc4daee8361a8e0c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse square root of a matrix.  <a href="#a40f4ace1e9cfa49dfc4daee8361a8e0c">More...</a><br /></td></tr>
-<tr class="separator:a40f4ace1e9cfa49dfc4daee8361a8e0c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8e0de313a01aaf9933e15b67f9f21542"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesquarerootsolversmodule.html#a8e0de313a01aaf9933e15b67f9f21542">squareroot</a> (InputMat, OutputMat, solver_parameters_in, order_in)</td></tr>
+<tr class="memdesc:a8e0de313a01aaf9933e15b67f9f21542"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the square root of a matrix.  <a href="#a8e0de313a01aaf9933e15b67f9f21542">More...</a><br /></td></tr>
+<tr class="separator:a8e0de313a01aaf9933e15b67f9f21542"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1c8567e02be523330c5d2781576f604"><td class="memItemLeft" align="right" valign="top">subroutine, public&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesquarerootsolversmodule.html#aa1c8567e02be523330c5d2781576f604">inversesquareroot</a> (InputMat, OutputMat, solver_parameters_in, order_in)</td></tr>
+<tr class="memdesc:aa1c8567e02be523330c5d2781576f604"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the inverse square root of a matrix.  <a href="#aa1c8567e02be523330c5d2781576f604">More...</a><br /></td></tr>
+<tr class="separator:aa1c8567e02be523330c5d2781576f604"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Computing The Square Root of a Matrix. </p>
 </div><h2 class="groupheader">Function/Subroutine Documentation</h2>
-<a id="a40f4ace1e9cfa49dfc4daee8361a8e0c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40f4ace1e9cfa49dfc4daee8361a8e0c">&#9670;&nbsp;</a></span>inversesquareroot()</h2>
+<a id="aa1c8567e02be523330c5d2781576f604"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1c8567e02be523330c5d2781576f604">&#9670;&nbsp;</a></span>inversesquareroot()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -105,7 +105,13 @@ Functions/Subroutines</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">type(iterativesolverparameters_t), intent(in), optional&#160;</td>
-          <td class="paramname"><em>solver_parameters_in</em>&#160;</td>
+          <td class="paramname"><em>solver_parameters_in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in), optional&#160;</td>
+          <td class="paramname"><em>order_in</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -121,14 +127,15 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">InputMat</td><td>the matrix to compute. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">OutputMat</td><td>the resulting matrix. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver, optional. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">order_in</td><td>polynomial order for calculation (default 5). </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a6eeabe3f427493766cbdeaa8a141e72b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6eeabe3f427493766cbdeaa8a141e72b">&#9670;&nbsp;</a></span>squareroot()</h2>
+<a id="a8e0de313a01aaf9933e15b67f9f21542"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e0de313a01aaf9933e15b67f9f21542">&#9670;&nbsp;</a></span>squareroot()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -149,7 +156,13 @@ Functions/Subroutines</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">type(iterativesolverparameters_t), intent(in), optional&#160;</td>
-          <td class="paramname"><em>solver_parameters_in</em>&#160;</td>
+          <td class="paramname"><em>solver_parameters_in</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">integer, intent(in), optional&#160;</td>
+          <td class="paramname"><em>order_in</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -165,6 +178,7 @@ Functions/Subroutines</h2></td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">InputMat</td><td>the matrix to compute. </td></tr>
     <tr><td class="paramdir">[out]</td><td class="paramname">OutputMat</td><td>the resulting matrix. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">solver_parameters_in</td><td>parameters for the solver, optional. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">order_in</td><td>polynomial order for calculation (default 5). </td></tr>
   </table>
   </dd>
 </dl>
