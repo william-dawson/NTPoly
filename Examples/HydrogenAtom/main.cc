@@ -155,14 +155,15 @@ int main(int argc, char *argv[]) {
 
   // Call the solver routine.
   NTPoly::DistributedSparseMatrix Density(grid_points);
-  double chemical_potential;
-  NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, Identity, 2, Density,
+  double chemical_potential, energy;
+  NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, Identity, 2, Density, energy,
                                      chemical_potential, solver_parameters);
 
   // Print the density matrix to file.
   Density.WriteToMatrixMarket(density_file_out);
 
   // Cleanup
+  NTPoly::DestructProcessGrid();
   MPI_Finalize();
   return 0;
 }

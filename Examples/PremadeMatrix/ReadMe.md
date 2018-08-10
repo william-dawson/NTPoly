@@ -62,7 +62,8 @@ And then run with:
 mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \
---number_of_electrons 10 --threshold 1e-6 --convergence_threshold 1e-5 \
+--number_of_electrons 10 --threshold 1e-6 \
+--converge_overlap 1e-3 --converge_density 1e-5 \
 --density Density.mtx
 
 Note that we're using the Fortran wrapper to link, and as a result we
@@ -81,7 +82,8 @@ Run with python:
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \
---number_of_electrons 10 --threshold 1e-6 --convergence_threshold 1e-5 \
+--number_of_electrons 10 --threshold 1e-6 \
+--converge_overlap 1e-3 --converge_density 1e-5 \
 --density Density.mtx
 
 ## Construct the process grid.
@@ -90,7 +92,8 @@ NTPoly uses a 3 dimensional process cube to distribute the work during solver
 routines. Before any calls are made, you must construct this grid. In general,
 the rows and columns should be close to equal. Memory use grows linearly with
 the number of process slices, so the number of slices should only be
-increased if the performance scaling begins to degrade.
+increased if the performance scaling begins to degrade. On the K computer,
+we find this happens at around 8192 cores.
 
 ## Read the Hamiltonian and Overlap matrix from file.
 
@@ -102,24 +105,21 @@ with the appropriate dimensions.
 
 ## Setup the solver system.
 
-The solvers used in this program are both iterative solvers. Iterative solvers
-compute the function of a matrix iteratively, and stop once some convergence
-tolerance is reached.
-
-In this case, we set three variables. The convergence difference determines
-when a calculation is considered converged. This is done by computing the
-norm of the difference between the last computed matrix and the current one.
-The second variable is the threshold, which is used for flushing small values
-to zero to maintain matrix sparsity. Finally, a permutation is set, which is
-used for load balancing.
+The solver requires two important parameters: the threshold and the convergence
+threshold. The threshold is used to flush small values to zero. The convergence
+threshold is used to determine if a calculation is finished. For the overlap
+matrix calculation, the convergence criteria is based on the norm of the
+matrix. For the density matrix, it is based on the energy. One likely will want
+to choose different parameters for each part of the calculation.
+Additionally, we set a third parameter in the solver parameters which is used
+for load balancing.
 
 ## Solve for the density matrix.
 
 First, the inverse square root of the matrix must be computed, and then
 a call to a density matrix solver routine is made (in this case, using the
-TRS2 algorithm). Both can use the same set of solver parameters, though in
-practice one might specialize them. The chemical potential is automatically
-computed by these routines.
+TRS2 algorithm). The chemical potential is automatically computed by the
+density matrix routine.
 
 ## Print the density matrix to file.
 

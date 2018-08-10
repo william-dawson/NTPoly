@@ -53,6 +53,10 @@ class TestDistributedMatrix(unittest.TestCase):
         self.process_slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
+        # Make sure we can destruct without any problems.
+        nt.DestructProcessGrid()
+        nt.ConstructProcessGrid(
+            self.process_rows, self.process_columns, self.process_slices)
         self.myrow = nt.GetMyRow()
         self.mycolumn = nt.GetMyColumn()
         self.myslice = nt.GetMySlice()

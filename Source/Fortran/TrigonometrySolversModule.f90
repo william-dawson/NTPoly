@@ -36,7 +36,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! A temporary matrix to hold the transformation from sine to cosine.
     TYPE(DistributedSparseMatrix_t) :: ShiftedMat
     TYPE(DistributedSparseMatrix_t) :: IdentityMat
-    REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.0)
+    REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.0_NTREAL)
 
     !! Shift
     CALL CopyDistributedSparseMatrix(InputMat,ShiftedMat)
@@ -44,7 +44,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(IdentityMat)
     CALL IncrementDistributedSparseMatrix(IdentityMat,ShiftedMat, &
-         & alpha_in=REAL(-1.0*PI/2.0,NTREAL))
+         & alpha_in=-1.0_NTREAL*PI/2.0_NTREAL)
     CALL DestructDistributedSparseMatrix(IdentityMat)
 
     IF (PRESENT(solver_parameters_in)) THEN
@@ -115,15 +115,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
 
     !! Figure out how much to scale the matrix.
-    sigma_val = 1.0
+    sigma_val = 1.0_NTREAL
     sigma_counter = 1
-    DO WHILE (spectral_radius/sigma_val .GT. 3.0e-3)
+    DO WHILE (spectral_radius/sigma_val .GT. 3.0e-3_NTREAL)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
 
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0_NTREAL/sigma_val)
     CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
          & InputMat%actual_matrix_dimension)
     CALL FillDistributedIdentity(OutputMat)
@@ -142,7 +142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Square the scaled matrix.
-    taylor_denom = -2.0
+    taylor_denom = -2.0_NTREAL
     CALL CopyDistributedSparseMatrix(OutputMat, Ak)
     CALL DistributedGemm(ScaledMat,ScaledMat,TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
@@ -154,9 +154,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL CopyDistributedSparseMatrix(TempMat,Ak)
        CALL IncrementDistributedSparseMatrix(Ak,OutputMat, &
-            & alpha_in=REAL(1.0/taylor_denom,NTREAL))
+            & alpha_in=1.0_NTREAL/taylor_denom)
        taylor_denom = taylor_denom * (counter+1)
-       taylor_denom = -1.0*taylor_denom*(counter+1)
+       taylor_denom = -1.0_NTREAL*taylor_denom*(counter+1)
     END DO
 
     !! Undo scaling
@@ -164,9 +164,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL CopyDistributedSparseMatrix(TempMat,OutputMat)
-       CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat, &
-            & REAL(-1.0,NTREAL))
+       CALL ScaleDistributedSparseMatrix(OutputMat,2.0_NTREAL)
+       CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat,-1.0_NTREAL)
     END DO
 
     IF (solver_parameters%do_load_balancing) THEN
@@ -235,15 +234,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     spectral_radius = MAX(ABS(e_min), ABS(e_max))
 
     !! Figure out how much to scale the matrix.
-    sigma_val = 1.0
+    sigma_val = 1.0_NTREAL
     sigma_counter = 1
-    DO WHILE (spectral_radius/sigma_val .GT. 1.0)
+    DO WHILE (spectral_radius/sigma_val .GT. 1.0_NTREAL)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
 
     CALL CopyDistributedSparseMatrix(InputMat, ScaledMat)
-    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0/sigma_val)
+    CALL ScaleDistributedSparseMatrix(ScaledMat,1.0_NTREAL/sigma_val)
     CALL ConstructEmptyDistributedSparseMatrix(OutputMat, &
          & InputMat%actual_matrix_dimension)
     CALL ConstructEmptyDistributedSparseMatrix(IdentityMat, &
@@ -259,51 +258,47 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Expand the Chebyshev Polynomial.
-    coefficients(1) = 7.651976865579664e-01_16
+    coefficients(1) = 7.651976865579664e-01_NTREAL
     coefficients(2) = 0
-    coefficients(3) = -2.298069698638004e-01_16
+    coefficients(3) = -2.298069698638004e-01_NTREAL
     coefficients(4) = 0
-    coefficients(5) = 4.953277928219409e-03_16
+    coefficients(5) = 4.953277928219409e-03_NTREAL
     coefficients(6) = 0
-    coefficients(7) = -4.187667600472235e-05_16
+    coefficients(7) = -4.187667600472235e-05_NTREAL
     coefficients(8) = 0
-    coefficients(9) = 1.884468822397086e-07_16
+    coefficients(9) = 1.884468822397086e-07_NTREAL
     coefficients(10) = 0
-    coefficients(11) = -5.261224549346905e-10_16
+    coefficients(11) = -5.261224549346905e-10_NTREAL
     coefficients(12) = 0
-    coefficients(13) = 9.999906645345580e-13_16
+    coefficients(13) = 9.999906645345580e-13_NTREAL
     coefficients(14) = 0
-    coefficients(15) = -2.083597362700025e-15_16
+    coefficients(15) = -2.083597362700025e-15_NTREAL
     coefficients(16) = 0
-    coefficients(17) = 9.181480886537484e-17_16
+    coefficients(17) = 9.181480886537484e-17_NTREAL
 
     !! Basic T Values.
-    CALL DistributedGemm(ScaledMat,ScaledMat,T2,alpha_in=REAL(2.0,NTREAL),&
+    CALL DistributedGemm(ScaledMat,ScaledMat,T2,alpha_in=2.0_NTREAL,&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(IdentityMat,T2, &
-         & alpha_in=REAL(-1.0,NTREAL))
-    CALL DistributedGemm(T2,T2,T4,alpha_in=REAL(2.0,NTREAL),&
+    CALL IncrementDistributedSparseMatrix(IdentityMat,T2,alpha_in=-1.0_NTREAL)
+    CALL DistributedGemm(T2,T2,T4,alpha_in=2.0_NTREAL,&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(IdentityMat,T4, &
-         & alpha_in=REAL(-1.0,NTREAL))
-    CALL DistributedGemm(T4,T2,T6,alpha_in=REAL(2.0,NTREAL),&
+    CALL IncrementDistributedSparseMatrix(IdentityMat,T4,alpha_in=-1.0_NTREAL)
+    CALL DistributedGemm(T4,T2,T6,alpha_in=2.0_NTREAL,&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(T2,T6, &
-         & alpha_in=REAL(-1.0,NTREAL))
-    CALL DistributedGemm(T6,T2,T8,alpha_in=REAL(2.0,NTREAL),&
+    CALL IncrementDistributedSparseMatrix(T2,T6,alpha_in=-1.0_NTREAL)
+    CALL DistributedGemm(T6,T2,T8,alpha_in=2.0_NTREAL,&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL IncrementDistributedSparseMatrix(T4,T8, &
-         & alpha_in=REAL(-1.0,NTREAL))
+    CALL IncrementDistributedSparseMatrix(T4,T8,alpha_in=-1.0_NTREAL)
 
     !! Contribution from the second half.
     CALL CopyDistributedSparseMatrix(T8,OutputMat)
     CALL ScaleDistributedSparseMatrix(OutputMat,0.5*coefficients(17))
     CALL IncrementDistributedSparseMatrix(T6,OutputMat,&
-         & alpha_in=REAL(0.5*coefficients(15),NTREAL))
+         & alpha_in=0.5_NTREAL*coefficients(15))
     CALL IncrementDistributedSparseMatrix(T4,OutputMat,&
-         & alpha_in=REAL(0.5*coefficients(13),NTREAL))
+         & alpha_in=0.5_NTREAL*coefficients(13))
     CALL IncrementDistributedSparseMatrix(T2,OutputMat,&
-         & alpha_in=REAL(0.5*coefficients(11),NTREAL))
+         & alpha_in=0.5_NTREAL*coefficients(11))
     CALL DistributedGemm(T8,OutputMat,TempMat,&
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
@@ -311,13 +306,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyDistributedSparseMatrix(T8,OutputMat)
     CALL ScaleDistributedSparseMatrix(OutputMat,coefficients(9))
     CALL IncrementDistributedSparseMatrix(T6,OutputMat,&
-         & alpha_in=REAL(coefficients(7)+0.5*coefficients(11),NTREAL))
+         & alpha_in=coefficients(7)+0.5_NTREAL*coefficients(11))
     CALL IncrementDistributedSparseMatrix(T4,OutputMat,&
-         & alpha_in=REAL(coefficients(5)+0.5*coefficients(13),NTREAL))
+         & alpha_in=coefficients(5)+0.5_NTREAL*coefficients(13))
     CALL IncrementDistributedSparseMatrix(T2,OutputMat,&
-         & alpha_in=REAL(coefficients(3)+0.5*coefficients(15),NTREAL))
+         & alpha_in=coefficients(3)+0.5_NTREAL*coefficients(15))
     CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat,&
-         & alpha_in=REAL(coefficients(1)+0.5*coefficients(17),NTREAL))
+         & alpha_in=coefficients(1)+0.5_NTREAL*coefficients(17))
 
     CALL IncrementDistributedSparseMatrix(TempMat,OutputMat)
 
@@ -326,9 +321,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DistributedGemm(OutputMat,OutputMat,TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL CopyDistributedSparseMatrix(TempMat,OutputMat)
-       CALL ScaleDistributedSparseMatrix(OutputMat,REAL(2.0,NTREAL))
-       CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat, &
-            & REAL(-1.0,NTREAL))
+       CALL ScaleDistributedSparseMatrix(OutputMat,2.0_NTREAL)
+       CALL IncrementDistributedSparseMatrix(IdentityMat,OutputMat,-1.0_NTREAL)
     END DO
 
     IF (solver_parameters%do_load_balancing) THEN

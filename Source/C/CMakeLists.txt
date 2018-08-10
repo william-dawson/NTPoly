@@ -28,4 +28,4 @@ set(Csrc
     Wrapper.h
 )
 
-install(DIRECTORY . DESTINATION include)
+install(DIRECTORY . DESTINATION ${CMAKE_BINARY_DIR}/include)

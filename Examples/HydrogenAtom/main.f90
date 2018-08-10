@@ -12,7 +12,7 @@ PROGRAM HydrogenAtom
        & IncrementDistributedSparseMatrix
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
-  USE ProcessGridModule, ONLY : ConstructProcessGrid
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & AppendToTripletList
@@ -113,6 +113,9 @@ PROGRAM HydrogenAtom
 
   !! Print the density matrix to file.
   CALL WriteToMatrixMarket(Density,density_file_out)
+
+  !! Cleanup
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DivideUpWork()

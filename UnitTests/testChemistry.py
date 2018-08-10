@@ -78,6 +78,7 @@ class TestChemistry(unittest.TestCase):
                         eigvals_only=True)
         homo = int(self.nel / 2) - 1
         lumo = homo + 1
+        
         if computed > eig_vals[homo] and computed < eig_vals[lumo]:
             self.assertTrue(True)
         else:
@@ -98,6 +99,34 @@ class TestChemistry(unittest.TestCase):
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
+    def test_pm(self):
+        '''Test our ability to compute the density matrix with PM.'''
+        fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
+        overlap_matrix = nt.DistributedSparseMatrix(self.overlap)
+        inverse_sqrt_matrix = nt.DistributedSparseMatrix(
+            fock_matrix.GetActualDimension())
+        density_matrix = nt.DistributedSparseMatrix(
+            fock_matrix.GetActualDimension())
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+        energy_value, chemical_potential = \
+            nt.DensityMatrixSolvers.PM(fock_matrix,
+                                       inverse_sqrt_matrix,
+                                       self.nel, density_matrix,
+                                       self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
+        self.check_cp(chemical_potential)
+
     def test_trs2(self):
         '''Test our ability to compute the density matrix with TRS2.'''
         fock_matrix = nt.DistributedSparseMatrix(self.hamiltonian)
@@ -114,10 +143,11 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.TRS2(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
+        energy_value, chemical_potential = \
+            nt.DensityMatrixSolvers.TRS2(fock_matrix,
+                                         inverse_sqrt_matrix,
+                                         self.nel, density_matrix,
+                                         self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -141,10 +171,11 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.TRS4(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
+        energy_value, chemical_potential = \
+            nt.DensityMatrixSolvers.TRS4(fock_matrix,
+                                         inverse_sqrt_matrix,
+                                         self.nel, density_matrix,
+                                         self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -168,10 +199,11 @@ class TestChemistry(unittest.TestCase):
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        chemical_potential = nt.DensityMatrixSolvers.HPCP(fock_matrix,
-                                                          inverse_sqrt_matrix,
-                                                          self.nel, density_matrix,
-                                                          self.solver_parameters)
+        energy_value, chemical_potential = \
+            nt.DensityMatrixSolvers.HPCP(fock_matrix,
+                                         inverse_sqrt_matrix,
+                                         self.nel, density_matrix,
+                                         self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()

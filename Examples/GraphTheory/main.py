@@ -134,3 +134,4 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     ResultMat.WriteToMatrixMarket(output_file)
+    nt.DestructProcessGrid()

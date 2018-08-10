@@ -6,11 +6,11 @@ PROGRAM GraphTheory
        & WriteToMatrixMarket, DistributedSparseMatrix_t, &
        & ConstructEmptyDistributedSparseMatrix, &
        & FillFromTripletList, DestructDistributedSparseMatrix, &
-       & CopyDistributedSparseMatrix, FillDistributedIdentity 
+       & CopyDistributedSparseMatrix, FillDistributedIdentity
   USE DistributedSparseMatrixAlgebraModule, ONLY: IncrementDistributedSparseMatrix
   USE InverseSolversModule, ONLY : Invert
   USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
-  USE ProcessGridModule, ONLY : ConstructProcessGrid
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
   USE TripletListModule, ONLY : TripletList_t, ConstructTripletList, &
        & SetTripletAt, AppendToTripletList
   USE TripletModule, ONLY : Triplet_t
@@ -98,6 +98,7 @@ PROGRAM GraphTheory
   !! Cleanup
   CALL DestructDistributedSparseMatrix(NetworkMat)
   CALL DestructDistributedSparseMatrix(ResultMat)
+  CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE DivideUpWork()

@@ -166,6 +166,7 @@ int main(int argc, char *argv[]) {
   ResultMat.WriteToMatrixMarket(output_file);
 
   // Cleanup
+  NTPoly::DestructProcessGrid();
   MPI_Finalize();
   return 0;
 }

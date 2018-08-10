@@ -2,7 +2,7 @@
 !> A Module For Storing The Parameters For Iterative Solvers.
 MODULE IterativeSolversModule
   USE DataTypesModule, ONLY : NTREAL
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
   USE PermutationModule, ONLY : Permutation_t
   IMPLICIT NONE
@@ -145,14 +145,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Iterative Solver Parameters")
     CALL EnterSubLog
-    CALL WriteListElement(key="be_verbose",bool_value_in=this%be_verbose)
-    CALL WriteListElement(key="do_load_balancing", &
+    CALL WriteElement(key="be_verbose",bool_value_in=this%be_verbose)
+    CALL WriteElement(key="do_load_balancing", &
          & bool_value_in=this%do_load_balancing)
-    CALL WriteListElement(key="converge_diff", &
+    CALL WriteElement(key="converge_diff", &
          & float_value_in=this%converge_diff)
-    CALL WriteListElement(key="threshold", &
+    CALL WriteElement(key="threshold", &
          & float_value_in=this%threshold)
-    CALL WriteListElement(key="max_iterations", &
+    CALL WriteElement(key="max_iterations", &
          & int_value_in=this%max_iterations)
     CALL ExitSubLog
   END SUBROUTINE PrintIterativeSolverParameters

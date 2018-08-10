@@ -145,10 +145,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
-          CALL WriteListElement(key="Trace", float_value_in=trace_value)
-          CALL WriteListElement(key="AddTrace", float_value_in=add_trace)
-          CALL WriteListElement(key="SubtractTrace", float_value_in=subtract_trace)
+          CALL WriteElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteElement(key="Trace", float_value_in=trace_value)
+          CALL WriteElement(key="AddTrace", float_value_in=add_trace)
+          CALL WriteElement(key="SubtractTrace", float_value_in=subtract_trace)
           CALL ExitSubLog
        END IF
 
