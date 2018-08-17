@@ -28,4 +28,5 @@ set(Csrc
     Wrapper.h
 )
 
-install(DIRECTORY . DESTINATION ${CMAKE_BINARY_DIR}/include)
+include(GNUInstallDirs)
+install(DIRECTORY . DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
