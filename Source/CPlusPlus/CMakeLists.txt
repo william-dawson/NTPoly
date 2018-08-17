@@ -3,9 +3,7 @@ set(Csrc
     ChebyshevSolvers.cc
     DensityMatrixSolvers.cc
     EigenBounds.cc
-    EigenSolvers.cc
     ExponentialSolvers.cc
-    FermiOperatorExpansion.cc
     GeometryOptimization.cc
     HermiteSolvers.cc
     InverseSolvers.cc
@@ -32,9 +30,7 @@ set(Chead
     ChebyshevSolvers.h
     DensityMatrixSolvers.h
     EigenBounds.h
-    EigenSolvers.h
     ExponentialSolvers.h
-    FermiOperatorExpansion.h
     GeometryOptimization.h
     HermiteSolvers.h
     InverseSolvers.h

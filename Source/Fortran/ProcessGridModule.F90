@@ -54,7 +54,7 @@ MODULE ProcessGridModule
   END TYPE ProcessGrid_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default process grid.
-  TYPE(ProcessGrid_t), PUBLIC :: global_grid
+  TYPE(ProcessGrid_t), TARGET, PUBLIC :: global_grid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid
   PUBLIC :: IsRoot
@@ -185,7 +185,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: column_block_multiplier
     INTEGER :: row_block_multiplier
-    INTEGER :: row_counter, column_counter
+    INTEGER :: II, JJ
 #ifdef _OPENMP
     INTEGER :: num_threads
 #endif
@@ -269,36 +269,37 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(grid%blocked_between_slice_comm(grid%number_of_blocks_rows, &
          & grid%number_of_blocks_columns))
 
-    DO column_counter=1,grid%number_of_blocks_columns
-       DO row_counter=1,grid%number_of_blocks_rows
+    DO JJ=1,grid%number_of_blocks_columns
+       DO II=1,grid%number_of_blocks_rows
           CALL MPI_COMM_SPLIT(grid%global_comm, grid%my_slice, &
-               & grid%global_rank, &
-               & grid%blocked_within_slice_comm(row_counter,column_counter), &
+               & grid%global_rank, grid%blocked_within_slice_comm(II,JJ), &
                & ierr)
           CALL MPI_COMM_SPLIT(grid%global_comm, grid%within_slice_rank, &
-               & grid%global_rank, &
-               & grid%blocked_between_slice_comm(row_counter,column_counter), &
+               & grid%global_rank, grid%blocked_between_slice_comm(II,JJ), &
                & ierr)
        END DO
     END DO
-    DO column_counter=1,grid%number_of_blocks_columns
+    DO JJ=1,grid%number_of_blocks_columns
        CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_column, &
-            & grid%global_rank, &
-            & grid%blocked_column_comm(column_counter), ierr)
+            & grid%global_rank, grid%blocked_column_comm(JJ), ierr)
     END DO
-    DO row_counter=1,grid%number_of_blocks_rows
+    DO II=1,grid%number_of_blocks_rows
        CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_row, &
-            & grid%global_rank, grid%blocked_row_comm(row_counter), ierr)
+            & grid%global_rank, grid%blocked_row_comm(II), ierr)
     END DO
 
   END SUBROUTINE ConstructNewProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
+  !! Note that this makes a complete and independent copy of the process grid.
+  !! Which of course means that the old grid will be destroyed, so don't leave
+  !! any matrices pointing to it.
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
     !> New_grid = old_grid
     TYPE(ProcessGrid_t), INTENT(INOUT) :: new_grid
+    INTEGER :: II, JJ, ierr
 
     !! Safe Copy
     CALL DestructProcessGrid(new_grid)
@@ -311,26 +312,91 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(new_grid%blocked_between_slice_comm( &
          & old_grid%number_of_blocks_rows, old_grid%number_of_blocks_columns))
 
-    new_grid = old_grid
+    !! Copy the communicators
+    DO II = 1, new_grid%number_of_blocks_rows
+       CALL MPI_COMM_DUP(old_grid%blocked_row_comm(II), &
+            & new_grid%blocked_row_comm(II), ierr)
+    END DO
+    DO JJ = 1, new_grid%number_of_blocks_columns
+       CALL MPI_COMM_DUP(old_grid%blocked_column_comm(II), &
+            & new_grid%blocked_column_comm(II), ierr)
+    END DO
+    DO JJ=1,new_grid%number_of_blocks_columns
+       DO II=1,new_grid%number_of_blocks_rows
+          CALL MPI_COMM_DUP(old_grid%blocked_within_slice_comm(II,JJ), &
+               & new_grid%blocked_within_slice_comm(II,JJ), ierr)
+       END DO
+    END DO
+    DO JJ=1,new_grid%number_of_blocks_columns
+       DO II=1,new_grid%number_of_blocks_rows
+          CALL MPI_COMM_DUP(old_grid%blocked_between_slice_comm(II,JJ), &
+               & new_grid%blocked_between_slice_comm(II,JJ), ierr)
+       END DO
+    END DO
+
+    CALL MPI_COMM_DUP(old_grid%global_comm, new_grid%global_comm, ierr)
+    CALL MPI_COMM_DUP(old_grid%row_comm, new_grid%row_comm, ierr)
+    CALL MPI_COMM_DUP(old_grid%column_comm, new_grid%column_comm, ierr)
+    CALL MPI_COMM_DUP(old_grid%within_slice_comm, new_grid%within_slice_comm, &
+         & ierr)
+    CALL MPI_COMM_DUP(old_grid%between_slice_comm, &
+         & new_grid%between_slice_comm, ierr)
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
-  SUBROUTINE DestructProcessGrid(grid)
-    !> The grid to destruct.
-    TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
+  !! Be careful about doing this. Matrices have pointers to process grids. If
+  !! you destruct a process grid without destructing the matrices pointing to
+  !! it, they will become unusable.
+  SUBROUTINE DestructProcessGrid(grid_in)
+    !> The grid to destruct. If none specified this destroys the global grid.
+    TYPE(ProcessGrid_t), OPTIONAL, INTENT(INOUT) :: grid_in
+    !! Counters
+    INTEGER :: II, JJ
+    INTEGER :: Ierr
 
-    !! Deallocate Blocks
-    IF (ALLOCATED(grid%blocked_row_comm)) THEN
-       DEALLOCATE(grid%blocked_row_comm)
-    END IF
-    IF (ALLOCATED(grid%blocked_column_comm)) THEN
-       DEALLOCATE(grid%blocked_column_comm)
-    END IF
-    IF (ALLOCATED(grid%blocked_within_slice_comm)) THEN
-       DEALLOCATE(grid%blocked_within_slice_comm)
-    END IF
-    IF (ALLOCATED(grid%blocked_between_slice_comm)) THEN
-       DEALLOCATE(grid%blocked_between_slice_comm)
+    !! Handle optional parameters
+    IF (.NOT. PRESENT(grid_in)) THEN
+       CALL DestructProcessGrid(global_grid)
+    ELSE !! Destruct
+       IF (ALLOCATED(grid_in%blocked_row_comm)) THEN
+          DO II = 1, grid_in%number_of_blocks_rows
+             CALL MPI_COMM_FREE(grid_in%blocked_row_comm(II), ierr)
+          END DO
+          DEALLOCATE(grid_in%blocked_row_comm)
+       END IF
+
+       IF (ALLOCATED(grid_in%blocked_column_comm)) THEN
+          DO JJ = 1, grid_in%number_of_blocks_columns
+             CALL MPI_COMM_FREE(grid_in%blocked_column_comm(JJ), ierr)
+          END DO
+          DEALLOCATE(grid_in%blocked_column_comm)
+       END IF
+
+       IF (ALLOCATED(grid_in%blocked_within_slice_comm)) THEN
+          DO JJ=1,grid_in%number_of_blocks_columns
+             DO II=1,grid_in%number_of_blocks_rows
+                CALL MPI_COMM_FREE(grid_in%blocked_within_slice_comm(II,JJ), &
+                     & ierr)
+             END DO
+          END DO
+          DEALLOCATE(grid_in%blocked_within_slice_comm)
+       END IF
+
+       IF (ALLOCATED(grid_in%blocked_between_slice_comm)) THEN
+          DO JJ=1,grid_in%number_of_blocks_columns
+             DO II=1,grid_in%number_of_blocks_rows
+                CALL MPI_COMM_FREE(grid_in%blocked_between_slice_comm(II,JJ), &
+                     & ierr)
+             END DO
+          END DO
+          DEALLOCATE(grid_in%blocked_between_slice_comm)
+       END IF
+
+       CALL MPI_COMM_FREE(grid_in%global_comm, ierr)
+       CALL MPI_COMM_FREE(grid_in%row_comm, ierr)
+       CALL MPI_COMM_FREE(grid_in%column_comm, ierr)
+       CALL MPI_COMM_FREE(grid_in%within_slice_comm, ierr)
+       CALL MPI_COMM_FREE(grid_in%between_slice_comm, ierr)
     END IF
 
   END SUBROUTINE DestructProcessGrid
