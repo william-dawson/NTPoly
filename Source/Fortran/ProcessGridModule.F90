@@ -347,7 +347,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Be careful about doing this. Matrices have pointers to process grids. If
   !! you destruct a process grid without destructing the matrices pointing to
   !! it, they will become unusable.
-  SUBROUTINE DestructProcessGrid(grid_in)
+  RECURSIVE SUBROUTINE DestructProcessGrid(grid_in)
     !> The grid to destruct. If none specified this destroys the global grid.
     TYPE(ProcessGrid_t), OPTIONAL, INTENT(INOUT) :: grid_in
     !! Counters
