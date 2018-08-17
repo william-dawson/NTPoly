@@ -12,7 +12,7 @@ MODULE PSMatrixModule
   USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
-       & SplitProcessGrid, CopyProcessGrid
+       & SplitProcessGrid
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
@@ -47,7 +47,7 @@ MODULE PSMatrixModule
      INTEGER :: end_row !< last row stored locally is less than this.
      INTEGER :: local_columns !< number of local columns.
      INTEGER :: local_rows !< number of local rows.
-     TYPE(ProcessGrid_t) :: process_grid !< process grid to operate on
+     TYPE(ProcessGrid_t), POINTER :: process_grid !< process grid to operate on
      LOGICAL :: is_complex !< true if the matrix data is true.
   END TYPE Matrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -178,7 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> True if you want to use complex numbers.
     LOGICAL, INTENT(IN), OPTIONAL             :: is_complex_in
     !> A process grid to host the matrix.
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
+    TYPE(ProcessGrid_t), INTENT(IN), TARGET, OPTIONAL :: process_grid_in
     !! Local Variables
     TYPE(Matrix_lsr) :: zeromatrix_r
     TYPE(Matrix_lsc) :: zeromatrix_c
@@ -187,9 +187,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Process Grid
     IF (PRESENT(process_grid_in)) THEN
-       CALL CopyProcessGrid(process_grid_in, this%process_grid)
+       this%process_grid => process_grid_in
     ELSE
-       CALL CopyProcessGrid(global_grid, this%process_grid)
+       this%process_grid => global_grid
     END IF
 
     !! Complex determination
@@ -273,7 +273,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
-  PURE SUBROUTINE CopyMatrix_ps(matA, matB)
+  SUBROUTINE CopyMatrix_ps(matA, matB)
     !> The matrix to copy.
     TYPE(Matrix_ps), INTENT(IN)    :: matA
     !> matB = matA.

@@ -89,7 +89,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromBinary_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
-  PURE SUBROUTINE CopyMatrix_ps_wrp(ih_matA,ih_matB) &
+  SUBROUTINE CopyMatrix_ps_wrp(ih_matA,ih_matB) &
        & bind(c,name="CopyMatrix_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)

@@ -2,9 +2,7 @@ set(Wsrc
     ChebyshevSolversModule_wrp.F90
     DensityMatrixSolversModule_wrp.F90
     EigenBoundsModule_wrp.F90
-    EigenSolversModule_wrp.F90
     ExponentialSolversModule_wrp.F90
-    FermiOperatorExpansionModule_wrp.F90
     GeometryOptimizationModule_wrp.F90
     HermiteSolversModule_wrp.F90
     InverseSolversModule_wrp.F90
@@ -28,12 +26,6 @@ set(Wsrc
     TripletListModule_wrp.F90
     WrapperModule.F90
 )
-
-include_directories(${CMAKE_BINARY_DIR}/Source/Fortran)
-
-IF (EIGEN_EXA)
-  include_directories(${EIGEN_EXA})
-ENDIF()
 
 add_library(NTPolyWrapper STATIC ${Wsrc})
 target_link_libraries(NTPolyWrapper NTPoly)
