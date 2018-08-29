@@ -58,11 +58,11 @@ public:
   //! Extracts a triplet list of the data that is stored on this process.
   //! Data is returned with absolute coordinates.
   //! \param triplet_list the list to fill.
-  void GetTripletList(TripletList_r &triplet_list);
+  void GetTripletList(TripletList_r &triplet_list) const;
   //! Extracts a triplet list of the data that is stored on this process.
   //! Data is returned with absolute coordinates.
   //! \param triplet_list the list to fill.
-  void GetTripletList(TripletList_c &triplet_list);
+  void GetTripletList(TripletList_c &triplet_list) const;
   //! Extract an arbitrary block of a matrix into a triplet list. Block is
   //! defined by the row/column start/end values.
   //! This is slower than GetTripletList, because communication is required.
