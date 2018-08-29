@@ -30,6 +30,27 @@ Would be transformed in to:
 
 > [1 - i, 0]
 
+## Build System
+
+See the premade matrix example for details. Build with something like:
+
+Fortran Build Instructions:
+mpif90 main.f90 -o example \
+  -I../../Build/include \
+  -L../../Build/lib -lNTPoly -fopenmp -llapack
+
+C++ Build Instructions:
+mpicxx main.cc -c \
+  -I../../Source/CPlusPlus -I../../Source/C
+
+mpif90 main.o -o example \
+  -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
+  -llapack
+
+(for the intel compiler, build an intermediate main.o object using the
+C++ compiler, and link with the fortran compiler using the flags:
+-qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++).
+
 ## Program Usage
 
 First you need to generate the input and comparison matrix. This can be done
@@ -37,9 +58,16 @@ using the `generate.py` program I provided.
 
 > python generate.py 512 input.mtx exp.mtx
 
-The program can be run using the following command:
-
+And then run with:
 mpirun -np 1 ./example \
+--process_rows 1 --process_columns 1 --process_slices 1 \
+--threshold 1e-6 --input_file input.mtx --exponential_file exp-nt.mtx
+
+Setup python environment:
+export PYTHONPATH=../../Build/python
+
+Run with python:
+mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --input_file input.mtx --exponential_file exp-nt.mtx
 
