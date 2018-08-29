@@ -73,12 +73,12 @@ PROGRAM ComplexMatrix
   CALL WriteElement(key="threshold", float_value_in=threshold)
   CALL ExitSubLog
 
-  !! Read The Matrix From File
+  !! Construct The Hermitian Matrix
   CALL ConstructMatrixFromMatrixMarket(InMat, input_file)
   CALL ConstructGuoMatrix(InMat, GMat)
   CALL ScaleMatrix(GMat, 0.5_NTREAL)
 
-  !! Solve
+  !! Compute The Exponential
   solver_parameters = SolverParameters_t(threshold_in=threshold)
   CALL ComputeExponential(GMat, ExMat, solver_parameters)
 
