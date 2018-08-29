@@ -597,8 +597,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(X_k2,Gx_right)
 
        !! Compute Traces
-      CALL DotMatrix(X_k2,Fx_right,trace_fx)
-      CALL DotMatrix(X_k2,Gx_right,trace_gx)
+       CALL DotMatrix(X_k2,Fx_right,trace_fx)
+       CALL DotMatrix(X_k2,Gx_right,trace_gx)
 
        !! Avoid Overflow
        IF (ABS(trace_gx) .LT. 1.0e-14_NTREAL) THEN

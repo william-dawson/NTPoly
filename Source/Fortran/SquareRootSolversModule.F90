@@ -51,7 +51,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
   SUBROUTINE InverseSquareRoot(InputMat, OutputMat, solver_parameters_in, &
-    & order_in)
+       & order_in)
     !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> The resulting matrix.
