@@ -79,17 +79,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE InverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine picks the appropriate solver method
-  !! @param[in] InputMat the matrix to compute.
-  !! @param[inout] OutputMat the matrix computed.
-  !! @param[in] solver_parameters parameters about how to solve.
-  !! @param[in] compute_inverse true if we are computing the inverse square root
-  !! @param[in] order_in the polynomial degree to use (optional, default=5)
   SUBROUTINE SquareRootSelector(InputMat, OutputMat, solver_parameters, &
        & compute_inverse, order_in)
+    !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> The Matrix computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters about how to solve.
     TYPE(SolverParameters_t),INTENT(IN) :: solver_parameters
+    !> True if we are computing the inverse square root.
     LOGICAL, INTENT(IN) :: compute_inverse
+    !> The polynomial degree to use (optional, default=5)
     INTEGER, INTENT(IN), OPTIONAL :: order_in
     !! Local Variables
     INTEGER :: order

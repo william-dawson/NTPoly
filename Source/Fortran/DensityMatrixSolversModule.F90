@@ -26,22 +26,21 @@ MODULE DensityMatrixSolversModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
   !! Based on the PM algorithm presented in \cite palser1998canonical
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from
-  !! @param[in] InverseSquareRoot of the overlap matrix.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] energy_value_out the energy of the system (optional).
-  !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional)
   SUBROUTINE PM(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
     INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> The chemical potential (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> Parameters for the solver (optional).
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -279,23 +278,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PM
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS2 method.
-  !! Based on the TRS2 algorithm presented in \cite niklasson2002
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from
-  !! @param[in] InverseSquareRoot of the overlap matrix.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] energy_value_out the energy of the system (optional).
-  !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional)
+  !! Based on the TRS2 algorithm presented in \cite niklasson2002.
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute the corresponding density from
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
     INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> The chemical potential (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> Parameters for the solver (optional).
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
@@ -488,24 +486,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS4 method.
   !! Based on the TRS4 algorithm presented in \cite niklasson2002
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from
-  !! @param[in] InverseSquareRoot of the overlap matrix.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] energy_value_out the energy of the system (optional).
-  !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
     INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> The chemical potential (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver (optional).
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     REAL(NTREAL), PARAMETER :: sigma_min = 0.0_NTREAL
     REAL(NTREAL), PARAMETER :: sigma_max = 6.0_NTREAL
     !! Handling Optional Parameters
@@ -728,25 +724,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TRS4
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the HPCP method.
-  !! Based on the algorithm presented in \cite truflandier2016communication
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from
-  !! @param[in] InverseSquareRoot of the overlap matrix.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] energy_value_out the energy of the system (optional).
-  !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
+  !! Based on the algorithm presented in \cite truflandier2016communication.
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
-    !! Parameters
+    !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
     INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> The chemical potential (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: &
-         & solver_parameters_in
+    !> Parameters for the solver (optional).
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Matrices
