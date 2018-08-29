@@ -4,6 +4,7 @@ set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_C_COMPILER mpifccpx)
 set(CMAKE_Fortran_COMPILER mpifrtpx)
 set(CMAKE_CXX_COMPILER mpiFCCpx)
+SET(CMAKE_Fortran_MODDIR_FLAG "-M")
 
 set(TOOLCHAIN_LIBS "")
 

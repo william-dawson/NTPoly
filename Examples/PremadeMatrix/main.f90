@@ -19,7 +19,8 @@ PROGRAM PremadeMatrixProgram
   CHARACTER(len=80) :: overlap_file
   CHARACTER(len=80) :: density_file_out
   INTEGER :: process_rows, process_columns, process_slices
-  REAL(NTREAL) :: threshold, convergence_threshold
+  REAL(NTREAL) :: threshold
+  REAL(NTREAL) :: converge_overlap, converge_density
   INTEGER :: number_of_electrons
   TYPE(SolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
@@ -60,8 +61,10 @@ PROGRAM PremadeMatrixProgram
         READ(argument_value,*) number_of_electrons
      CASE('--threshold')
         READ(argument_value,*) threshold
-     CASE('--convergence_threshold')
-        READ(argument_value,*) convergence_threshold
+     CASE('--converge_density')
+        READ(argument_value,*) converge_density
+     CASE('--converge_overlap')
+        READ(argument_value,*) converge_overlap
      END SELECT
   END DO
 
@@ -79,8 +82,8 @@ PROGRAM PremadeMatrixProgram
   CALL WriteElement(key="process_slices", int_value_in=process_slices)
   CALL WriteElement(key="number_of_electrons", int_value_in=number_of_electrons)
   CALL WriteElement(key="threshold", float_value_in=threshold)
-  CALL WriteElement(key="convergence_threshold", &
-       & float_value_in=convergence_threshold)
+  CALL WriteElement(key="converge_overlap", float_value_in=converge_overlap)
+  CALL WriteElement(key="converge_density", float_value_in=converge_density)
   CALL ExitSubLog
 
   !! Read in the matrices from file.
@@ -91,11 +94,16 @@ PROGRAM PremadeMatrixProgram
   CALL ConstructRandomPermutation(permutation, &
        & Hamiltonian%logical_matrix_dimension)
   solver_parameters = SolverParameters_t(&
-       & converge_diff_in=convergence_threshold, threshold_in=threshold, &
+       & converge_diff_in=converge_overlap, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 
   !! Call the solver routines.
   CALL InverseSquareRoot(Overlap, ISQOverlap, solver_parameters)
+
+  !! Change the solver variable for computing the density matrix.
+  solver_parameters%converge_diff=converge_density
+
+  !! Compute the density matrix.
   CALL TRS2(Hamiltonian, ISQOverlap, number_of_electrons, &
        & Density, solver_parameters_in=solver_parameters, &
        & chemical_potential_out=chemical_potential)

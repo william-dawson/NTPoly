@@ -20,7 +20,8 @@ int main(int argc, char *argv[]) {
   string overlap_file;
   string density_file_out;
   int process_rows, process_columns, process_slices;
-  double threshold, convergence_threshold;
+  double threshold;
+  double converge_overlap, converge_density;
   int number_of_electrons;
 
   // Setup MPI
@@ -50,8 +51,10 @@ int main(int argc, char *argv[]) {
       ss >> number_of_electrons;
     } else if (key == "--threshold") {
       ss >> threshold;
-    } else if (key == "--convergence_threshold") {
-      ss >> convergence_threshold;
+    } else if (key == "--converge_overlap") {
+      ss >> converge_overlap;
+    } else if (key == "--converge_density") {
+      ss >> converge_density;
     }
   }
 
@@ -69,7 +72,7 @@ int main(int argc, char *argv[]) {
   NTPoly::Permutation permutation(Hamiltonian.GetLogicalDimension());
   permutation.SetRandomPermutation();
   NTPoly::SolverParameters solver_parameters;
-  solver_parameters.SetConvergeDiff(convergence_threshold);
+  solver_parameters.SetConvergeDiff(converge_overlap);
   solver_parameters.SetThreshold(threshold);
   solver_parameters.SetLoadBalance(permutation);
   solver_parameters.SetVerbosity(true);
@@ -77,6 +80,11 @@ int main(int argc, char *argv[]) {
   // Call the solver routines.
   NTPoly::SquareRootSolvers::InverseSquareRoot(Overlap, ISQOverlap,
                                                solver_parameters);
+
+  // Change the solver variable for computing the density matrix.
+  solver_parameters.SetConvergeDiff(converge_density);
+
+  // Compute the density matrix.
   double chemical_potential, energy;
   NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, ISQOverlap,
                                      number_of_electrons, Density, energy,

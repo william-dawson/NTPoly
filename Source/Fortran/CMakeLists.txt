@@ -1,3 +1,4 @@
+################################################################################
 set(Fsrc
     ChebyshevSolversModule.F90
     DataTypesModule.F90
@@ -36,6 +37,16 @@ set(Fsrc
     TripletModule.F90
 )
 
+################################################################################
 add_library(NTPoly STATIC ${Fsrc})
+include(GNUInstallDirs)
 install(TARGETS NTPoly
-        ARCHIVE DESTINATION lib)
+        EXPORT ntpoly-export
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+################################################################################
+# For Exporting
+install(EXPORT ntpoly-export FILE NTPolyConfig.cmake
+        NAMESPACE NTPoly:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)

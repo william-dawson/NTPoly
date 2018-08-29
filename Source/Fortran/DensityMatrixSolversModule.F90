@@ -536,8 +536,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     IF (solver_parameters%be_verbose) THEN
-       CALL EnterSubLog
        CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="TRS4")
        CALL WriteCitation("niklasson2002expansion")
        CALL PrintParameters(solver_parameters)

@@ -55,13 +55,24 @@ set(Chead
 )
 
 ################################################################################
-include_directories(${CMAKE_SOURCE_DIR}/Source/C)
-
 add_library(NTPolyCPP STATIC ${Csrc} ${Chead})
 target_link_libraries(NTPolyCPP NTPolyWrapper)
 
 set_target_properties(NTPolyCPP PROPERTIES PUBLIC_HEADER "${Chead}")
-
+target_include_directories(NTPolyCPP PUBLIC
+                           $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/Source/C>
+                           $<INSTALL_INTERFACE:include>)
+include(GNUInstallDirs)
 install(TARGETS NTPolyCPP
-        ARCHIVE DESTINATION lib
-        PUBLIC_HEADER DESTINATION include)
+        EXPORT ntpolycpp-export
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+################################################################################
+# For Exporting
+install(EXPORT ntpolycpp-export
+        FILE NTPolyCPPConfig.cmake
+        NAMESPACE NTPoly::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)

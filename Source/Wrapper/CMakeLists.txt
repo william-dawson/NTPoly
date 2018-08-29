@@ -1,3 +1,4 @@
+################################################################################
 set(Wsrc
     ChebyshevSolversModule_wrp.F90
     DensityMatrixSolversModule_wrp.F90
@@ -27,6 +28,18 @@ set(Wsrc
     WrapperModule.F90
 )
 
+################################################################################
 add_library(NTPolyWrapper STATIC ${Wsrc})
 target_link_libraries(NTPolyWrapper NTPoly)
-install(TARGETS NTPolyWrapper ARCHIVE DESTINATION lib)
+
+include(GNUInstallDirs)
+install(TARGETS NTPolyWrapper
+        EXPORT ntpolywrapper-export
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+################################################################################
+install(EXPORT ntpolywrapper-export
+        FILE NTPolyWrapperConfig.cmake
+        NAMESPACE NTPoly::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)
