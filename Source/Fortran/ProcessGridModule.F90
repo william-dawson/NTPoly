@@ -57,6 +57,7 @@ MODULE ProcessGridModule
   TYPE(ProcessGrid_t), TARGET, PUBLIC :: global_grid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid
+  PUBLIC :: ConstructNewProcessGrid
   PUBLIC :: IsRoot
   PUBLIC :: SplitProcessGrid
   PUBLIC :: CopyProcessGrid
