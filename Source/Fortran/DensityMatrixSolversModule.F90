@@ -22,6 +22,7 @@ MODULE DensityMatrixSolversModule
   PUBLIC :: TRS2
   PUBLIC :: TRS4
   PUBLIC :: HPCP
+  PUBLIC :: EnergyDensityMatrix
   ! PUBLIC :: HPCPPlus
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
@@ -1237,5 +1238,45 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     DEALLOCATE(sigma_array)
   END SUBROUTINE HPCPPlus
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the energy-weighted density matrix.
+  SUBROUTINE EnergyDensityMatrix(Hamiltonian, Density, EnergyDensity, &
+       & threshold_in)
+    !> The matrix to compute from.
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The density matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: Density
+    !> The energy-weighted density matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: EnergyDensity
+    !> Threshold for flushing small values (default = 0).
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
+    !! Handling Optional Parameters
+    REAL(NTREAL) :: threshold
+    !! Local Matrices
+    TYPE(Matrix_ps) :: TempMat
+    !! Temporary Variables
+    TYPE(MatrixMemoryPool_p) :: pool
+
+    !! Optional Parameters
+    IF (PRESENT(threshold_in)) THEN
+       threshold = threshold_in
+    ELSE
+       threshold = 0.0_NTREAL
+    END IF
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(EnergyDensity, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+
+    !! EDM = DM * H * DM
+    CALL MatrixMultiply(Density, Hamiltonian, TempMat, &
+         & threshold_in=threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(TempMat, Density, EnergyDensity, &
+         & threshold_in=threshold, memory_pool_in=pool)
+
+    !! Cleanup
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrixMemoryPool(pool)
+  END SUBROUTINE EnergyDensityMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DensityMatrixSolversModule

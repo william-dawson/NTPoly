@@ -66,6 +66,15 @@ public:
                    Matrix_ps &Density, double &energy_value_out,
                    double &chemical_potential_out,
                    const SolverParameters &solver_parameters);
+  //! Compute the energy-weighted density matrix.
+  //!\param Hamiltonian the matrix to compute from.
+  //!\param Density the density matrix.
+  //!\param EnergyDensity the energy-weighted density matrix to compute.
+  //!\param threshold for flushing small values to zero.
+  static void EnergyDensityMatrix(const Matrix_ps &Hamiltonian,
+                                  const Matrix_ps &Density,
+                                  Matrix_ps &EnergyDensity,
+                                  double threshold = 0.0);
 };
 } // namespace NTPoly
 #endif

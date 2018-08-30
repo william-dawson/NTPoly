@@ -2,7 +2,8 @@
 !> Wraps the density matrix solvers module for calling from other languages.
 MODULE DensityMatrixSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DensityMatrixSolversModule, ONLY : TRS2, TRS4, HPCP, PM
+  USE DensityMatrixSolversModule, ONLY : TRS2, TRS4, HPCP, PM, &
+       & EnergyDensityMatrix
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -14,6 +15,7 @@ MODULE DensityMatrixSolversModule_wrp
   PUBLIC :: TRS2_wrp
   PUBLIC :: TRS4_wrp
   PUBLIC :: HPCP_wrp
+  PUBLIC :: EnergyDensityMatrix_wrp
   ! PUBLIC :: HPCPPlus_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
@@ -119,5 +121,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_Density%data, energy_value_out, chemical_potential_out, &
          & h_solver_parameters%data)
   END SUBROUTINE HPCP_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the energy-weighted density matrix.
+  SUBROUTINE EnergyDensityMatrix_wrp(ih_Hamiltonian, ih_Density, &
+       & ih_EnergyDensity, threshold) bind(c,name="EnergyDensityMatrix_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Hamiltonian(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Density(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_EnergyDensity(SIZE_wrp)
+    REAL(NTREAL), INTENT(IN) :: threshold
+    TYPE(Matrix_ps_wrp) :: h_Hamiltonian
+    TYPE(Matrix_ps_wrp) :: h_Density
+    TYPE(Matrix_ps_wrp) :: h_EnergyDensity
+
+    h_Hamiltonian = TRANSFER(ih_Hamiltonian,h_Hamiltonian)
+    h_Density = TRANSFER(ih_Density,h_Density)
+    h_EnergyDensity = TRANSFER(ih_EnergyDensity,h_EnergyDensity)
+
+    CALL EnergyDensityMatrix(h_Hamiltonian%data, h_Density%data, &
+         & h_EnergyDensity%data, threshold)
+  END SUBROUTINE EnergyDensityMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DensityMatrixSolversModule_wrp
