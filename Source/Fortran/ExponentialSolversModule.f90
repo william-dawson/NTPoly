@@ -28,7 +28,7 @@ MODULE ExponentialSolversModule
   USE RootSolversModule, ONLY : ComputeRoot
   USE SquareRootSolversModule, ONLY : SquareRoot
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

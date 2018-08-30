@@ -4,7 +4,7 @@ MODULE TimerModule
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
   USE ProcessGridModule
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
   LOGICAL :: is_initialized = .FALSE.

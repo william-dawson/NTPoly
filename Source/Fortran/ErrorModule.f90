@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A (under development) module to do handle error passing.
 MODULE ErrorModule
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -173,8 +173,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              WRITE(*,*) this%alloc_error
           ELSE IF (this%mpi_error_set) THEN
              WRITE(*,*) "Of type: mpi error."
-             CALL MPI_Error_String(this%mpi_error,error_string,error_string_len, &
-                  & error_string_error)
+             CALL MPI_Error_String(this%mpi_error, error_string, &
+                  & error_string_len, error_string_error)
              WRITE(*,*) error_string
           ELSE
              WRITE(*,*) "Of type: generic error."

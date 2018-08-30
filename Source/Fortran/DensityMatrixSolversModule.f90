@@ -19,7 +19,7 @@ MODULE DensityMatrixSolversModule
        & WriteHeader, WriteListElement, WriteCitation
   USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

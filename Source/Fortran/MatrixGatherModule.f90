@@ -5,7 +5,7 @@ MODULE MatrixGatherModule
   USE SparseMatrixAlgebraModule, ONLY : IncrementSparseMatrix
   USE SparseMatrixModule, ONLY : SparseMatrix_t, ConstructEmptySparseMatrix, &
        & DestructSparseMatrix
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -4,7 +4,7 @@ MODULE ProcessGridModule
   USE DataTypesModule, ONLY : MPITypeInfoInit
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
-  USE MPI
+  USE NTMPIModule
   USE ISO_C_BINDING, ONLY : c_int, c_bool
 #ifdef _OPENMP
   USE omp_lib, ONLY : omp_get_num_threads

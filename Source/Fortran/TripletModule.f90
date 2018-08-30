@@ -3,7 +3,7 @@
 MODULE TripletModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL
   USE ISO_C_BINDING, ONLY : c_int
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

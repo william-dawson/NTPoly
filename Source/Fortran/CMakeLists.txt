@@ -23,6 +23,7 @@ set(Fsrc
     MatrixMarketModule.f90
     MatrixMemoryPoolModule.f90
     MinimizerSolversModule.f90
+    NTMPIModule.f90
     ParameterConverterModule.f90
     PermutationModule.f90
     PolynomialSolversModule.f90

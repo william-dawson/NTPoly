@@ -19,7 +19,7 @@ MODULE SquareRootSolversModule
        & WriteHeader, WriteListElement, WriteCitation
   USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -40,7 +40,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN), OPTIONAL :: order_in
     !! Local Variables
     TYPE(IterativeSolverParameters_t) :: solver_parameters
-    INTEGER :: order
 
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
@@ -71,7 +70,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN), OPTIONAL :: order_in
     !! Local Variables
     TYPE(IterativeSolverParameters_t) :: solver_parameters
-    INTEGER :: order
 
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in

@@ -17,7 +17,7 @@ MODULE HermiteSolversModule
        & WriteListElement, WriteHeader
   USE ProcessGridModule
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

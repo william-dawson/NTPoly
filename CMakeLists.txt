@@ -39,6 +39,14 @@ else()
 endif()
 
 ################################################################################
+# Other optional parameters.
+option(USE_MPIH OFF)
+if(USE_MPIH)
+  add_definitions(-DUSE_MPIH)
+endif()
+
+################################################################################
+# Handle the Debug/Release choices.
 set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
 set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
 set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})

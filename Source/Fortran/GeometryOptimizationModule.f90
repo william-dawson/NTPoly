@@ -19,7 +19,7 @@ MODULE GeometryOptimizationModule
   USE ProcessGridModule
   USE SquareRootSolversModule, ONLY : InverseSquareRoot, SquareRoot
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
