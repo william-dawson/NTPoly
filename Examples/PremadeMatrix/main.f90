@@ -3,7 +3,6 @@
 PROGRAM PremadeMatrixProgram
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE IterativeSolversModule, ONLY : IterativeSolverParameters_t
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &

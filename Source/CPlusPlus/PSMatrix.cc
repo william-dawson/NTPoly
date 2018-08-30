@@ -89,12 +89,12 @@ int Matrix_ps::GetActualDimension() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void Matrix_ps::GetTripletList(TripletList_r &triplet_list) {
+void Matrix_ps::GetTripletList(TripletList_r &triplet_list) const {
   GetMatrixTripletList_psr_wrp(ih_this, triplet_list.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void Matrix_ps::GetTripletList(TripletList_c &triplet_list) {
+void Matrix_ps::GetTripletList(TripletList_c &triplet_list) const {
   GetMatrixTripletList_psc_wrp(ih_this, triplet_list.ih_this);
 }
 

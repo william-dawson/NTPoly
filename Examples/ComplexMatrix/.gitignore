@@ -1,0 +1,3 @@
+*.mtx
+example
+!input.mtx
