@@ -55,7 +55,7 @@ mpicxx main.cc -c \
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
-  -llapack
+  -llapack -lblas
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
