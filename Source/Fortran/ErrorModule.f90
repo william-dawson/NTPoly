@@ -159,7 +159,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     TYPE(Error_t), INTENT(in) :: this
     !! Local Data
-    CHARACTER(len=80) :: error_string
+    CHARACTER(len=MPI_MAX_ERROR_STRING) :: error_string
     INTEGER :: error_string_len
     INTEGER :: error_string_error
     TYPE(Error_t) :: temp_error
