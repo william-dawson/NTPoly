@@ -14,7 +14,7 @@ var searchData=
   ['inserted_5fper_5fbucket',['inserted_per_bucket',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a8ea602c87a7a99c713d620adcf85c95f',1,'matrixmemorypoolmodule::matrixmemorypool_t']]],
   ['inversesolvers',['InverseSolvers',['../class_n_t_poly_1_1_inverse_solvers.html',1,'NTPoly']]],
   ['inversesolversmodule',['inversesolversmodule',['../namespaceinversesolversmodule.html',1,'']]],
-  ['inversesquareroot',['InverseSquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#add14d824d362d7ec9326deb368126764',1,'NTPoly::SquareRootSolvers::InverseSquareRoot()'],['../namespacesquarerootsolversmodule.html#a40f4ace1e9cfa49dfc4daee8361a8e0c',1,'squarerootsolversmodule::inversesquareroot()']]],
+  ['inversesquareroot',['InverseSquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#add14d824d362d7ec9326deb368126764',1,'NTPoly::SquareRootSolvers::InverseSquareRoot()'],['../namespacesquarerootsolversmodule.html#aa1c8567e02be523330c5d2781576f604',1,'squarerootsolversmodule::inversesquareroot()']]],
   ['invert',['Invert',['../class_n_t_poly_1_1_inverse_solvers.html#aa93355861bd1fad19fc558455e93caf3',1,'NTPoly::InverseSolvers::Invert()'],['../namespaceinversesolversmodule.html#a7c50e19c6a0af81a1f3680d8a7fb3e72',1,'inversesolversmodule::invert()']]],
   ['isroot',['isroot',['../namespaceprocessgridmodule.html#a829ef381fd4d90c28fd9acc05b9b05e2',1,'processgridmodule']]],
   ['iterativesolverparameters',['IterativeSolverParameters',['../class_n_t_poly_1_1_iterative_solver_parameters.html',1,'NTPoly::IterativeSolverParameters'],['../class_n_t_poly_1_1_iterative_solver_parameters.html#ae2052582ebc922420de4d4e24936d8b9',1,'NTPoly::IterativeSolverParameters::IterativeSolverParameters()']]],

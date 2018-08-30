@@ -1,0 +1,36 @@
+---
+layout: post
+title:  "Release of Version 1.3"
+date:   2018-08-30 11:00:00 +0900
+categories: blog update
+---
+
+[Version 1.3](/NTPoly/downloads) of NTPoly is now available.
+This new version contains a number of improvements based on the help of
+Victor Yu of Duke University.
+
+New Solvers:
+* Canonical Purification of the Density Matrix
+* Higher order solvers for the Square Root
+
+Code Quality:
+* Cmake installation script
+* Removal of directory dependencies from CMake
+* MPI Module for systems that don't support "USE MPI"
+* Git Ignore files for examples
+
+Documentation:
+* Example of how to link to NTPoly from a Cmake project
+* Clarifications about convergence of overlap matrix vs. density matrix
+
+Bug Fixes:
+* Process grid construction checks
+* Process grid destructor (prevent communicator leak)
+* Fixed yaml formatting bugs
+
+A number of these changes were motivated by making NTPoly available as part
+of the [ELSI project](https://wordpress.elsi-interchange.org/). While I've
+tried my best to make NTPoly easy to integrate into your code, ELSI takes
+things one step further by providing an easy to use common interface for
+many different solvers. If you're developing an electronic structure code,
+I definitely recommend you check it out.

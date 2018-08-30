@@ -15,6 +15,7 @@ var searchData=
   ['destructmatrixmemorypool',['destructmatrixmemorypool',['../namespacematrixmemorypoolmodule.html#a733fdadf44979180a8ffdf24af1f7e3b',1,'matrixmemorypoolmodule']]],
   ['destructpermutation',['destructpermutation',['../namespacepermutationmodule.html#a154cd80ddb8feade987e43a6b22a0db8',1,'permutationmodule']]],
   ['destructpolynomial',['destructpolynomial',['../namespacepolynomialsolversmodule.html#a0ceb27fa2c76169ddedf65890be07b52',1,'polynomialsolversmodule']]],
+  ['destructprocessgrid',['destructprocessgrid',['../namespaceprocessgridmodule.html#a758516e0265377242a974fa7eba03453',1,'processgridmodule::destructprocessgrid()'],['../namespace_n_t_poly.html#a3dde3df29a861676b5597c7fc3fa41a2',1,'NTPoly::DestructProcessGrid()']]],
   ['destructsparsematrix',['destructsparsematrix',['../namespacesparsematrixmodule.html#a5cfb7d3909100046866c5a0ce81bac84',1,'sparsematrixmodule']]],
   ['destructtripletlist',['destructtripletlist',['../namespacetripletlistmodule.html#a1ca060f572f9ac42ada91a5b2003b39c',1,'tripletlistmodule']]],
   ['dirty_5farray',['dirty_array',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#ada71ff7adc96eb887b0a47338ed3fb01',1,'matrixmemorypoolmodule::matrixmemorypool_t']]],

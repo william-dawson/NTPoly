@@ -17,6 +17,7 @@ var searchData=
   ['columns',['columns',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a635b8e490761f14e34e69c0fe781314a',1,'matrixmemorypoolmodule::matrixmemorypool_t::columns()'],['../structsparsematrixmodule_1_1sparsematrix__t.html#a186413b543eb11fe76c2ccee605f3b5f',1,'sparsematrixmodule::sparsematrix_t::columns()']]],
   ['comm_5fsize',['comm_size',['../structmatrixgathermodule_1_1gatherhelper__t.html#a11e62adcf5220a2421327a6ec900ae2b',1,'matrixgathermodule::gatherhelper_t']]],
   ['comparetriplets',['comparetriplets',['../namespacetripletmodule.html#a2433d889e3e30b20811a73e4c71dbc17',1,'tripletmodule']]],
+  ['composesparsematrix',['composesparsematrix',['../namespacesparsematrixmodule.html#a0e6c758ef6a0ceddb4e07cc1a838d351',1,'sparsematrixmodule']]],
   ['composesparsematrixcolumns',['composesparsematrixcolumns',['../namespacesparsematrixmodule.html#a8610d41ff5ab8f855f8d21667f0048c3',1,'sparsematrixmodule']]],
   ['compute',['Compute',['../class_n_t_poly_1_1_chebyshev_polynomial.html#a8de9c75b2153dbf838389e9c832fd70d',1,'NTPoly::ChebyshevPolynomial::Compute()'],['../class_n_t_poly_1_1_hermite_polynomial.html#a04ee646e28fb77df83012c428765696a',1,'NTPoly::HermitePolynomial::Compute()']]],
   ['computeexponential',['ComputeExponential',['../class_n_t_poly_1_1_exponential_solvers.html#a6b3c3b474d03082eca5553f2ab7ea57d',1,'NTPoly::ExponentialSolvers::ComputeExponential()'],['../namespaceexponentialsolversmodule.html#a2cf91ed828a8e2f7ad10f824caf003c4',1,'exponentialsolversmodule::computeexponential()']]],

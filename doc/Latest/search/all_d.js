@@ -11,6 +11,7 @@ var searchData=
   ['permutation_5ft',['permutation_t',['../structpermutationmodule_1_1permutation__t.html',1,'permutationmodule']]],
   ['permutationmodule',['permutationmodule',['../namespacepermutationmodule.html',1,'']]],
   ['permutematrix',['PermuteMatrix',['../class_n_t_poly_1_1_load_balancer.html#ac622b621f4559385cef3914a7fc47b69',1,'NTPoly::LoadBalancer::PermuteMatrix()'],['../namespaceloadbalancermodule.html#aaf65648a981bee377cb325473256ff7b',1,'loadbalancermodule::permutematrix()']]],
+  ['pm',['PM',['../class_n_t_poly_1_1_density_matrix_solvers.html#acacb2c6a3adc89cb204db352aa14047d',1,'NTPoly::DensityMatrixSolvers::PM()'],['../namespacedensitymatrixsolversmodule.html#a1cab26bac930205a69d698c59fa735de',1,'densitymatrixsolversmodule::pm()']]],
   ['point_5fvalue',['point_value',['../structtripletmodule_1_1triplet__t.html#a6d6b74d0c6c3f6c63489629dfd2825a1',1,'tripletmodule::triplet_t::point_value()'],['../class_n_t_poly_1_1_triplet.html#a662ca1efdee8ec067ab6c64337535172',1,'NTPoly::Triplet::point_value()']]],
   ['polardecomposition',['polardecomposition',['../namespacesignsolversmodule.html#a81ea2a3368463b13ee4f2662663e2c14',1,'signsolversmodule']]],
   ['polynomial',['Polynomial',['../class_n_t_poly_1_1_polynomial.html',1,'NTPoly::Polynomial'],['../class_n_t_poly_1_1_polynomial.html#ad2e3c1c4797b27a873a4e4f546cd286a',1,'NTPoly::Polynomial::Polynomial()']]],

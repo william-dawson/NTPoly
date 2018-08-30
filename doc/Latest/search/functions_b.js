@@ -7,6 +7,7 @@ var searchData=
   ['patersonstockmeyercompute',['PatersonStockmeyerCompute',['../class_n_t_poly_1_1_polynomial.html#aa4a2e5b6ffce13d477d8eb0624946e10',1,'NTPoly::Polynomial::PatersonStockmeyerCompute()'],['../namespacepolynomialsolversmodule.html#a5b26458ec2997ba544730effd128151b',1,'polynomialsolversmodule::patersonstockmeyercompute()']]],
   ['permutation',['Permutation',['../class_n_t_poly_1_1_permutation.html#a7e987e571773d467c2177abdcc400a89',1,'NTPoly::Permutation']]],
   ['permutematrix',['PermuteMatrix',['../class_n_t_poly_1_1_load_balancer.html#ac622b621f4559385cef3914a7fc47b69',1,'NTPoly::LoadBalancer::PermuteMatrix()'],['../namespaceloadbalancermodule.html#aaf65648a981bee377cb325473256ff7b',1,'loadbalancermodule::permutematrix()']]],
+  ['pm',['PM',['../class_n_t_poly_1_1_density_matrix_solvers.html#acacb2c6a3adc89cb204db352aa14047d',1,'NTPoly::DensityMatrixSolvers::PM()'],['../namespacedensitymatrixsolversmodule.html#a1cab26bac930205a69d698c59fa735de',1,'densitymatrixsolversmodule::pm()']]],
   ['polardecomposition',['polardecomposition',['../namespacesignsolversmodule.html#a81ea2a3368463b13ee4f2662663e2c14',1,'signsolversmodule']]],
   ['polynomial',['Polynomial',['../class_n_t_poly_1_1_polynomial.html#ad2e3c1c4797b27a873a4e4f546cd286a',1,'NTPoly::Polynomial']]],
   ['powerbounds',['PowerBounds',['../class_n_t_poly_1_1_eigen_bounds.html#ad5f9419d7dec69f14cef351d4366ef09',1,'NTPoly::EigenBounds::PowerBounds()'],['../namespaceeigenboundsmodule.html#af99d7f74eb1933560af68d294f7e4f07',1,'eigenboundsmodule::powerbounds()']]],
