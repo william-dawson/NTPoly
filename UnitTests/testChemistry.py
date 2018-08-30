@@ -139,6 +139,32 @@ class TestChemistry(unittest.TestCase):
            gradient.'''
         self.basic_solver(nt.MinimizerSolvers.ConjugateGradient)
 
+    def test_energy_density(self):
+        '''Test the routines to compute the weighted-energy density matrix.'''
+
+        # Reference Solution
+        fmat = mmread(self.hamiltonian)
+        dmat = mmread(self.density)
+        edm = dmat.dot(fmat).dot(dmat)
+
+        # NTPoly
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        density_matrix = nt.Matrix_ps(self.density)
+        edm_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        nt.DensityMatrixSolvers.EnergyDensityMatrix(
+            fock_matrix, density_matrix, edm_matrix)
+
+        edm_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        # Compare
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            normval = abs(norm(edm - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
+
 
 class TestChemistry_r(TestChemistry):
     def testrealio(self):
