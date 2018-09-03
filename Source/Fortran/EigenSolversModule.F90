@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing the eigenvalues or singular values of a matrix.
 MODULE EigenSolversModule
-  USE DataTypesModule, ONLY : NTREAL
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE DensityMatrixSolversModule, ONLY : HPCP, TRS2
   USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, DestructMatrix, &
        & ConstructMatrixSFromD, ConstructMatrixDFromS, EigenDecomposition
@@ -26,6 +26,7 @@ MODULE EigenSolversModule
        & AppendToTripletList, ConstructTripletList, DestructTripletList, &
        & GetTripletAt, RedistributeTripletLists, SortTripletList
   USE TripletModule, ONLY : Triplet_r
+  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -37,7 +38,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ReferenceEigenDecomposition(this, eigenvectors, eigenvalues_in, &
        & solver_parameters_in)
     !> The matrix to decompose.
-    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     !> The eigenvectors of a matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> Diagonal matrix of eigenvalues.
@@ -525,7 +526,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE EigenSerial(this, eigenvectors, eigenvalues_out, &
        & solver_parameters_in)
     !> The matrix to compute.
-    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     !> The eigenvectors of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues of the matrix.
@@ -564,19 +565,53 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The splits are recorded in this vector.
     INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: splits
     !! Local Variables
+    TYPE(Matrix_ps) :: vec, val
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: val_array
+    TYPE(TripletList_r) :: diag_list
     INTEGER :: II
+    INTEGER :: split_count
+    REAL(NTREAL) :: split_min = 0.01
+    REAL(NTREAL) :: range
+    INTEGER :: ierr
 
-    ALLOCATE(splits(this%actual_matrix_dimension/4))
-    DO II = 1, SIZE(splits)
-       splits(II) = (II-1)*4 + 1
+    !! "Guess" The Eigenvalues - test
+    CALL ReferenceEigenDecomposition(this, vec, val)
+    CALL GetMatrixTripletList(val, diag_list)
+    ALLOCATE(val_array(this%actual_matrix_dimension))
+    val_array = 0
+    DO II = 1, diag_list%CurrentSize
+       val_array(diag_list%data(II)%index_row) = diag_list%data(II)%point_value
     END DO
+    CALL MPI_Allreduce(MPI_IN_PLACE, val_array, this%actual_matrix_dimension, &
+         & MPINTREAL, MPI_SUM, this%process_grid%within_slice_comm, ierr)
+    range = val_array(SIZE(val_array))-val_array(1)
+
+    !! Fill The Split Array
+    split_count = 0
+    DO II = 1, SIZE(val_array)-1
+       IF (ABS(val_array(II+1) - val_array(II))/range .GT. split_min) THEN
+          split_count = split_count + 1
+       END IF
+    END DO
+    ALLOCATE(splits(split_count))
+    split_count = 1
+    DO II = 1, SIZE(val_array)-1
+       IF (ABS(val_array(II+1) - val_array(II))/range .GT. split_min) THEN
+          splits(split_count) = II
+          split_count = split_count + 1
+       END IF
+    END DO
+
+    !! Cleanup
+    CALL DestructTripletList(diag_list)
+    DEALLOCATE(val_array)
 
   END SUBROUTINE FillSplits
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve (REAL).
   SUBROUTINE EigenSerial_r(this, eigenvectors, fixed_params, eigenvalues_out)
     !> The matrix to compute.
-    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     !> Matrix eigenvectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The solve parameters.
@@ -596,7 +631,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve (COMPLEX).
   SUBROUTINE EigenSerial_c(this, eigenvectors, fixed_params, eigenvalues_out)
     !> The matrix to compute.
-    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     !> Matrix eigenvectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The solve parameters.
