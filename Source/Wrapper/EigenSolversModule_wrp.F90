@@ -35,7 +35,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL SplittingEigenDecomposition(h_this%data, h_eigenvectors%data, &
-         & h_eigenvalues%data, target_values, h_solver_parameters%data)
+         & h_eigenvalues%data, num_values_in=target_values, &
+         & solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE SplittingEigenDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the singularvalues and singularvectors of a matrix.
