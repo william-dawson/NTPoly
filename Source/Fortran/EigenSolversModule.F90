@@ -29,8 +29,6 @@ MODULE EigenSolversModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTEGER, PARAMETER :: BASESIZE = 2048
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ReferenceEigenDecomposition
   PUBLIC :: SingularValueDecomposition
   PUBLIC :: SplittingEigenDecomposition
@@ -85,20 +83,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvalues and eigenvectors of a matrix.
   SUBROUTINE SplittingEigenDecomposition(this, eigenvectors, eigenvalues, &
-       & num_values_in, solver_parameters_in)
+       & num_values_in, splits_in, solver_parameters_in)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> A matrix containing the eigenvectors of a matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> A diagonal matrix containing the eigenvalues.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
-    !> The number of eigenvalues to compute
+    !> The number of eigenvalues to compute.
     INTEGER, INTENT(IN), OPTIONAL :: num_values_in
-    !> Parameters for the solve
+    !> Where to split the spectrum.
+    INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: splits_in
+    !> Parameters for the solve.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     INTEGER :: num_values
+    INTEGER, DIMENSION(:), ALLOCATABLE :: splits
     !! Local
     TYPE(Matrix_ps) :: eigenvectorsT, TempMat, eigenvalues_r
     TYPE(Matrix_ps) :: ReducedMat
@@ -133,8 +134,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(this, ReducedMat)
     END IF
 
+    !! Compute the splits
+    IF (PRESENT(splits_in)) THEN
+       ALLOCATE(splits(SIZE(splits_in)))
+       splits = splits_in
+    ELSE
+       CALL FillSplits(ReducedMat, splits)
+    END IF
+
     !! Actual Solve
-    CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters)
+    CALL EigenRecursive(ReducedMat, eigenvectors, splits, solver_parameters)
 
     !! Compute the eigenvalues
     CALL TransposeMatrix(eigenvectors, eigenvectorsT)
@@ -169,6 +178,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
+    END IF
+
+    IF (ALLOCATED(splits)) THEN
+       DEALLOCATE(splits)
     END IF
 
     CALL DestructMatrix(eigenvectorsT)
@@ -230,11 +243,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SingularValueDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The recursive workhorse routine for the eigendecompositon.
-  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, solver_parameters)
+  RECURSIVE SUBROUTINE EigenRecursive(this, eigenvectors, splits, &
+       & solver_parameters)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> A matrix containing the eigenvectors of a matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
+    !> Where to split the spectrum.
+    INTEGER, DIMENSION(:), INTENT(IN) :: splits
     !> Parameters for the solvers.
     TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
     !! Local Variables - matrices
@@ -248,7 +264,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: LeftVectors, RightVectors
     TYPE(Matrix_ps) :: SubMat, SubVec
     !! Local Variables - For Splitting
-    INTEGER :: mat_dim, left_dim, right_dim
+    INTEGER :: mat_dim, left_dim, right_dim, midpoint
     REAL(NTREAL) :: sparsity
     !! Special parameters
     TYPE(SolverParameters_t) :: balanced_it
@@ -268,12 +284,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
 
     !! Base Case
-    IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
+    IF (SIZE(splits) .LE. 0 .OR. &
+         & mat_dim .LE. solver_parameters%dac_base_size .OR. &
+         & sparsity .GT. solver_parameters%dac_base_sparsity) THEN
        CALL ReferenceEigenDecomposition(this, eigenvectors, &
             & solver_parameters_in=solver_parameters)
     ELSE
        !! Setup
-       left_dim = mat_dim/2
+       midpoint = SIZE(splits)/2 + 1
+       left_dim = splits(midpoint)
        right_dim = mat_dim - left_dim
 
        !! Setup special parameters for purification
@@ -286,7 +305,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & BalancePermutation_in=permutation)
 
        !! Purify
-       CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=balanced_it)
+       CALL TRS2(this, Identity, left_dim*2, PMat, &
+            & solver_parameters_in=balanced_it)
        CALL CopyMatrix(Identity, PHoleMat)
        CALL IncrementMatrix(PMat, PHoleMat, alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold)
@@ -311,8 +331,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Iterate Recursively
        CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
-       CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters)
-       CALL EigenRecursive(RightMat,RightVectors,solver_parameters)
+       CALL EigenRecursive(LeftMat, LeftVectors, splits(:midpoint-1), &
+            & solver_parameters)
+       CALL EigenRecursive(RightMat, RightVectors, &
+            & splits(midpoint+1:)-left_dim, solver_parameters)
        CALL ConstructEmptyMatrix(TempMat, this)
        CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
             & TempMat)
@@ -534,6 +556,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END IF
   END SUBROUTINE EigenSerial
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Figure out where to split the matrix
+  SUBROUTINE FillSplits(this, splits)
+    !> The matrix we are computing.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The splits are recorded in this vector.
+    INTEGER, DIMENSION(:), ALLOCATABLE, INTENT(INOUT) :: splits
+    !! Local Variables
+    INTEGER :: II
+
+    ALLOCATE(splits(this%actual_matrix_dimension/4))
+    DO II = 1, SIZE(splits)
+       splits(II) = (II-1)*4 + 1
+    END DO
+
+  END SUBROUTINE FillSplits
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve (REAL).
   SUBROUTINE EigenSerial_r(this, eigenvectors, fixed_params, eigenvalues_out)

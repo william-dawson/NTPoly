@@ -26,6 +26,9 @@ public:
   //! Threshold for flushing small values.
   //!\param new_value
   void SetThreshold(double new_value);
+  //! Set the value of the divide and conquer base size.
+  //!\param new_value
+  void SetDACBaseSize(int new_value);
   //! Load balance settings.
   //!\param new_value
   void SetLoadBalance(const Permutation &new_value);
