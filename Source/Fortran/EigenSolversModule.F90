@@ -127,13 +127,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Rotate so that we are only computing the target number of values
-    CALL StartTimer("Initial Purify")
     IF (num_values .LT. this%actual_matrix_dimension) THEN
        CALL ReduceDimension(this, num_values, solver_parameters, ReducedMat)
     ELSE
        CALL CopyMatrix(this, ReducedMat)
     END IF
-    CALL StopTimer("Initial Purify")
 
     !! Actual Solve
     CALL EigenRecursive(ReducedMat, eigenvectors, solver_parameters)
@@ -251,8 +249,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: SubMat, SubVec
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim
-    INTEGER :: color
-    LOGICAL :: split_slice
     REAL(NTREAL) :: sparsity
     !! Special parameters
     TYPE(SolverParameters_t) :: balanced_it
@@ -273,10 +269,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Base Case
     IF (mat_dim .LE. BASESIZE .OR. sparsity .GT. 0.30) THEN
-       CALL StartTimer("Base Case")
        CALL ReferenceEigenDecomposition(this, eigenvectors, &
             & solver_parameters_in=solver_parameters)
-       CALL StopTimer("Base Case")
     ELSE
        !! Setup
        left_dim = mat_dim/2
@@ -292,27 +286,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & BalancePermutation_in=permutation)
 
        !! Purify
-       CALL StartTimer("Purify")
        CALL TRS2(this,Identity,left_dim*2,PMat,solver_parameters_in=balanced_it)
        CALL CopyMatrix(Identity, PHoleMat)
        CALL IncrementMatrix(PMat, PHoleMat, alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold)
-       CALL StopTimer("Purify")
 
        !! Compute Eigenvectors of the Density Matrix
-       CALL StartTimer("Cholesky")
        CALL PivotedCholeskyDecomposition(PMat, PVec, left_dim, &
             & solver_parameters_in=solver_parameters)
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
             & solver_parameters_in=solver_parameters)
-       CALL StopTimer("Cholesky")
        CALL ConstructEmptyMatrix(StackV, this)
-       CALL StartTimer("Stack")
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
-       CALL StopTimer("Stack")
 
        !! Rotate to the divided subspace
-       CALL StartTimer("Rotate")
        CALL MatrixMultiply(this, StackV, TempMat, &
             & threshold_in=solver_parameters%threshold)
        CALL TransposeMatrix(StackV, StackVT)
@@ -321,29 +308,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL MatrixMultiply(StackVT, TempMat, VAV, &
             & threshold_in=solver_parameters%threshold)
-       CALL StopTimer("Rotate")
 
        !! Iterate Recursively
-       IF (this%process_grid%total_processors .GT. 1 .AND. .FALSE.) THEN
-          CALL ExtractCornerS(VAV, left_dim, right_dim, SubMat, color, &
-               & split_slice)
-          CALL EigenRecursive(SubMat, SubVec, solver_parameters)
-          CALL ConstructEmptyMatrix(TempMat, this)
-          CALL StackMatricesS(SubVec, left_dim, left_dim, color, TempMat)
-       ELSE
-          CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
-          CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters)
-          CALL EigenRecursive(RightMat,RightVectors,solver_parameters)
-          CALL ConstructEmptyMatrix(TempMat, this)
-          CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
-               & TempMat)
-       END IF
+       CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
+       CALL EigenRecursive(LeftMat,LeftVectors,solver_parameters)
+       CALL EigenRecursive(RightMat,RightVectors,solver_parameters)
+       CALL ConstructEmptyMatrix(TempMat, this)
+       CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
+            & TempMat)
 
        !! Recombine
-       CALL StartTimer("Recombine")
        CALL MatrixMultiply(StackV, TempMat, eigenvectors, &
             & threshold_in=solver_parameters%threshold)
-       CALL StopTimer("Recombine")
 
        !! Cleanup
        CALL DestructMatrix(SubMat)
@@ -412,48 +388,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE StackMatrices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Given two matrices, this stacks one on the left and right. The offsets
-  !> describe how to shift the values of the right mat.
-  !> Split process grid version.
-  SUBROUTINE StackMatricesS(SubMat, column_offset, row_offset, color, FullMat)
-    !> Matrix to stack stored on this group of processes.
-    TYPE(Matrix_ps), INTENT(INOUT) :: SubMat
-    !> How many columns over to shift.
-    INTEGER, INTENT(IN) :: column_offset
-    !> How many rows over to shift.
-    INTEGER, INTENT(IN) :: row_offset
-    !> The color of this process group.
-    INTEGER, INTENT(IN) :: color
-    !> The full matrix we construct.
-    TYPE(Matrix_ps), INTENT(INOUT) :: FullMat
-    !! Local Variables
-    TYPE(TripletList_r) :: sub_triplets
-    INTEGER :: counter
-
-    !! Basic Triplet Lists
-    CALL GetMatrixTripletList(SubMat, sub_triplets)
-
-    !! Adjust right triplets
-    IF (color .EQ. 1) THEN
-       DO counter = 1, sub_triplets%CurrentSize
-          sub_triplets%data(counter)%index_column = &
-               & sub_triplets%data(counter)%index_column  + column_offset
-          sub_triplets%data(counter)%index_row = &
-               & sub_triplets%data(counter)%index_row  + row_offset
-       END DO
-    END IF
-    IF (SubMat%process_grid%my_slice .GT. 0) THEN
-       sub_triplets = TripletList_r()
-    END IF
-
-    !! Combine
-    CALL FillMatrixFromTripletList(FullMat, sub_triplets, .FALSE.)
-
-    !! Cleanup
-    CALL DestructTripletList(sub_triplets)
-
-  END SUBROUTINE StackMatricesS
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract the top left and the bottom right corners of a matrix.
   SUBROUTINE ExtractCorner(this, left_dim, right_dim, LeftMat, RightMat)
     !> The matrix to extract from.
@@ -504,66 +438,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructTripletList(right_triplets)
 
   END SUBROUTINE ExtractCorner
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Extract the top left and the bottom right corners of a matrix.
-  !> Process grid splitting version.
-  SUBROUTINE ExtractCornerS(this, left_dim, right_dim, SubMat, color, &
-       & split_slice)
-    !> The matrix to extract from.
-    TYPE(Matrix_ps), INTENT(INOUT) :: this
-    !> The extracted sub matrix.
-    TYPE(Matrix_ps), INTENT(INOUT) :: SubMat
-    !> Whether the split was along slices or not.
-    LOGICAL, INTENT(OUT) :: split_slice
-    !> The dimension fo the left matrix.
-    INTEGER, INTENT(IN) :: left_dim
-    !> The dimension of the right matrix.
-    INTEGER, INTENT(IN) :: right_dim
-    !> Color determining which group this process belongs to.
-    INTEGER, INTENT(OUT) :: color
-    !! Local Data
-    TYPE(Matrix_ps) :: TempMat
-    TYPE(TripletList_r) :: full_triplets, extracted_triplets
-    TYPE(Triplet_r) :: temp_triplet
-    INTEGER :: counter
-
-    !! First Duplicate Across Process Grids
-    CALL CommSplitMatrix(this, TempMat, color, split_slice)
-
-    !! Extract The Corner
-    CALL GetMatrixTripletList(TempMat, full_triplets)
-
-    !! Extract Triplets
-    extracted_triplets = TripletList_r()
-    DO counter = 1, full_triplets%CurrentSize
-       CALL GetTripletAt(full_triplets, counter, temp_triplet)
-       IF (temp_triplet%index_row .LE. left_dim .AND. &
-            & temp_triplet%index_column .LE. left_dim .AND. color .EQ. 0) THEN
-          CALL AppendToTripletList(extracted_triplets, temp_triplet)
-       ELSE IF (temp_triplet%index_row .GT. left_dim .AND. &
-            & temp_triplet%index_column .GT. left_dim .AND. color .EQ. 1) THEN
-          temp_triplet%index_row = temp_triplet%index_row - left_dim
-          temp_triplet%index_column = temp_triplet%index_column - left_dim
-          CALL AppendToTripletList(extracted_triplets, temp_triplet)
-       END IF
-    END DO
-
-    !! Fill
-    IF (color .EQ. 0) THEN
-       CALL ConstructEmptyMatrix(SubMat, left_dim, TempMat%process_grid, &
-            & TempMat%is_complex)
-    ELSE
-       CALL ConstructEmptyMatrix(SubMat, right_dim, TempMat%process_grid, &
-            & TempMat%is_complex)
-    END IF
-    CALL FillMatrixFromTripletList(SubMat,extracted_triplets,preduplicated_in=.TRUE.)
-
-    !! Cleanup
-    CALL DestructMatrix(TempMat)
-    CALL DestructTripletList(full_triplets)
-    CALL DestructTripletList(extracted_triplets)
-
-  END SUBROUTINE ExtractCornerS
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> When we want to only compute the first n eigenvalues of a matrix, this
   !> routine will project out the higher eigenvalues.
