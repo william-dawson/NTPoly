@@ -40,6 +40,12 @@ set(Fsrc
 )
 
 ################################################################################
+IF (EIGEN_EXA)
+  LIST(APPEND Fsrc EigenExaModule.F90)
+  include_directories(${EIGEN_EXA})
+ENDIF()
+
+################################################################################
 add_library(NTPoly STATIC ${Fsrc})
 include(GNUInstallDirs)
 install(TARGETS NTPoly

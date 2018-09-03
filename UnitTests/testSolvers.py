@@ -668,8 +668,91 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_denseeigendecomposition(self):
+        '''Test the dense eigen decomposition'''
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        w, vdense = eigh(matrix1.todense())
+        CheckV = csr_matrix(vdense)
+
+        ntmatrix = nt.Matrix_ps(self.input_file)
+        V = nt.Matrix_ps(self.mat_dim)
+        W = nt.Matrix_ps(self.mat_dim)
+
+        nt.EigenSolvers.ReferenceEigenDecomposition(ntmatrix, V, W, self.fsp)
+        V.WriteToMatrixMarket(result_file)
+        W.WriteToMatrixMarket(result_file2)
+
+        normval = 0
+        relative_error = 0
+        normval2 = 0
+        relative_error2 = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file)
+            CheckD = diag((CheckV.H.dot(matrix1).dot(CheckV)).todense())
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
+            normval = abs(normd(CheckD - ResultD))
+            relative_error = normval / normd(CheckD)
+            print("Norm:", normval)
+            print("Relative_Error:", relative_error)
+
+            ResultW = diag((mmread(result_file2)).todense())
+            normval = abs(normd(CheckD - ResultW))
+            relative_error = normval / normd(CheckD)
+            print("Norm:", normval2)
+            print("Relative_Error:", relative_error2)
+
+        global_norm = comm.bcast(normval, root=0)
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
+
 class TestSolvers_r(TestSolvers):
-    pass
+    def test_cholesky(self):
+        '''Test subroutine that computes the cholesky decomposition.'''
+        # Starting Matrix
+        matrix1 = self.create_matrix(SPD=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = cholesky(matrix1.todense(), lower=True)
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+
+        cholesky_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.LinearSolvers.CholeskyDecomposition(input_matrix, cholesky_matrix,
+                                               self.fsp)
+
+        cholesky_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_pivotedcholesky(self):
+        '''Test subroutine that computes the pivoted cholesky decomposition.'''
+        matrix1 = mmread(os.environ["CholTest"])
+        rank = 2
+        self.write_matrix(matrix1, self.input_file)
+
+        self.CheckMat = csr_matrix(matrix1)
+
+        # Result Matrix
+        A = nt.Matrix_ps(self.input_file, False)
+        L = nt.Matrix_ps(self.mat_dim)
+        LT = nt.Matrix_ps(self.mat_dim)
+        LLT = nt.Matrix_ps(self.mat_dim)
+        memory_pool = nt.PMatrixMemoryPool(A)
+
+        nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
+        LT.Transpose(L)
+        LLT.Gemm(L, LT, memory_pool)
+
+        LLT.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
 
 class TestSolvers_c(TestSolvers):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
