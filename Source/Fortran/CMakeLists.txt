@@ -1,11 +1,13 @@
 ################################################################################
 set(Fsrc
     ChebyshevSolversModule.F90
+    CholeskyModule.F90
     DataTypesModule.F90
     DensityMatrixSolversModule.F90
     DMatrixModule.F90
     EigenBoundsModule.F90
     ErrorModule.F90
+    EigenSolversModule.F90
     ExponentialSolversModule.F90
     GemmTasksModule.F90
     GeometryOptimizationModule.F90
