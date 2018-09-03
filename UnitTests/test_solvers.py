@@ -712,6 +712,82 @@ class TestSolvers(unittest.TestCase):
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
+    def test_splittingeigendecomposition(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+        self.CheckMat = csr_matrix(diag(vals))
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        vec_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.EigenSolvers.SplittingEigenDecomposition(input_matrix, vec_matrix,
+                                                    val_matrix, self.mat_dim,
+                                                    self.isp)
+        val_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_eigendecompositionhalf(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+        valshalf = vals[:int(self.mat_dim / 2)]
+        self.CheckMat = csr_matrix(diag(valshalf))
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        vec_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.EigenSolvers.SplittingEigenDecomposition(input_matrix, vec_matrix,
+                                                    val_matrix,
+                                                    int(self.mat_dim / 2),
+                                                    self.isp)
+        val_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_svd(self):
+        '''Test our ability to compute the eigen decomposition.'''
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+
+        # Check Matrix
+        u, s, vh = svd(matrix1.todense())
+        self.CheckMat = csr_matrix(diag(s))
+        if self.my_rank == 0:
+            mmwrite(self.input_file, csr_matrix(matrix1))
+        comm.barrier()
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        left_matrix = nt.Matrix_ps(self.mat_dim)
+        right_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.EigenSolvers.SingularValueDecompostion(input_matrix, left_matrix,
+                                                  right_matrix, val_matrix,
+                                                  self.isp)
+        val_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_diag()
+
+
 class TestSolvers_r(TestSolvers):
     def test_cholesky(self):
         '''Test subroutine that computes the cholesky decomposition.'''
@@ -758,6 +834,7 @@ class TestSolvers_r(TestSolvers):
         comm.barrier()
 
         self.check_result()
+
 
 class TestSolvers_c(TestSolvers):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
