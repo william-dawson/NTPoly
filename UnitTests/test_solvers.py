@@ -724,6 +724,9 @@ class TestSolvers(unittest.TestCase):
             mmwrite(self.input_file, csr_matrix(matrix1))
         comm.barrier()
 
+        self.isp.SetDACBaseSize(2)
+        self.isp.SetDACBaseSparsity(1.0)
+
         # Result Matrix
         input_matrix = nt.Matrix_ps(self.input_file, False)
         vec_matrix = nt.Matrix_ps(self.mat_dim)

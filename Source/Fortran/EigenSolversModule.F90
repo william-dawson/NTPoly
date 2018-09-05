@@ -125,6 +125,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="recursive")
+       CALL WriteElement(key="Target_Values", int_value_in=num_values)
        CALL PrintParameters(solver_parameters)
     END IF
 

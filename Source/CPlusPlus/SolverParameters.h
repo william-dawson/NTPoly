@@ -29,6 +29,9 @@ public:
   //! Set the value of the divide and conquer base size.
   //!\param new_value
   void SetDACBaseSize(int new_value);
+  //! Set the value of the divide and conquer base sparsity.
+  //!\param new_value
+  void SetDACBaseSparsity(double new_value);
   //! Load balance settings.
   //!\param new_value
   void SetLoadBalance(const Permutation &new_value);

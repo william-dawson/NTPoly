@@ -40,6 +40,11 @@ void SolverParameters::SetDACBaseSize(int new_value) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void SolverParameters::SetDACBaseSparsity(double new_value) {
+  SetParametersDACBaseSparsity_wrp(ih_this, &new_value);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void SolverParameters::SetLoadBalance(const Permutation &new_value) {
   SetParametersLoadBalance_wrp(ih_this, new_value.ih_this);
 }
