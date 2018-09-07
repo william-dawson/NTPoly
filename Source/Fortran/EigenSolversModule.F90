@@ -264,7 +264,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: TempMat
     TYPE(Matrix_ps) :: LeftMat, RightMat
     TYPE(Matrix_ps) :: LeftVectors, RightVectors
-    TYPE(Matrix_ps) :: SubMat, SubVec
     !! Local Variables - For Splitting
     INTEGER :: mat_dim, left_dim, right_dim, midpoint
     REAL(NTREAL) :: sparsity
@@ -316,10 +315,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Eigenvectors of the Density Matrix
        CALL PivotedCholeskyDecomposition(PMat, PVec, left_dim, &
             & solver_parameters_in=solver_parameters)
+       CALL DestructMatrix(PMat)
        CALL PivotedCholeskyDecomposition(PHoleMat, PHoleVec, right_dim, &
             & solver_parameters_in=solver_parameters)
+       CALL DestructMatrix(PHoleMat)
        CALL ConstructEmptyMatrix(StackV, this)
        CALL StackMatrices(PVec, PHoleVec, left_dim, 0, StackV)
+       CALL DestructMatrix(PVec)
+       CALL DestructMatrix(PHoleVec)
 
        !! Rotate to the divided subspace
        CALL MatrixMultiply(this, StackV, TempMat, &
@@ -330,13 +333,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        CALL MatrixMultiply(StackVT, TempMat, VAV, &
             & threshold_in=solver_parameters%threshold)
+       CALL DestructMatrix(StackVT)
 
        !! Iterate Recursively
        CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
+       CALL DestructMatrix(VAV)
        CALL EigenRecursive(LeftMat, LeftVectors, splits(:midpoint-1), &
             & solver_parameters)
+       CALL DestructMatrix(LeftMat)
        CALL EigenRecursive(RightMat, RightVectors, &
             & splits(midpoint+1:)-left_dim, solver_parameters)
+       CALL DestructMatrix(RightMat)
        CALL ConstructEmptyMatrix(TempMat, this)
        CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
             & TempMat)
@@ -346,18 +353,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold)
 
        !! Cleanup
-       CALL DestructMatrix(SubMat)
-       CALL DestructMatrix(SubVec)
-       CALL DestructMatrix(PMat)
-       CALL DestructMatrix(PHoleMat)
-       CALL DestructMatrix(PVec)
-       CALL DestructMatrix(PHoleVec)
        CALL DestructMatrix(StackV)
-       CALL DestructMatrix(StackVT)
-       CALL DestructMatrix(VAV)
        CALL DestructMatrix(TempMat)
-       CALL DestructMatrix(LeftMat)
-       CALL DestructMatrix(RightMat)
        CALL DestructMatrix(LeftVectors)
        CALL DestructMatrix(RightVectors)
     END IF
