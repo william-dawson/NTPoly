@@ -9,7 +9,8 @@ MODULE EigenSolversModule
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
-  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
+  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
+       & DestructPermutation
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
@@ -308,6 +309,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Purify
        CALL TRS2(this, Identity, left_dim*2, PMat, &
             & solver_parameters_in=balanced_it)
+       CALL DestructPermutation(permutation)
        CALL CopyMatrix(Identity, PHoleMat)
        CALL IncrementMatrix(PMat, PHoleMat, alpha_in=REAL(-1.0,NTREAL), &
             & threshold_in=solver_parameters%threshold)
@@ -334,6 +336,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(StackVT, TempMat, VAV, &
             & threshold_in=solver_parameters%threshold)
        CALL DestructMatrix(StackVT)
+       CALL DestructMatrix(TempMat)
 
        !! Iterate Recursively
        CALL ExtractCorner(VAV, left_dim, right_dim, LeftMat, RightMat)
@@ -347,6 +350,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructEmptyMatrix(TempMat, this)
        CALL StackMatrices(LeftVectors, RightVectors, left_dim, left_dim, &
             & TempMat)
+       CALL DestructMatrix(LeftVectors)
+       CALL DestructMatrix(RightVectors)
 
        !! Recombine
        CALL MatrixMultiply(StackV, TempMat, eigenvectors, &
@@ -355,8 +360,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Cleanup
        CALL DestructMatrix(StackV)
        CALL DestructMatrix(TempMat)
-       CALL DestructMatrix(LeftVectors)
-       CALL DestructMatrix(RightVectors)
     END IF
     CALL DestructMatrix(Identity)
 
@@ -518,6 +521,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(PVecT)
     CALL DestructMatrix(TempMat)
     CALL DestructMatrix(VAV)
+    CALL DestructPermutation(permutation)
   END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
