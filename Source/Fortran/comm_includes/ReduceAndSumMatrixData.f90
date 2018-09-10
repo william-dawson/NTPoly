@@ -1,15 +1,15 @@
   !! Local Data
   INTEGER :: grid_error
-  INTEGER :: counter
+  INTEGER :: II
   INTEGER :: sum_total_values, sum_outer_indices
 
   ALLOCATE(helper%displacement(helper%comm_size))
 
   !! Build Displacement List
   helper%displacement(1) = 0
-  DO counter = 2, SIZE(helper%displacement)
-     helper%displacement(counter) = helper%displacement(counter-1) + &
-          & helper%values_per_process(counter-1)
+  DO II = 2, SIZE(helper%displacement)
+     helper%displacement(II) = helper%displacement(II-1) + &
+          & helper%values_per_process(II-1)
   END DO
 
   !! Build Storage

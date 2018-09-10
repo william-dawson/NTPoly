@@ -35,6 +35,24 @@ MODULE MatrixReduceModule
      INTEGER, DIMENSION(:), ALLOCATABLE :: values_per_process
      !> The displacements for where those gathered values should go.
      INTEGER, DIMENSION(:), ALLOCATABLE :: displacement
+#ifdef NOIALLGATHER
+     !> For mpi backup plan, a list of request object for the sizes.
+     INTEGER, DIMENSION(:), ALLOCATABLE :: size_request_list
+     !> For mpi backup plan, a list of status object for the sizes.
+     INTEGER, DIMENSION(:,:), ALLOCATABLE :: size_status_list
+     !> For mpi backup, a list of request objets for outer indices.
+     INTEGER, DIMENSION(:), ALLOCATABLE :: outer_request_list
+     !> For mpi backup, a list of status objects for outer indices.
+     INTEGER, DIMENSION(:,:), ALLOCATABLE :: outer_status_list
+     !> For mpi backup, a list of request objects for inner indices.
+     INTEGER, DIMENSION(:), ALLOCATABLE :: inner_request_list
+     !> For mpi backup, a list of status objects for inner indices.
+     INTEGER, DIMENSION(:,:), ALLOCATABLE :: inner_status_list
+     !> For mpi backup, a list of request object for data.
+     INTEGER, DIMENSION(:), ALLOCATABLE :: data_request_list
+     !> For mpi backup, a lsit of status objects for data.
+     INTEGER, DIMENSION(:,:), ALLOCATABLE :: data_status_list
+#endif
   END TYPE ReduceHelper_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ReduceMatrixSizes
@@ -80,7 +98,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
+#ifdef NOIALLGATHER
+    INCLUDE "comm_includes/ReduceMatrixSizes_sendrecv.f90"
+#else
     INCLUDE "comm_includes/ReduceMatrixSizes.f90"
+#endif
   END SUBROUTINE ReduceMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
@@ -92,7 +114,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
+#ifdef NOIALLGATHER
+    INCLUDE "comm_includes/ReduceMatrixSizes_sendrecv.f90"
+#else
     INCLUDE "comm_includes/ReduceMatrixSizes.f90"
+#endif
   END SUBROUTINE ReduceMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align it one matrix
@@ -108,7 +134,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
 
+#ifdef NOIALLGATHER
+    INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
+#else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
+#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
@@ -131,8 +161,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
-
+#ifdef NOIALLGATHER
+    INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
+#else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
+#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, helper%data_request, &
@@ -156,7 +189,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third function to call, finishes setting up the matrices.
   PURE SUBROUTINE ReduceAndComposeMatrixCleanup_lsc(matrix, gathered_matrix, &
        & helper)
- !> The matrix to send.
+    !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)    :: matrix
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
@@ -178,8 +211,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(INOUT)              :: communicator
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
-
+#ifdef NOIALLGATHER
+    INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
+#else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
+#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
@@ -200,8 +236,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(INOUT)              :: communicator
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
-
+#ifdef NOIALLGATHER
+    INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
+#else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
+#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, &
@@ -223,6 +262,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: temporary_matrix, sum_matrix
 
     INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
+#ifdef NOIALLGATHER
+    DEALLOCATE(helper%size_request_list)
+    DEALLOCATE(helper%size_status_list)
+    DEALLOCATE(helper%outer_request_list)
+    DEALLOCATE(helper%outer_status_list)
+    DEALLOCATE(helper%inner_request_list)
+    DEALLOCATE(helper%inner_status_list)
+    DEALLOCATE(helper%data_request_list)
+    DEALLOCATE(helper%data_status_list)
+#endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Finally routine to sum up the matrices.
@@ -240,6 +289,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: temporary_matrix, sum_matrix
 
     INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
+#ifdef NOIALLGATHER
+    DEALLOCATE(helper%size_request_list)
+    DEALLOCATE(helper%size_status_list)
+    DEALLOCATE(helper%outer_request_list)
+    DEALLOCATE(helper%outer_status_list)
+    DEALLOCATE(helper%inner_request_list)
+    DEALLOCATE(helper%inner_status_list)
+    DEALLOCATE(helper%data_request_list)
+    DEALLOCATE(helper%data_status_list)
+#endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.
@@ -248,9 +307,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-
+#ifdef NOIALLGATHER
+    CALL MPI_Testall(SIZE(helper%size_request_list), helper%size_request_list, &
+         & finished, helper%size_status_list, helper%error_code)
+#else
     CALL MPI_Test(helper%size_request, request_completed, &
          & helper%size_status, helper%error_code)
+#endif
   END FUNCTION TestReduceSizeRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the outer indices of the matrices is complete.
@@ -259,9 +322,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-
+#ifdef NOIALLGATHER
+    CALL MPI_Testall(SIZE(helper%outer_request_list), helper%outer_request_list,&
+         & finished, helper%outer_status_list, helper%error_code)
+#else
     CALL MPI_Test(helper%outer_request, request_completed, &
          & helper%outer_status, helper%error_code)
+#endif
   END FUNCTION TestReduceOuterRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the inner indices of the matrices is complete.
@@ -270,9 +337,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-
+#ifdef NOIALLGATHER
+    CALL MPI_Testall(SIZE(helper%inner_request_list), helper%inner_request_list,&
+         & finished, helper%inner_status_list, helper%error_code)
+#else
     CALL MPI_Test(helper%inner_request, request_completed, &
          & helper%inner_status, helper%error_code)
+#endif
   END FUNCTION TestReduceInnerRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the data of the matrices is complete.
@@ -281,9 +352,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-
+#ifdef NOIALLGATHER
+    CALL MPI_Testall(SIZE(helper%data_request_list), helper%data_request_list,&
+         & finished, helper%data_status_list, helper%error_code)
+#else
     CALL MPI_Test(helper%data_request, request_completed, &
          & helper%data_status, helper%error_code)
+#endif
   END FUNCTION TestReduceDataRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixReduceModule
