@@ -136,13 +136,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #ifdef NOIALLGATHER
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
+    DO II = 1, helper%comm_size
+       CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
+            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
+            & helper%values_per_process(II), MPINTREAL, II-1, 3, &
+            & communicator, helper%data_request_list(helper%comm_size+II), &
+            & grid_error)
+    END DO
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
-#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
          & grid_error)
+#endif
   END SUBROUTINE ReduceAndComposeMatrixData_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align it one matrix
@@ -163,13 +171,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(INOUT)              :: communicator
 #ifdef NOIALLGATHER
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
+    DO II = 1, helper%comm_size
+       CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
+            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
+            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 3, &
+            & communicator, helper%data_request_list(helper%comm_size+II), &
+            & grid_error)
+    END DO
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
-#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
-         & helper%displacement, MPINTCOMPLEX, communicator, helper%data_request, &
-         & grid_error)
+         & helper%displacement, MPINTCOMPLEX, communicator, &
+         & helper%data_request, grid_error)
+#endif
   END SUBROUTINE ReduceAndComposeMatrixData_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Third function to call, finishes setting up the matrices.
@@ -183,6 +199,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
+#ifdef NOIALLGATHER
+    DEALLOCATE(helper%size_request_list)
+    DEALLOCATE(helper%size_status_list)
+    DEALLOCATE(helper%outer_request_list)
+    DEALLOCATE(helper%outer_status_list)
+    DEALLOCATE(helper%inner_request_list)
+    DEALLOCATE(helper%inner_status_list)
+    DEALLOCATE(helper%data_request_list)
+    DEALLOCATE(helper%data_status_list)
+#endif
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -197,6 +223,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
     INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
+#ifdef NOIALLGATHER
+    DEALLOCATE(helper%size_request_list)
+    DEALLOCATE(helper%size_status_list)
+    DEALLOCATE(helper%outer_request_list)
+    DEALLOCATE(helper%outer_status_list)
+    DEALLOCATE(helper%inner_request_list)
+    DEALLOCATE(helper%inner_status_list)
+    DEALLOCATE(helper%data_request_list)
+    DEALLOCATE(helper%data_status_list)
+#endif
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -213,13 +249,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
     INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
+    DO II = 1, helper%comm_size
+       CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
+            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
+            & helper%values_per_process(II), MPINTREAL, II-1, 3, &
+            & communicator, helper%data_request_list(helper%comm_size+II), &
+            & grid_error)
+    END DO
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
-#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
          & grid_error)
+#endif
   END SUBROUTINE ReduceAndSumMatrixData_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine to call for gathering and summing up the data.
@@ -238,13 +282,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
     INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
+    DO II = 1, helper%comm_size
+       CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
+            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
+            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 3, &
+            & communicator, helper%data_request_list(helper%comm_size+II), &
+            & grid_error)
+    END DO
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
-#endif
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, &
          & helper%data_request, grid_error)
+#endif
   END SUBROUTINE ReduceAndSumMatrixData_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Finally routine to sum up the matrices.
@@ -309,7 +361,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: request_completed
 #ifdef NOIALLGATHER
     CALL MPI_Testall(SIZE(helper%size_request_list), helper%size_request_list, &
-         & finished, helper%size_status_list, helper%error_code)
+         & request_completed, helper%size_status_list, helper%error_code)
 #else
     CALL MPI_Test(helper%size_request, request_completed, &
          & helper%size_status, helper%error_code)
@@ -323,8 +375,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> True if the request is finished.
     LOGICAL :: request_completed
 #ifdef NOIALLGATHER
-    CALL MPI_Testall(SIZE(helper%outer_request_list), helper%outer_request_list,&
-         & finished, helper%outer_status_list, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%outer_request_list), &
+         & helper%outer_request_list, request_completed, &
+         & helper%outer_status_list, helper%error_code)
 #else
     CALL MPI_Test(helper%outer_request, request_completed, &
          & helper%outer_status, helper%error_code)
@@ -338,8 +391,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> True if the request is finished.
     LOGICAL :: request_completed
 #ifdef NOIALLGATHER
-    CALL MPI_Testall(SIZE(helper%inner_request_list), helper%inner_request_list,&
-         & finished, helper%inner_status_list, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%inner_request_list), &
+         & helper%inner_request_list, request_completed, &
+         & helper%inner_status_list, helper%error_code)
 #else
     CALL MPI_Test(helper%inner_request, request_completed, &
          & helper%inner_status, helper%error_code)
@@ -354,7 +408,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: request_completed
 #ifdef NOIALLGATHER
     CALL MPI_Testall(SIZE(helper%data_request_list), helper%data_request_list,&
-         & finished, helper%data_status_list, helper%error_code)
+         & request_completed, helper%data_status_list, helper%error_code)
 #else
     CALL MPI_Test(helper%data_request, request_completed, &
          & helper%data_status, helper%error_code)

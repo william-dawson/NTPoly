@@ -40,6 +40,15 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 ################################################################################
+## Check for Nonblocking Collectives
+IF (NOIALLGATHER)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -DNOIALLGATHER")
+  set(CMAKE_Fortran_FLAGS_RELEASE
+      "${CMAKE_Fortran_FLAGS_RELEASE} -DNOIALLGATHER")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DNOIALLGATHER")
+ENDIF()
+
+################################################################################
 ## Get at the source files
 subdirs(Documentation)
 subdirs(Source)
