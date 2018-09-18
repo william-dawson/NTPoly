@@ -138,9 +138,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
-            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
        CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTREAL, II-1, 3, &
+            & helper%values_per_process(II), MPINTREAL, II-1, 4, &
             & communicator, helper%data_request_list(helper%comm_size+II), &
             & grid_error)
     END DO
@@ -173,9 +173,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
-            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
        CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 3, &
+            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 4, &
             & communicator, helper%data_request_list(helper%comm_size+II), &
             & grid_error)
     END DO
@@ -251,9 +251,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
-            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
        CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTREAL, II-1, 3, &
+            & helper%values_per_process(II), MPINTREAL, II-1, 4, &
             & communicator, helper%data_request_list(helper%comm_size+II), &
             & grid_error)
     END DO
@@ -284,9 +284,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
-            & II-1, 3, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
        CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 3, &
+            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 4, &
             & communicator, helper%data_request_list(helper%comm_size+II), &
             & grid_error)
     END DO
