@@ -2,6 +2,7 @@
   INTEGER :: grid_error
   INTEGER :: II
   INTEGER :: total_values
+  INTEGER :: istart, iend, isize
 
   !! Send Receive Buffers
   ALLOCATE(helper%outer_request_list(helper%comm_size*2))
@@ -32,14 +33,19 @@
      !! Send/Recv inner index
      CALL MPI_ISend(matrix%inner_index, SIZE(matrix%inner_index), MPI_INT, &
           & II-1, 2, communicator, helper%inner_request_list(II), grid_error)
-     CALL MPI_Irecv(gathered_matrix%inner_index(helper%displacement(II)+1:), &
-          & helper%values_per_process(II), MPI_INT, II-1, 2, &
-          & communicator, helper%inner_request_list(helper%comm_size+II), &
-          & grid_error)
+     istart = helper%displacement(II)+1
+     isize = helper%values_per_process(II)
+     iend = istart + isize - 1
+     CALL MPI_Irecv(gathered_matrix%inner_index(istart:iend), isize, MPI_INT, &
+          & II-1, 2, communicator, &
+          & helper%inner_request_list(helper%comm_size+II), grid_error)
      !! Send/Recv Outer Index
      CALL MPI_ISend(matrix%outer_index(2:), matrix%columns, MPI_INT, &
           & II-1, 3, communicator, helper%outer_request_list(II), grid_error)
-     CALL MPI_Irecv(gathered_matrix%outer_index((matrix%columns)*(II-1)+2:), &
-          & matrix%columns, MPI_INT, II-1, 3, communicator, &
+     istart = (matrix%columns)*(II-1)+2
+     isize = matrix%columns
+     iend = istart + isize - 1
+     CALL MPI_Irecv(gathered_matrix%outer_index(istart:iend), isize, MPI_INT, &
+          & II-1, 3, communicator, &
           & helper%outer_request_list(helper%comm_size+II), grid_error)
   END DO

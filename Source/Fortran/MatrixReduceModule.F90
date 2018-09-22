@@ -133,16 +133,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
-
 #ifdef NOIALLGATHER
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
             & II-1, 4, communicator, helper%data_request_list(II), grid_error)
-       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTREAL, II-1, 4, &
-            & communicator, helper%data_request_list(helper%comm_size+II), &
-            & grid_error)
+       istart = helper%displacement(II)+1
+       isize = helper%values_per_process(II)
+       iend = istart + isize - 1
+       CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, MPINTREAL, &
+            & II-1, 4, communicator, &
+            & helper%data_request_list(helper%comm_size+II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
@@ -174,10 +175,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
             & II-1, 4, communicator, helper%data_request_list(II), grid_error)
-       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 4, &
-            & communicator, helper%data_request_list(helper%comm_size+II), &
-            & grid_error)
+       istart = helper%displacement(II)+1
+       isize = helper%values_per_process(II)
+       iend = istart + isize - 1
+       CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, &
+            & MPINTCOMPLEX, II-1, 4, communicator, &
+            & helper%data_request_list(helper%comm_size+II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
@@ -252,10 +255,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
             & II-1, 4, communicator, helper%data_request_list(II), grid_error)
-       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTREAL, II-1, 4, &
-            & communicator, helper%data_request_list(helper%comm_size+II), &
-            & grid_error)
+       istart = helper%displacement(II)+1
+       isize = helper%values_per_process(II)
+       iend = istart + isize - 1
+       CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, MPINTREAL, &
+            & II-1, 4, communicator, &
+            & helper%data_request_list(helper%comm_size+II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
@@ -285,10 +290,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
             & II-1, 4, communicator, helper%data_request_list(II), grid_error)
-       CALL MPI_Irecv(gathered_matrix%values(helper%displacement(II)+1:), &
-            & helper%values_per_process(II), MPINTCOMPLEX, II-1, 4, &
-            & communicator, helper%data_request_list(helper%comm_size+II), &
-            & grid_error)
+       istart = helper%displacement(II)+1
+       isize = helper%values_per_process(II)
+       iend = istart + isize - 1
+       CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, &
+            & MPINTCOMPLEX, II-1, 4, communicator, &
+            & helper%data_request_list(helper%comm_size+II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
