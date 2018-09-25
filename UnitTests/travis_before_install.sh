@@ -11,11 +11,9 @@ if [[ "$TESTOS" == "LINUX" ]]; then
     ./configure >/dev/null 2>&1;
     make >/dev/null 2>&1;
   fi
-  if  [ -z ${NOIALLGATHER+x} ]; then
-    cd openmpi-3.0.1
-    sudo make install >/dev/null 2>&1
-    cd ../
-  fi
+  cd openmpi-3.0.1
+  sudo make install >/dev/null 2>&1
+  cd ../
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
