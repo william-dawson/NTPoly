@@ -12,8 +12,6 @@ if [[ "$TESTOS" == "LINUX" ]]; then
     make >/dev/null 2>&1;
   fi
   if  [ -z ${NOIALLGATHER+x} ]; then
-    echo "using standard mpi"
-  else
     cd openmpi-3.0.1
     sudo make install >/dev/null 2>&1
     cd ../
