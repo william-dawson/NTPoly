@@ -203,14 +203,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    DEALLOCATE(helper%size_request_list)
-    DEALLOCATE(helper%size_status_list)
-    DEALLOCATE(helper%outer_request_list)
-    DEALLOCATE(helper%outer_status_list)
-    DEALLOCATE(helper%inner_request_list)
-    DEALLOCATE(helper%inner_status_list)
-    DEALLOCATE(helper%data_request_list)
-    DEALLOCATE(helper%data_status_list)
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%size_request_list)
+    END IF
+    IF (ALLOCATED(helper%size_status_list)) THEN
+       DEALLOCATE(helper%size_status_list)
+    END IF
+    IF (ALLOCATED(helper%outer_request_list)) THEN
+       DEALLOCATE(helper%outer_request_list)
+    END IF
+    IF (ALLOCATED(helper%outer_status_list)) THEN
+       DEALLOCATE(helper%outer_status_list)
+    END IF
+    IF (ALLOCATED(helper%inner_request_list)) THEN
+       DEALLOCATE(helper%inner_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_status_list)) THEN
+       DEALLOCATE(helper%inner_status_list)
+    END IF
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%data_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_status_list)) THEN
+       DEALLOCATE(helper%data_status_list)
+    END IF
 #endif
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsr
@@ -227,14 +243,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    DEALLOCATE(helper%size_request_list)
-    DEALLOCATE(helper%size_status_list)
-    DEALLOCATE(helper%outer_request_list)
-    DEALLOCATE(helper%outer_status_list)
-    DEALLOCATE(helper%inner_request_list)
-    DEALLOCATE(helper%inner_status_list)
-    DEALLOCATE(helper%data_request_list)
-    DEALLOCATE(helper%data_status_list)
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%size_request_list)
+    END IF
+    IF (ALLOCATED(helper%size_status_list)) THEN
+       DEALLOCATE(helper%size_status_list)
+    END IF
+    IF (ALLOCATED(helper%outer_request_list)) THEN
+       DEALLOCATE(helper%outer_request_list)
+    END IF
+    IF (ALLOCATED(helper%outer_status_list)) THEN
+       DEALLOCATE(helper%outer_status_list)
+    END IF
+    IF (ALLOCATED(helper%inner_request_list)) THEN
+       DEALLOCATE(helper%inner_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_status_list)) THEN
+       DEALLOCATE(helper%inner_status_list)
+    END IF
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%data_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_status_list)) THEN
+       DEALLOCATE(helper%data_status_list)
+    END IF
 #endif
 
   END SUBROUTINE ReduceAndComposeMatrixCleanup_lsc
@@ -322,14 +354,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    DEALLOCATE(helper%size_request_list)
-    DEALLOCATE(helper%size_status_list)
-    DEALLOCATE(helper%outer_request_list)
-    DEALLOCATE(helper%outer_status_list)
-    DEALLOCATE(helper%inner_request_list)
-    DEALLOCATE(helper%inner_status_list)
-    DEALLOCATE(helper%data_request_list)
-    DEALLOCATE(helper%data_status_list)
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%size_request_list)
+    END IF
+    IF (ALLOCATED(helper%size_status_list)) THEN
+       DEALLOCATE(helper%size_status_list)
+    END IF
+    IF (ALLOCATED(helper%outer_request_list)) THEN
+       DEALLOCATE(helper%outer_request_list)
+    END IF
+    IF (ALLOCATED(helper%outer_status_list)) THEN
+       DEALLOCATE(helper%outer_status_list)
+    END IF
+    IF (ALLOCATED(helper%inner_request_list)) THEN
+       DEALLOCATE(helper%inner_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_status_list)) THEN
+       DEALLOCATE(helper%inner_status_list)
+    END IF
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%data_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_status_list)) THEN
+       DEALLOCATE(helper%data_status_list)
+    END IF
 #endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -349,14 +397,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    DEALLOCATE(helper%size_request_list)
-    DEALLOCATE(helper%size_status_list)
-    DEALLOCATE(helper%outer_request_list)
-    DEALLOCATE(helper%outer_status_list)
-    DEALLOCATE(helper%inner_request_list)
-    DEALLOCATE(helper%inner_status_list)
-    DEALLOCATE(helper%data_request_list)
-    DEALLOCATE(helper%data_status_list)
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%size_request_list)
+    END IF
+    IF (ALLOCATED(helper%size_status_list)) THEN
+       DEALLOCATE(helper%size_status_list)
+    END IF
+    IF (ALLOCATED(helper%outer_request_list)) THEN
+       DEALLOCATE(helper%outer_request_list)
+    END IF
+    IF (ALLOCATED(helper%outer_status_list)) THEN
+       DEALLOCATE(helper%outer_status_list)
+    END IF
+    IF (ALLOCATED(helper%inner_request_list)) THEN
+       DEALLOCATE(helper%inner_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_status_list)) THEN
+       DEALLOCATE(helper%inner_status_list)
+    END IF
+    IF (ALLOCATED(helper%size_request_list)) THEN
+       DEALLOCATE(helper%data_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_status_list)) THEN
+       DEALLOCATE(helper%data_status_list)
+    END IF
 #endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
