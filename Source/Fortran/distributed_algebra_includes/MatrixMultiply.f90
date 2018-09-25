@@ -198,7 +198,13 @@
                    & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
                    & alpha_in=alpha, threshold_in=working_threshold, &
                    & blocked_memory_pool_in=MPGRID(II,JJ))
-              ABTasks(II,JJ) = SendSizeAB
+              !! We can exit early if there is only one process slice
+              IF (matAB%process_grid%num_process_slices .EQ. 1) THEN
+                 ABTasks(II,JJ) = CleanupAB
+                 CALL CopyMatrix(SliceContribution(II,JJ), matAB%LMAT(II,JJ))
+              ELSE
+                 ABTasks(II,JJ) = SendSizeAB
+              END IF
               !$OMP END TASK
            CASE(SendSizeAB)
               CALL ReduceMatrixSizes(SliceContribution(II,JJ),&
