@@ -87,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceMatrixSizes_sendrecv.f90"
+    INCLUDE "comm_includes/ReduceAndComposeMatrixSizes_sendrecv.f90"
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixSizes.f90"
 #endif
@@ -105,7 +105,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceMatrixSizes_sendrecv.f90"
+    INCLUDE "comm_includes/ReduceAndComposeMatrixSizes_sendrecv.f90"
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixSizes.f90"
 #endif
@@ -263,7 +263,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceMatrixSizes_sendrecv.f90"
+    INCLUDE "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixSizes.f90"
 #endif
@@ -281,7 +281,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceMatrixSizes_sendrecv.f90"
+    INCLUDE "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixSizes.f90"
 #endif

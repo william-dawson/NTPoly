@@ -2,6 +2,7 @@
   INTEGER :: grid_error
   INTEGER :: sum_outer_indices
   INTEGER :: II
+  INTEGER :: istart, isize, iend
 
   CALL MPI_Comm_size(communicator,helper%comm_size,grid_error)
 
@@ -10,9 +11,11 @@
   sum_outer_indices = (matrix%columns+1)*helper%comm_size
   ALLOCATE(gathered_matrix%outer_index(sum_outer_indices+1))
 
- !! Send/Recv Outer Index
+  ALLOCATE(helper%outer_send_request_list(helper%comm_size))
+  ALLOCATE(helper%outer_recv_request_list(helper%comm_size))
+  
+  !! Send/Recv Outer Index
   DO II = 1, helper%comm_size
-     !! Send/Recv Outer Index
      CALL MPI_ISend(matrix%outer_index, SIZE(matrix%outer_index), MPI_INT, &
           & II-1, 3, communicator, helper%outer_send_request_list(II), &
           & grid_error)

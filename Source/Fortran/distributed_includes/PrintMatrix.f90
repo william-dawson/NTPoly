@@ -1,8 +1,6 @@
   !! Helpers For Communication
   TYPE(ReduceHelper_t) :: row_helper
   TYPE(ReduceHelper_t) :: column_helper
-  INTEGER :: mpi_status(MPI_STATUS_SIZE)
-  INTEGER :: ierr
 
   !! Merge all the local data
   CALL MergeMatrixLocalBlocks(this, merged_local_data)
@@ -11,12 +9,15 @@
   CALL TransposeMatrix(merged_local_data, merged_local_dataT)
   CALL ReduceAndComposeMatrixSizes(merged_local_dataT, &
        & this%process_grid%column_comm, merged_columns, column_helper)
-  CALL MPI_Wait(column_helper%outer_request,mpi_status,ierr)
+  DO WHILE(.NOT. TestReduceSizeRequest(column_helper))
+  END DO
   CALL ReduceAndComposeMatrixData(merged_local_dataT, &
        & this%process_grid%column_comm, merged_columns, &
        & column_helper)
-  CALL MPI_Wait(column_helper%inner_request,mpi_status,ierr)
-  CALL MPI_Wait(column_helper%data_request,mpi_status,ierr)
+  DO WHILE(.NOT. TestReduceInnerRequest(column_helper))
+  END DO
+  DO WHILE(.NOT. TestReduceDataRequest(column_helper))
+  END DO
   CALL ReduceAndComposeMatrixCleanup(merged_local_dataT, merged_columns, &
        & column_helper)
 
@@ -24,11 +25,14 @@
   CALL TransposeMatrix(merged_columns,merged_columnsT)
   CALL ReduceAndComposeMatrixSizes(merged_columnsT, &
        & this%process_grid%row_comm, full_gathered, row_helper)
-  CALL MPI_Wait(row_helper%outer_request,mpi_status,ierr)
+  DO WHILE(.NOT. TestReduceSizeRequest(row_helper))
+  END DO
   CALL ReduceAndComposeMatrixData(merged_columnsT, this%process_grid%row_comm, &
        & full_gathered, row_helper)
-  CALL MPI_Wait(row_helper%inner_request,mpi_status,ierr)
-  CALL MPI_Wait(row_helper%data_request,mpi_status,ierr)
+  DO WHILE(.NOT. TestReduceInnerRequest(row_helper))
+  END DO
+  DO WHILE(.NOT. TestReduceDataRequest(row_helper))
+  END DO
   CALL ReduceAndComposeMatrixCleanup(merged_columnsT, full_gathered,row_helper)
 
   !! Make these changes so that it prints the logical rows/columns
