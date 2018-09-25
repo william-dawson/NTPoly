@@ -15,20 +15,12 @@ MODULE MatrixReduceModule
      INTEGER :: comm_size
      !> A request object for gathering the sizes.
      INTEGER :: size_request
-     !> A status object for gathering the sizes.
-     INTEGER :: size_status(MPI_STATUS_SIZE)
      !> A request object for gathering outer indices.
      INTEGER :: outer_request
-     !> A status object for gathering outer indices.
-     INTEGER :: outer_status(MPI_STATUS_SIZE)
      !> A request object for gathering inner indices.
      INTEGER :: inner_request
-     !> A status object for gathering inner indices.
-     INTEGER :: inner_status(MPI_STATUS_SIZE)
      !> A request object for gathering data.
      INTEGER :: data_request
-     !> A status object for gathering data.
-     INTEGER :: data_status(MPI_STATUS_SIZE)
      !> The error code after an MPI call.
      INTEGER :: error_code
      !> Number of values to gather from each process.
@@ -38,20 +30,12 @@ MODULE MatrixReduceModule
 #ifdef NOIALLGATHER
      !> For mpi backup plan, a list of request object for the sizes.
      INTEGER, DIMENSION(:), ALLOCATABLE :: size_request_list
-     !> For mpi backup plan, a list of status object for the sizes.
-     INTEGER, DIMENSION(:,:), ALLOCATABLE :: size_status_list
      !> For mpi backup, a list of request objets for outer indices.
      INTEGER, DIMENSION(:), ALLOCATABLE :: outer_request_list
-     !> For mpi backup, a list of status objects for outer indices.
-     INTEGER, DIMENSION(:,:), ALLOCATABLE :: outer_status_list
      !> For mpi backup, a list of request objects for inner indices.
      INTEGER, DIMENSION(:), ALLOCATABLE :: inner_request_list
-     !> For mpi backup, a list of status objects for inner indices.
-     INTEGER, DIMENSION(:,:), ALLOCATABLE :: inner_status_list
      !> For mpi backup, a list of request object for data.
      INTEGER, DIMENSION(:), ALLOCATABLE :: data_request_list
-     !> For mpi backup, a lsit of status objects for data.
-     INTEGER, DIMENSION(:,:), ALLOCATABLE :: data_status_list
 #endif
   END TYPE ReduceHelper_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -206,26 +190,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (ALLOCATED(helper%size_request_list)) THEN
        DEALLOCATE(helper%size_request_list)
     END IF
-    IF (ALLOCATED(helper%size_status_list)) THEN
-       DEALLOCATE(helper%size_status_list)
-    END IF
     IF (ALLOCATED(helper%outer_request_list)) THEN
        DEALLOCATE(helper%outer_request_list)
-    END IF
-    IF (ALLOCATED(helper%outer_status_list)) THEN
-       DEALLOCATE(helper%outer_status_list)
     END IF
     IF (ALLOCATED(helper%inner_request_list)) THEN
        DEALLOCATE(helper%inner_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_status_list)) THEN
-       DEALLOCATE(helper%inner_status_list)
-    END IF
-    IF (ALLOCATED(helper%size_request_list)) THEN
+    IF (ALLOCATED(helper%data_request_list)) THEN
        DEALLOCATE(helper%data_request_list)
-    END IF
-    IF (ALLOCATED(helper%data_status_list)) THEN
-       DEALLOCATE(helper%data_status_list)
     END IF
 #endif
 
@@ -246,26 +218,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (ALLOCATED(helper%size_request_list)) THEN
        DEALLOCATE(helper%size_request_list)
     END IF
-    IF (ALLOCATED(helper%size_status_list)) THEN
-       DEALLOCATE(helper%size_status_list)
-    END IF
     IF (ALLOCATED(helper%outer_request_list)) THEN
        DEALLOCATE(helper%outer_request_list)
-    END IF
-    IF (ALLOCATED(helper%outer_status_list)) THEN
-       DEALLOCATE(helper%outer_status_list)
     END IF
     IF (ALLOCATED(helper%inner_request_list)) THEN
        DEALLOCATE(helper%inner_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_status_list)) THEN
-       DEALLOCATE(helper%inner_status_list)
-    END IF
-    IF (ALLOCATED(helper%size_request_list)) THEN
+    IF (ALLOCATED(helper%data_request_list)) THEN
        DEALLOCATE(helper%data_request_list)
-    END IF
-    IF (ALLOCATED(helper%data_status_list)) THEN
-       DEALLOCATE(helper%data_status_list)
     END IF
 #endif
 
@@ -357,26 +317,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (ALLOCATED(helper%size_request_list)) THEN
        DEALLOCATE(helper%size_request_list)
     END IF
-    IF (ALLOCATED(helper%size_status_list)) THEN
-       DEALLOCATE(helper%size_status_list)
-    END IF
     IF (ALLOCATED(helper%outer_request_list)) THEN
        DEALLOCATE(helper%outer_request_list)
-    END IF
-    IF (ALLOCATED(helper%outer_status_list)) THEN
-       DEALLOCATE(helper%outer_status_list)
     END IF
     IF (ALLOCATED(helper%inner_request_list)) THEN
        DEALLOCATE(helper%inner_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_status_list)) THEN
-       DEALLOCATE(helper%inner_status_list)
-    END IF
-    IF (ALLOCATED(helper%size_request_list)) THEN
+    IF (ALLOCATED(helper%data_request_list)) THEN
        DEALLOCATE(helper%data_request_list)
-    END IF
-    IF (ALLOCATED(helper%data_status_list)) THEN
-       DEALLOCATE(helper%data_status_list)
     END IF
 #endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsr
@@ -400,26 +348,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (ALLOCATED(helper%size_request_list)) THEN
        DEALLOCATE(helper%size_request_list)
     END IF
-    IF (ALLOCATED(helper%size_status_list)) THEN
-       DEALLOCATE(helper%size_status_list)
-    END IF
     IF (ALLOCATED(helper%outer_request_list)) THEN
        DEALLOCATE(helper%outer_request_list)
-    END IF
-    IF (ALLOCATED(helper%outer_status_list)) THEN
-       DEALLOCATE(helper%outer_status_list)
     END IF
     IF (ALLOCATED(helper%inner_request_list)) THEN
        DEALLOCATE(helper%inner_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_status_list)) THEN
-       DEALLOCATE(helper%inner_status_list)
-    END IF
-    IF (ALLOCATED(helper%size_request_list)) THEN
+    IF (ALLOCATED(helper%data_request_list)) THEN
        DEALLOCATE(helper%data_request_list)
-    END IF
-    IF (ALLOCATED(helper%data_status_list)) THEN
-       DEALLOCATE(helper%data_status_list)
     END IF
 #endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsc
@@ -432,10 +368,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: request_completed
 #ifdef NOIALLGATHER
     CALL MPI_Testall(SIZE(helper%size_request_list), helper%size_request_list, &
-         & request_completed, helper%size_status_list, helper%error_code)
+         & request_completed, MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%size_request, request_completed, &
-         & helper%size_status, helper%error_code)
+         & MPI_STATUSES_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceSizeRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -448,10 +384,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef NOIALLGATHER
     CALL MPI_Testall(SIZE(helper%outer_request_list), &
          & helper%outer_request_list, request_completed, &
-         & helper%outer_status_list, helper%error_code)
+         & MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%outer_request, request_completed, &
-         & helper%outer_status, helper%error_code)
+         & MPI_STATUSES_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceOuterRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -464,10 +400,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef NOIALLGATHER
     CALL MPI_Testall(SIZE(helper%inner_request_list), &
          & helper%inner_request_list, request_completed, &
-         & helper%inner_status_list, helper%error_code)
+         & MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%inner_request, request_completed, &
-         & helper%inner_status, helper%error_code)
+         & MPI_STATUSES_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceInnerRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -479,10 +415,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: request_completed
 #ifdef NOIALLGATHER
     CALL MPI_Testall(SIZE(helper%data_request_list), helper%data_request_list,&
-         & request_completed, helper%data_status_list, helper%error_code)
+         & request_completed, MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%data_request, request_completed, &
-         & helper%data_status, helper%error_code)
+         & MPI_STATUSES_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceDataRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

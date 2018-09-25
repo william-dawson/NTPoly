@@ -8,9 +8,6 @@
   ALLOCATE(helper%outer_request_list(helper%comm_size*2))
   ALLOCATE(helper%inner_request_list(helper%comm_size*2))
   ALLOCATE(helper%data_request_list(helper%comm_size*2))
-  ALLOCATE(helper%outer_status_list(helper%comm_size*2, MPI_STATUS_SIZE))
-  ALLOCATE(helper%inner_status_list(helper%comm_size*2, MPI_STATUS_SIZE))
-  ALLOCATE(helper%data_status_list(helper%comm_size*2, MPI_STATUS_SIZE))
 
   ALLOCATE(helper%displacement(helper%comm_size))
   !! Build Displacement List
