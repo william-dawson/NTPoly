@@ -371,7 +371,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & request_completed, MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%size_request, request_completed, &
-         & MPI_STATUSES_IGNORE, helper%error_code)
+         & MPI_STATUS_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceSizeRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -387,7 +387,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%outer_request, request_completed, &
-         & MPI_STATUSES_IGNORE, helper%error_code)
+         & MPI_STATUS_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceOuterRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -403,7 +403,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%inner_request, request_completed, &
-         & MPI_STATUSES_IGNORE, helper%error_code)
+         & MPI_STATUS_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceInnerRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -418,7 +418,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & request_completed, MPI_STATUSES_IGNORE, helper%error_code)
 #else
     CALL MPI_Test(helper%data_request, request_completed, &
-         & MPI_STATUSES_IGNORE, helper%error_code)
+         & MPI_STATUS_IGNORE, helper%error_code)
 #endif
   END FUNCTION TestReduceDataRequest
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
