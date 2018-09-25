@@ -1,11 +1,18 @@
   !! Local Data
   INTEGER :: grid_error
   INTEGER :: II
-  INTEGER :: sum_total_values, sum_outer_indices
+  INTEGER :: sum_total_values
+  INTEGER :: idx
 
-  ALLOCATE(helper%displacement(helper%comm_size))
+  !! Compute values per process
+  ALLOCATE(helper%values_per_process(helper%comm_size))
+  DO II = 1, helper%comm_size
+     idx = (matrix%columns+1)*II
+     helper%values_per_process(II) = gathered_matrix%outer_index(idx)
+  END DO
 
   !! Build Displacement List
+  ALLOCATE(helper%displacement(helper%comm_size))
   helper%displacement(1) = 0
   DO II = 2, SIZE(helper%displacement)
      helper%displacement(II) = helper%displacement(II-1) + &
@@ -14,17 +21,11 @@
 
   !! Build Storage
   sum_total_values = SUM(helper%values_per_process)
-  sum_outer_indices = (matrix%columns+1)*helper%comm_size
-  CALL DestructMatrix(gathered_matrix)
   ALLOCATE(gathered_matrix%values(sum_total_values))
   ALLOCATE(gathered_matrix%inner_index(sum_total_values))
-  ALLOCATE(gathered_matrix%outer_index(sum_outer_indices+1))
 
   !! MPI Calls
   CALL MPI_IAllGatherv(matrix%inner_index,SIZE(matrix%values),MPI_INT, &
        & gathered_matrix%inner_index, helper%values_per_process, &
        & helper%displacement, MPI_INT, communicator, helper%inner_request, &
        & grid_error)
-  CALL MPI_IAllGather(matrix%outer_index, matrix%columns+1,&
-       & MPI_INT, gathered_matrix%outer_index, matrix%columns+1, MPI_INT, &
-       & communicator, helper%outer_request, grid_error)

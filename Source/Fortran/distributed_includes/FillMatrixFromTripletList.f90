@@ -20,14 +20,13 @@
   !! summing up.
   IF (.NOT. preduplicated .AND. &
        & .NOT. this%process_grid%num_process_slices .EQ. 1) THEN
-     CALL ReduceMatrixSizes(local_matrix, this%process_grid%between_slice_comm,&
+     CALL ReduceAndSumMatrixSizes(local_matrix, &
+          & this%process_grid%between_slice_comm, gathered_matrix, &
           & gather_helper)
      DO WHILE(.NOT. TestReduceSizeRequest(gather_helper))
      END DO
      CALL ReduceAndSumMatrixData(local_matrix, gathered_matrix, &
           & this%process_grid%between_slice_comm, gather_helper)
-     DO WHILE(.NOT. TestReduceOuterRequest(gather_helper))
-     END DO
      DO WHILE(.NOT. TestReduceInnerRequest(gather_helper))
      END DO
      DO WHILE(.NOT. TestReduceDataRequest(gather_helper))

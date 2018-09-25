@@ -9,28 +9,27 @@
 
   !! Merge Columns
   CALL TransposeMatrix(merged_local_data, merged_local_dataT)
-  CALL ReduceMatrixSizes(merged_local_dataT, this%process_grid%column_comm, &
-       & column_helper)
-  CALL MPI_Wait(column_helper%size_request ,mpi_status,ierr)
-  CALL ReduceAndComposeMatrixData(merged_local_dataT, &
-       & this%process_grid%column_comm,merged_columns, &
-       & column_helper)
+  CALL ReduceAndComposeMatrixSizes(merged_local_dataT, &
+       & this%process_grid%column_comm, merged_columns, column_helper)
   CALL MPI_Wait(column_helper%outer_request,mpi_status,ierr)
+  CALL ReduceAndComposeMatrixData(merged_local_dataT, &
+       & this%process_grid%column_comm, merged_columns, &
+       & column_helper)
   CALL MPI_Wait(column_helper%inner_request,mpi_status,ierr)
   CALL MPI_Wait(column_helper%data_request,mpi_status,ierr)
-  CALL ReduceAndComposeMatrixCleanup(merged_local_dataT,merged_columns, &
+  CALL ReduceAndComposeMatrixCleanup(merged_local_dataT, merged_columns, &
        & column_helper)
 
   !! Merge Rows
   CALL TransposeMatrix(merged_columns,merged_columnsT)
-  CALL ReduceMatrixSizes(merged_columnsT, this%process_grid%row_comm, row_helper)
-  CALL MPI_Wait(row_helper%size_request,mpi_status,ierr)
-  CALL ReduceAndComposeMatrixData(merged_columnsT, this%process_grid%row_comm, &
-       & full_gathered,row_helper)
+  CALL ReduceAndComposeMatrixSizes(merged_columnsT, &
+       & this%process_grid%row_comm, full_gathered, row_helper)
   CALL MPI_Wait(row_helper%outer_request,mpi_status,ierr)
+  CALL ReduceAndComposeMatrixData(merged_columnsT, this%process_grid%row_comm, &
+       & full_gathered, row_helper)
   CALL MPI_Wait(row_helper%inner_request,mpi_status,ierr)
   CALL MPI_Wait(row_helper%data_request,mpi_status,ierr)
-  CALL ReduceAndComposeMatrixCleanup(merged_columnsT,full_gathered,row_helper)
+  CALL ReduceAndComposeMatrixCleanup(merged_columnsT, full_gathered,row_helper)
 
   !! Make these changes so that it prints the logical rows/columns
   full_gathered%rows = this%actual_matrix_dimension

@@ -40,14 +40,4 @@
      CALL MPI_Irecv(gathered_matrix%inner_index(istart:iend), isize, MPI_INT, &
           & II-1, 2, communicator, &
           & helper%inner_recv_request_list(II), grid_error)
-     !! Send/Recv Outer Index
-     CALL MPI_ISend(matrix%outer_index, SIZE(matrix%outer_index), MPI_INT, &
-          & II-1, 3, communicator, helper%outer_send_request_list(II), &
-          & grid_error)
-     istart = (matrix%columns+1)*(II-1)+1
-     isize = matrix%columns + 1
-     iend = istart + isize - 1
-     CALL MPI_Irecv(gathered_matrix%outer_index(istart:iend), isize, MPI_INT, &
-          & II-1, 3, communicator, &
-          & helper%outer_recv_request_list(II), grid_error)
   END DO
