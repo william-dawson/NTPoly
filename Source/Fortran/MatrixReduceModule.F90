@@ -29,13 +29,17 @@ MODULE MatrixReduceModule
      INTEGER, DIMENSION(:), ALLOCATABLE :: displacement
 #ifdef NOIALLGATHER
      !> For mpi backup plan, a list of request object for the sizes.
-     INTEGER, DIMENSION(:), ALLOCATABLE :: size_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: size_send_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: size_recv_request_list
      !> For mpi backup, a list of request objets for outer indices.
-     INTEGER, DIMENSION(:), ALLOCATABLE :: outer_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: outer_send_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: outer_recv_request_list
      !> For mpi backup, a list of request objects for inner indices.
-     INTEGER, DIMENSION(:), ALLOCATABLE :: inner_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: inner_send_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: inner_recv_request_list
      !> For mpi backup, a list of request object for data.
-     INTEGER, DIMENSION(:), ALLOCATABLE :: data_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: data_send_request_list
+     INTEGER, DIMENSION(:), ALLOCATABLE :: data_recv_request_list
 #endif
   END TYPE ReduceHelper_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -121,13 +125,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
-            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_send_request_list(II), &
+            & grid_error)
        istart = helper%displacement(II)+1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, MPINTREAL, &
             & II-1, 4, communicator, &
-            & helper%data_request_list(helper%comm_size+II), grid_error)
+            & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
@@ -158,13 +163,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
-            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_send_request_list(II), &
+            & grid_error)
        istart = helper%displacement(II)+1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, &
             & MPINTCOMPLEX, II-1, 4, communicator, &
-            & helper%data_request_list(helper%comm_size+II), grid_error)
+            & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
@@ -187,17 +193,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    IF (ALLOCATED(helper%size_request_list)) THEN
-       DEALLOCATE(helper%size_request_list)
+    IF (ALLOCATED(helper%size_send_request_list)) THEN
+       DEALLOCATE(helper%size_send_request_list)
     END IF
-    IF (ALLOCATED(helper%outer_request_list)) THEN
-       DEALLOCATE(helper%outer_request_list)
+    IF (ALLOCATED(helper%size_recv_request_list)) THEN
+       DEALLOCATE(helper%size_recv_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_request_list)) THEN
-       DEALLOCATE(helper%inner_request_list)
+    IF (ALLOCATED(helper%outer_send_request_list)) THEN
+       DEALLOCATE(helper%outer_send_request_list)
     END IF
-    IF (ALLOCATED(helper%data_request_list)) THEN
-       DEALLOCATE(helper%data_request_list)
+    IF (ALLOCATED(helper%outer_recv_request_list)) THEN
+       DEALLOCATE(helper%outer_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_send_request_list)) THEN
+       DEALLOCATE(helper%inner_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_recv_request_list)) THEN
+       DEALLOCATE(helper%inner_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_send_request_list)) THEN
+       DEALLOCATE(helper%data_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_recv_request_list)) THEN
+       DEALLOCATE(helper%data_recv_request_list)
     END IF
 #endif
 
@@ -215,17 +233,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    IF (ALLOCATED(helper%size_request_list)) THEN
-       DEALLOCATE(helper%size_request_list)
+    IF (ALLOCATED(helper%size_send_request_list)) THEN
+       DEALLOCATE(helper%size_send_request_list)
     END IF
-    IF (ALLOCATED(helper%outer_request_list)) THEN
-       DEALLOCATE(helper%outer_request_list)
+    IF (ALLOCATED(helper%size_recv_request_list)) THEN
+       DEALLOCATE(helper%size_recv_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_request_list)) THEN
-       DEALLOCATE(helper%inner_request_list)
+    IF (ALLOCATED(helper%outer_send_request_list)) THEN
+       DEALLOCATE(helper%outer_send_request_list)
     END IF
-    IF (ALLOCATED(helper%data_request_list)) THEN
-       DEALLOCATE(helper%data_request_list)
+    IF (ALLOCATED(helper%outer_recv_request_list)) THEN
+       DEALLOCATE(helper%outer_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_send_request_list)) THEN
+       DEALLOCATE(helper%inner_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_recv_request_list)) THEN
+       DEALLOCATE(helper%inner_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_send_request_list)) THEN
+       DEALLOCATE(helper%data_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_recv_request_list)) THEN
+       DEALLOCATE(helper%data_recv_request_list)
     END IF
 #endif
 
@@ -246,13 +276,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
-            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_send_request_list(II), &
+            & grid_error)
        istart = helper%displacement(II)+1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, MPINTREAL, &
             & II-1, 4, communicator, &
-            & helper%data_request_list(helper%comm_size+II), grid_error)
+            & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
@@ -281,13 +312,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
-            & II-1, 4, communicator, helper%data_request_list(II), grid_error)
+            & II-1, 4, communicator, helper%data_send_request_list(II), &
+            & grid_error)
        istart = helper%displacement(II)+1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, &
             & MPINTCOMPLEX, II-1, 4, communicator, &
-            & helper%data_request_list(helper%comm_size+II), grid_error)
+            & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
     INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
@@ -314,17 +346,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    IF (ALLOCATED(helper%size_request_list)) THEN
-       DEALLOCATE(helper%size_request_list)
+    IF (ALLOCATED(helper%size_send_request_list)) THEN
+       DEALLOCATE(helper%size_send_request_list)
     END IF
-    IF (ALLOCATED(helper%outer_request_list)) THEN
-       DEALLOCATE(helper%outer_request_list)
+    IF (ALLOCATED(helper%size_recv_request_list)) THEN
+       DEALLOCATE(helper%size_recv_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_request_list)) THEN
-       DEALLOCATE(helper%inner_request_list)
+    IF (ALLOCATED(helper%outer_send_request_list)) THEN
+       DEALLOCATE(helper%outer_send_request_list)
     END IF
-    IF (ALLOCATED(helper%data_request_list)) THEN
-       DEALLOCATE(helper%data_request_list)
+    IF (ALLOCATED(helper%outer_recv_request_list)) THEN
+       DEALLOCATE(helper%outer_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_send_request_list)) THEN
+       DEALLOCATE(helper%inner_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_recv_request_list)) THEN
+       DEALLOCATE(helper%inner_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_send_request_list)) THEN
+       DEALLOCATE(helper%data_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_recv_request_list)) THEN
+       DEALLOCATE(helper%data_recv_request_list)
     END IF
 #endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsr
@@ -345,17 +389,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
-    IF (ALLOCATED(helper%size_request_list)) THEN
-       DEALLOCATE(helper%size_request_list)
+    IF (ALLOCATED(helper%size_send_request_list)) THEN
+       DEALLOCATE(helper%size_send_request_list)
     END IF
-    IF (ALLOCATED(helper%outer_request_list)) THEN
-       DEALLOCATE(helper%outer_request_list)
+    IF (ALLOCATED(helper%size_recv_request_list)) THEN
+       DEALLOCATE(helper%size_recv_request_list)
     END IF
-    IF (ALLOCATED(helper%inner_request_list)) THEN
-       DEALLOCATE(helper%inner_request_list)
+    IF (ALLOCATED(helper%outer_send_request_list)) THEN
+       DEALLOCATE(helper%outer_send_request_list)
     END IF
-    IF (ALLOCATED(helper%data_request_list)) THEN
-       DEALLOCATE(helper%data_request_list)
+    IF (ALLOCATED(helper%outer_recv_request_list)) THEN
+       DEALLOCATE(helper%outer_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_send_request_list)) THEN
+       DEALLOCATE(helper%inner_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%inner_recv_request_list)) THEN
+       DEALLOCATE(helper%inner_recv_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_send_request_list)) THEN
+       DEALLOCATE(helper%data_send_request_list)
+    END IF
+    IF (ALLOCATED(helper%data_recv_request_list)) THEN
+       DEALLOCATE(helper%data_recv_request_list)
     END IF
 #endif
   END SUBROUTINE ReduceAndSumMatrixCleanup_lsc
@@ -366,9 +422,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
+    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
-    CALL MPI_Testall(SIZE(helper%size_request_list), helper%size_request_list, &
-         & request_completed, MPI_STATUSES_IGNORE, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%size_send_request_list), &
+         & helper%size_send_request_list, send_request_completed, &
+         & MPI_STATUSES_IGNORE, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%size_recv_request_list), &
+         & helper%size_recv_request_list, recv_request_completed, &
+         & MPI_STATUSES_IGNORE, helper%error_code)
+    request_completed = send_request_completed .AND. recv_request_completed
 #else
     CALL MPI_Test(helper%size_request, request_completed, &
          & MPI_STATUS_IGNORE, helper%error_code)
@@ -381,10 +443,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
+    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
-    CALL MPI_Testall(SIZE(helper%outer_request_list), &
-         & helper%outer_request_list, request_completed, &
+    CALL MPI_Testall(SIZE(helper%outer_send_request_list), &
+         & helper%outer_send_request_list, send_request_completed, &
          & MPI_STATUSES_IGNORE, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%outer_recv_request_list), &
+         & helper%outer_recv_request_list, recv_request_completed, &
+         & MPI_STATUSES_IGNORE, helper%error_code)
+    request_completed = send_request_completed .AND. recv_request_completed
 #else
     CALL MPI_Test(helper%outer_request, request_completed, &
          & MPI_STATUS_IGNORE, helper%error_code)
@@ -397,10 +464,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
+    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
-    CALL MPI_Testall(SIZE(helper%inner_request_list), &
-         & helper%inner_request_list, request_completed, &
+    CALL MPI_Testall(SIZE(helper%inner_send_request_list), &
+         & helper%inner_send_request_list, send_request_completed, &
          & MPI_STATUSES_IGNORE, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%inner_recv_request_list), &
+         & helper%inner_recv_request_list, recv_request_completed, &
+         & MPI_STATUSES_IGNORE, helper%error_code)
+    request_completed = send_request_completed .AND. recv_request_completed
 #else
     CALL MPI_Test(helper%inner_request, request_completed, &
          & MPI_STATUS_IGNORE, helper%error_code)
@@ -413,9 +485,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
+    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
-    CALL MPI_Testall(SIZE(helper%data_request_list), helper%data_request_list,&
-         & request_completed, MPI_STATUSES_IGNORE, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%data_send_request_list), &
+         & helper%data_send_request_list, send_request_completed, &
+         & MPI_STATUSES_IGNORE, helper%error_code)
+    CALL MPI_Testall(SIZE(helper%data_recv_request_list), &
+         & helper%data_recv_request_list, recv_request_completed, &
+         & MPI_STATUSES_IGNORE, helper%error_code)
+    request_completed = send_request_completed .AND. recv_request_completed
 #else
     CALL MPI_Test(helper%data_request, request_completed, &
          & MPI_STATUS_IGNORE, helper%error_code)
