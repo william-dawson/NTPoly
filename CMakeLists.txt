@@ -40,15 +40,18 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 ################################################################################
-## Check for Nonblocking Collectives
-IF (NOIALLGATHER)
-  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -DNOIALLGATHER")
-  set(CMAKE_Fortran_FLAGS_RELEASE
-      "${CMAKE_Fortran_FLAGS_RELEASE} -DNOIALLGATHER")
-  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DNOIALLGATHER")
+## Check MPI Features
+option(USE_MPIH OFF)
+if (NOT ${MPI_Fortran_HAVE_F90_MODULE})
+  add_definitions(-DUSE_MPIH)
+endif()
+
+option(NOIALLGATHER OFF)
+if (NOIALLGATHER)
+  add_definitions(-DNOIALLGATHER)
   message("IAllgather replacement activated.")
   message("Note that this may reduce parallel performance.")
-ENDIF()
+endif()
 
 ################################################################################
 ## Get at the source files
