@@ -8,7 +8,6 @@ MODULE SMatrixModule
        & AppendToTripletList, SymmetrizeTripletList, ConvertTripletListType
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE TimerModule, ONLY : StartTimer, StopTimer
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

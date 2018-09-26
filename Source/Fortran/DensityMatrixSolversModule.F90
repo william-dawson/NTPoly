@@ -14,7 +14,6 @@ MODULE DensityMatrixSolversModule
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
        & ConjugateMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -12,7 +12,6 @@ MODULE ChebyshevSolversModule
        & PrintMatrixInformation, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

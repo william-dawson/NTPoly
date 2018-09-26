@@ -20,8 +20,8 @@
   bytes_per_data = sizeof(temp_data)
   header_size = bytes_per_int*4
   ALLOCATE(local_values_buffer(this%process_grid%slice_size))
-  CALL MPI_Allgather(SIZE(merged_local_data%values),1,MPI_INT,&
-       & local_values_buffer,1,MPI_INT,&
+  CALL MPI_Allgather(SIZE(merged_local_data%values), 1, MPINTINTEGER,&
+       & local_values_buffer, 1, MPINTINTEGER,&
        & this%process_grid%within_slice_comm,ierr)
   write_offset = 0
   write_offset = write_offset + header_size
@@ -37,8 +37,8 @@
      !! Absolute Positions
      CALL ShiftTripletList(triplet_list, this%start_row - 1, &
           & this%start_column - 1)
-     CALL MPI_File_open(this%process_grid%within_slice_comm,file_name,&
-          & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
+     CALL MPI_File_open(this%process_grid%within_slice_comm, file_name,&
+          & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY), MPI_INFO_NULL, &
           & mpi_file_handler, ierr)
      !! Write Header
      IF (this%process_grid%within_slice_rank .EQ. 0) THEN
@@ -50,13 +50,13 @@
         ELSE
            header_buffer(4) = 0
         END IF
-        CALL MPI_File_write_at(mpi_file_handler,zero_offset,header_buffer,4,&
-             & MPI_INT,mpi_status,ierr)
+        CALL MPI_File_write_at(mpi_file_handler, zero_offset, header_buffer, &
+             & 4, MPINTINTEGER, mpi_status,ierr)
      END IF
      !! Write The Rest
      CALL MPI_File_set_view(mpi_file_handler,write_offset,triplet_mpi_type,&
           & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
-     CALL MPI_File_write(mpi_file_handler,triplet_list%data, &
+     CALL MPI_File_write(mpi_file_handler, triplet_list%data, &
           & triplet_list%CurrentSize, triplet_mpi_type, MPI_STATUS_IGNORE, &
           & ierr)
 

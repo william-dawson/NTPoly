@@ -9,7 +9,6 @@ MODULE PolynomialSolversModule
   USE PSMatrixModule
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

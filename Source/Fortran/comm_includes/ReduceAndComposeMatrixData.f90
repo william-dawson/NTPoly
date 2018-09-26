@@ -25,7 +25,7 @@
   ALLOCATE(gathered_matrix%inner_index(total_values))
 
   !! MPI Calls
-  CALL MPI_IAllGatherv(matrix%inner_index,SIZE(matrix%values),MPI_INT, &
+  CALL MPI_IAllGatherv(matrix%inner_index,SIZE(matrix%values),MPINTINTEGER, &
        & gathered_matrix%inner_index, helper%values_per_process, &
-       & helper%displacement, MPI_INT, communicator, &
+       & helper%displacement, MPINTINTEGER, communicator, &
        & helper%inner_request, grid_error)

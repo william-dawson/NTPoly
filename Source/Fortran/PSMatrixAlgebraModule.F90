@@ -22,7 +22,7 @@ MODULE PSMatrixAlgebraModule
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & DestructTripletList
   USE ISO_C_BINDING
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

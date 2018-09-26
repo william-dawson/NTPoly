@@ -11,5 +11,5 @@
 
   !! Gather Outer Indices
   CALL MPI_IAllGather(matrix%outer_index, matrix%columns+1,&
-       & MPI_INT, gathered_matrix%outer_index, matrix%columns+1, MPI_INT, &
-       & communicator, helper%outer_request, grid_error)
+       & MPINTINTEGER, gathered_matrix%outer_index, matrix%columns+1, &
+       & MPINTINTEGER, communicator, helper%outer_request, grid_error)

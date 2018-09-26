@@ -34,13 +34,13 @@
   !! MPI Calls
   DO II = 1, helper%comm_size
      !! Send/Recv inner index
-     CALL MPI_ISend(matrix%inner_index, SIZE(matrix%inner_index), MPI_INT, &
-          & II-1, 2, communicator, helper%inner_send_request_list(II), &
-          & grid_error)
+     CALL MPI_ISend(matrix%inner_index, SIZE(matrix%inner_index), &
+          & MPINTINTEGER, II-1, 2, communicator, &
+          & helper%inner_send_request_list(II), grid_error)
      istart = helper%displacement(II)+1
      isize = helper%values_per_process(II)
      iend = istart + isize - 1
-     CALL MPI_Irecv(gathered_matrix%inner_index(istart:iend), isize, MPI_INT, &
-          & II-1, 2, communicator, &
+     CALL MPI_Irecv(gathered_matrix%inner_index(istart:iend), isize, &
+          & MPINTINTEGER, II-1, 2, communicator, &
           & helper%inner_recv_request_list(II), grid_error)
   END DO

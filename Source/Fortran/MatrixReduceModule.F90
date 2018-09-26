@@ -1,11 +1,12 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
+       & MPINTINTEGER
   USE SMatrixAlgebraModule, ONLY : IncrementMatrix
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix, &
        & DestructMatrix, CopyMatrix
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -436,8 +437,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
+    LOGICAL :: send_request_completed, recv_request_completed
     CALL MPI_Testall(SIZE(helper%outer_send_request_list), &
          & helper%outer_send_request_list, send_request_completed, &
          & MPI_STATUSES_IGNORE, helper%error_code)
@@ -457,8 +458,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
+    LOGICAL :: send_request_completed, recv_request_completed
     CALL MPI_Testall(SIZE(helper%inner_send_request_list), &
          & helper%inner_send_request_list, send_request_completed, &
          & MPI_STATUSES_IGNORE, helper%error_code)
@@ -478,8 +479,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !> True if the request is finished.
     LOGICAL :: request_completed
-    LOGICAL :: send_request_completed, recv_request_completed
 #ifdef NOIALLGATHER
+    LOGICAL :: send_request_completed, recv_request_completed
     CALL MPI_Testall(SIZE(helper%data_send_request_list), &
          & helper%data_send_request_list, send_request_completed, &
          & MPI_STATUSES_IGNORE, helper%error_code)

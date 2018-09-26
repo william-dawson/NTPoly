@@ -10,6 +10,6 @@
 
   !! Gather Information About Other Processes
   CALL MPI_IAllGather(matrix%outer_index(2:), matrix%columns,&
-       & MPI_INT, gathered_matrix%outer_index(2:), &
-       & matrix%columns, MPI_INT, communicator, helper%outer_request, &
+       & MPINTINTEGER, gathered_matrix%outer_index(2:), &
+       & matrix%columns, MPINTINTEGER, communicator, helper%outer_request, &
        & grid_error)
