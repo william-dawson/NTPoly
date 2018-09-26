@@ -46,6 +46,8 @@ IF (NOIALLGATHER)
   set(CMAKE_Fortran_FLAGS_RELEASE
       "${CMAKE_Fortran_FLAGS_RELEASE} -DNOIALLGATHER")
   set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DNOIALLGATHER")
+  message("IAllgather replacement activated.")
+  message("Note that this may reduce parallel performance.")
 ENDIF()
 
 ################################################################################
