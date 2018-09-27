@@ -31,8 +31,8 @@
   END DO
 
   !! Figure Out How Much Data Gets Received
-  CALL MPI_ALLTOALL(send_per_process, 1, MPI_INT, recv_per_process, 1, &
-       & MPI_INT, comm, mpi_error)
+  CALL MPI_ALLTOALL(send_per_process, 1, MPINTINTEGER, recv_per_process, 1, &
+       & MPINTINTEGER, comm, mpi_error)
   recv_offsets(1) = 0
   DO counter = 2, num_processes
      recv_offsets(counter) = recv_offsets(counter-1) + &
@@ -60,17 +60,15 @@
   END DO
 
   !! Do Actual Send
-  CALL StartTimer("AllToAllV")
   CALL MPI_Alltoallv(send_buffer_col, send_per_process, send_offsets, &
-       & MPI_INT, recv_buffer_col, recv_per_process, recv_offsets, MPI_INT, &
-       & comm, mpi_error)
+       & MPINTINTEGER, recv_buffer_col, recv_per_process, recv_offsets, &
+       & MPINTINTEGER, comm, mpi_error)
   CALL MPI_Alltoallv(send_buffer_row, send_per_process, send_offsets, &
-       & MPI_INT, recv_buffer_row, recv_per_process, recv_offsets, MPI_INT, &
-       & comm, mpi_error)
+       & MPINTINTEGER, recv_buffer_row, recv_per_process, recv_offsets, &
+       & MPINTINTEGER, comm, mpi_error)
   CALL MPI_Alltoallv(send_buffer_val, send_per_process, send_offsets, &
        & MPIDATATYPE, recv_buffer_val, recv_per_process, recv_offsets, &
        & MPIDATATYPE, comm, mpi_error)
-  CALL StopTimer("AllToAllV")
 
   !! Unpack Into The Output Triplet List
   CALL ConstructTripletList(local_data_out, size_in=SUM(recv_per_process))
