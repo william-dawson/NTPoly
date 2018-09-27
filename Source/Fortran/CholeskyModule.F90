@@ -1,10 +1,11 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Helper Routines for Computing The Cholesky Decomposition
 MODULE CholeskyModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, MPINTINTEGER
   USE DMatrixModule, ONLY : Matrix_ldr
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
-       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
+       & TestReduceSizeRequest, TestReduceInnerRequest, TestReduceDataRequest
   USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixFromTripletList
   USE ProcessGridModule, ONLY : ProcessGrid_t
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, TransposeMatrix, &
@@ -13,7 +14,7 @@ MODULE CholeskyModule
   USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
        & DestructTripletList
   USE TripletModule, ONLY : Triplet_r
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -121,15 +122,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     cols_per_proc(process_grid%my_column+1) = AMat%local_columns
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
-         & MPI_INTEGER, process_grid%row_comm, ierr)
+    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPINTINTEGER, cols_per_proc, 1, &
+         & MPINTINTEGER, process_grid%row_comm, ierr)
     d_cols_per_proc(1) = 0
     DO II = 2, process_grid%num_process_columns
        d_cols_per_proc(II) = d_cols_per_proc(II-1) + cols_per_proc(II-1)
     END DO
     col_root_lookup(AMat%start_column:AMat%end_column - 1) = process_grid%row_rank
-    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
-         & col_root_lookup, cols_per_proc, d_cols_per_proc, MPI_INTEGER, &
+    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPINTINTEGER, &
+         & col_root_lookup, cols_per_proc, d_cols_per_proc, MPINTINTEGER, &
          & process_grid%row_comm, ierr)
 
   END SUBROUTINE ConstructRankLookup
