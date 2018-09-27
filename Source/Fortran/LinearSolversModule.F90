@@ -19,6 +19,7 @@ MODULE LinearSolversModule
        & FillMatrixIdentity, MergeMatrixLocalBlocks, PrintMatrixInformation
   USE SMatrixModule, ONLY : Matrix_lsr
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
