@@ -342,6 +342,24 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & ierr)
     CALL MPI_COMM_DUP(old_grid%between_slice_comm, &
          & new_grid%between_slice_comm, ierr)
+
+    !! Copy all the basic data about a process
+    new_grid%total_processors = old_grid%total_processors
+    new_grid%num_process_rows = old_grid%num_process_rows
+    new_grid%num_process_columns = old_grid%num_process_columns
+    new_grid%num_process_slices = old_grid%num_process_slices
+    new_grid%slice_size = old_grid%slice_size
+    new_grid%my_slice = old_grid%my_slice
+    new_grid%my_row = old_grid%my_row
+    new_grid%my_column = old_grid%my_column
+    new_grid%global_rank = old_grid%global_rank
+    new_grid%within_slice_rank = old_grid%within_slice_rank
+    new_grid%between_slice_rank = old_grid%between_slice_rank
+    new_grid%column_rank = old_grid%column_rank
+    new_grid%row_rank = old_grid%row_rank
+    new_grid%block_multiplier = old_grid%block_multiplier
+    new_grid%number_of_blocks_columns = old_grid%number_of_blocks_columns
+    new_grid%number_of_blocks_rows = old_grid%number_of_blocks_rows
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
@@ -360,6 +378,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DestructProcessGrid(global_grid)
     ELSE !! Destruct
        IF (ALLOCATED(grid_in%blocked_row_comm)) THEN
+          CALL MPI_COMM_FREE(grid_in%global_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%row_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%column_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%within_slice_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%between_slice_comm, ierr)
+
           DO II = 1, grid_in%number_of_blocks_rows
              CALL MPI_COMM_FREE(grid_in%blocked_row_comm(II), ierr)
           END DO
@@ -392,12 +416,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END DO
           DEALLOCATE(grid_in%blocked_between_slice_comm)
        END IF
-
-       CALL MPI_COMM_FREE(grid_in%global_comm, ierr)
-       CALL MPI_COMM_FREE(grid_in%row_comm, ierr)
-       CALL MPI_COMM_FREE(grid_in%column_comm, ierr)
-       CALL MPI_COMM_FREE(grid_in%within_slice_comm, ierr)
-       CALL MPI_COMM_FREE(grid_in%between_slice_comm, ierr)
     END IF
 
   END SUBROUTINE DestructProcessGrid
