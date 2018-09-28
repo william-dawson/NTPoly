@@ -19,7 +19,6 @@ MODULE ExponentialSolversModule
   USE RootSolversModule, ONLY : ComputeRoot
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SquareRootSolversModule, ONLY : SquareRoot
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

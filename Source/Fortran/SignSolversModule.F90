@@ -14,7 +14,6 @@ MODULE SignSolversModule
        & FillMatrixIdentity, PrintMatrixInformation, TransposeMatrix, &
        & ConjugateMatrix, ConstructEmptyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

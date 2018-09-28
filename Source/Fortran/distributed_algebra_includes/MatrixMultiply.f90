@@ -88,19 +88,15 @@
            !$OMP END TASK
         CASE(SendSizeA)
            !! Then Start A Global Gather
-           CALL ReduceMatrixSizes(LocalRowContribution(II), &
+           CALL ReduceAndComposeMatrixSizes(LocalRowContribution(II), &
                 & matAB%process_grid%blocked_row_comm(II), &
-                & row_helper(II))
+                & GatheredRowContribution(II), row_helper(II))
            ATasks(II) = ComposeA
         CASE(ComposeA)
            IF (TestReduceSizeRequest(row_helper(II))) THEN
               CALL ReduceAndComposeMatrixData(LocalRowContribution(II), &
                    & matAB%process_grid%blocked_row_comm(II), &
                    & GatheredRowContribution(II), row_helper(II))
-              ATasks(II) = WaitOuterA
-           END IF
-        CASE(WaitOuterA)
-           IF (TestReduceOuterRequest(row_helper(II))) THEN
               ATasks(II) = WaitInnerA
            END IF
         CASE(WaitInnerA)
@@ -145,19 +141,15 @@
            !$OMP END TASK
         CASE(SendSizeB)
            !! Then A Global Gather
-           CALL ReduceMatrixSizes(LocalColumnContribution(JJ), &
+           CALL ReduceAndComposeMatrixSizes(LocalColumnContribution(JJ), &
                 & matAB%process_grid%blocked_column_comm(JJ), &
-                & column_helper(JJ))
+                & GatheredColumnContribution(JJ), column_helper(JJ))
            BTasks(JJ) = LocalComposeB
         CASE(LocalComposeB)
            IF (TestReduceSizeRequest(column_helper(JJ))) THEN
               CALL ReduceAndComposeMatrixData(LocalColumnContribution(JJ),&
                    & matAB%process_grid%blocked_column_comm(JJ), &
                    & GatheredColumnContribution(JJ), column_helper(JJ))
-              BTasks(JJ) = WaitOuterB
-           END IF
-        CASE(WaitOuterB)
-           IF (TestReduceOuterRequest(column_helper(JJ))) THEN
               BTasks(JJ) = WaitInnerB
            END IF
         CASE(WaitInnerB)
@@ -198,12 +190,18 @@
                    & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
                    & alpha_in=alpha, threshold_in=working_threshold, &
                    & blocked_memory_pool_in=MPGRID(II,JJ))
-              ABTasks(II,JJ) = SendSizeAB
+              !! We can exit early if there is only one process slice
+              IF (matAB%process_grid%num_process_slices .EQ. 1) THEN
+                 ABTasks(II,JJ) = CleanupAB
+                 CALL CopyMatrix(SliceContribution(II,JJ), matAB%LMAT(II,JJ))
+              ELSE
+                 ABTasks(II,JJ) = SendSizeAB
+              END IF
               !$OMP END TASK
            CASE(SendSizeAB)
-              CALL ReduceMatrixSizes(SliceContribution(II,JJ),&
+              CALL ReduceAndSumMatrixSizes(SliceContribution(II,JJ),&
                    & matAB%process_grid%blocked_between_slice_comm(II,JJ), &
-                   & slice_helper(II,JJ))
+                   & matAB%LMAT(II,JJ), slice_helper(II,JJ))
               ABTasks(II,JJ) = GatherAndSumAB
            CASE (GatherAndSumAB)
               IF (TestReduceSizeRequest(slice_helper(II,JJ))) THEN
@@ -211,21 +209,14 @@
                       & matAB%LMAT(II,JJ), &
                       & matAB%process_grid%blocked_between_slice_comm(II,JJ),&
                       & slice_helper(II,JJ))
-                 ABTasks(II,JJ) = WaitOuterAB
-              END IF
-           CASE (WaitOuterAB)
-              IF (TestReduceOuterRequest(&
-                   & slice_helper(II,JJ))) THEN
                  ABTasks(II,JJ) = WaitInnerAB
               END IF
            CASE (WaitInnerAB)
-              IF (TestReduceInnerRequest(&
-                   & slice_helper(II,JJ))) THEN
+              IF (TestReduceInnerRequest(slice_helper(II,JJ))) THEN
                  ABTasks(II,JJ) = WaitDataAB
               END IF
            CASE (WaitDataAB)
-              IF (TestReduceDataRequest(&
-                   & slice_helper(II,JJ))) THEN
+              IF (TestReduceDataRequest(slice_helper(II,JJ))) THEN
                  ABTasks(II,JJ) = LocalSumAB
               END IF
            CASE(LocalSumAB)

@@ -13,7 +13,6 @@ MODULE GeometryOptimizationModule
        & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

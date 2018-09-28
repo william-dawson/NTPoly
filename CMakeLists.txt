@@ -1,7 +1,7 @@
 ################################################################################
 ## Basic Setup
 cmake_minimum_required (VERSION 3.2)
-project(NTPoly VERSION 1.3)
+project(NTPoly VERSION 2.0)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 enable_language(Fortran)
 
@@ -37,6 +37,20 @@ set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS_RELEASE})
   set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS_RELEASE})
+endif()
+
+################################################################################
+## Check MPI Features
+option(USE_MPIH OFF)
+if (NOT ${MPI_Fortran_HAVE_F90_MODULE})
+  add_definitions(-DUSE_MPIH)
+endif()
+
+option(NOIALLGATHER OFF)
+if (NOIALLGATHER)
+  add_definitions(-DNOIALLGATHER)
+  message("IAllgather replacement activated.")
+  message("Note that this may reduce parallel performance.")
 endif()
 
 ################################################################################

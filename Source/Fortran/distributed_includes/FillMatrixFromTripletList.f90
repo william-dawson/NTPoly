@@ -18,15 +18,15 @@
        & this%local_rows, this%local_columns)
   !! And reduce over the Z dimension. This can be accomplished by
   !! summing up.
-  IF (.NOT. PRESENT(preduplicated_in) .OR. .NOT. preduplicated_in) THEN
-     CALL ReduceMatrixSizes(local_matrix, this%process_grid%between_slice_comm,&
+  IF (.NOT. preduplicated .AND. &
+       & .NOT. this%process_grid%num_process_slices .EQ. 1) THEN
+     CALL ReduceAndSumMatrixSizes(local_matrix, &
+          & this%process_grid%between_slice_comm, gathered_matrix, &
           & gather_helper)
      DO WHILE(.NOT. TestReduceSizeRequest(gather_helper))
      END DO
      CALL ReduceAndSumMatrixData(local_matrix, gathered_matrix, &
           & this%process_grid%between_slice_comm, gather_helper)
-     DO WHILE(.NOT. TestReduceOuterRequest(gather_helper))
-     END DO
      DO WHILE(.NOT. TestReduceInnerRequest(gather_helper))
      END DO
      DO WHILE(.NOT. TestReduceDataRequest(gather_helper))
