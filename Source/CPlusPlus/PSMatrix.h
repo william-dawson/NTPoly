@@ -2,8 +2,8 @@
 #define DISTRIBUTEDSPARSEMATRIX_h
 
 #include "Wrapper.h"
-#include <string>
 #include <complex>
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
@@ -84,6 +84,16 @@ public:
   //! \param start_column the starting col for data to store on this process
   //! \param end_column the ending col for data to store on this process
   void GetMatrixBlock(TripletList_c &triplet_list, int start_row, int end_row,
+                      int start_column, int end_column);
+  //! Copy an arbitrary slice from a matrix into a new smaller matrix.
+  //! NTPoly only works with square matrices, so if the number of rows and
+  //! columns is different the matrix is resized to the maximum size.
+  //! \param submatrix the slice to fill.
+  //! \param start_row the starting row to include in this matrix.
+  //! \param end_row the ending row to include in this matrix.
+  //! \param start_column the starting column to include in this matrix.
+  //! \param end_column the last column to include in this matrix.
+  void GetMatrixSlice(Matrix_ps &submatrix, int start_row, int end_row,
                       int start_column, int end_column);
 
 public:

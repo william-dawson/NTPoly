@@ -29,6 +29,8 @@ void GetMatrixBlock_psr_wrp(const int *ih_this, int *ih_triplet_list,
 void GetMatrixBlock_psc_wrp(const int *ih_this, int *ih_triplet_list,
                             int *start_row, int *end_row, int *start_column,
                             int *end_column);
+void GetMatrixSlice_wrp(const int *ih_this, int *ih_submatrix, int *start_row,
+                        int *end_row, int *start_column, int *end_column);
 void TransposeMatrix_ps_wrp(const int *ih_matA, int *ih_transmat);
 void ConjugateMatrix_ps_wrp(int *ih_matA);
 void DotMatrix_psr_wrp(const int *ih_matA, const int *ih_matB, double *product);
