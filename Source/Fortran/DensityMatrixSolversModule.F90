@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
-  USE DataTypesModule, ONLY : NTREAL
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE EigenSolversModule, ONLY : ReferenceEigenDecomposition
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
@@ -13,8 +13,11 @@ MODULE DensityMatrixSolversModule
        & DotMatrix, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
-       & ConjugateMatrix
+       & ConjugateMatrix, GetMatrixSlice, TransposeMatrix, ConjugateMatrix, &
+       & GetMatrixTripletList, PrintMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE TripletListModule, ONLY : TripletList_r, DestructTripletList
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1265,9 +1268,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: TempMat
     TYPE(Matrix_ps) :: eigenvectors, eigenvalues
+    TYPE(Matrix_ps) :: occupied, occupiedT
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: matrix_dim
+    TYPE(TripletList_r) :: val_list
+    REAL(NTREAL) :: homo, lumo
+    INTEGER :: II
+    INTEGER :: ierr
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -1299,11 +1306,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & eigenvalues, solver_parameters)
 
     !! Slice the eigenvectors and eigenvalues
-    CALL GetMatrixBlock(eigenvectors, vec_left, 1, matrix_dim, 1, nel/2)
+    WRITE(*,*) occupied%is_complex
+    CALL GetMatrixSlice(eigenvectors, occupied, 1, &
+         & eigenvectors%actual_matrix_dimension, 1, nel/2)
+     WRITE(*,*) occupied%is_complex
+    CALL TransposeMatrix(occupied, occupiedT)
+    IF (occupied%is_complex) THEN
+       CALL ConjugateMatrix(occupiedT)
+    END IF
+    WRITE(*,*) occupied%is_complex, occupiedT%is_complex
 
     !! Construct the density matrix
+    CALL MatrixMultiply(occupied, occupiedT, Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Extract the energy and chemical potential
+    CALL DotMatrix(Density, WorkingHamiltonian, energy_value)
+    energy_value = 2.0_NTREAL*energy_value
+    CALL GetMatrixTripletList(eigenvalues, val_list)
+    homo = 0.0_NTREAL
+    lumo = 0.0_NTREAL
+    DO II = 1, val_list%CurrentSize
+       IF (val_list%data(II)%index_column .EQ. nel/2) THEN
+          homo = val_list%data(II)%point_value
+       ELSE IF (val_list%data(II)%index_column .EQ. nel/2 + 1) THEN
+          lumo = val_list%data(II)%point_value
+       END IF
+    END DO
+    CALL MPI_Allreduce(MPI_IN_PLACE, homo, 1, MPINTREAL, MPI_SUM, &
+         & Hamiltonian%process_grid%within_slice_comm, ierr)
+    CALL MPI_Allreduce(MPI_IN_PLACE, lumo, 1, MPINTREAL, MPI_SUM, &
+         & Hamiltonian%process_grid%within_slice_comm, ierr)
+    chemical_potential = 0.5_NTREAL*(lumo-homo) + homo
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL MatrixMultiply(InverseSquareRoot,Density,TempMat, &
@@ -1316,6 +1350,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(TempMat)
     CALL DestructMatrix(eigenvectors)
     CALL DestructMatrix(eigenvalues)
+    CALL DestructMatrix(occupied)
+    CALL DestructMatrix(occupiedT)
+    CALL DestructTripletList(val_list)
     CALL DestructMatrixMemoryPool(pool)
 
     !! Optional Parameters

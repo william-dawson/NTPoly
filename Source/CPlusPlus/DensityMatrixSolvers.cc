@@ -53,6 +53,16 @@ void DensityMatrixSolvers::HPCP(const Matrix_ps &Hamiltonian,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void DensityMatrixSolvers::DenseSolver(
+    const Matrix_ps &Hamiltonian, const Matrix_ps &Overlap, int nel,
+    Matrix_ps &Density, double &energy_value_out,
+    double &chemical_potential_out, const SolverParameters &solver_parameters) {
+  DenseSolver_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel, GetIH(Density),
+                  &energy_value_out, &chemical_potential_out,
+                  GetIH(solver_parameters));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void DensityMatrixSolvers::EnergyDensityMatrix(const Matrix_ps &Hamiltonian,
                                                const Matrix_ps &Density,
                                                Matrix_ps &EnergyDensity,
