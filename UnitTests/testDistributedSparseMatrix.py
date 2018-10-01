@@ -81,15 +81,24 @@ class TestDistributedMatrix(unittest.TestCase):
         self.process_rows = int(os.environ['PROCESS_ROWS'])
         self.process_columns = int(os.environ['PROCESS_COLUMNS'])
         self.process_slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(
+
+        # A specific process grid
+        self.grid = nt.ProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
-        # Make sure we can destruct without any problems.
-        nt.DestructProcessGrid()
-        nt.ConstructProcessGrid(
+        del self.grid
+        self.grid = nt.ProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
-        self.myrow = nt.GetMyRow()
-        self.mycolumn = nt.GetMyColumn()
-        self.myslice = nt.GetMySlice()
+        self.myrow = self.grid.GetMyRow()
+        self.mycolumn = self.grid.GetMyColumn()
+        self.myslice = self.grid.GetMySlice()
+
+        # global process grid
+        nt.ConstructGlobalProcessGrid(
+            self.process_rows, self.process_columns, self.process_slices)
+        # test destructor
+        nt.DestructGlobalProcessGrid()
+        nt.ConstructGlobalProcessGrid(
+            self.process_rows, self.process_columns, self.process_slices)
 
     def setUp(self):
         '''Set up specific tests.'''

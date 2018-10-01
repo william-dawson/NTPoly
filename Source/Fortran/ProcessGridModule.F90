@@ -293,8 +293,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
   !! Note that this makes a complete and independent copy of the process grid.
-  !! Which of course means that the old grid will be destroyed, so don't leave
-  !! any matrices pointing to it.
+  !! Which of course means that whatever is currently stored in new_grid will
+  !! be destroyed, so don't leave any matrices pointing to it.
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid

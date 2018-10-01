@@ -12,6 +12,7 @@ class Permutation;
 class SolverBase;
 class TripletList_r;
 class TripletList_c;
+class ProcessGrid;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Module For Performing Distributed Sparse Matrix Operations.
 class Matrix_ps {
@@ -19,12 +20,22 @@ public:
   //! Construct an empty matrix.
   //!\param matrix_dimension size fo the matrix.
   Matrix_ps(int matrix_dimension);
+  //! Construct an empty matrix.
+  //!\param matrix_dimension size fo the matrix.
+  //!\param grid the process grid this matrix is distributed on.
+  Matrix_ps(int matrix_dimension, const ProcessGrid &grid);
   //! Construct a matrix from file.
   //!\param file_name name of the file to build from.
   //!\param is_binary true if the file is a binary file.
   Matrix_ps(std::string file_name, bool is_binary = false);
+  //! Construct a matrix from file.
+  //!\param file_name name of the file to build from.
+  //!\param is_binary true if the file is a binary file.
+  //!\param grid the process grid this matrix is distributed on.
+  Matrix_ps(std::string file_name, const ProcessGrid &grid,
+            bool is_binary = false);
   //! Copy constructor.
-  //!\param matB matrix to opy from.
+  //!\param matB matrix to copy from.
   Matrix_ps(const Matrix_ps &matB);
 
 public:
