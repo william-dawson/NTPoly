@@ -230,6 +230,8 @@ class TestDistributedMatrix(unittest.TestCase):
             sub_mat = matrix1[start_row:end_row + 1, start_col:end_col + 1]
             new_dim = max(end_row - start_row + 1, end_col - start_col + 1)
             space_mat = zeros((new_dim, new_dim))
+            if self.complex:
+                space_mat = 1j * space_mat
             space_mat[:end_row - start_row + 1, :end_col -
                       start_col + 1] = sub_mat.todense()
             self.CheckMat = csr_matrix(space_mat)
