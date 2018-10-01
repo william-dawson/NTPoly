@@ -5,6 +5,9 @@ set(CMAKE_C_COMPILER mpiicc)
 set(CMAKE_Fortran_COMPILER mpiifort)
 set(CMAKE_CXX_COMPILER mpiicpc)
 
+# Library Files
+set(TOOLCHAIN_LIBS "-lblas -llapack")
+
 # Release suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -qopenmp -lgomp -fPIC")
 set(F_TOOLCHAINFLAGS_RELEASE "-O3 -fpp -qopenmp -fPIC")

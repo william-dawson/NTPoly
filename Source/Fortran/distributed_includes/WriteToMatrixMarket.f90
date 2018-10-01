@@ -103,8 +103,9 @@
 
   !! Figure out the offset sizes
   ALLOCATE(local_values_buffer(this%process_grid%slice_size))
-  CALL MPI_Allgather(triplet_list_string_length,1,MPI_INT,&
-       & local_values_buffer,1,MPI_INT,this%process_grid%within_slice_comm,ierr)
+  CALL MPI_Allgather(triplet_list_string_length, 1, MPINTINTEGER,&
+       & local_values_buffer, 1, MPINTINTEGER, &
+       & this%process_grid%within_slice_comm,ierr)
   write_offset = 0
   write_offset = write_offset + header_size
   DO counter = 1,this%process_grid%within_slice_rank

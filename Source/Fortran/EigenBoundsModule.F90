@@ -14,7 +14,7 @@ MODULE EigenBoundsModule
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_r
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -13,7 +13,6 @@ MODULE TrigonometrySolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

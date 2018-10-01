@@ -119,7 +119,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE GetTripletAt_r_wrp(ih_this, index, index_column, index_row, &
        & point_value) bind(c,name="GetTripletAt_r_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(OUT)    :: index
+    INTEGER(kind=c_int), INTENT(IN)     :: index
     INTEGER(kind=c_int), INTENT(OUT)    :: index_column
     INTEGER(kind=c_int), INTENT(OUT)    :: index_row
     REAL(NTREAL), INTENT(OUT) :: point_value
@@ -244,7 +244,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE GetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
        & point_value_real, point_value_imag) bind(c,name="GetTripletAt_c_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(OUT)    :: index
+    INTEGER(kind=c_int), INTENT(IN)     :: index
     INTEGER(kind=c_int), INTENT(OUT)    :: index_column
     INTEGER(kind=c_int), INTENT(OUT)    :: index_row
     REAL(NTREAL), INTENT(OUT) :: point_value_real

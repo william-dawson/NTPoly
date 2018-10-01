@@ -18,8 +18,8 @@
   diags_per_proc(process_grid%my_row+1) = fill_counter
 
   !! Duplicate the diagonal entries along the process column (across rows)
-  CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, diags_per_proc, 1, &
-       & MPI_INTEGER, process_grid%column_comm, ierr)
+  CALL MPI_Allgather(MPI_IN_PLACE, 1, MPINTINTEGER, diags_per_proc, 1, &
+       & MPINTINTEGER, process_grid%column_comm, ierr)
   diag_displ(1) = 0
   DO II = 2, process_grid%num_process_rows
      diag_displ(II) = diag_displ(II-1) + diags_per_proc(II-1)

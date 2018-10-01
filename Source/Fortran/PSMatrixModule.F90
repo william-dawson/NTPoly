@@ -1,18 +1,19 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Performing Distributed Sparse Matrix Operations.
 MODULE PSMatrixModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
+       & MPINTINTEGER
   USE LoggingModule, ONLY : &
        & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
-       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
-       & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup, &
-       & TestReduceSizeRequest, TestReduceOuterRequest, &
-       & TestReduceInnerRequest, TestReduceDataRequest
   USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
        & SplitProcessGrid
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
+       & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
+       & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
+       & TestReduceInnerRequest, TestReduceDataRequest
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
@@ -26,7 +27,7 @@ MODULE PSMatrixModule
        & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
        & ShiftTripletList
   USE ISO_C_BINDING
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -70,6 +71,7 @@ MODULE PSMatrixModule
   PUBLIC :: GetMatrixLogicalDimension
   PUBLIC :: GetMatrixTripletList
   PUBLIC :: GetMatrixBlock
+  PUBLIC :: GetMatrixSlice
   !! Printing To The Console
   PUBLIC :: PrintMatrix
   PUBLIC :: PrintMatrixInformation
@@ -377,8 +379,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (ierr .EQ. 0) THEN
           !! Parse the header.
           READ(local_file_handler,fmt='(A)') input_buffer
-          error_occured = ParseMMHeader(input_buffer, sparsity_type, data_type, &
-               & pattern_type)
+          error_occured = ParseMMHeader(input_buffer, sparsity_type, &
+               & data_type, pattern_type)
           header_length = header_length + LEN_TRIM(input_buffer) + 1
           !! First Read In The Comment Lines
           found_comment_line = .TRUE.
@@ -405,19 +407,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Broadcast Parameters
-    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(matrix_rows, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(total_values, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(total_values, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(header_length, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(header_length, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(sparsity_type, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(sparsity_type, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(data_type, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(data_type, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(pattern_type, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(pattern_type, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
 
     !! Build Local Storage
@@ -425,8 +427,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & is_complex_in = (data_type .EQ. MM_COMPLEX))
 
     !! Global read
-    CALL MPI_File_open(this%process_grid%global_comm,file_name,MPI_MODE_RDONLY,&
-         & MPI_INFO_NULL,mpi_file_handler,ierr)
+    CALL MPI_File_open(this%process_grid%global_comm, file_name, &
+         & MPI_MODE_RDONLY, MPI_INFO_NULL,mpi_file_handler,ierr)
     CALL MPI_File_get_size(mpi_file_handler,total_file_size,ierr)
 
     !! Compute Offsets And Data Size
@@ -572,7 +574,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsRoot(global_grid)) THEN
        local_offset = 0
        CALL MPI_File_read_at(mpi_file_handler, local_offset, &
-            & matrix_information, 4, MPI_INT, mpi_status, ierr)
+            & matrix_information, 4, MPINTINTEGER, mpi_status, ierr)
        matrix_rows = matrix_information(1)
        matrix_columns = matrix_information(2)
        total_values = matrix_information(3)
@@ -580,13 +582,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Broadcast Parameters
-    CALL MPI_Bcast(matrix_rows, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(matrix_rows, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(matrix_columns, 1, MPI_INT, global_grid%RootID, &
+    CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(total_values, 1, MPI_INT ,global_grid%RootID, &
+    CALL MPI_Bcast(total_values, 1, MPINTINTEGER ,global_grid%RootID, &
          & global_grid%global_comm, ierr)
-    CALL MPI_Bcast(complex_flag, 1, MPI_INT ,global_grid%RootID, &
+    CALL MPI_Bcast(complex_flag, 1, MPINTINTEGER ,global_grid%RootID, &
          & global_grid%global_comm, ierr)
 
     !! Build Local Storage
@@ -598,7 +600,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & is_complex_in=.FALSE.)
     END IF
 
-    CALL MPI_Type_extent(MPI_INT,bytes_per_int,ierr)
+    CALL MPI_Type_extent(MPINTINTEGER,bytes_per_int,ierr)
     IF (this%is_complex) THEN
        CALL MPI_Type_extent(MPINTCOMPLEX,bytes_per_data,ierr)
        triplet_mpi_type = GetMPITripletType_c()
@@ -989,7 +991,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
     !! Temporary
-    INTEGER :: counter, p_counter
+    INTEGER :: II, PP
     INTEGER :: ierr
 
     IF (this%is_complex) THEN
@@ -1048,7 +1050,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_row
     INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
     !! Temporary
-    INTEGER :: counter, p_counter
+    INTEGER :: II, PP
     INTEGER :: ierr
 
     IF (.NOT. this%is_complex) THEN
@@ -1062,6 +1064,83 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef MPIDATATYPE
 
   END SUBROUTINE GetMatrixBlock_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy an arbitrary slice from a matrix into a new smaller matrix.
+  !> NTPoly only works with square matrices, so if the number of rows and
+  !> columns is different the matrix is resized to the maximum size.
+  SUBROUTINE GetMatrixSlice(this, submatrix, start_row, end_row, &
+       & start_column, end_column)
+    !> The distributed sparse matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The slice to fill.
+    TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
+    !> The starting row to include in this matrix.
+    INTEGER :: start_row
+    !> The ending row to include in this matrix.
+    INTEGER :: end_row
+    !> The starting column to include in this matrix.
+    INTEGER :: start_column
+    !> The last column to include in this matrix.
+    INTEGER :: end_column
+
+    !! Get a triplet list with the values
+    IF (this%is_complex) THEN
+       CALL GetMatrixSlice_psc(this, submatrix, start_row, end_row, &
+            & start_column, end_column)
+    ELSE
+       CALL GetMatrixSlice_psr(this, submatrix, start_row, end_row, &
+            & start_column, end_column)
+    END IF
+
+  END SUBROUTINE GetMatrixSlice
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Implements slice matrix for real types.
+  SUBROUTINE GetMatrixSlice_psr(this, submatrix, start_row, end_row, &
+       & start_column, end_column)
+    !> The distributed sparse matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The slice to fill.
+    TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
+    !> The starting row to include in this matrix.
+    INTEGER :: start_row
+    !> The ending row to include in this matrix.
+    INTEGER :: end_row
+    !> The starting column to include in this matrix.
+    INTEGER :: start_column
+    !> The last column to include in this matrix.
+    INTEGER :: end_column
+
+#define TLISTTYPE TripletList_r
+#define TTYPE Triplet_r
+#include "distributed_includes/SliceMatrix.f90"
+#undef TLISTTYPE
+#undef TTYPE
+
+  END SUBROUTINE GetMatrixSlice_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Implements slice matrix for complex types.
+  SUBROUTINE GetMatrixSlice_psc(this, submatrix, start_row, end_row, &
+       & start_column, end_column)
+    !> The distributed sparse matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The slice to fill.
+    TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
+    !> The starting row to include in this matrix.
+    INTEGER :: start_row
+    !> The ending row to include in this matrix.
+    INTEGER :: end_row
+    !> The starting column to include in this matrix.
+    INTEGER :: start_column
+    !> The last column to include in this matrix.
+    INTEGER :: end_column
+
+#define TLISTTYPE TripletList_c
+#define TTYPE Triplet_c
+#include "distributed_includes/SliceMatrix.f90"
+#undef TLISTTYPE
+#undef TTYPE
+
+  END SUBROUTINE GetMatrixSlice_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
   PURE FUNCTION GetMatrixActualDimension_ps(this) RESULT(DIMENSION)
@@ -1265,9 +1344,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Global Reduce
-    CALL MPI_Allreduce(local_size,max_size,1,MPI_INT,MPI_MAX,&
+    CALL MPI_Allreduce(local_size,max_size,1,MPINTINTEGER,MPI_MAX,&
          & this%process_grid%within_slice_comm, ierr)
-    CALL MPI_Allreduce(local_size,min_size,1,MPI_INT,MPI_MIN,&
+    CALL MPI_Allreduce(local_size,min_size,1,MPINTINTEGER,MPI_MIN,&
          & this%process_grid%within_slice_comm, ierr)
 
   END SUBROUTINE GetMatrixLoadBalance_ps

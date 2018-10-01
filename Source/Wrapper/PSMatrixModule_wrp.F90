@@ -33,6 +33,7 @@ MODULE PSMatrixModule_wrp
   PUBLIC :: GetMatrixTripletList_psc_wrp
   PUBLIC :: GetMatrixBlock_psr_wrp
   PUBLIC :: GetMatrixBlock_psc_wrp
+  PUBLIC :: GetMatrixSlice_wrp
   PUBLIC :: TransposeMatrix_ps_wrp
   PUBLIC :: ConjugateMatrix_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -281,6 +282,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GetMatrixBlock(h_this%data,h_triplet_list%data, start_row, end_row,&
          & start_column, end_column)
   END SUBROUTINE GetMatrixBlock_psc_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy an arbitrary slice from a matrix into a new smaller matrix.
+  SUBROUTINE GetMatrixSlice_wrp(ih_this, ih_submatrix, start_row, &
+       & end_row, start_column, end_column) bind(c,name="GetMatrixSlice_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_submatrix(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
+    INTEGER(kind=c_int), INTENT(IN) :: start_column, end_column
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_submatrix
+
+    h_this = TRANSFER(ih_this,h_this)
+    h_submatrix = TRANSFER(ih_submatrix,h_submatrix)
+    CALL GetMatrixSlice(h_this%data,h_submatrix%data, start_row, end_row,&
+         & start_column, end_column)
+  END SUBROUTINE GetMatrixSlice_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix.
   SUBROUTINE TransposeMatrix_ps_wrp(ih_matA,ih_transmat) &

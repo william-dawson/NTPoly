@@ -1,13 +1,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Lists of Triplets.
 MODULE TripletListModule
-  USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
+  USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
+       & MPINTINTEGER
   USE TripletModule, ONLY : Triplet_r, Triplet_c, CompareTriplets, &
        & ConvertTripletType
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC, MM_HERMITIAN
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE ISO_C_BINDING, ONLY : c_int
-  USE MPI
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: TripletList_r

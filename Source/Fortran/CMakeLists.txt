@@ -18,6 +18,7 @@ set(Fsrc
     MatrixMemoryPoolModule.F90
     MatrixReduceModule.F90
     MinimizerSolversModule.F90
+    NTMPIModule.F90
     PermutationModule.F90
     PMatrixMemoryPoolModule.F90
     PolynomialSolversModule.F90
