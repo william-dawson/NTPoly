@@ -66,6 +66,20 @@ public:
                    Matrix_ps &Density, double &energy_value_out,
                    double &chemical_potential_out,
                    const SolverParameters &solver_parameters);
+  //! Compute the density matrix of a system using the eigendecomposition.
+  //! Based on the algorithm presented in: \cite truflandier2016communication
+  //!\param Hamiltonian the matrix to compute the corresponding density from.
+  //!\param InverseSquareRoot of the overlap matrix.
+  //!\param nel the number of electrons.
+  //!\param Density the density matrix computed by this routine.
+  //!\param energy_value_out the energy of the system (optional).
+  //!\param chemical_potential_out the chemical potential calculated.
+  //!\param solver_parameters parameters for the solver
+  static void DenseSolver(const Matrix_ps &Hamiltonian,
+                          const Matrix_ps &InverseSquareRoot, int nel,
+                          Matrix_ps &Density, double &energy_value_out,
+                          double &chemical_potential_out,
+                          const SolverParameters &solver_parameters);
   //! Compute the energy-weighted density matrix.
   //!\param Hamiltonian the matrix to compute from.
   //!\param Density the density matrix.

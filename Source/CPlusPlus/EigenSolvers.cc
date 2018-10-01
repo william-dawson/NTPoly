@@ -15,18 +15,4 @@ void EigenSolvers::ReferenceEigenDecomposition(
   ReferenceEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
                                   GetIH(eigenvalues), GetIH(solver_parameters));
 }
-void EigenSolvers::SplittingEigenDecomposition(
-    const Matrix_ps &matrix, Matrix_ps &eigenvectors, Matrix_ps &eigenvalues,
-    int num_values, const SolverParameters &solver_parameters) {
-  SplittingEigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors),
-                                  GetIH(eigenvalues), &num_values,
-                                  GetIH(solver_parameters));
-}
-void EigenSolvers::SingularValueDecompostion(
-    const Matrix_ps &matrix, Matrix_ps &leftvectors, Matrix_ps &rightvectors,
-    Matrix_ps &singularvalues, const SolverParameters &solver_parameters) {
-  SingularValueDecompostion_wrp(GetIH(matrix), GetIH(leftvectors),
-                                GetIH(rightvectors), GetIH(singularvalues),
-                                GetIH(solver_parameters));
-}
 } // namespace NTPoly
