@@ -71,6 +71,7 @@ MODULE PSMatrixModule
   PUBLIC :: GetMatrixLogicalDimension
   PUBLIC :: GetMatrixTripletList
   PUBLIC :: GetMatrixBlock
+  PUBLIC :: GetMatrixSlice
   !! Printing To The Console
   PUBLIC :: PrintMatrix
   PUBLIC :: PrintMatrixInformation
@@ -1063,6 +1064,83 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef MPIDATATYPE
 
   END SUBROUTINE GetMatrixBlock_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy an arbitrary slice from a matrix into a new smaller matrix.
+  !> NTPoly only works with square matrices, so if the number of rows and
+  !> columns is different the matrix is resized to the maximum size.
+  SUBROUTINE GetMatrixSlice(this, submatrix, start_row, end_row, &
+       & start_column, end_column)
+    !> The distributed sparse matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The slice to fill.
+    TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
+    !> The starting row to include in this matrix.
+    INTEGER :: start_row
+    !> The ending row to include in this matrix.
+    INTEGER :: end_row
+    !> The starting column to include in this matrix.
+    INTEGER :: start_column
+    !> The last column to include in this matrix.
+    INTEGER :: end_column
+
+    !! Get a triplet list with the values
+    IF (this%is_complex) THEN
+       CALL GetMatrixSlice_psc(this, submatrix, start_row, end_row, &
+            & start_column, end_column)
+    ELSE
+       CALL GetMatrixSlice_psr(this, submatrix, start_row, end_row, &
+            & start_column, end_column)
+    END IF
+
+  END SUBROUTINE GetMatrixSlice
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Implements slice matrix for real types.
+  SUBROUTINE GetMatrixSlice_psr(this, submatrix, start_row, end_row, &
+       & start_column, end_column)
+    !> The distributed sparse matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The slice to fill.
+    TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
+    !> The starting row to include in this matrix.
+    INTEGER :: start_row
+    !> The ending row to include in this matrix.
+    INTEGER :: end_row
+    !> The starting column to include in this matrix.
+    INTEGER :: start_column
+    !> The last column to include in this matrix.
+    INTEGER :: end_column
+
+#define TLISTTYPE TripletList_r
+#define TTYPE Triplet_r
+#include "distributed_includes/SliceMatrix.f90"
+#undef TLISTTYPE
+#undef TTYPE
+
+  END SUBROUTINE GetMatrixSlice_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Implements slice matrix for complex types.
+  SUBROUTINE GetMatrixSlice_psc(this, submatrix, start_row, end_row, &
+       & start_column, end_column)
+    !> The distributed sparse matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The slice to fill.
+    TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
+    !> The starting row to include in this matrix.
+    INTEGER :: start_row
+    !> The ending row to include in this matrix.
+    INTEGER :: end_row
+    !> The starting column to include in this matrix.
+    INTEGER :: start_column
+    !> The last column to include in this matrix.
+    INTEGER :: end_column
+
+#define TLISTTYPE TripletList_c
+#define TTYPE Triplet_c
+#include "distributed_includes/SliceMatrix.f90"
+#undef TLISTTYPE
+#undef TTYPE
+
+  END SUBROUTINE GetMatrixSlice_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
   PURE FUNCTION GetMatrixActualDimension_ps(this) RESULT(DIMENSION)
