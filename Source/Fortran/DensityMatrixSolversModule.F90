@@ -1306,15 +1306,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & eigenvalues, solver_parameters)
 
     !! Slice the eigenvectors and eigenvalues
-    WRITE(*,*) occupied%is_complex
     CALL GetMatrixSlice(eigenvectors, occupied, 1, &
          & eigenvectors%actual_matrix_dimension, 1, nel/2)
-     WRITE(*,*) occupied%is_complex
     CALL TransposeMatrix(occupied, occupiedT)
     IF (occupied%is_complex) THEN
        CALL ConjugateMatrix(occupiedT)
     END IF
-    WRITE(*,*) occupied%is_complex, occupiedT%is_complex
 
     !! Construct the density matrix
     CALL MatrixMultiply(occupied, occupiedT, Density, &
