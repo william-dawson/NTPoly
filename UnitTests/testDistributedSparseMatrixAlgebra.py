@@ -67,8 +67,10 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     CheckMat = 0
     # Rank of the current process.
     my_rank = 0
-    # Whether the matrix is complex or not
-    complex = False
+    # Whether the first matrix is complex or not
+    complex1 = False
+    # Whether the second matrix is complex or not
+    complex2 = False
 
     def write_matrix(self, mat, file_name):
         if self.my_rank == 0:
@@ -82,6 +84,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
+        self.grid = nt.ProcessGrid(rows, columns, slices)
 
     def setUp(self):
         '''Set up a specific test.'''
@@ -106,8 +109,27 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_addition(self):
         '''Test routines to add together matrices.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
+            self.write_matrix(matrix1, self.input_file1)
+            self.write_matrix(matrix2, self.input_file2)
+
+            self.CheckMat = matrix1 + matrix2
+
+            comm.barrier()
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, self.grid, False)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, self.grid, False)
+            ntmatrix2.Increment(ntmatrix1)
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_addition_pg(self):
+        '''Test routines to add together matrices.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
 
@@ -122,40 +144,11 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             self.check_result()
 
-    def test_dot(self):
-        '''Test routines to add together matrices.'''
-        for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
-            self.write_matrix(matrix1, self.input_file1)
-            self.write_matrix(matrix2, self.input_file2)
-            check = 0
-            if self.my_rank == 0:
-                check = sum(multiply(matrix1.todense(), matrix2.todense()))
-
-            check = comm.bcast(check, root=0)
-            if param.sparsity > 0.0:
-                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
-            else:
-                ntmatrix1 = nt.Matrix_ps(param.rows)
-            if param.sparsity2 > 0.0:
-                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
-            else:
-                ntmatrix2 = nt.Matrix_ps(param.rows)
-
-            result = 0
-            result = ntmatrix2.Dot(ntmatrix1)
-            comm.barrier()
-
-            normval = abs(result - check)
-
-            self.assertLessEqual(normval, THRESHOLD)
-
     def test_pairwisemultiply(self):
         '''Test routines to pairwise multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
             self.CheckMat = csr_matrix(multiply(
@@ -180,8 +173,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_multiply(self):
         '''Test routines to multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
 
@@ -207,7 +200,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_reverse(self):
         '''Test routines to permute a matrix.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
             self.write_matrix(matrix1, self.input_file1)
 
             self.CheckMat = matrix1
@@ -240,15 +233,54 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             self.check_result()
 
 
+class TestDistributedMatrixAlgebra_r(TestDistributedMatrixAlgebra):
+    # Whether the first matrix is complex or not
+    complex1 = False
+    # Whether the second matrix is complex or not
+    complex2 = False
+
+    def test_dot(self):
+        '''Test routines to add together matrices.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
+            self.write_matrix(matrix1, self.input_file1)
+            self.write_matrix(matrix2, self.input_file2)
+            check = 0
+            if self.my_rank == 0:
+                check = sum(multiply(matrix1.todense(), matrix2.todense()))
+
+            check = comm.bcast(check, root=0)
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            else:
+                ntmatrix1 = nt.Matrix_ps(param.rows)
+            if param.sparsity2 > 0.0:
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
+            else:
+                ntmatrix2 = nt.Matrix_ps(param.rows)
+
+            result = 0
+            result = ntmatrix2.Dot(ntmatrix1)
+            comm.barrier()
+
+            normval = abs(result - check)
+
+            self.assertLessEqual(normval, THRESHOLD)
+
+
 class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
-    complex = True
+    # Whether the first matrix is complex or not
+    complex1 = True
+    # Whether the second matrix is complex or not
+    complex2 = True
 
     def test_dot(self):
         '''Test routines to add together matrices.'''
         for param in self.parameters:
             comm.barrier()
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
 
@@ -275,6 +307,21 @@ class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
 
             normval = abs(result - check)
             self.assertLessEqual(normval, THRESHOLD)
+
+
+class TestDistributedMatrixAlgebra_rc(TestDistributedMatrixAlgebra):
+    # Whether the first matrix is complex or not
+    complex1 = True
+    # Whether the second matrix is complex or not
+    complex2 = False
+
+
+class TestDistributedMatrixAlgebra_cr(TestDistributedMatrixAlgebra):
+    # Whether the first matrix is complex or not
+    complex1 = False
+    # Whether the second matrix is complex or not
+    complex2 = True
+
 
 if __name__ == '__main__':
     unittest.main()

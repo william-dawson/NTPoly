@@ -139,8 +139,7 @@ class TestDistributedMatrix(unittest.TestCase):
             self.write_matrix(matrix1, self.input_file1)
             self.CheckMat = matrix1
 
-            ntmatrix1 = nt.Matrix_ps(
-                self.input_file1, self.grid, False)
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, self.grid, False)
             ntmatrix1.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
@@ -158,8 +157,6 @@ class TestDistributedMatrix(unittest.TestCase):
             ntmatrix1 = nt.Matrix_ps(self.input_file1, new_grid, False)
             ntmatrix1.WriteToMatrixMarket(self.result_file)
             comm.barrier()
-
-            del new_grid
 
             self.check_result()
 
