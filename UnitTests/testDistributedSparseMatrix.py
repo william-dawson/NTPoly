@@ -10,6 +10,7 @@ import scipy.sparse
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
 from scipy.io import mmread, mmwrite
+from numpy import zeros
 import os
 import sys
 from mpi4py import MPI
@@ -175,15 +176,16 @@ class TestDistributedMatrix(unittest.TestCase):
             global_seed = comm.bcast(seed_val, root=0)
             seed(global_seed)
             dimension = ntmatrix1.GetActualDimension()
-            row_end_list = sample(range(1, dimension), self.process_rows - 1)
-            col_end_list = sample(range(1, dimension),
+            row_end_list = sample(range(0, dimension - 1),
+                                  self.process_rows - 1)
+            col_end_list = sample(range(0, dimension - 1),
                                   self.process_columns - 1)
-            row_end_list.append(dimension + 1)
-            col_end_list.append(dimension + 1)
-            row_start_list = [1]
+            row_end_list.append(dimension)
+            col_end_list.append(dimension)
+            row_start_list = [0]
             for i in range(1, len(row_end_list)):
                 row_start_list.append(row_end_list[i - 1])
-            col_start_list = [1]
+            col_start_list = [0]
             for i in range(1, len(col_end_list)):
                 col_start_list.append(col_end_list[i - 1])
 
@@ -197,6 +199,45 @@ class TestDistributedMatrix(unittest.TestCase):
 
             ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
             ntmatrix2.FillFromTripletList(triplet_list)
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_slice(self):
+        '''Test slicing of a matrix.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            else:
+                ntmatrix1 = nt.Matrix_ps(param.rows)
+
+            # Compute a random slicing
+            seed_val = randrange(sys.maxsize)
+            global_seed = comm.bcast(seed_val, root=0)
+            seed(global_seed)
+            dimension = ntmatrix1.GetActualDimension()
+            end_row = sample(range(1, dimension - 1), 1)[0]
+            end_col = sample(range(1, dimension - 1), 1)[0]
+            start_row = sample(range(0, end_row), 1)[0]
+            start_col = sample(range(0, end_col), 1)[0]
+
+            # Compute the reference result
+            sub_mat = matrix1[start_row:end_row + 1, start_col:end_col + 1]
+            new_dim = max(end_row - start_row + 1, end_col - start_col + 1)
+            space_mat = zeros((new_dim, new_dim))
+            space_mat[:end_row - start_row + 1, :end_col -
+                      start_col + 1] = sub_mat.todense()
+            self.CheckMat = csr_matrix(space_mat)
+
+            # Compute with ntpoly
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
+            ntmatrix1.GetMatrixSlice(
+                ntmatrix2, start_row, end_row, start_col, end_col)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
