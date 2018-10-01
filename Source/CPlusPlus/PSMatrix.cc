@@ -101,6 +101,11 @@ void Matrix_ps::GetTripletList(TripletList_c &triplet_list) const {
 //////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::GetMatrixBlock(TripletList_r &triplet_list, int start_row,
                                int end_row, int start_column, int end_column) {
+  // 0 => 1 based indexing
+  start_row++;
+  end_row++;
+  start_column++;
+  end_column++;
   GetMatrixBlock_psr_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
                          &start_column, &end_column);
 }
@@ -108,8 +113,25 @@ void Matrix_ps::GetMatrixBlock(TripletList_r &triplet_list, int start_row,
 //////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::GetMatrixBlock(TripletList_c &triplet_list, int start_row,
                                int end_row, int start_column, int end_column) {
+  // 0 => 1 based indexing
+  start_row++;
+  end_row++;
+  start_column++;
+  end_column++;
   GetMatrixBlock_psc_wrp(ih_this, triplet_list.ih_this, &start_row, &end_row,
                          &start_column, &end_column);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void Matrix_ps::GetMatrixSlice(Matrix_ps &submatrix, int start_row, int end_row,
+                               int start_column, int end_column) {
+  // 0 => 1 based indexing
+  start_row++;
+  end_row++;
+  start_column++;
+  end_column++;
+  GetMatrixSlice_wrp(ih_this, submatrix.ih_this, &start_row, &end_row,
+                     &start_column, &end_column);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -122,9 +144,9 @@ void Matrix_ps::Conjugate() { ConjugateMatrix_ps_wrp(ih_this); }
 
 //////////////////////////////////////////////////////////////////////////////
 double Matrix_ps::Dot(const Matrix_ps &matB) {
-   double dot_product;
-   DotMatrix_psr_wrp(ih_this, matB.ih_this, &dot_product);
-   return dot_product;
+  double dot_product;
+  DotMatrix_psr_wrp(ih_this, matB.ih_this, &dot_product);
+  return dot_product;
 }
 
 //////////////////////////////////////////////////////////////////////////////
