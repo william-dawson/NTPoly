@@ -1085,10 +1085,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Get a triplet list with the values
     IF (this%is_complex) THEN
-       CALL GetMatrixSlice_psr(this, submatrix, start_row, end_row, &
+       CALL GetMatrixSlice_psc(this, submatrix, start_row, end_row, &
             & start_column, end_column)
     ELSE
-       CALL GetMatrixSlice_psc(this, submatrix, start_row, end_row, &
+       CALL GetMatrixSlice_psr(this, submatrix, start_row, end_row, &
             & start_column, end_column)
     END IF
 
