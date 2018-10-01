@@ -41,7 +41,8 @@ if __name__ == "__main__":
             extra_connections = int(argument_value)
 
     # Setup the process grid.
-    nt.ConstructProcessGrid(process_rows, process_columns, process_slices)
+    nt.ConstructGlobalProcessGrid(
+        process_rows, process_columns, process_slices)
 
     # Set Up The Solver Parameters.
     solver_parameters = nt.SolverParameters()
@@ -98,8 +99,8 @@ if __name__ == "__main__":
     extra_scratch = numpy.zeros(number_of_nodes)
     counter = 0
     while counter < extra_connections:
-        extra_source_node = random.randint(0, number_of_nodes-1)
-        extra_destination_node = random.randint(0, number_of_nodes-1)
+        extra_source_node = random.randint(0, number_of_nodes - 1)
+        extra_destination_node = random.randint(0, number_of_nodes - 1)
         if extra_scratch[extra_source_node] != 1 and \
                 extra_scratch[extra_destination_node] != 1 and \
                 extra_source_node != extra_destination_node and \
@@ -111,14 +112,14 @@ if __name__ == "__main__":
 
             if extra_source_node >= starting_node and \
                     extra_source_node <= ending_node:
-                temp_triplet.index_row = extra_source_node+1
-                temp_triplet.index_column = extra_destination_node+1
+                temp_triplet.index_row = extra_source_node + 1
+                temp_triplet.index_column = extra_destination_node + 1
                 temp_triplet.point_value = 0.1
                 triplet_list.Append(temp_triplet)
             elif extra_destination_node >= starting_node and \
                     extra_destination_node <= ending_node:
-                temp_triplet.index_row = extra_destination_node+1
-                temp_triplet.index_column = extra_source_node+1
+                temp_triplet.index_row = extra_destination_node + 1
+                temp_triplet.index_column = extra_source_node + 1
                 temp_triplet.point_value = 0.1
                 triplet_list.Append(temp_triplet)
 
@@ -128,10 +129,10 @@ if __name__ == "__main__":
     # Solve
     ResMat = nt.Matrix_ps(number_of_nodes)
     ResMat.FillIdentity()
-    ResMat.Increment(NetworkMat,alpha=-1.0*attenuation)
+    ResMat.Increment(NetworkMat, alpha=-1.0 * attenuation)
 
-    nt.InverseSolvers.Invert(ResMat,ResultMat,solver_parameters)
+    nt.InverseSolvers.Invert(ResMat, ResultMat, solver_parameters)
 
     # Print the density matrix to file.
     ResultMat.WriteToMatrixMarket(output_file)
-    nt.DestructProcessGrid()
+    nt.DestructGlobalProcessGrid()

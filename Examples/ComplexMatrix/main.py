@@ -9,6 +9,8 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 ##########################################################################
+
+
 def ConstructGuoMatrix(InMat, OutMat):
     '''Construct the Hermitian matrix
     '''
@@ -22,10 +24,10 @@ def ConstructGuoMatrix(InMat, OutMat):
         stlist.Append(temp)
         if temp.index_row != temp.index_column:
             temp2 = nt.Triplet_r()
-            temp2.index_row = temp.index_column;
-            temp2.index_column = temp.index_row;
-            temp2.point_value = temp.point_value;
-            stlist.Append(temp2);
+            temp2.index_row = temp.index_column
+            temp2.index_column = temp.index_row
+            temp2.point_value = temp.point_value
+            stlist.Append(temp2)
     SMat = nt.Matrix_ps(InMat.GetActualDimension())
     SMat.FillFromTripletList(stlist)
 
@@ -51,6 +53,7 @@ def ConstructGuoMatrix(InMat, OutMat):
     OutMat.Increment(CMatrix)
     OutMat.Increment(SMat)
 
+
 ##########################################################################
 if __name__ == "__main__":
     rank = comm.Get_rank()
@@ -74,11 +77,12 @@ if __name__ == "__main__":
             threshold = float(argument_value)
 
     # Setup the process grid.
-    nt.ConstructProcessGrid(process_rows, process_columns, process_slices)
+    nt.ConstructGlobalProcessGrid(
+        process_rows, process_columns, process_slices)
 
     # Construct The Hermitian Matrix
     InMat = nt.Matrix_ps(input_file)
-    GMat = nt.Matrix_ps(InMat.GetActualDimension());
+    GMat = nt.Matrix_ps(InMat.GetActualDimension())
     ConstructGuoMatrix(InMat, GMat)
     GMat.Scale(0.5)
 
@@ -90,3 +94,4 @@ if __name__ == "__main__":
 
     # Write To File
     OMat.WriteToMatrixMarket(exponential_file)
+    nt.DestructGlobalProcessGrid()

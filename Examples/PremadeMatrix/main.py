@@ -38,7 +38,8 @@ if __name__ == "__main__":
             converge_density = float(argument_value)
 
     # Setup the process grid.
-    nt.ConstructProcessGrid(process_rows, process_columns, process_slices)
+    nt.ConstructGlobalProcessGrid(
+        process_rows, process_columns, process_slices)
 
     # Read in the matrices from file.
     Hamiltonian = nt.Matrix_ps(hamiltonian_file)
@@ -72,4 +73,4 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)
-    nt.DestructProcessGrid()
+    nt.DestructGlobalProcessGrid()
