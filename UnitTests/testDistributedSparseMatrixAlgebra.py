@@ -81,7 +81,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(rows, columns, slices)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
     def setUp(self):
         '''Set up a specific test.'''

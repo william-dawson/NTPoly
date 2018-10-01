@@ -94,9 +94,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ProcessGrid_wrp) :: h_old_grid
     TYPE(ProcessGrid_wrp) :: h_new_grid
 
+    ALLOCATE(h_new_grid%data)
+
     h_old_grid = TRANSFER(ih_old_grid,h_old_grid)
-    h_new_grid = TRANSFER(ih_new_grid,h_new_grid)
     CALL CopyProcessGrid(h_old_grid%data,h_new_grid%data)
+    ih_new_grid = TRANSFER(h_new_grid,ih_new_grid)
   END SUBROUTINE CopyProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.

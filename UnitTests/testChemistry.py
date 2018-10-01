@@ -31,7 +31,7 @@ class TestChemistry(unittest.TestCase):
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(rows, columns, slices, True)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
 
     def setUp(self):
         '''Set up an individual test.'''

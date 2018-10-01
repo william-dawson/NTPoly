@@ -389,6 +389,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL MPI_COMM_FREE(grid_in%blocked_row_comm(II), ierr)
           END DO
           DEALLOCATE(grid_in%blocked_row_comm)
+          CALL MPI_COMM_FREE(grid_in%global_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%row_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%column_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%within_slice_comm, ierr)
+          CALL MPI_COMM_FREE(grid_in%between_slice_comm, ierr)
        END IF
 
        IF (ALLOCATED(grid_in%blocked_column_comm)) THEN

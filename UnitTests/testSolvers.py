@@ -47,7 +47,7 @@ class TestSolvers(unittest.TestCase):
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(rows, columns, slices)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''

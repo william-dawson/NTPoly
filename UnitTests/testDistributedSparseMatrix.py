@@ -85,6 +85,7 @@ class TestDistributedMatrix(unittest.TestCase):
         # A specific process grid
         self.grid = nt.ProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
+        # test destructor
         del self.grid
         self.grid = nt.ProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
@@ -131,6 +132,37 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_read_pg(self):
+        '''Test our ability to read and write matrices on a given grid.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            ntmatrix1 = nt.Matrix_ps(
+                self.input_file1, self.grid, False)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_copy_grid(self):
+        '''Test process grid copying'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            new_grid = nt.ProcessGrid(self.grid)
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, new_grid, False)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            del new_grid
+
+            self.check_result()
+
     def test_readwritebinary(self):
         '''Test our ability to read and write binary.'''
         for param in self.parameters:
@@ -141,6 +173,21 @@ class TestDistributedMatrix(unittest.TestCase):
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.WriteToBinary(self.input_file2)
             ntmatrix2 = nt.Matrix_ps(self.input_file2, True)
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_readwritebinary_pg(self):
+        '''Test our ability to read and write binary on a given grid.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, self.grid, False)
+            ntmatrix1.WriteToBinary(self.input_file2)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, self.grid, True)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
