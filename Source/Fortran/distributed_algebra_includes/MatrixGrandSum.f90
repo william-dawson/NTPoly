@@ -2,7 +2,7 @@
   DO JJ = 1, this%process_grid%number_of_blocks_columns
      DO II = 1, this%process_grid%number_of_blocks_rows
         CALL MatrixGrandSum(this%LMAT(II,JJ), TEMP)
-        sum = sum + TEMP
+        sum = sum + REAL(TEMP, KIND=NTREAL)
      END DO
   END DO
 

@@ -257,28 +257,6 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
-    def test_eigendecomposition(self):
-        '''Test the dense eigen decomposition'''
-        for param in self.parameters:
-            matrix1 = param.create_matrix(square=True, complex=self.complex)
-            matrix1 = matrix1 + matrix1.H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            w, vdense = eigh(matrix1.todense())
-            CheckV = csr_matrix(vdense)
-
-            ntmatrix = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            V = self.SMatrix(ntmatrix.GetColumns(), ntmatrix.GetColumns())
-
-            ntmatrix.EigenDecomposition(V, THRESHOLD)
-            V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
-
-            ResultV = mmread(self.scratch_dir + "/vmat.mtx")
-            CheckD = diag((CheckV.H.dot(matrix1).dot(CheckV)).todense())
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
-            normvalv = abs(normd(CheckD - ResultD))
-
-            self.assertLessEqual(normvalv, THRESHOLD)
-
     def test_get_row(self):
         '''Test function that extracts a row from the matrix'''
         for param in self.parameters:
