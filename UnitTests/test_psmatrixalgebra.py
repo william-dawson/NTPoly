@@ -1,10 +1,10 @@
 '''
-@package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.
+@package test_psmatrixalgebra
+A test suite for parallel matrix algebra.
 '''
-from Helpers import THRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
+from helpers import THRESHOLD
+from helpers import result_file
+from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
 import scipy
@@ -51,8 +51,8 @@ class TestParameters:
         return mat
 
 
-class TestDistributedMatrixAlgebra(unittest.TestCase):
-    '''A test class for the distributed matrix module.'''
+class TestPSMatrixAlgebra:
+    '''A test class for parallel matrix algebra.'''
     # Parameters for the tests
     parameters = []
     # Place to store the result matrix.
@@ -103,7 +103,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
         self.grid = nt.ProcessGrid(rows, columns, slices)
         self.my_rank = comm.Get_rank()
-        
+
         self.parameters = []
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2, 0.2))
@@ -248,7 +248,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             self.check_result()
 
 
-class TestDistributedMatrixAlgebra_r(TestDistributedMatrixAlgebra):
+class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Special routines for real algebra'''
     # Whether the first matrix is complex or not
     complex1 = False
     # Whether the second matrix is complex or not
@@ -284,7 +285,8 @@ class TestDistributedMatrixAlgebra_r(TestDistributedMatrixAlgebra):
             self.assertLessEqual(normval, THRESHOLD)
 
 
-class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
+class TestPSMatrixAlgebra_c(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Specialization for complex algebra'''
     # Whether the first matrix is complex or not
     complex1 = True
     # Whether the second matrix is complex or not
@@ -324,14 +326,16 @@ class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
             self.assertLessEqual(normval, THRESHOLD)
 
 
-class TestDistributedMatrixAlgebra_rc(TestDistributedMatrixAlgebra):
+class TestPSMatrixAlgebra_rc(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Specialization for real-complex mixing'''
     # Whether the first matrix is complex or not
     complex1 = True
     # Whether the second matrix is complex or not
     complex2 = False
 
 
-class TestDistributedMatrixAlgebra_cr(TestDistributedMatrixAlgebra):
+class TestPSMatrixAlgebra_cr(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Specialization for complex-real mixing'''
     # Whether the first matrix is complex or not
     complex1 = False
     # Whether the second matrix is complex or not

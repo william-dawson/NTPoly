@@ -1,5 +1,5 @@
 ##########################################################################
-''' @package testBuildInstructions.py
+''' @package test_build.py
 A script that tests the build instructions of the examples.
 '''
 from sys import argv

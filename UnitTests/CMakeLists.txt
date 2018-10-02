@@ -2,13 +2,13 @@
 set(TestFiles
     __init__.py
     CurrentTest.sh
-    Helpers.py
+    helpers.py
     RunTest.sh
-    testChemistry.py
-    testDistributedSparseMatrix.py
-    testDistributedSparseMatrixAlgebra.py
-    testSolvers.py
-    testSparseMatrix.py
+    test_chemistry.py
+    test_matrix.py
+    test_psmatrix.py
+    test_psmatrixalgebra.py
+    test_solvers.py
 )
 
 find_package(PythonInterp REQUIRED)
@@ -23,34 +23,32 @@ else()
 endif()
 
 configure_file(__init__.py __init__.py COPYONLY)
-configure_file(Helpers.py Helpers.py COPYONLY)
+configure_file(helpers.py helpers.py COPYONLY)
 configure_file(RunTest.sh
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/RunTest.sh @ONLY)
 configure_file(CurrentTest.sh
   ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/CurrentTest.sh @ONLY)
-configure_file(testChemistry.py testChemistry.py COPYONLY)
-configure_file(testDistributedSparseMatrix.py
-  testDistributedSparseMatrix.py COPYONLY)
-configure_file(testDistributedSparseMatrixAlgebra.py
-  testDistributedSparseMatrixAlgebra.py COPYONLY)
-configure_file(testSolvers.py testSolvers.py COPYONLY)
-configure_file(testSparseMatrix.py testSparseMatrix.py COPYONLY)
+configure_file(test_chemistry.py test_chemistry.py COPYONLY)
+configure_file(test_matrix.py test_matrix.py COPYONLY)
+configure_file(test_psmatrix.py test_psmatrix.py COPYONLY)
+configure_file(test_psmatrixalgebra.py test_psmatrixalgebra.py COPYONLY)
+configure_file(test_solvers.py test_solvers.py COPYONLY)
 
 ################################################################################
 find_program(BASH_PROGRAM bash)
 set(TestScript ${CMAKE_BINARY_DIR}/bin/RunTest.sh)
 
-add_test(PythonTests111 ${BASH_PROGRAM} ${TestScript} 1 1 1 1)
-add_test(PythonTests211 ${BASH_PROGRAM} ${TestScript} 2 1 1 2)
-add_test(PythonTests121 ${BASH_PROGRAM} ${TestScript} 1 2 1 2)
-add_test(PythonTests112 ${BASH_PROGRAM} ${TestScript} 1 1 2 2)
-add_test(PythonTests221 ${BASH_PROGRAM} ${TestScript} 2 2 1 4)
-add_test(PythonTests212 ${BASH_PROGRAM} ${TestScript} 2 1 2 4)
-add_test(PythonTests122 ${BASH_PROGRAM} ${TestScript} 1 2 2 4)
-add_test(PythonTests222 ${BASH_PROGRAM} ${TestScript} 2 2 2 8)
-add_test(PythonTests321 ${BASH_PROGRAM} ${TestScript} 3 2 1 6)
-add_test(PythonTests213 ${BASH_PROGRAM} ${TestScript} 2 1 3 6)
-add_test(PythonTests611 ${BASH_PROGRAM} ${TestScript} 6 1 1 6)
+add_test(Regression111 ${BASH_PROGRAM} ${TestScript} 1 1 1 1)
+add_test(Regression211 ${BASH_PROGRAM} ${TestScript} 2 1 1 2)
+add_test(Regression121 ${BASH_PROGRAM} ${TestScript} 1 2 1 2)
+add_test(Regression112 ${BASH_PROGRAM} ${TestScript} 1 1 2 2)
+add_test(Regression221 ${BASH_PROGRAM} ${TestScript} 2 2 1 4)
+add_test(Regression212 ${BASH_PROGRAM} ${TestScript} 2 1 2 4)
+add_test(Regression122 ${BASH_PROGRAM} ${TestScript} 1 2 2 4)
+add_test(Regression222 ${BASH_PROGRAM} ${TestScript} 2 2 2 8)
+add_test(Regression321 ${BASH_PROGRAM} ${TestScript} 3 2 1 6)
+add_test(Regression213 ${BASH_PROGRAM} ${TestScript} 2 1 3 6)
+add_test(Regression611 ${BASH_PROGRAM} ${TestScript} 6 1 1 6)
 
 set(CurrentTestScript ${CMAKE_BINARY_DIR}/bin/CurrentTest.sh)
 add_test(CurrentTest ${BASH_PROGRAM} ${CurrentTestScript} 1 1 1 1)

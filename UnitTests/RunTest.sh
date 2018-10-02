@@ -35,16 +35,15 @@ export PROCESSES="$4"
 ## Local Tests
 if [ $PROCESSES == "1" ]
 then
-  @PYTHON_EXECUTABLE@ -m unittest -v testSparseMatrix.TestLocalMatrix
-  @PYTHON_EXECUTABLE@ -m unittest -v testSparseMatrix.TestLocalMatrix_c
+  @PYTHON_EXECUTABLE@ -m unittest -v test_matrix
 fi
 
 ## MPI Tests
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-@PYTHON_EXECUTABLE@ -m unittest -v testDistributedSparseMatrix
+@PYTHON_EXECUTABLE@ -m unittest -v test_psmatrix
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-@PYTHON_EXECUTABLE@ -m unittest -v testDistributedSparseMatrixAlgebra
+@PYTHON_EXECUTABLE@ -m unittest -v test_psmatrixalgebra
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-@PYTHON_EXECUTABLE@ -m unittest -v testSolvers
+@PYTHON_EXECUTABLE@ -m unittest -v test_solvers
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-@PYTHON_EXECUTABLE@ -m unittest -v testChemistry
+@PYTHON_EXECUTABLE@ -m unittest -v test_chemistry

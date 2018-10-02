@@ -1,3 +1,3 @@
 # If you want to define a test for your branch, do it like this.
 
-BRANCHTEST="testDistributedSparseMatrix.TestDistributedMatrix.test_read"
+BRANCHTEST="test_psmatrix.TestPSMatrix.test_read"

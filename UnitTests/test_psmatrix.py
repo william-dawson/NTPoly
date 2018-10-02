@@ -1,6 +1,6 @@
 '''
-@package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.
+@package test_matrix
+A test suite for paralle matrices.
 '''
 import unittest
 import NTPolySwig as nt
@@ -14,9 +14,9 @@ from numpy import zeros
 import os
 import sys
 from mpi4py import MPI
-from Helpers import THRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
+from helpers import THRESHOLD
+from helpers import result_file
+from helpers import scratch_dir
 # MPI global communicator.
 comm = MPI.COMM_WORLD
 
@@ -49,8 +49,8 @@ class TestParameters:
         return csr_matrix(mat)
 
 
-class TestDistributedMatrix(unittest.TestCase):
-    '''A test class for the distributed matrix module.'''
+class TestPSMatrix(unittest.TestCase):
+    '''A test class for parallel matrices.'''
     # Parameters for the tests
     parameters = []
     # Input file name 1
@@ -317,7 +317,8 @@ class TestDistributedMatrix(unittest.TestCase):
             self.check_result()
 
 
-class TestDistributedMatrix_c(TestDistributedMatrix):
+class TestPSMatrix_c(TestPSMatrix):
+    '''Specialization for complex matrices'''
     TripletList = nt.TripletList_c
     complex = True
 

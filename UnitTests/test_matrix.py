@@ -1,6 +1,6 @@
 '''
 @package testSparseMatrix
-A test suite for the Sparse Matrix module.
+A test suite for local matrices.
 '''
 import unittest
 import NTPolySwig as nt
@@ -18,8 +18,8 @@ from numpy.linalg import norm as normd
 from scipy.io import mmwrite, mmread
 import os
 
-from Helpers import THRESHOLD
-from Helpers import result_file
+from helpers import THRESHOLD
+from helpers import result_file
 
 
 class TestParameters:
@@ -57,7 +57,7 @@ class TestParameters:
 
 
 class TestLocalMatrix(unittest.TestCase):
-    '''A test class for the local matrix module.'''
+    '''A test class for local matrices.'''
     # Parameters for the matrices
     parameters = []
     # Location of the scratch directory.
@@ -67,7 +67,8 @@ class TestLocalMatrix(unittest.TestCase):
     complex = False
 
     def setUp(self):
-        '''Set up tests.'''
+        '''Set up a test.'''
+        self.parameters = []
         self.parameters.append(TestParameters(2, 4, 0.0))
         self.parameters.append(TestParameters(8, 8, 0.0))
         self.parameters.append(TestParameters(2, 2, 1.0))
@@ -318,6 +319,7 @@ class TestLocalMatrix(unittest.TestCase):
 
 
 class TestLocalMatrix_c(TestLocalMatrix):
+    '''Specialization for complex matrices'''
     SMatrix = nt.Matrix_lsc
     MatrixMemoryPool = nt.MatrixMemoryPool_c
     complex = True
