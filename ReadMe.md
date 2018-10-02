@@ -128,7 +128,7 @@ The following features and methods have been implemented in NTPoly:
 Citation
 --------------------------------------------------------------------------------
 A description of the techniques used in NTPoly can be found in the following
-Computer Phyics Communications paper:
+Computer Physics Communications paper:
 
 > Dawson, William, and Takahito Nakajima. "Massively parallel sparse matrix
 > function calculations with NTPoly." Computer Physics Communications (2017).
