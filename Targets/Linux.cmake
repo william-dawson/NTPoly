@@ -6,7 +6,7 @@ set(CMAKE_Fortran_COMPILER mpif90)
 set(CMAKE_CXX_COMPILER mpicxx)
 
 # Library Files
-set(TOOLCHAIN_LIBS "-lblas -llapack")
+set(TOOLCHAIN_LIBS "-lblas")
 
 # Release suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -lgomp -fPIC")
