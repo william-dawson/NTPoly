@@ -77,38 +77,41 @@ class TestDistributedMatrix(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        '''Set up tests.'''
+        '''Set up test suite.'''
+        rows = int(os.environ['PROCESS_ROWS'])
+        columns = int(os.environ['PROCESS_COLUMNS'])
+        slices = int(os.environ['PROCESS_SLICES'])
+        # global process grid
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
+
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
+
+    def setUp(self):
+        '''Set up specific tests.'''
+        mat_size = 33
         self.process_rows = int(os.environ['PROCESS_ROWS'])
         self.process_columns = int(os.environ['PROCESS_COLUMNS'])
         self.process_slices = int(os.environ['PROCESS_SLICES'])
 
-        # A specific process grid
-        self.grid = nt.ProcessGrid(
-            self.process_rows, self.process_columns, self.process_slices)
-        # test destructor
-        del self.grid
         self.grid = nt.ProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
         self.myrow = self.grid.GetMyRow()
         self.mycolumn = self.grid.GetMyColumn()
         self.myslice = self.grid.GetMySlice()
 
-        # global process grid
-        nt.ConstructGlobalProcessGrid(
-            self.process_rows, self.process_columns, self.process_slices)
-        # test destructor
-        nt.DestructGlobalProcessGrid()
-        nt.ConstructGlobalProcessGrid(
-            self.process_rows, self.process_columns, self.process_slices)
-
-    def setUp(self):
-        '''Set up specific tests.'''
-        mat_size = 64
         self.my_rank = comm.Get_rank()
+        self.parameters = []
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.0))
         self.parameters.append(TestParameters(7, 7, 0.2))
+
+    def tearDown(self):
+        '''Cleanup this test.'''
+        del self.grid
 
     def check_result(self):
         '''Compare two matrices.'''

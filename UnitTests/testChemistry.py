@@ -33,6 +33,11 @@ class TestChemistry(unittest.TestCase):
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
 
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
+
     def setUp(self):
         '''Set up an individual test.'''
         self.my_rank = comm.Get_rank()

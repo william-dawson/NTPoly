@@ -40,26 +40,11 @@ then
 fi
 
 ## MPI Tests
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrix.TestDistributedMatrix
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrix.TestDistributedMatrix_c
-
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra_c
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra_rc
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testDistributedSparseMatrixAlgebra.TestDistributedMatrixAlgebra_cr
-
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testSolvers.TestSolvers
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testSolvers.TestSolvers_r
-
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testChemistry.TestChemistry_r
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ @PYTHON_EXECUTABLE@ \
--m unittest -v testChemistry.TestChemistry_c
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
+@PYTHON_EXECUTABLE@ -m unittest -v testDistributedSparseMatrix
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
+@PYTHON_EXECUTABLE@ -m unittest -v testDistributedSparseMatrixAlgebra
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
+@PYTHON_EXECUTABLE@ -m unittest -v testSolvers
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
+@PYTHON_EXECUTABLE@ -m unittest -v testChemistry

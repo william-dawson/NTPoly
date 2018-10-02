@@ -49,6 +49,11 @@ class TestSolvers(unittest.TestCase):
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
+
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''
         Create the test matrix with the following parameters.

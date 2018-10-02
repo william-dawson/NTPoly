@@ -79,17 +79,32 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        '''Set up tests.'''
+        '''Set up test suite.'''
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
-        self.grid = nt.ProcessGrid(rows, columns, slices)
+
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test suite.'''
+        nt.DestructGlobalProcessGrid()
+
+    def tearDown(self):
+        '''Cleanup this test.'''
+        del self.grid
 
     def setUp(self):
         '''Set up a specific test.'''
-        mat_size = 64
+        rows = int(os.environ['PROCESS_ROWS'])
+        columns = int(os.environ['PROCESS_COLUMNS'])
+        slices = int(os.environ['PROCESS_SLICES'])
+        mat_size = 33
+
+        self.grid = nt.ProcessGrid(rows, columns, slices)
         self.my_rank = comm.Get_rank()
+        
+        self.parameters = []
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2, 0.2))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 0.0))
@@ -106,8 +121,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
-    def test_addition(self):
-        '''Test routines to add together matrices.'''
+    def test_addition_pg(self):
+        '''Test routines to add together matrices with an explicit grid.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(snum=1, complex=self.complex1)
             matrix2 = param.create_matrix(snum=2, complex=self.complex2)
@@ -125,7 +140,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             self.check_result()
 
-    def test_addition_pg(self):
+    def test_addition(self):
         '''Test routines to add together matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(snum=1, complex=self.complex1)
