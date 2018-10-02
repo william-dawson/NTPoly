@@ -18,17 +18,21 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 
+rows = int(os.environ['PROCESS_ROWS'])
+columns = int(os.environ['PROCESS_COLUMNS'])
+slices = int(os.environ['PROCESS_SLICES'])
+
 class TestParameters:
     '''An internal class for holding internal class parameters.'''
 
-    def __init__(self, rows, columns, sparsity, sparsity2):
+    def __init__(self, rows, sparsity, sparsity2):
         '''Default constructor.
         @param[in] rows matrix rows.
         @param[in] columns matrix columns.
         @param[in] sparsity matrix sparsity.
         '''
         self.rows = rows
-        self.columns = columns
+        self.columns = rows
         self.sparsity = sparsity
         self.sparsity2 = sparsity2
 
@@ -71,6 +75,8 @@ class TestPSMatrixAlgebra:
     complex1 = False
     # Whether the second matrix is complex or not
     complex2 = False
+    # The size of the matrix
+    mat_size = 33
 
     def write_matrix(self, mat, file_name):
         if self.my_rank == 0:
@@ -80,9 +86,6 @@ class TestPSMatrixAlgebra:
     @classmethod
     def setUpClass(self):
         '''Set up test suite.'''
-        rows = int(os.environ['PROCESS_ROWS'])
-        columns = int(os.environ['PROCESS_COLUMNS'])
-        slices = int(os.environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
     @classmethod
@@ -96,21 +99,15 @@ class TestPSMatrixAlgebra:
 
     def setUp(self):
         '''Set up a specific test.'''
-        rows = int(os.environ['PROCESS_ROWS'])
-        columns = int(os.environ['PROCESS_COLUMNS'])
-        slices = int(os.environ['PROCESS_SLICES'])
-        mat_size = 33
-
         self.grid = nt.ProcessGrid(rows, columns, slices)
         self.my_rank = comm.Get_rank()
 
         self.parameters = []
-        self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 1.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.2, 0.2))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 0.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 0.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 1.0))
-        self.parameters.append(TestParameters(7, 7, 0.2, 0.2))
+        self.parameters.append(TestParameters(self.mat_size, 1.0, 1.0))
+        self.parameters.append(TestParameters(self.mat_size, 0.2, 0.2))
+        self.parameters.append(TestParameters(self.mat_size, 0.0, 0.0))
+        self.parameters.append(TestParameters(self.mat_size, 1.0, 0.0))
+        self.parameters.append(TestParameters(self.mat_size, 0.0, 1.0))
 
     def check_result(self):
         '''Compare two matrices.'''
@@ -333,6 +330,13 @@ class TestPSMatrixAlgebra_rc(TestPSMatrixAlgebra, unittest.TestCase):
     # Whether the second matrix is complex or not
     complex2 = False
 
+    def setUp(self):
+        '''Set up a specific test.'''
+        self.grid = nt.ProcessGrid(rows, columns, slices)
+        self.my_rank = comm.Get_rank()
+
+        self.parameters = [TestParameters(self.mat_size, 0.2, 0.2)]
+
 
 class TestPSMatrixAlgebra_cr(TestPSMatrixAlgebra, unittest.TestCase):
     '''Specialization for complex-real mixing'''
@@ -340,6 +344,14 @@ class TestPSMatrixAlgebra_cr(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = False
     # Whether the second matrix is complex or not
     complex2 = True
+
+    def setUp(self):
+        '''Set up a specific test.'''
+        self.grid = nt.ProcessGrid(rows, columns, slices)
+        self.my_rank = comm.Get_rank()
+
+        self.parameters = []
+        self.parameters = [TestParameters(self.mat_size, 0.2, 0.2)]
 
 
 if __name__ == '__main__':

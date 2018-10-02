@@ -107,7 +107,6 @@ class TestPSMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.0))
-        self.parameters.append(TestParameters(7, 7, 0.2))
 
     def tearDown(self):
         '''Cleanup this test.'''

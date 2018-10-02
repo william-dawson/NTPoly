@@ -38,12 +38,12 @@ then
   @PYTHON_EXECUTABLE@ -m unittest -v test_matrix
 fi
 
-## MPI Tests
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-@PYTHON_EXECUTABLE@ -m unittest -v test_psmatrix
-@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-@PYTHON_EXECUTABLE@ -m unittest -v test_psmatrixalgebra
+## Matrix Tests
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
 @PYTHON_EXECUTABLE@ -m unittest -v test_solvers
 @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
 @PYTHON_EXECUTABLE@ -m unittest -v test_chemistry
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
+@PYTHON_EXECUTABLE@ -m unittest -v test_psmatrix
+@MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
+@PYTHON_EXECUTABLE@ -m unittest -v test_psmatrixalgebra
