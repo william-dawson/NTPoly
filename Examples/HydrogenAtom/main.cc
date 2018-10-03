@@ -64,8 +64,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Setup the process grid.
-  NTPoly::ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns,
-                               process_slices, true);
+  NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
+                                     process_columns, process_slices, true);
   // Set Up The Solver Parameters.
   NTPoly::SolverParameters solver_parameters;
   solver_parameters.SetConvergeDiff(convergence_threshold);
@@ -163,7 +163,7 @@ int main(int argc, char *argv[]) {
   Density.WriteToMatrixMarket(density_file_out);
 
   // Cleanup
-  NTPoly::DestructProcessGrid();
+  NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
   return 0;
 }

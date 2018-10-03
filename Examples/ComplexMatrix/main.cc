@@ -47,7 +47,7 @@ void ConstructGuoMatrix(const NTPoly::Matrix_ps &InMat,
     temp = tlist.GetTripletAt(i);
     temp_c.index_row = temp.index_row;
     temp_c.index_column = temp.index_column;
-    temp_c.point_value = 0.0 + 1i;
+    temp_c.point_value = std::complex<double>(0.0,1.0);
     clist.Append(temp_c);
   }
   NTPoly::Matrix_ps CMatrix(SMat.GetActualDimension());
@@ -94,8 +94,8 @@ int main(int argc, char *argv[]) {
   }
 
   // Setup the process grid.
-  NTPoly::ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns,
-                               process_slices, true);
+  NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
+                                     process_columns, process_slices, true);
 
   // Compute the Hermitian Matrix
   NTPoly::Matrix_ps InMat(input_file);
@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
   OMat.WriteToMatrixMarket(exponential_file);
 
   // Cleanup
-  NTPoly::DestructProcessGrid();
+  NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
   return 0;
 }

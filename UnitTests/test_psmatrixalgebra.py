@@ -1,10 +1,10 @@
 '''
-@package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.
+@package test_psmatrixalgebra
+A test suite for parallel matrix algebra.
 '''
-from Helpers import THRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
+from helpers import THRESHOLD
+from helpers import result_file
+from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
 import scipy
@@ -18,17 +18,21 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 
+rows = int(os.environ['PROCESS_ROWS'])
+columns = int(os.environ['PROCESS_COLUMNS'])
+slices = int(os.environ['PROCESS_SLICES'])
+
 class TestParameters:
     '''An internal class for holding internal class parameters.'''
 
-    def __init__(self, rows, columns, sparsity, sparsity2):
+    def __init__(self, rows, sparsity, sparsity2):
         '''Default constructor.
         @param[in] rows matrix rows.
         @param[in] columns matrix columns.
         @param[in] sparsity matrix sparsity.
         '''
         self.rows = rows
-        self.columns = columns
+        self.columns = rows
         self.sparsity = sparsity
         self.sparsity2 = sparsity2
 
@@ -51,8 +55,8 @@ class TestParameters:
         return mat
 
 
-class TestDistributedMatrixAlgebra(unittest.TestCase):
-    '''A test class for the distributed matrix module.'''
+class TestPSMatrixAlgebra:
+    '''A test class for parallel matrix algebra.'''
     # Parameters for the tests
     parameters = []
     # Place to store the result matrix.
@@ -67,8 +71,12 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     CheckMat = 0
     # Rank of the current process.
     my_rank = 0
-    # Whether the matrix is complex or not
-    complex = False
+    # Whether the first matrix is complex or not
+    complex1 = False
+    # Whether the second matrix is complex or not
+    complex2 = False
+    # The size of the matrix
+    mat_size = 33
 
     def write_matrix(self, mat, file_name):
         if self.my_rank == 0:
@@ -77,22 +85,29 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        '''Set up tests.'''
-        rows = int(os.environ['PROCESS_ROWS'])
-        columns = int(os.environ['PROCESS_COLUMNS'])
-        slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(rows, columns, slices)
+        '''Set up test suite.'''
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
+
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test suite.'''
+        nt.DestructGlobalProcessGrid()
+
+    def tearDown(self):
+        '''Cleanup this test.'''
+        del self.grid
 
     def setUp(self):
         '''Set up a specific test.'''
-        mat_size = 64
+        self.grid = nt.ProcessGrid(rows, columns, slices)
         self.my_rank = comm.Get_rank()
-        self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 1.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.2, 0.2))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 0.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 1.0, 0.0))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.0, 1.0))
-        self.parameters.append(TestParameters(7, 7, 0.2, 0.2))
+
+        self.parameters = []
+        self.parameters.append(TestParameters(self.mat_size, 1.0, 1.0))
+        self.parameters.append(TestParameters(self.mat_size, 0.2, 0.2))
+        self.parameters.append(TestParameters(self.mat_size, 0.0, 0.0))
+        self.parameters.append(TestParameters(self.mat_size, 1.0, 0.0))
+        self.parameters.append(TestParameters(self.mat_size, 0.0, 1.0))
 
     def check_result(self):
         '''Compare two matrices.'''
@@ -103,11 +118,30 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
+    def test_addition_pg(self):
+        '''Test routines to add together matrices with an explicit grid.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
+            self.write_matrix(matrix1, self.input_file1)
+            self.write_matrix(matrix2, self.input_file2)
+
+            self.CheckMat = matrix1 + matrix2
+
+            comm.barrier()
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, self.grid, False)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, self.grid, False)
+            ntmatrix2.Increment(ntmatrix1)
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
     def test_addition(self):
         '''Test routines to add together matrices.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
 
@@ -122,40 +156,11 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
 
             self.check_result()
 
-    def test_dot(self):
-        '''Test routines to add together matrices.'''
-        for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
-            self.write_matrix(matrix1, self.input_file1)
-            self.write_matrix(matrix2, self.input_file2)
-            check = 0
-            if self.my_rank == 0:
-                check = sum(multiply(matrix1.todense(), matrix2.todense()))
-
-            check = comm.bcast(check, root=0)
-            if param.sparsity > 0.0:
-                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
-            else:
-                ntmatrix1 = nt.Matrix_ps(param.rows)
-            if param.sparsity2 > 0.0:
-                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
-            else:
-                ntmatrix2 = nt.Matrix_ps(param.rows)
-
-            result = 0
-            result = ntmatrix2.Dot(ntmatrix1)
-            comm.barrier()
-
-            normval = abs(result - check)
-
-            self.assertLessEqual(normval, THRESHOLD)
-
     def test_pairwisemultiply(self):
         '''Test routines to pairwise multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
             self.CheckMat = csr_matrix(multiply(
@@ -180,8 +185,8 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_multiply(self):
         '''Test routines to multiply two matrices.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
 
@@ -207,7 +212,7 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
     def test_reverse(self):
         '''Test routines to permute a matrix.'''
         for param in self.parameters:
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
             self.write_matrix(matrix1, self.input_file1)
 
             self.CheckMat = matrix1
@@ -240,15 +245,56 @@ class TestDistributedMatrixAlgebra(unittest.TestCase):
             self.check_result()
 
 
-class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
-    complex = True
+class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Special routines for real algebra'''
+    # Whether the first matrix is complex or not
+    complex1 = False
+    # Whether the second matrix is complex or not
+    complex2 = False
+
+    def test_dot(self):
+        '''Test routines to add together matrices.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
+            self.write_matrix(matrix1, self.input_file1)
+            self.write_matrix(matrix2, self.input_file2)
+            check = 0
+            if self.my_rank == 0:
+                check = sum(multiply(matrix1.todense(), matrix2.todense()))
+
+            check = comm.bcast(check, root=0)
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            else:
+                ntmatrix1 = nt.Matrix_ps(param.rows)
+            if param.sparsity2 > 0.0:
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
+            else:
+                ntmatrix2 = nt.Matrix_ps(param.rows)
+
+            result = 0
+            result = ntmatrix2.Dot(ntmatrix1)
+            comm.barrier()
+
+            normval = abs(result - check)
+
+            self.assertLessEqual(normval, THRESHOLD)
+
+
+class TestPSMatrixAlgebra_c(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Specialization for complex algebra'''
+    # Whether the first matrix is complex or not
+    complex1 = True
+    # Whether the second matrix is complex or not
+    complex2 = True
 
     def test_dot(self):
         '''Test routines to add together matrices.'''
         for param in self.parameters:
             comm.barrier()
-            matrix1 = param.create_matrix(snum=1, complex=self.complex)
-            matrix2 = param.create_matrix(snum=2, complex=self.complex)
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
             self.write_matrix(matrix1, self.input_file1)
             self.write_matrix(matrix2, self.input_file2)
 
@@ -275,6 +321,38 @@ class TestDistributedMatrixAlgebra_c(TestDistributedMatrixAlgebra):
 
             normval = abs(result - check)
             self.assertLessEqual(normval, THRESHOLD)
+
+
+class TestPSMatrixAlgebra_rc(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Specialization for real-complex mixing'''
+    # Whether the first matrix is complex or not
+    complex1 = True
+    # Whether the second matrix is complex or not
+    complex2 = False
+
+    def setUp(self):
+        '''Set up a specific test.'''
+        self.grid = nt.ProcessGrid(rows, columns, slices)
+        self.my_rank = comm.Get_rank()
+
+        self.parameters = [TestParameters(self.mat_size, 0.2, 0.2)]
+
+
+class TestPSMatrixAlgebra_cr(TestPSMatrixAlgebra, unittest.TestCase):
+    '''Specialization for complex-real mixing'''
+    # Whether the first matrix is complex or not
+    complex1 = False
+    # Whether the second matrix is complex or not
+    complex2 = True
+
+    def setUp(self):
+        '''Set up a specific test.'''
+        self.grid = nt.ProcessGrid(rows, columns, slices)
+        self.my_rank = comm.Get_rank()
+
+        self.parameters = []
+        self.parameters = [TestParameters(self.mat_size, 0.2, 0.2)]
+
 
 if __name__ == '__main__':
     unittest.main()

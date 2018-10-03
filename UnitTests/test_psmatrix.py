@@ -1,6 +1,6 @@
 '''
-@package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.
+@package test_matrix
+A test suite for paralle matrices.
 '''
 import unittest
 import NTPolySwig as nt
@@ -14,9 +14,9 @@ from numpy import zeros
 import os
 import sys
 from mpi4py import MPI
-from Helpers import THRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
+from helpers import THRESHOLD
+from helpers import result_file
+from helpers import scratch_dir
 # MPI global communicator.
 comm = MPI.COMM_WORLD
 
@@ -49,8 +49,8 @@ class TestParameters:
         return csr_matrix(mat)
 
 
-class TestDistributedMatrix(unittest.TestCase):
-    '''A test class for the distributed matrix module.'''
+class TestPSMatrix(unittest.TestCase):
+    '''A test class for parallel matrices.'''
     # Parameters for the tests
     parameters = []
     # Input file name 1
@@ -77,28 +77,40 @@ class TestDistributedMatrix(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        '''Set up tests.'''
-        self.process_rows = int(os.environ['PROCESS_ROWS'])
-        self.process_columns = int(os.environ['PROCESS_COLUMNS'])
-        self.process_slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(
-            self.process_rows, self.process_columns, self.process_slices)
-        # Make sure we can destruct without any problems.
-        nt.DestructProcessGrid()
-        nt.ConstructProcessGrid(
-            self.process_rows, self.process_columns, self.process_slices)
-        self.myrow = nt.GetMyRow()
-        self.mycolumn = nt.GetMyColumn()
-        self.myslice = nt.GetMySlice()
+        '''Set up test suite.'''
+        rows = int(os.environ['PROCESS_ROWS'])
+        columns = int(os.environ['PROCESS_COLUMNS'])
+        slices = int(os.environ['PROCESS_SLICES'])
+        # global process grid
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
+
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
 
     def setUp(self):
         '''Set up specific tests.'''
-        mat_size = 64
+        mat_size = 33
+        self.process_rows = int(os.environ['PROCESS_ROWS'])
+        self.process_columns = int(os.environ['PROCESS_COLUMNS'])
+        self.process_slices = int(os.environ['PROCESS_SLICES'])
+
+        self.grid = nt.ProcessGrid(
+            self.process_rows, self.process_columns, self.process_slices)
+        self.myrow = self.grid.GetMyRow()
+        self.mycolumn = self.grid.GetMyColumn()
+        self.myslice = self.grid.GetMySlice()
+
         self.my_rank = comm.Get_rank()
+        self.parameters = []
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.0))
-        self.parameters.append(TestParameters(7, 7, 0.2))
+
+    def tearDown(self):
+        '''Cleanup this test.'''
+        del self.grid
 
     def check_result(self):
         '''Compare two matrices.'''
@@ -122,6 +134,34 @@ class TestDistributedMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_read_pg(self):
+        '''Test our ability to read and write matrices on a given grid.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, self.grid, False)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_copy_grid(self):
+        '''Test process grid copying'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            new_grid = nt.ProcessGrid(self.grid)
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, new_grid, False)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
     def test_readwritebinary(self):
         '''Test our ability to read and write binary.'''
         for param in self.parameters:
@@ -132,6 +172,21 @@ class TestDistributedMatrix(unittest.TestCase):
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.WriteToBinary(self.input_file2)
             ntmatrix2 = nt.Matrix_ps(self.input_file2, True)
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_readwritebinary_pg(self):
+        '''Test our ability to read and write binary on a given grid.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, self.grid, False)
+            ntmatrix1.WriteToBinary(self.input_file2)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, self.grid, True)
             ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
@@ -261,7 +316,8 @@ class TestDistributedMatrix(unittest.TestCase):
             self.check_result()
 
 
-class TestDistributedMatrix_c(TestDistributedMatrix):
+class TestPSMatrix_c(TestPSMatrix):
+    '''Specialization for complex matrices'''
     TripletList = nt.TripletList_c
     complex = True
 

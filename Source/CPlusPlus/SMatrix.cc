@@ -1,8 +1,8 @@
 #include "MatrixMemoryPool.h"
 #include "SMatrix.h"
 #include "TripletList.h"
-using std::string;
 using std::complex;
+using std::string;
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
@@ -95,12 +95,14 @@ void Matrix_lsc::ExtractRow(int row_number, Matrix_lsc &row_out) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Matrix_lsr::ExtractColumn(int column_number, Matrix_lsr &column_out) const {
+void Matrix_lsr::ExtractColumn(int column_number,
+                               Matrix_lsr &column_out) const {
   int temp = column_number + 1;
   ExtractMatrixColumn_lsr_wrp(ih_this, &temp, column_out.ih_this);
 }
 
-void Matrix_lsc::ExtractColumn(int column_number, Matrix_lsc &column_out) const {
+void Matrix_lsc::ExtractColumn(int column_number,
+                               Matrix_lsc &column_out) const {
   int temp = column_number + 1;
   ExtractMatrixColumn_lsc_wrp(ih_this, &temp, column_out.ih_this);
 }
@@ -116,12 +118,12 @@ void Matrix_lsc::Scale(double constant) {
 ////////////////////////////////////////////////////////////////////////////////
 
 void Matrix_lsr::Increment(const Matrix_lsr &matB, double alpha,
-                          double threshold) {
+                           double threshold) {
   IncrementMatrix_lsr_wrp(matB.ih_this, ih_this, &alpha, &threshold);
 }
 
 void Matrix_lsc::Increment(const Matrix_lsc &matB, double alpha,
-                          double threshold) {
+                           double threshold) {
   IncrementMatrix_lsc_wrp(matB.ih_this, ih_this, &alpha, &threshold);
 }
 
@@ -137,37 +139,37 @@ complex<double> Matrix_lsc::Dot(const Matrix_lsc &matB) const {
   double real, imag;
   complex<double> val;
   DotMatrix_lsc_wrp(ih_this, matB.ih_this, &real, &imag);
-  val = complex<double>(real,imag);
+  val = complex<double>(real, imag);
   return val;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void Matrix_lsr::PairwiseMultiply(const NTPoly::Matrix_lsr &matA,
-                                 const NTPoly::Matrix_lsr &matB) {
+                                  const NTPoly::Matrix_lsr &matB) {
   PairwiseMultiplyMatrix_lsr_wrp(matA.ih_this, matB.ih_this, ih_this);
 }
 
 void Matrix_lsc::PairwiseMultiply(const NTPoly::Matrix_lsc &matA,
-                                 const NTPoly::Matrix_lsc &matB) {
+                                  const NTPoly::Matrix_lsc &matB) {
   PairwiseMultiplyMatrix_lsc_wrp(matA.ih_this, matB.ih_this, ih_this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 void Matrix_lsr::Gemm(const Matrix_lsr &matA, const Matrix_lsr &matB,
-                     bool isATransposed, bool isBTransposed, double alpha,
-                     double beta, double threshold,
-                     MatrixMemoryPool_r &memory_pool) {
+                      bool isATransposed, bool isBTransposed, double alpha,
+                      double beta, double threshold,
+                      MatrixMemoryPool_r &memory_pool) {
   MatrixMultiply_lsr_wrp(matA.ih_this, matB.ih_this, ih_this, &isATransposed,
                          &isBTransposed, &alpha, &beta, &threshold,
                          memory_pool.ih_this);
 }
 
 void Matrix_lsc::Gemm(const Matrix_lsc &matA, const Matrix_lsc &matB,
-                     bool isATransposed, bool isBTransposed, double alpha,
-                     double beta, double threshold,
-                     MatrixMemoryPool_c &memory_pool) {
+                      bool isATransposed, bool isBTransposed, double alpha,
+                      double beta, double threshold,
+                      MatrixMemoryPool_c &memory_pool) {
   MatrixMultiply_lsc_wrp(matA.ih_this, matB.ih_this, ih_this, &isATransposed,
                          &isBTransposed, &alpha, &beta, &threshold,
                          memory_pool.ih_this);
@@ -208,17 +210,5 @@ void Matrix_lsr::MatrixToTripletList(TripletList_r &triplet_list) const {
 
 void Matrix_lsc::MatrixToTripletList(TripletList_c &triplet_list) const {
   MatrixToTripletList_lsc_wrp(ih_this, triplet_list.ih_this);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void Matrix_lsr::EigenDecomposition(NTPoly::Matrix_lsr &MatV,
-                                   double threshold) const {
-  EigenDecomposition_lsr_wrp(ih_this, MatV.ih_this, &threshold);
-}
-
-void Matrix_lsc::EigenDecomposition(NTPoly::Matrix_lsc &MatV,
-                                   double threshold) const {
-  EigenDecomposition_lsc_wrp(ih_this, MatV.ih_this, &threshold);
 }
 } // namespace NTPoly

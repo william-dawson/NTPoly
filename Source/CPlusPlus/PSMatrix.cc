@@ -1,11 +1,10 @@
 #include "PMatrixMemoryPool.h"
 #include "PSMatrix.h"
 #include "Permutation.h"
+#include "ProcessGrid.h"
 #include "TripletList.h"
 using std::string;
 #include <iostream>
-using std::cout;
-using std::endl;
 using namespace NTPoly;
 using std::complex;
 
@@ -22,6 +21,11 @@ Matrix_ps::Matrix_ps(int matrix_dimension) {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+Matrix_ps::Matrix_ps(int matrix_dimension, const ProcessGrid &grid) {
+  ConstructEmptyMatrixPG_ps_wrp(ih_this, &matrix_dimension, grid.ih_this);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 Matrix_ps::Matrix_ps(std::string file_name, bool is_binary) {
   int string_length = file_name.length();
   if (is_binary) {
@@ -30,6 +34,19 @@ Matrix_ps::Matrix_ps(std::string file_name, bool is_binary) {
   } else {
     ConstructMatrixFromMatrixMarket_ps_wrp(ih_this, &file_name.c_str()[0],
                                            &string_length);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+Matrix_ps::Matrix_ps(std::string file_name, const ProcessGrid &grid,
+                     bool is_binary) {
+  int string_length = file_name.length();
+  if (is_binary) {
+    ConstructMatrixFromBinaryPG_ps_wrp(ih_this, &file_name.c_str()[0],
+                                     &string_length, grid.ih_this);
+  } else {
+    ConstructMatrixFromMatrixMarketPG_ps_wrp(ih_this, &file_name.c_str()[0],
+                                           &string_length, grid.ih_this);
   }
 }
 

@@ -293,8 +293,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
   !! Note that this makes a complete and independent copy of the process grid.
-  !! Which of course means that the old grid will be destroyed, so don't leave
-  !! any matrices pointing to it.
+  !! Which of course means that whatever is currently stored in new_grid will
+  !! be destroyed, so don't leave any matrices pointing to it.
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
@@ -384,7 +384,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL MPI_COMM_FREE(grid_in%column_comm, ierr)
           CALL MPI_COMM_FREE(grid_in%within_slice_comm, ierr)
           CALL MPI_COMM_FREE(grid_in%between_slice_comm, ierr)
-
           DO II = 1, grid_in%number_of_blocks_rows
              CALL MPI_COMM_FREE(grid_in%blocked_row_comm(II), ierr)
           END DO

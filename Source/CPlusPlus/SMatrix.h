@@ -2,8 +2,8 @@
 #define SMatrix_h
 
 #include "Wrapper.h"
-#include <string>
 #include <complex>
+#include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
@@ -53,7 +53,8 @@ public:
   //!\param matB matrix to add.
   //!\param alpha scale for the matrix.
   //!\param threshold for flushing small values.
-  void Increment(const NTPoly::Matrix_lsr &matB, double alpha, double threshold);
+  void Increment(const NTPoly::Matrix_lsr &matB, double alpha,
+                 double threshold);
   //! Matrix dot product.
   //!\param matB matrix to dot with.
   //!\result the dot product of this and matB.
@@ -75,12 +76,6 @@ public:
   void Gemm(const NTPoly::Matrix_lsr &matA, const NTPoly::Matrix_lsr &matB,
             bool isATransposed, bool isBTransposed, double alpha, double beta,
             double threshold, NTPoly::MatrixMemoryPool_r &memory_pool);
-
-public:
-  //! Compute the eigen vectors of a matrix.
-  //!\param MatV the eigenvectors.
-  //!\param threshold for pruning small values.
-  void EigenDecomposition(NTPoly::Matrix_lsr &MatV, double threshold) const;
 
 public:
   //! Transpose a sparse matrix.
@@ -152,7 +147,8 @@ public:
   //!\param matB matrix to add.
   //!\param alpha scale for the matrix.
   //!\param threshold for flushing small values.
-  void Increment(const NTPoly::Matrix_lsc &matB, double alpha, double threshold);
+  void Increment(const NTPoly::Matrix_lsc &matB, double alpha,
+                 double threshold);
   //! Matrix dot product.
   //!\param matB matrix to dot with.
   //!\result the dot product of this and matB.
@@ -174,12 +170,6 @@ public:
   void Gemm(const NTPoly::Matrix_lsc &matA, const NTPoly::Matrix_lsc &matB,
             bool isATransposed, bool isBTransposed, double alpha, double beta,
             double threshold, NTPoly::MatrixMemoryPool_c &memory_pool);
-
-public:
-  //! Compute the eigen vectors of a matrix.
-  //!\param MatV the eigenvectors.
-  //!\param threshold for pruning small values.
-  void EigenDecomposition(NTPoly::Matrix_lsc &MatV, double threshold) const;
 
 public:
   //! Transpose a sparse matrix.

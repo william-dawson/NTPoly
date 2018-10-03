@@ -1,10 +1,9 @@
+'''@package test_chemistry
+A test suite for chemistry focused solvers.
 '''
-@package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.
-'''
-from Helpers import THRESHOLD, EXTRAPTHRESHOLD
-from Helpers import result_file
-from Helpers import scratch_dir
+from helpers import THRESHOLD, EXTRAPTHRESHOLD
+from helpers import result_file
+from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
 from numpy import diag
@@ -18,7 +17,7 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 
-class TestChemistry(unittest.TestCase):
+class TestChemistry:
     '''A test class for the chemistry solvers.'''
     # Matrix to compare to
     CheckMat = 0
@@ -31,7 +30,12 @@ class TestChemistry(unittest.TestCase):
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(rows, columns, slices, True)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
+
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
 
     def setUp(self):
         '''Set up an individual test.'''
@@ -166,7 +170,8 @@ class TestChemistry(unittest.TestCase):
         self.assertLessEqual(global_norm, THRESHOLD)
 
 
-class TestChemistry_r(TestChemistry):
+class TestChemistry_r(TestChemistry, unittest.TestCase):
+    '''Specialization for real matrices'''
     def testrealio(self):
         '''Test routines to read data produced by a real chemistry program.'''
         density_matrix = nt.Matrix_ps(self.realio)
@@ -233,8 +238,8 @@ class TestChemistry_r(TestChemistry):
         self.check_full_extrap()
 
 
-class TestChemistry_c(TestChemistry):
-    '''A test class for complex chemistry solvers.'''
+class TestChemistry_c(TestChemistry, unittest.TestCase):
+    '''Speclailziation for complex matrices.'''
 
     def setUp(self):
         '''Set up an individual test.'''
