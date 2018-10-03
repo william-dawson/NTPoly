@@ -27,7 +27,7 @@ matrix:
       env: TESTOS="LINUX" SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
     - os: osx
       sudo: required
-      env: TESTOS="OSX" MAKETEST=1 OMPI_MCA_shmem="posix"
+      env: TESTOS="OSX" MAKETEST=0
 
 cache:
   pip: true
