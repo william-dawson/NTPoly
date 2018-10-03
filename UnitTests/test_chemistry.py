@@ -6,11 +6,12 @@ from helpers import result_file
 from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
-from numpy import diag
+from numpy import diag, sqrt
 import scipy
 from scipy.sparse.linalg import norm
-from scipy.io import mmread
-from scipy.linalg import eigh
+from scipy.io import mmread, mmwrite
+from scipy.linalg import eigh, funm
+from scipy.sparse import csr_matrix, rand
 import os
 from mpi4py import MPI
 # MPI global communicator
@@ -23,6 +24,50 @@ class TestChemistry:
     CheckMat = 0
     # Rank of the current process
     my_rank = 0
+    # complex test
+    is_complex = False
+
+    def create_matrices(self):
+        '''
+        Create the test matrix with the following parameters.
+        '''
+        fock = rand(self.mat_dim, self.mat_dim, density=1.0)
+        if self.is_complex:
+            fock += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
+            fock = fock + fock.H
+        else:
+            fock = fock + fock.T
+        overlap = rand(self.mat_dim, self.mat_dim, density=1.0)
+        overlap = overlap.T.dot(overlap)
+
+        isq = funm(overlap.todense(), lambda x: 1.0 / sqrt(x))
+        wfock = isq.dot(fock.todense()).dot(isq)
+
+        # Add a gap
+        w, v = eigh(wfock)
+        gap = (w[-1] - w[0])/3.0
+        w[self.nel:] += gap
+        if self.is_complex:
+            wfock = v.conj().T.dot(diag(w).dot(v))
+        else:
+            wfock = v.T.dot(diag(w).dot(v))
+
+        # Compute the density
+        w[:int(self.nel/2)] = 2.0
+        w[int(self.nel/2):] = 0.0
+        if self.is_complex:
+            density = isq.dot(v.dot(diag(w).dot(v.conj().T))).dot(isq)
+        else:
+            density = isq.dot(v.dot(diag(w).dot(v.T))).dot(isq)
+
+        self.write_matrix(fock, self.hamiltonian)
+        self.write_matrix(overlap, self.overlap)
+        self.write_matrix(density, self.density)
+
+    def write_matrix(self, mat, file_name):
+        if self.my_rank == 0:
+            mmwrite(file_name, csr_matrix(mat))
+        comm.barrier()
 
     @classmethod
     def setUpClass(self):
@@ -42,15 +87,17 @@ class TestChemistry:
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
-        self.hamiltonian = os.environ["HAMILTONIAN"]
-        self.overlap = os.environ["OVERLAP"]
-        self.density = os.environ["DENSITY"]
         self.geomh1 = os.environ["GEOMH1"]
         self.geomo1 = os.environ["GEOMO1"]
         self.geomo2 = os.environ["GEOMO2"]
         self.geomd2 = os.environ["GEOMD2"]
         self.realio = os.environ["REALIO"]
         self.nel = 10
+
+        self.hamiltonian = scratch_dir + "/rf.mtx"
+        self.overlap = scratch_dir + "/rs.mtx"
+        self.density = scratch_dir + "/rd.mtx"
+        self.mat_dim = 7
 
     def check_full(self):
         '''Compare two computed matrices.'''
@@ -99,6 +146,7 @@ class TestChemistry:
 
     def basic_solver(self, SRoutine):
         '''Test various kinds of density matrix solvers.'''
+        self.create_matrices()
         fock_matrix = nt.Matrix_ps(self.hamiltonian)
         overlap_matrix = nt.Matrix_ps(self.overlap)
         inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
@@ -239,17 +287,8 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
 
 
 class TestChemistry_c(TestChemistry, unittest.TestCase):
-    '''Speclailziation for complex matrices.'''
-
-    def setUp(self):
-        '''Set up an individual test.'''
-        self.my_rank = comm.Get_rank()
-        self.solver_parameters = nt.SolverParameters()
-        self.solver_parameters.SetVerbosity(True)
-        self.hamiltonian = os.environ["HCOMPLEX"]
-        self.overlap = os.environ["SCOMPLEX"]
-        self.density = os.environ["DCOMPLEX"]
-        self.nel = 10
+    '''Specialization for complex matrices.'''
+    is_complex = True
 
 
 if __name__ == '__main__':
