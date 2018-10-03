@@ -42,7 +42,7 @@ script:
   - cd Build
   - bash ../UnitTests/travis_run_cmake.sh
   - make
-  - if [ "$MAKETEST" = 1 ]; then travis_wait 60 make test; fi
+  - if [ "$MAKETEST" = 1 ]; make test; fi
   - cd ../UnitTests/
   - bash travis_check_examples.sh
 
