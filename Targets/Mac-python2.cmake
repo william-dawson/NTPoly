@@ -30,7 +30,3 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0")
 set(F_TOOLCHAINFLAGS_DEBUG
   "-fbounds-check -O0 -fexternal-blas -cpp -Wall -DPURE=")
-
-IF (EIGEN_EXA)
-  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -lscalapack")
-ENDIF()

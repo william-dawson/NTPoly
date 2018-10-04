@@ -3,7 +3,8 @@
 MODULE PSMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE PermutationModule_wrp, ONLY : Permutation_wrp
-  USE PSMatrixAlgebraModule
+  USE ProcessGridModule_wrp, ONLY : ProcessGrid_wrp
+  ! USE PSMatrixAlgebraModule
   USE PSMatrixModule
   USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -49,6 +50,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructEmptyMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the constructor of an empty sparse, distributed, matrix.
+  SUBROUTINE ConstructEmptyMatrixPG_ps_wrp(ih_this,matrix_dim,ih_grid) &
+       & bind(c,name="ConstructEmptyMatrixPG_ps_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: matrix_dim
+    INTEGER(kind=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(ProcessGrid_wrp) :: h_grid
+
+    h_grid = TRANSFER(ih_grid,h_grid)
+    ALLOCATE(h_this%data)
+    CALL ConstructEmptyMatrix(h_this%data,matrix_dim,h_grid%data)
+    ih_this = TRANSFER(h_this,ih_this)
+  END SUBROUTINE ConstructEmptyMatrixPG_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp(ih_this, file_name, &
        & name_size) bind(c,name="ConstructMatrixFromMatrixMarket_ps_wrp")
@@ -69,14 +85,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct distributed sparse matrix from a matrix market file in parallel.
+  SUBROUTINE ConstructMatrixFromMatrixMarketPG_ps_wrp(ih_this, file_name, &
+       & name_size, ih_grid) &
+       & bind(c,name="ConstructMatrixFromMatrixMarketPG_ps_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(kind=c_int), INTENT(IN) :: name_size
+    INTEGER(kind=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
+    !! Local Data
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(ProcessGrid_wrp) :: h_grid
+    CHARACTER(len=name_size) :: local_string
+    INTEGER :: counter
+
+    DO counter=1,name_size
+       local_string(counter:counter) = file_name(counter)
+    END DO
+
+    ALLOCATE(h_this%data)
+    h_grid = TRANSFER(ih_grid,h_grid)
+    CALL ConstructMatrixFromMatrixMarket(h_this%data,local_string,h_grid%data)
+    ih_this = TRANSFER(h_this,ih_this)
+  END SUBROUTINE ConstructMatrixFromMatrixMarketPG_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
   SUBROUTINE ConstructMatrixFromBinary_ps_wrp(ih_this,file_name,name_size) &
        & bind(c,name="ConstructMatrixFromBinary_ps_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
-    TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
+    TYPE(Matrix_ps_wrp) :: h_this
     CHARACTER(len=name_size) :: local_string
     INTEGER :: counter
 
@@ -88,6 +128,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructMatrixFromBinary(h_this%data,local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromBinary_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a distributed sparse matrix from a binary file in parallel.
+  SUBROUTINE ConstructMatrixFromBinaryPG_ps_wrp(ih_this, file_name, &
+       & name_size, ih_grid) &
+       & bind(c,name="ConstructMatrixFromBinaryPG_ps_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(kind=c_int), INTENT(IN) :: name_size
+    INTEGER(kind=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
+    !! Local Data
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(ProcessGrid_wrp) :: h_grid
+    CHARACTER(len=name_size) :: local_string
+    INTEGER :: counter
+
+    DO counter=1,name_size
+       local_string(counter:counter) = file_name(counter)
+    END DO
+
+    ALLOCATE(h_this%data)
+    h_grid = TRANSFER(ih_grid,h_grid)
+    CALL ConstructMatrixFromBinary(h_this%data,local_string,h_grid%data)
+    ih_this = TRANSFER(h_this,ih_this)
+  END SUBROUTINE ConstructMatrixFromBinaryPG_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
   SUBROUTINE CopyMatrix_ps_wrp(ih_matA,ih_matB) &

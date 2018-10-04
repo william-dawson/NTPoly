@@ -36,11 +36,12 @@ MODULE DMatrixModule
   PUBLIC :: SplitMatrix
   PUBLIC :: ComposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: EigenDecomposition
   PUBLIC :: MatrixNorm
   PUBLIC :: IncrementMatrix
   PUBLIC :: MultiplyMatrix
   PUBLIC :: TransposeMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE Matrix_ldr
      MODULE PROCEDURE ConstructEmptyMatrix_ldr
@@ -76,10 +77,6 @@ MODULE DMatrixModule
      MODULE PROCEDURE ComposeMatrix_ldr
      MODULE PROCEDURE ComposeMatrix_ldc
   END INTERFACE
-  INTERFACE EigenDecomposition
-     MODULE PROCEDURE EigenDecomposition_ldr
-     MODULE PROCEDURE EigenDecomposition_ldc
-  END INTERFACE
   INTERFACE MatrixNorm
      MODULE PROCEDURE MatrixNorm_ldr
      MODULE PROCEDURE MatrixNorm_ldc
@@ -95,6 +92,10 @@ MODULE DMatrixModule
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_ldr
      MODULE PROCEDURE TransposeMatrix_ldc
+  END INTERFACE
+  INTERFACE EigenDecomposition
+     MODULE PROCEDURE EigenDecomposition_ldr
+     MODULE PROCEDURE EigenDecomposition_ldc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the empty constructor.
@@ -197,17 +198,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ldr), INTENT(IN) :: this
     !> The norm of the matrix.
     REAL(NTREAL) :: norm
-    !! Local Variables
-    CHARACTER, PARAMETER :: NORMC = 'F'
-    DOUBLE PRECISION, DIMENSION(this%rows) :: WORK
-    INTEGER :: M, N, LDA
-    !! Externel
-    DOUBLE PRECISION, EXTERNAL :: dlange
+    INTEGER :: II, JJ
 
-    M = this%rows
-    N = this%columns
-    LDA = this%rows
-    norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
+    norm = 0
+    DO II =1, this%rows
+       DO JJ = 1,  this%columns
+          norm = norm + this%data(II,JJ)**2
+       END DO
+    END DO
   END FUNCTION MatrixNorm_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.
@@ -455,16 +453,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The norm of the matrix.
     REAL(NTREAL) :: norm
     !! Local Variables
-    CHARACTER, PARAMETER :: NORMC = 'F'
-    COMPLEX*16, DIMENSION(this%rows) :: WORK
-    INTEGER :: M, N, LDA
-    !! Externel
-    DOUBLE PRECISION, EXTERNAL :: zlange
+    INTEGER :: II, JJ
 
-    M = this%rows
-    N = this%columns
-    LDA = this%rows
-    norm = ZLANGE(NORMC, M, N, this%data, LDA, WORK)
+    norm = 0
+    DO II =1, this%rows
+       DO JJ = 1,  this%columns
+          norm = norm + &
+               & REAL(this%data(II,JJ)*CONJG(this%data(II,JJ)),KIND=NTREAL)
+       END DO
+    END DO
   END FUNCTION MatrixNorm_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.

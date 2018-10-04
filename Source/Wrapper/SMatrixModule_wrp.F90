@@ -34,7 +34,6 @@ MODULE SMatrixModule_wrp
   PUBLIC :: PrintMatrix_lsr_wrp
   PUBLIC :: PrintMatrixF_lsr_wrp
   PUBLIC :: MatrixToTripletList_lsr_wrp
-  PUBLIC :: EigenDecomposition_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructMatrixFromFile_lsc_wrp
   PUBLIC :: ConstructMatrixFromTripletList_lsc_wrp
@@ -50,7 +49,6 @@ MODULE SMatrixModule_wrp
   PUBLIC :: PrintMatrix_lsc_wrp
   PUBLIC :: PrintMatrixF_lsc_wrp
   PUBLIC :: MatrixToTripletList_lsc_wrp
-  PUBLIC :: EigenDecomposition_lsc_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   SUBROUTINE ConstructMatrixFromFile_lsr_wrp(ih_this, file_name, name_size) &
@@ -245,29 +243,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_lsr_wrp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Wrap the dense eigendecompsition routine.
-  SUBROUTINE EigenDecomposition_lsr_wrp(ih_matA, ih_matV, threshold) &
-       & bind(c,name="EigenDecomposition_lsr_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matV(SIZE_wrp)
-    REAL(NTREAL), INTENT(IN) :: threshold
-    TYPE(Matrix_lsr_wrp) :: h_matA
-    TYPE(Matrix_lsr_wrp) :: h_matV
-    !! Temporary Dense Matrices
-    TYPE(Matrix_ldr) :: dense_a, dense_v
-
-    h_matA  = TRANSFER(ih_matA,h_matA)
-    h_matV = TRANSFER(ih_matV,h_matV)
-
-    CALL ConstructMatrixDFromS(h_matA%data, dense_a)
-    CALL EigenDecomposition(dense_a, dense_v)
-    CALL ConstructMatrixSFromD(dense_v,h_matV%data,threshold)
-
-    !! Cleanup
-    CALL DestructMatrix(dense_a)
-    CALL DestructMatrix(dense_v)
-  END SUBROUTINE EigenDecomposition_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   SUBROUTINE ConstructMatrixFromFile_lsc_wrp(ih_this, file_name, name_size) &
@@ -472,28 +447,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_lsc_wrp
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Wrap the dense eigendecompsition routine.
-  SUBROUTINE EigenDecomposition_lsc_wrp(ih_matA, ih_matV, threshold) &
-       & bind(c,name="EigenDecomposition_lsc_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matV(SIZE_wrp)
-    REAL(NTREAL), INTENT(IN) :: threshold
-    TYPE(Matrix_lsc_wrp) :: h_matA
-    TYPE(Matrix_lsc_wrp) :: h_matV
-    !! Temporary Dense Matrices
-    TYPE(Matrix_ldc) :: dense_a, dense_v
-
-    h_matA  = TRANSFER(ih_matA,h_matA)
-    h_matV = TRANSFER(ih_matV,h_matV)
-
-    CALL ConstructMatrixDFromS(h_matA%data, dense_a)
-    CALL EigenDecomposition(dense_a, dense_v)
-    CALL ConstructMatrixSFromD(dense_v,h_matV%data,threshold)
-
-    !! Cleanup
-    CALL DestructMatrix(dense_a)
-    CALL DestructMatrix(dense_v)
-  END SUBROUTINE EigenDecomposition_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixModule_wrp

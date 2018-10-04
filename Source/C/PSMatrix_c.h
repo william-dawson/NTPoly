@@ -2,12 +2,21 @@
 #define DISTRIBUTEDSPARSEMATRIX_ch
 
 void ConstructEmptyMatrix_ps_wrp(int *ih_this, const int *matrix_dim);
+void ConstructEmptyMatrixPG_ps_wrp(int *ih_this, const int *matrix_dim,
+                                   const int *ih_grid);
 void CopyMatrix_ps_wrp(const int *ih_matA, int *ih_matB);
 void DestructMatrix_ps_wrp(int *ih_this);
 void ConstructMatrixFromMatrixMarket_ps_wrp(int *ih_this, const char *file_name,
                                             const int *name_size);
 void ConstructMatrixFromBinary_ps_wrp(int *ih_this, const char *file_name,
                                       const int *name_size);
+void ConstructMatrixFromMatrixMarketPG_ps_wrp(int *ih_this,
+                                              const char *file_name,
+                                              const int *name_size,
+                                              const int *ih_grid);
+void ConstructMatrixFromBinaryPG_ps_wrp(int *ih_this, const char *file_name,
+                                        const int *name_size,
+                                        const int *ih_grid);
 void WriteMatrixToBinary_ps_wrp(const int *ih_this, const char *file_name,
                                 const int *name_size);
 void WriteMatrixToMatrixMarket_ps_wrp(const int *ih_this, const char *file_name,

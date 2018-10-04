@@ -17,9 +17,6 @@ public:
   //! Construct the triplet list.
   //!\param size the size of the list.
   TripletList_r(int size = 0);
-  //! Construct a triplet list from a distributed sparse matrix.
-  //!\param matrix to construct from.
-  // TripletList(const Matrix_ps &matrix);
   //! Increase the size of a triplet list.
   //!\param size the new size.
   void Resize(int size);
@@ -68,9 +65,6 @@ public:
   //! Construct the triplet list.
   //!\param size the size of the list.
   TripletList_c(int size = 0);
-  //! Construct a triplet list from a distributed sparse matrix.
-  //!\param matrix to construct from.
-  // TripletList(const Matrix_ps &matrix);
   //! Increase the size of a triplet list.
   //!\param size the new size.
   void Resize(int size);

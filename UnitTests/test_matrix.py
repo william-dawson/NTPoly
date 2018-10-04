@@ -1,6 +1,6 @@
 '''
 @package testSparseMatrix
-A test suite for the Sparse Matrix module.
+A test suite for local matrices.
 '''
 import unittest
 import NTPolySwig as nt
@@ -18,8 +18,8 @@ from numpy.linalg import norm as normd
 from scipy.io import mmwrite, mmread
 import os
 
-from Helpers import THRESHOLD
-from Helpers import result_file
+from helpers import THRESHOLD
+from helpers import result_file
 
 
 class TestParameters:
@@ -57,7 +57,7 @@ class TestParameters:
 
 
 class TestLocalMatrix(unittest.TestCase):
-    '''A test class for the local matrix module.'''
+    '''A test class for local matrices.'''
     # Parameters for the matrices
     parameters = []
     # Location of the scratch directory.
@@ -67,7 +67,8 @@ class TestLocalMatrix(unittest.TestCase):
     complex = False
 
     def setUp(self):
-        '''Set up tests.'''
+        '''Set up a test.'''
+        self.parameters = []
         self.parameters.append(TestParameters(2, 4, 0.0))
         self.parameters.append(TestParameters(8, 8, 0.0))
         self.parameters.append(TestParameters(2, 2, 1.0))
@@ -256,28 +257,6 @@ class TestLocalMatrix(unittest.TestCase):
             normval = abs(norm(CheckMat - ResultMat))
             self.assertLessEqual(normval, THRESHOLD)
 
-    def test_eigendecomposition(self):
-        '''Test the dense eigen decomposition'''
-        for param in self.parameters:
-            matrix1 = param.create_matrix(square=True, complex=self.complex)
-            matrix1 = matrix1 + matrix1.H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            w, vdense = eigh(matrix1.todense())
-            CheckV = csr_matrix(vdense)
-
-            ntmatrix = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            V = self.SMatrix(ntmatrix.GetColumns(), ntmatrix.GetColumns())
-
-            ntmatrix.EigenDecomposition(V, THRESHOLD)
-            V.WriteToMatrixMarket(self.scratch_dir + "/vmat.mtx")
-
-            ResultV = mmread(self.scratch_dir + "/vmat.mtx")
-            CheckD = diag((CheckV.H.dot(matrix1).dot(CheckV)).todense())
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
-            normvalv = abs(normd(CheckD - ResultD))
-
-            self.assertLessEqual(normvalv, THRESHOLD)
-
     def test_get_row(self):
         '''Test function that extracts a row from the matrix'''
         for param in self.parameters:
@@ -318,6 +297,7 @@ class TestLocalMatrix(unittest.TestCase):
 
 
 class TestLocalMatrix_c(TestLocalMatrix):
+    '''Specialization for complex matrices'''
     SMatrix = nt.Matrix_lsc
     MatrixMemoryPool = nt.MatrixMemoryPool_c
     complex = True

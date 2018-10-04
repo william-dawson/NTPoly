@@ -1,5 +1,5 @@
-''' @package testDistributedSparseMatrix
-A test suite for the Distributed Sparse Matrix module.'''
+''' @package test_solvers
+A test suite for the different solvers.'''
 import unittest
 import NTPolySwig as nt
 import warnings
@@ -17,9 +17,9 @@ import os
 from numpy.polynomial.chebyshev import chebfit, chebval
 from numpy.polynomial.hermite import hermfit, hermval
 from mpi4py import MPI
-from Helpers import THRESHOLD
-from Helpers import result_file, result_file2
-from Helpers import scratch_dir
+from helpers import THRESHOLD
+from helpers import result_file, result_file2
+from helpers import scratch_dir
 
 
 # MPI global communicator.
@@ -47,7 +47,12 @@ class TestSolvers(unittest.TestCase):
         rows = int(os.environ['PROCESS_ROWS'])
         columns = int(os.environ['PROCESS_COLUMNS'])
         slices = int(os.environ['PROCESS_SLICES'])
-        nt.ConstructProcessGrid(rows, columns, slices)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
+
+    @classmethod
+    def tearDownClass(self):
+        '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
 
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''

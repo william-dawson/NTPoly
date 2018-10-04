@@ -1,4 +1,4 @@
-  
+
   !! Allocate Space For Result
   ALLOCATE(per_column_min(this%local_columns))
   ALLOCATE(per_column_max(this%local_columns))
@@ -13,9 +13,9 @@
      IF (triplet_list%data(counter)%index_row .EQ. &
           & triplet_list%data(counter)%index_column) THEN
         per_column_min(local_column) = per_column_min(local_column) + &
-             & triplet_list%data(counter)%point_value
+             & REAL(triplet_list%data(counter)%point_value,KIND=NTREAL)
         per_column_max(local_column) = per_column_max(local_column) + &
-             & triplet_list%data(counter)%point_value
+             & REAL(triplet_list%data(counter)%point_value,KIND=NTREAL)
      ELSE
         per_column_min(local_column) = per_column_min(local_column) - &
              & ABS(triplet_list%data(counter)%point_value)

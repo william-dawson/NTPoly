@@ -10,7 +10,6 @@ set(Csrc
     LinearSolvers_c.h
     LoadBalancer_c.h
     MatrixMemoryPool_c.h
-    MinimizerSolvers_c.h
     PMatrixMemoryPool_c.h
     PSMatrix_c.h
     Permutation_c.h

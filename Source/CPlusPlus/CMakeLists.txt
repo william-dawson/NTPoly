@@ -11,7 +11,6 @@ set(Csrc
     LinearSolvers.cc
     LoadBalancer.cc
     MatrixMemoryPool.cc
-    MinimizerSolvers.cc
     Permutation.cc
     Polynomial.cc
     PMatrixMemoryPool.cc
@@ -39,7 +38,6 @@ set(Chead
     LinearSolvers.h
     LoadBalancer.h
     MatrixMemoryPool.h
-    MinimizerSolvers.h
     Permutation.h
     PMatrixMemoryPool.h
     Polynomial.h
