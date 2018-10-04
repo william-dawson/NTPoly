@@ -144,7 +144,7 @@ class TestChemistry:
             self.assertTrue(False)
         pass
 
-    def basic_solver(self, SRoutine):
+    def basic_solver(self, SRoutine, cpcheck=True):
         '''Test various kinds of density matrix solvers.'''
         self.create_matrices()
         fock_matrix = nt.Matrix_ps(self.hamiltonian)
@@ -168,7 +168,8 @@ class TestChemistry:
         comm.barrier()
 
         self.check_full()
-        self.check_cp(chemical_potential)
+        if cpcheck:
+            self.check_cp(chemical_potential)
 
     def test_pm(self):
         '''Test our ability to compute the density matrix with PM.'''
@@ -189,7 +190,7 @@ class TestChemistry:
     def test_cg(self):
         '''Test routines to compute the density matrix with conjugate
            gradient.'''
-        self.basic_solver(nt.MinimizerSolvers.ConjugateGradient)
+        self.basic_solver(nt.MinimizerSolvers.ConjugateGradient, False)
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''

@@ -2,6 +2,7 @@
 !> A Module For Solving Systems Quantum Chemistry Systems Using Minimization.
 MODULE MinimizerSolversModule
   USE DataTypesModule, ONLY : NTREAL
+  USE DensityMatrixSolversModule, ONLY : PM
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteElement, WriteCitation, WriteListElement
@@ -41,12 +42,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
     !! Local Variables
-    REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: last_trace_value
     REAL(NTREAL) :: norm_value
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: P_k
-    TYPE(Matrix_ps) :: Gradient
     TYPE(Matrix_ps) :: G_k, G_kplusone
     TYPE(Matrix_ps) :: H_k
     TYPE(Matrix_ps) :: TempMat, TempMat2
@@ -58,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: root1, root2, root_temp
     REAL(NTREAL) :: energy_value, energy_value2
     !! Temporary Variables
-    TYPE(MatrixMemoryPool_p) :: pool1
+    TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: outer_counter
     INTEGER :: matrix_dimension
 
@@ -87,44 +85,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(H_k, Hamiltonian)
     CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
     CALL ConstructEmptyMatrix(TempMat2, Hamiltonian)
-    CALL ConstructEmptyMatrix(Gradient, Hamiltonian)
     CALL ConstructEmptyMatrix(Identity, Hamiltonian)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
     CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
     CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
        CALL PermuteMatrix(WorkingHamiltonian, WorkingHamiltonian, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
 
-    !! Initialize
-    trace_value = 0.0_NTREAL
-    last_trace_value = 0.0_NTREAL
+    !! Initial Guess
     CALL CopyMatrix(Identity, P_k)
-    CALL ScaleMatrix(P_k,REAL(0.5*nel,NTREAL)/matrix_dimension)
+    CALL ScaleMatrix(P_k,(0.5_NTREAL*nel)/matrix_dimension)
 
     !! Compute The Gradient
-    CALL CopyMatrix(Identity,TempMat)
-    CALL IncrementMatrix(P_k,TempMat,-1.0_NTREAL)
-    CALL MatrixMultiply(P_k,WorkingHamiltonian,TempMat2, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL MatrixMultiply(TempMat,TempMat2,Gradient, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-    CALL ScaleMatrix(Gradient,6.0_NTREAL)
-    CALL MatrixTrace(Gradient, mu)
-    mu = mu/matrix_dimension
-    CALL IncrementMatrix(Identity,Gradient,-1.0_NTREAL*mu)
-    CALL CopyMatrix(Gradient,H_k)
-    CALL ScaleMatrix(H_k,-1.0_NTREAL)
-    CALL CopyMatrix(H_k,G_k)
+    CALL ComputeGradient(P_k, WorkingHamiltonian, Identity, pool, &
+         & solver_parameters, G_k, mu)
+    CALL CopyMatrix(G_k, H_k)
+    CALL ScaleMatrix(H_k, -1.0_NTREAL)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -134,7 +120,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     outer_counter = 1
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     energy_value = 0
-    DO outer_counter = 1,solver_parameters%max_iterations
+    DO outer_counter = 1, solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
@@ -143,55 +129,46 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ExitSubLog
        END IF
 
-       !! Compute The Step Size
-       CALL DotMatrix(H_k, Gradient, b)
-       CALL MatrixMultiply(H_k,WorkingHamiltonian,TempMat, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL MatrixMultiply(H_k,TempMat,TempMat2, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+       !! Compute HHF
+       CALL MatrixMultiply(H_k, WorkingHamiltonian, TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(H_k, TempMat, TempMat2, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
-       CALL CopyMatrix(Identity,TempMat)
-       CALL IncrementMatrix(P_k,TempMat,-2.0_NTREAL)
+       !! Compute The Step Size
+       CALL DotMatrix(H_k, G_k, b)
+
+       CALL CopyMatrix(Identity, TempMat)
+       CALL IncrementMatrix(P_k, TempMat, -2.0_NTREAL)
+
        CALL DotMatrix(TempMat, TempMat2, c)
-       c = 3.0_NTREAL*c
+       c = 6.0_NTREAL*c
+
        CALL DotMatrix(H_k, TempMat2, d)
-       d = -2.0_NTREAL*d
+       d = -6.0_NTREAL*d
 
        !! Find optimal step size by solving a quadratic equation.
-       root_temp = SQRT(c*c - 3.0_NTREAL * b * d)
-       root1 = (-1.0_NTREAL*root_temp - c)/(3.0_NTREAL*d)
-       root2 = (root_temp - c)/(3.0_NTREAL*d)
-       IF (2.0_NTREAL*c + 6.0_NTREAL*D*root1 .GT. 0) THEN
+       root_temp = SQRT(c*c - 4 * b * d)
+       root1 = (-1.0_NTREAL*root_temp + c)/(2*d)
+       root2 = (-1.0_NTREAL*root_temp - c)/(2*d)
+       IF (c + 2*d*root1 .GT. 0) THEN
           step_size = root1
        ELSE
           step_size = root2
        END IF
 
-       CALL IncrementMatrix(H_k,P_k,REAL(step_size,NTREAL))
+       CALL IncrementMatrix(H_k, P_k, step_size)
 
        !! Compute new gradient
-       CALL CopyMatrix(Identity,TempMat)
-       CALL IncrementMatrix(P_k,TempMat,-1.0_NTREAL)
-       CALL MatrixMultiply(P_k,WorkingHamiltonian,TempMat2, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL MatrixMultiply(TempMat,TempMat2,Gradient, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-       CALL ScaleMatrix(Gradient,6.0_NTREAL)
-       CALL MatrixTrace(Gradient, mu)
-       mu = mu/matrix_dimension
-       CALL IncrementMatrix(Identity,Gradient,-1.0_NTREAL*mu)
-       CALL CopyMatrix(Gradient,G_kplusone)
-       CALL ScaleMatrix(G_kplusone,-1.0_NTREAL)
+       CALL ComputeGradient(P_k, WorkingHamiltonian, Identity, pool, &
+            & solver_parameters, G_kplusone, mu)
 
        !! Compute conjugate direction
-       CALL DotMatrix(G_kplusone,G_kplusone,gamma)
+       CALL DotMatrix(G_kplusone, G_kplusone,gamma)
        CALL DotMatrix(G_k, G_k, gamma_d)
-       gamma = gamma/gamma_d
-       IF (gamma < 0.0_NTREAL) THEN
-          gamma = 0
-       END IF
+       gamma = ABS(gamma)/gamma_d
        CALL ScaleMatrix(H_k,gamma)
-       CALL IncrementMatrix(G_kplusone,H_k)
+       CALL IncrementMatrix(G_kplusone,H_k,-1.0_NTREAL)
        CALL CopyMatrix(G_kplusone,G_k)
 
        !! Energy value based convergence
@@ -199,8 +176,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DotMatrix(P_k, WorkingHamiltonian, energy_value)
        energy_value = 2.0_NTREAL*energy_value
        norm_value = ABS(energy_value - energy_value2)
-
-       CALL MatrixTrace(P_k, trace_value)
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
@@ -215,14 +190,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Undo Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
        CALL UndoPermuteMatrix(P_k, P_k, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool1)
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
+       CALL UndoPermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
     END IF
 
+    CALL PM(P_k, Identity, nel, Density, &
+         & energy_value_out, chemical_potential_out, solver_parameters)
+
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot,P_k,TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+    CALL MatrixMultiply(InverseSquareRoot,Density,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
     CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     IF (PRESENT(chemical_potential_out)) THEN
        chemical_potential_out = mu
@@ -240,12 +220,51 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrix(TempMat)
     CALL DestructMatrix(TempMat2)
-    CALL DestructMatrix(Gradient)
     CALL DestructMatrix(P_k)
     CALL DestructMatrix(G_k)
     CALL DestructMatrix(G_kplusone)
     CALL DestructMatrix(H_k)
-    CALL DestructMatrixMemoryPool(pool1)
+    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE ConjugateGradient
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the gradient for the CG method.
+  SUBROUTINE ComputeGradient(Density, Hamiltonian, Identity, pool, param, &
+     & Grad, mu)
+     !> The current guess of the density matrix.
+     TYPE(Matrix_ps), INTENT(IN) :: Density
+     !> The Hamiltonian matrix
+     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+     !> The Identity matrix
+     TYPE(Matrix_ps), INTENT(IN) :: Identity
+     !> The memory pool
+     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+     !> Parameters for the solver.
+     TYPE(SolverParameters_t), INTENT(IN) :: param
+     !> The Gradient which is computed.
+     TYPE(Matrix_ps), INTENT(INOUT) :: Grad
+     !> The chemical potential
+     REAL(NTREAL), INTENT(OUT) :: mu
+     !! Local Data
+     TYPE(Matrix_ps) :: IMinusP, PH
+
+     !! Compute (I - P)
+     CALL CopyMatrix(Identity, IMinusP)
+     CALL IncrementMatrix(Density, IMinusP, -1.0_NTREAL)
+
+     !! Compute (I - P)*P*H
+     CALL MatrixMultiply(Density, Hamiltonian, PH, &
+          & threshold_in=param%threshold, memory_pool_in=pool)
+     CALL MatrixMultiply(IMinusP, PH, Grad, &
+          & threshold_in=param%threshold, memory_pool_in=pool)
+
+     !! Compute the chemical potential
+     CALL ScaleMatrix(Grad, 6.0_NTREAL)
+     CALL MatrixTrace(Grad, mu)
+     mu = mu/Hamiltonian%actual_matrix_dimension
+
+     !! Cleanup
+     CALL DestructMatrix(IMinusP)
+     CALL DestructMatrix(PH)
+  END SUBROUTINE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MinimizerSolversModule
