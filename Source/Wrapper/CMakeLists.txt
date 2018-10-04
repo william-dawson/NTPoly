@@ -10,7 +10,6 @@ set(Wsrc
     LinearSolversModule_wrp.F90
     LoadBalancerModule_wrp.F90
     MatrixMemoryPoolModule_wrp.F90
-    MinimizerSolversModule_wrp.F90
     PermutationModule_wrp.F90
     PMatrixMemoryPoolModule_wrp.F90
     PolynomialSolversModule_wrp.F90
