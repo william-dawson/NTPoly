@@ -115,7 +115,6 @@ The following features and methods have been implemented in NTPoly:
     * Square Root and Inverse Square Root
     * Matrix *p* th Root
 * Quantum Chemistry
-    * Density Matrix Minimization
     * Density Matrix Purification
     * Chemical Potential Calculation
     * Geometry Optimization

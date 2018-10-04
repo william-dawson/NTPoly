@@ -24,8 +24,6 @@ class TestChemistry:
     CheckMat = 0
     # Rank of the current process
     my_rank = 0
-    # complex test
-    is_complex = False
 
     def create_matrices(self):
         '''
@@ -40,12 +38,17 @@ class TestChemistry:
         overlap = rand(self.mat_dim, self.mat_dim, density=1.0)
         overlap = overlap.T.dot(overlap)
 
+        # Make sure the overlap is well conditioned.
+        w, v = eigh(overlap.todense())
+        w += 0.2
+        overlap = csr_matrix(v.T.dot(diag(w).dot(v)))
+
         isq = funm(overlap.todense(), lambda x: 1.0 / sqrt(x))
         wfock = isq.dot(fock.todense()).dot(isq)
 
         # Add a gap
         w, v = eigh(wfock)
-        gap = (w[-1] - w[0])/3.0
+        gap = (w[-1] - w[0])/2.0
         w[self.nel:] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
@@ -142,7 +145,6 @@ class TestChemistry:
             self.assertTrue(True)
         else:
             self.assertTrue(False)
-        pass
 
     def basic_solver(self, SRoutine, cpcheck=True):
         '''Test various kinds of density matrix solvers.'''
@@ -170,6 +172,7 @@ class TestChemistry:
         self.check_full()
         if cpcheck:
             self.check_cp(chemical_potential)
+        comm.barrier()
 
     def test_pm(self):
         '''Test our ability to compute the density matrix with PM.'''
@@ -187,15 +190,10 @@ class TestChemistry:
         '''Test routines to compute the density matrix with HPCP.'''
         self.basic_solver(nt.DensityMatrixSolvers.HPCP)
 
-    def test_cg(self):
-        '''Test routines to compute the density matrix with conjugate
-           gradient.'''
-        self.basic_solver(nt.MinimizerSolvers.ConjugateGradient, False)
-
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''
-
         # Reference Solution
+        self.create_matrices()
         fmat = mmread(self.hamiltonian)
         dmat = mmread(self.density)
         edm = dmat.dot(fmat).dot(dmat)
@@ -217,10 +215,13 @@ class TestChemistry:
             normval = abs(norm(edm - ResultMat))
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
+        comm.barrier()
 
 
 class TestChemistry_r(TestChemistry, unittest.TestCase):
     '''Specialization for real matrices'''
+    # complex test
+    is_complex = False
     def testrealio(self):
         '''Test routines to read data produced by a real chemistry program.'''
         density_matrix = nt.Matrix_ps(self.realio)
@@ -234,6 +235,7 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
             normval = abs(norm(self.CheckMat - ResultMat))
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
+        comm.barrier()
 
     def test_PExtrapolate(self):
         '''Test the density extrapolation routine.'''
@@ -260,6 +262,7 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
         comm.barrier()
 
         self.check_full_extrap()
+        comm.barrier()
 
     def test_SExtrapolate(self):
         '''Test the density extrapolation routine.'''
@@ -285,6 +288,7 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
         comm.barrier()
 
         self.check_full_extrap()
+        comm.barrier()
 
 
 class TestChemistry_c(TestChemistry, unittest.TestCase):
