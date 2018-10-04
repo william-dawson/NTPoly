@@ -26,7 +26,7 @@ public:
   ProcessGrid(int process_rows, int process_columns, int process_slices,
               bool be_verbose = false);
   //! Copy constructor.
-  //!\param grid to copy from.
+  //!\param old_grid to copy from.
   ProcessGrid(const ProcessGrid &old_grid);
 
 public:
