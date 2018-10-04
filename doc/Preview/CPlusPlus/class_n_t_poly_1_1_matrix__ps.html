@@ -83,8 +83,12 @@ $(function() {
 Public Member Functions</h2></td></tr>
 <tr class="memitem:ad7ab028ff13251c8d8d81c61760cebdb"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#ad7ab028ff13251c8d8d81c61760cebdb">Matrix_ps</a> (int matrix_dimension)</td></tr>
 <tr class="separator:ad7ab028ff13251c8d8d81c61760cebdb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac363e1ec47241cae556a443115995a9a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#ac363e1ec47241cae556a443115995a9a">Matrix_ps</a> (int matrix_dimension, const <a class="el" href="class_n_t_poly_1_1_process_grid.html">ProcessGrid</a> &amp;grid)</td></tr>
+<tr class="separator:ac363e1ec47241cae556a443115995a9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5fe3bf66017520ac430df2e618e10a18"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a5fe3bf66017520ac430df2e618e10a18">Matrix_ps</a> (std::string file_name, bool is_binary=false)</td></tr>
 <tr class="separator:a5fe3bf66017520ac430df2e618e10a18"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad04e5cb1e739098df6ac5233293f6fdc"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#ad04e5cb1e739098df6ac5233293f6fdc">Matrix_ps</a> (std::string file_name, const <a class="el" href="class_n_t_poly_1_1_process_grid.html">ProcessGrid</a> &amp;grid, bool is_binary=false)</td></tr>
+<tr class="separator:ad04e5cb1e739098df6ac5233293f6fdc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6926c0ab3cf5141c5df5b0e88817df3"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#ac6926c0ab3cf5141c5df5b0e88817df3">Matrix_ps</a> (const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;matB)</td></tr>
 <tr class="separator:ac6926c0ab3cf5141c5df5b0e88817df3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affca5ba0b82d4f34603de430af15191f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#affca5ba0b82d4f34603de430af15191f">WriteToBinary</a> (std::string file_name) const</td></tr>
@@ -109,14 +113,16 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#aa3cda6634c985fa6d805e48267f92d29">GetLogicalDimension</a> () const</td></tr>
 <tr class="memdesc:aa3cda6634c985fa6d805e48267f92d29"><td class="mdescLeft">&#160;</td><td class="mdescRight">the logical dimension is scaled so each process has an even slice. <br /></td></tr>
 <tr class="separator:aa3cda6634c985fa6d805e48267f92d29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ec2557e25cdf8d8843635172b236452"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a4ec2557e25cdf8d8843635172b236452">GetTripletList</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list__r.html">TripletList_r</a> &amp;triplet_list)</td></tr>
-<tr class="separator:a4ec2557e25cdf8d8843635172b236452"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a020b46dbc4ba3b8d1694c98153267058"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a020b46dbc4ba3b8d1694c98153267058">GetTripletList</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list__c.html">TripletList_c</a> &amp;triplet_list)</td></tr>
-<tr class="separator:a020b46dbc4ba3b8d1694c98153267058"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae077b5c57bb05129226ff141c9d79015"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#ae077b5c57bb05129226ff141c9d79015">GetTripletList</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list__r.html">TripletList_r</a> &amp;triplet_list) const</td></tr>
+<tr class="separator:ae077b5c57bb05129226ff141c9d79015"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa76452f690ec019656fc96e85925f20"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#aaa76452f690ec019656fc96e85925f20">GetTripletList</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list__c.html">TripletList_c</a> &amp;triplet_list) const</td></tr>
+<tr class="separator:aaa76452f690ec019656fc96e85925f20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae9052457c1804b385773642fceb01b4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#ae9052457c1804b385773642fceb01b4f">GetMatrixBlock</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list__r.html">TripletList_r</a> &amp;triplet_list, int start_row, int end_row, int start_column, int end_column)</td></tr>
 <tr class="separator:ae9052457c1804b385773642fceb01b4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30479897d50a97cbe7915969085ad1b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a30479897d50a97cbe7915969085ad1b3">GetMatrixBlock</a> (<a class="el" href="class_n_t_poly_1_1_triplet_list__c.html">TripletList_c</a> &amp;triplet_list, int start_row, int end_row, int start_column, int end_column)</td></tr>
 <tr class="separator:a30479897d50a97cbe7915969085ad1b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa48f6971a4160ad155a6cd59cc18f1c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#aaa48f6971a4160ad155a6cd59cc18f1c">GetMatrixSlice</a> (<a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;submatrix, int start_row, int end_row, int start_column, int end_column)</td></tr>
+<tr class="separator:aaa48f6971a4160ad155a6cd59cc18f1c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f8153f51adeb8ccb66e31a2e96437f1"><td class="memItemLeft" align="right" valign="top"><a id="a4f8153f51adeb8ccb66e31a2e96437f1"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a4f8153f51adeb8ccb66e31a2e96437f1">Transpose</a> (const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">NTPoly::Matrix_ps</a> &amp;matA)</td></tr>
 <tr class="memdesc:a4f8153f51adeb8ccb66e31a2e96437f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transpose a sparse matrix. <br /></td></tr>
@@ -171,7 +177,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 <div class="textblock"><p>A Module For Performing Distributed Sparse Matrix Operations. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="ad7ab028ff13251c8d8d81c61760cebdb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad7ab028ff13251c8d8d81c61760cebdb">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[1/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7ab028ff13251c8d8d81c61760cebdb">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[1/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -194,8 +200,43 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 
 </div>
 </div>
+<a id="ac363e1ec47241cae556a443115995a9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac363e1ec47241cae556a443115995a9a">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[2/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">NTPoly::Matrix_ps::Matrix_ps </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>matrix_dimension</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_process_grid.html">ProcessGrid</a> &amp;&#160;</td>
+          <td class="paramname"><em>grid</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Construct an empty matrix. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">matrix_dimension</td><td>size fo the matrix. </td></tr>
+    <tr><td class="paramname">grid</td><td>the process grid this matrix is distributed on. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a5fe3bf66017520ac430df2e618e10a18"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5fe3bf66017520ac430df2e618e10a18">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[2/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fe3bf66017520ac430df2e618e10a18">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[3/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -229,8 +270,50 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 
 </div>
 </div>
+<a id="ad04e5cb1e739098df6ac5233293f6fdc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad04e5cb1e739098df6ac5233293f6fdc">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[4/5]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">NTPoly::Matrix_ps::Matrix_ps </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>file_name</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="class_n_t_poly_1_1_process_grid.html">ProcessGrid</a> &amp;&#160;</td>
+          <td class="paramname"><em>grid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>is_binary</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Construct a matrix from file. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">file_name</td><td>name of the file to build from. </td></tr>
+    <tr><td class="paramname">is_binary</td><td>true if the file is a binary file. </td></tr>
+    <tr><td class="paramname">grid</td><td>the process grid this matrix is distributed on. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ac6926c0ab3cf5141c5df5b0e88817df3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac6926c0ab3cf5141c5df5b0e88817df3">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[3/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6926c0ab3cf5141c5df5b0e88817df3">&#9670;&nbsp;</a></span>Matrix_ps() <span class="overload">[5/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -246,7 +329,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 </div><div class="memdoc">
 <p>Copy constructor. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">matB</td><td>matrix to opy from. </td></tr>
+    <tr><td class="paramname">matB</td><td>matrix to copy from. </td></tr>
   </table>
   </dd>
 </dl>
@@ -560,8 +643,64 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 
 </div>
 </div>
-<a id="a4ec2557e25cdf8d8843635172b236452"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4ec2557e25cdf8d8843635172b236452">&#9670;&nbsp;</a></span>GetTripletList() <span class="overload">[1/2]</span></h2>
+<a id="aaa48f6971a4160ad155a6cd59cc18f1c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa48f6971a4160ad155a6cd59cc18f1c">&#9670;&nbsp;</a></span>GetMatrixSlice()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::Matrix_ps::GetMatrixSlice </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;&#160;</td>
+          <td class="paramname"><em>submatrix</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>start_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>end_row</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>start_column</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>end_column</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Copy an arbitrary slice from a matrix into a new smaller matrix. <a class="el" href="namespace_n_t_poly.html" title="C++ interface to NTPoly. ">NTPoly</a> only works with square matrices, so if the number of rows and columns is different the matrix is resized to the maximum size. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">submatrix</td><td>the slice to fill. </td></tr>
+    <tr><td class="paramname">start_row</td><td>the starting row to include in this matrix. </td></tr>
+    <tr><td class="paramname">end_row</td><td>the ending row to include in this matrix. </td></tr>
+    <tr><td class="paramname">start_column</td><td>the starting column to include in this matrix. </td></tr>
+    <tr><td class="paramname">end_column</td><td>the last column to include in this matrix. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae077b5c57bb05129226ff141c9d79015"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae077b5c57bb05129226ff141c9d79015">&#9670;&nbsp;</a></span>GetTripletList() <span class="overload">[1/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -571,7 +710,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
           <td>(</td>
           <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_triplet_list__r.html">TripletList_r</a> &amp;&#160;</td>
           <td class="paramname"><em>triplet_list</em></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -584,8 +723,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 
 </div>
 </div>
-<a id="a020b46dbc4ba3b8d1694c98153267058"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a020b46dbc4ba3b8d1694c98153267058">&#9670;&nbsp;</a></span>GetTripletList() <span class="overload">[2/2]</span></h2>
+<a id="aaa76452f690ec019656fc96e85925f20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa76452f690ec019656fc96e85925f20">&#9670;&nbsp;</a></span>GetTripletList() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -595,7 +734,7 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
           <td>(</td>
           <td class="paramtype"><a class="el" href="class_n_t_poly_1_1_triplet_list__c.html">TripletList_c</a> &amp;&#160;</td>
           <td class="paramname"><em>triplet_list</em></td><td>)</td>
-          <td></td>
+          <td> const</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -755,8 +894,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/Users/dawson/Documents/NTPoly/Complex/Source/CPlusPlus/<a class="el" href="_p_s_matrix_8h_source.html">PSMatrix.h</a></li>
-<li>/Users/dawson/Documents/NTPoly/Complex/Source/CPlusPlus/PSMatrix.cc</li>
+<li>/Users/dawson/Desktop/NTPoly/Source/CPlusPlus/<a class="el" href="_p_s_matrix_8h_source.html">PSMatrix.h</a></li>
+<li>/Users/dawson/Desktop/NTPoly/Source/CPlusPlus/PSMatrix.cc</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

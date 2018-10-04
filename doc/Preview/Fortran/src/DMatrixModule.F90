@@ -36,7 +36,6 @@ MODULE DMatrixModule
   PUBLIC :: SplitMatrix
   PUBLIC :: ComposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  PUBLIC :: EigenDecomposition
   PUBLIC :: MatrixNorm
   PUBLIC :: IncrementMatrix
   PUBLIC :: MultiplyMatrix
@@ -75,10 +74,6 @@ MODULE DMatrixModule
   INTERFACE ComposeMatrix
      MODULE PROCEDURE ComposeMatrix_ldr
      MODULE PROCEDURE ComposeMatrix_ldc
-  END INTERFACE
-  INTERFACE EigenDecomposition
-     MODULE PROCEDURE EigenDecomposition_ldr
-     MODULE PROCEDURE EigenDecomposition_ldc
   END INTERFACE
   INTERFACE MatrixNorm
      MODULE PROCEDURE MatrixNorm_ldr
@@ -197,17 +192,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ldr), INTENT(IN) :: this
     !> The norm of the matrix.
     REAL(NTREAL) :: norm
-    !! Local Variables
-    CHARACTER, PARAMETER :: NORMC = 'F'
-    DOUBLE PRECISION, DIMENSION(this%rows) :: WORK
-    INTEGER :: M, N, LDA
-    !! Externel
-    DOUBLE PRECISION, EXTERNAL :: dlange
+    INTEGER :: II, JJ
 
-    M = this%rows
-    N = this%columns
-    LDA = this%rows
-    norm = DLANGE(NORMC, M, N, this%data, LDA, WORK)
+    norm = 0
+    DO II =1, this%rows
+       DO JJ = 1,  this%columns
+          norm = norm + this%data(II,JJ)**2
+       END DO
+    END DO
   END FUNCTION MatrixNorm_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.
@@ -225,13 +217,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> to another.
   PURE SUBROUTINE ComposeMatrix_ldr(mat_array, block_rows, block_columns, &
        & out_matrix)
-    !> 2d array of matrices to compose.
-    TYPE(Matrix_ldr), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
-         & mat_array
     !> The number of rows of the array of blocks.
     INTEGER, INTENT(IN) :: block_rows
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
+    !> 2d array of matrices to compose.
+    TYPE(Matrix_ldr), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
+         & mat_array
     !> The composed matrix.
     TYPE(Matrix_ldr), INTENT(INOUT) :: out_matrix
 
@@ -294,65 +286,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & LDB, BETA, MatC%data, LDC)
 
   END SUBROUTINE MultiplyMatrix_ldr
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the eigenvectors of a dense matrix.
-  !> Wraps a standard dense linear algebra routine.
-  SUBROUTINE EigenDecomposition_ldr(MatA, MatV, MatW)
-    !> MatA the matrix to decompose.
-    TYPE(Matrix_ldr), INTENT(IN) :: MatA
-    !> The eigenvectors.
-    TYPE(Matrix_ldr), INTENT(INOUT) :: MatV
-    !> The eigenvalues.
-    TYPE(Matrix_ldr), INTENT(INOUT), OPTIONAL :: MatW
-    !! Local variables
-    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
-    INTEGER :: N, LDA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
-    DOUBLE PRECISION :: WORKTEMP
-    INTEGER :: LWORK
-    INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
-    INTEGER :: IWORKTEMP
-    INTEGER :: LIWORK
-    INTEGER :: INFO
-    INTEGER :: II
-
-    MatV = Matrix_ldr(MatA%rows,MatA%columns)
-    MatV%data = MatA%data
-
-    N = SIZE(MatA%data,DIM=1)
-    LDA = N
-
-    !! Allocations
-    ALLOCATE(W(N))
-
-    !! Determine the scratch space size
-    LWORK = -1
-    CALL DSYEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
-         & LIWORK, INFO)
-    N = LDA
-    LWORK = INT(WORKTEMP)
-    ALLOCATE(WORK(LWORK))
-    LIWORK = INT(IWORKTEMP)
-    ALLOCATE(IWORK(LIWORK))
-
-    !! Run Lapack For Real
-    CALL DSYEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, IWORK, LIWORK, &
-         & INFO)
-
-    !! Extract Eigenvalues
-    IF (PRESENT(MatW)) THEN
-       MatW = Matrix_ldr(MatA%rows,1)
-       DO II = 1, N
-          MatW%data(II,1) = W(II)
-       END DO
-    END IF
-
-    !! Cleanup
-    DEALLOCATE(W)
-    DEALLOCATE(Work)
-
-  END SUBROUTINE EigenDecomposition_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine style wrapper for the constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldc(this, rows, columns)
@@ -455,16 +388,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The norm of the matrix.
     REAL(NTREAL) :: norm
     !! Local Variables
-    CHARACTER, PARAMETER :: NORMC = 'F'
-    COMPLEX*16, DIMENSION(this%rows) :: WORK
-    INTEGER :: M, N, LDA
-    !! Externel
-    DOUBLE PRECISION, EXTERNAL :: zlange
+    INTEGER :: II, JJ
 
-    M = this%rows
-    N = this%columns
-    LDA = this%rows
-    norm = ZLANGE(NORMC, M, N, this%data, LDA, WORK)
+    norm = 0
+    DO II =1, this%rows
+       DO JJ = 1,  this%columns
+          norm = norm + &
+               & REAL(this%data(II,JJ)*CONJG(this%data(II,JJ)),KIND=NTREAL)
+       END DO
+    END DO
   END FUNCTION MatrixNorm_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a dense matrix.
@@ -482,13 +414,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> to another.
   PURE SUBROUTINE ComposeMatrix_ldc(mat_array, block_rows, block_columns, &
        & out_matrix)
-    !> 2d array of matrices to compose.
-    TYPE(Matrix_ldc), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
-         & mat_array
     !> The number of rows of the array of blocks.
     INTEGER, INTENT(IN) :: block_rows
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
+    !> 2d array of matrices to compose.
+    TYPE(Matrix_ldc), DIMENSION(block_rows, block_columns), INTENT(IN) :: &
+         & mat_array
     !> The composed matrix.
     TYPE(Matrix_ldc), INTENT(INOUT) :: out_matrix
 
@@ -550,71 +482,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & LDB, BETA, MatC%data, LDC)
 
   END SUBROUTINE MultiplyMatrix_ldc
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the eigenvectors of a dense matrix.
-  !> Wraps a standard dense linear algebra routine.
-  SUBROUTINE EigenDecomposition_ldc(MatA, MatV, MatW)
-    !> The matrix to decompose.
-    TYPE(Matrix_ldc), INTENT(IN) :: MatA
-    !> The eigenvectors.
-    TYPE(Matrix_ldc), INTENT(INOUT) :: MatV
-    !> The eigenvalues.
-    TYPE(Matrix_ldc), INTENT(INOUT), OPTIONAL :: MatW
-    !! Standard parameters
-    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
-    INTEGER :: N, LDA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
-    COMPLEX*16, DIMENSION(:), ALLOCATABLE :: WORK
-    INTEGER :: LWORK
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RWORK
-    INTEGER :: LRWORK
-    INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
-    INTEGER :: LIWORK
-    INTEGER :: INFO
-    !! Temp
-    COMPLEX*16 :: WORKTEMP
-    DOUBLE PRECISION :: RWORKTEMP
-    INTEGER :: IWORKTEMP
-    INTEGER :: II
-
-    MatV = Matrix_ldc(MatA%rows,MatA%columns)
-    MatV%data = MatA%data
-
-    N = SIZE(MatA%data,DIM=1)
-    LDA = N
-
-    !! Allocations
-    ALLOCATE(W(N))
-
-    !! Determine the scratch space size
-    LWORK = -1
-    CALL ZHEEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, RWORKTEMP, &
-         & LRWORK, IWORKTEMP, LIWORK, INFO)
-    N = LDA
-    LWORK = INT(WORKTEMP)
-    ALLOCATE(WORK(LWORK))
-    LRWORK = INT(RWORKTEMP)
-    ALLOCATE(RWORK(LRWORK))
-    LIWORK = INT(IWORKTEMP)
-    ALLOCATE(IWORK(LIWORK))
-
-    !! Run Lapack For Real
-    CALL ZHEEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, RWORK, LRWORK, &
-         & IWORK, LIWORK, INFO)
-
-    !! Extract Eigenvalues
-    IF (PRESENT(MatW)) THEN
-       MatW = Matrix_ldc(MatA%rows, 1)
-       DO II = 1, N
-          MatW%data(II,1) = W(II)
-       END DO
-    END IF
-
-    !! Cleanup
-    DEALLOCATE(W)
-    DEALLOCATE(Work)
-    DEALLOCATE(RWork)
-
-  END SUBROUTINE EigenDecomposition_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DMatrixModule

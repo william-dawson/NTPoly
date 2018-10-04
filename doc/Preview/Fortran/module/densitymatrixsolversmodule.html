@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 7.4% of total for modules and submodules.">642 statements</a>
+    title="10.5% of total for modules and submodules.">841 statements</a>
      </li> 
      
      
@@ -182,11 +182,15 @@
   <div class="list-group">
     <div id="subs-0" class="panel-collapse collapse">
       
+      <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-pm">PM</a>
+      
       <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-trs2">TRS2</a>
       
       <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-trs4">TRS4</a>
       
       <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-hpcp">HPCP</a>
+      
+      <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-energydensitymatrix">EnergyDensityMatrix</a>
       
     </div>
   </div>
@@ -235,8 +239,6 @@
     
     <li><a href='../module/solverparametersmodule.html'>SolverParametersModule</a></li>
     
-    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
-    
   </ul>
       </li>
       
@@ -274,11 +276,15 @@
   <div class="list-group">
     <div id="subs-1" class="panel-collapse collapse">
       
+      <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-pm">PM</a>
+      
       <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-trs2">TRS2</a>
       
       <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-trs4">TRS4</a>
       
       <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-hpcp">HPCP</a>
+      
+      <a class="list-group-item" href="../module/densitymatrixsolversmodule.html#proc-energydensitymatrix">EnergyDensityMatrix</a>
       
     </div>
   </div>
@@ -316,8 +322,8 @@
     
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-trs2"></span><h3>
-public subroutine <a href='../proc/trs2.html'>TRS2</a>(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-pm"></span><h3>
+public subroutine <a href='../proc/pm.html'>PM</a>(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -332,8 +338,156 @@ public subroutine <a href='../proc/trs2.html'>TRS2</a>(Hamiltonian, InverseSquar
 
 
 
-<p>Compute the density matrix from a Hamiltonian using the TRS2 method.
- Based on the TRS2 algorithm presented in \cite niklasson2002</p>
+<p>Compute the density matrix from a Hamiltonian using the PM method.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>InverseSquareRoot</strong></td><td><p>The inverse square root of the overlap matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>nel</strong></td><td><p>The number of electrons.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>Density</strong></td><td><p>The density matrix computed by this routine.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>The energy of the system (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>chemical_potential_out</strong></td><td><p>The chemical potential (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver (optional).</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-trs2"></span><h3>
+public subroutine <a href='../proc/trs2.html'>TRS2</a>(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Compute the density matrix from a Hamiltonian using the TRS2 method.</p>
     
     <h4>Arguments</h4>
     
@@ -419,6 +573,21 @@ public subroutine <a href='../proc/trs2.html'>TRS2</a>(Hamiltonian, InverseSquar
   <td>optional</td>
   
   <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>The energy of the system (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
   <td><strong>chemical_potential_out</strong></td><td><p>The chemical potential (optional).</p></td>
   
 </tr>
@@ -434,7 +603,7 @@ public subroutine <a href='../proc/trs2.html'>TRS2</a>(Hamiltonian, InverseSquar
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>The parameters for the solver.</p></td>
+  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver (optional).</p></td>
   
 </tr>
 
@@ -452,7 +621,7 @@ public subroutine <a href='../proc/trs2.html'>TRS2</a>(Hamiltonian, InverseSquar
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-trs4"></span><h3>
-public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -467,8 +636,7 @@ public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquar
 
 
 
-<p>Compute the density matrix from a Hamiltonian using the TRS4 method.
- Based on the TRS4 algorithm presented in \cite niklasson2002</p>
+<p>Compute the density matrix from a Hamiltonian using the TRS4 method.</p>
     
     <h4>Arguments</h4>
     
@@ -494,7 +662,7 @@ public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquar
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from</p></td>
+  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from.</p></td>
   
 </tr>
 
@@ -554,6 +722,21 @@ public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquar
   <td>optional</td>
   
   <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>The energy of the system (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
   <td><strong>chemical_potential_out</strong></td><td><p>The chemical potential (optional).</p></td>
   
 </tr>
@@ -569,7 +752,7 @@ public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquar
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>The parameters for the solver.</p></td>
+  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver (optional).</p></td>
   
 </tr>
 
@@ -587,7 +770,7 @@ public subroutine <a href='../proc/trs4.html'>TRS4</a>(Hamiltonian, InverseSquar
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-hpcp"></span><h3>
-public subroutine <a href='../proc/hpcp.html'>HPCP</a>(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+public subroutine <a href='../proc/hpcp.html'>HPCP</a>(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -602,8 +785,7 @@ public subroutine <a href='../proc/hpcp.html'>HPCP</a>(Hamiltonian, InverseSquar
 
 
 
-<p>Compute the density matrix from a Hamiltonian using the HPCP method.
- Based on the algorithm presented in \cite truflandier2016communication</p>
+<p>Compute the density matrix from a Hamiltonian using the HPCP method.</p>
     
     <h4>Arguments</h4>
     
@@ -629,7 +811,7 @@ public subroutine <a href='../proc/hpcp.html'>HPCP</a>(Hamiltonian, InverseSquar
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from</p></td>
+  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from.</p></td>
   
 </tr>
 
@@ -689,6 +871,21 @@ public subroutine <a href='../proc/hpcp.html'>HPCP</a>(Hamiltonian, InverseSquar
   <td>optional</td>
   
   <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>The energy of the system (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
   <td><strong>chemical_potential_out</strong></td><td><p>The chemical potential (optional).</p></td>
   
 </tr>
@@ -704,7 +901,111 @@ public subroutine <a href='../proc/hpcp.html'>HPCP</a>(Hamiltonian, InverseSquar
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>The parameters for the solver.</p></td>
+  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver (optional).</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-energydensitymatrix"></span><h3>
+public subroutine <a href='../proc/energydensitymatrix.html'>EnergyDensityMatrix</a>(Hamiltonian, Density, EnergyDensity, threshold_in)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Compute the energy-weighted density matrix.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute from.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>Density</strong></td><td><p>The density matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>EnergyDensity</strong></td><td><p>The energy-weighted density matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>threshold_in</strong></td><td><p>Threshold for flushing small values (default = 0).</p></td>
   
 </tr>
 

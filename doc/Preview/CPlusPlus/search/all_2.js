@@ -2,7 +2,6 @@ var searchData=
 [
   ['cgsolver',['CGSolver',['../class_n_t_poly_1_1_linear_solvers.html#aa4b86969e4d033e5ea0d35a90abac224',1,'NTPoly::LinearSolvers']]],
   ['chebyshevpolynomial',['ChebyshevPolynomial',['../class_n_t_poly_1_1_chebyshev_polynomial.html',1,'NTPoly::ChebyshevPolynomial'],['../class_n_t_poly_1_1_chebyshev_polynomial.html#a27711c11becbe010de501a9395327829',1,'NTPoly::ChebyshevPolynomial::ChebyshevPolynomial()']]],
-  ['choleskydecomposition',['CholeskyDecomposition',['../class_n_t_poly_1_1_linear_solvers.html#a8f33c1d15aa5238a4617f8763b176109',1,'NTPoly::LinearSolvers']]],
   ['compute',['Compute',['../class_n_t_poly_1_1_chebyshev_polynomial.html#ad58898d9a699d5421084af3d11bbbe74',1,'NTPoly::ChebyshevPolynomial::Compute()'],['../class_n_t_poly_1_1_hermite_polynomial.html#ade50d631b8ff03ebc66071a70d3b8813',1,'NTPoly::HermitePolynomial::Compute()']]],
   ['computeexponential',['ComputeExponential',['../class_n_t_poly_1_1_exponential_solvers.html#afa8c1256fc8028ca967e656be7a8df57',1,'NTPoly::ExponentialSolvers']]],
   ['computeexponentialpade',['ComputeExponentialPade',['../class_n_t_poly_1_1_exponential_solvers.html#aadf70b52a63d2476cd42e87e6b6db10f',1,'NTPoly::ExponentialSolvers']]],
@@ -13,7 +12,7 @@ var searchData=
   ['computeroot',['ComputeRoot',['../class_n_t_poly_1_1_root_solvers.html#aaafe7689efadb8d4d8f4e1b398a4e986',1,'NTPoly::RootSolvers']]],
   ['computesign',['ComputeSign',['../class_n_t_poly_1_1_sign_solvers.html#a66895528d4979b1bca7af2e5bf5f7e7e',1,'NTPoly::SignSolvers']]],
   ['conjugate',['Conjugate',['../class_n_t_poly_1_1_matrix__ps.html#a04ac0ce1f95b33733f6d29d0cfcc7ba7',1,'NTPoly::Matrix_ps::Conjugate()'],['../class_n_t_poly_1_1_matrix__lsc.html#a0113cee4b3f81da50f6f842011df9038',1,'NTPoly::Matrix_lsc::Conjugate()']]],
-  ['conjugategradient',['ConjugateGradient',['../class_n_t_poly_1_1_minimizer_solvers.html#a8a6bfa180e5da2c6993c7fe71a8513cb',1,'NTPoly::MinimizerSolvers']]],
-  ['constructprocessgrid',['ConstructProcessGrid',['../namespace_n_t_poly.html#aa6dafc12a67bd080685e3fb2d69d3e17',1,'NTPoly::ConstructProcessGrid(MPI_Comm world_comm, int process_rows, int process_columns, int process_slices, bool be_verbose)'],['../namespace_n_t_poly.html#ac113641954b4fa372874c53fd2a93956',1,'NTPoly::ConstructProcessGrid(int process_rows, int process_columns, int process_slices, bool be_verbose)']]],
+  ['conjugategradient',['ConjugateGradient',['../class_n_t_poly_1_1_minimizer_solvers.html#aeb07c9112f487a0eddc00414e444e222',1,'NTPoly::MinimizerSolvers']]],
+  ['constructglobalprocessgrid',['ConstructGlobalProcessGrid',['../namespace_n_t_poly.html#a8759b0f580c164e2c3670b9cb40551a9',1,'NTPoly::ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_rows, int process_columns, int process_slices, bool be_verbose)'],['../namespace_n_t_poly.html#aef8132dfcbcd462551987ee22c3db107',1,'NTPoly::ConstructGlobalProcessGrid(int process_rows, int process_columns, int process_slices, bool be_verbose)']]],
   ['cosine',['Cosine',['../class_n_t_poly_1_1_trigonometry_solvers.html#a2a03acd48b494469c857a1e798b24ae9',1,'NTPoly::TrigonometrySolvers']]]
 ];

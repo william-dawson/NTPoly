@@ -12,9 +12,7 @@ var searchData=
   ['settripletat',['SetTripletAt',['../class_n_t_poly_1_1_triplet_list__r.html#a23935c116969393b2783462d0521f009',1,'NTPoly::TripletList_r::SetTripletAt()'],['../class_n_t_poly_1_1_triplet_list__c.html#abb20762c66499c0e636a3a8e8b9971ab',1,'NTPoly::TripletList_c::SetTripletAt()']]],
   ['setverbosity',['SetVerbosity',['../class_n_t_poly_1_1_solver_parameters.html#a6079a1af70e410173b507eb90c0c33bb',1,'NTPoly::SolverParameters']]],
   ['sine',['Sine',['../class_n_t_poly_1_1_trigonometry_solvers.html#a758a1ab4e935052a7e0a5aac923dd4fd',1,'NTPoly::TrigonometrySolvers']]],
-  ['singularvaluedecompostion',['SingularValueDecompostion',['../class_n_t_poly_1_1_eigen_solvers.html#afc0ab3cb13d5be60cb0cdd117d9153c1',1,'NTPoly::EigenSolvers']]],
   ['solverparameters',['SolverParameters',['../class_n_t_poly_1_1_solver_parameters.html#a0b282df736bfce6b9413cffeec1c5b34',1,'NTPoly::SolverParameters']]],
   ['sorttripletlist',['SortTripletList',['../class_n_t_poly_1_1_triplet_list__r.html#a04dcb848ea307cd94428cc95190bec17',1,'NTPoly::TripletList_r::SortTripletList()'],['../class_n_t_poly_1_1_triplet_list__c.html#af640fd21143858bd4219ad3d12b2ac0c',1,'NTPoly::TripletList_c::SortTripletList()']]],
-  ['splittingeigendecomposition',['SplittingEigenDecomposition',['../class_n_t_poly_1_1_eigen_solvers.html#a00ec12e1d347de5eac53e90be09cbfe1',1,'NTPoly::EigenSolvers']]],
   ['squareroot',['SquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#a063a3416db2a4c7129201030accee7c6',1,'NTPoly::SquareRootSolvers']]]
 ];

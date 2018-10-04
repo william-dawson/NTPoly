@@ -54,11 +54,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: row_counter, column_counter
 
 #define grid grid_r
-#include "pool_includes/DestructMatrixMemoryPool.f90"
+#include "distributed_pool_includes/DestructMatrixMemoryPool.f90"
 #undef grid
 
 #define grid grid_c
-#include "pool_includes/DestructMatrixMemoryPool.f90"
+#include "distributed_pool_includes/DestructMatrixMemoryPool.f90"
 #undef grid
 
   END SUBROUTINE DestructMatrixMemoryPool_p

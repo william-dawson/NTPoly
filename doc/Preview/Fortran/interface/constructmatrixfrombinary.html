@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 76 statements,  2.1% of total for procedures.">3 statements</a>
+    title="<p> 0.1% of total for procedures.</p>Including implementation: 81 statements,  2.3% of total for procedures.">3 statements</a>
      </li> 
      
      
@@ -261,7 +261,7 @@
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-constructmatrixfrombinary_ps"></span><h3>
-private subroutine ConstructMatrixFromBinary_ps(this, file_name)
+private subroutine ConstructMatrixFromBinary_ps(this, file_name, grid_in)
     
     
    
@@ -315,6 +315,21 @@ private subroutine ConstructMatrixFromBinary_ps(this, file_name)
   
   <td></td><td>::</td>
   <td><strong>file_name</strong></td><td><p>The name of the file to read.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>grid_in</strong></td><td><p>Grid to distribute the matrix on.</p></td>
   
 </tr>
 

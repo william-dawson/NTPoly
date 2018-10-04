@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.1% of total for source files.">98 statements</a>
+    title=" 1.2% of total for source files.">98 statements</a>
      </li> 
      
      
@@ -267,7 +267,7 @@
 <a name="ln-2"></a><span class="c">!&gt; A Module For Storing The Parameters For Iterative Solvers.</span>
 <a name="ln-3"></a><span class="k">MODULE </span><span class="n">SolverParametersModule</span>
 <a name="ln-4"></a>  <span class="k">USE </span><span class="n">DataTypesModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">NTREAL</span>
-<a name="ln-5"></a>  <span class="k">USE </span><span class="n">LoggingModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">EnterSubLog</span><span class="p">,</span> <span class="n">ExitSubLog</span><span class="p">,</span> <span class="n">WriteListElement</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-5"></a>  <span class="k">USE </span><span class="n">LoggingModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">EnterSubLog</span><span class="p">,</span> <span class="n">ExitSubLog</span><span class="p">,</span> <span class="n">WriteElement</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-6"></a>       <span class="p">&amp;</span> <span class="n">WriteHeader</span>
 <a name="ln-7"></a>  <span class="k">USE </span><span class="n">PermutationModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Permutation_t</span>
 <a name="ln-8"></a>  <span class="k">IMPLICIT NONE</span>
@@ -408,14 +408,14 @@
 <a name="ln-143"></a>
 <a name="ln-144"></a>    <span class="k">CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Solver Parameters&quot;</span><span class="p">)</span>
 <a name="ln-145"></a>    <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-146"></a>    <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;be_verbose&quot;</span><span class="p">,</span><span class="n">bool_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span>
-<a name="ln-147"></a>    <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;do_load_balancing&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-146"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;be_verbose&quot;</span><span class="p">,</span><span class="n">bool_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span>
+<a name="ln-147"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;do_load_balancing&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-148"></a>         <span class="p">&amp;</span> <span class="n">bool_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span>
-<a name="ln-149"></a>    <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;converge_diff&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-149"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;converge_diff&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-150"></a>         <span class="p">&amp;</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">converge_diff</span><span class="p">)</span>
-<a name="ln-151"></a>    <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;threshold&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-151"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;threshold&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-152"></a>         <span class="p">&amp;</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span>
-<a name="ln-153"></a>    <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iterations&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-153"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iterations&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-154"></a>         <span class="p">&amp;</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">max_iterations</span><span class="p">)</span>
 <a name="ln-155"></a>    <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-156"></a>  <span class="k">END SUBROUTINE </span><span class="n">PrintParameters</span>

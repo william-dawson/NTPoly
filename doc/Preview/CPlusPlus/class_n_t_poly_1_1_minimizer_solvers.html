@@ -89,8 +89,8 @@ Inheritance diagram for NTPoly::MinimizerSolvers:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
-<tr class="memitem:a8a6bfa180e5da2c6993c7fe71a8513cb"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_minimizer_solvers.html#a8a6bfa180e5da2c6993c7fe71a8513cb">ConjugateGradient</a> (const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;Hamiltonian, const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;InverseSquareRoot, int nel, <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;Density, double &amp;chemical_potential_out, const <a class="el" href="class_n_t_poly_1_1_solver_parameters.html">SolverParameters</a> &amp;solver_parameters)</td></tr>
-<tr class="separator:a8a6bfa180e5da2c6993c7fe71a8513cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb07c9112f487a0eddc00414e444e222"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_minimizer_solvers.html#aeb07c9112f487a0eddc00414e444e222">ConjugateGradient</a> (const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;Hamiltonian, const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;InverseSquareRoot, int nel, <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;Density, double &amp;energy_value_out, double &amp;chemical_potential_out, const <a class="el" href="class_n_t_poly_1_1_solver_parameters.html">SolverParameters</a> &amp;solver_parameters)</td></tr>
+<tr class="separator:aeb07c9112f487a0eddc00414e444e222"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -107,8 +107,8 @@ Additional Inherited Members</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A class for computing the density matrix based on minimization methods. </p>
 </div><h2 class="groupheader">Member Function Documentation</h2>
-<a id="a8a6bfa180e5da2c6993c7fe71a8513cb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a6bfa180e5da2c6993c7fe71a8513cb">&#9670;&nbsp;</a></span>ConjugateGradient()</h2>
+<a id="aeb07c9112f487a0eddc00414e444e222"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb07c9112f487a0eddc00414e444e222">&#9670;&nbsp;</a></span>ConjugateGradient()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -144,6 +144,12 @@ Additional Inherited Members</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">double &amp;&#160;</td>
+          <td class="paramname"><em>energy_value_out</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">double &amp;&#160;</td>
           <td class="paramname"><em>chemical_potential_out</em>, </td>
         </tr>
         <tr>
@@ -170,6 +176,7 @@ Additional Inherited Members</h2></td></tr>
     <tr><td class="paramname">InverseSquareRoot</td><td>of the overlap matrix. </td></tr>
     <tr><td class="paramname">nel</td><td>the number of electrons. </td></tr>
     <tr><td class="paramname">Density</td><td>the density matrix computed by this routine. </td></tr>
+    <tr><td class="paramname">energy_value_out</td><td>the energy of the system (optional). </td></tr>
     <tr><td class="paramname">chemical_potential_out</td><td>the chemical potential calculated. </td></tr>
     <tr><td class="paramname">solver_parameters</td><td>parameters for the solver </td></tr>
   </table>
@@ -179,8 +186,8 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/Users/dawson/Documents/NTPoly/Complex/Source/CPlusPlus/<a class="el" href="_minimizer_solvers_8h_source.html">MinimizerSolvers.h</a></li>
-<li>/Users/dawson/Documents/NTPoly/Complex/Source/CPlusPlus/MinimizerSolvers.cc</li>
+<li>/Users/dawson/Desktop/NTPoly/Source/CPlusPlus/<a class="el" href="_minimizer_solvers_8h_source.html">MinimizerSolvers.h</a></li>
+<li>/Users/dawson/Desktop/NTPoly/Source/CPlusPlus/MinimizerSolvers.cc</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

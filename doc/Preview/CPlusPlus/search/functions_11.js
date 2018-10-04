@@ -9,6 +9,7 @@ var searchData=
   ['_7ematrixmemorypool_5fr',['~MatrixMemoryPool_r',['../class_n_t_poly_1_1_matrix_memory_pool__r.html#ae3fe7a870ca4d0f194ba304e74e51aa4',1,'NTPoly::MatrixMemoryPool_r']]],
   ['_7epmatrixmemorypool',['~PMatrixMemoryPool',['../class_n_t_poly_1_1_p_matrix_memory_pool.html#a6294df212342a6ccca5e87eefc73d0e2',1,'NTPoly::PMatrixMemoryPool']]],
   ['_7epolynomial',['~Polynomial',['../class_n_t_poly_1_1_polynomial.html#ac5ae7b39d14bb90ed75a36b03ad57739',1,'NTPoly::Polynomial']]],
+  ['_7eprocessgrid',['~ProcessGrid',['../class_n_t_poly_1_1_process_grid.html#a12011a3ae7800042f69453698e8790a3',1,'NTPoly::ProcessGrid']]],
   ['_7etripletlist_5fc',['~TripletList_c',['../class_n_t_poly_1_1_triplet_list__c.html#a52e22cc157d7dcf936ed38c56a915e43',1,'NTPoly::TripletList_c']]],
   ['_7etripletlist_5fr',['~TripletList_r',['../class_n_t_poly_1_1_triplet_list__r.html#aed0f69373f5535dd66831db3712cd568',1,'NTPoly::TripletList_r']]]
 ];

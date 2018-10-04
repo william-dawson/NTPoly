@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.0% of total for modules and submodules.">174 statements</a>
+    title=" 2.2% of total for modules and submodules.">177 statements</a>
      </li> 
      
      
@@ -229,8 +229,6 @@
     
     <li><a href='../module/solverparametersmodule.html'>SolverParametersModule</a></li>
     
-    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
-    
   </ul>
       </li>
       
@@ -307,7 +305,7 @@
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-conjugategradient"></span><h3>
-public subroutine <a href='../proc/conjugategradient.html'>ConjugateGradient</a>(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+public subroutine <a href='../proc/conjugategradient.html'>ConjugateGradient</a>(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -397,6 +395,21 @@ public subroutine <a href='../proc/conjugategradient.html'>ConjugateGradient</a>
   
   <td></td><td>::</td>
   <td><strong>Density</strong></td><td><p>The density matrix computed by this routine.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>Energy of the system</p></td>
   
 </tr>
 

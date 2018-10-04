@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.4% of total for procedures.">160 statements</a>
+    title=" 4.6% of total for procedures.">164 statements</a>
      </li> 
      
      
@@ -195,7 +195,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -229,7 +229,7 @@ public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density
   
 <tr>
   
-  <td><span class="anchor" id="variable-hamiltonian%7E4"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-hamiltonian%7E6"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -244,7 +244,7 @@ public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density
   
 <tr>
   
-  <td><span class="anchor" id="variable-inversesquareroot%7E4"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-inversesquareroot%7E5"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -259,7 +259,7 @@ public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density
   
 <tr>
   
-  <td><span class="anchor" id="variable-nel%7E4"></span>integer,</td>
+  <td><span class="anchor" id="variable-nel%7E5"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -274,7 +274,7 @@ public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density
   
 <tr>
   
-  <td><span class="anchor" id="variable-density%7E4"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-density%7E6"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -289,7 +289,22 @@ public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density
   
 <tr>
   
-  <td><span class="anchor" id="variable-chemical_potential_out%7E4"></span>real(kind=NTREAL),</td>
+  <td><span class="anchor" id="variable-energy_value_out%7E5"></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>Energy of the system</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-chemical_potential_out%7E5"></span>real(kind=NTREAL),</td>
   <td>intent(out),</td>
   <td>optional</td>
   
@@ -304,7 +319,7 @@ public subroutine ConjugateGradient(Hamiltonian, InverseSquareRoot, nel, Density
   
 <tr>
   
-  <td><span class="anchor" id="variable-solver_parameters_in%7E21"></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
+  <td><span class="anchor" id="variable-solver_parameters_in%7E17"></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
   <td>intent(in),</td>
   <td>optional</td>
   

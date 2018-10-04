@@ -4,11 +4,12 @@ var searchData=
   ['patersonstockmeyercompute',['PatersonStockmeyerCompute',['../class_n_t_poly_1_1_polynomial.html#ab783f92819594fc286d28bb7b4d68020',1,'NTPoly::Polynomial']]],
   ['permutation',['Permutation',['../class_n_t_poly_1_1_permutation.html#a7e987e571773d467c2177abdcc400a89',1,'NTPoly::Permutation']]],
   ['permutematrix',['PermuteMatrix',['../class_n_t_poly_1_1_load_balancer.html#ab743a6cfc72af08cd724a733d77eb68d',1,'NTPoly::LoadBalancer']]],
-  ['pivotedcholeskydecomposition',['PivotedCholeskyDecomposition',['../class_n_t_poly_1_1_linear_solvers.html#a558dac1929774a08b2f98e86bd84f2f1',1,'NTPoly::LinearSolvers']]],
+  ['pm',['PM',['../class_n_t_poly_1_1_density_matrix_solvers.html#a5c80dc46c0a65c5e6ad5182adef8edb1',1,'NTPoly::DensityMatrixSolvers']]],
   ['pmatrixmemorypool',['PMatrixMemoryPool',['../class_n_t_poly_1_1_p_matrix_memory_pool.html#a53d223ada8ac8c931efdc44aac03f17b',1,'NTPoly::PMatrixMemoryPool']]],
   ['polynomial',['Polynomial',['../class_n_t_poly_1_1_polynomial.html#ad2e3c1c4797b27a873a4e4f546cd286a',1,'NTPoly::Polynomial']]],
   ['powerbounds',['PowerBounds',['../class_n_t_poly_1_1_eigen_bounds.html#a6f0f88f2f855decad2f74aa134bb00ff',1,'NTPoly::EigenBounds']]],
   ['print',['Print',['../class_n_t_poly_1_1_matrix__lsr.html#ad0ed3a7b561b1b3d748e95d6122db90f',1,'NTPoly::Matrix_lsr::Print()'],['../class_n_t_poly_1_1_matrix__lsc.html#a7077fbf8ef68148fe268eac5b07f0983',1,'NTPoly::Matrix_lsc::Print()']]],
+  ['processgrid',['ProcessGrid',['../class_n_t_poly_1_1_process_grid.html#ada2f279342cf8ded7f4e6c8400ad36bc',1,'NTPoly::ProcessGrid::ProcessGrid(MPI_Comm world_comm, int process_rows, int process_columns, int process_slices, bool be_verbose=false)'],['../class_n_t_poly_1_1_process_grid.html#a1ada67fd4e4baba16eac203e9641e834',1,'NTPoly::ProcessGrid::ProcessGrid(int process_rows, int process_columns, int process_slices, bool be_verbose=false)'],['../class_n_t_poly_1_1_process_grid.html#a3c8b946d2d3a680d40178c37bc1f8d9f',1,'NTPoly::ProcessGrid::ProcessGrid(const ProcessGrid &amp;old_grid)']]],
   ['pseudoinverse',['PseudoInverse',['../class_n_t_poly_1_1_inverse_solvers.html#afb7a7c747aa395d190f045d679838460',1,'NTPoly::InverseSolvers']]],
   ['purificationextrapolate',['PurificationExtrapolate',['../class_n_t_poly_1_1_geometry_optimization.html#a8409a07db04ebde7b10b0ebffc4216b9',1,'NTPoly::GeometryOptimization']]]
 ];

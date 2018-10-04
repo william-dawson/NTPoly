@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.9% of total for modules and submodules.">335 statements</a>
+    title=" 1.6% of total for modules and submodules.">125 statements</a>
      </li> 
      
      
@@ -184,10 +184,6 @@
       
       <a class="list-group-item" href="../module/linearsolversmodule.html#proc-cgsolver">CGSolver</a>
       
-      <a class="list-group-item" href="../module/linearsolversmodule.html#proc-choleskydecomposition">CholeskyDecomposition</a>
-      
-      <a class="list-group-item" href="../module/linearsolversmodule.html#proc-pivotedcholeskydecomposition">PivotedCholeskyDecomposition</a>
-      
     </div>
   </div>
 </div>
@@ -219,8 +215,6 @@
       <li class="list-group-item">
   <ul class="list-inline">
     
-    <li><a href='../module/choleskymodule.html'>CholeskyModule</a></li>
-    
     <li><a href='../module/datatypesmodule.html'>DataTypesModule</a></li>
     
     <li><a href='../module/dmatrixmodule.html'>DMatrixModule</a></li>
@@ -238,8 +232,6 @@
     <li><a href='../module/smatrixmodule.html'>SMatrixModule</a></li>
     
     <li><a href='../module/solverparametersmodule.html'>SolverParametersModule</a></li>
-    
-    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
     
   </ul>
       </li>
@@ -279,10 +271,6 @@
     <div id="subs-1" class="panel-collapse collapse">
       
       <a class="list-group-item" href="../module/linearsolversmodule.html#proc-cgsolver">CGSolver</a>
-      
-      <a class="list-group-item" href="../module/linearsolversmodule.html#proc-choleskydecomposition">CholeskyDecomposition</a>
-      
-      <a class="list-group-item" href="../module/linearsolversmodule.html#proc-pivotedcholeskydecomposition">PivotedCholeskyDecomposition</a>
       
     </div>
   </div>
@@ -408,201 +396,6 @@ public subroutine <a href='../proc/cgsolver.html'>CGSolver</a>(AMat, XMat, BMat,
   
   <td></td><td>::</td>
   <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-choleskydecomposition"></span><h3>
-public subroutine <a href='../proc/choleskydecomposition.html'>CholeskyDecomposition</a>(AMat, LMat, solver_parameters_in)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Compute The Cholesky Decomposition of a Hermitian Positive Definite matrix.
- This is a really naive implementation, that might be worth revisiting.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>AMat</strong></td><td><p>The matrix A, must be hermitian, positive definite.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>LMat</strong></td><td><p>The lower diagonal matrix computed.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-pivotedcholeskydecomposition"></span><h3>
-public subroutine <a href='../proc/pivotedcholeskydecomposition.html'>PivotedCholeskyDecomposition</a>(AMat, LMat, rank_in, solver_parameters_in)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Compute The Pivoted Cholesky Decomposition of a Hermitian Semi-Definite
- matrix. Pass it the target rank of the matrix.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>AMat</strong></td><td><p>The matrix A, must be hermitian, positive semi-definite.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>LMat</strong></td><td><p>The matrix computed.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>rank_in</strong></td><td><p>The target rank of the matrix.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>Tarameters for the solver</p></td>
   
 </tr>
 

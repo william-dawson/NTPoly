@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.0% of total for source files.">174 statements</a>
+    title=" 2.2% of total for source files.">177 statements</a>
      </li> 
      
      
@@ -277,118 +277,118 @@
 <a name="ln-12"></a>  <span class="k">USE </span><span class="n">PSMatrixModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Matrix_ps</span><span class="p">,</span> <span class="n">ConstructEmptyMatrix</span><span class="p">,</span> <span class="n">CopyMatrix</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-13"></a>       <span class="p">&amp;</span> <span class="n">DestructMatrix</span><span class="p">,</span> <span class="n">FillMatrixIdentity</span><span class="p">,</span> <span class="n">PrintMatrixInformation</span>
 <a name="ln-14"></a>  <span class="k">USE </span><span class="n">SolverParametersModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">SolverParameters_t</span><span class="p">,</span> <span class="n">PrintParameters</span>
-<a name="ln-15"></a>  <span class="k">USE </span><span class="n">MPI</span>
-<a name="ln-16"></a>  <span class="k">IMPLICIT NONE</span>
-<a name="ln-17"></a><span class="k">  PRIVATE</span>
-<a name="ln-18"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-19"></a>  <span class="c">!! Solvers</span>
-<a name="ln-20"></a>  <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">ConjugateGradient</span>
-<a name="ln-21"></a><span class="k">CONTAINS</span><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-22"></a>  <span class="c">!&gt; Compute the density matrix from a Hamiltonian using the CG method.</span>
-<a name="ln-23"></a>  <span class="c">!&gt; Based on two papers. The first by Scuseria \cite millam1997linear developed</span>
-<a name="ln-24"></a>  <span class="c">!&gt; the initial method, and then Challacombe \cite challacombe1999simplified</span>
-<a name="ln-25"></a>  <span class="c">!&gt; developed a simplified scheme.</span>
-<a name="ln-26"></a>  <span class="k">SUBROUTINE </span><span class="n">ConjugateGradient</span><span class="p">(</span><span class="n">Hamiltonian</span><span class="p">,</span> <span class="n">InverseSquareRoot</span><span class="p">,</span> <span class="n">nel</span><span class="p">,</span> <span class="n">Density</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-27"></a>       <span class="p">&amp;</span> <span class="n">chemical_potential_out</span><span class="p">,</span> <span class="n">solver_parameters_in</span><span class="p">)</span>
-<a name="ln-28"></a>    <span class="c">!&gt; The matrix to compute the corresponding density from.</span>
-<a name="ln-29"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">Hamiltonian</span>
-<a name="ln-30"></a>    <span class="c">!&gt; The inverse square root of the overlap matrix.</span>
-<a name="ln-31"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">InverseSquareRoot</span>
-<a name="ln-32"></a>    <span class="c">!&gt; The number of electrons.</span>
-<a name="ln-33"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">nel</span>
-<a name="ln-34"></a>    <span class="c">!&gt; The density matrix computed by this routine.</span>
-<a name="ln-35"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Density</span>
-<a name="ln-36"></a>    <span class="c">!&gt; The chemical potential.</span>
-<a name="ln-37"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">out</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">chemical_potential_out</span>
-<a name="ln-38"></a>    <span class="c">!&gt; Parameters for the solver.</span>
-<a name="ln-39"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">solver_parameters_in</span>
-<a name="ln-40"></a>    <span class="c">!! Handling Optional Parameters</span>
-<a name="ln-41"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">solver_parameters</span>
-<a name="ln-42"></a>    <span class="c">!! Local Variables</span>
-<a name="ln-43"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trace_value</span>
-<a name="ln-44"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">last_trace_value</span>
-<a name="ln-45"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">norm_value</span>
-<a name="ln-46"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WorkingHamiltonian</span>
-<a name="ln-47"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">P_k</span>
-<a name="ln-48"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Gradient</span>
-<a name="ln-49"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">G_k</span><span class="p">,</span> <span class="n">G_kplusone</span>
-<a name="ln-50"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">H_k</span>
-<a name="ln-51"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">TempMat</span><span class="p">,</span> <span class="n">TempMat2</span>
-<a name="ln-52"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Identity</span>
-<a name="ln-53"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">mu</span>
-<a name="ln-54"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">gamma</span><span class="p">,</span> <span class="n">gamma_d</span>
-<a name="ln-55"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">step_size</span>
-<a name="ln-56"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span>
-<a name="ln-57"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">root1</span><span class="p">,</span> <span class="n">root2</span><span class="p">,</span> <span class="n">root_temp</span>
-<a name="ln-58"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">energy_value</span><span class="p">,</span> <span class="n">energy_value2</span>
-<a name="ln-59"></a>    <span class="c">!! Temporary Variables</span>
-<a name="ln-60"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">MatrixMemoryPool_p</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pool1</span>
-<a name="ln-61"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">outer_counter</span>
-<a name="ln-62"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">matrix_dimension</span>
-<a name="ln-63"></a>
-<a name="ln-64"></a>    <span class="c">!! Optional Parameters</span>
-<a name="ln-65"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">solver_parameters_in</span><span class="p">))</span> <span class="k">THEN</span>
-<a name="ln-66"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">solver_parameters_in</span>
-<a name="ln-67"></a>    <span class="k">ELSE</span>
-<a name="ln-68"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">SolverParameters_t</span><span class="p">()</span>
-<a name="ln-69"></a>    <span class="k">END IF</span>
-<a name="ln-70"></a>
-<a name="ln-71"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-72"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
-<a name="ln-73"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-74"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;CG&quot;</span><span class="p">)</span>
-<a name="ln-75"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;millam1997linear challacombe1999simplified&quot;</span><span class="p">)</span>
-<a name="ln-76"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
-<a name="ln-77"></a>    <span class="k">END IF</span>
-<a name="ln-78"></a>
-<a name="ln-79"></a>    <span class="c">!! Construct All The Necessary Matrices</span>
-<a name="ln-80"></a>    <span class="n">matrix_dimension</span> <span class="o">=</span> <span class="n">Hamiltonian</span><span class="p">%</span><span class="n">actual_matrix_dimension</span>
-<a name="ln-81"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">Density</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-82"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-83"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-84"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">G_k</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-85"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-86"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-87"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-88"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">TempMat2</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-89"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-90"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
-<a name="ln-91"></a>    <span class="k">CALL </span><span class="n">FillMatrixIdentity</span><span class="p">(</span><span class="n">Identity</span><span class="p">)</span>
-<a name="ln-92"></a>
-<a name="ln-93"></a>    <span class="c">!! Compute the working hamiltonian.</span>
-<a name="ln-94"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">Hamiltonian</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-95"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-96"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-97"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-98"></a>
-<a name="ln-99"></a>    <span class="c">!! Load Balancing Step</span>
-<a name="ln-100"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-101"></a><span class="k">       CALL </span><span class="n">PermuteMatrix</span><span class="p">(</span><span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-102"></a>            <span class="p">&amp;</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">,</span> <span class="n">memorypool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-103"></a>       <span class="k">CALL </span><span class="n">PermuteMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span> <span class="n">Identity</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-104"></a>            <span class="p">&amp;</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">,</span> <span class="n">memorypool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-105"></a>    <span class="k">END IF</span>
-<a name="ln-106"></a>
-<a name="ln-107"></a>    <span class="c">!! Initialize</span>
-<a name="ln-108"></a>    <span class="n">trace_value</span> <span class="o">=</span> <span class="mf">0.0d+0</span>
-<a name="ln-109"></a>    <span class="n">last_trace_value</span> <span class="o">=</span> <span class="mf">0.0d+0</span>
-<a name="ln-110"></a>    <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span> <span class="n">P_k</span><span class="p">)</span>
-<a name="ln-111"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">nel</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">)</span><span class="o">/</span><span class="n">matrix_dimension</span><span class="p">)</span>
-<a name="ln-112"></a>
-<a name="ln-113"></a>    <span class="c">!! Compute The Gradient</span>
-<a name="ln-114"></a>    <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">TempMat</span><span class="p">)</span>
-<a name="ln-115"></a>    <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
-<a name="ln-116"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">WorkingHamiltonian</span><span class="p">,</span><span class="n">TempMat2</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-117"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-118"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">TempMat2</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-119"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-120"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="mf">6.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
-<a name="ln-121"></a>    <span class="k">CALL </span><span class="n">MatrixTrace</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
-<a name="ln-122"></a>    <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="o">/</span><span class="n">matrix_dimension</span>
-<a name="ln-123"></a>    <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-124"></a>         <span class="p">&amp;</span> <span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">*</span><span class="n">mu</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
+<a name="ln-15"></a>  <span class="k">IMPLICIT NONE</span>
+<a name="ln-16"></a><span class="k">  PRIVATE</span>
+<a name="ln-17"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-18"></a>  <span class="c">!! Solvers</span>
+<a name="ln-19"></a>  <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">ConjugateGradient</span>
+<a name="ln-20"></a><span class="k">CONTAINS</span><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-21"></a>  <span class="c">!&gt; Compute the density matrix from a Hamiltonian using the CG method.</span>
+<a name="ln-22"></a>  <span class="c">!&gt; Based on two papers. The first by Scuseria \cite millam1997linear developed</span>
+<a name="ln-23"></a>  <span class="c">!&gt; the initial method, and then Challacombe \cite challacombe1999simplified</span>
+<a name="ln-24"></a>  <span class="c">!&gt; developed a simplified scheme.</span>
+<a name="ln-25"></a>  <span class="k">SUBROUTINE </span><span class="n">ConjugateGradient</span><span class="p">(</span><span class="n">Hamiltonian</span><span class="p">,</span> <span class="n">InverseSquareRoot</span><span class="p">,</span> <span class="n">nel</span><span class="p">,</span> <span class="n">Density</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-26"></a>       <span class="p">&amp;</span> <span class="n">energy_value_out</span><span class="p">,</span> <span class="n">chemical_potential_out</span><span class="p">,</span> <span class="n">solver_parameters_in</span><span class="p">)</span>
+<a name="ln-27"></a>    <span class="c">!&gt; The matrix to compute the corresponding density from.</span>
+<a name="ln-28"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">Hamiltonian</span>
+<a name="ln-29"></a>    <span class="c">!&gt; The inverse square root of the overlap matrix.</span>
+<a name="ln-30"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span>  <span class="kd">::</span> <span class="n">InverseSquareRoot</span>
+<a name="ln-31"></a>    <span class="c">!&gt; The number of electrons.</span>
+<a name="ln-32"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">nel</span>
+<a name="ln-33"></a>    <span class="c">!&gt; The density matrix computed by this routine.</span>
+<a name="ln-34"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Density</span>
+<a name="ln-35"></a>    <span class="c">!&gt; Energy of the system</span>
+<a name="ln-36"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">OUT</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">energy_value_out</span>
+<a name="ln-37"></a>    <span class="c">!&gt; The chemical potential.</span>
+<a name="ln-38"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">OUT</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">chemical_potential_out</span>
+<a name="ln-39"></a>    <span class="c">!&gt; Parameters for the solver.</span>
+<a name="ln-40"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">solver_parameters_in</span>
+<a name="ln-41"></a>    <span class="c">!! Handling Optional Parameters</span>
+<a name="ln-42"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">solver_parameters</span>
+<a name="ln-43"></a>    <span class="c">!! Local Variables</span>
+<a name="ln-44"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trace_value</span>
+<a name="ln-45"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">last_trace_value</span>
+<a name="ln-46"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">norm_value</span>
+<a name="ln-47"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WorkingHamiltonian</span>
+<a name="ln-48"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">P_k</span>
+<a name="ln-49"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Gradient</span>
+<a name="ln-50"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">G_k</span><span class="p">,</span> <span class="n">G_kplusone</span>
+<a name="ln-51"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">H_k</span>
+<a name="ln-52"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">TempMat</span><span class="p">,</span> <span class="n">TempMat2</span>
+<a name="ln-53"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">)</span> <span class="kd">::</span> <span class="n">Identity</span>
+<a name="ln-54"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">mu</span>
+<a name="ln-55"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="nb">gamma</span><span class="p">,</span> <span class="n">gamma_d</span>
+<a name="ln-56"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">step_size</span>
+<a name="ln-57"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">d</span>
+<a name="ln-58"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">root1</span><span class="p">,</span> <span class="n">root2</span><span class="p">,</span> <span class="n">root_temp</span>
+<a name="ln-59"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">)</span> <span class="kd">::</span> <span class="n">energy_value</span><span class="p">,</span> <span class="n">energy_value2</span>
+<a name="ln-60"></a>    <span class="c">!! Temporary Variables</span>
+<a name="ln-61"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">MatrixMemoryPool_p</span><span class="p">)</span> <span class="kd">::</span> <span class="n">pool1</span>
+<a name="ln-62"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">outer_counter</span>
+<a name="ln-63"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">matrix_dimension</span>
+<a name="ln-64"></a>
+<a name="ln-65"></a>    <span class="c">!! Optional Parameters</span>
+<a name="ln-66"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">solver_parameters_in</span><span class="p">))</span> <span class="k">THEN</span>
+<a name="ln-67"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">solver_parameters_in</span>
+<a name="ln-68"></a>    <span class="k">ELSE</span>
+<a name="ln-69"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">SolverParameters_t</span><span class="p">()</span>
+<a name="ln-70"></a>    <span class="k">END IF</span>
+<a name="ln-71"></a>
+<a name="ln-72"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-73"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
+<a name="ln-74"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
+<a name="ln-75"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;CG&quot;</span><span class="p">)</span>
+<a name="ln-76"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;millam1997linear challacombe1999simplified&quot;</span><span class="p">)</span>
+<a name="ln-77"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
+<a name="ln-78"></a>    <span class="k">END IF</span>
+<a name="ln-79"></a>
+<a name="ln-80"></a>    <span class="c">!! Construct All The Necessary Matrices</span>
+<a name="ln-81"></a>    <span class="n">matrix_dimension</span> <span class="o">=</span> <span class="n">Hamiltonian</span><span class="p">%</span><span class="n">actual_matrix_dimension</span>
+<a name="ln-82"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">Density</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-83"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-84"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-85"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">G_k</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-86"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-87"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-88"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-89"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">TempMat2</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-90"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-91"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span> <span class="n">Hamiltonian</span><span class="p">)</span>
+<a name="ln-92"></a>    <span class="k">CALL </span><span class="n">FillMatrixIdentity</span><span class="p">(</span><span class="n">Identity</span><span class="p">)</span>
+<a name="ln-93"></a>
+<a name="ln-94"></a>    <span class="c">!! Compute the working hamiltonian.</span>
+<a name="ln-95"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">Hamiltonian</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-96"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-97"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-98"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-99"></a>
+<a name="ln-100"></a>    <span class="c">!! Load Balancing Step</span>
+<a name="ln-101"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-102"></a><span class="k">       CALL </span><span class="n">PermuteMatrix</span><span class="p">(</span><span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-103"></a>            <span class="p">&amp;</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">,</span> <span class="n">memorypool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-104"></a>       <span class="k">CALL </span><span class="n">PermuteMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span> <span class="n">Identity</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-105"></a>            <span class="p">&amp;</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">,</span> <span class="n">memorypool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-106"></a>    <span class="k">END IF</span>
+<a name="ln-107"></a>
+<a name="ln-108"></a>    <span class="c">!! Initialize</span>
+<a name="ln-109"></a>    <span class="n">trace_value</span> <span class="o">=</span> <span class="mf">0.0_NTREAL</span>
+<a name="ln-110"></a>    <span class="n">last_trace_value</span> <span class="o">=</span> <span class="mf">0.0_NTREAL</span>
+<a name="ln-111"></a>    <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span> <span class="n">P_k</span><span class="p">)</span>
+<a name="ln-112"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="mf">0.5</span><span class="o">*</span><span class="n">nel</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">)</span><span class="o">/</span><span class="n">matrix_dimension</span><span class="p">)</span>
+<a name="ln-113"></a>
+<a name="ln-114"></a>    <span class="c">!! Compute The Gradient</span>
+<a name="ln-115"></a>    <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">TempMat</span><span class="p">)</span>
+<a name="ln-116"></a>    <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="p">)</span>
+<a name="ln-117"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">WorkingHamiltonian</span><span class="p">,</span><span class="n">TempMat2</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-118"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-119"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">TempMat2</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-120"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-121"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="mf">6.0_NTREAL</span><span class="p">)</span>
+<a name="ln-122"></a>    <span class="k">CALL </span><span class="n">MatrixTrace</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
+<a name="ln-123"></a>    <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="o">/</span><span class="n">matrix_dimension</span>
+<a name="ln-124"></a>    <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="o">*</span><span class="n">mu</span><span class="p">)</span>
 <a name="ln-125"></a>    <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="n">H_k</span><span class="p">)</span>
-<a name="ln-126"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
+<a name="ln-126"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="p">)</span>
 <a name="ln-127"></a>    <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span><span class="n">G_k</span><span class="p">)</span>
 <a name="ln-128"></a>
 <a name="ln-129"></a>    <span class="c">!! Iterate</span>
@@ -397,14 +397,14 @@
 <a name="ln-132"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
 <a name="ln-133"></a>    <span class="k">END IF</span>
 <a name="ln-134"></a><span class="k">    </span><span class="n">outer_counter</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-135"></a>    <span class="n">norm_value</span> <span class="o">=</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span> <span class="o">+</span> <span class="mf">1.0d+0</span>
+<a name="ln-135"></a>    <span class="n">norm_value</span> <span class="o">=</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span> <span class="o">+</span> <span class="mf">1.0_NTREAL</span>
 <a name="ln-136"></a>    <span class="n">energy_value</span> <span class="o">=</span> <span class="mi">0</span>
 <a name="ln-137"></a>    <span class="k">DO </span><span class="n">outer_counter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">max_iterations</span>
 <a name="ln-138"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">outer_counter</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-139"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-140"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-141"></a>          <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
-<a name="ln-142"></a>          <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-141"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-142"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
 <a name="ln-143"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-144"></a>       <span class="k">END IF</span>
 <a name="ln-145"></a>
@@ -416,17 +416,17 @@
 <a name="ln-151"></a>            <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
 <a name="ln-152"></a>
 <a name="ln-153"></a>       <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">TempMat</span><span class="p">)</span>
-<a name="ln-154"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
+<a name="ln-154"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span><span class="o">-</span><span class="mf">2.0_NTREAL</span><span class="p">)</span>
 <a name="ln-155"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span> <span class="n">TempMat2</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
-<a name="ln-156"></a>       <span class="n">c</span> <span class="o">=</span> <span class="mf">3.0</span><span class="o">*</span><span class="n">c</span>
+<a name="ln-156"></a>       <span class="n">c</span> <span class="o">=</span> <span class="mf">3.0_NTREAL</span><span class="o">*</span><span class="n">c</span>
 <a name="ln-157"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span> <span class="n">TempMat2</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
-<a name="ln-158"></a>       <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0</span><span class="o">*</span><span class="n">d</span>
+<a name="ln-158"></a>       <span class="n">d</span> <span class="o">=</span> <span class="o">-</span><span class="mf">2.0_NTREAL</span><span class="o">*</span><span class="n">d</span>
 <a name="ln-159"></a>
 <a name="ln-160"></a>       <span class="c">!! Find optimal step size by solving a quadratic equation.</span>
-<a name="ln-161"></a>       <span class="n">root_temp</span> <span class="o">=</span> <span class="nb">SQRT</span><span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">c</span> <span class="o">-</span> <span class="mf">3.0</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
-<a name="ln-162"></a>       <span class="n">root1</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">*</span><span class="n">root_temp</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">3.0</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>
-<a name="ln-163"></a>       <span class="n">root2</span> <span class="o">=</span> <span class="p">(</span><span class="n">root_temp</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">3.0</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>
-<a name="ln-164"></a>       <span class="k">IF</span> <span class="p">(</span><span class="mf">2.0</span><span class="o">*</span><span class="n">c</span> <span class="o">+</span> <span class="mf">6.0</span><span class="o">*</span><span class="n">D</span><span class="o">*</span><span class="n">root1</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-161"></a>       <span class="n">root_temp</span> <span class="o">=</span> <span class="nb">SQRT</span><span class="p">(</span><span class="n">c</span><span class="o">*</span><span class="n">c</span> <span class="o">-</span> <span class="mf">3.0_NTREAL</span> <span class="o">*</span> <span class="n">b</span> <span class="o">*</span> <span class="n">d</span><span class="p">)</span>
+<a name="ln-162"></a>       <span class="n">root1</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="o">*</span><span class="n">root_temp</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">3.0_NTREAL</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>
+<a name="ln-163"></a>       <span class="n">root2</span> <span class="o">=</span> <span class="p">(</span><span class="n">root_temp</span> <span class="o">-</span> <span class="n">c</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="mf">3.0_NTREAL</span><span class="o">*</span><span class="n">d</span><span class="p">)</span>
+<a name="ln-164"></a>       <span class="k">IF</span> <span class="p">(</span><span class="mf">2.0_NTREAL</span><span class="o">*</span><span class="n">c</span> <span class="o">+</span> <span class="mf">6.0_NTREAL</span><span class="o">*</span><span class="n">D</span><span class="o">*</span><span class="n">root1</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-165"></a><span class="k">          </span><span class="n">step_size</span> <span class="o">=</span> <span class="n">root1</span>
 <a name="ln-166"></a>       <span class="k">ELSE</span>
 <a name="ln-167"></a><span class="k">          </span><span class="n">step_size</span> <span class="o">=</span> <span class="n">root2</span>
@@ -436,82 +436,84 @@
 <a name="ln-171"></a>
 <a name="ln-172"></a>       <span class="c">!! Compute new gradient</span>
 <a name="ln-173"></a>       <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">TempMat</span><span class="p">)</span>
-<a name="ln-174"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
+<a name="ln-174"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="p">)</span>
 <a name="ln-175"></a>       <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span><span class="n">WorkingHamiltonian</span><span class="p">,</span><span class="n">TempMat2</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-176"></a>            <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
 <a name="ln-177"></a>       <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">TempMat2</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-178"></a>            <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-179"></a>       <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="mf">6.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
+<a name="ln-179"></a>       <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="mf">6.0_NTREAL</span><span class="p">)</span>
 <a name="ln-180"></a>       <span class="k">CALL </span><span class="n">MatrixTrace</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span> <span class="n">mu</span><span class="p">)</span>
 <a name="ln-181"></a>       <span class="n">mu</span> <span class="o">=</span> <span class="n">mu</span><span class="o">/</span><span class="n">matrix_dimension</span>
-<a name="ln-182"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-183"></a>            <span class="p">&amp;</span> <span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="o">*</span><span class="n">mu</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
-<a name="ln-184"></a>       <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="n">G_kplusone</span><span class="p">)</span>
-<a name="ln-185"></a>       <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="kt">REAL</span><span class="p">(</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span><span class="n">NTREAL</span><span class="p">))</span>
-<a name="ln-186"></a>
-<a name="ln-187"></a>       <span class="c">!! Compute conjugate direction</span>
-<a name="ln-188"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="n">G_kplusone</span><span class="p">,</span><span class="nb">gamma</span><span class="p">)</span>
-<a name="ln-189"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">G_k</span><span class="p">,</span> <span class="n">G_k</span><span class="p">,</span> <span class="n">gamma_d</span><span class="p">)</span>
-<a name="ln-190"></a>       <span class="nb">gamma</span> <span class="o">=</span> <span class="nb">gamma</span><span class="o">/</span><span class="n">gamma_d</span>
-<a name="ln-191"></a>       <span class="k">IF</span> <span class="p">(</span><span class="nb">gamma</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-192"></a><span class="k">          </span><span class="nb">gamma</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-193"></a>       <span class="k">END IF</span>
-<a name="ln-194"></a><span class="k">       CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span><span class="nb">gamma</span><span class="p">)</span>
-<a name="ln-195"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="n">H_k</span><span class="p">)</span>
-<a name="ln-196"></a>       <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="n">G_k</span><span class="p">)</span>
-<a name="ln-197"></a>
-<a name="ln-198"></a>       <span class="c">!! Energy value based convergence</span>
-<a name="ln-199"></a>       <span class="n">energy_value2</span> <span class="o">=</span> <span class="n">energy_value</span>
-<a name="ln-200"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="n">energy_value</span><span class="p">)</span>
-<a name="ln-201"></a>       <span class="n">energy_value</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">energy_value</span>
-<a name="ln-202"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
-<a name="ln-203"></a>
-<a name="ln-204"></a>       <span class="k">CALL </span><span class="n">MatrixTrace</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">trace_value</span><span class="p">)</span>
-<a name="ln-205"></a>
-<a name="ln-206"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">norm_value</span> <span class="p">.</span><span class="n">LE</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-207"></a><span class="k">          EXIT</span>
-<a name="ln-208"></a><span class="k">       END IF</span>
-<a name="ln-209"></a><span class="k">    END DO</span>
-<a name="ln-210"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-211"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-212"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
-<a name="ln-213"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">P_k</span><span class="p">)</span>
-<a name="ln-214"></a>    <span class="k">END IF</span>
-<a name="ln-215"></a>
-<a name="ln-216"></a>    <span class="c">!! Undo Load Balancing Step</span>
-<a name="ln-217"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-218"></a><span class="k">       CALL </span><span class="n">UndoPermuteMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">P_k</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-219"></a>            <span class="p">&amp;</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">,</span> <span class="n">memorypool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-220"></a>    <span class="k">END IF</span>
-<a name="ln-221"></a>
-<a name="ln-222"></a>    <span class="c">!! Compute the density matrix in the non-orthogonalized basis</span>
-<a name="ln-223"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-224"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-225"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">Density</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-226"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-227"></a>
-<a name="ln-228"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">chemical_potential_out</span><span class="p">))</span> <span class="k">THEN</span>
-<a name="ln-229"></a><span class="k">       </span><span class="n">chemical_potential_out</span> <span class="o">=</span> <span class="n">mu</span>
-<a name="ln-230"></a>    <span class="k">END IF</span>
-<a name="ln-231"></a>
-<a name="ln-232"></a>    <span class="c">!! Cleanup</span>
-<a name="ln-233"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-234"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-235"></a>    <span class="k">END IF</span>
-<a name="ln-236"></a>
-<a name="ln-237"></a><span class="k">    CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">WorkingHamiltonian</span><span class="p">)</span>
-<a name="ln-238"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">)</span>
-<a name="ln-239"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">TempMat</span><span class="p">)</span>
-<a name="ln-240"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">TempMat2</span><span class="p">)</span>
-<a name="ln-241"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">)</span>
-<a name="ln-242"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">)</span>
-<a name="ln-243"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">G_k</span><span class="p">)</span>
-<a name="ln-244"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">)</span>
-<a name="ln-245"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">)</span>
-<a name="ln-246"></a>    <span class="k">CALL </span><span class="n">DestructMatrixMemoryPool</span><span class="p">(</span><span class="n">pool1</span><span class="p">)</span>
-<a name="ln-247"></a>  <span class="k">END SUBROUTINE </span><span class="n">ConjugateGradient</span>
-<a name="ln-248"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-249"></a><span class="k">END MODULE </span><span class="n">MinimizerSolversModule</span>
+<a name="ln-182"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">,</span><span class="n">Gradient</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="o">*</span><span class="n">mu</span><span class="p">)</span>
+<a name="ln-183"></a>       <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">,</span><span class="n">G_kplusone</span><span class="p">)</span>
+<a name="ln-184"></a>       <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="o">-</span><span class="mf">1.0_NTREAL</span><span class="p">)</span>
+<a name="ln-185"></a>
+<a name="ln-186"></a>       <span class="c">!! Compute conjugate direction</span>
+<a name="ln-187"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="n">G_kplusone</span><span class="p">,</span><span class="nb">gamma</span><span class="p">)</span>
+<a name="ln-188"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">G_k</span><span class="p">,</span> <span class="n">G_k</span><span class="p">,</span> <span class="n">gamma_d</span><span class="p">)</span>
+<a name="ln-189"></a>       <span class="nb">gamma</span> <span class="o">=</span> <span class="nb">gamma</span><span class="o">/</span><span class="n">gamma_d</span>
+<a name="ln-190"></a>       <span class="k">IF</span> <span class="p">(</span><span class="nb">gamma</span> <span class="o">&lt;</span> <span class="mf">0.0_NTREAL</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-191"></a><span class="k">          </span><span class="nb">gamma</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-192"></a>       <span class="k">END IF</span>
+<a name="ln-193"></a><span class="k">       CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">,</span><span class="nb">gamma</span><span class="p">)</span>
+<a name="ln-194"></a>       <span class="k">CALL </span><span class="n">IncrementMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="n">H_k</span><span class="p">)</span>
+<a name="ln-195"></a>       <span class="k">CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">,</span><span class="n">G_k</span><span class="p">)</span>
+<a name="ln-196"></a>
+<a name="ln-197"></a>       <span class="c">!! Energy value based convergence</span>
+<a name="ln-198"></a>       <span class="n">energy_value2</span> <span class="o">=</span> <span class="n">energy_value</span>
+<a name="ln-199"></a>       <span class="k">CALL </span><span class="n">DotMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">WorkingHamiltonian</span><span class="p">,</span> <span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-200"></a>       <span class="n">energy_value</span> <span class="o">=</span> <span class="mf">2.0_NTREAL</span><span class="o">*</span><span class="n">energy_value</span>
+<a name="ln-201"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
+<a name="ln-202"></a>
+<a name="ln-203"></a>       <span class="k">CALL </span><span class="n">MatrixTrace</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">trace_value</span><span class="p">)</span>
+<a name="ln-204"></a>
+<a name="ln-205"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">norm_value</span> <span class="p">.</span><span class="n">LE</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-206"></a><span class="k">          EXIT</span>
+<a name="ln-207"></a><span class="k">       END IF</span>
+<a name="ln-208"></a><span class="k">    END DO</span>
+<a name="ln-209"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-210"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
+<a name="ln-211"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-212"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">P_k</span><span class="p">)</span>
+<a name="ln-213"></a>    <span class="k">END IF</span>
+<a name="ln-214"></a>
+<a name="ln-215"></a>    <span class="c">!! Undo Load Balancing Step</span>
+<a name="ln-216"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-217"></a><span class="k">       CALL </span><span class="n">UndoPermuteMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">,</span> <span class="n">P_k</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-218"></a>            <span class="p">&amp;</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">,</span> <span class="n">memorypool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-219"></a>    <span class="k">END IF</span>
+<a name="ln-220"></a>
+<a name="ln-221"></a>    <span class="c">!! Compute the density matrix in the non-orthogonalized basis</span>
+<a name="ln-222"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">P_k</span><span class="p">,</span><span class="n">TempMat</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-223"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-224"></a>    <span class="k">CALL </span><span class="n">MatrixMultiply</span><span class="p">(</span><span class="n">TempMat</span><span class="p">,</span><span class="n">InverseSquareRoot</span><span class="p">,</span><span class="n">Density</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-225"></a>         <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span> <span class="n">memory_pool_in</span><span class="o">=</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-226"></a>
+<a name="ln-227"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">chemical_potential_out</span><span class="p">))</span> <span class="k">THEN</span>
+<a name="ln-228"></a><span class="k">       </span><span class="n">chemical_potential_out</span> <span class="o">=</span> <span class="n">mu</span>
+<a name="ln-229"></a>    <span class="k">END IF</span>
+<a name="ln-230"></a><span class="k">    IF</span><span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">energy_value_out</span><span class="p">))</span> <span class="k">THEN</span>
+<a name="ln-231"></a><span class="k">       </span><span class="n">energy_value_out</span> <span class="o">=</span> <span class="n">energy_value</span>
+<a name="ln-232"></a>    <span class="k">END IF</span>
+<a name="ln-233"></a>
+<a name="ln-234"></a>    <span class="c">!! Cleanup</span>
+<a name="ln-235"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-236"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
+<a name="ln-237"></a>    <span class="k">END IF</span>
+<a name="ln-238"></a>
+<a name="ln-239"></a><span class="k">    CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">WorkingHamiltonian</span><span class="p">)</span>
+<a name="ln-240"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">Identity</span><span class="p">)</span>
+<a name="ln-241"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">TempMat</span><span class="p">)</span>
+<a name="ln-242"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">TempMat2</span><span class="p">)</span>
+<a name="ln-243"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">Gradient</span><span class="p">)</span>
+<a name="ln-244"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">P_k</span><span class="p">)</span>
+<a name="ln-245"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">G_k</span><span class="p">)</span>
+<a name="ln-246"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">G_kplusone</span><span class="p">)</span>
+<a name="ln-247"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">H_k</span><span class="p">)</span>
+<a name="ln-248"></a>    <span class="k">CALL </span><span class="n">DestructMatrixMemoryPool</span><span class="p">(</span><span class="n">pool1</span><span class="p">)</span>
+<a name="ln-249"></a>  <span class="k">END SUBROUTINE </span><span class="n">ConjugateGradient</span>
+<a name="ln-250"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-251"></a><span class="k">END MODULE </span><span class="n">MinimizerSolversModule</span>
 </pre></div>
 
     </section>

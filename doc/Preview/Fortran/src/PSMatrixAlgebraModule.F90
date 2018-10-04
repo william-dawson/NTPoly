@@ -3,16 +3,16 @@
 MODULE PSMatrixAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
   USE GemmTasksModule
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
-       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
-       & ReduceAndSumMatrixData, ReduceAndSumMatrixCleanup, &
-       & TestReduceSizeRequest, TestReduceOuterRequest, &
-       & TestReduceInnerRequest, TestReduceDataRequest
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & CheckMemoryPoolValidity, DestructMatrixMemoryPool
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
        & MergeMatrixLocalBlocks
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
+       & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
+       & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
+       & TestReduceInnerRequest, TestReduceDataRequest
   USE SMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixGrandSum, &
        & PairwiseMultiplyMatrix, IncrementMatrix, ScaleMatrix, &
        & MatrixColumnNorm
@@ -22,7 +22,7 @@ MODULE PSMatrixAlgebraModule
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & DestructTripletList
   USE ISO_C_BINDING
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -84,11 +84,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (this%is_complex) THEN
 #define LMAT merged_local_data_c
-#include "algebra_includes/MatrixSigma.f90"
+#include "distributed_algebra_includes/MatrixSigma.f90"
 #undef LMAT
     ELSE
 #define LMAT merged_local_data_r
-#include "algebra_includes/MatrixSigma.f90"
+#include "distributed_algebra_includes/MatrixSigma.f90"
 #undef LMAT
     ENDIF
   END SUBROUTINE MatrixSigma_ps
@@ -150,8 +150,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END IF
     ELSE
-       memory_pool = MatrixMemoryPool_p(matA)
+       IF (matA%is_complex) THEN
+          memory_pool = MatrixMemoryPool_p(matA)
+       ELSE
+          memory_pool = MatrixMemoryPool_p(matB)
+       END IF
     END IF
+
 
     !! Perform Upcasting
     IF (matB%is_complex .AND. .NOT. matA%is_complex) THEN
@@ -249,7 +254,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define SliceContribution SliceContribution_c
 #define LMAT local_data_c
 #define MPGRID memory_pool%grid_c
-#include "algebra_includes/MatrixMultiply.f90"
+#include "distributed_algebra_includes/MatrixMultiply.f90"
 #undef AdjacentABlocks
 #undef LocalRowContribution
 #undef GatheredRowContribution
@@ -271,7 +276,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define SliceContribution SliceContribution_r
 #define LMAT local_data_r
 #define MPGRID memory_pool%grid_r
-#include "algebra_includes/MatrixMultiply.f90"
+#include "distributed_algebra_includes/MatrixMultiply.f90"
 #undef AdjacentABlocks
 #undef LocalRowContribution
 #undef GatheredRowContribution
@@ -301,13 +306,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (this%is_complex) THEN
 #define TEMP temp_c
 #define LMAT local_data_c
-#include "algebra_includes/MatrixGrandSum.f90"
+#include "distributed_algebra_includes/MatrixGrandSum.f90"
 #undef LMAT
 #undef TEMP
     ELSE
 #define TEMP temp_r
 #define LMAT local_data_r
-#include "algebra_includes/MatrixGrandSum.f90"
+#include "distributed_algebra_includes/MatrixGrandSum.f90"
 #undef LMAT
 #undef TEMP
     END IF
@@ -331,13 +336,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (this%is_complex) THEN
 #define TEMP temp_c
 #define LMAT local_data_c
-#include "algebra_includes/MatrixGrandSum.f90"
+#include "distributed_algebra_includes/MatrixGrandSum.f90"
 #undef LMAT
 #undef TEMP
     ELSE
 #define TEMP temp_r
 #define LMAT local_data_r
-#include "algebra_includes/MatrixGrandSum.f90"
+#include "distributed_algebra_includes/MatrixGrandSum.f90"
 #undef LMAT
 #undef TEMP
     END IF
@@ -361,16 +366,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matB, converted_matrix)
        CALL PairwiseMultiplyMatrix(matA, converted_matrix, matC)
+       CALL DestructMatrix(converted_matrix)
     ELSE IF (.NOT. matA%is_complex .AND. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matA, converted_matrix)
        CALL PairwiseMultiplyMatrix(converted_matrix, matB, matC)
+       CALL DestructMatrix(converted_matrix)
     ELSE IF (matA%is_complex .AND. matB%is_complex) THEN
 #define LMAT local_data_c
-#include "algebra_includes/PairwiseMultiply.f90"
+#include "distributed_algebra_includes/PairwiseMultiply.f90"
 #undef LMAT
     ELSE
 #define LMAT local_data_r
-#include "algebra_includes/PairwiseMultiply.f90"
+#include "distributed_algebra_includes/PairwiseMultiply.f90"
 #undef LMAT
     END IF
   END SUBROUTINE PairwiseMultiplyMatrix_ps
@@ -390,11 +397,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (this%is_complex) THEN
 #define LMAT merged_local_data_c
-#include "algebra_includes/MatrixNorm.f90"
+#include "distributed_algebra_includes/MatrixNorm.f90"
 #undef LMAT
     ELSE
 #define LMAT merged_local_data_r
-#include "algebra_includes/MatrixNorm.f90"
+#include "distributed_algebra_includes/MatrixNorm.f90"
 #undef LMAT
     END IF
   END FUNCTION MatrixNorm_ps
@@ -410,7 +417,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The dot product.
     REAL(NTREAL), INTENT(OUT) :: product
 
-    INCLUDE "algebra_includes/DotMatrix.f90"
+    INCLUDE "distributed_algebra_includes/DotMatrix.f90"
   END SUBROUTINE DotMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(Matrix A,Matrix B)
@@ -424,7 +431,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The dot product.
     COMPLEX(NTCOMPLEX), INTENT(OUT) :: product
 
-    INCLUDE "algebra_includes/DotMatrix.f90"
+    INCLUDE "distributed_algebra_includes/DotMatrix.f90"
   END SUBROUTINE DotMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
@@ -459,18 +466,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matB, converted_matrix)
        CALL IncrementMatrix(matA, converted_matrix, alpha, threshold)
+       CALL CopyMatrix(converted_matrix, matB)
     ELSE IF (.NOT. matA%is_complex .AND. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matA, converted_matrix)
        CALL IncrementMatrix(converted_matrix, matB, alpha, threshold)
     ELSE IF (matA%is_complex .AND. matB%is_complex) THEN
 #define LMAT local_data_c
-#include "algebra_includes/IncrementMatrix.f90"
+#include "distributed_algebra_includes/IncrementMatrix.f90"
 #undef LMAT
     ELSE
 #define LMAT local_data_r
-#include "algebra_includes/IncrementMatrix.f90"
+#include "distributed_algebra_includes/IncrementMatrix.f90"
 #undef LMAT
     END IF
+
+    CALL DestructMatrix(converted_matrix)
 
   END SUBROUTINE IncrementMatrix_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -485,11 +495,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (this%is_complex) THEN
 #define LOCALDATA local_data_c
-#include "algebra_includes/ScaleMatrix.f90"
+#include "distributed_algebra_includes/ScaleMatrix.f90"
 #undef LOCALDATA
     ELSE
 #define LOCALDATA local_data_r
-#include "algebra_includes/ScaleMatrix.f90"
+#include "distributed_algebra_includes/ScaleMatrix.f90"
 #undef LOCALDATA
     END IF
 
@@ -507,7 +517,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (this%is_complex) THEN
 #define LOCALDATA local_data_c
-#include "algebra_includes/ScaleMatrix.f90"
+#include "distributed_algebra_includes/ScaleMatrix.f90"
 #undef LOCALDATA
     ELSE
        CALL ConvertMatrixToComplex(this, this_c)
@@ -538,7 +548,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define TLIST triplet_list_c
 #define LMAT merged_local_data_c
 #define MPIDATATYPE MPINTCOMPLEX
-#include "algebra_includes/MatrixTrace.f90"
+#include "distributed_algebra_includes/MatrixTrace.f90"
 #undef MPIDATATYPE
 #undef LMAT
 #undef TLIST
@@ -546,7 +556,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define TLIST triplet_list_r
 #define LMAT merged_local_data_r
 #define MPIDATATYPE MPINTREAL
-#include "algebra_includes/MatrixTrace.f90"
+#include "distributed_algebra_includes/MatrixTrace.f90"
 #undef MPIDATATYPE
 #undef LMAT
 #undef TLIST

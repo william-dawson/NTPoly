@@ -12,7 +12,6 @@ MODULE ChebyshevSolversModule
        & PrintMatrixInformation, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -115,7 +114,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Standard")
-       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL WriteElement(key="Degree", int_value_in=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -225,7 +224,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Recursive")
-       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL WriteElement(key="Degree", int_value_in=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -318,7 +317,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: RightMat
 
     !! First Handle The Base Case
-    IF (SIZE(poly%coefficients) .EQ. 2) THEN
+    IF (SIZE(poly%coefficients) .EQ. 1) THEN
+       CALL CopyMatrix(T_Powers(1), OutputMat)
+       CALL ScaleMatrix(OutputMat, poly%coefficients(1))
+    ELSE IF (SIZE(poly%coefficients) .EQ. 2) THEN
        CALL CopyMatrix(T_Powers(1), OutputMat)
        CALL ScaleMatrix(OutputMat, poly%coefficients(1))
        CALL IncrementMatrix(T_Powers(2), OutputMat, &

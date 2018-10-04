@@ -9,7 +9,6 @@ MODULE PolynomialSolversModule
   USE PSMatrixModule
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE TimerModule
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -109,7 +108,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Horner")
        CALL PrintParameters(solver_parameters)
-       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL WriteElement(key="Degree", int_value_in=degree-1)
     END IF
 
     !! Initial values for matrices
@@ -204,7 +203,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Method", text_value_in="Paterson Stockmeyer")
        CALL WriteCitation("paterson1973number")
        CALL PrintParameters(solver_parameters)
-       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL WriteElement(key="Degree", int_value_in=degree-1)
     END IF
 
     ALLOCATE(x_powers(s_value+1))

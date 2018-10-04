@@ -7,6 +7,6 @@ var searchData=
   ['triplet_5fr',['Triplet_r',['../class_n_t_poly_1_1_triplet__r.html',1,'NTPoly']]],
   ['tripletlist_5fc',['TripletList_c',['../class_n_t_poly_1_1_triplet_list__c.html',1,'NTPoly::TripletList_c'],['../class_n_t_poly_1_1_triplet_list__c.html#ae04b3d02119422e78c262ea7da990ff7',1,'NTPoly::TripletList_c::TripletList_c()']]],
   ['tripletlist_5fr',['TripletList_r',['../class_n_t_poly_1_1_triplet_list__r.html',1,'NTPoly::TripletList_r'],['../class_n_t_poly_1_1_triplet_list__r.html#ac024a095ae83c94abb4c2277475d477a',1,'NTPoly::TripletList_r::TripletList_r()']]],
-  ['trs2',['TRS2',['../class_n_t_poly_1_1_density_matrix_solvers.html#a9658c79609c2f265070f6c16b195ff5d',1,'NTPoly::DensityMatrixSolvers']]],
-  ['trs4',['TRS4',['../class_n_t_poly_1_1_density_matrix_solvers.html#aaa061639286c84bb1df9f8911361440f',1,'NTPoly::DensityMatrixSolvers']]]
+  ['trs2',['TRS2',['../class_n_t_poly_1_1_density_matrix_solvers.html#aba1852e37e8b0a9d316b6aec574a6366',1,'NTPoly::DensityMatrixSolvers']]],
+  ['trs4',['TRS4',['../class_n_t_poly_1_1_density_matrix_solvers.html#a375509116b97af1c4038e23360764a51',1,'NTPoly::DensityMatrixSolvers']]]
 ];

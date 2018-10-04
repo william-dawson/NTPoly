@@ -1,13 +1,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing Lists of Triplets.
 MODULE TripletListModule
-  USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
+  USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
+       & MPINTINTEGER
   USE TripletModule, ONLY : Triplet_r, Triplet_c, CompareTriplets, &
        & ConvertTripletType
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC, MM_HERMITIAN
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE ISO_C_BINDING, ONLY : c_int
-  USE MPI
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: TripletList_r
@@ -90,7 +90,7 @@ MODULE TripletListModule
   END INTERFACE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
-  TYPE, PUBLIC :: TripletList_r
+  TYPE :: TripletList_r
      !> Internal representation of the data.
      TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list
@@ -98,7 +98,7 @@ MODULE TripletListModule
   END TYPE TripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
-  TYPE, PUBLIC :: TripletList_c
+  TYPE :: TripletList_c
      !> Internal representation of the data.
      TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: DATA
      !> Current number of elements in the triplet list

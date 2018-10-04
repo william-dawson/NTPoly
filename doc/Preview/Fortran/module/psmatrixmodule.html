@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="10.9% of total for modules and submodules.">941 statements</a>
+    title="12.2% of total for modules and submodules.">981 statements</a>
      </li> 
      
      
@@ -254,6 +254,8 @@
       
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-setmatrixprocessgrid">SetMatrixProcessGrid</a>
       
+      <a class="list-group-item" href="../module/psmatrixmodule.html#proc-getmatrixslice">GetMatrixSlice</a>
+      
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-convertmatrixtoreal">ConvertMatrixToReal</a>
       
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-convertmatrixtocomplex">ConvertMatrixToComplex</a>
@@ -293,13 +295,13 @@
     
     <li><a href='../module/loggingmodule.html'>LoggingModule</a></li>
     
-    <li><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></li>
-    
     <li><a href='../module/matrixmarketmodule.html'>MatrixMarketModule</a></li>
     
     <li><a href='../module/permutationmodule.html'>PermutationModule</a></li>
     
     <li><a href='../module/processgridmodule.html'>ProcessGridModule</a></li>
+    
+    <li><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></li>
     
     <li><a href='../module/smatrixmodule.html'>SMatrixModule</a></li>
     
@@ -311,7 +313,7 @@
     
     <li><a href="http://fortranwiki.org/fortran/show/ISO_C_BINDING">iso_c_binding</a></li>
     
-    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
+    <li><a href='../module/ntmpimodule.html'>NTMPIModule</a></li>
     
   </ul>
       </li>
@@ -422,6 +424,8 @@
       
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-setmatrixprocessgrid">SetMatrixProcessGrid</a>
       
+      <a class="list-group-item" href="../module/psmatrixmodule.html#proc-getmatrixslice">GetMatrixSlice</a>
+      
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-convertmatrixtoreal">ConvertMatrixToReal</a>
       
       <a class="list-group-item" href="../module/psmatrixmodule.html#proc-convertmatrixtocomplex">ConvertMatrixToComplex</a>
@@ -530,7 +534,7 @@ private subroutine ConstructEmptyMatrix_ps(this, matrix_dim_, process_grid_in, i
   <td>intent(in),</td>
   <td>optional</td>
   
-  <td></td><td>::</td>
+  <td>TARGET</td><td>::</td>
   <td><strong>process_grid_in</strong></td><td><p>A process grid to host the matrix.</p></td>
   
 </tr>
@@ -796,7 +800,7 @@ private subroutine CopyMatrix_ps(matA, matB)
     
     
     <h3>
-private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name)
+private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name, grid_in)
     
     
    
@@ -851,6 +855,21 @@ private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name)
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>grid_in</strong></td><td><p>Grid to distribute the matrix on.</p></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -879,7 +898,7 @@ private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name)
     
     
     <h3>
-private subroutine ConstructMatrixFromBinary_ps(this, file_name)
+private subroutine ConstructMatrixFromBinary_ps(this, file_name, grid_in)
     
     
    
@@ -931,6 +950,21 @@ private subroutine ConstructMatrixFromBinary_ps(this, file_name)
   
   <td></td><td>::</td>
   <td><strong>file_name</strong></td><td><p>The name of the file to read.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>grid_in</strong></td><td><p>Grid to distribute the matrix on.</p></td>
   
 </tr>
 
@@ -3191,8 +3225,8 @@ private subroutine CommSplitMatrix_ps(this, split_mat, my_color, split_slice)
   
   <td><span class="anchor" id="variable-process_grid"></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
   
-  <td>public</td>
-  <td></td><td>::</td>
+  <td>public,</td>
+  <td>POINTER</td><td>::</td>
   <td><strong>process_grid</strong></td><td></td><td></td><td><p>process grid to operate on</p></td>
   
 </tr>
@@ -3294,6 +3328,142 @@ public subroutine <a href='../proc/setmatrixprocessgrid.html'>SetMatrixProcessGr
   
   <td></td><td>::</td>
   <td><strong>grid</strong></td><td><p>The grid to set it to.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-getmatrixslice"></span><h3>
+public subroutine <a href='../proc/getmatrixslice.html'>GetMatrixSlice</a>(this, submatrix, start_row, end_row, start_column, end_column)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Copy an arbitrary slice from a matrix into a new smaller matrix.
+ NTPoly only works with square matrices, so if the number of rows and
+ columns is different the matrix is resized to the maximum size.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>this</strong></td><td><p>The distributed sparse matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>submatrix</strong></td><td><p>The slice to fill.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>start_row</strong></td><td><p>The starting row to include in this matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>end_row</strong></td><td><p>The ending row to include in this matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>start_column</strong></td><td><p>The starting column to include in this matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer</td>
+  <td></td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>end_column</strong></td><td><p>The last column to include in this matrix.</p></td>
   
 </tr>
 

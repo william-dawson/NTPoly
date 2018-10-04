@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.0% of total for source files.">345 statements</a>
+    title=" 4.3% of total for source files.">344 statements</a>
      </li> 
      
      
@@ -266,14 +266,14 @@
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-2"></a><span class="c">!&gt; A Module For Storing Lists of Triplets.</span>
 <a name="ln-3"></a><span class="k">MODULE </span><span class="n">TripletListModule</span>
-<a name="ln-4"></a>  <span class="k">USE </span><span class="n">DataTypesModule</span><span class="p">,</span> <span class="n">ONLY</span><span class="p">:</span> <span class="n">NTREAL</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">NTCOMPLEX</span><span class="p">,</span> <span class="n">MPINTCOMPLEX</span>
-<a name="ln-5"></a>  <span class="k">USE </span><span class="n">TripletModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Triplet_r</span><span class="p">,</span> <span class="n">Triplet_c</span><span class="p">,</span> <span class="n">CompareTriplets</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-6"></a>       <span class="p">&amp;</span> <span class="n">ConvertTripletType</span>
-<a name="ln-7"></a>  <span class="k">USE </span><span class="n">MatrixMarketModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">MM_SYMMETRIC</span><span class="p">,</span> <span class="n">MM_SKEW_SYMMETRIC</span><span class="p">,</span> <span class="n">MM_HERMITIAN</span>
-<a name="ln-8"></a>  <span class="k">USE </span><span class="n">TimerModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">StartTimer</span><span class="p">,</span> <span class="n">StopTimer</span>
-<a name="ln-9"></a>  <span class="k">USE </span><span class="nb">ISO_C_BINDING</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="kt">c_int</span>
-<a name="ln-10"></a><span class="kt">  </span><span class="k">USE </span><span class="n">MPI</span>
-<a name="ln-11"></a>  <span class="k">IMPLICIT NONE</span>
+<a name="ln-4"></a>  <span class="k">USE </span><span class="n">DataTypesModule</span><span class="p">,</span> <span class="n">ONLY</span><span class="p">:</span> <span class="n">NTREAL</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">NTCOMPLEX</span><span class="p">,</span> <span class="n">MPINTCOMPLEX</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-5"></a>       <span class="p">&amp;</span> <span class="n">MPINTINTEGER</span>
+<a name="ln-6"></a>  <span class="k">USE </span><span class="n">TripletModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Triplet_r</span><span class="p">,</span> <span class="n">Triplet_c</span><span class="p">,</span> <span class="n">CompareTriplets</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-7"></a>       <span class="p">&amp;</span> <span class="n">ConvertTripletType</span>
+<a name="ln-8"></a>  <span class="k">USE </span><span class="n">MatrixMarketModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">MM_SYMMETRIC</span><span class="p">,</span> <span class="n">MM_SKEW_SYMMETRIC</span><span class="p">,</span> <span class="n">MM_HERMITIAN</span>
+<a name="ln-9"></a>  <span class="k">USE </span><span class="n">TimerModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">StartTimer</span><span class="p">,</span> <span class="n">StopTimer</span>
+<a name="ln-10"></a>  <span class="k">USE </span><span class="nb">ISO_C_BINDING</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="kt">c_int</span>
+<a name="ln-11"></a><span class="kt">  </span><span class="k">IMPLICIT NONE</span>
 <a name="ln-12"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-13"></a>  <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">TripletList_r</span>
 <a name="ln-14"></a>  <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">TripletList_c</span>
@@ -355,7 +355,7 @@
 <a name="ln-90"></a>  <span class="k">END INTERFACE</span>
 <a name="ln-91"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-92"></a>  <span class="c">!&gt; A data type for a list of triplets.</span>
-<a name="ln-93"></a>  <span class="k">TYPE</span><span class="p">,</span> <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">TripletList_r</span>
+<a name="ln-93"></a>  <span class="k">TYPE</span> <span class="kd">::</span> <span class="n">TripletList_r</span>
 <a name="ln-94"></a>     <span class="c">!&gt; Internal representation of the data.</span>
 <a name="ln-95"></a>     <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="k">DATA</span>
 <a name="ln-96"></a>     <span class="c">!&gt; Current number of elements in the triplet list</span>
@@ -363,7 +363,7 @@
 <a name="ln-98"></a>  <span class="k">END TYPE </span><span class="n">TripletList_r</span>
 <a name="ln-99"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-100"></a>  <span class="c">!&gt; A data type for a list of triplets.</span>
-<a name="ln-101"></a>  <span class="k">TYPE</span><span class="p">,</span> <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">TripletList_c</span>
+<a name="ln-101"></a>  <span class="k">TYPE</span> <span class="kd">::</span> <span class="n">TripletList_c</span>
 <a name="ln-102"></a>     <span class="c">!&gt; Internal representation of the data.</span>
 <a name="ln-103"></a>     <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_c</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="k">DATA</span>
 <a name="ln-104"></a>     <span class="c">!&gt; Current number of elements in the triplet list</span>

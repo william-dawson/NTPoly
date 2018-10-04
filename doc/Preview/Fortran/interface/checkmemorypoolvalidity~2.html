@@ -128,21 +128,21 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 14 statements,  0.4% of total for procedures.">3 statements</a>
+    title="<p> 0.1% of total for procedures.</p>Including implementation: 18 statements,  0.5% of total for procedures.">4 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/PMatrixMemoryPoolModule.F90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/MatrixMemoryPoolModule.F90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/pmatrixmemorypoolmodule.f90.html'>PMatrixMemoryPoolModule.F90</a></li>
+     <li><a href='../sourcefile/matrixmemorypoolmodule.f90.html'>MatrixMemoryPoolModule.F90</a></li>
     
-     <li><a href='../module/pmatrixmemorypoolmodule.html'>PMatrixMemoryPoolModule</a></li>
+     <li><a href='../module/matrixmemorypoolmodule.html'>MatrixMemoryPoolModule</a></li>
     
   
      <li class="active">CheckMemoryPoolValidity</li>
@@ -190,7 +190,9 @@
   <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/checkmemorypoolvalidity%7E2.html#moduleprocedure-checkmemorypoolvalidity_p">CheckMemoryPoolValidity_p</a>
+      <a class="list-group-item" href="../interface/checkmemorypoolvalidity%7E2.html#moduleprocedure-checkmemorypoolvalidity_lr">CheckMemoryPoolValidity_lr</a>
+      
+      <a class="list-group-item" href="../interface/checkmemorypoolvalidity%7E2.html#moduleprocedure-checkmemorypoolvalidity_lc">CheckMemoryPoolValidity_lc</a>
       
     </div>
   </div>
@@ -239,7 +241,9 @@
   <div id="modprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/checkmemorypoolvalidity%7E2.html#moduleprocedure-checkmemorypoolvalidity_p">CheckMemoryPoolValidity_p</a>
+      <a class="list-group-item" href="../interface/checkmemorypoolvalidity%7E2.html#moduleprocedure-checkmemorypoolvalidity_lr">CheckMemoryPoolValidity_lr</a>
+      
+      <a class="list-group-item" href="../interface/checkmemorypoolvalidity%7E2.html#moduleprocedure-checkmemorypoolvalidity_lc">CheckMemoryPoolValidity_lc</a>
       
     </div>
   </div>
@@ -260,8 +264,8 @@
    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-checkmemorypoolvalidity_p"></span><h3>
-private pure function CheckMemoryPoolValidity_p(this, matrix) result(isvalid)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-checkmemorypoolvalidity_lr"></span><h3>
+private pure function CheckMemoryPoolValidity_lr(this, columns, rows) result(isvalid)
     
     
    
@@ -272,8 +276,8 @@ private pure function CheckMemoryPoolValidity_p(this, matrix) result(isvalid)
 
 
 
-<p>Checks if a given distributed memory pool has been validly allocated to
- handle the given parameters.</p>
+<p>Checks if a given memory pool has been validly allocated to handle
+ the given parameters.</p>
     
     <h4>Arguments</h4>
     
@@ -294,7 +298,7 @@ private pure function CheckMemoryPoolValidity_p(this, matrix) result(isvalid)
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/matrixmemorypool_p.html'>MatrixMemoryPool_p</a>),</td>
+  <td><span class="anchor" ></span>type(<a href='../type/matrixmemorypool_lr.html'>MatrixMemoryPool_lr</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -309,12 +313,27 @@ private pure function CheckMemoryPoolValidity_p(this, matrix) result(isvalid)
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" ></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>matrix</strong></td><td><p>The associated matrix to check against.</p></td>
+  <td><strong>columns</strong></td><td><p>Number of columns in the matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rows</strong></td><td><p>Number of rows in the matrix.</p></td>
   
 </tr>
 
@@ -331,7 +350,103 @@ private pure function CheckMemoryPoolValidity_p(this, matrix) result(isvalid)
   
      <h4>Return Value <small>logical
   </small></h4>
-  <p>True if the memory pool is valid.</p>
+  <p>true if the memory pool is valid.</p>
+    
+
+  </div>
+  </div>
+
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-checkmemorypoolvalidity_lc"></span><h3>
+private pure function CheckMemoryPoolValidity_lc(this, columns, rows) result(isvalid)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+<p>Checks if a given memory pool has been validly allocated to handle
+ Checks if a given memory pool has been validly allocated to handle
+ the given parameters.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrixmemorypool_lc.html'>MatrixMemoryPool_lc</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>this</strong></td><td><p>The memory pool to check.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>columns</strong></td><td><p>Number of columns in the matrix.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>rows</strong></td><td><p>Number of rows in the matrix.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h4>Return Value <small>logical
+  </small></h4>
+  <p>true if the memory pool is valid.</p>
     
 
   </div>

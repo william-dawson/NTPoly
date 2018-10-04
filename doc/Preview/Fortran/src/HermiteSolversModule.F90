@@ -12,7 +12,6 @@ MODULE HermiteSolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -113,7 +112,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Hermite Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="Standard")
-       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL WriteElement(key="Degree", int_value_in=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 

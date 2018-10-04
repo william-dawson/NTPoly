@@ -133,22 +133,15 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/appendtotripletlist_r.html'>AppendToTripletList_r</a></td><td><a href='../module/tripletlistmodule.html'>TripletListModule</a></td><td>Subroutine</td><td><p>Add a value to the end of the triplet list.</p></td></tr>
 			 
-			   <tr><td><a href='../interface/appendtovector.html'>AppendToVector</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
-			   <tr><td><a href='../interface/broadcastvector.html'>BroadcastVector</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/cgsolver.html'>CGSolver</a></td><td><a href='../module/linearsolversmodule.html'>LinearSolversModule</a></td><td>Subroutine</td><td><p>Solve the matrix equation AX = B using the conjugate gradient method.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/checkallocerror.html'>CheckAllocError</a></td><td><a href='../module/errormodule.html'>ErrorModule</a></td><td>Function</td><td><p>Routine to call if an alloc error has occurred.</p></td></tr>
 			 
-			   <tr><td><a href='../interface/checkmemorypoolvalidity.html'>CheckMemoryPoolValidity</a></td><td><a href='../module/matrixmemorypoolmodule.html'>MatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../interface/checkmemorypoolvalidity.html'>CheckMemoryPoolValidity</a></td><td><a href='../module/pmatrixmemorypoolmodule.html'>PMatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/checkmemorypoolvalidity%7E2.html'>CheckMemoryPoolValidity</a></td><td><a href='../module/pmatrixmemorypoolmodule.html'>PMatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../interface/checkmemorypoolvalidity%7E2.html'>CheckMemoryPoolValidity</a></td><td><a href='../module/matrixmemorypoolmodule.html'>MatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/checkmpierror.html'>CheckMPIError</a></td><td><a href='../module/errormodule.html'>ErrorModule</a></td><td>Function</td><td><p>Routine to call to check if an MPI error has occurred.</p></td></tr>
-			 
-			   <tr><td><a href='../proc/choleskydecomposition.html'>CholeskyDecomposition</a></td><td><a href='../module/linearsolversmodule.html'>LinearSolversModule</a></td><td>Subroutine</td><td><p>Compute The Cholesky Decomposition of a Hermitian Positive Definite matrix.
- This is a really naive implementation, that might be worth revisiting.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/cleanup.html'>Cleanup</a></td><td><a href='../module/errormodule.html'>ErrorModule</a></td><td>Subroutine</td><td><p>As a last case resort, this will print an error message and quit.</p></td></tr>
 			 
@@ -196,8 +189,6 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/constructdefaultpermutation.html'>ConstructDefaultPermutation</a></td><td><a href='../module/permutationmodule.html'>PermutationModule</a></td><td>Subroutine</td><td><p>Constructs a permutation that preserves the original order.</p></td></tr>
 			 
-			   <tr><td><a href='../interface/constructdiag.html'>ConstructDiag</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/constructemptymatrix.html'>ConstructEmptyMatrix</a></td><td><a href='../module/smatrixmodule.html'>SMatrixModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/constructemptymatrix%7E2.html'>ConstructEmptyMatrix</a></td><td><a href='../module/dmatrixmodule.html'>DMatrixModule</a></td><td>Interface</td><td></td></tr>
@@ -221,18 +212,18 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../interface/constructmatrixsfromd.html'>ConstructMatrixSFromD</a></td><td><a href='../module/dmatrixmodule.html'>DMatrixModule</a></td><td>Interface</td><td></td></tr>
 			 
+			   <tr><td><a href='../proc/constructnewprocessgrid.html'>ConstructNewProcessGrid</a></td><td><a href='../module/processgridmodule.html'>ProcessGridModule</a></td><td>Subroutine</td><td><p>Construct a process grid.</p></td></tr>
+			 
 			   <tr><td><a href='../interface/constructpolynomial.html'>ConstructPolynomial</a></td><td><a href='../module/chebyshevsolversmodule.html'>ChebyshevSolversModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/constructpolynomial%7E2.html'>ConstructPolynomial</a></td><td><a href='../module/hermitesolversmodule.html'>HermiteSolversModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/constructpolynomial%7E3.html'>ConstructPolynomial</a></td><td><a href='../module/polynomialsolversmodule.html'>PolynomialSolversModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/constructprocessgrid.html'>ConstructProcessGrid</a></td><td><a href='../module/processgridmodule.html'>ProcessGridModule</a></td><td>Subroutine</td><td><p>Setup the default process grid.</p></td></tr>
+			   <tr><td><a href='../interface/constructprocessgrid.html'>ConstructProcessGrid</a></td><td><a href='../module/processgridmodule.html'>ProcessGridModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/constructrandompermutation.html'>ConstructRandomPermutation</a></td><td><a href='../module/permutationmodule.html'>PermutationModule</a></td><td>Subroutine</td><td><p>Constructs a permutation that has a random order.
  Implements Knuth shuffle.</p></td></tr>
-			 
-			   <tr><td><a href='../proc/constructranklookup.html'>ConstructRankLookup</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Subroutine</td><td><p>Construct a lookup for columns</p></td></tr>
 			 
 			   <tr><td><a href='../proc/constructreversepermutation.html'>ConstructReversePermutation</a></td><td><a href='../module/permutationmodule.html'>PermutationModule</a></td><td>Subroutine</td><td><p>Constructs a permutation that reverses the original order.</p></td></tr>
 			 
@@ -278,9 +269,9 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../interface/destructmatrix%7E3.html'>DestructMatrix</a></td><td><a href='../module/psmatrixmodule.html'>PSMatrixModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/destructmatrixmemorypool.html'>DestructMatrixMemoryPool</a></td><td><a href='../module/matrixmemorypoolmodule.html'>MatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../interface/destructmatrixmemorypool.html'>DestructMatrixMemoryPool</a></td><td><a href='../module/pmatrixmemorypoolmodule.html'>PMatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/destructmatrixmemorypool%7E2.html'>DestructMatrixMemoryPool</a></td><td><a href='../module/pmatrixmemorypoolmodule.html'>PMatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
+			   <tr><td><a href='../interface/destructmatrixmemorypool%7E2.html'>DestructMatrixMemoryPool</a></td><td><a href='../module/matrixmemorypoolmodule.html'>MatrixMemoryPoolModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/destructpermutation.html'>DestructPermutation</a></td><td><a href='../module/permutationmodule.html'>PermutationModule</a></td><td>Subroutine</td><td><p>Destruct a permutation object.</p></td></tr>
 			 
@@ -298,19 +289,13 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/destructtripletlist_r.html'>DestructTripletList_r</a></td><td><a href='../module/tripletlistmodule.html'>TripletListModule</a></td><td>Subroutine</td><td><p>Destructs a triplet list.</p></td></tr>
 			 
-			   <tr><td><a href='../interface/dotallhelper.html'>DotAllHelper</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
-			   <tr><td><a href='../interface/dotallpivoted.html'>DotAllPivoted</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/dotmatrix.html'>DotMatrix</a></td><td><a href='../module/smatrixalgebramodule.html'>SMatrixAlgebraModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/dotmatrix%7E2.html'>DotMatrix</a></td><td><a href='../module/psmatrixalgebramodule.html'>PSMatrixAlgebraModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/dotsparsevectors.html'>DotSparseVectors</a></td><td><a href='../module/svectormodule.html'>SVectorModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/eigendecomposition.html'>EigenDecomposition</a></td><td><a href='../module/dmatrixmodule.html'>DMatrixModule</a></td><td>Interface</td><td></td></tr>
-			 
-			   <tr><td><a href='../proc/eigenexa_s.html'>EigenExa_s</a></td><td><a href='../module/eigenexamodule.html'>EigenExaModule</a></td><td>Subroutine</td><td><p>Compute the eigenvectors of a matrix using EigenExa.</p></td></tr>
+			   <tr><td><a href='../proc/energydensitymatrix.html'>EnergyDensityMatrix</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the energy-weighted density matrix.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/entersublog.html'>EnterSubLog</a></td><td><a href='../module/loggingmodule.html'>LoggingModule</a></td><td>Subroutine</td><td><p>Call this subroutine when you enter into a section with verbose output</p></td></tr>
 			 
@@ -336,8 +321,6 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../interface/filtermatrix.html'>FilterMatrix</a></td><td><a href='../module/psmatrixmodule.html'>PSMatrixModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/gathermatrixcolumn.html'>GatherMatrixColumn</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../proc/gershgorinbounds.html'>GershgorinBounds</a></td><td><a href='../module/eigenboundsmodule.html'>EigenBoundsModule</a></td><td>Subroutine</td><td><p>Compute a bounds on the minimum and maximum eigenvalue of a matrix.
  Uses Gershgorin's theorem.</p></td></tr>
 			 
@@ -354,6 +337,10 @@ All Procedures &ndash; NTPoly
 			   <tr><td><a href='../interface/getmatrixrows.html'>GetMatrixRows</a></td><td><a href='../module/smatrixmodule.html'>SMatrixModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/getmatrixsize.html'>GetMatrixSize</a></td><td><a href='../module/psmatrixmodule.html'>PSMatrixModule</a></td><td>Interface</td><td></td></tr>
+			 
+			   <tr><td><a href='../proc/getmatrixslice.html'>GetMatrixSlice</a></td><td><a href='../module/psmatrixmodule.html'>PSMatrixModule</a></td><td>Subroutine</td><td><p>Copy an arbitrary slice from a matrix into a new smaller matrix.
+ NTPoly only works with square matrices, so if the number of rows and
+ columns is different the matrix is resized to the maximum size.</p></td></tr>
 			 
 			   <tr><td><a href='../interface/getmatrixtripletlist.html'>GetMatrixTripletList</a></td><td><a href='../module/psmatrixmodule.html'>PSMatrixModule</a></td><td>Interface</td><td></td></tr>
 			 
@@ -373,8 +360,6 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/getmyslice.html'>GetMySlice</a></td><td><a href='../module/processgridmodule.html'>ProcessGridModule</a></td><td>Function</td><td><p>Get the slice of the current process.</p></td></tr>
 			 
-			   <tr><td><a href='../interface/getpivot.html'>GetPivot</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
-			 
 			   <tr><td><a href='../interface/gettripletat.html'>GetTripletAt</a></td><td><a href='../module/tripletlistmodule.html'>TripletListModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/gettripletat_c.html'>GetTripletAt_c</a></td><td><a href='../module/tripletlistmodule.html'>TripletListModule</a></td><td>Subroutine</td><td><p>Get the value of a triplet at a particular index.</p></td></tr>
@@ -389,8 +374,7 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../interface/gettripletvalues.html'>GetTripletValues</a></td><td><a href='../module/tripletmodule.html'>TripletModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/hpcp.html'>HPCP</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the HPCP method.
- Based on the algorithm presented in \cite truflandier2016communication</p></td></tr>
+			   <tr><td><a href='../proc/hpcp.html'>HPCP</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the HPCP method.</p></td></tr>
 			 
 			   <tr><td><a href='../interface/incrementmatrix.html'>IncrementMatrix</a></td><td><a href='../module/smatrixalgebramodule.html'>SMatrixAlgebraModule</a></td><td>Interface</td><td></td></tr>
 			 
@@ -458,8 +442,7 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/permutematrix.html'>PermuteMatrix</a></td><td><a href='../module/loadbalancermodule.html'>LoadBalancerModule</a></td><td>Subroutine</td><td><p>Apply a permutation to a matrix.</p></td></tr>
 			 
-			   <tr><td><a href='../proc/pivotedcholeskydecomposition.html'>PivotedCholeskyDecomposition</a></td><td><a href='../module/linearsolversmodule.html'>LinearSolversModule</a></td><td>Subroutine</td><td><p>Compute The Pivoted Cholesky Decomposition of a Hermitian Semi-Definite
- matrix. Pass it the target rank of the matrix.</p></td></tr>
+			   <tr><td><a href='../proc/pm.html'>PM</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the PM method.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/polardecomposition.html'>PolarDecomposition</a></td><td><a href='../module/signsolversmodule.html'>SignSolversModule</a></td><td>Subroutine</td><td><p>Computes the polar decomposition of a matrix Mat = U*H.</p></td></tr>
 			 
@@ -503,13 +486,13 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../interface/reduceandcomposematrixdata.html'>ReduceAndComposeMatrixData</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Interface</td><td></td></tr>
 			 
+			   <tr><td><a href='../interface/reduceandcomposematrixsizes.html'>ReduceAndComposeMatrixSizes</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Interface</td><td></td></tr>
+			 
 			   <tr><td><a href='../interface/reduceandsummatrixcleanup.html'>ReduceAndSumMatrixCleanup</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/reduceandsummatrixdata.html'>ReduceAndSumMatrixData</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../interface/reducematrixsizes.html'>ReduceMatrixSizes</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Interface</td><td></td></tr>
-			 
-			   <tr><td><a href='../proc/referenceeigendecomposition.html'>ReferenceEigenDecomposition</a></td><td><a href='../module/eigensolversmodule.html'>EigenSolversModule</a></td><td>Subroutine</td><td><p>This routine uses a dense eigensolver for reference purposes.</p></td></tr>
+			   <tr><td><a href='../interface/reduceandsummatrixsizes.html'>ReduceAndSumMatrixSizes</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/registertimer.html'>RegisterTimer</a></td><td><a href='../module/timermodule.html'>TimerModule</a></td><td>Subroutine</td><td><p>Register a timer with the timer module.  Call this before using that timer.</p></td></tr>
 			 
@@ -573,8 +556,6 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/sine.html'>Sine</a></td><td><a href='../module/trigonometrysolversmodule.html'>TrigonometrySolversModule</a></td><td>Subroutine</td><td><p>Compute the sine of a matrix.</p></td></tr>
 			 
-			   <tr><td><a href='../proc/singularvaluedecomposition.html'>SingularValueDecomposition</a></td><td><a href='../module/eigensolversmodule.html'>EigenSolversModule</a></td><td>Subroutine</td><td><p>Compute the singular values and singular vectors of a matrix.</p></td></tr>
-			 
 			   <tr><td><a href='../interface/solverparameters_t.html'>SolverParameters_t</a></td><td><a href='../module/solverparametersmodule.html'>SolverParametersModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../interface/sortdensetripletlist.html'>SortDenseTripletList</a></td><td><a href='../module/tripletlistmodule.html'>TripletListModule</a></td><td>Interface</td><td></td></tr>
@@ -605,8 +586,6 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/splitprocessgrid.html'>SplitProcessGrid</a></td><td><a href='../module/processgridmodule.html'>ProcessGridModule</a></td><td>Subroutine</td><td><p>Given a process grid, this splits it into two grids of even size</p></td></tr>
 			 
-			   <tr><td><a href='../proc/splittingeigendecomposition.html'>SplittingEigenDecomposition</a></td><td><a href='../module/eigensolversmodule.html'>EigenSolversModule</a></td><td>Subroutine</td><td><p>Compute the eigenvalues and eigenvectors of a matrix.</p></td></tr>
-			 
 			   <tr><td><a href='../proc/squareroot.html'>SquareRoot</a></td><td><a href='../module/squarerootsolversmodule.html'>SquareRootSolversModule</a></td><td>Subroutine</td><td><p>Compute the square root of a matrix.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/starttimer.html'>StartTimer</a></td><td><a href='../module/timermodule.html'>TimerModule</a></td><td>Subroutine</td><td><p>Start the clock running for a given timer.</p></td></tr>
@@ -625,8 +604,6 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../proc/testreduceinnerrequest.html'>TestReduceInnerRequest</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Function</td><td><p>Test if a request for the inner indices of the matrices is complete.</p></td></tr>
 			 
-			   <tr><td><a href='../proc/testreduceouterrequest.html'>TestReduceOuterRequest</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Function</td><td><p>Test if a request for the outer indices of the matrices is complete.</p></td></tr>
-			 
 			   <tr><td><a href='../proc/testreducesizerequest.html'>TestReduceSizeRequest</a></td><td><a href='../module/matrixreducemodule.html'>MatrixReduceModule</a></td><td>Function</td><td><p>Test if a request for the size of the matrices is complete.</p></td></tr>
 			 
 			   <tr><td><a href='../interface/transposematrix.html'>TransposeMatrix</a></td><td><a href='../module/smatrixmodule.html'>SMatrixModule</a></td><td>Interface</td><td></td></tr>
@@ -639,15 +616,11 @@ All Procedures &ndash; NTPoly
 			 
 			   <tr><td><a href='../interface/tripletlist_r.html'>TripletList_r</a></td><td><a href='../module/tripletlistmodule.html'>TripletListModule</a></td><td>Interface</td><td></td></tr>
 			 
-			   <tr><td><a href='../proc/trs2.html'>TRS2</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the TRS2 method.
- Based on the TRS2 algorithm presented in \cite niklasson2002</p></td></tr>
+			   <tr><td><a href='../proc/trs2.html'>TRS2</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the TRS2 method.</p></td></tr>
 			 
-			   <tr><td><a href='../proc/trs4.html'>TRS4</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the TRS4 method.
- Based on the TRS4 algorithm presented in \cite niklasson2002</p></td></tr>
+			   <tr><td><a href='../proc/trs4.html'>TRS4</a></td><td><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></td><td>Subroutine</td><td><p>Compute the density matrix from a Hamiltonian using the TRS4 method.</p></td></tr>
 			 
 			   <tr><td><a href='../proc/undopermutematrix.html'>UndoPermuteMatrix</a></td><td><a href='../module/loadbalancermodule.html'>LoadBalancerModule</a></td><td>Subroutine</td><td><p>Undo a permutation applied to a matrix.</p></td></tr>
-			 
-			   <tr><td><a href='../interface/unpackcholesky.html'>UnpackCholesky</a></td><td><a href='../module/choleskymodule.html'>CholeskyModule</a></td><td>Interface</td><td></td></tr>
 			 
 			   <tr><td><a href='../proc/writecitation.html'>WriteCitation</a></td><td><a href='../module/loggingmodule.html'>LoggingModule</a></td><td>Subroutine</td><td><p>Write out a citation element.</p></td></tr>
 			 

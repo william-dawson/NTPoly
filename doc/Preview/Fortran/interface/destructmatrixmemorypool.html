@@ -128,21 +128,21 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 12 statements,  0.3% of total for procedures.">4 statements</a>
+    title="<p> 0.1% of total for procedures.</p>Including implementation: 23 statements,  0.6% of total for procedures.">3 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/MatrixMemoryPoolModule.F90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/PMatrixMemoryPoolModule.F90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/matrixmemorypoolmodule.f90.html'>MatrixMemoryPoolModule.F90</a></li>
+     <li><a href='../sourcefile/pmatrixmemorypoolmodule.f90.html'>PMatrixMemoryPoolModule.F90</a></li>
     
-     <li><a href='../module/matrixmemorypoolmodule.html'>MatrixMemoryPoolModule</a></li>
+     <li><a href='../module/pmatrixmemorypoolmodule.html'>PMatrixMemoryPoolModule</a></li>
     
   
      <li class="active">DestructMatrixMemoryPool</li>
@@ -190,9 +190,7 @@
   <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/destructmatrixmemorypool.html#moduleprocedure-destructmatrixmemorypool_lr">DestructMatrixMemoryPool_lr</a>
-      
-      <a class="list-group-item" href="../interface/destructmatrixmemorypool.html#moduleprocedure-destructmatrixmemorypool_lc">DestructMatrixMemoryPool_lc</a>
+      <a class="list-group-item" href="../interface/destructmatrixmemorypool.html#moduleprocedure-destructmatrixmemorypool_p">DestructMatrixMemoryPool_p</a>
       
     </div>
   </div>
@@ -241,9 +239,7 @@
   <div id="modprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/destructmatrixmemorypool.html#moduleprocedure-destructmatrixmemorypool_lr">DestructMatrixMemoryPool_lr</a>
-      
-      <a class="list-group-item" href="../interface/destructmatrixmemorypool.html#moduleprocedure-destructmatrixmemorypool_lc">DestructMatrixMemoryPool_lc</a>
+      <a class="list-group-item" href="../interface/destructmatrixmemorypool.html#moduleprocedure-destructmatrixmemorypool_p">DestructMatrixMemoryPool_p</a>
       
     </div>
   </div>
@@ -264,8 +260,8 @@
    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-destructmatrixmemorypool_lr"></span><h3>
-private subroutine DestructMatrixMemoryPool_lr(this)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-destructmatrixmemorypool_p"></span><h3>
+private subroutine DestructMatrixMemoryPool_p(this)
     
     
    
@@ -276,7 +272,7 @@ private subroutine DestructMatrixMemoryPool_lr(this)
 
 
 
-<p>A destructor for a matrix memory pool</p>
+<p>Destruct a Distributed Matrix Memory Pool object.</p>
     
     <h4>Arguments</h4>
     
@@ -297,67 +293,12 @@ private subroutine DestructMatrixMemoryPool_lr(this)
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/matrixmemorypool_lr.html'>MatrixMemoryPool_lr</a>),</td>
+  <td><span class="anchor" ></span>type(<a href='../type/matrixmemorypool_p.html'>MatrixMemoryPool_p</a>),</td>
   <td>intent(inout)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>this</strong></td><td><p>The matrix being destructed.</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-   
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-destructmatrixmemorypool_lc"></span><h3>
-private subroutine DestructMatrixMemoryPool_lc(this)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-<p>A destructor for a matrix memory pool</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrixmemorypool_lc.html'>MatrixMemoryPool_lc</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>this</strong></td><td><p>The matrix being destructed.</p></td>
+  <td><strong>this</strong></td><td><p>Distributed Matrix Memory Pool object to destroy.</p></td>
   
 </tr>
 

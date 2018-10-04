@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 6.5% of total for modules and submodules.">559 statements</a>
+    title=" 5.9% of total for modules and submodules.">472 statements</a>
      </li> 
      
      
@@ -195,8 +195,6 @@
       <a class="list-group-item" href="../module/dmatrixmodule.html#interface-splitmatrix%7E2">SplitMatrix</a>
       
       <a class="list-group-item" href="../module/dmatrixmodule.html#interface-composematrix%7E2">ComposeMatrix</a>
-      
-      <a class="list-group-item" href="../module/dmatrixmodule.html#interface-eigendecomposition">EigenDecomposition</a>
       
       <a class="list-group-item" href="../module/dmatrixmodule.html#interface-matrixnorm%7E2">MatrixNorm</a>
       
@@ -313,8 +311,6 @@
       <a class="list-group-item" href="../module/dmatrixmodule.html#interface-splitmatrix%7E2">SplitMatrix</a>
       
       <a class="list-group-item" href="../module/dmatrixmodule.html#interface-composematrix%7E2">ComposeMatrix</a>
-      
-      <a class="list-group-item" href="../module/dmatrixmodule.html#interface-eigendecomposition">EigenDecomposition</a>
       
       <a class="list-group-item" href="../module/dmatrixmodule.html#interface-matrixnorm%7E2">MatrixNorm</a>
       
@@ -1788,187 +1784,6 @@ private subroutine ComposeMatrix_ldc(mat_array, block_rows, block_columns, out_m
   
   <td></td><td>::</td>
   <td><strong>out_matrix</strong></td><td><p>The composed matrix.</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-    </li>
-  
-  
-  </ul>
-</div>
-
-    
-     
-<div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="interface-eigendecomposition"></span><h3>public interface <a href='../interface/eigendecomposition.html'>EigenDecomposition</a>
-    
-  </h3></div>
-  
-  <ul class="list-group">
-  
-  
-  
-    <li class="list-group-item">
-    
-    
-    <h3>
-private subroutine EigenDecomposition_ldr(MatA, MatV, MatW)
-    
-    
-   
-</h3>
-    
-
-
-
-<p>Compute the eigenvectors of a dense matrix.
- Wraps a standard dense linear algebra routine.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ldr.html'>Matrix_ldr</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>MatA</strong></td><td><p>MatA the matrix to decompose.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ldr.html'>Matrix_ldr</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>MatV</strong></td><td><p>The eigenvectors.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ldr.html'>Matrix_ldr</a>),</td>
-  <td>intent(inout),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>MatW</strong></td><td><p>The eigenvalues.</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-    </li>
-  
-    <li class="list-group-item">
-    
-    
-    <h3>
-private subroutine EigenDecomposition_ldc(MatA, MatV, MatW)
-    
-    
-   
-</h3>
-    
-
-
-
-<p>Compute the eigenvectors of a dense matrix.
- Wraps a standard dense linear algebra routine.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ldc.html'>Matrix_ldc</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>MatA</strong></td><td><p>The matrix to decompose.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ldc.html'>Matrix_ldc</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>MatV</strong></td><td><p>The eigenvectors.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ldc.html'>Matrix_ldc</a>),</td>
-  <td>intent(inout),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>MatW</strong></td><td><p>The eigenvalues.</p></td>
   
 </tr>
 

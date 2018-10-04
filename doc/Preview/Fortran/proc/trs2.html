@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 3.7% of total for procedures.">134 statements</a>
+    title=" 3.9% of total for procedures.">138 statements</a>
      </li> 
      
      
@@ -195,7 +195,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -205,8 +205,7 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
 
 
     
-    <p>Compute the density matrix from a Hamiltonian using the TRS2 method.
- Based on the TRS2 algorithm presented in \cite niklasson2002</p>
+    <p>Compute the density matrix from a Hamiltonian using the TRS2 method.</p>
     
 
     <h3>Arguments</h3>
@@ -227,7 +226,7 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-hamiltonian"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-hamiltonian%7E2"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -242,7 +241,7 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-inversesquareroot"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-inversesquareroot%7E2"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -257,7 +256,7 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-nel"></span>integer,</td>
+  <td><span class="anchor" id="variable-nel%7E2"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -272,7 +271,7 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-density"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-density%7E2"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -287,7 +286,22 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-chemical_potential_out"></span>real(kind=NTREAL),</td>
+  <td><span class="anchor" id="variable-energy_value_out%7E2"></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>The energy of the system (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-chemical_potential_out%7E2"></span>real(kind=NTREAL),</td>
   <td>intent(out),</td>
   <td>optional</td>
   
@@ -302,12 +316,12 @@ public subroutine TRS2(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-solver_parameters_in%7E6"></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
+  <td><span class="anchor" id="variable-solver_parameters_in%7E7"></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
   <td>intent(in),</td>
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>The parameters for the solver.</p></td>
+  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver (optional).</p></td>
   
 </tr>
 

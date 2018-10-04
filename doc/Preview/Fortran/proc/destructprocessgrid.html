@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.4% of total for procedures.">15 statements</a>
+    title=" 1.2% of total for procedures.">42 statements</a>
      </li> 
      
      
@@ -195,7 +195,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine DestructProcessGrid(grid)
+public subroutine DestructProcessGrid(grid_in)
     
     
    
@@ -226,12 +226,12 @@ public subroutine DestructProcessGrid(grid)
   
 <tr>
   
-  <td><span class="anchor" id="variable-grid%7E6"></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
+  <td><span class="anchor" id="variable-grid_in"></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(inout),</td>
+  <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>grid</strong></td><td><p>The grid to destruct.</p></td>
+  <td><strong>grid_in</strong></td><td><p>The grid to destruct. If none specified this destroys the global grid.</p></td>
   
 </tr>
 

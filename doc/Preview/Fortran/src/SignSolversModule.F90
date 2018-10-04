@@ -14,7 +14,6 @@ MODULE SignSolversModule
        & FillMatrixIdentity, PrintMatrixInformation, TransposeMatrix, &
        & ConjugateMatrix, ConstructEmptyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE MPI
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -118,9 +117,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: OutMatT
     TYPE(MatrixMemoryPool_p) :: pool
     !! Local Data
-    REAL(NTREAL), PARAMETER :: alpha = 1.69770248526
-    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
-    REAL(NTREAL), PARAMETER :: THREE = 3.0
+    REAL(NTREAL), PARAMETER :: alpha = 1.69770248526_NTREAL
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: alpha_k
     REAL(NTREAL) :: xk
@@ -147,7 +144,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Initialize
     CALL GershgorinBounds(Mat,e_min,e_max)
     xk = ABS(e_min/e_max)
-    CALL ScaleMatrix(OutMat,1.0/ABS(e_max))
+    CALL ScaleMatrix(OutMat,1.0_NTREAL/ABS(e_max))
 
     !! Iterate.
     IF (solver_parameters%be_verbose) THEN
@@ -155,18 +152,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     iterate: DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteElement(key="Convergence", float_value_in=norm_value)
           CALL ExitSubLog
        END IF
 
        !! Update Scaling Factors
-       alpha_k = MIN(SQRT(3.0/(1.0+xk+xk**2)), alpha)
-       xk = 0.5*alpha_k*xk*(3.0-(alpha_k**2)*xk**2)
+       alpha_k = MIN(SQRT(3.0_NTREAL/(1.0_NTREAL+xk+xk**2)), alpha)
+       xk = 0.5_NTREAL*alpha_k*xk*(3.0_NTREAL-(alpha_k**2)*xk**2)
 
        IF (needs_transpose) THEN
           CALL TransposeMatrix(OutMat, OutMatT)
@@ -174,20 +171,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL ConjugateMatrix(OutMatT)
           END IF
           CALL MatrixMultiply(OutMatT, OutMat, Temp1, &
-               & alpha_in=-1.0*alpha_k**2, &
+               & alpha_in=-1.0_NTREAL*alpha_k**2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        ELSE
           CALL MatrixMultiply(OutMat, OutMat, Temp1, &
-               & alpha_in=-1.0*alpha_k**2, &
+               & alpha_in=-1.0_NTREAL*alpha_k**2, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        END IF
-       CALL IncrementMatrix(Identity,Temp1,alpha_in=THREE)
+       CALL IncrementMatrix(Identity,Temp1,alpha_in=3.0_NTREAL)
 
-       CALL MatrixMultiply(OutMat, Temp1, Temp2, alpha_in=0.5*alpha_k, &
+       CALL MatrixMultiply(OutMat, Temp1, Temp2, alpha_in=0.5_NTREAL*alpha_k, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
-       CALL IncrementMatrix(Temp2, OutMat, &
-            & alpha_in=NEGATIVE_ONE)
+       CALL IncrementMatrix(Temp2, OutMat, alpha_in=-1.0_NTREAL)
        norm_value = MatrixNorm(OutMat)
        CALL CopyMatrix(Temp2,OutMat)
 

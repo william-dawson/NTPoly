@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.7% of total for modules and submodules.">145 statements</a>
+    title=" 3.5% of total for modules and submodules.">284 statements</a>
      </li> 
      
      
@@ -233,8 +233,6 @@
     
     <li><a href='../module/solverparametersmodule.html'>SolverParametersModule</a></li>
     
-    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
-    
   </ul>
       </li>
       
@@ -313,7 +311,7 @@
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-squareroot"></span><h3>
-public subroutine <a href='../proc/squareroot.html'>SquareRoot</a>(InputMat, OutputMat, solver_parameters_in)
+public subroutine <a href='../proc/squareroot.html'>SquareRoot</a>(InputMat, OutputMat, solver_parameters_in, order_in)
     
     
    
@@ -388,6 +386,21 @@ public subroutine <a href='../proc/squareroot.html'>SquareRoot</a>(InputMat, Out
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>order_in</strong></td><td><p>Order of polynomial for calculation (default 5).</p></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -402,7 +415,7 @@ public subroutine <a href='../proc/squareroot.html'>SquareRoot</a>(InputMat, Out
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-inversesquareroot"></span><h3>
-public subroutine <a href='../proc/inversesquareroot.html'>InverseSquareRoot</a>(InputMat, OutputMat, solver_parameters_in)
+public subroutine <a href='../proc/inversesquareroot.html'>InverseSquareRoot</a>(InputMat, OutputMat, solver_parameters_in, order_in)
     
     
    
@@ -474,6 +487,21 @@ public subroutine <a href='../proc/inversesquareroot.html'>InverseSquareRoot</a>
   
   <td></td><td>::</td>
   <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>order_in</strong></td><td><p>Order of polynomial for calculation (default 5).</p></td>
   
 </tr>
 

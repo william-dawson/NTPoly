@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.1% of total for source files.">10 statements</a>
+    title=" 0.1% of total for source files.">11 statements</a>
      </li> 
      
      
@@ -267,7 +267,7 @@
 <a name="ln-2"></a><span class="c">!&gt; A module to store specifications for basic data types.</span>
 <a name="ln-3"></a><span class="k">MODULE </span><span class="n">DataTypesModule</span>
 <a name="ln-4"></a>  <span class="k">USE </span><span class="nb">ISO_C_BINDING</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="kt">C_DOUBLE</span><span class="p">,</span> <span class="kt">C_DOUBLE_COMPLEX</span>
-<a name="ln-5"></a><span class="kt">  </span><span class="k">USE </span><span class="n">MPI</span>
+<a name="ln-5"></a><span class="kt">  </span><span class="k">USE </span><span class="n">NTMPIModule</span>
 <a name="ln-6"></a>  <span class="k">IMPLICIT NONE</span>
 <a name="ln-7"></a><span class="k">  PRIVATE</span>
 <a name="ln-8"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
@@ -279,8 +279,10 @@
 <a name="ln-14"></a>  <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">PARAMETER</span><span class="p">,</span> <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">NTCOMPLEX</span> <span class="o">=</span> <span class="kt">C_DOUBLE_COMPLEX</span>
 <a name="ln-15"></a>  <span class="c">!&gt; MPI complex datatype with the precision we will use in this program.</span>
 <a name="ln-16"></a>  <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">PARAMETER</span><span class="p">,</span> <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">MPINTCOMPLEX</span> <span class="o">=</span> <span class="n">MPI_DOUBLE_COMPLEX</span>
-<a name="ln-17"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-18"></a><span class="k">END MODULE </span><span class="n">DataTypesModule</span>
+<a name="ln-17"></a>  <span class="c">!&gt; MPI Integer type we will use in this program.</span>
+<a name="ln-18"></a>  <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">PARAMETER</span><span class="p">,</span> <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">MPINTINTEGER</span> <span class="o">=</span> <span class="n">MPI_INT</span>
+<a name="ln-19"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-20"></a><span class="k">END MODULE </span><span class="n">DataTypesModule</span>
 </pre></div>
 
     </section>

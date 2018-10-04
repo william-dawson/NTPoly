@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.7% of total for modules and submodules.">144 statements</a>
+    title=" 1.9% of total for modules and submodules.">154 statements</a>
      </li> 
      
      
@@ -178,11 +178,13 @@
   <div id="inters-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reducematrixsizes">ReduceMatrixSizes</a>
+      <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandcomposematrixsizes">ReduceAndComposeMatrixSizes</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandcomposematrixdata">ReduceAndComposeMatrixData</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandcomposematrixcleanup">ReduceAndComposeMatrixCleanup</a>
+      
+      <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandsummatrixsizes">ReduceAndSumMatrixSizes</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandsummatrixdata">ReduceAndSumMatrixData</a>
       
@@ -214,8 +216,6 @@
     <div class="list-group">
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#proc-testreducesizerequest">TestReduceSizeRequest</a>
-      
-      <a class="list-group-item" href="../module/matrixreducemodule.html#proc-testreduceouterrequest">TestReduceOuterRequest</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#proc-testreduceinnerrequest">TestReduceInnerRequest</a>
       
@@ -259,7 +259,7 @@
     
     <li><a href='../module/smatrixmodule.html'>SMatrixModule</a></li>
     
-    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
+    <li><a href='../module/ntmpimodule.html'>NTMPIModule</a></li>
     
   </ul>
       </li>
@@ -294,11 +294,13 @@
   <div id="inters-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reducematrixsizes">ReduceMatrixSizes</a>
+      <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandcomposematrixsizes">ReduceAndComposeMatrixSizes</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandcomposematrixdata">ReduceAndComposeMatrixData</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandcomposematrixcleanup">ReduceAndComposeMatrixCleanup</a>
+      
+      <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandsummatrixsizes">ReduceAndSumMatrixSizes</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#interface-reduceandsummatrixdata">ReduceAndSumMatrixData</a>
       
@@ -330,8 +332,6 @@
     <div class="list-group">
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#proc-testreducesizerequest">TestReduceSizeRequest</a>
-      
-      <a class="list-group-item" href="../module/matrixreducemodule.html#proc-testreduceouterrequest">TestReduceOuterRequest</a>
       
       <a class="list-group-item" href="../module/matrixreducemodule.html#proc-testreduceinnerrequest">TestReduceInnerRequest</a>
       
@@ -366,7 +366,7 @@
    
      
 <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="interface-reducematrixsizes"></span><h3>public interface <a href='../interface/reducematrixsizes.html'>ReduceMatrixSizes</a>
+  <div class="panel-heading codesum"><span class="anchor" id="interface-reduceandcomposematrixsizes"></span><h3>public interface <a href='../interface/reduceandcomposematrixsizes.html'>ReduceAndComposeMatrixSizes</a>
     
   </h3></div>
   
@@ -378,7 +378,7 @@
     
     
     <h3>
-private subroutine ReduceMatrixSizes_lsr(matrix, communicator, helper)
+private subroutine ReduceAndComposeMatrixSizes_lsr(matrix, communicator, gathered_matrix, helper)
     
     
    
@@ -438,6 +438,21 @@ private subroutine ReduceMatrixSizes_lsr(matrix, communicator, helper)
   
 <tr>
   
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_lsr.html'>Matrix_lsr</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>gathered_matrix</strong></td><td><p>The matrix we are gathering.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
   <td><span class="anchor" ></span>type(<a href='../type/reducehelper_t.html'>ReduceHelper_t</a>),</td>
   <td>intent(inout)</td>
   <td></td>
@@ -460,7 +475,7 @@ private subroutine ReduceMatrixSizes_lsr(matrix, communicator, helper)
     
     
     <h3>
-private subroutine ReduceMatrixSizes_lsc(matrix, communicator, helper)
+private subroutine ReduceAndComposeMatrixSizes_lsc(matrix, communicator, gathered_matrix, helper)
     
     
    
@@ -511,6 +526,21 @@ private subroutine ReduceMatrixSizes_lsc(matrix, communicator, helper)
   
   <td></td><td>::</td>
   <td><strong>communicator</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_lsc.html'>Matrix_lsc</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>gathered_matrix</strong></td><td><p>The matrix we are gathering.</p></td>
   
 </tr>
 
@@ -914,6 +944,215 @@ private subroutine ReduceAndComposeMatrixCleanup_lsc(matrix, gathered_matrix, he
   
   <td></td><td>::</td>
   <td><strong>helper</strong></td><td><p>The helper associated with this gather.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-reduceandsummatrixsizes"></span><h3>public interface <a href='../interface/reduceandsummatrixsizes.html'>ReduceAndSumMatrixSizes</a>
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+  
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine ReduceAndSumMatrixSizes_lsr(matrix, communicator, gathered_matrix, helper)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>The first routine to call, gathers the sizes of the data to be sent.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_lsr.html'>Matrix_lsr</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>matrix</strong></td><td><p>The matrix to send.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>communicator</strong></td><td><p>The communicator to send along.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_lsr.html'>Matrix_lsr</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>gathered_matrix</strong></td><td><p>The matrix we are gathering.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/reducehelper_t.html'>ReduceHelper_t</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>helper</strong></td><td><p>The  helper associated with this gather.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine ReduceAndSumMatrixSizes_lsc(matrix, communicator, gathered_matrix, helper)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>The first routine to call, gathers the sizes of the data to be sent.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_lsc.html'>Matrix_lsc</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>matrix</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>communicator</strong></td><td></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/matrix_lsc.html'>Matrix_lsc</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>gathered_matrix</strong></td><td><p>The matrix we are gathering.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/reducehelper_t.html'>ReduceHelper_t</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>helper</strong></td><td></td>
   
 </tr>
 
@@ -1401,53 +1640,11 @@ private subroutine ReduceAndSumMatrixCleanup_lsc(matrix, gathered_matrix, thresh
   
 <tr>
   
-  <td><span class="anchor" id="variable-size_request"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>size_request</strong></td><td></td><td></td><td><p>A request object for gathering the sizes.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-size_status"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>size_status</strong>(MPI_STATUS_SIZE)</td><td></td><td></td><td><p>A status object for gathering the sizes.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
   <td><span class="anchor" id="variable-outer_request"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>outer_request</strong></td><td></td><td></td><td><p>A request object for gathering outer indices.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-outer_status"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>outer_status</strong>(MPI_STATUS_SIZE)</td><td></td><td></td><td><p>A status object for gathering outer indices.</p></td>
   
 </tr>
 
@@ -1471,39 +1668,11 @@ private subroutine ReduceAndSumMatrixCleanup_lsc(matrix, gathered_matrix, thresh
   
 <tr>
   
-  <td><span class="anchor" id="variable-inner_status"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>inner_status</strong>(MPI_STATUS_SIZE)</td><td></td><td></td><td><p>A status object for gathering inner indices.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
   <td><span class="anchor" id="variable-data_request"></span>integer,</td>
   
   <td>public</td>
   <td></td><td>::</td>
   <td><strong>data_request</strong></td><td></td><td></td><td><p>A request object for gathering data.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" id="variable-data_status"></span>integer,</td>
-  
-  <td>public</td>
-  <td></td><td>::</td>
-  <td><strong>data_status</strong>(MPI_STATUS_SIZE)</td><td></td><td></td><td><p>A status object for gathering data.</p></td>
   
 </tr>
 
@@ -1587,74 +1756,6 @@ public function <a href='../proc/testreducesizerequest.html'>TestReduceSizeReque
 
 
 <p>Test if a request for the size of the matrices is complete.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/reducehelper_t.html'>ReduceHelper_t</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>helper</strong></td><td><p>The gatherer helper structure.</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  
-  
-  
-  
-     <h4>Return Value <small>logical
-  </small></h4>
-  <p>True if the request is finished.</p>
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-testreduceouterrequest"></span><h3>
-public function <a href='../proc/testreduceouterrequest.html'>TestReduceOuterRequest</a>(helper) result(request_completed)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Test if a request for the outer indices of the matrices is complete.</p>
     
     <h4>Arguments</h4>
     

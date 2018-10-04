@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.2% of total for procedures.">154 statements</a>
+    title=" 4.4% of total for procedures.">157 statements</a>
      </li> 
      
      
@@ -195,7 +195,7 @@
     
     <div class="col-md-9" id='text'>
     <h2>
-public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_potential_out, solver_parameters_in)
+public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, energy_value_out, chemical_potential_out, solver_parameters_in)
     
     
    
@@ -205,8 +205,7 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
 
 
     
-    <p>Compute the density matrix from a Hamiltonian using the HPCP method.
- Based on the algorithm presented in \cite truflandier2016communication</p>
+    <p>Compute the density matrix from a Hamiltonian using the HPCP method.</p>
     
 
     <h3>Arguments</h3>
@@ -227,12 +226,12 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-hamiltonian%7E3"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-hamiltonian%7E4"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from</p></td>
+  <td><strong>Hamiltonian</strong></td><td><p>The matrix to compute the corresponding density from.</p></td>
   
 </tr>
 
@@ -242,7 +241,7 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-inversesquareroot%7E3"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-inversesquareroot%7E4"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -257,7 +256,7 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-nel%7E3"></span>integer,</td>
+  <td><span class="anchor" id="variable-nel%7E4"></span>integer,</td>
   <td>intent(in)</td>
   <td></td>
   
@@ -272,7 +271,7 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-density%7E3"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
+  <td><span class="anchor" id="variable-density%7E4"></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
   <td>intent(inout)</td>
   <td></td>
   
@@ -287,7 +286,22 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-chemical_potential_out%7E3"></span>real(kind=NTREAL),</td>
+  <td><span class="anchor" id="variable-energy_value_out%7E4"></span>real(kind=NTREAL),</td>
+  <td>intent(out),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>energy_value_out</strong></td><td><p>The energy of the system (optional).</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-chemical_potential_out%7E4"></span>real(kind=NTREAL),</td>
   <td>intent(out),</td>
   <td>optional</td>
   
@@ -302,12 +316,12 @@ public subroutine HPCP(Hamiltonian, InverseSquareRoot, nel, Density, chemical_po
   
 <tr>
   
-  <td><span class="anchor" id="variable-solver_parameters_in%7E8"></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
+  <td><span class="anchor" id="variable-solver_parameters_in%7E9"></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
   <td>intent(in),</td>
   <td>optional</td>
   
   <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>The parameters for the solver.</p></td>
+  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver (optional).</p></td>
   
 </tr>
 

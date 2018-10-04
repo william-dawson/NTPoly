@@ -14,7 +14,7 @@ MODULE EigenBoundsModule
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_r
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -43,11 +43,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (this%is_complex) THEN
 #define triplet_list triplet_list_c
-#include "SolverSupport/includes/GershgorinBounds.f90"
+#include "solver_includes/GershgorinBounds.f90"
 #undef triplet_list
     ELSE
 #define triplet_list triplet_list_r
-#include "SolverSupport/includes/GershgorinBounds.f90"
+#include "solver_includes/GershgorinBounds.f90"
 #undef triplet_list
     END IF
   END SUBROUTINE GershgorinBounds
@@ -95,7 +95,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (this%process_grid%global_rank .EQ. 0) THEN
        temp_triplet%index_row = 1
        temp_triplet%index_column = 1
-       temp_triplet%point_value = 1.0
+       temp_triplet%point_value = 1.0_NTREAL
        CALL AppendToTripletList(temp_list,temp_triplet)
     END IF
     CALL FillMatrixFromTripletList(vector,temp_list)
@@ -106,12 +106,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteElement(key="Convergence", float_value_in=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -123,7 +123,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(vector2,scale_value)
 
        !! Check if Converged
-       CALL IncrementMatrix(vector2,vector,REAL(-1.0,NTREAL))
+       CALL IncrementMatrix(vector2,vector,-1.0_NTREAL)
        norm_value = MatrixNorm(vector)
 
        CALL CopyMatrix(vector2,vector)
