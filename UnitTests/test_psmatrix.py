@@ -121,6 +121,24 @@ class TestPSMatrix(unittest.TestCase):
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
 
+    def test_grid(self):
+        '''Test the simplified process grid interface'''
+        self.assertEqual(self.process_rows, nt.GetGlobalNumRows())
+        self.assertEqual(self.process_columns, nt.GetGlobalNumColumns())
+        self.assertEqual(self.process_slices, nt.GetGlobalNumSlices())
+
+        self.assertEqual(self.process_rows, self.grid.GetNumRows())
+        self.assertEqual(self.process_columns, self.grid.GetNumColumns())
+        self.assertEqual(self.process_slices, self.grid.GetNumSlices())
+
+        total_procs = self.process_rows * self.process_columns * \
+            self.process_slices
+        new_grid = nt.ProcessGrid(self.process_slices)
+        new_total_procs = new_grid.GetNumRows() * new_grid.GetNumColumns() * \
+            new_grid.GetNumSlices()
+        self.assertEqual(total_procs, new_total_procs)
+        del new_grid
+
     def test_read(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
