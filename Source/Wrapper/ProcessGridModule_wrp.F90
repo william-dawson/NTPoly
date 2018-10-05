@@ -15,16 +15,24 @@ MODULE ProcessGridModule_wrp
   END TYPE ProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructGlobalProcessGrid_wrp
+  PUBLIC :: ConstructGlobalProcessGridabr_wrp
   PUBLIC :: GetGlobalMySlice_wrp
   PUBLIC :: GetGlobalMyColumn_wrp
   PUBLIC :: GetGlobalMyRow_wrp
+  PUBLIC :: GetGlobalNumSlices_wrp
+  PUBLIC :: GetGlobalNumColumns_wrp
+  PUBLIC :: GetGlobalNumRows_wrp
   PUBLIC :: DestructGlobalProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid_wrp
+  PUBLIC :: ConstructProcessGridabr_wrp
   PUBLIC :: CopyProcessGrid_wrp
   PUBLIC :: GetMySlice_wrp
   PUBLIC :: GetMyColumn_wrp
   PUBLIC :: GetMyRow_wrp
+  PUBLIC :: GetNumSlices_wrp
+  PUBLIC :: GetNumColumns_wrp
+  PUBLIC :: GetNumRows_wrp
   PUBLIC :: DestructProcessGrid_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
@@ -39,6 +47,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructProcessGrid(world_comm_, process_rows_, process_columns_, &
          & process_slices_, be_verbose)
   END SUBROUTINE ConstructGlobalProcessGrid_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the process grid construction routine.
+  SUBROUTINE ConstructGlobalProcessGridabr_wrp(world_comm_, process_slices_, &
+       & be_verbose) bind(c,name="ConstructGlobalProcessGridabr_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    INTEGER(kind=c_int), INTENT(IN) :: process_slices_
+    LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
+    CALL ConstructProcessGrid(world_comm_, process_slices_, be_verbose)
+  END SUBROUTINE ConstructGlobalProcessGridabr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.
   FUNCTION GetGlobalMySlice_wrp() RESULT(return_val) &
@@ -62,6 +79,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     return_val = GetMyRow()
   END FUNCTION GetGlobalMyRow_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of process slices.
+  FUNCTION GetGlobalNumSlices_wrp() RESULT(return_val) &
+       & bind(c,name="GetGlobalNumSlices_wrp")
+    !! Parameters
+    INTEGER(kind=c_int) :: return_val
+    return_val = global_grid%num_process_slices
+  END FUNCTION GetGlobalNumSlices_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of process columns.
+  FUNCTION GetGlobalNumColumns_wrp() RESULT(return_val) &
+       & bind(c,name="GetGlobalNumColumns_wrp")
+    !! Parameters
+    INTEGER(kind=c_int) :: return_val
+    return_val = global_grid%num_process_columns
+  END FUNCTION GetGlobalNumColumns_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of process rows.
+  FUNCTION GetGlobalNumRows_wrp() RESULT(return_val) &
+       & bind(c,name="GetGlobalNumRows_wrp")
+    !! Parameters
+    INTEGER(kind=c_int) :: return_val
+    return_val = global_grid%num_process_rows
+  END FUNCTION GetGlobalNumRows_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
   SUBROUTINE DestructGlobalProcessGrid_wrp() &
        & bind(c,name="DestructGlobalProcessGrid_wrp")
@@ -70,14 +111,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a process grid.
   SUBROUTINE ConstructProcessGrid_wrp(ih_grid, world_comm_, process_rows_, &
-       & process_columns_, process_slices_, be_verbose) &
+       & process_columns_, process_slices_) &
        & bind(c,name="ConstructProcessGrid_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_grid(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     INTEGER(kind=c_int), INTENT(IN) :: process_rows_
     INTEGER(kind=c_int), INTENT(IN) :: process_columns_
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
-    LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
     TYPE(ProcessGrid_wrp) :: h_grid
 
     ALLOCATE(h_grid%data)
@@ -85,6 +125,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & process_columns_, process_slices_)
     ih_grid = TRANSFER(h_grid,ih_grid)
   END SUBROUTINE ConstructProcessGrid_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a process grid.
+  SUBROUTINE ConstructProcessGridabr_wrp(ih_grid, world_comm_, process_slices_) &
+       & bind(c,name="ConstructProcessGridabr_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_grid(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    INTEGER(kind=c_int), INTENT(IN) :: process_slices_
+    TYPE(ProcessGrid_wrp) :: h_grid
+
+    ALLOCATE(h_grid%data)
+    CALL ConstructNewProcessGrid(h_grid%data, world_comm_, process_slices_)
+    ih_grid = TRANSFER(h_grid,ih_grid)
+  END SUBROUTINE ConstructProcessGridabr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
   SUBROUTINE CopyProcessGrid_wrp(ih_old_grid, ih_new_grid) &
@@ -132,6 +185,39 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     return_val = GetMyRow(h_this%data)
   END FUNCTION GetMyRow_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of slices in this grid.
+  FUNCTION GetNumSlices_wrp(ih_this) RESULT(return_val) &
+       & bind(c,name="GetNumSlices_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int) :: return_val
+    TYPE(ProcessGrid_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    return_val = h_this%data%num_process_slices
+  END FUNCTION GetNumSlices_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of columns in this grid.
+  FUNCTION GetNumColumns_wrp(ih_this) RESULT(return_val) &
+       & bind(c,name="GetNumColumns_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int) :: return_val
+    TYPE(ProcessGrid_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    return_val = h_this%data%num_process_columns
+  END FUNCTION GetNumColumns_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the number of rows in this grid.
+  FUNCTION GetNumRows_wrp(ih_this) RESULT(return_val) &
+       & bind(c,name="GetNumRows_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int) :: return_val
+    TYPE(ProcessGrid_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    return_val = h_this%data%num_process_rows
+  END FUNCTION GetNumRows_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix
   SUBROUTINE DestructProcessGrid_wrp(ih_this) &

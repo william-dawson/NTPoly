@@ -10,19 +10,30 @@ namespace NTPoly {
 
 ////////////////////////////////////////////////////////////////////////////////
 ProcessGrid::ProcessGrid(MPI_Comm world_comm, int process_rows,
-                         int process_columns, int process_slices,
-                         bool be_verbose) {
+                         int process_columns, int process_slices) {
   MPI_Fint temp_comm = MPI_Comm_c2f(world_comm);
   ConstructProcessGrid_wrp(ih_this, &temp_comm, &process_rows, &process_columns,
-                           &process_slices, &be_verbose);
+                           &process_slices);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 ProcessGrid::ProcessGrid(int process_rows, int process_columns,
-                         int process_slices, bool be_verbose) {
+                         int process_slices) {
   MPI_Fint temp_comm = MPI_Comm_c2f(MPI_COMM_WORLD);
   ConstructProcessGrid_wrp(ih_this, &temp_comm, &process_rows, &process_columns,
-                           &process_slices, &be_verbose);
+                           &process_slices);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ProcessGrid::ProcessGrid(MPI_Comm world_comm, int process_slices) {
+  MPI_Fint temp_comm = MPI_Comm_c2f(world_comm);
+  ConstructProcessGridabr_wrp(ih_this, &temp_comm, &process_slices);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+ProcessGrid::ProcessGrid(int process_slices) {
+  MPI_Fint temp_comm = MPI_Comm_c2f(MPI_COMM_WORLD);
+  ConstructProcessGridabr_wrp(ih_this, &temp_comm, &process_slices);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -38,6 +49,15 @@ int ProcessGrid::GetMyColumn() { return GetMyColumn_wrp(ih_this); }
 
 ////////////////////////////////////////////////////////////////////////////////
 int ProcessGrid::GetMyRow() { return GetMyRow_wrp(ih_this); }
+
+////////////////////////////////////////////////////////////////////////////////
+int ProcessGrid::GetNumSlices() { return GetNumSlices_wrp(ih_this); }
+
+////////////////////////////////////////////////////////////////////////////////
+int ProcessGrid::GetNumColumns() { return GetNumColumns_wrp(ih_this); }
+
+////////////////////////////////////////////////////////////////////////////////
+int ProcessGrid::GetNumRows() { return GetNumRows_wrp(ih_this); }
 
 ////////////////////////////////////////////////////////////////////////////////
 ProcessGrid::~ProcessGrid() { DestructProcessGrid_wrp(ih_this); }
@@ -60,6 +80,19 @@ void ConstructGlobalProcessGrid(int process_rows, int process_columns,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_slices,
+                                bool be_verbose) {
+  MPI_Fint temp_comm = MPI_Comm_c2f(world_comm);
+  ConstructGlobalProcessGridabr_wrp(&temp_comm, &process_slices, &be_verbose);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void ConstructGlobalProcessGrid(int process_slices, bool be_verbose) {
+  MPI_Fint temp_comm = MPI_Comm_c2f(MPI_COMM_WORLD);
+  ConstructGlobalProcessGridabr_wrp(&temp_comm, &process_slices, &be_verbose);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 int GetGlobalMySlice() { return GetGlobalMySlice_wrp(); }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -67,6 +100,15 @@ int GetGlobalMyColumn() { return GetGlobalMyColumn_wrp(); }
 
 ////////////////////////////////////////////////////////////////////////////////
 int GetGlobalMyRow() { return GetGlobalMyRow_wrp(); }
+
+////////////////////////////////////////////////////////////////////////////////
+int GetGlobalNumSlices() { return GetGlobalNumSlices_wrp(); }
+
+////////////////////////////////////////////////////////////////////////////////
+int GetGlobalNumColumns() { return GetGlobalNumColumns_wrp(); }
+
+////////////////////////////////////////////////////////////////////////////////
+int GetGlobalNumRows() { return GetGlobalNumRows_wrp(); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void DestructGlobalProcessGrid() { DestructGlobalProcessGrid_wrp(); }
