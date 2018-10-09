@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 37 statements,  1.0% of total for procedures.">3 statements</a>
+    title="<p> 0.1% of total for procedures.</p>Including implementation: 49 statements,  1.3% of total for procedures.">3 statements</a>
      </li> 
      
      
@@ -261,7 +261,7 @@
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-solverparameters_init"></span><h3>
-private pure function SolverParameters_init(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in) result(this)
+private pure function SolverParameters_init(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in, dac_base_size_in, dac_base_sparsity_in) result(this)
     
     
    
@@ -360,6 +360,36 @@ private pure function SolverParameters_init(converge_diff_in, threshold_in, max_
   
   <td></td><td>::</td>
   <td><strong>BalancePermutation_in</strong></td><td><p>For load balancing</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>dac_base_size_in</strong></td><td><p>Base size for the divided and conquer solvers.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>dac_base_sparsity_in</strong></td><td><p>Base sparsity for the divide and conquer solvers.</p></td>
   
 </tr>
 

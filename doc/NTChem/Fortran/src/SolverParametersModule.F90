@@ -22,6 +22,10 @@ MODULE SolverParametersModule
      LOGICAL :: do_load_balancing
      !> The permutation used for load balancing.
      TYPE(Permutation_t) :: BalancePermutation
+     !> For the divide and conquer solvers when to switch to a dense solver.
+     INTEGER :: dac_base_size
+     !> For the divide and conquer solvers when to switch to a dense solver.
+     REAL(NTREAL) :: dac_base_sparsity
   END TYPE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SolverParameters_t
@@ -33,6 +37,8 @@ MODULE SolverParametersModule
   PUBLIC :: SetParametersThreshold
   PUBLIC :: SetParametersBeVerbose
   PUBLIC :: SetParametersLoadBalance
+  PUBLIC :: SetParametersDACBaseSize
+  PUBLIC :: SetParametersDACBaseSparsity
   PUBLIC :: PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default convergence difference.
@@ -42,7 +48,8 @@ MODULE SolverParametersModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a data type which stores iterative solver parameters.
   PURE FUNCTION SolverParameters_init(converge_diff_in, threshold_in, &
-       & max_iterations_in, be_verbose_in, BalancePermutation_in) RESULT(this)
+       & max_iterations_in, be_verbose_in, BalancePermutation_in, &
+       & dac_base_size_in, dac_base_sparsity_in) RESULT(this)
     !> Converge_diff_in the difference between iterations to consider
     !> a calculation converged.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: converge_diff_in
@@ -52,6 +59,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN), OPTIONAL :: max_iterations_in
     !> Whether to print during the calculation (default = False)
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
+    !> Base size for the divided and conquer solvers.
+    INTEGER, INTENT(IN), OPTIONAL :: dac_base_size_in
+    !> Base sparsity for the divide and conquer solvers.
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: dac_base_sparsity_in
     !> For load balancing
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
     TYPE(SolverParameters_t) :: this
@@ -82,6 +93,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        this%do_load_balancing = .TRUE.
        this%BalancePermutation = BalancePermutation_in
+    END IF
+    IF (.NOT. PRESENT(dac_base_size_in)) THEN
+       this%dac_base_size = 2
+    ELSE
+       this%dac_base_size = dac_base_size_in
+    END IF
+    IF (.NOT. PRESENT(dac_base_sparsity_in)) THEN
+       this%dac_base_sparsity = 1
+    ELSE
+       this%dac_base_sparsity = dac_base_sparsity_in
     END IF
   END FUNCTION SolverParameters_init
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -136,6 +157,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%BalancePermutation = new_value
   END SUBROUTINE SetParametersLoadBalance
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the divide and conquer base size.
+  PURE SUBROUTINE SetParametersDACBaseSize(this,new_value)
+    !> The parameter object.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
+    INTEGER, INTENT(IN) :: new_value
+
+    this%dac_base_size = new_value
+  END SUBROUTINE SetParametersDACBaseSize
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the divide and conquer base sparsity.
+  PURE SUBROUTINE SetParametersDACBaseSparsity(this,new_value)
+    !> The parameter object.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
+    REAL(NTREAL), INTENT(IN) :: new_value
+
+    this%dac_base_sparsity = new_value
+  END SUBROUTINE SetParametersDACBaseSparsity
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the iterative solver parameter values.
   SUBROUTINE PrintParameters(this)
     !> The parameter object.
@@ -146,12 +187,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteElement(key="be_verbose",bool_value_in=this%be_verbose)
     CALL WriteElement(key="do_load_balancing", &
          & bool_value_in=this%do_load_balancing)
-    CALL WriteElement(key="converge_diff", &
-         & float_value_in=this%converge_diff)
-    CALL WriteElement(key="threshold", &
-         & float_value_in=this%threshold)
-    CALL WriteElement(key="max_iterations", &
-         & int_value_in=this%max_iterations)
+    CALL WriteElement(key="converge_diff", float_value_in=this%converge_diff)
+    CALL WriteElement(key="threshold", float_value_in=this%threshold)
+    CALL WriteElement(key="max_iterations", int_value_in=this%max_iterations)
+    CALL WriteElement(key="DAC Base Size", int_value_in=this%dac_base_size)
+    CALL WriteElement(key="DAC Base Sparsity", &
+         & float_value_in=this%dac_base_sparsity)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

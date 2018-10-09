@@ -83,6 +83,9 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_eigen_bounds.html">EigenBounds</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for computing eigen bounds matrices.  <a href="class_n_t_poly_1_1_eigen_bounds.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_eigen_solvers.html">EigenSolvers</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for computing the eigen and singular value decomposition.  <a href="class_n_t_poly_1_1_eigen_solvers.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_exponential_solvers.html">ExponentialSolvers</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A Module For Computing General Matrix Exponentials.  <a href="class_n_t_poly_1_1_exponential_solvers.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -112,9 +115,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix_memory_pool__c.html">MatrixMemoryPool_c</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix_memory_pool__r.html">MatrixMemoryPool_r</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_minimizer_solvers.html">MinimizerSolvers</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A class for computing the density matrix based on minimization methods.  <a href="class_n_t_poly_1_1_minimizer_solvers.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_permutation.html">Permutation</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">A data structure for storing permutations.  <a href="class_n_t_poly_1_1_permutation.html#details">More...</a><br /></td></tr>
@@ -160,6 +160,10 @@ Functions</h2></td></tr>
 <tr class="separator:a8759b0f580c164e2c3670b9cb40551a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef8132dfcbcd462551987ee22c3db107"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#aef8132dfcbcd462551987ee22c3db107">ConstructGlobalProcessGrid</a> (int process_rows, int process_columns, int process_slices, bool be_verbose)</td></tr>
 <tr class="separator:aef8132dfcbcd462551987ee22c3db107"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adcf6bfb76c29ff85515f59b47a068ce1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#adcf6bfb76c29ff85515f59b47a068ce1">ConstructGlobalProcessGrid</a> (MPI_Comm world_comm, int process_slices, bool be_verbose)</td></tr>
+<tr class="separator:adcf6bfb76c29ff85515f59b47a068ce1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7aee2f8fefeb7175555c2d813558d318"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#a7aee2f8fefeb7175555c2d813558d318">ConstructGlobalProcessGrid</a> (int process_slices, bool be_verbose)</td></tr>
+<tr class="separator:a7aee2f8fefeb7175555c2d813558d318"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75b56d6baeb98bf476b5b3bd7b50c1e4"><td class="memItemLeft" align="right" valign="top"><a id="a75b56d6baeb98bf476b5b3bd7b50c1e4"></a>
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#a75b56d6baeb98bf476b5b3bd7b50c1e4">GetGlobalMySlice</a> ()</td></tr>
 <tr class="memdesc:a75b56d6baeb98bf476b5b3bd7b50c1e4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the slice of the current process. <br /></td></tr>
@@ -172,6 +176,18 @@ int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="names
 int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#a365063c24423c7432217c7b8597a00e8">GetGlobalMyRow</a> ()</td></tr>
 <tr class="memdesc:a365063c24423c7432217c7b8597a00e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the row of the current process. <br /></td></tr>
 <tr class="separator:a365063c24423c7432217c7b8597a00e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad31e81a4bede97969cfd6f0b1df39995"><td class="memItemLeft" align="right" valign="top"><a id="ad31e81a4bede97969cfd6f0b1df39995"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#ad31e81a4bede97969cfd6f0b1df39995">GetGlobalNumSlices</a> ()</td></tr>
+<tr class="memdesc:ad31e81a4bede97969cfd6f0b1df39995"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of process slices. <br /></td></tr>
+<tr class="separator:ad31e81a4bede97969cfd6f0b1df39995"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a98cfa938a7588806f2ed3da25fdc6792"><td class="memItemLeft" align="right" valign="top"><a id="a98cfa938a7588806f2ed3da25fdc6792"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#a98cfa938a7588806f2ed3da25fdc6792">GetGlobalNumColumns</a> ()</td></tr>
+<tr class="memdesc:a98cfa938a7588806f2ed3da25fdc6792"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of process columns. <br /></td></tr>
+<tr class="separator:a98cfa938a7588806f2ed3da25fdc6792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef71c69ed71051bca4768f7b1d37f369"><td class="memItemLeft" align="right" valign="top"><a id="aef71c69ed71051bca4768f7b1d37f369"></a>
+int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#aef71c69ed71051bca4768f7b1d37f369">GetGlobalNumRows</a> ()</td></tr>
+<tr class="memdesc:aef71c69ed71051bca4768f7b1d37f369"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of process rows. <br /></td></tr>
+<tr class="separator:aef71c69ed71051bca4768f7b1d37f369"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a22f0820f010474d035474b4c87bfce8a"><td class="memItemLeft" align="right" valign="top"><a id="a22f0820f010474d035474b4c87bfce8a"></a>
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespace_n_t_poly.html#a22f0820f010474d035474b4c87bfce8a">DestructGlobalProcessGrid</a> ()</td></tr>
 <tr class="memdesc:a22f0820f010474d035474b4c87bfce8a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Standard destructor. <br /></td></tr>
@@ -182,7 +198,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 <p>A class to wrap up triplets of values. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a8759b0f580c164e2c3670b9cb40551a9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8759b0f580c164e2c3670b9cb40551a9">&#9670;&nbsp;</a></span>ConstructGlobalProcessGrid() <span class="overload">[1/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#a8759b0f580c164e2c3670b9cb40551a9">&#9670;&nbsp;</a></span>ConstructGlobalProcessGrid() <span class="overload">[1/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -238,7 +254,7 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
 </div>
 </div>
 <a id="aef8132dfcbcd462551987ee22c3db107"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aef8132dfcbcd462551987ee22c3db107">&#9670;&nbsp;</a></span>ConstructGlobalProcessGrid() <span class="overload">[2/2]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#aef8132dfcbcd462551987ee22c3db107">&#9670;&nbsp;</a></span>ConstructGlobalProcessGrid() <span class="overload">[2/4]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -278,6 +294,83 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="name
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">process_rows</td><td>number of grid rows. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">process_columns</td><td>number of grid columns. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">process_slices</td><td>number of grid slices. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">be_verbose</td><td>verbosity flag. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="adcf6bfb76c29ff85515f59b47a068ce1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adcf6bfb76c29ff85515f59b47a068ce1">&#9670;&nbsp;</a></span>ConstructGlobalProcessGrid() <span class="overload">[3/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::ConstructGlobalProcessGrid </td>
+          <td>(</td>
+          <td class="paramtype">MPI_Comm&#160;</td>
+          <td class="paramname"><em>world_comm</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>process_slices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>be_verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Construct the global process grid. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">world_comm</td><td>a communicator that every process in the grid is a part of. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">process_slices</td><td>number of grid slices. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">be_verbose</td><td>verbosity flag. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7aee2f8fefeb7175555c2d813558d318"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7aee2f8fefeb7175555c2d813558d318">&#9670;&nbsp;</a></span>ConstructGlobalProcessGrid() <span class="overload">[4/4]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::ConstructGlobalProcessGrid </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>process_slices</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>be_verbose</em> = <code>false</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Construct the global process grid from comm world </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">process_slices</td><td>number of grid slices. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">be_verbose</td><td>verbosity flag. </td></tr>
   </table>

@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.6% of total for modules and submodules.">370 statements</a>
+    title=" 4.5% of total for modules and submodules.">392 statements</a>
      </li> 
      
      
@@ -192,6 +192,8 @@
       
       <a class="list-group-item" href="../module/processgridmodule.html#interface-constructprocessgrid">ConstructProcessGrid</a>
       
+      <a class="list-group-item" href="../module/processgridmodule.html#interface-constructnewprocessgrid">ConstructNewProcessGrid</a>
+      
     </div>
   </div>
 </div>
@@ -235,8 +237,6 @@
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
   <div class="list-group">
     <div id="subs-0" class="panel-collapse collapse">
-      
-      <a class="list-group-item" href="../module/processgridmodule.html#proc-constructnewprocessgrid">ConstructNewProcessGrid</a>
       
       <a class="list-group-item" href="../module/processgridmodule.html#proc-copyprocessgrid">CopyProcessGrid</a>
       
@@ -330,6 +330,8 @@
       
       <a class="list-group-item" href="../module/processgridmodule.html#interface-constructprocessgrid">ConstructProcessGrid</a>
       
+      <a class="list-group-item" href="../module/processgridmodule.html#interface-constructnewprocessgrid">ConstructNewProcessGrid</a>
+      
     </div>
   </div>
 </div>
@@ -373,8 +375,6 @@
   <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
   <div class="list-group">
     <div id="subs-1" class="panel-collapse collapse">
-      
-      <a class="list-group-item" href="../module/processgridmodule.html#proc-constructnewprocessgrid">ConstructNewProcessGrid</a>
       
       <a class="list-group-item" href="../module/processgridmodule.html#proc-copyprocessgrid">CopyProcessGrid</a>
       
@@ -632,6 +632,215 @@ private subroutine ConstructProcessGrid_onlyslice(world_comm_, process_slices_in
   
   <td></td><td>::</td>
   <td><strong>be_verbose_in</strong></td><td><p>Set true to print process grid info.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+  
+  </ul>
+</div>
+
+    
+     
+<div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="interface-constructnewprocessgrid"></span><h3>public interface <a href='../interface/constructnewprocessgrid.html'>ConstructNewProcessGrid</a>
+    
+  </h3></div>
+  
+  <ul class="list-group">
+  
+  
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine ConstructNewProcessGrid_full(grid, world_comm_, process_rows_, process_columns_, process_slices_)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Construct a process grid.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>grid</strong></td><td><p>The grid to construct</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=c_int),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>world_comm_</strong></td><td><p>A communicator that every process in the grid is a part of.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=c_int),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>process_rows_</strong></td><td><p>The number of grid rows.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=c_int),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>process_columns_</strong></td><td><p>The number of grid columns.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=c_int),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>process_slices_</strong></td><td><p>The number of grid slices.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine ConstructNewProcessGrid_onlyslice(grid, world_comm_, process_slices)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Setup a process grid specifying only the slices</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>grid</strong></td><td><p>The grid to construct</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=c_int),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>world_comm_</strong></td><td><p>A communicator that every process in the grid is a part of.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer(kind=c_int),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>process_slices</strong></td><td><p>The number of grid slices.</p></td>
   
 </tr>
 
@@ -1357,125 +1566,6 @@ public function <a href='../proc/getmyrow.html'>GetMyRow</a>(grid) result(return
     
     <section>
     <h2>Subroutines</h2>
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-constructnewprocessgrid"></span><h3>
-public subroutine <a href='../proc/constructnewprocessgrid.html'>ConstructNewProcessGrid</a>(grid, world_comm_, process_rows_, process_columns_, process_slices_)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Construct a process grid.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>grid</strong></td><td><p>The grid to construct</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer(kind=c_int),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>world_comm_</strong></td><td><p>A communicator that every process in the grid is a part of.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer(kind=c_int),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>process_rows_</strong></td><td><p>The number of grid rows.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer(kind=c_int),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>process_columns_</strong></td><td><p>The number of grid columns.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer(kind=c_int),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>process_slices_</strong></td><td><p>The number of grid slices.</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
     
     
   <div class="panel panel-default">

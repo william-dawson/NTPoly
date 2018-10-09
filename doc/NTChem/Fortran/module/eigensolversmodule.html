@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 4.9% of total for modules and submodules.">420 statements</a>
+    title=" 1.0% of total for modules and submodules.">86 statements</a>
      </li> 
      
      
@@ -184,10 +184,6 @@
       
       <a class="list-group-item" href="../module/eigensolversmodule.html#proc-referenceeigendecomposition">ReferenceEigenDecomposition</a>
       
-      <a class="list-group-item" href="../module/eigensolversmodule.html#proc-splittingeigendecomposition">SplittingEigenDecomposition</a>
-      
-      <a class="list-group-item" href="../module/eigensolversmodule.html#proc-singularvaluedecomposition">SingularValueDecomposition</a>
-      
     </div>
   </div>
 </div>
@@ -221,8 +217,6 @@
     
     <li><a href='../module/datatypesmodule.html'>DataTypesModule</a></li>
     
-    <li><a href='../module/densitymatrixsolversmodule.html'>DensityMatrixSolversModule</a></li>
-    
     <li><a href='../module/dmatrixmodule.html'>DMatrixModule</a></li>
     
     <li><a href='../module/linearsolversmodule.html'>LinearSolversModule</a></li>
@@ -246,6 +240,8 @@
     <li><a href='../module/tripletlistmodule.html'>TripletListModule</a></li>
     
     <li><a href='../module/tripletmodule.html'>TripletModule</a></li>
+    
+    <li><a href="http://www.mpi-forum.org/docs/mpi-3.1/mpi31-report/node410.htm">mpi</a></li>
     
   </ul>
       </li>
@@ -285,10 +281,6 @@
     <div id="subs-1" class="panel-collapse collapse">
       
       <a class="list-group-item" href="../module/eigensolversmodule.html#proc-referenceeigendecomposition">ReferenceEigenDecomposition</a>
-      
-      <a class="list-group-item" href="../module/eigensolversmodule.html#proc-splittingeigendecomposition">SplittingEigenDecomposition</a>
-      
-      <a class="list-group-item" href="../module/eigensolversmodule.html#proc-singularvaluedecomposition">SingularValueDecomposition</a>
       
     </div>
   </div>
@@ -364,7 +356,7 @@ public subroutine <a href='../proc/referenceeigendecomposition.html'>ReferenceEi
 <tr>
   
   <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
+  <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
@@ -414,244 +406,6 @@ public subroutine <a href='../proc/referenceeigendecomposition.html'>ReferenceEi
   
   <td></td><td>::</td>
   <td><strong>solver_parameters_in</strong></td><td><p>Parameters for computing</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-splittingeigendecomposition"></span><h3>
-public subroutine <a href='../proc/splittingeigendecomposition.html'>SplittingEigenDecomposition</a>(this, eigenvectors, eigenvalues, num_values_in, solver_parameters_in)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Compute the eigenvalues and eigenvectors of a matrix.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>this</strong></td><td><p>The matrix to decompose.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>eigenvectors</strong></td><td><p>A matrix containing the eigenvectors of a matrix.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>eigenvalues</strong></td><td><p>A diagonal matrix containing the eigenvalues.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>integer,</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>num_values_in</strong></td><td><p>The number of eigenvalues to compute</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solve</p></td>
-  
-</tr>
-
-</tbody>
-</table>
-
-      
-    
-    
-
-  </div>
-  </div>
-
-    
-    
-  <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-singularvaluedecomposition"></span><h3>
-public subroutine <a href='../proc/singularvaluedecomposition.html'>SingularValueDecomposition</a>(this, left_vectors, right_vectors, singularvalues, solver_parameters_in)
-    
-    
-   
-</h3></div>
-  <div class="panel-body">
-       
-    
-
-
-
-
-
-
-
-<p>Compute the singular values and singular vectors of a matrix.</p>
-    
-    <h4>Arguments</h4>
-    
-      
-      
-<table class="table table-striped varlist">
-<thead><tr><th>Type</th>
-<th>Intent</th><th>Optional</th>
-<th>Attributes</th><th></th><th>Name</th><th></th></thead>
-
-
-
-<tbody>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(in)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>this</strong></td><td><p>The matrix to decompose.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>left_vectors</strong></td><td><p>A matrix containing the left singular vectors.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>right_vectors</strong></td><td><p>A matrix containing the right singular vectors.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
-  <td></td>
-  
-  <td></td><td>::</td>
-  <td><strong>singularvalues</strong></td><td><p>A diagonal matrix containing the singularvalues.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>solver_parameters_in</strong></td><td><p>Parameters for the solver</p></td>
   
 </tr>
 

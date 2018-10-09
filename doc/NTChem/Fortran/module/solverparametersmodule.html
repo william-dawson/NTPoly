@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.2% of total for modules and submodules.">98 statements</a>
+    title=" 1.4% of total for modules and submodules.">126 statements</a>
      </li> 
      
      
@@ -229,6 +229,10 @@
       <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersbeverbose">SetParametersBeVerbose</a>
       
       <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersloadbalance">SetParametersLoadBalance</a>
+      
+      <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersdacbasesize">SetParametersDACBaseSize</a>
+      
+      <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersdacbasesparsity">SetParametersDACBaseSparsity</a>
       
       <a class="list-group-item" href="../module/solverparametersmodule.html#proc-printparameters">PrintParameters</a>
       
@@ -354,6 +358,10 @@
       
       <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersloadbalance">SetParametersLoadBalance</a>
       
+      <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersdacbasesize">SetParametersDACBaseSize</a>
+      
+      <a class="list-group-item" href="../module/solverparametersmodule.html#proc-setparametersdacbasesparsity">SetParametersDACBaseSparsity</a>
+      
       <a class="list-group-item" href="../module/solverparametersmodule.html#proc-printparameters">PrintParameters</a>
       
     </div>
@@ -442,7 +450,7 @@
     
     
     <h3>
-private pure function SolverParameters_init(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in) result(this)
+private pure function SolverParameters_init(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in, dac_base_size_in, dac_base_sparsity_in) result(this)
     
     
    
@@ -539,6 +547,36 @@ private pure function SolverParameters_init(converge_diff_in, threshold_in, max_
   
   <td></td><td>::</td>
   <td><strong>BalancePermutation_in</strong></td><td><p>For load balancing</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>dac_base_size_in</strong></td><td><p>Base size for the divided and conquer solvers.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>dac_base_sparsity_in</strong></td><td><p>Base sparsity for the divide and conquer solvers.</p></td>
   
 </tr>
 
@@ -681,6 +719,34 @@ private pure function SolverParameters_init(converge_diff_in, threshold_in, max_
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dac_base_size"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>dac_base_size</strong></td><td></td><td></td><td><p>For the divide and conquer solvers when to switch to a dense solver.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dac_base_sparsity"></span>real(kind=NTREAL),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>dac_base_sparsity</strong></td><td></td><td></td><td><p>For the divide and conquer solvers when to switch to a dense solver.</p></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -696,7 +762,7 @@ private pure function SolverParameters_init(converge_diff_in, threshold_in, max_
              
              
              
-             <tr><td>private pure function <strong>SolverParameters_init</strong>(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in)</td><td><p>Construct a data type which stores iterative solver parameters.</p></td></tr>
+             <tr><td>private pure function <strong>SolverParameters_init</strong>(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in, dac_base_size_in, dac_base_sparsity_in)</td><td><p>Construct a data type which stores iterative solver parameters.</p></td></tr>
              
         
        </tbody>
@@ -1069,6 +1135,154 @@ public subroutine <a href='../proc/setparametersloadbalance.html'>SetParametersL
 <tr>
   
   <td><span class="anchor" ></span>type(<a href='../type/permutation_t.html'>Permutation_t</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>new_value</strong></td><td><p>Value to set it to.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setparametersdacbasesize"></span><h3>
+public subroutine <a href='../proc/setparametersdacbasesize.html'>SetParametersDACBaseSize</a>(this, new_value)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Set the value of the divide and conquer base size.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>this</strong></td><td><p>The parameter object.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>new_value</strong></td><td><p>Value to set it to.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+    
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-setparametersdacbasesparsity"></span><h3>
+public subroutine <a href='../proc/setparametersdacbasesparsity.html'>SetParametersDACBaseSparsity</a>(this, new_value)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+
+
+
+
+<p>Set the value of the divide and conquer base sparsity.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/solverparameters_t.html'>SolverParameters_t</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>this</strong></td><td><p>The parameter object.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
   <td>intent(in)</td>
   <td></td>
   

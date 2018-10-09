@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 5.9% of total for derived types.</p>Including implementation: 8 statements,  5.3% of total for derived types.">8 statements</a>
+    title="<p> 6.8% of total for derived types.</p>Including implementation: 10 statements,  6.5% of total for derived types.">10 statements</a>
      </li> 
      
      
@@ -184,6 +184,10 @@
       <a class="list-group-item" href="../type/solverparameters_t.html#variable-do_load_balancing">do_load_balancing</a>
       
       <a class="list-group-item" href="../type/solverparameters_t.html#variable-balancepermutation">BalancePermutation</a>
+      
+      <a class="list-group-item" href="../type/solverparameters_t.html#variable-dac_base_size">dac_base_size</a>
+      
+      <a class="list-group-item" href="../type/solverparameters_t.html#variable-dac_base_sparsity">dac_base_sparsity</a>
       
     </div>
   </div>
@@ -254,6 +258,10 @@
       <a class="list-group-item" href="../type/solverparameters_t.html#variable-do_load_balancing">do_load_balancing</a>
       
       <a class="list-group-item" href="../type/solverparameters_t.html#variable-balancepermutation">BalancePermutation</a>
+      
+      <a class="list-group-item" href="../type/solverparameters_t.html#variable-dac_base_size">dac_base_size</a>
+      
+      <a class="list-group-item" href="../type/solverparameters_t.html#variable-dac_base_sparsity">dac_base_sparsity</a>
       
     </div>
   </div>
@@ -389,6 +397,34 @@
   
 </tr>
 
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dac_base_size"></span>integer,</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>dac_base_size</strong></td><td></td><td></td><td><p>For the divide and conquer solvers when to switch to a dense solver.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" id="variable-dac_base_sparsity"></span>real(kind=NTREAL),</td>
+  
+  <td>public</td>
+  <td></td><td>::</td>
+  <td><strong>dac_base_sparsity</strong></td><td></td><td></td><td><p>For the divide and conquer solvers when to switch to a dense solver.</p></td>
+  
+</tr>
+
 </tbody>
 </table>
 
@@ -414,7 +450,7 @@
     
     
     <h3>
-private pure function SolverParameters_init(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in) result(this)
+private pure function SolverParameters_init(converge_diff_in, threshold_in, max_iterations_in, be_verbose_in, BalancePermutation_in, dac_base_size_in, dac_base_sparsity_in) result(this)
     
     
    
@@ -511,6 +547,36 @@ private pure function SolverParameters_init(converge_diff_in, threshold_in, max_
   
   <td></td><td>::</td>
   <td><strong>BalancePermutation_in</strong></td><td><p>For load balancing</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>dac_base_size_in</strong></td><td><p>Base size for the divided and conquer solvers.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>dac_base_sparsity_in</strong></td><td><p>Base sparsity for the divide and conquer solvers.</p></td>
   
 </tr>
 

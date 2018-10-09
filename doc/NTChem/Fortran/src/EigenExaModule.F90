@@ -226,6 +226,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     DEALLOCATE(send_list)
     CALL DestructTripletList(recv_list)
+    CALL DestructTripletList(triplet_a)
 
   END SUBROUTINE NTToEigen
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -241,7 +242,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Info about the calculation.
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
-    TYPE(TripletList_r) :: triplet_w, triplet_v
+    TYPE(TripletList_r) :: triplet_v
     TYPE(Triplet_r) :: trip
     INTEGER :: row_start, row_end, col_start, col_end
     INTEGER :: II, JJ, ilookup, jlookup
@@ -279,7 +280,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL StopTimer("EigenFill")
 
     !! Cleanup
-    CALL DestructTripletList(triplet_w)
     CALL DestructTripletList(triplet_v)
 
     DEALLOCATE(VD1)

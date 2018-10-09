@@ -3,6 +3,8 @@ var searchData=
   ['scale',['Scale',['../class_n_t_poly_1_1_matrix__ps.html#a30497e612b6076ec14792d227a6f11cb',1,'NTPoly::Matrix_ps::Scale()'],['../class_n_t_poly_1_1_matrix__lsr.html#a52d7630a7a6e299cb18d08d8761ef643',1,'NTPoly::Matrix_lsr::Scale()'],['../class_n_t_poly_1_1_matrix__lsc.html#af29872ec740012d01be2ff5d6ae1e8ef',1,'NTPoly::Matrix_lsc::Scale()']]],
   ['setcoefficient',['SetCoefficient',['../class_n_t_poly_1_1_chebyshev_polynomial.html#aa199d1e74cdb0e7622d7061c2c7a4284',1,'NTPoly::ChebyshevPolynomial::SetCoefficient()'],['../class_n_t_poly_1_1_hermite_polynomial.html#ac06438e3ab676f8937ffd7cc9f265e73',1,'NTPoly::HermitePolynomial::SetCoefficient()'],['../class_n_t_poly_1_1_polynomial.html#a3238979771a2c7b66938d186eef5da42',1,'NTPoly::Polynomial::SetCoefficient()']]],
   ['setconvergediff',['SetConvergeDiff',['../class_n_t_poly_1_1_solver_parameters.html#a9ac26b2eb82a0fb107d73e484b928f7b',1,'NTPoly::SolverParameters']]],
+  ['setdacbasesize',['SetDACBaseSize',['../class_n_t_poly_1_1_solver_parameters.html#a4e164ffeaa563f7f44e5d0ce9a3819ee',1,'NTPoly::SolverParameters']]],
+  ['setdacbasesparsity',['SetDACBaseSparsity',['../class_n_t_poly_1_1_solver_parameters.html#a5c9c0ddcf9467156f684942c42a8f1e4',1,'NTPoly::SolverParameters']]],
   ['setdefaultpermutation',['SetDefaultPermutation',['../class_n_t_poly_1_1_permutation.html#a166a7985f84b99d16204a3b95faf77dc',1,'NTPoly::Permutation']]],
   ['setloadbalance',['SetLoadBalance',['../class_n_t_poly_1_1_solver_parameters.html#a35bb2e59f4987808f0de2a6186cf99c9',1,'NTPoly::SolverParameters']]],
   ['setmaxiterations',['SetMaxIterations',['../class_n_t_poly_1_1_solver_parameters.html#a4899e6d1c68185ba088dc3cf8519a9e4',1,'NTPoly::SolverParameters']]],

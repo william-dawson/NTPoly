@@ -1,10 +1,11 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Helper Routines for Computing The Cholesky Decomposition
 MODULE CholeskyModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, MPINTINTEGER
   USE DMatrixModule, ONLY : Matrix_ldr
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceMatrixSizes, &
-       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
+       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
+       & TestReduceSizeRequest, TestReduceInnerRequest, TestReduceDataRequest
   USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixFromTripletList
   USE ProcessGridModule, ONLY : ProcessGrid_t
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, TransposeMatrix, &
@@ -13,7 +14,7 @@ MODULE CholeskyModule
   USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
        & DestructTripletList
   USE TripletModule, ONLY : Triplet_r
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -66,7 +67,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Value to insert.
     REAL(NTREAL), INTENT(IN) :: insert_value
 
-    INCLUDE "includes/AppendToVector.f90"
+    INCLUDE "solver_includes/AppendToVector.f90"
   END SUBROUTINE AppendToVector_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to broadcast a sparse vector
@@ -84,7 +85,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local
     INTEGER :: err
 
-    INCLUDE "includes/BroadcastVector.f90"
+    INCLUDE "solver_includes/BroadcastVector.f90"
     CALL MPI_Bcast(values(:num_values), num_values, MPINTREAL, root, comm, err)
 
   END SUBROUTINE BroadcastVector_r
@@ -100,7 +101,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Diagonal values computed.
     REAL(NTREAL), DIMENSION(:), INTENT(INOUT) :: diag
 
-    INCLUDE "includes/ConstructDiag.f90"
+    INCLUDE "solver_includes/ConstructDiag.f90"
     CALL MPI_Allgatherv(MPI_IN_PLACE, diags_per_proc(process_grid%my_row+1), &
          & MPINTREAL, diag, diags_per_proc, diag_displ, MPINTREAL, &
          & process_grid%column_comm, ierr)
@@ -121,15 +122,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     cols_per_proc(process_grid%my_column+1) = AMat%local_columns
-    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPI_INTEGER, cols_per_proc, 1, &
-         & MPI_INTEGER, process_grid%row_comm, ierr)
+    CALL MPI_Allgather(MPI_IN_PLACE, 1, MPINTINTEGER, cols_per_proc, 1, &
+         & MPINTINTEGER, process_grid%row_comm, ierr)
     d_cols_per_proc(1) = 0
     DO II = 2, process_grid%num_process_columns
        d_cols_per_proc(II) = d_cols_per_proc(II-1) + cols_per_proc(II-1)
     END DO
     col_root_lookup(AMat%start_column:AMat%end_column - 1) = process_grid%row_rank
-    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
-         & col_root_lookup, cols_per_proc, d_cols_per_proc, MPI_INTEGER, &
+    CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPINTINTEGER, &
+         & col_root_lookup, cols_per_proc, d_cols_per_proc, MPINTINTEGER, &
          & process_grid%row_comm, ierr)
 
   END SUBROUTINE ConstructRankLookup
@@ -155,7 +156,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to reduce along.
     INTEGER, INTENT(INOUT) :: comm
 
-    INCLUDE "includes/DotAllHelper.f90"
+    INCLUDE "solver_includes/DotAllHelper.f90"
 
   END SUBROUTINE DotAllHelper_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -186,7 +187,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to reduce along.
     INTEGER, INTENT(INOUT) :: comm
 
-    INCLUDE "includes/DotAllPivoted.f90"
+    INCLUDE "solver_includes/DotAllPivoted.f90"
 
   END SUBROUTINE DotAllPivoted_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -201,7 +202,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsr) :: local_matrixT
 
-    INCLUDE "includes/GatherMatrixColumn.f90"
+    INCLUDE "solver_includes/GatherMatrixColumn.f90"
   END SUBROUTINE GatherMatrixColumn_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pivot vector.
@@ -229,7 +230,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: temp_diag
     DOUBLE PRECISION, DIMENSION(2) :: max_diag
 
-    INCLUDE "includes/GetPivot.f90"
+    INCLUDE "solver_includes/GetPivot.f90"
 
   END SUBROUTINE GetPivot_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -244,7 +245,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Matrix to unpack into.
     TYPE(Matrix_ps), INTENT(INOUT) :: LMat
 
-    INCLUDE "includes/UnpackCholesky.f90"
+    INCLUDE "solver_includes/UnpackCholesky.f90"
   END SUBROUTINE UnpackCholesky_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE CholeskyModule
