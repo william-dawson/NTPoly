@@ -331,11 +331,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   !> Read \cite boisvert1996matrix for the details.
   RECURSIVE SUBROUTINE ConstructMatrixFromMatrixMarket_ps(this, file_name, &
-       & grid_in)
+       & process_grid_in)
     !> The file being constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> Grid to distribute the matrix on.
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid_in
+    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !> The name of the file to read.
     CHARACTER(len=*), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
@@ -373,13 +373,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
 
-    IF (.NOT. PRESENT(grid_in)) THEN
+    IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromMatrixMarket(this, file_name, global_grid)
     ELSE
        !! Setup Involves Just The Root Opening And Reading Parameter Data
        CALL StartTimer("MPI Read Text")
        bytes_per_character = sizeof(temp_char)
-       IF (IsRoot(grid_in)) THEN
+       IF (IsRoot(process_grid_in)) THEN
           header_length = 0
           local_file_handler = 16
           OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
@@ -410,27 +410,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (ierr .NE. 0) THEN
-          CALL MPI_Abort(grid_in%global_comm, -1, ierr)
+          CALL MPI_Abort(process_grid_in%global_comm, -1, ierr)
        END IF
 
        !! Broadcast Parameters
-       CALL MPI_Bcast(matrix_rows, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(total_values, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(header_length, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(sparsity_type, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(data_type, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(pattern_type, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
+       CALL MPI_Bcast(matrix_rows, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(total_values, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(header_length, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(sparsity_type, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(data_type, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(pattern_type, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
 
        !! Build Local Storage
-       CALL ConstructEmptyMatrix(this, matrix_rows, grid_in, &
+       CALL ConstructEmptyMatrix(this, matrix_rows, process_grid_in, &
             & is_complex_in = (data_type .EQ. MM_COMPLEX))
 
        !! Global read
@@ -550,12 +550,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
   !> Faster than text, so this is good for check pointing.
-  RECURSIVE SUBROUTINE ConstructMatrixFromBinary_ps(this, file_name, grid_in)
+  RECURSIVE SUBROUTINE ConstructMatrixFromBinary_ps(this, file_name, &
+       & process_grid_in)
     !! Parameters
     !> The file being constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> Grid to distribute the matrix on.
-    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid_in
+    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !> The name of the file to read.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
@@ -575,22 +576,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
 
-    IF (.NOT. PRESENT(grid_in)) THEN
+    IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromBinary(this, file_name, global_grid)
     ELSE
        CALL StartTimer("MPI Read Binary")
 
-       CALL MPI_File_open(grid_in%global_comm,file_name,MPI_MODE_RDONLY,&
-            & MPI_INFO_NULL,mpi_file_handler,ierr)
+       CALL MPI_File_open(process_grid_in%global_comm, file_name, &
+            & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
        IF (ierr .NE. 0) THEN
-          IF (IsRoot(grid_in)) THEN
+          IF (IsRoot(process_grid_in)) THEN
              WRITE(*,*) file_name, " doesn't exist"
           END IF
-          CALL MPI_Abort(grid_in%global_comm, -1, ierr)
+          CALL MPI_Abort(process_grid_in%global_comm, -1, ierr)
        END IF
 
        !! Get The Matrix Parameters
-       IF (IsRoot(grid_in)) THEN
+       IF (IsRoot(process_grid_in)) THEN
           local_offset = 0
           CALL MPI_File_read_at(mpi_file_handler, local_offset, &
                & matrix_information, 4, MPINTINTEGER, mpi_status, ierr)
@@ -601,21 +602,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Broadcast Parameters
-       CALL MPI_Bcast(matrix_rows, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(total_values, 1, MPINTINTEGER ,grid_in%RootID, &
-            & grid_in%global_comm, ierr)
-       CALL MPI_Bcast(complex_flag, 1, MPINTINTEGER ,grid_in%RootID, &
-            & grid_in%global_comm, ierr)
+       CALL MPI_Bcast(matrix_rows, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(total_values, 1, MPINTINTEGER ,process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
+       CALL MPI_Bcast(complex_flag, 1, MPINTINTEGER ,process_grid_in%RootID, &
+            & process_grid_in%global_comm, ierr)
 
        !! Build Local Storage
        IF (complex_flag .EQ. 1) THEN
-          CALL ConstructEmptyMatrix(this, matrix_rows, grid_in, &
+          CALL ConstructEmptyMatrix(this, matrix_rows, process_grid_in, &
                & is_complex_in=.TRUE.)
        ELSE
-          CALL ConstructEmptyMatrix(this, matrix_rows, grid_in, &
+          CALL ConstructEmptyMatrix(this, matrix_rows, process_grid_in, &
                & is_complex_in=.FALSE.)
        END IF
 
