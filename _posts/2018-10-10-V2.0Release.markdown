@@ -1,0 +1,15 @@
+---
+layout: post
+title:  "Release of Version 2.0"
+date:   2018-10-10 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.0](/NTPoly/downloads) of NTPoly is now available.
+
+Version 2.0 adds two major features:
+1. Support for complex matrices.
+2. Support for multiple process grids.
+
+In order to support these features, I made significant changes to the user
+interface. Please see the revised examples and documentation.

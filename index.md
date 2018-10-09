@@ -5,4 +5,7 @@
 layout: home
 ---
 
-NTPoly is a massively parallel library for computing the functions of sparse, symmetric matrices based on polynomial expansions. For sufficiently sparse matrices, most of the matrix functions in NTPoly can be computed in linear time.
+NTPoly is a massively parallel library for computing the functions of sparse,
+symmetric matrices based on polynomial expansions. For sufficiently sparse
+matrices, most of the matrix functions in NTPoly can be computed in linear
+time.
