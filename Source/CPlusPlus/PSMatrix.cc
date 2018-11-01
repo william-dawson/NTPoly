@@ -43,10 +43,10 @@ Matrix_ps::Matrix_ps(std::string file_name, const ProcessGrid &grid,
   int string_length = file_name.length();
   if (is_binary) {
     ConstructMatrixFromBinaryPG_ps_wrp(ih_this, &file_name.c_str()[0],
-                                     &string_length, grid.ih_this);
+                                       &string_length, grid.ih_this);
   } else {
     ConstructMatrixFromMatrixMarketPG_ps_wrp(ih_this, &file_name.c_str()[0],
-                                           &string_length, grid.ih_this);
+                                             &string_length, grid.ih_this);
   }
 }
 
@@ -158,6 +158,11 @@ void Matrix_ps::Transpose(const Matrix_ps &matA) {
 
 ////////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::Conjugate() { ConjugateMatrix_ps_wrp(ih_this); }
+
+////////////////////////////////////////////////////////////////////////////////
+void Matrix_ps::Resize(int new_size) {
+  ResizeMatrix_ps_wrp(ih_this, &new_size);
+}
 
 //////////////////////////////////////////////////////////////////////////////
 double Matrix_ps::Dot(const Matrix_ps &matB) {

@@ -115,6 +115,14 @@ public:
   void Conjugate();
 
 public:
+  //! Change the size of a matrix.
+  //! If the new size is smaller, then values outside that range are deleted.
+  //! IF the new size is bigger, zero padding is applied.
+  //! Warning: this requires a full data redistribution.
+  //\param new_size the new size of the matrix.
+  void Resize(int new_size);
+
+public:
   //! this = dot(this,matB)
   //!\param matB the matrix to dot.
   double Dot(const Matrix_ps &matB);

@@ -86,6 +86,7 @@ MODULE PSMatrixModule
   PUBLIC :: TransposeMatrix
   PUBLIC :: ConjugateMatrix
   PUBLIC :: CommSplitMatrix
+  PUBLIC :: ResizeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrix_ps
@@ -1648,5 +1649,48 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "distributed_includes/ConvertMatrixType.f90"
   END SUBROUTINE ConvertMatrixToComplex
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Change the size of a matrix.
+  !! If the new size is smaller, then values outside that range are deleted.
+  !! IF the new size is bigger, zero padding is applied.
+  !! Warning: this requires a full data redistribution.
+  SUBROUTINE ResizeMatrix(this, new_size)
+    !> The matrix to resize.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The new size of the matrix.
+    INTEGER, INTENT(IN) :: new_size
+
+    IF (this%is_complex) THEN
+       CALL ResizeMatrix_psc(this, new_size)
+    ELSE
+       CALL ResizeMatrix_psr(this, new_size)
+    END IF
+  END SUBROUTINE ResizeMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Change the size of a matrix implementation (real).
+  SUBROUTINE ResizeMatrix_psr(this, new_size)
+    !> The matrix to resize.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The new size of the matrix.
+    INTEGER, INTENT(IN) :: new_size
+    !! Local Variables
+    TYPE(TripletList_r) :: tlist, pruned
+    TYPE(Triplet_r) :: temp
+
+    INCLUDE "distributed_includes/ResizeMatrix.f90"
+  END SUBROUTINE ResizeMatrix_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Change the size of a matrix implementation (real).
+  SUBROUTINE ResizeMatrix_psc(this, new_size)
+    !> The matrix to resize.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The new size of the matrix.
+    INTEGER, INTENT(IN) :: new_size
+    !! Local Variables
+    TYPE(TripletList_c) :: tlist, pruned
+    TYPE(Triplet_c) :: temp
+
+    INCLUDE "distributed_includes/ResizeMatrix.f90"
+  END SUBROUTINE ResizeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule
