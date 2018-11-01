@@ -4,7 +4,7 @@ MODULE SolverParametersModule
   USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
-  USE PermutationModule, ONLY : Permutation_t
+  USE PermutationModule, ONLY : Permutation_t, DestructPermutation
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -34,6 +34,7 @@ MODULE SolverParametersModule
   PUBLIC :: SetParametersBeVerbose
   PUBLIC :: SetParametersLoadBalance
   PUBLIC :: PrintParameters
+  PUBLIC :: DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default convergence difference.
   REAL(NTREAL), PARAMETER, PUBLIC :: CONVERGENCE_DIFF_CONST = 1e-6
@@ -154,5 +155,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & int_value_in=this%max_iterations)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Cleanup the solver parameters datastructure.
+  PURE SUBROUTINE DestructSolverParameters(this)
+    !> The parameter object.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
+
+    CALL DestructPermutation(this%BalancePermutation)
+  END SUBROUTINE DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SolverParametersModule
