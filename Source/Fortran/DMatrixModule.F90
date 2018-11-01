@@ -349,10 +349,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     DEALLOCATE(W)
     DEALLOCATE(Work)
-<<<<<<< HEAD
     DEALLOCATE(IWork)
-=======
->>>>>>> e3be2a98b9279585069fc88e71debe812fca6ef6
 
   END SUBROUTINE EigenDecomposition_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
