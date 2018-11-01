@@ -12,7 +12,8 @@ if ( FORD )
   add_custom_target(fdoc "${FORD}" Ford)
   add_dependencies(doc fdoc)
 else()
-  MESSAGE("FORD not found! No fortran documentation will be generated.")
+  MESSAGE(WARNING 
+          "FORD not found! No fortran documentation will be generated.")
 endif()
 
 # C++
@@ -21,6 +22,6 @@ if (NOT FORTRAN_ONLY AND DOXYGEN_FOUND)
                  ${CMAKE_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(cdoc ${DOXYGEN_EXECUTABLE} ${CMAKE_BINARY_DIR}/Doxyfile)
   add_dependencies(doc cdoc)
-elseif(DOXYGEN_FOUND)
-  MESSAGE("Doxygen not found! No documentation will be generated.")
+elseif(NOT DOXYGEN_FOUND)
+  MESSAGE(WARNING "Doxygen not found! No documentation will be generated.")
 endif()

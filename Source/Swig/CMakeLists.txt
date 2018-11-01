@@ -8,7 +8,7 @@ if (SWIG_FOUND)
       COMMAND ${PYTHON_EXECUTABLE} -c
       "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
       OUTPUT_VARIABLE PYTHON_INCLUDE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  MESSAGE("Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
+  MESSAGE(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
   INCLUDE(${SWIG_USE_FILE})
 
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
@@ -34,5 +34,5 @@ if (SWIG_FOUND)
     LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python
   )
 else()
-  MESSAGE("Swig not found! No python bindings will be generated.")
+  MESSAGE(WARNING "Swig not found! No python bindings will be generated.")
 endif()

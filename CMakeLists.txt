@@ -14,7 +14,7 @@ find_package(SWIG 3.0)
 if (NOT FORTRAN_ONLY)
   enable_testing()
 else()
-  MESSAGE("Fortran only! No local testing will be generated.")
+  MESSAGE(WARNING "Fortran only! No local testing will be generated.")
 endif()
 
 ################################################################################
@@ -48,8 +48,8 @@ endif()
 option(NOIALLGATHER OFF)
 if (NOIALLGATHER)
   add_definitions(-DNOIALLGATHER)
-  message("IAllgather replacement activated.")
-  message("Note that this may reduce parallel performance.")
+  MESSAGE(STATUS "IAllgather replacement activated.")
+  MESSAGE(STATUS "Note that this may reduce parallel performance.")
 endif()
 
 ################################################################################
