@@ -6,7 +6,7 @@ MODULE SolverParametersModule_wrp
        & SetParametersConvergeDiff, SetParametersMaxIterations, &
        & SetParametersThreshold, SetParametersBeVerbose, &
        & SetParametersLoadBalance, SetParametersDACBaseSize, &
-       & SetParametersDACBaseSparsity
+       & SetParametersDACBaseSparsity, DestructSolverParameters
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_bool, c_int
@@ -47,6 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
+    CALL DestructSolverParameters(h_this%data)
     DEALLOCATE(h_this%data)
     !ih_this = 0
   END SUBROUTINE DestructSolverParameters_wrp
