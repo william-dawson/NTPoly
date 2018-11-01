@@ -387,7 +387,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConjugateMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix resize function.
-  PURE SUBROUTINE ResizeMatrix_ps_wrp(ih_this, new_size) &
+  SUBROUTINE ResizeMatrix_ps_wrp(ih_this, new_size) &
        & BIND(c,NAME="ResizeMatrix_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(IN) :: new_size
