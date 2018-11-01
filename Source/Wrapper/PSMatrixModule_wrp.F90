@@ -4,7 +4,6 @@ MODULE PSMatrixModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE ProcessGridModule_wrp, ONLY : ProcessGrid_wrp
-  ! USE PSMatrixAlgebraModule
   USE PSMatrixModule
   USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -37,12 +36,13 @@ MODULE PSMatrixModule_wrp
   PUBLIC :: GetMatrixSlice_wrp
   PUBLIC :: TransposeMatrix_ps_wrp
   PUBLIC :: ConjugateMatrix_ps_wrp
+  PUBLIC :: ResizeMatrix_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps_wrp(ih_this,matrix_dim) &
-       & bind(c,name="ConstructEmptyMatrix_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: matrix_dim
+       & BIND(c,NAME="ConstructEmptyMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: matrix_dim
     TYPE(Matrix_ps_wrp) :: h_this
 
     ALLOCATE(h_this%data)
@@ -52,10 +52,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrixPG_ps_wrp(ih_this,matrix_dim,ih_grid) &
-       & bind(c,name="ConstructEmptyMatrixPG_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: matrix_dim
-    INTEGER(kind=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
+       & BIND(c,NAME="ConstructEmptyMatrixPG_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: matrix_dim
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(ProcessGrid_wrp) :: h_grid
 
@@ -67,10 +67,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp(ih_this, file_name, &
-       & name_size) bind(c,name="ConstructMatrixFromMatrixMarket_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(IN) :: name_size
+       & name_size) BIND(c,NAME="ConstructMatrixFromMatrixMarket_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(KIND=c_int), INTENT(IN) :: name_size
     TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -88,11 +88,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
   SUBROUTINE ConstructMatrixFromMatrixMarketPG_ps_wrp(ih_this, file_name, &
        & name_size, ih_grid) &
-       & bind(c,name="ConstructMatrixFromMatrixMarketPG_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(IN) :: name_size
-    INTEGER(kind=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
+       & BIND(c,NAME="ConstructMatrixFromMatrixMarketPG_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
     !! Local Data
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(ProcessGrid_wrp) :: h_grid
@@ -111,10 +111,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
   SUBROUTINE ConstructMatrixFromBinary_ps_wrp(ih_this,file_name,name_size) &
-       & bind(c,name="ConstructMatrixFromBinary_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(IN) :: name_size
+       & BIND(c,NAME="ConstructMatrixFromBinary_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(KIND=c_int), INTENT(IN) :: name_size
     !! Local Data
     TYPE(Matrix_ps_wrp) :: h_this
     CHARACTER(len=name_size) :: local_string
@@ -132,11 +132,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a distributed sparse matrix from a binary file in parallel.
   SUBROUTINE ConstructMatrixFromBinaryPG_ps_wrp(ih_this, file_name, &
        & name_size, ih_grid) &
-       & bind(c,name="ConstructMatrixFromBinaryPG_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(IN) :: name_size
-    INTEGER(kind=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
+       & BIND(c,NAME="ConstructMatrixFromBinaryPG_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
     !! Local Data
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(ProcessGrid_wrp) :: h_grid
@@ -155,9 +155,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a distributed sparse matrix in a safe way.
   SUBROUTINE CopyMatrix_ps_wrp(ih_matA,ih_matB) &
-       & bind(c,name="CopyMatrix_ps_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
+       & BIND(c,NAME="CopyMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_matA
     TYPE(Matrix_ps_wrp) :: h_matB
 
@@ -168,8 +168,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix
   PURE SUBROUTINE DestructMatrix_ps_wrp(ih_this) &
-       & bind(c,name="DestructMatrix_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+       & BIND(c,NAME="DestructMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -179,10 +179,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a file.
   SUBROUTINE WriteMatrixToBinary_ps_wrp(ih_this,file_name,name_size) &
-       & bind(c,name="WriteMatrixToBinary_ps_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(IN) :: name_size
+       & BIND(c,NAME="WriteMatrixToBinary_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(KIND=c_int), INTENT(IN) :: name_size
     TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -198,10 +198,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a matrix market file.
   SUBROUTINE WriteMatrixToMatrixMarket_ps_wrp(ih_this,file_name,name_size) &
-       & bind(c,name="WriteMatrixToMatrixMarket_ps_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
-    INTEGER(kind=c_int), INTENT(IN) :: name_size
+       & BIND(c,NAME="WriteMatrixToMatrixMarket_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
+    INTEGER(KIND=c_int), INTENT(IN) :: name_size
     TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -217,9 +217,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists.
   SUBROUTINE FillMatrixFromTripletList_psr_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="FillMatrixFromTripletList_psr_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
+       & BIND(c,NAME="FillMatrixFromTripletList_psr_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(TripletList_r_wrp) :: h_triplet_list
 
@@ -230,9 +230,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists.
   SUBROUTINE FillMatrixFromTripletList_psc_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="FillMatrixFromTripletList_psc_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
+       & BIND(c,NAME="FillMatrixFromTripletList_psc_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(TripletList_c_wrp) :: h_triplet_list
 
@@ -243,8 +243,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
   SUBROUTINE FillMatrixIdentity_ps_wrp(ih_this) &
-       & bind(c,name="FillMatrixIdentity_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+       & BIND(c,NAME="FillMatrixIdentity_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -253,10 +253,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation matrix.
   SUBROUTINE FillMatrixPermutation_ps_wrp(ih_this, ih_permutation, &
-       & permute_rows) bind(c,name="FillMatrixPermutation_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
-    LOGICAL(kind=c_bool), INTENT(IN) :: permute_rows
+       & permute_rows) BIND(c,NAME="FillMatrixPermutation_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
+    LOGICAL(KIND=c_bool), INTENT(IN) :: permute_rows
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Permutation_wrp) :: h_permutation
 
@@ -269,9 +269,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Actual Dimension accessor.
   PURE SUBROUTINE GetMatrixActualDimension_ps_wrp(ih_this, mat_dimension) &
-       & bind(c,name="GetMatrixActualDimension_ps_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(OUT) :: mat_dimension
+       & BIND(c,NAME="GetMatrixActualDimension_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(OUT) :: mat_dimension
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -280,9 +280,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Logical Dimension accessor.
   PURE SUBROUTINE GetMatrixLogicalDimension_ps_wrp(ih_this, mat_dimension) &
-       & bind(c,name="GetMatrixLogicalDimension_ps_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(OUT) :: mat_dimension
+       & BIND(c,NAME="GetMatrixLogicalDimension_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(OUT) :: mat_dimension
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
@@ -291,9 +291,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
   SUBROUTINE GetMatrixTripletList_psr_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="GetMatrixTripletList_psr_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
+       & BIND(c,NAME="GetMatrixTripletList_psr_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(TripletList_r_wrp) :: h_triplet_list
 
@@ -304,9 +304,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
   SUBROUTINE GetMatrixTripletList_psc_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="GetMatrixTripletList_psc_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
+       & BIND(c,NAME="GetMatrixTripletList_psc_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(TripletList_c_wrp) :: h_triplet_list
 
@@ -317,11 +317,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list.
   SUBROUTINE GetMatrixBlock_psr_wrp(ih_this, ih_triplet_list, start_row, &
-       & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_psr_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
-    INTEGER(kind=c_int), INTENT(IN) :: start_column, end_column
+       & end_row, start_column, end_column) BIND(c,NAME="GetMatrixBlock_psr_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: start_row, end_row
+    INTEGER(KIND=c_int), INTENT(IN) :: start_column, end_column
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(TripletList_r_wrp) :: h_triplet_list
 
@@ -333,11 +333,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list.
   SUBROUTINE GetMatrixBlock_psc_wrp(ih_this, ih_triplet_list, start_row, &
-       & end_row, start_column, end_column) bind(c,name="GetMatrixBlock_psc_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
-    INTEGER(kind=c_int), INTENT(IN) :: start_column, end_column
+       & end_row, start_column, end_column) BIND(c,NAME="GetMatrixBlock_psc_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: start_row, end_row
+    INTEGER(KIND=c_int), INTENT(IN) :: start_column, end_column
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(TripletList_c_wrp) :: h_triplet_list
 
@@ -349,11 +349,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy an arbitrary slice from a matrix into a new smaller matrix.
   SUBROUTINE GetMatrixSlice_wrp(ih_this, ih_submatrix, start_row, &
-       & end_row, start_column, end_column) bind(c,name="GetMatrixSlice_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_submatrix(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: start_row, end_row
-    INTEGER(kind=c_int), INTENT(IN) :: start_column, end_column
+       & end_row, start_column, end_column) BIND(c,NAME="GetMatrixSlice_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_submatrix(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: start_row, end_row
+    INTEGER(KIND=c_int), INTENT(IN) :: start_column, end_column
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_submatrix
 
@@ -365,9 +365,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix.
   SUBROUTINE TransposeMatrix_ps_wrp(ih_matA,ih_transmat) &
-       & bind(c,name="TransposeMatrix_ps_wrp")
-    INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_transmat(SIZE_wrp)
+       & BIND(c,NAME="TransposeMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_transmat(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_matA
     TYPE(Matrix_ps_wrp) :: h_transmat
 
@@ -378,12 +378,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix conjugate function.
   PURE SUBROUTINE ConjugateMatrix_ps_wrp(ih_matA) &
-       & bind(c,name="ConjugateMatrix_ps_wrp")
-    INTEGER(kind=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
+       & BIND(c,NAME="ConjugateMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_matA
 
     h_matA  = TRANSFER(ih_matA,h_matA)
     CALL ConjugateMatrix(h_matA%data)
   END SUBROUTINE ConjugateMatrix_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the matrix resize function.
+  PURE SUBROUTINE ResizeMatrix_ps_wrp(ih_this, new_size) &
+       & BIND(c,NAME="ResizeMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(IN) :: new_size
+    TYPE(Matrix_ps_wrp) :: h_this
+
+    h_this  = TRANSFER(ih_this,h_this)
+    CALL ResizeMatrix(h_this%data, new_size)
+  END SUBROUTINE ResizeMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule_wrp
