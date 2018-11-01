@@ -333,6 +333,39 @@ class TestPSMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_grow(self):
+        '''Test our ability to resize matrices (grow).'''
+        for param in self.parameters:
+            small_size = int(param.rows / 2)
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(
+                matrix1[:small_size, :small_size], self.input_file1)
+
+            self.CheckMat = matrix1
+            self.CheckMat[:,small_size:] = 0
+            self.CheckMat[small_size:,:] = 0
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix1.Resize(param.rows)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_shrink(self):
+        '''Test our ability to resize matrices (shrink).'''
+        for param in self.parameters:
+            small_size = int(param.rows / 2)
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+
+            self.CheckMat = matrix1[:small_size, :small_size]
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix1.Resize(small_size)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
 
 class TestPSMatrix_c(TestPSMatrix):
     '''Specialization for complex matrices'''
