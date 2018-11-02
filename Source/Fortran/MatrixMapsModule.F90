@@ -26,7 +26,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: outmat
     INTERFACE
        !> The procedure to apply to each element.
-       SUBROUTINE proc(row, column, val)
+       SUBROUTINE proc(row, column, val, valid)
          USE DataTypesModule, ONLY : NTREAL
          !> The row value of an element.
          INTEGER, INTENT(INOUT) :: row
@@ -34,6 +34,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          INTEGER, INTENT(INOUT) :: column
          !> The actual value of an element.
          REAL(KIND=NTREAL), INTENT(INOUT) :: val
+         !> Set this to false to filter an element.
+         LOGICAL, INTENT(OUT) :: valid
        END SUBROUTINE proc
     END INTERFACE
     !! Local Variables
@@ -50,7 +52,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: outmat
     INTERFACE
        !> The procedure to apply to each element.
-       SUBROUTINE proc(row, column, val)
+       SUBROUTINE proc(row, column, val, valid)
          USE DataTypesModule, ONLY : NTCOMPLEX
          !> The row value of an element.
          INTEGER, INTENT(INOUT) :: row
@@ -58,6 +60,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          INTEGER, INTENT(INOUT) :: column
          !> The actual value of an element.
          COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT) :: val
+         !> Set this to false to filter an element.
+         LOGICAL, INTENT(OUT) :: valid
        END SUBROUTINE proc
     END INTERFACE
     !! Local Variables
@@ -74,7 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r), INTENT(INOUT) :: outlist
     INTERFACE
        !> The procedure to apply to each element.
-       SUBROUTINE proc(row, column, val)
+       SUBROUTINE proc(row, column, val, valid)
          USE DataTypesModule, ONLY : NTREAL
          !> The row value of an element.
          INTEGER, INTENT(INOUT) :: row
@@ -82,6 +86,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          INTEGER, INTENT(INOUT) :: column
          !> The actual value of an element.
          REAL(KIND=NTREAL), INTENT(INOUT) :: val
+         !> Set this to false to filter an element.
+         LOGICAL, INTENT(OUT) :: valid
        END SUBROUTINE proc
     END INTERFACE
     !! Local Variables
@@ -99,7 +105,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c), INTENT(INOUT) :: outlist
     INTERFACE
        !> The procedure to apply to each element.
-       SUBROUTINE proc(row, column, val)
+       SUBROUTINE proc(row, column, val, valid)
          USE DataTypesModule, ONLY : NTCOMPLEX
          !> The row value of an element.
          INTEGER, INTENT(INOUT) :: row
@@ -107,6 +113,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          INTEGER, INTENT(INOUT) :: column
          !> The actual value of an element.
          COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT) :: val
+         !> Set this to false to filter an element.
+         LOGICAL, INTENT(OUT) :: valid
        END SUBROUTINE proc
     END INTERFACE
     !! Local Variables
