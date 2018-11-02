@@ -15,6 +15,7 @@ set(Fsrc
     LoadBalancerModule.F90
     LoggingModule.F90
     MatrixMarketModule.F90
+    MatrixMapsModule.F90
     MatrixMemoryPoolModule.F90
     MatrixReduceModule.F90
     NTMPIModule.F90
