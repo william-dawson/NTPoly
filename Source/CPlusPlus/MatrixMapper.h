@@ -42,6 +42,12 @@ private:
                   bool (*proc)(int &index_row, int &index_column,
                                std::complex<double> &value),
                   int num_slices = 1, int my_slice = 0);
+  //! A helper that gets information about the process grid.
+  //!\param mat the matrix to get the info of.
+  //!\param num_slices how many slices is this matrix distributed on.
+  //!\param my_slice which slice is this process on.
+  static void GetSliceInfo(const Matrix_ps &mat, int &num_slices,
+                           int &my_slice);
 };
 } // namespace NTPoly
 

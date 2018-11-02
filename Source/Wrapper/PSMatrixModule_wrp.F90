@@ -37,6 +37,7 @@ MODULE PSMatrixModule_wrp
   PUBLIC :: TransposeMatrix_ps_wrp
   PUBLIC :: ConjugateMatrix_ps_wrp
   PUBLIC :: ResizeMatrix_ps_wrp
+  PUBLIC :: GetMatrixProcessGrid_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the constructor of an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps_wrp(ih_this,matrix_dim) &
@@ -396,5 +397,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this  = TRANSFER(ih_this,h_this)
     CALL ResizeMatrix(h_this%data, new_size)
   END SUBROUTINE ResizeMatrix_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Returns a handle to the process grid this matrix is distributed on.
+  SUBROUTINE GetMatrixProcessGrid_ps_wrp(ih_this, ih_grid) &
+       & BIND(c,NAME="GetMatrixProcessGrid_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_grid(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(ProcessGrid_wrp) :: h_grid
+
+    h_this = TRANSFER(ih_this,h_this)
+    h_grid%data => h_this%data%process_grid
+    ih_grid = TRANSFER(h_grid, ih_grid)
+  END SUBROUTINE GetMatrixProcessGrid_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule_wrp
