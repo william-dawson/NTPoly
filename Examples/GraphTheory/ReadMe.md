@@ -21,7 +21,7 @@ See the premade matrix example for details. Build with something like:
 Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
-  -L../../Build/lib -lNTPoly -fopenmp -llapack
+  -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
 
 C++ Build Instructions:
 mpicxx main.cc -c \
