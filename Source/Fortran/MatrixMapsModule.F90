@@ -2,9 +2,11 @@
 !> A Module For Simplfiying Per Element Operations on Matrices.
 MODULE MatrixMapsModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
-       & GetMatrixTripletList, FillMatrixFromTripletList
+       & GetMatrixTripletList, FillMatrixFromTripletList, &
+       & DestructMatrix
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & DestructTripletList
+       & DestructTripletList, AppendToTripletList, GetTripletAt, &
+       & ConstructTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
@@ -71,7 +73,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MapMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a triplet list, apply this procedure to each element.
-  SUBROUTINE MapTripletList_r(inlist, outlist, proc)
+  SUBROUTINE MapTripletList_r(inlist, outlist, proc, num_slices_in, &
+       & my_slice_in)
     !> The matrix to apply the procedure to.
     TYPE(TripletList_r), INTENT(IN) :: inlist
     !> The matrix where each element has had proc called on it.
@@ -90,6 +93,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          LOGICAL, INTENT(OUT) :: valid
        END SUBROUTINE proc
     END INTERFACE
+    !> How many process slices to do this mapping on (default is 1)
+    INTEGER, INTENT(IN), OPTIONAL :: num_slices_in
+    !> What process slice this process should compute (default is 0).
+    INTEGER, INTENT(IN), OPTIONAL :: my_slice_in
     !! Local Variables
     TYPE(Triplet_r) :: temp
 
@@ -98,7 +105,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MapTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a triplet list, apply this procedure to each element.
-  SUBROUTINE MapTripletList_c(inlist, outlist, proc)
+  SUBROUTINE MapTripletList_c(inlist, outlist, proc, num_slices_in, &
+       & my_slice_in)
     !> The matrix to apply the procedure to.
     TYPE(TripletList_c), INTENT(IN) :: inlist
     !> The matrix where each element has had proc called on it.
@@ -117,6 +125,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          LOGICAL, INTENT(OUT) :: valid
        END SUBROUTINE proc
     END INTERFACE
+    !> How many process slices to do this mapping on (default is 1)
+    INTEGER, INTENT(IN), OPTIONAL :: num_slices_in
+    !> What process slice this process should compute (default is 0).
+    INTEGER, INTENT(IN), OPTIONAL :: my_slice_in
     !! Local Variables
     TYPE(Triplet_c) :: temp
 

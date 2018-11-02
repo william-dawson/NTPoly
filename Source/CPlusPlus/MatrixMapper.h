@@ -24,20 +24,24 @@ public:
   static void Map(const Matrix_ps &inmat, Matrix_ps &outmat,
                   bool (*proc)(int &index_row, int &index_column,
                                std::complex<double> &value));
+
+private:
   //! Given a triplet list, apply this procedure to each element (real).
   //!\param inlist the list to apply the procedure to.
   //!\param outlist the list where each element has had proc called on it.
   //!\param proc the procedure to apply.
   static void Map(const TripletList_r &inlist, TripletList_r &outlist,
                   bool (*proc)(int &index_row, int &index_column,
-                               double &value));
+                               double &value),
+                  int num_slices = 1, int my_slice = 0);
   //! Given a triplet list, apply this procedure to each element (cmplx).
   //!\param inlist the list to apply the procedure to.
   //!\param outlist the list where each element has had proc called on it.
   //!\param proc the procedure to apply.
   static void Map(const TripletList_c &inmat, TripletList_c &outmat,
                   bool (*proc)(int &index_row, int &index_column,
-                               std::complex<double> &value));
+                               std::complex<double> &value),
+                  int num_slices = 1, int my_slice = 0);
 };
 } // namespace NTPoly
 
