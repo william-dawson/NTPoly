@@ -41,7 +41,7 @@ mpif90 main.f90 -o example \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
 =======
   -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
->>>>>>> 6fc3402f53a70b70efeb8258a8f13ccacc316a38
+>>>>>>> NTChem
 
 C++ Build Instructions:
 mpicxx main.cc -c \

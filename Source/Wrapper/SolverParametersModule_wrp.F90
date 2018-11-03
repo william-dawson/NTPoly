@@ -5,7 +5,8 @@ MODULE SolverParametersModule_wrp
   USE SolverParametersModule, ONLY : SolverParameters_t, &
        & SetParametersConvergeDiff, SetParametersMaxIterations, &
        & SetParametersThreshold, SetParametersBeVerbose, &
-       & SetParametersLoadBalance, DestructSolverParameters
+       & SetParametersLoadBalance, SetParametersDACBaseSize, &
+       & SetParametersDACBaseSparsity, DestructSolverParameters
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_bool, c_int
@@ -25,6 +26,8 @@ MODULE SolverParametersModule_wrp
   PUBLIC :: SetParametersThreshold_wrp
   PUBLIC :: SetParametersBeVerbose_wrp
   PUBLIC :: SetParametersLoadBalance_wrp
+  PUBLIC :: SetParametersDACBaseSize_wrp
+  PUBLIC :: SetParametersDACBaseSparsity_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the iterat solver parameters.
   PURE SUBROUTINE ConstructSolverParameters_wrp(ih_this) &
@@ -105,5 +108,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_new_value = TRANSFER(ih_new_value,h_new_value)
     CALL SetParametersLoadBalance(h_this%data,h_new_value%data)
   END SUBROUTINE SetParametersLoadBalance_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the divide and conquer base size.
+  PURE SUBROUTINE SetParametersDACBaseSize_wrp(ih_this,new_value) &
+       & bind(c,name="SetParametersDACBaseSize_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: new_value
+    TYPE(SolverParameters_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    CALL SetParametersDACBaseSize(h_this%data,new_value)
+  END SUBROUTINE SetParametersDACBaseSize_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the divide and conquer base sparsity.
+  PURE SUBROUTINE SetParametersDACBaseSparsity_wrp(ih_this,new_value) &
+       & bind(c,name="SetParametersDACBaseSparsity_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    REAL(kind=NTREAL), INTENT(IN) :: new_value
+    TYPE(SolverParameters_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    CALL SetParametersDACBaseSparsity(h_this%data,new_value)
+  END SUBROUTINE SetParametersDACBaseSparsity_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SolverParametersModule_wrp

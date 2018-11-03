@@ -190,6 +190,10 @@ class TestChemistry:
         '''Test routines to compute the density matrix with HPCP.'''
         self.basic_solver(nt.DensityMatrixSolvers.HPCP)
 
+    def test_dense(self):
+        '''Test routines to compute the density matrix with eigensolver.'''
+        self.basic_solver(nt.DensityMatrixSolvers.DenseSolver)
+
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''
         # Reference Solution

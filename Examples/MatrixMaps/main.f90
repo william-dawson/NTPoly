@@ -67,7 +67,7 @@ PROGRAM MatrixMapsProgram
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> This is the function we will map on to the matrix. 
+  !> This is the function we will map on to the matrix.
   SUBROUTINE TestFunction(row, column, val, valid)
     INTEGER, INTENT(INOUT) :: row
     INTEGER, INTENT(INOUT) :: column

@@ -1,11 +1,13 @@
 ################################################################################
 set(Fsrc
     ChebyshevSolversModule.F90
+    CholeskyModule.F90
     DataTypesModule.F90
     DensityMatrixSolversModule.F90
     DMatrixModule.F90
     EigenBoundsModule.F90
     ErrorModule.F90
+    EigenSolversModule.F90
     ExponentialSolversModule.F90
     GemmTasksModule.F90
     GeometryOptimizationModule.F90
@@ -37,6 +39,12 @@ set(Fsrc
     TripletListModule.F90
     TripletModule.F90
 )
+
+################################################################################
+IF (EIGEN_EXA)
+  LIST(APPEND Fsrc EigenExaModule.F90)
+  include_directories(${EIGEN_EXA})
+ENDIF()
 
 ################################################################################
 add_library(NTPoly STATIC ${Fsrc})

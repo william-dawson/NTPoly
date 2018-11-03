@@ -39,6 +39,14 @@ if (NOT CMAKE_BUILD_TYPE)
 endif()
 
 ################################################################################
+## Check for EigenExa
+IF (EIGEN_EXA)
+  add_definitions(-DEIGENEXA)
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -L${EIGEN_EXA}")
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -lEigenExa")
+ENDIF()
+
+################################################################################
 ## Check MPI Features
 option(USE_MPIH OFF)
 if (NOT ${MPI_Fortran_HAVE_F90_MODULE})
@@ -51,6 +59,17 @@ if (NOIALLGATHER)
   MESSAGE(STATUS "IAllgather replacement activated.")
   MESSAGE(STATUS "Note that this may reduce parallel performance.")
 endif()
+
+################################################################################
+## Check for EigenExa
+IF (EIGEN_EXA)
+  set(CMAKE_Fortran_FLAGS_DEBUG "${CMAKE_Fortran_FLAGS_DEBUG} -DEIGENEXA")
+  set(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE} -DEIGENEXA")
+  set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} -DEIGENEXA")
+
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -L${EIGEN_EXA}")
+  set(TOOLCHAIN_LIBS "${TOOLCHAIN_LIBS} -lEigenExa")
+ENDIF()
 
 ################################################################################
 ## Get at the source files

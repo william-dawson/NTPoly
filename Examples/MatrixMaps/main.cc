@@ -10,8 +10,6 @@ using std::stringstream;
 #include "PSMatrix.h"
 #include "ProcessGrid.h"
 
-#include <iostream>
-
 // This is the function we will map on to the matrix.
 class TestOperation : public NTPoly::RealOperation {
 public:
