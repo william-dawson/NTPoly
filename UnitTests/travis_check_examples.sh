@@ -10,6 +10,8 @@ else
   python test_build.py ../Examples/HydrogenAtom/ run-fortran
   python test_build.py ../Examples/HydrogenAtom/ run-c++
   python test_build.py ../Examples/HydrogenAtom/ run-python
+  python test_build.py ../Examples/MatrixMaps/ run-fortran
+  python test_build.py ../Examples/MatrixMaps/ run-c++
   python test_build.py ../Examples/PremadeMatrix/ run-fortran
   python test_build.py ../Examples/PremadeMatrix/ run-c++
   python test_build.py ../Examples/PremadeMatrix/ run-python

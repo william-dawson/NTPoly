@@ -10,17 +10,21 @@ using std::stringstream;
 #include "PSMatrix.h"
 #include "ProcessGrid.h"
 
-bool TestFunction(int& row, int& column, double& value) {
-  bool valid;
-  if (row >= column) {
-    value *= 2;
-    valid = true;
-  } else {
-    valid = false;
-  }
+#include <iostream>
 
-  return valid;
-}
+// This is the function we will map on to the matrix.
+class TestOperation : public NTPoly::RealOperation {
+public:
+  // Notice you overload the () operator.
+  bool operator()() {
+    // This object contains a triplet called data for you to modify.
+    if (this->data.index_row >= this->data.index_column) {
+      this->data.point_value *= 2;
+      return true;
+    }
+    return false;
+  }
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 int main(int argc, char *argv[]) {
@@ -57,7 +61,8 @@ int main(int argc, char *argv[]) {
   NTPoly::Matrix_ps Output(Input.GetActualDimension());
 
   // Map
-  NTPoly::MatrixMapper::Map(Input, Output, &TestFunction);
+  TestOperation op;
+  NTPoly::MatrixMapper::Map(Input, Output, &op);
 
   // Print the density matrix to file.
   Output.WriteToMatrixMarket(output_file);
