@@ -1,12 +1,14 @@
-%module NTPolySwig
+%module(directors="1") NTPolySwig
 %include "typemaps.i"
 %apply double& OUTPUT { double& chemical_potential_out };
 %apply double& OUTPUT { double& energy_value_out };
 %apply double *OUTPUT { double *max_power_eig };
 %apply double *OUTPUT { double *min_ger_eig };
 %apply double *OUTPUT { double *max_ger_eig };
+
 %{
 #include "SolverBase.h"
+#include "Triplet.h"
 #include "ChebyshevSolvers.h"
 #include "DensityMatrixSolvers.h"
 #include "EigenBounds.h"
@@ -17,6 +19,7 @@
 #include "InverseSolvers.h"
 #include "LinearSolvers.h"
 #include "LoadBalancer.h"
+#include "MatrixMapper.h"
 #include "MatrixMemoryPool.h"
 #include "Permutation.h"
 #include "PMatrixMemoryPool.h"
@@ -29,7 +32,6 @@
 #include "SolverParameters.h"
 #include "SquareRootSolvers.h"
 #include "TrigonometrySolvers.h"
-#include "Triplet.h"
 #include "TripletList.h"
 #include <complex>
 using namespace NTPoly;
@@ -38,7 +40,11 @@ using namespace NTPoly;
 %include <complex.i>
 %include "std_string.i"
 
+%feature("director") RealOperation;
+%feature("director") ComplexOperation;
+
 %include "SolverBase.h"
+%include "Triplet.h"
 %include "ChebyshevSolvers.h"
 %include "DensityMatrixSolvers.h"
 %include "EigenBounds.h"
@@ -49,6 +55,7 @@ using namespace NTPoly;
 %include "InverseSolvers.h"
 %include "LinearSolvers.h"
 %include "LoadBalancer.h"
+%include "MatrixMapper.h"
 %include "MatrixMemoryPool.h"
 %include "Permutation.h"
 %include "Polynomial.h"
@@ -61,5 +68,4 @@ using namespace NTPoly;
 %include "SolverParameters.h"
 %include "SquareRootSolvers.h"
 %include "TrigonometrySolvers.h"
-%include "Triplet.h"
 %include "TripletList.h"

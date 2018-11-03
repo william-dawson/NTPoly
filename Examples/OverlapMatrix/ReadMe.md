@@ -60,7 +60,7 @@ The following steps are carried out.
 Build with
 mpif90 main.f90 -o example \
   -I../../Build/include \
-  -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
+  -L../../Build/lib -lNTPoly -fopenmp -lblas
 
 And then run with:
 mpirun -np 1 ./example \
