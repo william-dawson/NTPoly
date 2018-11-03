@@ -45,11 +45,6 @@ And then run with:
 mpirun -np 1 ./example \
 --process_slices 1 --input_matrix input.mtx --output_matrix output.mtx
 
-Note that we're using the Fortran wrapper to link, and as a result we
-have to explicitly link against the C++ standard library. For Mac users,
-note that the default clang installation doesn't support openmp, so you will
-need to compile everything with g++.
-
 In the build directory, there is also a /python folder, which is used for
 linking against a python program. Python requires you to set the Python path
 to this directory so that it knows where to look for the python module files.
@@ -61,4 +56,22 @@ Run with python:
 mpirun -np 1 python main.py \
 --process_slices 1 --input_matrix input.mtx --output_matrix output.mtx
 
-## Mapping Procedure
+## Mapping Procedure - Fortran
+
+To use the map, simply define a procedure which takes the specified arguments
+(see the documentation of the `MatrixMapper`). In this case, we map a
+procedure which takes just the row, column, and value of a triplet. We
+then transform that value, and return true or false based on whether we
+wish to filter the value.
+
+## Mapping Procedure - C++/Python/ETC
+
+The interface to the maps is more general for object oriented languages
+(I plan to add those approach once Fortran 2003 support is sufficient). You
+can instead define a class that derives from the base class `RealOperation` or
+`ComplexOperation`. These classes are functors, so you can override their
+function call operator to create a suitable routine.
+
+Each object of the derived type has a member called `data` which is a triplet.
+You can access the values of an element through this triplet, and modify
+them accordingly.
