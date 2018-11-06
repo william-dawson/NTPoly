@@ -68,11 +68,12 @@ PROGRAM MatrixMapsProgram
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This is the function we will map on to the matrix.
-  SUBROUTINE TestFunction(row, column, val, valid)
+  FUNCTION TestFunction(row, column, val, supp_in) RESULT(valid)
     INTEGER, INTENT(INOUT) :: row
     INTEGER, INTENT(INOUT) :: column
     REAL(NTREAL), INTENT(INOUT) :: val
-    LOGICAL, INTENT(OUT) :: valid
+    REAL(NTREAL), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
+    LOGICAL :: valid
 
     IF (row .GE. column) THEN
        valid = .TRUE.
@@ -80,5 +81,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        valid = .FALSE.
     END IF
-  END SUBROUTINE TestFunction
+  END FUNCTION TestFunction
 END PROGRAM MatrixMapsProgram

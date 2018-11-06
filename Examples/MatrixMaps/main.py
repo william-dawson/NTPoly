@@ -43,7 +43,8 @@ if __name__ == "__main__":
     Output = nt.Matrix_ps(Input.GetActualDimension())
 
     # Map
-    nt.MatrixMapper.Map(Input, Output, TestOperation())
+    op = TestOperation()
+    nt.MatrixMapper.Map(Input, Output, op)
 
     # Print the density matrix to file.
     Output.WriteToMatrixMarket(output_matrix)
