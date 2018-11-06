@@ -68,10 +68,11 @@ PROGRAM MatrixMapsProgram
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This is the function we will map on to the matrix.
-  FUNCTION TestFunction(row, column, val) RESULT(valid)
+  FUNCTION TestFunction(row, column, val, supp_in) RESULT(valid)
     INTEGER, INTENT(INOUT) :: row
     INTEGER, INTENT(INOUT) :: column
     REAL(NTREAL), INTENT(INOUT) :: val
+    REAL(NTREAL), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
     LOGICAL :: valid
 
     IF (row .GE. column) THEN

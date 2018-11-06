@@ -2,6 +2,7 @@
 #define MATRIXMAPS_h
 #include "Triplet.h"
 #include <complex>
+#include <vector>
 
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
@@ -13,29 +14,29 @@ class ComplexOperation {
 public:
   //! An operation to apply to a matrix element.
   //! The core operation to overload.
-  //!\param index_row the row of the element.
-  //!\param index_column the column of the element.
-  //!\param value the value of the element.
   //!\result if false, this element is filtered away.
   virtual bool operator()() { return true; }
   virtual ~ComplexOperation() {}
 
 public:
+  //! When an operation is performed, this is the data to modify.
   Triplet_c data;
+  //! You can also set some supplementary values here.
+  std::vector<std::complex<double> > supp;
 };
 class RealOperation {
 public:
   //! An operation to apply to a matrix element.
   //! The core operation to overload.
-  //!\param index_row the row of the element.
-  //!\param index_column the column of the element.
-  //!\param value the value of the element.
   //!\result if false, this element is filtered away.
   virtual bool operator()() { return true; }
   virtual ~RealOperation() {}
 
 public:
+  //! When an operation is performed, this is the data to modify.
   Triplet_r data;
+  //! You can also set some supplementary values here.
+  std::vector<double> supp;
 };
 ////////////////////////////////////////////////////////////////////////////////
 //! This class is used to apply an operation to each element in the matrix.
