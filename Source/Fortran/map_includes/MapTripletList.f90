@@ -19,7 +19,7 @@
   CALL ConstructTripletList(outlist)
   DO II = my_slice+1, inlist%CurrentSize, num_slices
      CALL GetTripletAt(inlist, II, temp)
-     CALL proc(temp%index_row, temp%index_column, temp%point_value, valid)
+     valid = proc(temp%index_row, temp%index_column, temp%point_value)
      IF (valid) THEN
         CALL AppendToTripletList(outlist, temp)
      END IF

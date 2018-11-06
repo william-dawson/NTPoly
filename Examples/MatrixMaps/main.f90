@@ -67,12 +67,12 @@ PROGRAM MatrixMapsProgram
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> This is the function we will map on to the matrix. 
-  SUBROUTINE TestFunction(row, column, val, valid)
+  !> This is the function we will map on to the matrix.
+  FUNCTION TestFunction(row, column, val) RESULT(valid)
     INTEGER, INTENT(INOUT) :: row
     INTEGER, INTENT(INOUT) :: column
     REAL(NTREAL), INTENT(INOUT) :: val
-    LOGICAL, INTENT(OUT) :: valid
+    LOGICAL :: valid
 
     IF (row .GE. column) THEN
        valid = .TRUE.
@@ -80,5 +80,5 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        valid = .FALSE.
     END IF
-  END SUBROUTINE TestFunction
+  END FUNCTION TestFunction
 END PROGRAM MatrixMapsProgram
