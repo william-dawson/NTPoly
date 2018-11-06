@@ -21,8 +21,6 @@ public:
 public:
   //! When an operation is performed, this is the data to modify.
   Triplet_c data;
-  //! You can also set some supplementary values here.
-  std::vector<std::complex<double> > supp;
 };
 class RealOperation {
 public:
@@ -35,8 +33,6 @@ public:
 public:
   //! When an operation is performed, this is the data to modify.
   Triplet_r data;
-  //! You can also set some supplementary values here.
-  std::vector<double> supp;
 };
 ////////////////////////////////////////////////////////////////////////////////
 //! This class is used to apply an operation to each element in the matrix.

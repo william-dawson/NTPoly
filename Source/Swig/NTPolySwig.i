@@ -37,11 +37,6 @@ using namespace NTPoly;
 %}
 
 %include <complex.i>
-%include "std_vector.i"
-namespace std {
-   %template(DoubleVector) vector<double>;
-   %template(ComplexVector) vector<std::complex<double> >;
-}
 %include "std_string.i"
 
 %feature("director") RealOperation;
