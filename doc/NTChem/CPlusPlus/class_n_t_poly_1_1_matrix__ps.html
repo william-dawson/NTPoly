@@ -131,6 +131,8 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a04ac0ce1f95b33733f6d29d0cfcc7ba7">Conjugate</a> ()</td></tr>
 <tr class="memdesc:a04ac0ce1f95b33733f6d29d0cfcc7ba7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Compute the complex conjugate of a matrix. <br /></td></tr>
 <tr class="separator:a04ac0ce1f95b33733f6d29d0cfcc7ba7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7eb05a6dd739148f8a2f13bb41a742e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a7eb05a6dd739148f8a2f13bb41a742e9">Resize</a> (int new_size)</td></tr>
+<tr class="separator:a7eb05a6dd739148f8a2f13bb41a742e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afea158c384c0a7cfff81e4bc4774a434"><td class="memItemLeft" align="right" valign="top">double&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#afea158c384c0a7cfff81e4bc4774a434">Dot</a> (const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;matB)</td></tr>
 <tr class="separator:afea158c384c0a7cfff81e4bc4774a434"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05adbe0dd2905af84b55b70ecc5acc48"><td class="memItemLeft" align="right" valign="top">std::complex&lt; double &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_n_t_poly_1_1_matrix__ps.html#a05adbe0dd2905af84b55b70ecc5acc48">Dot_c</a> (const <a class="el" href="class_n_t_poly_1_1_matrix__ps.html">Matrix_ps</a> &amp;matB)</td></tr>
@@ -172,6 +174,9 @@ template&lt;class T &gt; </td></tr>
 <tr class="memitem:a3fd82ad87283cdf8b4f14842d9910546"><td class="memItemLeft" align="right" valign="top"><a id="a3fd82ad87283cdf8b4f14842d9910546"></a>
 class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b></td></tr>
 <tr class="separator:a3fd82ad87283cdf8b4f14842d9910546"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6d23c9506303849053694e1c1709c9a"><td class="memItemLeft" align="right" valign="top"><a id="ac6d23c9506303849053694e1c1709c9a"></a>
+class&#160;</td><td class="memItemRight" valign="bottom"><b>MatrixMapper</b></td></tr>
+<tr class="separator:ac6d23c9506303849053694e1c1709c9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>A Module For Performing Distributed Sparse Matrix Operations. </p>
@@ -826,6 +831,25 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 
 </div>
 </div>
+<a id="a7eb05a6dd739148f8a2f13bb41a742e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7eb05a6dd739148f8a2f13bb41a742e9">&#9670;&nbsp;</a></span>Resize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void NTPoly::Matrix_ps::Resize </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>new_size</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Change the size of a matrix. If the new size is smaller, then values outside that range are deleted. IF the new size is bigger, zero padding is applied. Warning: this requires a full data redistribution. </p>
+
+</div>
+</div>
 <a id="a30497e612b6076ec14792d227a6f11cb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a30497e612b6076ec14792d227a6f11cb">&#9670;&nbsp;</a></span>Scale()</h2>
 
@@ -894,8 +918,8 @@ class&#160;</td><td class="memItemRight" valign="bottom"><b>PMatrixMemoryPool</b
 </div>
 </div>
 <hr/>The documentation for this class was generated from the following files:<ul>
-<li>/Users/dawson/Desktop/Merge/Source/CPlusPlus/<a class="el" href="_p_s_matrix_8h_source.html">PSMatrix.h</a></li>
-<li>/Users/dawson/Desktop/Merge/Source/CPlusPlus/PSMatrix.cc</li>
+<li>/Users/dawson/Desktop/NTPoly/Source/CPlusPlus/<a class="el" href="_p_s_matrix_8h_source.html">PSMatrix.h</a></li>
+<li>/Users/dawson/Desktop/NTPoly/Source/CPlusPlus/PSMatrix.cc</li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

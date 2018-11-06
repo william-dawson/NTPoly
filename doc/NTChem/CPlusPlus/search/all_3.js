@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['data',['data',['../class_n_t_poly_1_1_complex_operation.html#ac1514c9af0e35f096a7f3c7f1daa44e1',1,'NTPoly::ComplexOperation::data()'],['../class_n_t_poly_1_1_real_operation.html#a626ee146a31640fed0104a76caaa51f9',1,'NTPoly::RealOperation::data()']]],
   ['densesolver',['DenseSolver',['../class_n_t_poly_1_1_density_matrix_solvers.html#ac6fe69658beb1e1abb24feb7d1e85f7f',1,'NTPoly::DensityMatrixSolvers']]],
   ['densitymatrixsolvers',['DensityMatrixSolvers',['../class_n_t_poly_1_1_density_matrix_solvers.html',1,'NTPoly']]],
   ['destructglobalprocessgrid',['DestructGlobalProcessGrid',['../namespace_n_t_poly.html#a22f0820f010474d035474b4c87bfce8a',1,'NTPoly']]],

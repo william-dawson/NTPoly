@@ -3,6 +3,7 @@ var searchData=
   ['cgsolver',['CGSolver',['../class_n_t_poly_1_1_linear_solvers.html#aa4b86969e4d033e5ea0d35a90abac224',1,'NTPoly::LinearSolvers']]],
   ['chebyshevpolynomial',['ChebyshevPolynomial',['../class_n_t_poly_1_1_chebyshev_polynomial.html',1,'NTPoly::ChebyshevPolynomial'],['../class_n_t_poly_1_1_chebyshev_polynomial.html#a27711c11becbe010de501a9395327829',1,'NTPoly::ChebyshevPolynomial::ChebyshevPolynomial()']]],
   ['choleskydecomposition',['CholeskyDecomposition',['../class_n_t_poly_1_1_linear_solvers.html#a8f33c1d15aa5238a4617f8763b176109',1,'NTPoly::LinearSolvers']]],
+  ['complexoperation',['ComplexOperation',['../class_n_t_poly_1_1_complex_operation.html',1,'NTPoly']]],
   ['compute',['Compute',['../class_n_t_poly_1_1_chebyshev_polynomial.html#ad58898d9a699d5421084af3d11bbbe74',1,'NTPoly::ChebyshevPolynomial::Compute()'],['../class_n_t_poly_1_1_hermite_polynomial.html#ade50d631b8ff03ebc66071a70d3b8813',1,'NTPoly::HermitePolynomial::Compute()']]],
   ['computeexponential',['ComputeExponential',['../class_n_t_poly_1_1_exponential_solvers.html#afa8c1256fc8028ca967e656be7a8df57',1,'NTPoly::ExponentialSolvers']]],
   ['computeexponentialpade',['ComputeExponentialPade',['../class_n_t_poly_1_1_exponential_solvers.html#aadf70b52a63d2476cd42e87e6b6db10f',1,'NTPoly::ExponentialSolvers']]],
