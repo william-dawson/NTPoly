@@ -60,11 +60,15 @@ mpirun -np 1 python main.py \
 
 To use the map, simply define a procedure which takes the specified arguments
 (see the documentation of the `MatrixMapper`). In this case, we map a
-procedure which takes just the row, column, and value of a triplet. It also
-takes an optional parameter which is called supplementary data. This is an
-array into which you can pass any and all external data this map might depend
-on. We then transform the triplet values, and return true or false based on
+procedure which takes just the row, column, and value of a triplet.
+We then transform the triplet values, and return true or false based on
 whether we wish to filter the value.
+
+The mapping procedure can take an array parameter which is for supplementary
+data (this is not shown here, see the documentation). This is an
+array into which you can pass any and all external data this map might depend
+on. Then when you call the mapping operation, you also pass in this data
+array.
 
 ## Mapping Procedure - C++/Python/ETC
 
