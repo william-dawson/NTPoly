@@ -37,11 +37,7 @@ See the premade matrix example for details. Build with something like:
 Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
-<<<<<<< HEAD
   -L../../Build/lib -lNTPoly -fopenmp -lblas
-=======
-  -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
->>>>>>> NTChem
 
 C++ Build Instructions:
 mpicxx main.cc -c \
