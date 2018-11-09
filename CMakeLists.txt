@@ -7,8 +7,6 @@ enable_language(Fortran)
 ################################################################################
 ## Packages
 find_package(MPI REQUIRED)
-MESSAGE(STATUS "MPI PATH")
-MESSAGE(STATUS ${MPI_INCLUDE_PATH})
 find_package(BLAS)
 find_package(SWIG 3.0)
 
