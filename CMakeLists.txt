@@ -52,7 +52,7 @@ ENDIF()
 ################################################################################
 ## Check MPI Features
 option(USE_MPIH OFF)
-IF (NOT ${MPI_Fortran_HAVE_F90_MODULE})
+IF (USE_MPIH OR NOT ${MPI_Fortran_HAVE_F90_MODULE})
   add_definitions(-DUSE_MPIH)
 ENDIF()
 
