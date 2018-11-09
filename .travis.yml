@@ -41,7 +41,7 @@ before_install:
 script:
   - cd Build
   - bash ../UnitTests/travis_run_cmake.sh
-  - make
+  - make VERBOSE=1
   - if [ "$MAKETEST" = 1 ]; then make test; fi
   - cd ../UnitTests/
   - bash travis_check_examples.sh
