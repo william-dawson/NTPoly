@@ -7,15 +7,8 @@ enable_language(Fortran)
 ################################################################################
 ## Packages
 find_package(MPI REQUIRED)
-find_package(OpenMP)
 find_package(BLAS)
 find_package(SWIG 3.0)
-
-find_package(OpenMP)
-IF (OpenMP_FOUND)
-  SET(CMAKE_Fortran_FLAGS_RELEASE "${CMAKE_Fortran_FLAGS_RELEASE}"
-      ${OpenMP_Fortran_FLAGS})
-ENDIF()
 
 ################################################################################
 ## Testing
@@ -42,6 +35,10 @@ IF (CMAKE_TOOLCHAIN_FILE)
   SET(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
   SET(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
   SET(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
+ELSE()
+  find_package(OpenMP)
+  SET(CMAKE_Fortran_FLAGS_RELEASE
+      "${CMAKE_Fortran_FLAGS_RELEASE} ${OpenMP_Fortran_FLAGS}")
 ENDIF()
 
 ## Fill in the default flags if no release type.
@@ -49,6 +46,8 @@ IF (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_RELEASE})
   SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
 ENDIF()
+
+MESSAGE(${CMAKE_Fortran_FLAGS_RELEASE})
 
 ################################################################################
 ## Check MPI Features
