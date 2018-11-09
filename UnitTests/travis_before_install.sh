@@ -2,18 +2,7 @@
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
-  if [ -f "openmpi-3.0.1/README" ]; then
-   echo "Using cached openmpi";
-  else
-    wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz;
-    tar xvf openmpi-3.0.1.tar.gz >/dev/null;
-    cd openmpi-3.0.1;
-    ./configure >/dev/null 2>&1;
-    make >/dev/null 2>&1;
-  fi
-  cd openmpi-3.0.1
-  sudo make install >/dev/null 2>&1
-  cd ../
+  sudo apt-get install openmpi
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
