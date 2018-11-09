@@ -44,7 +44,10 @@ There are a few options you can pass to CMake to modify the build. You can set
 directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir`. You can
 also set `-DFORTRAN_ONLY=YES` if you want to only build the Fortran interface.
 Note that with just the Fortran interface, it is not possible to perform local
-tests.
+tests. If you have an old version of MPI, you might need to pass
+`-DNOIALLGATHER=YES` to disable the use of nonblocking collectives. However,
+this may degrade performance, so I recommend upgrading your MPI implementation
+if possible.
 
 After that you can build using:
 > make
@@ -52,8 +55,8 @@ After that you can build using:
 And for the documentation:
 > make doc
 
-[Online documentation](https://william-dawson.github.io/NTPoly/documentation/) is also
-available. Further details about the library can be found on the
+[Online documentation](https://william-dawson.github.io/NTPoly/documentation/)
+is also available. Further details about the library can be found on the
 [Wiki](https://github.com/william-dawson/NTPoly/wiki).
 If you aren't cross compiling, you can perform local tests using:
 > make test
