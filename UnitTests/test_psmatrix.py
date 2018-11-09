@@ -366,11 +366,67 @@ class TestPSMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_map(self):
+        '''Test our ability to use the matrix mapping functions'''
+        class MatOp(nt.RealOperation):
+            def __call__(self):
+                # This object contains a triplet called data for you to modify.
+                if (self.data.point_value >= 0.5):
+                    return False
+                return True
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+
+            self.CheckMat = matrix1
+            for i in range(0, param.rows):
+                for j in range(0, param.columns):
+                    if self.CheckMat[i,j] > 0.5:
+                        self.CheckMat[i,j] = 0
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
+
+            nt.MatrixMapper.Map(ntmatrix1, ntmatrix2, MatOp())
+
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
 
 class TestPSMatrix_c(TestPSMatrix):
     '''Specialization for complex matrices'''
     TripletList = nt.TripletList_c
     complex = True
+
+    def test_map(self):
+        '''Test our ability to use the matrix mapping functions'''
+        class MatOp(nt.ComplexOperation):
+            def __call__(self):
+                # This object contains a triplet called data for you to modify.
+                if (abs(self.data.point_value) >= 0.5):
+                    return False
+                return True
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+
+            self.CheckMat = matrix1
+            for i in range(0, param.rows):
+                for j in range(0, param.columns):
+                    if abs(self.CheckMat[i,j]) > 0.5:
+                        self.CheckMat[i,j] = 0
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
+
+            nt.MatrixMapper.Map(ntmatrix1, ntmatrix2, MatOp())
+
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
 
     def test_conjugatetranspose(self):
         '''Test our ability to compute the conjugate transpose of a matrix.'''

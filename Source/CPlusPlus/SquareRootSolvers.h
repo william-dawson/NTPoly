@@ -21,9 +21,8 @@ public:
   //!\param InputMat matrix to compute the inversesquareroot of.
   //!\param OutputMat = InputMat^-1/2.
   //!\param solver_parameters parameters for the solver
-  static void
-  InverseSquareRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
-                    const SolverParameters &solver_parameters);
+  static void InverseSquareRoot(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
+                                const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

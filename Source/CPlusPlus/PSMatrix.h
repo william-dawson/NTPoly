@@ -13,6 +13,7 @@ class SolverBase;
 class TripletList_r;
 class TripletList_c;
 class ProcessGrid;
+class MatrixMapper;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Module For Performing Distributed Sparse Matrix Operations.
 class Matrix_ps {
@@ -172,6 +173,7 @@ private:
   friend class SolverBase;
   template <class T> friend class TripletList;
   friend class PMatrixMemoryPool;
+  friend class MatrixMapper;
 };
 } // namespace NTPoly
 #endif
