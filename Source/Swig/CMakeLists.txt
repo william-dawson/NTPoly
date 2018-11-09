@@ -7,11 +7,11 @@ if (SWIG_FOUND)
   include(ConfigPython.cmake)
   if(APPLE)
     get_py_lib()
+    MESSAGE(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
   endif()
   get_py_include()
 
   MESSAGE(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
-  MESSAGE(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
 
   # Link everything
   INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
