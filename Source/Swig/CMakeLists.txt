@@ -1,14 +1,15 @@
 ################################################################################
 if (SWIG_FOUND)
-
   # Probe some information about python
   if(NOT DEFINED PYTHON_EXECUTABLE)
     find_package(PythonInterp REQUIRED)
   endif()
-
-  INCLUDE(ConfigPython.cmake)
+  include(ConfigPython.cmake)
+  if(APPLE)
+    get_py_lib()
+  endif()
   get_py_include()
-  get_py_lib()
+
   MESSAGE(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
   MESSAGE(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
 
