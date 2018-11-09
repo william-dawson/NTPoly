@@ -1,5 +1,5 @@
-
 if [[ "$TESTOS" == "LINUX" ]]; then
+  sudo apt-get update
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
