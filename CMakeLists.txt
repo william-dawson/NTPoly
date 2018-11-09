@@ -7,6 +7,8 @@ enable_language(Fortran)
 ################################################################################
 ## Packages
 find_package(MPI REQUIRED)
+MESSAGE(STATUS "MPI PATH")
+MESSAGE(STATUS ${MPI_INCLUDE_PATH})
 find_package(BLAS)
 find_package(SWIG 3.0)
 
@@ -46,8 +48,6 @@ IF (NOT CMAKE_BUILD_TYPE)
   SET(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_RELEASE})
   SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
 ENDIF()
-
-MESSAGE(${CMAKE_Fortran_FLAGS_RELEASE})
 
 ################################################################################
 ## Check MPI Features
