@@ -39,6 +39,18 @@ on popular systems. You should copy one of these files, and create your own
 mymachine.cmake file. Then, cd into the Build directory, and type:
 > cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake ..
 
+After setting everything up, you can build using:
+> make
+
+And for the documentation:
+> make doc
+
+[Online documentation](https://william-dawson.github.io/NTPoly/documentation/)
+is also available. Further details about the library can be found on the
+[Wiki](https://github.com/william-dawson/NTPoly/wiki).
+If you aren't cross compiling, you can perform local tests using:
+> make test
+
 There are a few options you can pass to CMake to modify the build. You can set
 `-DCMAKE_BUILD_TYPE=Debug` for debugging purposes. You can set the install
 directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir`. You can
@@ -55,18 +67,6 @@ build shared libraries if necessary. The python bindings, for example, require
 shared libraries on most systems. But building shared libraries can reduce
 performance, so you might want to override this, and build only the Fortran
 and C++ bindings.
-
-After setting everything up, you can build using:
-> make
-
-And for the documentation:
-> make doc
-
-[Online documentation](https://william-dawson.github.io/NTPoly/documentation/)
-is also available. Further details about the library can be found on the
-[Wiki](https://github.com/william-dawson/NTPoly/wiki).
-If you aren't cross compiling, you can perform local tests using:
-> make test
 
 Basic Theory
 --------------------------------------------------------------------------------
