@@ -50,9 +50,13 @@ this may degrade performance, so I recommend upgrading your MPI implementation
 if possible.
 
 You can choose between building a static or shared library using
-`-DBUILD_SHARED_LIBS`. 
+`-DBUILD_SHARED_LIBS`. By default, NTPoly will try to do the right thing, and
+build shared libraries if necessary. The python bindings, for example, require
+shared libraries on most systems. But building shared libraries can reduce
+performance, so you might want to override this, and build only the Fortran
+and C++ bindings.
 
-After that you can build using:
+After setting everything up, you can build using:
 > make
 
 And for the documentation:
