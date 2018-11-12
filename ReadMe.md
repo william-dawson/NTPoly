@@ -49,6 +49,9 @@ tests. If you have an old version of MPI, you might need to pass
 this may degrade performance, so I recommend upgrading your MPI implementation
 if possible.
 
+You can choose between building a static or shared library using
+`-DBUILD_SHARED_LIBS`. 
+
 After that you can build using:
 > make
 
