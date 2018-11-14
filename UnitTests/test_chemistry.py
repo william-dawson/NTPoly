@@ -90,6 +90,7 @@ class TestChemistry:
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
+        self.solver_parameters.SetMaxIterations(8192)
         self.geomh1 = os.environ["GEOMH1"]
         self.geomo1 = os.environ["GEOMO1"]
         self.geomo2 = os.environ["GEOMO2"]
@@ -144,6 +145,8 @@ class TestChemistry:
         if computed > eig_vals[homo] and computed < eig_vals[lumo]:
             self.assertTrue(True)
         else:
+            print(eig_vals[homo], eig_vals[lumo], computed)
+            print(eig_vals)
             self.assertTrue(False)
 
     def basic_solver(self, SRoutine, cpcheck=True):
@@ -191,29 +194,8 @@ class TestChemistry:
         self.basic_solver(nt.DensityMatrixSolvers.HPCP)
 
     def test_foe(self):
-        '''Test fermi operator expansion without known CP.'''
-        fock_matrix = nt.Matrix_ps(self.hamiltonian)
-        overlap_matrix = nt.Matrix_ps(self.overlap)
-        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
-        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
-        degree = 16384
-
-        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation()
-        self.solver_parameters.SetLoadBalance(permutation)
-
-        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
-                                               inverse_sqrt_matrix,
-                                               self.solver_parameters)
-
-        energy_value, chemical_potential = nt.FermiOperatorExpansion.Compute(fock_matrix, inverse_sqrt_matrix,
-                                                                             self.nel, density_matrix,
-                                                                             degree, self.solver_parameters)
-
-        density_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_full()
+        '''Test routines to compute the density matrix with the FOE.'''
+        self.basic_solver(nt.FermiOperatorExpansion.Compute)
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''

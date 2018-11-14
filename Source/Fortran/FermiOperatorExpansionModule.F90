@@ -27,7 +27,7 @@ MODULE FermiOperatorExpansionModule
   REAL(NTREAL), PARAMETER, PRIVATE :: PI =  4 * ATAN (1.0_NTREAL)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Density Matrix using the Fermi Operator Expansion.
-  SUBROUTINE ComputeFOE(Hamiltonian, InverseSquareRoot, nel, Density, degree, &
+  SUBROUTINE ComputeFOE(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
@@ -37,8 +37,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nel
     !> OutputMat = poly(InputMat)
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
-    !> Degree to expand to.
-    INTEGER, INTENT(IN) :: degree
     !> The energy of the system (optional).
     REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
     !> The computed chemical potential.
@@ -75,15 +73,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", text_value_in="FOE")
-       CALL WriteElement(key="Degree", int_value_in=degree)
+       CALL WriteElement(key="Degree", &
+            & int_value_in=solver_parameters%max_iterations)
        CALL PrintParameters(solver_parameters)
     END IF
 
     !! If we know the chemical potential, do the standard algorithm.
-    CALL ComputeSearch(WorkingHamiltonian, Density, nel/2, degree, &
+    CALL ComputeSearch(WorkingHamiltonian, Density, nel/2, &
+         & solver_parameters%max_iterations, &
          & solver_parameters, energy_value, chemical_potential)
     IF (PRESENT(chemical_potential_out)) THEN
-       chemical_potential_out = chemical_potential
+       chemical_potential_out = chemical_potential * (e_max - e_min)
     END IF
     IF (PRESENT(energy_value_out)) THEN
        energy_value_out = energy_value

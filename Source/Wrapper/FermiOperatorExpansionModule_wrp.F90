@@ -14,13 +14,12 @@ MODULE FermiOperatorExpansionModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Density Matrix using the Fermi Operator Expansion.
   SUBROUTINE ComputeFOE_wrp(ih_Hamiltonian, ih_InverseSquareRoot, &
-       & nel, ih_Density, degree, energy_value_out, chemical_potential_out, &
+       & nel, ih_Density, energy_value_out, chemical_potential_out, &
        & ih_solver_parameters) bind(c,name="ComputeFOE_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Hamiltonian(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_InverseSquareRoot(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: nel
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Density(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: degree
     REAL(kind=c_double), INTENT(INOUT) :: energy_value_out
     REAL(kind=c_double), INTENT(INOUT) :: chemical_potential_out
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -36,7 +35,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL ComputeFOE(h_Hamiltonian%data, h_InverseSquareRoot%data, INT(nel), &
-         & h_Density%data, INT(degree), energy_value_out, &
+         & h_Density%data, energy_value_out, &
          & chemical_potential_out, &
          & solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE ComputeFOE_wrp
