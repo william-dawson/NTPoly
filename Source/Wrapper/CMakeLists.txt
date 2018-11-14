@@ -4,6 +4,7 @@ set(Wsrc
     DensityMatrixSolversModule_wrp.F90
     EigenBoundsModule_wrp.F90
     ExponentialSolversModule_wrp.F90
+    FermiOperatorExpansionModule_wrp.F90
     GeometryOptimizationModule_wrp.F90
     HermiteSolversModule_wrp.F90
     InverseSolversModule_wrp.F90

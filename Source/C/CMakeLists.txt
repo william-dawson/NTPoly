@@ -3,6 +3,7 @@ set(Csrc
     DensityMatrixSolvers_c.h
     EigenBounds_c.h
     ExponentialSolvers_c.h
+    FermiOperatorExpansion_c.h
     GeometryOptimization_c.h
     HermiteSolvers_c.h
     InverseSolvers_c.h

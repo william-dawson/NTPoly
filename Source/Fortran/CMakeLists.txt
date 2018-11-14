@@ -7,6 +7,7 @@ set(Fsrc
     EigenBoundsModule.F90
     ErrorModule.F90
     ExponentialSolversModule.F90
+    FermiOperatorExpansionModule.F90
     GemmTasksModule.F90
     GeometryOptimizationModule.F90
     HermiteSolversModule.F90

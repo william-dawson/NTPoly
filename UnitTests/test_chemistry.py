@@ -48,7 +48,7 @@ class TestChemistry:
 
         # Add a gap
         w, v = eigh(wfock)
-        gap = (w[-1] - w[0])/2.0
+        gap = (w[-1] - w[0]) / 2.0
         w[self.nel:] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
@@ -56,8 +56,8 @@ class TestChemistry:
             wfock = v.T.dot(diag(w).dot(v))
 
         # Compute the density
-        w[:int(self.nel/2)] = 2.0
-        w[int(self.nel/2):] = 0.0
+        w[:int(self.nel / 2)] = 2.0
+        w[int(self.nel / 2):] = 0.0
         if self.is_complex:
             density = isq.dot(v.dot(diag(w).dot(v.conj().T))).dot(isq)
         else:
@@ -190,6 +190,31 @@ class TestChemistry:
         '''Test routines to compute the density matrix with HPCP.'''
         self.basic_solver(nt.DensityMatrixSolvers.HPCP)
 
+    def test_foe(self):
+        '''Test fermi operator expansion without known CP.'''
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        degree = 16384
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+
+        energy_value, chemical_potential = nt.FermiOperatorExpansion.Compute(fock_matrix, inverse_sqrt_matrix,
+                                                                             self.nel, density_matrix,
+                                                                             degree, self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
+
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''
         # Reference Solution
@@ -222,6 +247,7 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
     '''Specialization for real matrices'''
     # complex test
     is_complex = False
+
     def testrealio(self):
         '''Test routines to read data produced by a real chemistry program.'''
         density_matrix = nt.Matrix_ps(self.realio)
