@@ -1,23 +1,9 @@
 var searchData=
 [
-  ['increment',['Increment',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#aeb93d903d109cff2cecdaaa7ffab3202',1,'NTPoly::DistributedSparseMatrix::Increment()'],['../class_n_t_poly_1_1_sparse_matrix.html#ae659c420ec2c6eb950bbf2f045d8ad9b',1,'NTPoly::SparseMatrix::Increment()']]],
-  ['incrementdistributedsparsematrix',['incrementdistributedsparsematrix',['../namespacedistributedsparsematrixalgebramodule.html#a9ad347e92f841d7aac727915ac6d8ba2',1,'distributedsparsematrixalgebramodule']]],
-  ['incrementsparsematrix',['incrementsparsematrix',['../namespacesparsematrixalgebramodule.html#a75ea470899228f9b2c1487a0c86eb64e',1,'sparsematrixalgebramodule']]],
-  ['index_5fcolumn',['index_column',['../structtripletmodule_1_1triplet__t.html#a8e5a852a0befa1bb1b48ae6af0cf6fa9',1,'tripletmodule::triplet_t::index_column()'],['../class_n_t_poly_1_1_triplet.html#a5e3af4f03e3785a9f69a8544948138af',1,'NTPoly::Triplet::index_column()']]],
-  ['index_5flookup',['index_lookup',['../structpermutationmodule_1_1permutation__t.html#a446ee0465be449879daa5e5a4788d85e',1,'permutationmodule::permutation_t']]],
-  ['index_5frow',['index_row',['../structtripletmodule_1_1triplet__t.html#ae7729c7dea2c2b1dd892332c131ef91b',1,'tripletmodule::triplet_t::index_row()'],['../class_n_t_poly_1_1_triplet.html#a63081249d5dbcb320f209fdf37ae5733',1,'NTPoly::Triplet::index_row()']]],
-  ['inner_5fcounter',['inner_counter',['../structsparsematrixiteratormodule_1_1sparsematrixiterator__t.html#a77166f3f200c9f281e92f4397ad33718',1,'sparsematrixiteratormodule::sparsematrixiterator_t']]],
-  ['inner_5findex',['inner_index',['../structsparsematrixmodule_1_1sparsematrix__t.html#a687e4a8e584ce63effa8293c1e697cfd',1,'sparsematrixmodule::sparsematrix_t']]],
-  ['inner_5findex_5fbuffer',['inner_index_buffer',['../structmatrixgathermodule_1_1gatherhelper__t.html#aaa0e3c02fe78b2971e79b239ed35f836',1,'matrixgathermodule::gatherhelper_t']]],
-  ['inner_5frequest',['inner_request',['../structmatrixgathermodule_1_1gatherhelper__t.html#ad85981d0b5d3cebeeb1cd0538997883c',1,'matrixgathermodule::gatherhelper_t']]],
-  ['inner_5fstatus',['inner_status',['../structmatrixgathermodule_1_1gatherhelper__t.html#ad754a51007ee21dcd8d11a637206d0db',1,'matrixgathermodule::gatherhelper_t']]],
-  ['inserted_5fper_5fbucket',['inserted_per_bucket',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#a8ea602c87a7a99c713d620adcf85c95f',1,'matrixmemorypoolmodule::matrixmemorypool_t']]],
+  ['increment',['Increment',['../class_n_t_poly_1_1_matrix__ps.html#ab091a243561a0eab3cfa56f057a77d85',1,'NTPoly::Matrix_ps::Increment()'],['../class_n_t_poly_1_1_matrix__lsr.html#a3fae21588735ad55283b742b639ea8ee',1,'NTPoly::Matrix_lsr::Increment()'],['../class_n_t_poly_1_1_matrix__lsc.html#ac43e0125cbcedce12a6cd6c891de0733',1,'NTPoly::Matrix_lsc::Increment()']]],
+  ['index_5fcolumn',['index_column',['../class_n_t_poly_1_1_triplet__r.html#a4b9e590f28fa3d6b85d4d4e9012beb9d',1,'NTPoly::Triplet_r::index_column()'],['../class_n_t_poly_1_1_triplet__c.html#a377b610a8f8502e071d3f5c39fd8e8a4',1,'NTPoly::Triplet_c::index_column()']]],
+  ['index_5frow',['index_row',['../class_n_t_poly_1_1_triplet__r.html#af80c254a51fefb27a88b5e4fdbdee43f',1,'NTPoly::Triplet_r::index_row()'],['../class_n_t_poly_1_1_triplet__c.html#ae5eb9c6beb30012daa8337cb0d5f272e',1,'NTPoly::Triplet_c::index_row()']]],
   ['inversesolvers',['InverseSolvers',['../class_n_t_poly_1_1_inverse_solvers.html',1,'NTPoly']]],
-  ['inversesolversmodule',['inversesolversmodule',['../namespaceinversesolversmodule.html',1,'']]],
-  ['inversesquareroot',['InverseSquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#add14d824d362d7ec9326deb368126764',1,'NTPoly::SquareRootSolvers::InverseSquareRoot()'],['../namespacesquarerootsolversmodule.html#aa1c8567e02be523330c5d2781576f604',1,'squarerootsolversmodule::inversesquareroot()']]],
-  ['invert',['Invert',['../class_n_t_poly_1_1_inverse_solvers.html#aa93355861bd1fad19fc558455e93caf3',1,'NTPoly::InverseSolvers::Invert()'],['../namespaceinversesolversmodule.html#a7c50e19c6a0af81a1f3680d8a7fb3e72',1,'inversesolversmodule::invert()']]],
-  ['isroot',['isroot',['../namespaceprocessgridmodule.html#a829ef381fd4d90c28fd9acc05b9b05e2',1,'processgridmodule']]],
-  ['iterativesolverparameters',['IterativeSolverParameters',['../class_n_t_poly_1_1_iterative_solver_parameters.html',1,'NTPoly::IterativeSolverParameters'],['../class_n_t_poly_1_1_iterative_solver_parameters.html#ae2052582ebc922420de4d4e24936d8b9',1,'NTPoly::IterativeSolverParameters::IterativeSolverParameters()']]],
-  ['iterativesolverparameters_5ft',['iterativesolverparameters_t',['../structiterativesolversmodule_1_1iterativesolverparameters__t.html',1,'iterativesolversmodule']]],
-  ['iterativesolversmodule',['iterativesolversmodule',['../namespaceiterativesolversmodule.html',1,'']]]
+  ['inversesquareroot',['InverseSquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#a1b5b53eb0d6edd4e374b7677d0211152',1,'NTPoly::SquareRootSolvers']]],
+  ['invert',['Invert',['../class_n_t_poly_1_1_inverse_solvers.html#adda034d9fb26c1386a713eec3ecb109b',1,'NTPoly::InverseSolvers']]]
 ];

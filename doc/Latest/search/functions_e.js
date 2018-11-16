@@ -1,14 +1,18 @@
 var searchData=
 [
-  ['testdatarequest',['testdatarequest',['../namespacematrixgathermodule.html#a13c1c6a239ef58788e721ccf5417bb96',1,'matrixgathermodule']]],
-  ['testinnerrequest',['testinnerrequest',['../namespacematrixgathermodule.html#a99c5f3b6b670b361c54ddcc4c11249cc',1,'matrixgathermodule']]],
-  ['testouterrequest',['testouterrequest',['../namespacematrixgathermodule.html#a19191f039046a0d534f470460405d961',1,'matrixgathermodule']]],
-  ['testsizerequest',['testsizerequest',['../namespacematrixgathermodule.html#a09095376f661e577345f9de8b666d785',1,'matrixgathermodule']]],
-  ['trace',['Trace',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#a60c84bbb2c6ab022adc9969939c370a9',1,'NTPoly::DistributedSparseMatrix::Trace()'],['../namespacedistributedsparsematrixalgebramodule.html#aa480b25052262e377a3225c5309d59df',1,'distributedsparsematrixalgebramodule::trace()']]],
-  ['transpose',['Transpose',['../class_n_t_poly_1_1_distributed_sparse_matrix.html#aada8352de696599eff9a868d0bea5158',1,'NTPoly::DistributedSparseMatrix::Transpose()'],['../class_n_t_poly_1_1_sparse_matrix.html#a4cbdc12bc0e85794af9c7aa57889d195',1,'NTPoly::SparseMatrix::Transpose()']]],
-  ['transposedistributedsparsematrix',['transposedistributedsparsematrix',['../namespacedistributedsparsematrixmodule.html#a8ce76b70a99f1545412acf865ab56048',1,'distributedsparsematrixmodule']]],
-  ['transposesparsematrix',['transposesparsematrix',['../namespacesparsematrixmodule.html#a22099ebd7c19ede253a13f671cec0c5d',1,'sparsematrixmodule']]],
-  ['tripletlist',['TripletList',['../class_n_t_poly_1_1_triplet_list.html#afc41727eafd2cb56f898212bc76325fe',1,'NTPoly::TripletList::TripletList(int size=0)'],['../class_n_t_poly_1_1_triplet_list.html#ae7074bdf4be8f2e33b6a75f6c39fa97b',1,'NTPoly::TripletList::TripletList(const DistributedSparseMatrix &amp;matrix)']]],
-  ['trs2',['TRS2',['../class_n_t_poly_1_1_density_matrix_solvers.html#a9bac432bad1db70891c42a14c48710de',1,'NTPoly::DensityMatrixSolvers::TRS2()'],['../namespacedensitymatrixsolversmodule.html#aef697eff5d664ab681c9db1fe36bddf2',1,'densitymatrixsolversmodule::trs2()']]],
-  ['trs4',['TRS4',['../class_n_t_poly_1_1_density_matrix_solvers.html#a86300ba0f637b8ecc07764a138aa2d3b',1,'NTPoly::DensityMatrixSolvers::TRS4()'],['../namespacedensitymatrixsolversmodule.html#a8ed3ae80d0718ffe9681f1506f6692df',1,'densitymatrixsolversmodule::trs4()']]]
+  ['scale',['Scale',['../class_n_t_poly_1_1_matrix__ps.html#a30497e612b6076ec14792d227a6f11cb',1,'NTPoly::Matrix_ps::Scale()'],['../class_n_t_poly_1_1_matrix__lsr.html#a52d7630a7a6e299cb18d08d8761ef643',1,'NTPoly::Matrix_lsr::Scale()'],['../class_n_t_poly_1_1_matrix__lsc.html#af29872ec740012d01be2ff5d6ae1e8ef',1,'NTPoly::Matrix_lsc::Scale()']]],
+  ['setcoefficient',['SetCoefficient',['../class_n_t_poly_1_1_chebyshev_polynomial.html#aa199d1e74cdb0e7622d7061c2c7a4284',1,'NTPoly::ChebyshevPolynomial::SetCoefficient()'],['../class_n_t_poly_1_1_hermite_polynomial.html#ac06438e3ab676f8937ffd7cc9f265e73',1,'NTPoly::HermitePolynomial::SetCoefficient()'],['../class_n_t_poly_1_1_polynomial.html#a3238979771a2c7b66938d186eef5da42',1,'NTPoly::Polynomial::SetCoefficient()']]],
+  ['setconvergediff',['SetConvergeDiff',['../class_n_t_poly_1_1_solver_parameters.html#a9ac26b2eb82a0fb107d73e484b928f7b',1,'NTPoly::SolverParameters']]],
+  ['setdefaultpermutation',['SetDefaultPermutation',['../class_n_t_poly_1_1_permutation.html#a166a7985f84b99d16204a3b95faf77dc',1,'NTPoly::Permutation']]],
+  ['setloadbalance',['SetLoadBalance',['../class_n_t_poly_1_1_solver_parameters.html#a35bb2e59f4987808f0de2a6186cf99c9',1,'NTPoly::SolverParameters']]],
+  ['setmaxiterations',['SetMaxIterations',['../class_n_t_poly_1_1_solver_parameters.html#a4899e6d1c68185ba088dc3cf8519a9e4',1,'NTPoly::SolverParameters']]],
+  ['setrandompermutation',['SetRandomPermutation',['../class_n_t_poly_1_1_permutation.html#ad051606fbe7939ac440942a1694001db',1,'NTPoly::Permutation']]],
+  ['setreversepermutation',['SetReversePermutation',['../class_n_t_poly_1_1_permutation.html#a160f97ac4f7508beba52e78b16ec9339',1,'NTPoly::Permutation']]],
+  ['setthreshold',['SetThreshold',['../class_n_t_poly_1_1_solver_parameters.html#ad7477a4ae90a03389c4cd7e22c7f4645',1,'NTPoly::SolverParameters']]],
+  ['settripletat',['SetTripletAt',['../class_n_t_poly_1_1_triplet_list__r.html#a23935c116969393b2783462d0521f009',1,'NTPoly::TripletList_r::SetTripletAt()'],['../class_n_t_poly_1_1_triplet_list__c.html#abb20762c66499c0e636a3a8e8b9971ab',1,'NTPoly::TripletList_c::SetTripletAt()']]],
+  ['setverbosity',['SetVerbosity',['../class_n_t_poly_1_1_solver_parameters.html#a6079a1af70e410173b507eb90c0c33bb',1,'NTPoly::SolverParameters']]],
+  ['sine',['Sine',['../class_n_t_poly_1_1_trigonometry_solvers.html#a758a1ab4e935052a7e0a5aac923dd4fd',1,'NTPoly::TrigonometrySolvers']]],
+  ['solverparameters',['SolverParameters',['../class_n_t_poly_1_1_solver_parameters.html#a0b282df736bfce6b9413cffeec1c5b34',1,'NTPoly::SolverParameters']]],
+  ['sorttripletlist',['SortTripletList',['../class_n_t_poly_1_1_triplet_list__r.html#a04dcb848ea307cd94428cc95190bec17',1,'NTPoly::TripletList_r::SortTripletList()'],['../class_n_t_poly_1_1_triplet_list__c.html#af640fd21143858bd4219ad3d12b2ac0c',1,'NTPoly::TripletList_c::SortTripletList()']]],
+  ['squareroot',['SquareRoot',['../class_n_t_poly_1_1_square_root_solvers.html#a063a3416db2a4c7129201030accee7c6',1,'NTPoly::SquareRootSolvers']]]
 ];

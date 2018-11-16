@@ -1,8 +1,5 @@
 var searchData=
 [
-  ['value',['value',['../structsparsematrixiteratormodule_1_1sparsematrixiterator__t.html#a1790e6bb36d221f8c1dba59dac936bcd',1,'sparsematrixiteratormodule::sparsematrixiterator_t']]],
-  ['value_5farray',['value_array',['../structmatrixmemorypoolmodule_1_1matrixmemorypool__t.html#ae01d8520dd19b14dbdb628fbe8d05115',1,'matrixmemorypoolmodule::matrixmemorypool_t']]],
-  ['value_5fbuffer',['value_buffer',['../structmatrixgathermodule_1_1gatherhelper__t.html#afa8a3623052e79bb4e6d6978ed0c27f6',1,'matrixgathermodule::gatherhelper_t']]],
-  ['values',['values',['../structsparsematrixmodule_1_1sparsematrix__t.html#a1b5b6af3cde7a9f69c6ed97bbd3abe0e',1,'sparsematrixmodule::sparsematrix_t']]],
-  ['values_5fper_5fprocess',['values_per_process',['../structmatrixgathermodule_1_1gatherhelper__t.html#a145c441e35e5480cbe493e1022259159',1,'matrixgathermodule::gatherhelper_t']]]
+  ['writetobinary',['WriteToBinary',['../class_n_t_poly_1_1_matrix__ps.html#affca5ba0b82d4f34603de430af15191f',1,'NTPoly::Matrix_ps']]],
+  ['writetomatrixmarket',['WriteToMatrixMarket',['../class_n_t_poly_1_1_matrix__ps.html#a105bf9babeb1c470609b7a84ff8aab26',1,'NTPoly::Matrix_ps::WriteToMatrixMarket()'],['../class_n_t_poly_1_1_matrix__lsr.html#a393053cd1e46e2b3b79032d8fb8fc4e8',1,'NTPoly::Matrix_lsr::WriteToMatrixMarket()'],['../class_n_t_poly_1_1_matrix__lsc.html#a0d2b00740751a613fdb6f5f9591cbd99',1,'NTPoly::Matrix_lsc::WriteToMatrixMarket()']]]
 ];

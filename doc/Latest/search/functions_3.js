@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['entersublog',['entersublog',['../namespaceloggingmodule.html#ab9d4d006778fa7e7b6dc065033783355',1,'loggingmodule']]],
-  ['erroroccurred',['erroroccurred',['../namespaceerrormodule.html#aec97941069ef9362d5ca2936ede89938',1,'errormodule']]],
-  ['exitsublog',['exitsublog',['../namespaceloggingmodule.html#a3ddad2863536ebbc3833b2c60bdadcad',1,'loggingmodule']]],
-  ['extractcolumn',['ExtractColumn',['../class_n_t_poly_1_1_sparse_matrix.html#ab9380a4d3e0c846edd13ff0b3db049f5',1,'NTPoly::SparseMatrix::ExtractColumn()'],['../namespacesparsematrixmodule.html#aa3f2666e3b3032d614d4c1b4e17637d6',1,'sparsematrixmodule::extractcolumn()']]],
-  ['extractrow',['ExtractRow',['../class_n_t_poly_1_1_sparse_matrix.html#ae89d48f3949da314184cfd66670c9130',1,'NTPoly::SparseMatrix::ExtractRow()'],['../namespacesparsematrixmodule.html#a99410be5adb26923d40409e0e2f9a695',1,'sparsematrixmodule::extractrow()']]]
+  ['energydensitymatrix',['EnergyDensityMatrix',['../class_n_t_poly_1_1_density_matrix_solvers.html#a87255ca48fc3811b160ca4144757000b',1,'NTPoly::DensityMatrixSolvers']]],
+  ['extractcolumn',['ExtractColumn',['../class_n_t_poly_1_1_matrix__lsr.html#adc348e88ec11222044f970b4b8332b03',1,'NTPoly::Matrix_lsr::ExtractColumn()'],['../class_n_t_poly_1_1_matrix__lsc.html#a87e7a42c1ef9ec6d6f34f3311fe3965f',1,'NTPoly::Matrix_lsc::ExtractColumn()']]],
+  ['extractrow',['ExtractRow',['../class_n_t_poly_1_1_matrix__lsr.html#a3dab9eb28b191fe6c6239af88b2cf296',1,'NTPoly::Matrix_lsr::ExtractRow()'],['../class_n_t_poly_1_1_matrix__lsc.html#a200ad31e7e302537ebeabb832891d722',1,'NTPoly::Matrix_lsc::ExtractRow()']]]
 ];

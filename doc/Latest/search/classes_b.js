@@ -1,9 +1,8 @@
 var searchData=
 [
-  ['signsolvers',['SignSolvers',['../class_n_t_poly_1_1_sign_solvers.html',1,'NTPoly']]],
-  ['solverbase',['SolverBase',['../class_n_t_poly_1_1_solver_base.html',1,'NTPoly']]],
-  ['sparsematrix',['SparseMatrix',['../class_n_t_poly_1_1_sparse_matrix.html',1,'NTPoly']]],
-  ['sparsematrix_5ft',['sparsematrix_t',['../structsparsematrixmodule_1_1sparsematrix__t.html',1,'sparsematrixmodule']]],
-  ['sparsematrixiterator_5ft',['sparsematrixiterator_t',['../structsparsematrixiteratormodule_1_1sparsematrixiterator__t.html',1,'sparsematrixiteratormodule']]],
-  ['squarerootsolvers',['SquareRootSolvers',['../class_n_t_poly_1_1_square_root_solvers.html',1,'NTPoly']]]
+  ['trigonometrysolvers',['TrigonometrySolvers',['../class_n_t_poly_1_1_trigonometry_solvers.html',1,'NTPoly']]],
+  ['triplet_5fc',['Triplet_c',['../class_n_t_poly_1_1_triplet__c.html',1,'NTPoly']]],
+  ['triplet_5fr',['Triplet_r',['../class_n_t_poly_1_1_triplet__r.html',1,'NTPoly']]],
+  ['tripletlist_5fc',['TripletList_c',['../class_n_t_poly_1_1_triplet_list__c.html',1,'NTPoly']]],
+  ['tripletlist_5fr',['TripletList_r',['../class_n_t_poly_1_1_triplet_list__r.html',1,'NTPoly']]]
 ];
