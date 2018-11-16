@@ -62,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Purification")
+       CALL WriteElement(key="Method", value="Purification")
        CALL WriteCitation("niklasson2010trace")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -129,12 +129,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL WriteListElement(key="Round", value=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", float_value_in=norm_value)
-          CALL WriteElement(key="Trace", float_value_in=trace_value)
-          CALL WriteElement(key="AddTrace", float_value_in=add_trace)
-          CALL WriteElement(key="SubtractTrace", float_value_in=subtract_trace)
+          CALL WriteElement(key="Convergence", value=norm_value)
+          CALL WriteElement(key="Trace", value=trace_value)
+          CALL WriteElement(key="AddTrace", value=add_trace)
+          CALL WriteElement(key="SubtractTrace", value=subtract_trace)
           CALL ExitSubLog
        END IF
 
@@ -160,7 +160,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL WriteElement(key="Total_Iterations", value=total_iterations)
        CALL PrintMatrixInformation(NewDensity)
     END IF
 
@@ -219,7 +219,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Lowdin")
+       CALL WriteElement(key="Method", value="Lowdin")
        CALL WriteCitation("exner2002comparison")
        CALL PrintParameters(solver_parameters)
     END IF

@@ -109,16 +109,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (be_verbose) THEN
        CALL WriteHeader("Process Grid")
        CALL EnterSubLog
-       CALL WriteListElement(key = "Process Rows", &
-            & int_value_in=global_grid%num_process_rows)
+       CALL WriteListElement("Process Rows", &
+            & value=global_grid%num_process_rows)
        CALL WriteListElement(key = "Process Columns", &
-            & int_value_in=global_grid%num_process_columns)
+            & value=global_grid%num_process_columns)
        CALL WriteListElement(key = "Process Slices", &
-            & int_value_in=global_grid%num_process_slices)
+            & value=global_grid%num_process_slices)
        CALL WriteListElement(key = "Column Blocks", &
-            & int_value_in=global_grid%number_of_blocks_columns)
+            & value=global_grid%number_of_blocks_columns)
        CALL WriteListElement(key = "Row Blocks", &
-            & int_value_in=global_grid%number_of_blocks_rows)
+            & value=global_grid%number_of_blocks_rows)
        CALL ExitSubLog
     END IF
 
