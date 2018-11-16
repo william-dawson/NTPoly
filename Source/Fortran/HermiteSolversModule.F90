@@ -111,8 +111,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Hermite Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Standard")
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Method", value="Standard")
+       CALL WriteElement(key="Degree", value=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 

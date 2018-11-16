@@ -106,9 +106,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Horner")
+       CALL WriteElement(key="Method", value="Horner")
        CALL PrintParameters(solver_parameters)
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Degree", value=degree-1)
     END IF
 
     !! Initial values for matrices
@@ -200,10 +200,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Paterson Stockmeyer")
+       CALL WriteElement(key="Method", value="Paterson Stockmeyer")
        CALL WriteCitation("paterson1973number")
        CALL PrintParameters(solver_parameters)
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Degree", value=degree-1)
     END IF
 
     ALLOCATE(x_powers(s_value+1))
