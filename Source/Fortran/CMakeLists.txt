@@ -39,7 +39,7 @@ set(Fsrc
 )
 
 ################################################################################
-add_library(NTPoly STATIC ${Fsrc})
+add_library(NTPoly ${Fsrc})
 target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES}
                       ${OpenMP_Fortran_LIBRARIES} ${BLAS_LIBRARIES})
 target_include_directories(NTPoly PUBLIC ${MPI_Fortran_INCLUDE_PATH})
