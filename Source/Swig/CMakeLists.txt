@@ -1,23 +1,23 @@
 ################################################################################
 if (SWIG_FOUND)
-  # Determine python path using python's distutils module
+  # Probe some information about python
   if(NOT DEFINED PYTHON_EXECUTABLE)
     find_package(PythonInterp REQUIRED)
   endif()
-  execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c
-      "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
-      OUTPUT_VARIABLE PYTHON_INCLUDE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  MESSAGE(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
-  MESSAGE(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
-  INCLUDE(${SWIG_USE_FILE})
 
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Source/C)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Source/CPlusPlus)
+  include(ConfigPython.cmake)
+  get_py_lib()
+  message(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
+  get_py_include()
+  message(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
 
-  SET(CMAKE_SWIG_FLAGS "")
+  include_directories(${PYTHON_INCLUDE_PATH})
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+  include_directories(${CMAKE_SOURCE_DIR}/Source/C)
+  include_directories(${CMAKE_SOURCE_DIR}/Source/CPlusPlus)
+
+  include(${SWIG_USE_FILE})
+  set(CMAKE_SWIG_FLAGS "")
 
   set(Swigsrc
     NTPolySwig.i
