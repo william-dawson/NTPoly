@@ -57,7 +57,7 @@ set(Chead
 )
 
 ################################################################################
-add_library(NTPolyCPP STATIC ${Csrc} ${Chead})
+add_library(NTPolyCPP ${Csrc} ${Chead})
 target_link_libraries(NTPolyCPP NTPolyWrapper)
 
 set_target_properties(NTPolyCPP PROPERTIES PUBLIC_HEADER "${Chead}")

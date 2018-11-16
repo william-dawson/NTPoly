@@ -6,6 +6,7 @@ set(Fsrc
     DensityMatrixSolversModule.F90
     DMatrixModule.F90
     EigenBoundsModule.F90
+    EigenExaModule.F90
     ErrorModule.F90
     EigenSolversModule.F90
     ExponentialSolversModule.F90
@@ -41,13 +42,11 @@ set(Fsrc
 )
 
 ################################################################################
-IF (EIGEN_EXA)
-  LIST(APPEND Fsrc EigenExaModule.F90)
-  include_directories(${EIGEN_EXA})
-ENDIF()
+add_library(NTPoly ${Fsrc})
+target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES}
+                      ${OpenMP_Fortran_LIBRARIES} ${BLAS_LIBRARIES})
+target_include_directories(NTPoly PUBLIC ${MPI_Fortran_INCLUDE_PATH})
 
-################################################################################
-add_library(NTPoly STATIC ${Fsrc})
 include(GNUInstallDirs)
 install(TARGETS NTPoly
         EXPORT ntpoly-export

@@ -185,15 +185,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Solver Parameters")
     CALL EnterSubLog
-    CALL WriteElement(key="be_verbose",bool_value_in=this%be_verbose)
-    CALL WriteElement(key="do_load_balancing", &
-         & bool_value_in=this%do_load_balancing)
-    CALL WriteElement(key="converge_diff", float_value_in=this%converge_diff)
-    CALL WriteElement(key="threshold", float_value_in=this%threshold)
-    CALL WriteElement(key="max_iterations", int_value_in=this%max_iterations)
-    CALL WriteElement(key="DAC Base Size", int_value_in=this%dac_base_size)
-    CALL WriteElement(key="DAC Base Sparsity", &
-         & float_value_in=this%dac_base_sparsity)
+    CALL WriteElement(key="be_verbose",value=this%be_verbose)
+    CALL WriteElement(key="do_load_balancing", value=this%do_load_balancing)
+    CALL WriteElement(key="converge_diff", value=this%converge_diff)
+    CALL WriteElement(key="threshold", value=this%threshold)
+    CALL WriteElement(key="max_iterations", value=this%max_iterations)
+    CALL WriteElement(key="DAC Base Size", value=this%dac_base_size)
+    CALL WriteElement(key="DAC Base Sparsity", value=this%dac_base_sparsity)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -1,23 +1,25 @@
 ################################################################################
 if (SWIG_FOUND)
-  # Determine python path using python's distutils module
+  # Probe some information about python
   if(NOT DEFINED PYTHON_EXECUTABLE)
     find_package(PythonInterp REQUIRED)
   endif()
-  execute_process(
-      COMMAND ${PYTHON_EXECUTABLE} -c
-      "from distutils.sysconfig import get_python_inc; print(get_python_inc())"
-      OUTPUT_VARIABLE PYTHON_INCLUDE_PATH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  MESSAGE(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
-  MESSAGE(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
-  INCLUDE(${SWIG_USE_FILE})
 
-  INCLUDE_DIRECTORIES(${PYTHON_INCLUDE_PATH})
-  INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR})
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Source/C)
-  INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/Source/CPlusPlus)
+  include(ConfigPython.cmake)
+  if (APPLE)
+    get_py_lib()
+    message(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
+  endif()
+  get_py_include()
+  message(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
 
-  SET(CMAKE_SWIG_FLAGS "")
+  include_directories(${PYTHON_INCLUDE_PATH})
+  include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+  include_directories(${CMAKE_SOURCE_DIR}/Source/C)
+  include_directories(${CMAKE_SOURCE_DIR}/Source/CPlusPlus)
+
+  include(${SWIG_USE_FILE})
+  set(CMAKE_SWIG_FLAGS "")
 
   set(Swigsrc
     NTPolySwig.i
@@ -27,13 +29,13 @@ if (SWIG_FOUND)
     SET_SOURCE_FILES_PROPERTIES(${file} PROPERTIES CPLUSPLUS ON)
   endforeach(file)
   set(CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/python)
-  SWIG_ADD_MODULE(NTPolySwig python ${Swigsrc})
-  SWIG_LINK_LIBRARIES(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly
+  swig_add_module(NTPolySwig python ${Swigsrc})
+  swig_link_libraries(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly
                       ${PYTHON_LIBRARIES} ${TOOLCHAIN_LIBS})
   set_target_properties(_NTPolySwig PROPERTIES
     ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
     LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python
   )
 else()
-  MESSAGE(WARNING "Swig not found! No python bindings will be generated.")
+  message(WARNING "Swig not found! No python bindings will be generated.")
 endif()

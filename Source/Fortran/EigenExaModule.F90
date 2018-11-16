@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for calling eigenexa
 MODULE EigenExaModule
+#if EIGENEXA
   USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteCitation, WriteHeader
@@ -82,7 +83,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="EigenExa")
+       CALL WriteElement(key="Method", value="EigenExa")
        CALL WriteCitation("imamura2011development")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -358,5 +359,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL eigen_free
 
   END SUBROUTINE CleanUp
+#endif
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenExaModule
