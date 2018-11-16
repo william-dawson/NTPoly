@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 1.0% of total for modules and submodules.">88 statements</a>
+    title=" 3.0% of total for modules and submodules.">270 statements</a>
      </li> 
      
      
@@ -330,7 +330,399 @@
     
     
     <h3>
-private subroutine MapTripletList_r(inlist, outlist, proc, supp_in, num_slices_in, my_slice_in)
+private subroutine MapTripletList_r(inlist, outlist, proc, num_slices_in, my_slice_in)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Given a triplet list, apply this procedure to each element.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/tripletlist_r.html'>TripletList_r</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>inlist</strong></td><td><p>The matrix to apply the procedure to.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/tripletlist_r.html'>TripletList_r</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>outlist</strong></td><td><p>The matrix where each element has had proc called on it.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td colspan="7">
+      <small>
+    
+    <h5>
+public function proc(row, column, val) result(valid)
+    
+    
+   
+</h5>
+    
+
+
+
+<p>The procedure to apply to each element.</p>
+    
+    <h6>Arguments</h6>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>row</strong></td><td><p>The row value of an element.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>column</strong></td><td><p>The column value of an element.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>val</strong></td><td><p>The actual value of an element.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h6>Return Value <small>logical
+  </small></h6>
+  <p>Set this to false to filter an element.</p>
+    
+</small>
+  </td> 
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>num_slices_in</strong></td><td><p>How many process slices to do this mapping on (default is 1)</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>my_slice_in</strong></td><td><p>What process slice this process should compute (default is 0).</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine MapTripletList_c(inlist, outlist, proc, num_slices_in, my_slice_in)
+    
+    
+   
+</h3>
+    
+
+
+
+<p>Given a triplet list, apply this procedure to each element.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/tripletlist_c.html'>TripletList_c</a>),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>inlist</strong></td><td><p>The matrix to apply the procedure to.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>type(<a href='../type/tripletlist_c.html'>TripletList_c</a>),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>outlist</strong></td><td><p>The matrix where each element has had proc called on it.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td colspan="7">
+      <small>
+    
+    <h5>
+public function proc(row, column, val) result(valid)
+    
+    
+   
+</h5>
+    
+
+
+
+<p>The procedure to apply to each element.</p>
+    
+    <h6>Arguments</h6>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>row</strong></td><td><p>The row value of an element.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>column</strong></td><td><p>The column value of an element.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>complex(kind=NTCOMPLEX),</td>
+  <td>intent(inout)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>val</strong></td><td><p>The actual value of an element.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  
+  
+  
+  
+     <h6>Return Value <small>logical
+  </small></h6>
+  <p>Set this to false to filter an element.</p>
+    
+</small>
+  </td> 
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>num_slices_in</strong></td><td><p>How many process slices to do this mapping on (default is 1)</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in),</td>
+  <td>optional</td>
+  
+  <td></td><td>::</td>
+  <td><strong>my_slice_in</strong></td><td><p>What process slice this process should compute (default is 0).</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+    </li>
+  
+    <li class="list-group-item">
+    
+    
+    <h3>
+private subroutine MapTripletListArray_r(inlist, outlist, proc, supp_in, num_slices_in, my_slice_in)
     
     
    
@@ -471,7 +863,7 @@ public function proc(row, column, val, supp_in) result(valid)
   
   <td><span class="anchor" ></span>real(kind=NTREAL),</td>
   <td>intent(in),</td>
-  <td>optional</td>
+  <td></td>
   
   <td>DIMENSION(:)</td><td>::</td>
   <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
@@ -506,7 +898,7 @@ public function proc(row, column, val, supp_in) result(valid)
   
   <td><span class="anchor" ></span>real(kind=NTREAL),</td>
   <td>intent(in),</td>
-  <td>optional</td>
+  <td></td>
   
   <td>DIMENSION(:)</td><td>::</td>
   <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
@@ -556,7 +948,7 @@ public function proc(row, column, val, supp_in) result(valid)
     
     
     <h3>
-private subroutine MapTripletList_c(inlist, outlist, proc, supp_in, num_slices_in, my_slice_in)
+private subroutine MapTripletListArray_c(inlist, outlist, proc, supp_in, num_slices_in, my_slice_in)
     
     
    
@@ -697,7 +1089,7 @@ public function proc(row, column, val, supp_in) result(valid)
   
   <td><span class="anchor" ></span>complex(kind=NTCOMPLEX),</td>
   <td>intent(in),</td>
-  <td>optional</td>
+  <td></td>
   
   <td>DIMENSION(:)</td><td>::</td>
   <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
@@ -732,7 +1124,7 @@ public function proc(row, column, val, supp_in) result(valid)
   
   <td><span class="anchor" ></span>complex(kind=NTCOMPLEX),</td>
   <td>intent(in),</td>
-  <td>optional</td>
+  <td></td>
   
   <td>DIMENSION(:)</td><td>::</td>
   <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
@@ -800,7 +1192,7 @@ public function proc(row, column, val, supp_in) result(valid)
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-mapmatrix_psr"></span><h3>
-public subroutine <a href='../proc/mapmatrix_psr.html'>MapMatrix_psr</a>(inmat, outmat, proc, supp_in)
+public subroutine <a href='../proc/mapmatrix_psr.html'>MapMatrix_psr</a>(inmat, outmat, proc)
     
     
    
@@ -870,7 +1262,7 @@ public subroutine <a href='../proc/mapmatrix_psr.html'>MapMatrix_psr</a>(inmat, 
       <small>
     
     <h5>
-public function proc(row, column, val, supp_in) result(valid)
+public function proc(row, column, val) result(valid)
     
     
    
@@ -939,21 +1331,6 @@ public function proc(row, column, val, supp_in) result(valid)
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td>DIMENSION(:)</td><td>::</td>
-  <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -974,21 +1351,6 @@ public function proc(row, column, val, supp_in) result(valid)
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>real(kind=NTREAL),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td>DIMENSION(:)</td><td>::</td>
-  <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -1003,7 +1365,7 @@ public function proc(row, column, val, supp_in) result(valid)
     
   <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-mapmatrix_psc"></span><h3>
-public subroutine <a href='../proc/mapmatrix_psc.html'>MapMatrix_psc</a>(inmat, outmat, proc, supp_in)
+public subroutine <a href='../proc/mapmatrix_psc.html'>MapMatrix_psc</a>(inmat, outmat, proc)
     
     
    
@@ -1073,7 +1435,7 @@ public subroutine <a href='../proc/mapmatrix_psc.html'>MapMatrix_psc</a>(inmat, 
       <small>
     
     <h5>
-public function proc(row, column, val, supp_in) result(valid)
+public function proc(row, column, val) result(valid)
     
     
    
@@ -1142,21 +1504,6 @@ public function proc(row, column, val, supp_in) result(valid)
   
 </tr>
 
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>complex(kind=NTCOMPLEX),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td>DIMENSION(:)</td><td>::</td>
-  <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
-  
-</tr>
-
 </tbody>
 </table>
 
@@ -1174,21 +1521,6 @@ public function proc(row, column, val, supp_in) result(valid)
     
 </small>
   </td> 
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>complex(kind=NTCOMPLEX),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td>DIMENSION(:)</td><td>::</td>
-  <td><strong>supp_in</strong></td><td><p>Any supplementary data you need to pass the map can packed here.</p></td>
   
 </tr>
 

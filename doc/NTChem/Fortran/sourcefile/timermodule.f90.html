@@ -360,7 +360,7 @@
 <a name="ln-95"></a>    <span class="k">CALL </span><span class="n">EnterSubLog</span>
 <a name="ln-96"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">timer_position</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-97"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">timer_name</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-98"></a>            <span class="p">&amp;</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">elapsed_times</span><span class="p">(</span><span class="n">timer_position</span><span class="p">))</span>
+<a name="ln-98"></a>            <span class="p">&amp;</span> <span class="k">value</span><span class="o">=</span><span class="n">elapsed_times</span><span class="p">(</span><span class="n">timer_position</span><span class="p">))</span>
 <a name="ln-99"></a>    <span class="k">END IF</span>
 <a name="ln-100"></a><span class="k">    CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-101"></a>  <span class="k">END SUBROUTINE </span><span class="n">PrintTimer</span>
@@ -374,7 +374,7 @@
 <a name="ln-109"></a>    <span class="k">CALL </span><span class="n">EnterSubLog</span>
 <a name="ln-110"></a>    <span class="k">DO </span><span class="n">timer_position</span> <span class="o">=</span> <span class="nb">LBOUND</span><span class="p">(</span><span class="n">timer_list</span><span class="p">,</span><span class="nb">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="nb">UBOUND</span><span class="p">(</span><span class="n">timer_list</span><span class="p">,</span><span class="nb">dim</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-111"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">timer_list</span><span class="p">(</span><span class="n">timer_position</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-112"></a>            <span class="p">&amp;</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">elapsed_times</span><span class="p">(</span><span class="n">timer_position</span><span class="p">))</span>
+<a name="ln-112"></a>            <span class="p">&amp;</span> <span class="k">value</span><span class="o">=</span><span class="n">elapsed_times</span><span class="p">(</span><span class="n">timer_position</span><span class="p">))</span>
 <a name="ln-113"></a>    <span class="k">END DO</span>
 <a name="ln-114"></a><span class="k">    CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-115"></a>  <span class="k">END SUBROUTINE </span><span class="n">PrintAllTimers</span>
@@ -396,7 +396,7 @@
 <a name="ln-131"></a>       <span class="k">CALL </span><span class="n">MPI_Allreduce</span><span class="p">(</span><span class="n">elapsed</span><span class="p">,</span> <span class="n">max_time</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">MPI_DOUBLE</span> <span class="p">,</span><span class="n">MPI_MAX</span><span class="p">,</span> <span class="p">&amp;</span>
 <a name="ln-132"></a>            <span class="p">&amp;</span> <span class="n">global_grid</span><span class="p">%</span><span class="n">global_comm</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
 <a name="ln-133"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">timer_list</span><span class="p">(</span><span class="n">timer_position</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-134"></a>            <span class="p">&amp;</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">max_time</span><span class="p">)</span>
+<a name="ln-134"></a>            <span class="p">&amp;</span> <span class="k">value</span><span class="o">=</span><span class="n">max_time</span><span class="p">)</span>
 <a name="ln-135"></a>    <span class="k">END DO</span>
 <a name="ln-136"></a>
 <a name="ln-137"></a><span class="k">    CALL </span><span class="n">ExitSubLog</span>

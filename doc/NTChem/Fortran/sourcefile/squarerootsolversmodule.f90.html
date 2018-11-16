@@ -475,9 +475,9 @@
 <a name="ln-210"></a>       <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">SquareRootMat</span><span class="p">,</span><span class="nb">SQRT</span><span class="p">(</span><span class="n">lambda</span><span class="p">))</span>
 <a name="ln-211"></a>
 <a name="ln-212"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-213"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-213"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-214"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-215"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-215"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
 <a name="ln-216"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-217"></a>       <span class="k">END IF</span>
 <a name="ln-218"></a>
@@ -487,7 +487,7 @@
 <a name="ln-222"></a><span class="k">    END DO</span>
 <a name="ln-223"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-224"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-225"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-225"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-226"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">InverseSquareRootMat</span><span class="p">)</span>
 <a name="ln-227"></a>    <span class="k">END IF</span>
 <a name="ln-228"></a>
@@ -660,9 +660,9 @@
 <a name="ln-395"></a>            <span class="p">&amp;</span> <span class="n">threshold_in</span><span class="o">=</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">,</span><span class="n">memory_pool_in</span><span class="o">=</span><span class="n">mpool</span><span class="p">)</span>
 <a name="ln-396"></a>
 <a name="ln-397"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-398"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-398"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-399"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-400"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span><span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-400"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
 <a name="ln-401"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-402"></a>       <span class="k">END IF</span>
 <a name="ln-403"></a>
@@ -672,7 +672,7 @@
 <a name="ln-407"></a><span class="k">    END DO</span>
 <a name="ln-408"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-409"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-410"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-410"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-411"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">InverseSquareRootMat</span><span class="p">)</span>
 <a name="ln-412"></a>    <span class="k">END IF</span>
 <a name="ln-413"></a>

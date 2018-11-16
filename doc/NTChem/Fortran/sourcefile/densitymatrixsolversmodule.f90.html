@@ -346,7 +346,7 @@
 <a name="ln-81"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-82"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
 <a name="ln-83"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-84"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;PM&quot;</span><span class="p">)</span>
+<a name="ln-84"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;PM&quot;</span><span class="p">)</span>
 <a name="ln-85"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;palser1998canonical&quot;</span><span class="p">)</span>
 <a name="ln-86"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-87"></a>    <span class="k">END IF</span>
@@ -458,10 +458,10 @@
 <a name="ln-193"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
 <a name="ln-194"></a>
 <a name="ln-195"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-196"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-196"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-197"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-198"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
-<a name="ln-199"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-198"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-199"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
 <a name="ln-200"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-201"></a>       <span class="k">END IF</span>
 <a name="ln-202"></a>
@@ -472,7 +472,7 @@
 <a name="ln-207"></a><span class="k">    </span><span class="n">total_iterations</span> <span class="o">=</span> <span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span>
 <a name="ln-208"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-209"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-210"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-210"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-211"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">X_k</span><span class="p">)</span>
 <a name="ln-212"></a>    <span class="k">END IF</span>
 <a name="ln-213"></a>
@@ -595,7 +595,7 @@
 <a name="ln-330"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-331"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
 <a name="ln-332"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-333"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;TRS2&quot;</span><span class="p">)</span>
+<a name="ln-333"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;TRS2&quot;</span><span class="p">)</span>
 <a name="ln-334"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;niklasson2002expansion&quot;</span><span class="p">)</span>
 <a name="ln-335"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-336"></a>    <span class="k">END IF</span>
@@ -673,10 +673,10 @@
 <a name="ln-408"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
 <a name="ln-409"></a>
 <a name="ln-410"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-411"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-411"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-412"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-413"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
-<a name="ln-414"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-413"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-414"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
 <a name="ln-415"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-416"></a>       <span class="k">END IF</span>
 <a name="ln-417"></a>
@@ -687,7 +687,7 @@
 <a name="ln-422"></a><span class="k">    </span><span class="n">total_iterations</span> <span class="o">=</span> <span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span>
 <a name="ln-423"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-424"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-425"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-425"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-426"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">X_k</span><span class="p">)</span>
 <a name="ln-427"></a>    <span class="k">END IF</span>
 <a name="ln-428"></a>
@@ -805,7 +805,7 @@
 <a name="ln-540"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-541"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
 <a name="ln-542"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-543"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;TRS4&quot;</span><span class="p">)</span>
+<a name="ln-543"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;TRS4&quot;</span><span class="p">)</span>
 <a name="ln-544"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;niklasson2002expansion&quot;</span><span class="p">)</span>
 <a name="ln-545"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-546"></a>    <span class="k">END IF</span>
@@ -903,10 +903,10 @@
 <a name="ln-638"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
 <a name="ln-639"></a>
 <a name="ln-640"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-641"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-641"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-642"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-643"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
-<a name="ln-644"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-643"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-644"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
 <a name="ln-645"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-646"></a>       <span class="k">END IF</span>
 <a name="ln-647"></a>
@@ -917,7 +917,7 @@
 <a name="ln-652"></a><span class="k">    </span><span class="n">total_iterations</span> <span class="o">=</span> <span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span>
 <a name="ln-653"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-654"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-655"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-655"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-656"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">X_k</span><span class="p">)</span>
 <a name="ln-657"></a>    <span class="k">END IF</span>
 <a name="ln-658"></a>
@@ -1047,7 +1047,7 @@
 <a name="ln-782"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-783"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
 <a name="ln-784"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-785"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;HPCP&quot;</span><span class="p">)</span>
+<a name="ln-785"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;HPCP&quot;</span><span class="p">)</span>
 <a name="ln-786"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;truflandier2016communication&quot;</span><span class="p">)</span>
 <a name="ln-787"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-788"></a>    <span class="k">END IF</span>
@@ -1149,10 +1149,10 @@
 <a name="ln-884"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
 <a name="ln-885"></a>
 <a name="ln-886"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-887"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-887"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-888"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-889"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
-<a name="ln-890"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-889"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-890"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
 <a name="ln-891"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-892"></a>       <span class="k">END IF</span>
 <a name="ln-893"></a>
@@ -1163,7 +1163,7 @@
 <a name="ln-898"></a><span class="k">    </span><span class="n">total_iterations</span> <span class="o">=</span> <span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span>
 <a name="ln-899"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-900"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-901"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-901"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-902"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">D1</span><span class="p">)</span>
 <a name="ln-903"></a>    <span class="k">END IF</span>
 <a name="ln-904"></a>
@@ -1289,7 +1289,7 @@
 <a name="ln-1024"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-1025"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
 <a name="ln-1026"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-1027"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;HPCP+&quot;</span><span class="p">)</span>
+<a name="ln-1027"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;HPCP+&quot;</span><span class="p">)</span>
 <a name="ln-1028"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;truflandier2016communication&quot;</span><span class="p">)</span>
 <a name="ln-1029"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-1030"></a>    <span class="k">END IF</span>
@@ -1428,10 +1428,10 @@
 <a name="ln-1163"></a>       <span class="n">norm_value</span> <span class="o">=</span> <span class="nb">ABS</span><span class="p">(</span><span class="n">energy_value</span> <span class="o">-</span> <span class="n">energy_value2</span><span class="p">)</span>
 <a name="ln-1164"></a>
 <a name="ln-1165"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-1166"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-1166"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-1167"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-1168"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
-<a name="ln-1169"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
+<a name="ln-1168"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-1169"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="s2">&quot;Energy_Value&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">energy_value</span><span class="p">)</span>
 <a name="ln-1170"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-1171"></a>       <span class="k">END IF</span>
 <a name="ln-1172"></a>
@@ -1442,7 +1442,7 @@
 <a name="ln-1177"></a><span class="k">    </span><span class="n">total_iterations</span> <span class="o">=</span> <span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span>
 <a name="ln-1178"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-1179"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-1180"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
+<a name="ln-1180"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="p">)</span>
 <a name="ln-1181"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">D1</span><span class="p">)</span>
 <a name="ln-1182"></a>    <span class="k">END IF</span>
 <a name="ln-1183"></a>
@@ -1551,7 +1551,7 @@
 <a name="ln-1286"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-1287"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Density Matrix Solver&quot;</span><span class="p">)</span>
 <a name="ln-1288"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-1289"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Dense Eigen Solver&quot;</span><span class="p">)</span>
+<a name="ln-1289"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Dense Eigen Solver&quot;</span><span class="p">)</span>
 <a name="ln-1290"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-1291"></a>    <span class="k">END IF</span>
 <a name="ln-1292"></a>

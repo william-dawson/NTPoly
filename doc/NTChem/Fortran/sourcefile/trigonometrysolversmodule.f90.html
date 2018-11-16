@@ -365,7 +365,7 @@
 <a name="ln-100"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-101"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Trigonometry Solver&quot;</span><span class="p">)</span>
 <a name="ln-102"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-103"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
+<a name="ln-103"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
 <a name="ln-104"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;higham2003computing&quot;</span><span class="p">)</span>
 <a name="ln-105"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-106"></a>    <span class="k">END IF</span>
@@ -481,7 +481,7 @@
 <a name="ln-216"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-217"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Trigonometry Solver&quot;</span><span class="p">)</span>
 <a name="ln-218"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-219"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">)</span>
+<a name="ln-219"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">)</span>
 <a name="ln-220"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;serbin1980algorithm higham2003computing yau1993reducing&quot;</span><span class="p">)</span>
 <a name="ln-221"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-222"></a>    <span class="k">END IF</span>

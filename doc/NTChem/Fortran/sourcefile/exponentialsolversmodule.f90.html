@@ -332,7 +332,7 @@
 <a name="ln-67"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-68"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Exponential Solver&quot;</span><span class="p">)</span>
 <a name="ln-69"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-70"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">)</span>
+<a name="ln-70"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">)</span>
 <a name="ln-71"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-72"></a>    <span class="k">END IF</span>
 <a name="ln-73"></a>
@@ -351,7 +351,7 @@
 <a name="ln-86"></a>    <span class="n">sub_solver_parameters</span><span class="p">%</span><span class="n">threshold</span> <span class="o">=</span> <span class="n">sub_solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="o">/</span><span class="n">sigma_val</span>
 <a name="ln-87"></a>
 <a name="ln-88"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-89"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">sigma_val</span><span class="p">)</span>
+<a name="ln-89"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">sigma_val</span><span class="p">)</span>
 <a name="ln-90"></a>    <span class="k">END IF</span>
 <a name="ln-91"></a>
 <a name="ln-92"></a>    <span class="c">!! Expand Chebyshev Series</span>
@@ -445,7 +445,7 @@
 <a name="ln-180"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-181"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Exponential Solver&quot;</span><span class="p">)</span>
 <a name="ln-182"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-183"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Pade&quot;</span><span class="p">)</span>
+<a name="ln-183"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Pade&quot;</span><span class="p">)</span>
 <a name="ln-184"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-185"></a>    <span class="k">END IF</span>
 <a name="ln-186"></a>
@@ -464,8 +464,8 @@
 <a name="ln-199"></a><span class="k">    CALL </span><span class="n">CopyMatrix</span><span class="p">(</span><span class="n">InputMat</span><span class="p">,</span> <span class="n">ScaledMat</span><span class="p">)</span>
 <a name="ln-200"></a>    <span class="k">CALL </span><span class="n">ScaleMatrix</span><span class="p">(</span><span class="n">ScaledMat</span><span class="p">,</span><span class="mf">1.0</span><span class="o">/</span><span class="n">sigma_val</span><span class="p">)</span>
 <a name="ln-201"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-202"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">sigma_val</span><span class="p">)</span>
-<a name="ln-203"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Scaling_Steps&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">sigma_counter</span><span class="p">)</span>
+<a name="ln-202"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">sigma_val</span><span class="p">)</span>
+<a name="ln-203"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Scaling_Steps&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">sigma_counter</span><span class="p">)</span>
 <a name="ln-204"></a>    <span class="k">END IF</span>
 <a name="ln-205"></a>
 <a name="ln-206"></a>    <span class="c">!! Sub Solver Parameters</span>
@@ -568,7 +568,7 @@
 <a name="ln-303"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-304"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Exponential Solver&quot;</span><span class="p">)</span>
 <a name="ln-305"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-306"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
+<a name="ln-306"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
 <a name="ln-307"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-308"></a>    <span class="k">END IF</span>
 <a name="ln-309"></a>
@@ -668,7 +668,7 @@
 <a name="ln-403"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-404"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Logarithm Solver&quot;</span><span class="p">)</span>
 <a name="ln-405"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-406"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">)</span>
+<a name="ln-406"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Chebyshev&quot;</span><span class="p">)</span>
 <a name="ln-407"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-408"></a>    <span class="k">END IF</span>
 <a name="ln-409"></a>
@@ -689,7 +689,7 @@
 <a name="ln-424"></a>       <span class="n">sigma_counter</span> <span class="o">=</span> <span class="n">sigma_counter</span> <span class="o">+</span> <span class="mi">1</span>
 <a name="ln-425"></a>    <span class="k">END DO</span>
 <a name="ln-426"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-427"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">sigma_val</span><span class="p">)</span>
+<a name="ln-427"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Sigma&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">sigma_val</span><span class="p">)</span>
 <a name="ln-428"></a>    <span class="k">END IF</span>
 <a name="ln-429"></a><span class="k">    </span><span class="n">f_sub_solver_parameters</span><span class="p">%</span><span class="n">threshold</span> <span class="o">=</span> <span class="p">&amp;</span>
 <a name="ln-430"></a>         <span class="p">&amp;</span> <span class="n">f_sub_solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="o">/</span><span class="kt">REAL</span><span class="p">(</span><span class="mi">2</span><span class="o">**</span><span class="p">(</span><span class="n">sigma_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span><span class="n">NTREAL</span><span class="p">)</span>
@@ -787,7 +787,7 @@
 <a name="ln-522"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-523"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Logarithm Solver&quot;</span><span class="p">)</span>
 <a name="ln-524"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-525"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
+<a name="ln-525"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Taylor&quot;</span><span class="p">)</span>
 <a name="ln-526"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-527"></a>    <span class="k">END IF</span>
 <a name="ln-528"></a>

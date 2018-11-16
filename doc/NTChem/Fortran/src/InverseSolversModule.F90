@@ -87,9 +87,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL WriteListElement(key="Round", value=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement(key="Convergence", value=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -119,7 +119,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", value=outer_counter-1)
        CALL PrintMatrixInformation(InverseMat)
     END IF
 
@@ -208,9 +208,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL WriteListElement(key="Round", value=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement(key="Convergence", value=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -239,7 +239,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", value=outer_counter-1)
        CALL PrintMatrixInformation(InverseMat)
     END IF
 

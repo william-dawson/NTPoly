@@ -63,7 +63,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="CG")
+       CALL WriteElement(key="Method", value="CG")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -107,9 +107,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL WriteListElement(key="Round", value=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement(key="Convergence", value=norm_value)
           CALL ExitSubLog
        END IF
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
@@ -156,7 +156,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", value=outer_counter-1)
        CALL PrintMatrixInformation(XMat)
     END IF
 
@@ -219,7 +219,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Cholesky Decomposition")
+       CALL WriteElement(key="Method", value="Cholesky Decomposition")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -372,9 +372,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", &
-            & text_value_in="Pivoted Cholesky Decomposition")
-       CALL WriteElement(key="Target_Rank", int_value_in=rank_in)
+       CALL WriteElement(key="Method", value="Pivoted Cholesky Decomposition")
+       CALL WriteElement(key="Target_Rank", value=rank_in)
        CALL PrintParameters(solver_parameters)
     END IF
 

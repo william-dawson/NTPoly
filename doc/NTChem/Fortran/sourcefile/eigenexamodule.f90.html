@@ -128,7 +128,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 2.5% of total for source files.">220 statements</a>
+    title=" 0.0% of total for source files.">2 statements</a>
      </li> 
      
      
@@ -266,365 +266,367 @@
     <div class="hl"><pre><span></span><a name="ln-1"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
 <a name="ln-2"></a><span class="c">!&gt; A module for calling eigenexa</span>
 <a name="ln-3"></a><span class="k">MODULE </span><span class="n">EigenExaModule</span>
-<a name="ln-4"></a>  <span class="k">USE </span><span class="n">DataTypesModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">NTREAL</span>
-<a name="ln-5"></a>  <span class="k">USE </span><span class="n">LoggingModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">EnterSubLog</span><span class="p">,</span> <span class="n">ExitSubLog</span><span class="p">,</span> <span class="n">WriteElement</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-6"></a>       <span class="p">&amp;</span> <span class="n">WriteCitation</span><span class="p">,</span> <span class="n">WriteHeader</span>
-<a name="ln-7"></a>  <span class="k">USE </span><span class="n">PSMatrixModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Matrix_ps</span><span class="p">,</span> <span class="n">ConstructEmptyMatrix</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-8"></a>       <span class="p">&amp;</span> <span class="n">FillMatrixFromTripletList</span><span class="p">,</span> <span class="n">GetMatrixTripletList</span><span class="p">,</span> <span class="n">PrintMatrixInformation</span>
-<a name="ln-9"></a>  <span class="k">USE </span><span class="n">SolverParametersModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">SolverParameters_t</span><span class="p">,</span> <span class="n">PrintParameters</span>
-<a name="ln-10"></a>  <span class="k">USE </span><span class="n">TimerModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">StartTimer</span><span class="p">,</span> <span class="n">StopTimer</span>
-<a name="ln-11"></a>  <span class="k">USE </span><span class="n">TripletModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Triplet_r</span><span class="p">,</span> <span class="n">SetTriplet</span>
-<a name="ln-12"></a>  <span class="k">USE </span><span class="n">TripletListModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">TripletList_r</span><span class="p">,</span> <span class="n">AppendToTripletList</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-13"></a>       <span class="p">&amp;</span> <span class="n">GetTripletAt</span><span class="p">,</span> <span class="n">ConstructTripletList</span><span class="p">,</span> <span class="n">DestructTripletList</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-14"></a>       <span class="p">&amp;</span> <span class="n">RedistributeTripletLists</span>
-<a name="ln-15"></a>  <span class="k">USE </span><span class="n">eigen_libs</span>
-<a name="ln-16"></a>  <span class="k">USE </span><span class="n">MPI</span>
-<a name="ln-17"></a>  <span class="k">IMPLICIT NONE</span>
-<a name="ln-18"></a><span class="k">  PRIVATE</span>
-<a name="ln-19"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-20"></a>  <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">EigenExa_s</span>
-<a name="ln-21"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-22"></a>  <span class="k">TYPE</span><span class="p">,</span> <span class="k">PRIVATE</span> <span class="kd">::</span> <span class="n">ExaHelper_t</span>
-<a name="ln-23"></a>     <span class="c">!&gt; The number of processors involved.</span>
-<a name="ln-24"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">num_procs</span>
-<a name="ln-25"></a>     <span class="c">!&gt; The number of rows for the eigenexa comm.</span>
-<a name="ln-26"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">proc_rows</span>
-<a name="ln-27"></a>     <span class="c">!&gt; The number of columns for the eigenexa comm.</span>
-<a name="ln-28"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">proc_cols</span>
-<a name="ln-29"></a>     <span class="c">!&gt; Which process this is.</span>
-<a name="ln-30"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">procid</span>
-<a name="ln-31"></a>     <span class="c">!&gt; The global rank</span>
-<a name="ln-32"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">global_rank</span>
-<a name="ln-33"></a>     <span class="c">!&gt; Which row is this process in.</span>
-<a name="ln-34"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">rowid</span>
-<a name="ln-35"></a>     <span class="c">!&gt; Which column is this process in.</span>
-<a name="ln-36"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">colid</span>
-<a name="ln-37"></a>     <span class="c">!&gt; The number of rows for the local matrix.</span>
-<a name="ln-38"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">local_rows</span>
-<a name="ln-39"></a>     <span class="c">!&gt; The number of columns for the local matrix.</span>
-<a name="ln-40"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">local_cols</span>
-<a name="ln-41"></a>     <span class="c">!&gt; The dimension fo the matrix.</span>
-<a name="ln-42"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">mat_dim</span>
-<a name="ln-43"></a>     <span class="c">!&gt; The communicator for this calculation.</span>
-<a name="ln-44"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">comm</span>
-<a name="ln-45"></a>     <span class="c">!&gt; Householder transform block size</span>
-<a name="ln-46"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">MB</span>
-<a name="ln-47"></a>     <span class="c">!&gt; Householder backward transformation block size</span>
-<a name="ln-48"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">M</span>
-<a name="ln-49"></a>     <span class="c">!&gt; Mode of the solver</span>
-<a name="ln-50"></a>     <span class="kt">CHARACTER</span> <span class="kd">::</span> <span class="n">MODE</span>
-<a name="ln-51"></a>     <span class="c">!&gt; For block cyclic indexing.</span>
-<a name="ln-52"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">offset</span>
-<a name="ln-53"></a>  <span class="k">END TYPE </span><span class="n">ExaHelper_t</span>
-<a name="ln-54"></a><span class="k">CONTAINS</span><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-55"></a>  <span class="c">!&gt; Compute the eigenvectors of a matrix using EigenExa.</span>
-<a name="ln-56"></a>  <span class="k">SUBROUTINE </span><span class="n">EigenExa_s</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">eigenvectors</span><span class="p">,</span> <span class="n">eigenvalues_out</span><span class="p">,</span> <span class="n">solver_parameters_in</span><span class="p">)</span>
-<a name="ln-57"></a>    <span class="c">!&gt; The matrix to decompose.</span>
-<a name="ln-58"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
-<a name="ln-59"></a>    <span class="c">!&gt; The eigenvectors computed.</span>
-<a name="ln-60"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">eigenvectors</span>
-<a name="ln-61"></a>    <span class="c">!&gt; The eigenvalues computed.</span>
-<a name="ln-62"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">eigenvalues_out</span>
-<a name="ln-63"></a>    <span class="c">!&gt; The parameters for this solver.</span>
-<a name="ln-64"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">solver_parameters_in</span>
-<a name="ln-65"></a>    <span class="c">!! Optional Parameters</span>
-<a name="ln-66"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">solver_parameters</span>
-<a name="ln-67"></a>    <span class="c">!! Helper</span>
-<a name="ln-68"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
-<a name="ln-69"></a>    <span class="c">!! Dense Matrices</span>
-<a name="ln-70"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">AD</span>
-<a name="ln-71"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">VD</span>
-<a name="ln-72"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">WD</span>
-<a name="ln-73"></a>
-<a name="ln-74"></a>    <span class="c">!! Process Optional Parameters</span>
-<a name="ln-75"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">solver_parameters_in</span><span class="p">))</span> <span class="k">THEN</span>
-<a name="ln-76"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">solver_parameters_in</span>
-<a name="ln-77"></a>    <span class="k">ELSE</span>
-<a name="ln-78"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">SolverParameters_t</span><span class="p">()</span>
-<a name="ln-79"></a>    <span class="k">END IF</span>
-<a name="ln-80"></a>
-<a name="ln-81"></a>    <span class="c">!! Write info about the solver</span>
-<a name="ln-82"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-83"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Eigen Solver&quot;</span><span class="p">)</span>
-<a name="ln-84"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-85"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;EigenExa&quot;</span><span class="p">)</span>
-<a name="ln-86"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;imamura2011development&quot;</span><span class="p">)</span>
-<a name="ln-87"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
-<a name="ln-88"></a>    <span class="k">END IF</span>
-<a name="ln-89"></a>
-<a name="ln-90"></a>    <span class="c">!! Main Routines</span>
-<a name="ln-91"></a>    <span class="k">CALL </span><span class="n">InitializeEigenExa</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-92"></a>
-<a name="ln-93"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;NTToEigen&quot;</span><span class="p">)</span>
-<a name="ln-94"></a>    <span class="k">CALL </span><span class="n">NTToEigen</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-95"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;NTToEigen&quot;</span><span class="p">)</span>
-<a name="ln-96"></a>
-<a name="ln-97"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaCompute&quot;</span><span class="p">)</span>
-<a name="ln-98"></a>    <span class="k">CALL </span><span class="n">Compute</span><span class="p">(</span><span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-99"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaCompute&quot;</span><span class="p">)</span>
-<a name="ln-100"></a>
-<a name="ln-101"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenToNT&quot;</span><span class="p">)</span>
-<a name="ln-102"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">eigenvectors</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
-<a name="ln-103"></a>    <span class="k">CALL </span><span class="n">EigenToNT</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span> <span class="n">eigenvectors</span><span class="p">,</span> <span class="n">solver_parameters</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-104"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenToNT&quot;</span><span class="p">)</span>
-<a name="ln-105"></a>
-<a name="ln-106"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">eigenvalues_out</span><span class="p">))</span> <span class="k">THEN</span>
-<a name="ln-107"></a><span class="k">       CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">eigenvalues_out</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
-<a name="ln-108"></a>       <span class="k">CALL </span><span class="n">ExtractEigenvalues</span><span class="p">(</span><span class="n">WD</span><span class="p">,</span> <span class="n">eigenvalues_out</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-109"></a>    <span class="k">END IF</span>
-<a name="ln-110"></a>
-<a name="ln-111"></a><span class="k">    CALL </span><span class="n">CleanUp</span><span class="p">(</span><span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">)</span>
-<a name="ln-112"></a>
-<a name="ln-113"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-114"></a><span class="k">       CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">eigenvectors</span><span class="p">)</span>
-<a name="ln-115"></a>       <span class="k">CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-116"></a>    <span class="k">END IF</span>
-<a name="ln-117"></a>
-<a name="ln-118"></a><span class="k">  END SUBROUTINE </span><span class="n">EigenExa_s</span>
-<a name="ln-119"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-120"></a>  <span class="c">!&gt; Setup the eigen exa data structures.</span>
-<a name="ln-121"></a>  <span class="k">SUBROUTINE </span><span class="n">InitializeEigenExa</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-122"></a>    <span class="c">!&gt; The matrix we&#39;re working on.</span>
-<a name="ln-123"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
-<a name="ln-124"></a>    <span class="c">!&gt; The dense matrix will be allocated.</span>
-<a name="ln-125"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">AD</span>
-<a name="ln-126"></a>    <span class="c">!&gt; The dense matrix of eigenvectors will be allocated.</span>
-<a name="ln-127"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">VD</span>
-<a name="ln-128"></a>    <span class="c">!&gt; The dense array of eigenvalues will be allocated.</span>
-<a name="ln-129"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WD</span>
-<a name="ln-130"></a>    <span class="c">!&gt; Stores info about the calculation.</span>
-<a name="ln-131"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
-<a name="ln-132"></a>    <span class="c">!! Local Variables</span>
-<a name="ln-133"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ICTXT</span><span class="p">,</span> <span class="n">INFO</span>
-<a name="ln-134"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span> <span class="kd">::</span> <span class="n">DESCA</span>
-<a name="ln-135"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ierr</span>
-<a name="ln-136"></a>
-<a name="ln-137"></a>    <span class="c">!! Setup the MPI Communicator</span>
-<a name="ln-138"></a>    <span class="k">CALL </span><span class="n">MPI_Comm_dup</span><span class="p">(</span><span class="n">A</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">global_comm</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
-<a name="ln-139"></a>    <span class="k">CALL </span><span class="n">MPI_Comm_rank</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">global_rank</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
-<a name="ln-140"></a>
-<a name="ln-141"></a>    <span class="c">!! Build EigenExa Process Grid</span>
-<a name="ln-142"></a>    <span class="k">CALL </span><span class="n">eigen_init</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">)</span>
-<a name="ln-143"></a>    <span class="k">CALL </span><span class="n">eigen_get_procs</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span> <span class="p">)</span>
-<a name="ln-144"></a>    <span class="k">CALL </span><span class="n">eigen_get_id</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">procid</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
-<a name="ln-145"></a>
-<a name="ln-146"></a>    <span class="c">!! Allocate Dense Matrices</span>
-<a name="ln-147"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span> <span class="o">=</span> <span class="n">A</span><span class="p">%</span><span class="n">actual_matrix_dimension</span>
-<a name="ln-148"></a>    <span class="k">CALL </span><span class="n">eigen_get_matdims</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_cols</span><span class="p">)</span>
-<a name="ln-149"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">AD</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_cols</span><span class="p">))</span>
-<a name="ln-150"></a>    <span class="n">AD</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-151"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">VD</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_cols</span><span class="p">))</span>
-<a name="ln-152"></a>    <span class="n">VD</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-153"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">WD</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">))</span>
-<a name="ln-154"></a>    <span class="n">WD</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-155"></a>
-<a name="ln-156"></a>    <span class="c">!&gt; Default blocking parameters</span>
-<a name="ln-157"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">MB</span> <span class="o">=</span> <span class="mi">128</span>
-<a name="ln-158"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">M</span> <span class="o">=</span> <span class="mi">48</span>
-<a name="ln-159"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">MODE</span> <span class="o">=</span> <span class="s1">&#39;A&#39;</span>
-<a name="ln-160"></a>
-<a name="ln-161"></a>    <span class="c">!! Blacs gives us the blocking info.</span>
-<a name="ln-162"></a>    <span class="n">ICTXT</span> <span class="o">=</span> <span class="n">eigen_get_blacs_context</span><span class="p">()</span>
-<a name="ln-163"></a>    <span class="k">CALL </span><span class="n">DESCINIT</span><span class="p">(</span><span class="n">DESCA</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ICTXT</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-164"></a>         <span class="p">&amp;</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">INFO</span> <span class="p">)</span>
-<a name="ln-165"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">offset</span> <span class="o">=</span> <span class="n">DESCA</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
-<a name="ln-166"></a>
-<a name="ln-167"></a>  <span class="k">END SUBROUTINE </span><span class="n">InitializeEigenExa</span>
-<a name="ln-168"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-169"></a>  <span class="c">!&gt; Converts the distributed sparse matrix to a dense matrix in block-cyclic</span>
-<a name="ln-170"></a>  <span class="c">!&gt; distribution.</span>
-<a name="ln-171"></a>  <span class="k">SUBROUTINE </span><span class="n">NTToEigen</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-172"></a>    <span class="c">!&gt; The matrix to convert.</span>
-<a name="ln-173"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
-<a name="ln-174"></a>    <span class="c">!&gt; The dense, block-cyclic version.</span>
-<a name="ln-175"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">AD</span>
-<a name="ln-176"></a>    <span class="c">!&gt; Info about the calculation.</span>
-<a name="ln-177"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
-<a name="ln-178"></a>    <span class="c">!! Local Variables</span>
-<a name="ln-179"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">triplet_a</span>
-<a name="ln-180"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">send_list</span>
-<a name="ln-181"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">recv_list</span>
-<a name="ln-182"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trip</span><span class="p">,</span> <span class="n">shifted_trip</span>
-<a name="ln-183"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">jlookup</span><span class="p">,</span> <span class="n">iowner</span><span class="p">,</span> <span class="n">jowner</span><span class="p">,</span> <span class="n">ijowner</span>
-<a name="ln-184"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">lrow</span><span class="p">,</span> <span class="n">lcol</span>
-<a name="ln-185"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">II</span>
-<a name="ln-186"></a>
-<a name="ln-187"></a>    <span class="c">!! We will fill a triplet list for each other process</span>
-<a name="ln-188"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span><span class="p">))</span>
-<a name="ln-189"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span>
-<a name="ln-190"></a>       <span class="k">CALL </span><span class="n">ConstructTripletList</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
-<a name="ln-191"></a>    <span class="k">END DO</span>
-<a name="ln-192"></a>
-<a name="ln-193"></a>    <span class="c">!! Now Get The Triplet List, and adjust</span>
-<a name="ln-194"></a>    <span class="k">CALL </span><span class="n">GetMatrixTripletList</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">triplet_a</span><span class="p">)</span>
-<a name="ln-195"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">triplet_a</span><span class="p">%</span><span class="n">CurrentSize</span>
-<a name="ln-196"></a>       <span class="k">CALL </span><span class="n">GetTripletAt</span><span class="p">(</span><span class="n">triplet_a</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">trip</span><span class="p">)</span>
-<a name="ln-197"></a>
-<a name="ln-198"></a>       <span class="c">!! Determine where that triplet will reside</span>
-<a name="ln-199"></a>       <span class="n">iowner</span> <span class="o">=</span> <span class="n">eigen_owner_node</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_row</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
-<a name="ln-200"></a>       <span class="n">jowner</span> <span class="o">=</span> <span class="n">eigen_owner_node</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_column</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
-<a name="ln-201"></a>       <span class="n">ijowner</span> <span class="o">=</span> <span class="p">(</span><span class="n">jowner</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span> <span class="o">+</span> <span class="n">iowner</span>
-<a name="ln-202"></a>
-<a name="ln-203"></a>       <span class="c">!! New indices</span>
-<a name="ln-204"></a>       <span class="n">ilookup</span> <span class="o">=</span> <span class="n">eigen_translate_g2l</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_row</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-205"></a>            <span class="p">&amp;</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
-<a name="ln-206"></a>       <span class="n">jlookup</span> <span class="o">=</span> <span class="n">eigen_translate_g2l</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_column</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-207"></a>            <span class="p">&amp;</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
-<a name="ln-208"></a>       <span class="k">CALL </span><span class="n">SetTriplet</span><span class="p">(</span><span class="n">shifted_trip</span><span class="p">,</span> <span class="n">jlookup</span><span class="p">,</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">trip</span><span class="p">%</span><span class="n">point_value</span><span class="p">)</span>
-<a name="ln-209"></a>
-<a name="ln-210"></a>       <span class="k">CALL </span><span class="n">AppendToTripletList</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">ijowner</span><span class="p">),</span> <span class="n">shifted_trip</span><span class="p">)</span>
-<a name="ln-211"></a>    <span class="k">END DO</span>
-<a name="ln-212"></a>
-<a name="ln-213"></a>    <span class="c">!! Redistribute The Triplets</span>
-<a name="ln-214"></a>    <span class="k">CALL </span><span class="n">RedistributeTripletLists</span><span class="p">(</span><span class="n">send_list</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">,</span> <span class="n">recv_list</span><span class="p">)</span>
-<a name="ln-215"></a>
-<a name="ln-216"></a>    <span class="c">!! Write To The Dense Array</span>
-<a name="ln-217"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">recv_list</span><span class="p">%</span><span class="n">CurrentSize</span>
-<a name="ln-218"></a>       <span class="n">lrow</span> <span class="o">=</span> <span class="n">recv_list</span><span class="p">%</span><span class="k">data</span><span class="p">(</span><span class="n">II</span><span class="p">)%</span><span class="n">index_row</span>
-<a name="ln-219"></a>       <span class="n">lcol</span> <span class="o">=</span> <span class="n">recv_list</span><span class="p">%</span><span class="k">data</span><span class="p">(</span><span class="n">II</span><span class="p">)%</span><span class="n">index_column</span>
-<a name="ln-220"></a>       <span class="n">AD</span><span class="p">(</span><span class="n">lrow</span><span class="p">,</span><span class="n">lcol</span><span class="p">)</span> <span class="o">=</span> <span class="n">recv_list</span><span class="p">%</span><span class="k">data</span><span class="p">(</span><span class="n">II</span><span class="p">)%</span><span class="n">point_value</span>
-<a name="ln-221"></a>    <span class="k">END DO</span>
-<a name="ln-222"></a>
-<a name="ln-223"></a>    <span class="c">!! Cleanup</span>
-<a name="ln-224"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span>
-<a name="ln-225"></a>       <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
-<a name="ln-226"></a>    <span class="k">END DO</span>
-<a name="ln-227"></a><span class="k">    DEALLOCATE</span><span class="p">(</span><span class="n">send_list</span><span class="p">)</span>
-<a name="ln-228"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">recv_list</span><span class="p">)</span>
-<a name="ln-229"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">triplet_a</span><span class="p">)</span>
-<a name="ln-230"></a>
-<a name="ln-231"></a>  <span class="k">END SUBROUTINE </span><span class="n">NTToEigen</span>
-<a name="ln-232"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-233"></a>  <span class="c">!&gt; Converts the dense eigenvector matrix stored block-cyclicly back to</span>
-<a name="ln-234"></a>  <span class="c">!&gt; a distributed sparse matrix.</span>
-<a name="ln-235"></a>  <span class="k">SUBROUTINE </span><span class="n">EigenToNT</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">solver_parameters</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-236"></a>    <span class="c">!&gt; The dense eigenvector matrix.</span>
-<a name="ln-237"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">VD</span>
-<a name="ln-238"></a>    <span class="c">!&gt; The distributed sparse matrix.</span>
-<a name="ln-239"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">V</span>
-<a name="ln-240"></a>    <span class="c">!&gt; Parameters for thresholding small values.</span>
-<a name="ln-241"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">solver_parameters</span>
-<a name="ln-242"></a>    <span class="c">!&gt; Info about the calculation.</span>
-<a name="ln-243"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
-<a name="ln-244"></a>    <span class="c">!! Local Variables</span>
-<a name="ln-245"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">triplet_v</span>
-<a name="ln-246"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trip</span>
-<a name="ln-247"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span><span class="p">,</span> <span class="n">col_start</span><span class="p">,</span> <span class="n">col_end</span>
-<a name="ln-248"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">II</span><span class="p">,</span> <span class="n">JJ</span><span class="p">,</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">jlookup</span>
-<a name="ln-249"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">VD1</span>
-<a name="ln-250"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ind</span>
-<a name="ln-251"></a>
-<a name="ln-252"></a>    <span class="c">!! Get The Eigenvectors</span>
-<a name="ln-253"></a>    <span class="n">row_start</span> <span class="o">=</span> <span class="n">eigen_loop_start</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
-<a name="ln-254"></a>    <span class="n">row_end</span> <span class="o">=</span> <span class="n">eigen_loop_end</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
-<a name="ln-255"></a>    <span class="n">col_start</span> <span class="o">=</span> <span class="n">eigen_loop_start</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
-<a name="ln-256"></a>    <span class="n">col_end</span> <span class="o">=</span> <span class="n">eigen_loop_end</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
-<a name="ln-257"></a>
-<a name="ln-258"></a>    <span class="c">!! Convert to a 1D array for index ease.</span>
-<a name="ln-259"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">VD1</span><span class="p">(</span><span class="n">SIZE</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span><span class="nb">DIM</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">SIZE</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span><span class="nb">DIM</span><span class="o">=</span><span class="mi">2</span><span class="p">)))</span>
-<a name="ln-260"></a>    <span class="n">VD1</span> <span class="o">=</span> <span class="nb">PACK</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span> <span class="p">.</span><span class="n">TRUE</span><span class="p">.)</span>
-<a name="ln-261"></a>
-<a name="ln-262"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaFilter&quot;</span><span class="p">)</span>
-<a name="ln-263"></a>    <span class="k">CALL </span><span class="n">ConstructTripletList</span><span class="p">(</span><span class="n">triplet_v</span><span class="p">)</span>
-<a name="ln-264"></a>    <span class="n">ind</span> <span class="o">=</span> <span class="mi">1</span>
-<a name="ln-265"></a>    <span class="k">DO </span><span class="n">JJ</span> <span class="o">=</span> <span class="n">col_start</span><span class="p">,</span> <span class="n">col_end</span>
-<a name="ln-266"></a>       <span class="n">jlookup</span> <span class="o">=</span> <span class="n">eigen_translate_l2g</span><span class="p">(</span><span class="n">JJ</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
-<a name="ln-267"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span>
-<a name="ln-268"></a>          <span class="k">IF</span> <span class="p">(</span><span class="nb">ABS</span><span class="p">(</span><span class="n">VD1</span><span class="p">(</span><span class="n">ind</span><span class="o">+</span><span class="n">II</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-269"></a><span class="k">             </span><span class="n">ilookup</span> <span class="o">=</span> <span class="n">eigen_translate_l2g</span><span class="p">(</span><span class="n">II</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
-<a name="ln-270"></a>             <span class="k">CALL </span><span class="n">SetTriplet</span><span class="p">(</span><span class="n">trip</span><span class="p">,</span> <span class="n">jlookup</span><span class="p">,</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">VD1</span><span class="p">(</span><span class="n">ind</span><span class="o">+</span><span class="n">II</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
-<a name="ln-271"></a>             <span class="k">CALL </span><span class="n">AppendToTripletList</span><span class="p">(</span><span class="n">triplet_v</span><span class="p">,</span> <span class="n">trip</span><span class="p">)</span>
-<a name="ln-272"></a>          <span class="k">END IF</span>
-<a name="ln-273"></a><span class="k">       END DO</span>
-<a name="ln-274"></a><span class="k">       </span><span class="n">ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="n">exa</span><span class="p">%</span><span class="n">offset</span>
-<a name="ln-275"></a>    <span class="k">END DO</span>
-<a name="ln-276"></a><span class="k">    CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaFilter&quot;</span><span class="p">)</span>
-<a name="ln-277"></a>
-<a name="ln-278"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenFill&quot;</span><span class="p">)</span>
-<a name="ln-279"></a>    <span class="k">CALL </span><span class="n">FillMatrixFromTripletList</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">triplet_v</span><span class="p">)</span>
-<a name="ln-280"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenFill&quot;</span><span class="p">)</span>
-<a name="ln-281"></a>
-<a name="ln-282"></a>    <span class="c">!! Cleanup</span>
-<a name="ln-283"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">triplet_v</span><span class="p">)</span>
-<a name="ln-284"></a>
-<a name="ln-285"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">VD1</span><span class="p">)</span>
-<a name="ln-286"></a>
-<a name="ln-287"></a>  <span class="k">END SUBROUTINE </span><span class="n">EigenToNT</span>
-<a name="ln-288"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-289"></a>  <span class="c">!&gt; Converts the dense eigenvalue matrix stored duplicated across processes.</span>
-<a name="ln-290"></a>  <span class="k">SUBROUTINE </span><span class="n">ExtractEigenvalues</span><span class="p">(</span><span class="n">WD</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-291"></a>    <span class="c">!&gt; The dense eigenvalue matrix.</span>
-<a name="ln-292"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WD</span>
-<a name="ln-293"></a>    <span class="c">!&gt; The distributed sparse matrix.</span>
-<a name="ln-294"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">W</span>
-<a name="ln-295"></a>    <span class="c">!&gt; Info about the calculation.</span>
-<a name="ln-296"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
-<a name="ln-297"></a>    <span class="c">!! Local Variables</span>
-<a name="ln-298"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">triplet_w</span>
-<a name="ln-299"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trip</span>
-<a name="ln-300"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">wstart</span><span class="p">,</span> <span class="n">wend</span><span class="p">,</span> <span class="n">wsize</span>
-<a name="ln-301"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">II</span>
-<a name="ln-302"></a>
-<a name="ln-303"></a>    <span class="c">!! Copy To Triplet List</span>
-<a name="ln-304"></a>    <span class="n">wsize</span> <span class="o">=</span> <span class="nb">MAX</span><span class="p">(</span><span class="nb">CEILING</span><span class="p">((</span><span class="mf">1.0</span><span class="o">*</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">)</span><span class="o">/</span><span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
-<a name="ln-305"></a>    <span class="n">wstart</span> <span class="o">=</span> <span class="n">wsize</span><span class="o">*</span><span class="n">exa</span><span class="p">%</span><span class="n">global_rank</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-306"></a>    <span class="n">wend</span> <span class="o">=</span> <span class="nb">MIN</span><span class="p">(</span><span class="n">wsize</span><span class="o">*</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">global_rank</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">)</span>
-<a name="ln-307"></a>
-<a name="ln-308"></a>    <span class="k">CALL </span><span class="n">ConstructTripletList</span><span class="p">(</span><span class="n">triplet_w</span><span class="p">)</span>
-<a name="ln-309"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="n">wstart</span><span class="p">,</span> <span class="n">wend</span>
-<a name="ln-310"></a>       <span class="k">CALL </span><span class="n">SetTriplet</span><span class="p">(</span><span class="n">trip</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">WD</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
-<a name="ln-311"></a>       <span class="k">CALL </span><span class="n">AppendToTripletList</span><span class="p">(</span><span class="n">triplet_w</span><span class="p">,</span> <span class="n">trip</span><span class="p">)</span>
-<a name="ln-312"></a>    <span class="k">END DO</span>
-<a name="ln-313"></a>
-<a name="ln-314"></a>    <span class="c">!! Go to global matrix</span>
-<a name="ln-315"></a>    <span class="k">CALL </span><span class="n">FillMatrixFromTripletList</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">triplet_w</span><span class="p">)</span>
-<a name="ln-316"></a>
-<a name="ln-317"></a>    <span class="c">!! Cleanup</span>
-<a name="ln-318"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">triplet_w</span><span class="p">)</span>
-<a name="ln-319"></a>
-<a name="ln-320"></a>  <span class="k">END SUBROUTINE </span><span class="n">ExtractEigenvalues</span>
-<a name="ln-321"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-322"></a>  <span class="c">!&gt; The routine which calls the eigenexa driver.</span>
-<a name="ln-323"></a>  <span class="k">SUBROUTINE </span><span class="n">Compute</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
-<a name="ln-324"></a>    <span class="c">!&gt; The matrix to decompose.</span>
-<a name="ln-325"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
-<a name="ln-326"></a>    <span class="c">!&gt; The eigenvectors.</span>
-<a name="ln-327"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">V</span>
-<a name="ln-328"></a>    <span class="c">!&gt; The eigenvalues.</span>
-<a name="ln-329"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">W</span>
-<a name="ln-330"></a>    <span class="c">!&gt; Calculation parameters.</span>
-<a name="ln-331"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
-<a name="ln-332"></a>    <span class="c">!! Local Variables</span>
-<a name="ln-333"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">N</span><span class="p">,</span> <span class="n">LDA</span><span class="p">,</span> <span class="n">LDZ</span>
-<a name="ln-334"></a>
-<a name="ln-335"></a>    <span class="c">!! Setup EigenExa Parameters</span>
-<a name="ln-336"></a>    <span class="n">N</span> <span class="o">=</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span>
-<a name="ln-337"></a>    <span class="n">LDA</span> <span class="o">=</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span>
-<a name="ln-338"></a>    <span class="n">LDZ</span> <span class="o">=</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span>
-<a name="ln-339"></a>
-<a name="ln-340"></a>    <span class="c">!! Call</span>
-<a name="ln-341"></a>    <span class="k">CALL </span><span class="n">eigen_sx</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">LDA</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">LDZ</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">exa</span><span class="p">%</span><span class="n">MODE</span><span class="p">)</span>
-<a name="ln-342"></a>
-<a name="ln-343"></a>  <span class="k">END SUBROUTINE </span><span class="n">Compute</span>
-<a name="ln-344"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-345"></a>  <span class="c">!&gt; Deallocates and shuts down eigenexa</span>
-<a name="ln-346"></a>  <span class="k">SUBROUTINE </span><span class="n">CleanUp</span><span class="p">(</span><span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">)</span>
-<a name="ln-347"></a>    <span class="c">!&gt; The matrix.</span>
-<a name="ln-348"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">AD</span>
-<a name="ln-349"></a>    <span class="c">!&gt; The eigenvectors.</span>
-<a name="ln-350"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">VD</span>
-<a name="ln-351"></a>    <span class="c">!&gt; The eigenvalues.</span>
-<a name="ln-352"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WD</span>
-<a name="ln-353"></a>
-<a name="ln-354"></a>    <span class="k">IF</span><span class="p">(</span><span class="nb">ALLOCATED</span><span class="p">(</span><span class="n">AD</span><span class="p">))</span> <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">AD</span><span class="p">)</span>
-<a name="ln-355"></a>    <span class="k">IF</span><span class="p">(</span><span class="nb">ALLOCATED</span><span class="p">(</span><span class="n">VD</span><span class="p">))</span> <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">VD</span><span class="p">)</span>
-<a name="ln-356"></a>    <span class="k">IF</span><span class="p">(</span><span class="nb">ALLOCATED</span><span class="p">(</span><span class="n">WD</span><span class="p">))</span> <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">WD</span><span class="p">)</span>
-<a name="ln-357"></a>
-<a name="ln-358"></a>    <span class="k">CALL </span><span class="n">eigen_free</span>
-<a name="ln-359"></a>
-<a name="ln-360"></a>  <span class="k">END SUBROUTINE </span><span class="n">CleanUp</span>
-<a name="ln-361"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-362"></a><span class="k">END MODULE </span><span class="n">EigenExaModule</span>
+<a name="ln-4"></a><span class="cp">#if EIGENEXA</span>
+<a name="ln-5"></a>  <span class="k">USE </span><span class="n">DataTypesModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">NTREAL</span>
+<a name="ln-6"></a>  <span class="k">USE </span><span class="n">LoggingModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">EnterSubLog</span><span class="p">,</span> <span class="n">ExitSubLog</span><span class="p">,</span> <span class="n">WriteElement</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-7"></a>       <span class="p">&amp;</span> <span class="n">WriteCitation</span><span class="p">,</span> <span class="n">WriteHeader</span>
+<a name="ln-8"></a>  <span class="k">USE </span><span class="n">PSMatrixModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Matrix_ps</span><span class="p">,</span> <span class="n">ConstructEmptyMatrix</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-9"></a>       <span class="p">&amp;</span> <span class="n">FillMatrixFromTripletList</span><span class="p">,</span> <span class="n">GetMatrixTripletList</span><span class="p">,</span> <span class="n">PrintMatrixInformation</span>
+<a name="ln-10"></a>  <span class="k">USE </span><span class="n">SolverParametersModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">SolverParameters_t</span><span class="p">,</span> <span class="n">PrintParameters</span>
+<a name="ln-11"></a>  <span class="k">USE </span><span class="n">TimerModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">StartTimer</span><span class="p">,</span> <span class="n">StopTimer</span>
+<a name="ln-12"></a>  <span class="k">USE </span><span class="n">TripletModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">Triplet_r</span><span class="p">,</span> <span class="n">SetTriplet</span>
+<a name="ln-13"></a>  <span class="k">USE </span><span class="n">TripletListModule</span><span class="p">,</span> <span class="n">ONLY</span> <span class="p">:</span> <span class="n">TripletList_r</span><span class="p">,</span> <span class="n">AppendToTripletList</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-14"></a>       <span class="p">&amp;</span> <span class="n">GetTripletAt</span><span class="p">,</span> <span class="n">ConstructTripletList</span><span class="p">,</span> <span class="n">DestructTripletList</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-15"></a>       <span class="p">&amp;</span> <span class="n">RedistributeTripletLists</span>
+<a name="ln-16"></a>  <span class="k">USE </span><span class="n">eigen_libs</span>
+<a name="ln-17"></a>  <span class="k">USE </span><span class="n">MPI</span>
+<a name="ln-18"></a>  <span class="k">IMPLICIT NONE</span>
+<a name="ln-19"></a><span class="k">  PRIVATE</span>
+<a name="ln-20"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-21"></a>  <span class="k">PUBLIC</span> <span class="kd">::</span> <span class="n">EigenExa_s</span>
+<a name="ln-22"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-23"></a>  <span class="k">TYPE</span><span class="p">,</span> <span class="k">PRIVATE</span> <span class="kd">::</span> <span class="n">ExaHelper_t</span>
+<a name="ln-24"></a>     <span class="c">!&gt; The number of processors involved.</span>
+<a name="ln-25"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">num_procs</span>
+<a name="ln-26"></a>     <span class="c">!&gt; The number of rows for the eigenexa comm.</span>
+<a name="ln-27"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">proc_rows</span>
+<a name="ln-28"></a>     <span class="c">!&gt; The number of columns for the eigenexa comm.</span>
+<a name="ln-29"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">proc_cols</span>
+<a name="ln-30"></a>     <span class="c">!&gt; Which process this is.</span>
+<a name="ln-31"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">procid</span>
+<a name="ln-32"></a>     <span class="c">!&gt; The global rank</span>
+<a name="ln-33"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">global_rank</span>
+<a name="ln-34"></a>     <span class="c">!&gt; Which row is this process in.</span>
+<a name="ln-35"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">rowid</span>
+<a name="ln-36"></a>     <span class="c">!&gt; Which column is this process in.</span>
+<a name="ln-37"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">colid</span>
+<a name="ln-38"></a>     <span class="c">!&gt; The number of rows for the local matrix.</span>
+<a name="ln-39"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">local_rows</span>
+<a name="ln-40"></a>     <span class="c">!&gt; The number of columns for the local matrix.</span>
+<a name="ln-41"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">local_cols</span>
+<a name="ln-42"></a>     <span class="c">!&gt; The dimension fo the matrix.</span>
+<a name="ln-43"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">mat_dim</span>
+<a name="ln-44"></a>     <span class="c">!&gt; The communicator for this calculation.</span>
+<a name="ln-45"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">comm</span>
+<a name="ln-46"></a>     <span class="c">!&gt; Householder transform block size</span>
+<a name="ln-47"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">MB</span>
+<a name="ln-48"></a>     <span class="c">!&gt; Householder backward transformation block size</span>
+<a name="ln-49"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">M</span>
+<a name="ln-50"></a>     <span class="c">!&gt; Mode of the solver</span>
+<a name="ln-51"></a>     <span class="kt">CHARACTER</span> <span class="kd">::</span> <span class="n">MODE</span>
+<a name="ln-52"></a>     <span class="c">!&gt; For block cyclic indexing.</span>
+<a name="ln-53"></a>     <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">offset</span>
+<a name="ln-54"></a>  <span class="k">END TYPE </span><span class="n">ExaHelper_t</span>
+<a name="ln-55"></a><span class="k">CONTAINS</span><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-56"></a>  <span class="c">!&gt; Compute the eigenvectors of a matrix using EigenExa.</span>
+<a name="ln-57"></a>  <span class="k">SUBROUTINE </span><span class="n">EigenExa_s</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">eigenvectors</span><span class="p">,</span> <span class="n">eigenvalues_out</span><span class="p">,</span> <span class="n">solver_parameters_in</span><span class="p">)</span>
+<a name="ln-58"></a>    <span class="c">!&gt; The matrix to decompose.</span>
+<a name="ln-59"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
+<a name="ln-60"></a>    <span class="c">!&gt; The eigenvectors computed.</span>
+<a name="ln-61"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">eigenvectors</span>
+<a name="ln-62"></a>    <span class="c">!&gt; The eigenvalues computed.</span>
+<a name="ln-63"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">eigenvalues_out</span>
+<a name="ln-64"></a>    <span class="c">!&gt; The parameters for this solver.</span>
+<a name="ln-65"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">),</span> <span class="k">OPTIONAL</span> <span class="kd">::</span> <span class="n">solver_parameters_in</span>
+<a name="ln-66"></a>    <span class="c">!! Optional Parameters</span>
+<a name="ln-67"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">solver_parameters</span>
+<a name="ln-68"></a>    <span class="c">!! Helper</span>
+<a name="ln-69"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
+<a name="ln-70"></a>    <span class="c">!! Dense Matrices</span>
+<a name="ln-71"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">AD</span>
+<a name="ln-72"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">VD</span>
+<a name="ln-73"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">WD</span>
+<a name="ln-74"></a>
+<a name="ln-75"></a>    <span class="c">!! Process Optional Parameters</span>
+<a name="ln-76"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">solver_parameters_in</span><span class="p">))</span> <span class="k">THEN</span>
+<a name="ln-77"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">solver_parameters_in</span>
+<a name="ln-78"></a>    <span class="k">ELSE</span>
+<a name="ln-79"></a><span class="k">       </span><span class="n">solver_parameters</span> <span class="o">=</span> <span class="n">SolverParameters_t</span><span class="p">()</span>
+<a name="ln-80"></a>    <span class="k">END IF</span>
+<a name="ln-81"></a>
+<a name="ln-82"></a>    <span class="c">!! Write info about the solver</span>
+<a name="ln-83"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-84"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Eigen Solver&quot;</span><span class="p">)</span>
+<a name="ln-85"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
+<a name="ln-86"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;EigenExa&quot;</span><span class="p">)</span>
+<a name="ln-87"></a>       <span class="k">CALL </span><span class="n">WriteCitation</span><span class="p">(</span><span class="s2">&quot;imamura2011development&quot;</span><span class="p">)</span>
+<a name="ln-88"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
+<a name="ln-89"></a>    <span class="k">END IF</span>
+<a name="ln-90"></a>
+<a name="ln-91"></a>    <span class="c">!! Main Routines</span>
+<a name="ln-92"></a>    <span class="k">CALL </span><span class="n">InitializeEigenExa</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-93"></a>
+<a name="ln-94"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;NTToEigen&quot;</span><span class="p">)</span>
+<a name="ln-95"></a>    <span class="k">CALL </span><span class="n">NTToEigen</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-96"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;NTToEigen&quot;</span><span class="p">)</span>
+<a name="ln-97"></a>
+<a name="ln-98"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaCompute&quot;</span><span class="p">)</span>
+<a name="ln-99"></a>    <span class="k">CALL </span><span class="n">Compute</span><span class="p">(</span><span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-100"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaCompute&quot;</span><span class="p">)</span>
+<a name="ln-101"></a>
+<a name="ln-102"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenToNT&quot;</span><span class="p">)</span>
+<a name="ln-103"></a>    <span class="k">CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">eigenvectors</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<a name="ln-104"></a>    <span class="k">CALL </span><span class="n">EigenToNT</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span> <span class="n">eigenvectors</span><span class="p">,</span> <span class="n">solver_parameters</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-105"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenToNT&quot;</span><span class="p">)</span>
+<a name="ln-106"></a>
+<a name="ln-107"></a>    <span class="k">IF</span> <span class="p">(</span><span class="nb">PRESENT</span><span class="p">(</span><span class="n">eigenvalues_out</span><span class="p">))</span> <span class="k">THEN</span>
+<a name="ln-108"></a><span class="k">       CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">eigenvalues_out</span><span class="p">,</span> <span class="n">A</span><span class="p">)</span>
+<a name="ln-109"></a>       <span class="k">CALL </span><span class="n">ExtractEigenvalues</span><span class="p">(</span><span class="n">WD</span><span class="p">,</span> <span class="n">eigenvalues_out</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-110"></a>    <span class="k">END IF</span>
+<a name="ln-111"></a>
+<a name="ln-112"></a><span class="k">    CALL </span><span class="n">CleanUp</span><span class="p">(</span><span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">)</span>
+<a name="ln-113"></a>
+<a name="ln-114"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-115"></a><span class="k">       CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">eigenvectors</span><span class="p">)</span>
+<a name="ln-116"></a>       <span class="k">CALL </span><span class="n">ExitSubLog</span>
+<a name="ln-117"></a>    <span class="k">END IF</span>
+<a name="ln-118"></a>
+<a name="ln-119"></a><span class="k">  END SUBROUTINE </span><span class="n">EigenExa_s</span>
+<a name="ln-120"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-121"></a>  <span class="c">!&gt; Setup the eigen exa data structures.</span>
+<a name="ln-122"></a>  <span class="k">SUBROUTINE </span><span class="n">InitializeEigenExa</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-123"></a>    <span class="c">!&gt; The matrix we&#39;re working on.</span>
+<a name="ln-124"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
+<a name="ln-125"></a>    <span class="c">!&gt; The dense matrix will be allocated.</span>
+<a name="ln-126"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">AD</span>
+<a name="ln-127"></a>    <span class="c">!&gt; The dense matrix of eigenvectors will be allocated.</span>
+<a name="ln-128"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">VD</span>
+<a name="ln-129"></a>    <span class="c">!&gt; The dense array of eigenvalues will be allocated.</span>
+<a name="ln-130"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WD</span>
+<a name="ln-131"></a>    <span class="c">!&gt; Stores info about the calculation.</span>
+<a name="ln-132"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
+<a name="ln-133"></a>    <span class="c">!! Local Variables</span>
+<a name="ln-134"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ICTXT</span><span class="p">,</span> <span class="n">INFO</span>
+<a name="ln-135"></a>    <span class="kt">INTEGER</span><span class="p">,</span> <span class="k">DIMENSION</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span> <span class="kd">::</span> <span class="n">DESCA</span>
+<a name="ln-136"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ierr</span>
+<a name="ln-137"></a>
+<a name="ln-138"></a>    <span class="c">!! Setup the MPI Communicator</span>
+<a name="ln-139"></a>    <span class="k">CALL </span><span class="n">MPI_Comm_dup</span><span class="p">(</span><span class="n">A</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">global_comm</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
+<a name="ln-140"></a>    <span class="k">CALL </span><span class="n">MPI_Comm_rank</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">global_rank</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
+<a name="ln-141"></a>
+<a name="ln-142"></a>    <span class="c">!! Build EigenExa Process Grid</span>
+<a name="ln-143"></a>    <span class="k">CALL </span><span class="n">eigen_init</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">)</span>
+<a name="ln-144"></a>    <span class="k">CALL </span><span class="n">eigen_get_procs</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span> <span class="p">)</span>
+<a name="ln-145"></a>    <span class="k">CALL </span><span class="n">eigen_get_id</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">procid</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
+<a name="ln-146"></a>
+<a name="ln-147"></a>    <span class="c">!! Allocate Dense Matrices</span>
+<a name="ln-148"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span> <span class="o">=</span> <span class="n">A</span><span class="p">%</span><span class="n">actual_matrix_dimension</span>
+<a name="ln-149"></a>    <span class="k">CALL </span><span class="n">eigen_get_matdims</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_cols</span><span class="p">)</span>
+<a name="ln-150"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">AD</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_cols</span><span class="p">))</span>
+<a name="ln-151"></a>    <span class="n">AD</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-152"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">VD</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_cols</span><span class="p">))</span>
+<a name="ln-153"></a>    <span class="n">VD</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-154"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">WD</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">))</span>
+<a name="ln-155"></a>    <span class="n">WD</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-156"></a>
+<a name="ln-157"></a>    <span class="c">!&gt; Default blocking parameters</span>
+<a name="ln-158"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">MB</span> <span class="o">=</span> <span class="mi">128</span>
+<a name="ln-159"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">M</span> <span class="o">=</span> <span class="mi">48</span>
+<a name="ln-160"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">MODE</span> <span class="o">=</span> <span class="s1">&#39;A&#39;</span>
+<a name="ln-161"></a>
+<a name="ln-162"></a>    <span class="c">!! Blacs gives us the blocking info.</span>
+<a name="ln-163"></a>    <span class="n">ICTXT</span> <span class="o">=</span> <span class="n">eigen_get_blacs_context</span><span class="p">()</span>
+<a name="ln-164"></a>    <span class="k">CALL </span><span class="n">DESCINIT</span><span class="p">(</span><span class="n">DESCA</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ICTXT</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-165"></a>         <span class="p">&amp;</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span><span class="p">,</span> <span class="n">INFO</span> <span class="p">)</span>
+<a name="ln-166"></a>    <span class="n">exa</span><span class="p">%</span><span class="n">offset</span> <span class="o">=</span> <span class="n">DESCA</span><span class="p">(</span><span class="mi">9</span><span class="p">)</span>
+<a name="ln-167"></a>
+<a name="ln-168"></a>  <span class="k">END SUBROUTINE </span><span class="n">InitializeEigenExa</span>
+<a name="ln-169"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-170"></a>  <span class="c">!&gt; Converts the distributed sparse matrix to a dense matrix in block-cyclic</span>
+<a name="ln-171"></a>  <span class="c">!&gt; distribution.</span>
+<a name="ln-172"></a>  <span class="k">SUBROUTINE </span><span class="n">NTToEigen</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">AD</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-173"></a>    <span class="c">!&gt; The matrix to convert.</span>
+<a name="ln-174"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
+<a name="ln-175"></a>    <span class="c">!&gt; The dense, block-cyclic version.</span>
+<a name="ln-176"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">AD</span>
+<a name="ln-177"></a>    <span class="c">!&gt; Info about the calculation.</span>
+<a name="ln-178"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
+<a name="ln-179"></a>    <span class="c">!! Local Variables</span>
+<a name="ln-180"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">triplet_a</span>
+<a name="ln-181"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">send_list</span>
+<a name="ln-182"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">recv_list</span>
+<a name="ln-183"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trip</span><span class="p">,</span> <span class="n">shifted_trip</span>
+<a name="ln-184"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">jlookup</span><span class="p">,</span> <span class="n">iowner</span><span class="p">,</span> <span class="n">jowner</span><span class="p">,</span> <span class="n">ijowner</span>
+<a name="ln-185"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">lrow</span><span class="p">,</span> <span class="n">lcol</span>
+<a name="ln-186"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">II</span>
+<a name="ln-187"></a>
+<a name="ln-188"></a>    <span class="c">!! We will fill a triplet list for each other process</span>
+<a name="ln-189"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span><span class="p">))</span>
+<a name="ln-190"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span>
+<a name="ln-191"></a>       <span class="k">CALL </span><span class="n">ConstructTripletList</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
+<a name="ln-192"></a>    <span class="k">END DO</span>
+<a name="ln-193"></a>
+<a name="ln-194"></a>    <span class="c">!! Now Get The Triplet List, and adjust</span>
+<a name="ln-195"></a>    <span class="k">CALL </span><span class="n">GetMatrixTripletList</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">triplet_a</span><span class="p">)</span>
+<a name="ln-196"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">triplet_a</span><span class="p">%</span><span class="n">CurrentSize</span>
+<a name="ln-197"></a>       <span class="k">CALL </span><span class="n">GetTripletAt</span><span class="p">(</span><span class="n">triplet_a</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">trip</span><span class="p">)</span>
+<a name="ln-198"></a>
+<a name="ln-199"></a>       <span class="c">!! Determine where that triplet will reside</span>
+<a name="ln-200"></a>       <span class="n">iowner</span> <span class="o">=</span> <span class="n">eigen_owner_node</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_row</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
+<a name="ln-201"></a>       <span class="n">jowner</span> <span class="o">=</span> <span class="n">eigen_owner_node</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_column</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
+<a name="ln-202"></a>       <span class="n">ijowner</span> <span class="o">=</span> <span class="p">(</span><span class="n">jowner</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span> <span class="o">+</span> <span class="n">iowner</span>
+<a name="ln-203"></a>
+<a name="ln-204"></a>       <span class="c">!! New indices</span>
+<a name="ln-205"></a>       <span class="n">ilookup</span> <span class="o">=</span> <span class="n">eigen_translate_g2l</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_row</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-206"></a>            <span class="p">&amp;</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
+<a name="ln-207"></a>       <span class="n">jlookup</span> <span class="o">=</span> <span class="n">eigen_translate_g2l</span><span class="p">(</span><span class="n">trip</span><span class="p">%</span><span class="n">index_column</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-208"></a>            <span class="p">&amp;</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
+<a name="ln-209"></a>       <span class="k">CALL </span><span class="n">SetTriplet</span><span class="p">(</span><span class="n">shifted_trip</span><span class="p">,</span> <span class="n">jlookup</span><span class="p">,</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">trip</span><span class="p">%</span><span class="n">point_value</span><span class="p">)</span>
+<a name="ln-210"></a>
+<a name="ln-211"></a>       <span class="k">CALL </span><span class="n">AppendToTripletList</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">ijowner</span><span class="p">),</span> <span class="n">shifted_trip</span><span class="p">)</span>
+<a name="ln-212"></a>    <span class="k">END DO</span>
+<a name="ln-213"></a>
+<a name="ln-214"></a>    <span class="c">!! Redistribute The Triplets</span>
+<a name="ln-215"></a>    <span class="k">CALL </span><span class="n">RedistributeTripletLists</span><span class="p">(</span><span class="n">send_list</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">comm</span><span class="p">,</span> <span class="n">recv_list</span><span class="p">)</span>
+<a name="ln-216"></a>
+<a name="ln-217"></a>    <span class="c">!! Write To The Dense Array</span>
+<a name="ln-218"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">recv_list</span><span class="p">%</span><span class="n">CurrentSize</span>
+<a name="ln-219"></a>       <span class="n">lrow</span> <span class="o">=</span> <span class="n">recv_list</span><span class="p">%</span><span class="k">data</span><span class="p">(</span><span class="n">II</span><span class="p">)%</span><span class="n">index_row</span>
+<a name="ln-220"></a>       <span class="n">lcol</span> <span class="o">=</span> <span class="n">recv_list</span><span class="p">%</span><span class="k">data</span><span class="p">(</span><span class="n">II</span><span class="p">)%</span><span class="n">index_column</span>
+<a name="ln-221"></a>       <span class="n">AD</span><span class="p">(</span><span class="n">lrow</span><span class="p">,</span><span class="n">lcol</span><span class="p">)</span> <span class="o">=</span> <span class="n">recv_list</span><span class="p">%</span><span class="k">data</span><span class="p">(</span><span class="n">II</span><span class="p">)%</span><span class="n">point_value</span>
+<a name="ln-222"></a>    <span class="k">END DO</span>
+<a name="ln-223"></a>
+<a name="ln-224"></a>    <span class="c">!! Cleanup</span>
+<a name="ln-225"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span>
+<a name="ln-226"></a>       <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">send_list</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
+<a name="ln-227"></a>    <span class="k">END DO</span>
+<a name="ln-228"></a><span class="k">    DEALLOCATE</span><span class="p">(</span><span class="n">send_list</span><span class="p">)</span>
+<a name="ln-229"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">recv_list</span><span class="p">)</span>
+<a name="ln-230"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">triplet_a</span><span class="p">)</span>
+<a name="ln-231"></a>
+<a name="ln-232"></a>  <span class="k">END SUBROUTINE </span><span class="n">NTToEigen</span>
+<a name="ln-233"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-234"></a>  <span class="c">!&gt; Converts the dense eigenvector matrix stored block-cyclicly back to</span>
+<a name="ln-235"></a>  <span class="c">!&gt; a distributed sparse matrix.</span>
+<a name="ln-236"></a>  <span class="k">SUBROUTINE </span><span class="n">EigenToNT</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">solver_parameters</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-237"></a>    <span class="c">!&gt; The dense eigenvector matrix.</span>
+<a name="ln-238"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">VD</span>
+<a name="ln-239"></a>    <span class="c">!&gt; The distributed sparse matrix.</span>
+<a name="ln-240"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">V</span>
+<a name="ln-241"></a>    <span class="c">!&gt; Parameters for thresholding small values.</span>
+<a name="ln-242"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">solver_parameters</span>
+<a name="ln-243"></a>    <span class="c">!&gt; Info about the calculation.</span>
+<a name="ln-244"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
+<a name="ln-245"></a>    <span class="c">!! Local Variables</span>
+<a name="ln-246"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">triplet_v</span>
+<a name="ln-247"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trip</span>
+<a name="ln-248"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span><span class="p">,</span> <span class="n">col_start</span><span class="p">,</span> <span class="n">col_end</span>
+<a name="ln-249"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">II</span><span class="p">,</span> <span class="n">JJ</span><span class="p">,</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">jlookup</span>
+<a name="ln-250"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span> <span class="kd">::</span> <span class="n">VD1</span>
+<a name="ln-251"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">ind</span>
+<a name="ln-252"></a>
+<a name="ln-253"></a>    <span class="c">!! Get The Eigenvectors</span>
+<a name="ln-254"></a>    <span class="n">row_start</span> <span class="o">=</span> <span class="n">eigen_loop_start</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
+<a name="ln-255"></a>    <span class="n">row_end</span> <span class="o">=</span> <span class="n">eigen_loop_end</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
+<a name="ln-256"></a>    <span class="n">col_start</span> <span class="o">=</span> <span class="n">eigen_loop_start</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
+<a name="ln-257"></a>    <span class="n">col_end</span> <span class="o">=</span> <span class="n">eigen_loop_end</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
+<a name="ln-258"></a>
+<a name="ln-259"></a>    <span class="c">!! Convert to a 1D array for index ease.</span>
+<a name="ln-260"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">VD1</span><span class="p">(</span><span class="n">SIZE</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span><span class="nb">DIM</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">*</span><span class="n">SIZE</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span><span class="nb">DIM</span><span class="o">=</span><span class="mi">2</span><span class="p">)))</span>
+<a name="ln-261"></a>    <span class="n">VD1</span> <span class="o">=</span> <span class="nb">PACK</span><span class="p">(</span><span class="n">VD</span><span class="p">,</span> <span class="p">.</span><span class="n">TRUE</span><span class="p">.)</span>
+<a name="ln-262"></a>
+<a name="ln-263"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaFilter&quot;</span><span class="p">)</span>
+<a name="ln-264"></a>    <span class="k">CALL </span><span class="n">ConstructTripletList</span><span class="p">(</span><span class="n">triplet_v</span><span class="p">)</span>
+<a name="ln-265"></a>    <span class="n">ind</span> <span class="o">=</span> <span class="mi">1</span>
+<a name="ln-266"></a>    <span class="k">DO </span><span class="n">JJ</span> <span class="o">=</span> <span class="n">col_start</span><span class="p">,</span> <span class="n">col_end</span>
+<a name="ln-267"></a>       <span class="n">jlookup</span> <span class="o">=</span> <span class="n">eigen_translate_l2g</span><span class="p">(</span><span class="n">JJ</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_cols</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">colid</span><span class="p">)</span>
+<a name="ln-268"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="n">row_start</span><span class="p">,</span> <span class="n">row_end</span>
+<a name="ln-269"></a>          <span class="k">IF</span> <span class="p">(</span><span class="nb">ABS</span><span class="p">(</span><span class="n">VD1</span><span class="p">(</span><span class="n">ind</span><span class="o">+</span><span class="n">II</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-270"></a><span class="k">             </span><span class="n">ilookup</span> <span class="o">=</span> <span class="n">eigen_translate_l2g</span><span class="p">(</span><span class="n">II</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">proc_rows</span><span class="p">,</span> <span class="n">exa</span><span class="p">%</span><span class="n">rowid</span><span class="p">)</span>
+<a name="ln-271"></a>             <span class="k">CALL </span><span class="n">SetTriplet</span><span class="p">(</span><span class="n">trip</span><span class="p">,</span> <span class="n">jlookup</span><span class="p">,</span> <span class="n">ilookup</span><span class="p">,</span> <span class="n">VD1</span><span class="p">(</span><span class="n">ind</span><span class="o">+</span><span class="n">II</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+<a name="ln-272"></a>             <span class="k">CALL </span><span class="n">AppendToTripletList</span><span class="p">(</span><span class="n">triplet_v</span><span class="p">,</span> <span class="n">trip</span><span class="p">)</span>
+<a name="ln-273"></a>          <span class="k">END IF</span>
+<a name="ln-274"></a><span class="k">       END DO</span>
+<a name="ln-275"></a><span class="k">       </span><span class="n">ind</span> <span class="o">=</span> <span class="n">ind</span> <span class="o">+</span> <span class="n">exa</span><span class="p">%</span><span class="n">offset</span>
+<a name="ln-276"></a>    <span class="k">END DO</span>
+<a name="ln-277"></a><span class="k">    CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenExaFilter&quot;</span><span class="p">)</span>
+<a name="ln-278"></a>
+<a name="ln-279"></a>    <span class="k">CALL </span><span class="n">StartTimer</span><span class="p">(</span><span class="s2">&quot;EigenFill&quot;</span><span class="p">)</span>
+<a name="ln-280"></a>    <span class="k">CALL </span><span class="n">FillMatrixFromTripletList</span><span class="p">(</span><span class="n">V</span><span class="p">,</span> <span class="n">triplet_v</span><span class="p">)</span>
+<a name="ln-281"></a>    <span class="k">CALL </span><span class="n">StopTimer</span><span class="p">(</span><span class="s2">&quot;EigenFill&quot;</span><span class="p">)</span>
+<a name="ln-282"></a>
+<a name="ln-283"></a>    <span class="c">!! Cleanup</span>
+<a name="ln-284"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">triplet_v</span><span class="p">)</span>
+<a name="ln-285"></a>
+<a name="ln-286"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">VD1</span><span class="p">)</span>
+<a name="ln-287"></a>
+<a name="ln-288"></a>  <span class="k">END SUBROUTINE </span><span class="n">EigenToNT</span>
+<a name="ln-289"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-290"></a>  <span class="c">!&gt; Converts the dense eigenvalue matrix stored duplicated across processes.</span>
+<a name="ln-291"></a>  <span class="k">SUBROUTINE </span><span class="n">ExtractEigenvalues</span><span class="p">(</span><span class="n">WD</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-292"></a>    <span class="c">!&gt; The dense eigenvalue matrix.</span>
+<a name="ln-293"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WD</span>
+<a name="ln-294"></a>    <span class="c">!&gt; The distributed sparse matrix.</span>
+<a name="ln-295"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Matrix_ps</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">W</span>
+<a name="ln-296"></a>    <span class="c">!&gt; Info about the calculation.</span>
+<a name="ln-297"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
+<a name="ln-298"></a>    <span class="c">!! Local Variables</span>
+<a name="ln-299"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">TripletList_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">triplet_w</span>
+<a name="ln-300"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">Triplet_r</span><span class="p">)</span> <span class="kd">::</span> <span class="n">trip</span>
+<a name="ln-301"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">wstart</span><span class="p">,</span> <span class="n">wend</span><span class="p">,</span> <span class="n">wsize</span>
+<a name="ln-302"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">II</span>
+<a name="ln-303"></a>
+<a name="ln-304"></a>    <span class="c">!! Copy To Triplet List</span>
+<a name="ln-305"></a>    <span class="n">wsize</span> <span class="o">=</span> <span class="nb">MAX</span><span class="p">(</span><span class="nb">CEILING</span><span class="p">((</span><span class="mf">1.0</span><span class="o">*</span><span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">)</span><span class="o">/</span><span class="n">exa</span><span class="p">%</span><span class="n">num_procs</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+<a name="ln-306"></a>    <span class="n">wstart</span> <span class="o">=</span> <span class="n">wsize</span><span class="o">*</span><span class="n">exa</span><span class="p">%</span><span class="n">global_rank</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-307"></a>    <span class="n">wend</span> <span class="o">=</span> <span class="nb">MIN</span><span class="p">(</span><span class="n">wsize</span><span class="o">*</span><span class="p">(</span><span class="n">exa</span><span class="p">%</span><span class="n">global_rank</span><span class="o">+</span><span class="mi">1</span><span class="p">),</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span><span class="p">)</span>
+<a name="ln-308"></a>
+<a name="ln-309"></a>    <span class="k">CALL </span><span class="n">ConstructTripletList</span><span class="p">(</span><span class="n">triplet_w</span><span class="p">)</span>
+<a name="ln-310"></a>    <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="n">wstart</span><span class="p">,</span> <span class="n">wend</span>
+<a name="ln-311"></a>       <span class="k">CALL </span><span class="n">SetTriplet</span><span class="p">(</span><span class="n">trip</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">II</span><span class="p">,</span> <span class="n">WD</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
+<a name="ln-312"></a>       <span class="k">CALL </span><span class="n">AppendToTripletList</span><span class="p">(</span><span class="n">triplet_w</span><span class="p">,</span> <span class="n">trip</span><span class="p">)</span>
+<a name="ln-313"></a>    <span class="k">END DO</span>
+<a name="ln-314"></a>
+<a name="ln-315"></a>    <span class="c">!! Go to global matrix</span>
+<a name="ln-316"></a>    <span class="k">CALL </span><span class="n">FillMatrixFromTripletList</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="n">triplet_w</span><span class="p">)</span>
+<a name="ln-317"></a>
+<a name="ln-318"></a>    <span class="c">!! Cleanup</span>
+<a name="ln-319"></a>    <span class="k">CALL </span><span class="n">DestructTripletList</span><span class="p">(</span><span class="n">triplet_w</span><span class="p">)</span>
+<a name="ln-320"></a>
+<a name="ln-321"></a>  <span class="k">END SUBROUTINE </span><span class="n">ExtractEigenvalues</span>
+<a name="ln-322"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-323"></a>  <span class="c">!&gt; The routine which calls the eigenexa driver.</span>
+<a name="ln-324"></a>  <span class="k">SUBROUTINE </span><span class="n">Compute</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">exa</span><span class="p">)</span>
+<a name="ln-325"></a>    <span class="c">!&gt; The matrix to decompose.</span>
+<a name="ln-326"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">A</span>
+<a name="ln-327"></a>    <span class="c">!&gt; The eigenvectors.</span>
+<a name="ln-328"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">V</span>
+<a name="ln-329"></a>    <span class="c">!&gt; The eigenvalues.</span>
+<a name="ln-330"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">W</span>
+<a name="ln-331"></a>    <span class="c">!&gt; Calculation parameters.</span>
+<a name="ln-332"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">ExaHelper_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">IN</span><span class="p">)</span> <span class="kd">::</span> <span class="n">exa</span>
+<a name="ln-333"></a>    <span class="c">!! Local Variables</span>
+<a name="ln-334"></a>    <span class="kt">INTEGER</span> <span class="kd">::</span> <span class="n">N</span><span class="p">,</span> <span class="n">LDA</span><span class="p">,</span> <span class="n">LDZ</span>
+<a name="ln-335"></a>
+<a name="ln-336"></a>    <span class="c">!! Setup EigenExa Parameters</span>
+<a name="ln-337"></a>    <span class="n">N</span> <span class="o">=</span> <span class="n">exa</span><span class="p">%</span><span class="n">mat_dim</span>
+<a name="ln-338"></a>    <span class="n">LDA</span> <span class="o">=</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span>
+<a name="ln-339"></a>    <span class="n">LDZ</span> <span class="o">=</span> <span class="n">exa</span><span class="p">%</span><span class="n">local_rows</span>
+<a name="ln-340"></a>
+<a name="ln-341"></a>    <span class="c">!! Call</span>
+<a name="ln-342"></a>    <span class="k">CALL </span><span class="n">eigen_sx</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">LDA</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">V</span><span class="p">,</span> <span class="n">LDZ</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="n">exa</span><span class="p">%</span><span class="n">MODE</span><span class="p">)</span>
+<a name="ln-343"></a>
+<a name="ln-344"></a>  <span class="k">END SUBROUTINE </span><span class="n">Compute</span>
+<a name="ln-345"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-346"></a>  <span class="c">!&gt; Deallocates and shuts down eigenexa</span>
+<a name="ln-347"></a>  <span class="k">SUBROUTINE </span><span class="n">CleanUp</span><span class="p">(</span><span class="n">AD</span><span class="p">,</span> <span class="n">VD</span><span class="p">,</span> <span class="n">WD</span><span class="p">)</span>
+<a name="ln-348"></a>    <span class="c">!&gt; The matrix.</span>
+<a name="ln-349"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">AD</span>
+<a name="ln-350"></a>    <span class="c">!&gt; The eigenvectors.</span>
+<a name="ln-351"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:,:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">VD</span>
+<a name="ln-352"></a>    <span class="c">!&gt; The eigenvalues.</span>
+<a name="ln-353"></a>    <span class="kt">REAL</span><span class="p">(</span><span class="n">NTREAL</span><span class="p">),</span> <span class="k">DIMENSION</span><span class="p">(:),</span> <span class="k">ALLOCATABLE</span><span class="p">,</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">WD</span>
+<a name="ln-354"></a>
+<a name="ln-355"></a>    <span class="k">IF</span><span class="p">(</span><span class="nb">ALLOCATED</span><span class="p">(</span><span class="n">AD</span><span class="p">))</span> <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">AD</span><span class="p">)</span>
+<a name="ln-356"></a>    <span class="k">IF</span><span class="p">(</span><span class="nb">ALLOCATED</span><span class="p">(</span><span class="n">VD</span><span class="p">))</span> <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">VD</span><span class="p">)</span>
+<a name="ln-357"></a>    <span class="k">IF</span><span class="p">(</span><span class="nb">ALLOCATED</span><span class="p">(</span><span class="n">WD</span><span class="p">))</span> <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">WD</span><span class="p">)</span>
+<a name="ln-358"></a>
+<a name="ln-359"></a>    <span class="k">CALL </span><span class="n">eigen_free</span>
+<a name="ln-360"></a>
+<a name="ln-361"></a>  <span class="k">END SUBROUTINE </span><span class="n">CleanUp</span>
+<a name="ln-362"></a><span class="cp">#endif</span>
+<a name="ln-363"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-364"></a><span class="k">END MODULE </span><span class="n">EigenExaModule</span>
 </pre></div>
 
     </section>

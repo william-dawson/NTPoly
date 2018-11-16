@@ -374,9 +374,9 @@
 <a name="ln-109"></a>    <span class="n">norm_value</span> <span class="o">=</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span> <span class="o">+</span> <span class="mf">1.0_NTREAL</span>
 <a name="ln-110"></a>    <span class="k">DO </span><span class="n">outer_counter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">max_iterations</span>
 <a name="ln-111"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">outer_counter</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-112"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-112"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-113"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-114"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-114"></a>          <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
 <a name="ln-115"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-116"></a>       <span class="k">END IF</span>
 <a name="ln-117"></a>
@@ -399,7 +399,7 @@
 <a name="ln-134"></a><span class="k">    END DO</span>
 <a name="ln-135"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-136"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-137"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-137"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-138"></a>    <span class="k">END IF</span>
 <a name="ln-139"></a>
 <a name="ln-140"></a>    <span class="c">!! Compute The Largest Eigenvalue</span>
@@ -410,7 +410,7 @@
 <a name="ln-145"></a>    <span class="n">max_value</span> <span class="o">=</span> <span class="n">max_value</span> <span class="o">/</span> <span class="n">scale_value</span>
 <a name="ln-146"></a>
 <a name="ln-147"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-148"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Max_Eigen_Value&quot;</span><span class="p">,</span><span class="n">float_value_in</span><span class="o">=</span><span class="n">max_value</span><span class="p">)</span>
+<a name="ln-148"></a><span class="k">       CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Max_Eigen_Value&quot;</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="n">max_value</span><span class="p">)</span>
 <a name="ln-149"></a>       <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-150"></a>    <span class="k">END IF</span>
 <a name="ln-151"></a>

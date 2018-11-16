@@ -16,6 +16,19 @@ MODULE LoggingModule
   PUBLIC :: WriteElement
   PUBLIC :: WriteCitation
   PUBLIC :: ExitSubLog
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE WriteListElement
+     MODULE PROCEDURE WriteListElement_bool
+     MODULE PROCEDURE WriteListElement_float
+     MODULE PROCEDURE WriteListElement_int
+     MODULE PROCEDURE WriteListElement_string
+  END INTERFACE
+  INTERFACE WriteElement
+     MODULE PROCEDURE WriteElement_bool
+     MODULE PROCEDURE WriteElement_float
+     MODULE PROCEDURE WriteElement_int
+     MODULE PROCEDURE WriteElement_string
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger.
   SUBROUTINE ActivateLogger
@@ -24,7 +37,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deactivate the logger.
   SUBROUTINE DeactivateLogger
-    IsActive = .TRUE.
+    IsActive = .FALSE.
   END SUBROUTINE DeactivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Call this subroutine when you enter into a section with verbose output
@@ -50,92 +63,158 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteHeader
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a element.
-  SUBROUTINE WriteElement(key, text_value_in, int_value_in, float_value_in, &
-       & bool_value_in)
+  SUBROUTINE WriteElement_bool(key, value)
     !> Some text to write.
     CHARACTER(LEN=*), INTENT(IN) :: key
-    !> A text value to write.
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: text_value_in
     !> An integer value to write.
-    INTEGER, INTENT(IN), OPTIONAL :: int_value_in
-    !> A float value to write.
-    REAL(NTReal), INTENT(IN), OPTIONAL :: float_value_in
-    !> A bool value to write.
-    LOGICAL, INTENT(IN), OPTIONAL :: bool_value_in
+    LOGICAL, INTENT(IN) :: value
 
     IF (IsActive) THEN
        CALL WriteIndent
 
        WRITE(*,'(A)',ADVANCE='no') key
-
-       IF (PRESENT(text_value_in)) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": "
-          WRITE(*,'(A)',ADVANCE='no') text_value_in
-       END IF
-       IF (PRESENT(int_value_in)) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": "
-          WRITE(*,'(I10)',ADVANCE='no') int_value_in
-       END IF
-       IF (PRESENT(float_value_in)) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": "
-          WRITE(*,'(ES22.14)',ADVANCE='no') float_value_in
-       END IF
-       IF (PRESENT(bool_value_in)) THEN
-          IF (bool_value_in) THEN
-             WRITE(*,'(A)',ADVANCE='no') ": True"
-          ELSE
-             WRITE(*,'(A)',ADVANCE='no') ": False"
-          END IF
+       IF (value) THEN
+          WRITE(*,'(A)',ADVANCE='no') ": True"
+       ELSE
+          WRITE(*,'(A)',ADVANCE='no') ": False"
        END IF
 
        WRITE(*,*)
     END IF
-  END SUBROUTINE WriteElement
+  END SUBROUTINE WriteElement_bool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Write out a list element.
-  !> Only specify one of the kinds of values.
-  SUBROUTINE WriteListElement(key, text_value_in, int_value_in, float_value_in,&
-       bool_value_in)
+  !> Write out a element.
+  SUBROUTINE WriteElement_float(key, value)
+    !> Some text to write.
+    CHARACTER(LEN=*), INTENT(IN) :: key
+    !> A float value to write.
+    REAL(NTReal), INTENT(IN) :: value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+
+       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(*,'(A)',ADVANCE='no') ": "
+       WRITE(*,'(ES22.14)',ADVANCE='no') value
+
+       WRITE(*,*)
+    END IF
+  END SUBROUTINE WriteElement_float
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a element.
+  SUBROUTINE WriteElement_int(key, value)
+    !> Some text to write.
+    CHARACTER(LEN=*), INTENT(IN) :: key
+    !> An integer value to write.
+    INTEGER, INTENT(IN) :: value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+
+       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(*,'(A)',ADVANCE='no') ": "
+       WRITE(*,'(I10)',ADVANCE='no') value
+
+       WRITE(*,*)
+    END IF
+  END SUBROUTINE WriteElement_int
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a element.
+  SUBROUTINE WriteElement_string(key, value)
     !> Some text to write.
     CHARACTER(LEN=*), INTENT(IN) :: key
     !> A text value to write.
-    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: text_value_in
-    !> An integer value to write.
-    INTEGER, INTENT(IN), OPTIONAL :: int_value_in
-    !> A float value to write.
-    REAL(NTReal), INTENT(IN), OPTIONAL :: float_value_in
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+
+       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(*,'(A)',ADVANCE='no') ": "
+       WRITE(*,'(A)',ADVANCE='no') value
+
+       WRITE(*,*)
+    END IF
+  END SUBROUTINE WriteElement_string
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a list element.
+  SUBROUTINE WriteListElement_bool(key, value)
+    !> Some text to write.
+    CHARACTER(LEN=*), INTENT(IN) :: key
     !> A bool value to write.
-    LOGICAL, INTENT(IN), OPTIONAL :: bool_value_in
+    LOGICAL, INTENT(IN) :: value
 
     IF (IsActive) THEN
        CALL WriteIndent
 
        WRITE(*,'(A)',ADVANCE='no') "- "
        WRITE(*,'(A)',ADVANCE='no') key
-
-       IF (PRESENT(text_value_in)) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": "
-          WRITE(*,'(A)',ADVANCE='no') text_value_in
-       END IF
-       IF (PRESENT(int_value_in)) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": "
-          WRITE(*,'(I10)',ADVANCE='no') int_value_in
-       END IF
-       IF (PRESENT(float_value_in)) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": "
-          WRITE(*,'(ES22.14)',ADVANCE='no') float_value_in
-       END IF
-       IF (PRESENT(bool_value_in)) THEN
-          IF (bool_value_in) THEN
-             WRITE(*,'(A)',ADVANCE='no') ": True"
-          ELSE
-             WRITE(*,'(A)',ADVANCE='no') ": False"
-          END IF
+       IF (value) THEN
+          WRITE(*,'(A)',ADVANCE='no') ": True"
+       ELSE
+          WRITE(*,'(A)',ADVANCE='no') ": False"
        END IF
 
        WRITE(*,*)
     END IF
-  END SUBROUTINE WriteListElement
+  END SUBROUTINE WriteListElement_bool
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a list element.
+  SUBROUTINE WriteListElement_float(key, value)
+    !> Some text to write.
+    CHARACTER(LEN=*), INTENT(IN) :: key
+    !> A float value to write.
+    REAL(NTReal), INTENT(IN) :: value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+
+       WRITE(*,'(A)',ADVANCE='no') "- "
+       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(*,'(A)',ADVANCE='no') ": "
+       WRITE(*,'(ES22.14)',ADVANCE='no') value
+
+       WRITE(*,*)
+    END IF
+  END SUBROUTINE WriteListElement_float
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a list element.
+  SUBROUTINE WriteListElement_int(key, value)
+    !> Some text to write.
+    CHARACTER(LEN=*), INTENT(IN) :: key
+    !> An integer value to write.
+    INTEGER, INTENT(IN) :: value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+
+       WRITE(*,'(A)',ADVANCE='no') "- "
+       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(*,'(A)',ADVANCE='no') ": "
+       WRITE(*,'(I10)',ADVANCE='no') value
+
+       WRITE(*,*)
+    END IF
+  END SUBROUTINE WriteListElement_int
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a list element.
+  SUBROUTINE WriteListElement_string(key, value)
+    !> Some text to write.
+    CHARACTER(LEN=*), INTENT(IN) :: key
+    !> A text value to write.
+    CHARACTER(LEN=*), INTENT(IN) :: value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+
+       WRITE(*,'(A)',ADVANCE='no') "- "
+       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(*,'(A)',ADVANCE='no') ": "
+       WRITE(*,'(A)',ADVANCE='no') value
+
+       WRITE(*,*)
+    END IF
+  END SUBROUTINE WriteListElement_string
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a citation element.
   SUBROUTINE WriteCitation(citation_list)

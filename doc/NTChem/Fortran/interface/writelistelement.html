@@ -10,7 +10,7 @@
     <meta name="author" content="" >
     <link rel="icon" href="../favicon.png">
 
-    <title>ConstructMatrixFromMatrixMarket &ndash; NTPoly</title>
+    <title>WriteListElement &ndash; NTPoly</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -110,7 +110,7 @@
     
   
   <div class="row">
-    <h1>ConstructMatrixFromMatrixMarket
+    <h1>WriteListElement
    <small>Interface</small>
     
     </h1>
@@ -128,24 +128,24 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="<p> 0.1% of total for procedures.</p>Including implementation: 144 statements,  3.9% of total for procedures.">3 statements</a>
+    title="<p> 0.2% of total for procedures.</p>Including implementation: 57 statements,  1.5% of total for procedures.">6 statements</a>
      </li> 
      
      
      
-    <li><i class="fa fa-code"></i><a href="../src/PSMatrixModule.F90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/LoggingModule.F90"> Source File</a></li>
      
      
   </ul>
   <ol class="breadcrumb in-well text-right">
   
     
-     <li><a href='../sourcefile/psmatrixmodule.f90.html'>PSMatrixModule.F90</a></li>
+     <li><a href='../sourcefile/loggingmodule.f90.html'>LoggingModule.F90</a></li>
     
-     <li><a href='../module/psmatrixmodule.html'>PSMatrixModule</a></li>
+     <li><a href='../module/loggingmodule.html'>LoggingModule</a></li>
     
   
-     <li class="active">ConstructMatrixFromMatrixMarket</li>
+     <li class="active">WriteListElement</li>
   </ol>
 </div>
 </div>
@@ -190,7 +190,13 @@
   <div id="modprocs-0" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/constructmatrixfrommatrixmarket.html#moduleprocedure-constructmatrixfrommatrixmarket_ps">ConstructMatrixFromMatrixMarket_ps</a>
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_bool">WriteListElement_bool</a>
+      
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_float">WriteListElement_float</a>
+      
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_int">WriteListElement_int</a>
+      
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_string">WriteListElement_string</a>
       
     </div>
   </div>
@@ -204,7 +210,7 @@
     </div>
     
     <div class="col-md-9" id='text'>
-      <h2>public interface ConstructMatrixFromMatrixMarket</h2>
+      <h2>public interface WriteListElement</h2>
    
      
      
@@ -239,7 +245,13 @@
   <div id="modprocs-1" class="panel-collapse collapse">
     <div class="list-group">
       
-      <a class="list-group-item" href="../interface/constructmatrixfrommatrixmarket.html#moduleprocedure-constructmatrixfrommatrixmarket_ps">ConstructMatrixFromMatrixMarket_ps</a>
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_bool">WriteListElement_bool</a>
+      
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_float">WriteListElement_float</a>
+      
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_int">WriteListElement_int</a>
+      
+      <a class="list-group-item" href="../interface/writelistelement.html#moduleprocedure-writelistelement_string">WriteListElement_string</a>
       
     </div>
   </div>
@@ -260,8 +272,8 @@
    
     
   <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-constructmatrixfrommatrixmarket_ps"></span><h3>
-private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name, process_grid_in)
+  <div class="panel-heading codesum"><span class="anchor" id="proc-writelistelement_bool"></span><h3>
+private subroutine WriteListElement_bool(key, value)
     
     
    
@@ -272,8 +284,7 @@ private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name, process_g
 
 
 
-<p>Construct distributed sparse matrix from a matrix market file in parallel.
- Read \cite boisvert1996matrix for the details.</p>
+<p>Write out a list element.</p>
     
     <h4>Arguments</h4>
     
@@ -294,12 +305,222 @@ private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name, process_g
   
 <tr>
   
-  <td><span class="anchor" ></span>type(<a href='../type/matrix_ps.html'>Matrix_ps</a>),</td>
-  <td>intent(inout)</td>
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>this</strong></td><td><p>The file being constructed.</p></td>
+  <td><strong>key</strong></td><td><p>Some text to write.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>logical,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>value</strong></td><td><p>A bool value to write.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-writelistelement_float"></span><h3>
+private subroutine WriteListElement_float(key, value)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+<p>Write out a list element.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>key</strong></td><td><p>Some text to write.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>real(kind=NTReal),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>value</strong></td><td><p>A float value to write.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-writelistelement_int"></span><h3>
+private subroutine WriteListElement_int(key, value)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+<p>Write out a list element.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>key</strong></td><td><p>Some text to write.</p></td>
+  
+</tr>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>integer,</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>value</strong></td><td><p>An integer value to write.</p></td>
+  
+</tr>
+
+</tbody>
+</table>
+
+      
+    
+    
+
+  </div>
+  </div>
+
+   
+    
+  <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-writelistelement_string"></span><h3>
+private subroutine WriteListElement_string(key, value)
+    
+    
+   
+</h3></div>
+  <div class="panel-body">
+       
+    
+
+
+
+<p>Write out a list element.</p>
+    
+    <h4>Arguments</h4>
+    
+      
+      
+<table class="table table-striped varlist">
+<thead><tr><th>Type</th>
+<th>Intent</th><th>Optional</th>
+<th>Attributes</th><th></th><th>Name</th><th></th></thead>
+
+
+
+<tbody>
+
+  
+  
+  
+  
+<tr>
+  
+  <td><span class="anchor" ></span>character(len=*),</td>
+  <td>intent(in)</td>
+  <td></td>
+  
+  <td></td><td>::</td>
+  <td><strong>key</strong></td><td><p>Some text to write.</p></td>
   
 </tr>
 
@@ -314,22 +535,7 @@ private subroutine ConstructMatrixFromMatrixMarket_ps(this, file_name, process_g
   <td></td>
   
   <td></td><td>::</td>
-  <td><strong>file_name</strong></td><td><p>The name of the file to read.</p></td>
-  
-</tr>
-
-  
-  
-  
-  
-<tr>
-  
-  <td><span class="anchor" ></span>type(<a href='../type/processgrid_t.html'>ProcessGrid_t</a>),</td>
-  <td>intent(in),</td>
-  <td>optional</td>
-  
-  <td></td><td>::</td>
-  <td><strong>process_grid_in</strong></td><td><p>Grid to distribute the matrix on.</p></td>
+  <td><strong>value</strong></td><td><p>A text value to write.</p></td>
   
 </tr>
 

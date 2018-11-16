@@ -328,7 +328,7 @@
 <a name="ln-63"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-64"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Linear Solver&quot;</span><span class="p">)</span>
 <a name="ln-65"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-66"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;CG&quot;</span><span class="p">)</span>
+<a name="ln-66"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;CG&quot;</span><span class="p">)</span>
 <a name="ln-67"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-68"></a>    <span class="k">END IF</span>
 <a name="ln-69"></a>
@@ -372,9 +372,9 @@
 <a name="ln-107"></a><span class="k">    </span><span class="n">norm_value</span> <span class="o">=</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span> <span class="o">+</span> <span class="mf">1.0_NTREAL</span>
 <a name="ln-108"></a>    <span class="k">DO </span><span class="n">outer_counter</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">max_iterations</span>
 <a name="ln-109"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">outer_counter</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="mi">1</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-110"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-110"></a><span class="k">          CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Round&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-111"></a>          <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-112"></a>          <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
+<a name="ln-112"></a>          <span class="k">CALL </span><span class="n">WriteListElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Convergence&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">norm_value</span><span class="p">)</span>
 <a name="ln-113"></a>          <span class="k">CALL </span><span class="n">ExitSubLog</span>
 <a name="ln-114"></a>       <span class="k">END IF</span>
 <a name="ln-115"></a><span class="k">       IF</span> <span class="p">(</span><span class="n">norm_value</span> <span class="p">.</span><span class="n">LE</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">converge_diff</span><span class="p">)</span> <span class="k">THEN</span>
@@ -421,7 +421,7 @@
 <a name="ln-156"></a>    <span class="k">END DO</span>
 <a name="ln-157"></a><span class="k">    IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-158"></a><span class="k">       CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-159"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span><span class="n">int_value_in</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-159"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Total_Iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">outer_counter</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
 <a name="ln-160"></a>       <span class="k">CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">XMat</span><span class="p">)</span>
 <a name="ln-161"></a>    <span class="k">END IF</span>
 <a name="ln-162"></a>
@@ -484,7 +484,7 @@
 <a name="ln-219"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-220"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Linear Solver&quot;</span><span class="p">)</span>
 <a name="ln-221"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-222"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Cholesky Decomposition&quot;</span><span class="p">)</span>
+<a name="ln-222"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Cholesky Decomposition&quot;</span><span class="p">)</span>
 <a name="ln-223"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
 <a name="ln-224"></a>    <span class="k">END IF</span>
 <a name="ln-225"></a>
@@ -637,141 +637,140 @@
 <a name="ln-372"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
 <a name="ln-373"></a><span class="k">       CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Linear Solver&quot;</span><span class="p">)</span>
 <a name="ln-374"></a>       <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-375"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-376"></a>            <span class="p">&amp;</span> <span class="n">text_value_in</span><span class="o">=</span><span class="s2">&quot;Pivoted Cholesky Decomposition&quot;</span><span class="p">)</span>
-<a name="ln-377"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Target_Rank&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">rank_in</span><span class="p">)</span>
-<a name="ln-378"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
-<a name="ln-379"></a>    <span class="k">END IF</span>
-<a name="ln-380"></a>
-<a name="ln-381"></a><span class="k">    CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">LMat</span><span class="p">,</span> <span class="n">AMat</span><span class="p">)</span>
-<a name="ln-382"></a>
-<a name="ln-383"></a>    <span class="c">!! Construct the pivot vector</span>
-<a name="ln-384"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">pivot_vector</span><span class="p">(</span><span class="n">AMat</span><span class="p">%</span><span class="n">actual_matrix_dimension</span><span class="p">))</span>
-<a name="ln-385"></a>    <span class="k">DO </span><span class="n">JJ</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">AMat</span><span class="p">%</span><span class="n">actual_matrix_dimension</span>
-<a name="ln-386"></a>       <span class="n">pivot_vector</span><span class="p">(</span><span class="n">JJ</span><span class="p">)</span> <span class="o">=</span> <span class="n">JJ</span>
-<a name="ln-387"></a>    <span class="k">END DO</span>
-<a name="ln-388"></a>
-<a name="ln-389"></a>    <span class="c">!! First get the local matrix in a dense recommendation for quick lookup</span>
-<a name="ln-390"></a>    <span class="k">CALL </span><span class="n">MergeMatrixLocalBlocks</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">sparse_a</span><span class="p">)</span>
-<a name="ln-391"></a>    <span class="k">CALL </span><span class="n">ConstructMatrixDFromS</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">,</span> <span class="n">dense_a</span><span class="p">)</span>
-<a name="ln-392"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">local_pivots</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-393"></a>
-<a name="ln-394"></a>    <span class="c">!! Extract the diagonal</span>
-<a name="ln-395"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">diag</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-396"></a>    <span class="k">CALL </span><span class="n">ConstructDiag</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">Lmat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">,</span> <span class="n">dense_a</span><span class="p">,</span> <span class="n">diag</span><span class="p">)</span>
-<a name="ln-397"></a>
-<a name="ln-398"></a>    <span class="c">!! Root Lookups</span>
-<a name="ln-399"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">col_root_lookup</span><span class="p">(</span><span class="n">AMat</span><span class="p">%</span><span class="n">logical_matrix_dimension</span><span class="p">))</span>
-<a name="ln-400"></a>    <span class="k">CALL </span><span class="n">ConstructRankLookup</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">,</span> <span class="n">col_root_lookup</span><span class="p">)</span>
-<a name="ln-401"></a>
-<a name="ln-402"></a>    <span class="c">!! Allocate space for L</span>
-<a name="ln-403"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-404"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">index_l</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">,</span> <span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-405"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">values_l</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">,</span> <span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-406"></a>    <span class="n">values_per_column_l</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-407"></a>
-<a name="ln-408"></a>    <span class="c">!! Buffer for fast indexing of A</span>
-<a name="ln-409"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">a_buf</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-410"></a>    <span class="n">a_buf</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-411"></a>
-<a name="ln-412"></a>    <span class="c">!! Allocate space for a received column</span>
-<a name="ln-413"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">recv_index</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">))</span>
-<a name="ln-414"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">recv_values</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">))</span>
-<a name="ln-415"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">dot_values</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
-<a name="ln-416"></a>
-<a name="ln-417"></a>    <span class="c">!! Pregather the full column of A.</span>
-<a name="ln-418"></a>    <span class="k">CALL </span><span class="n">GatherMatrixColumn</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">,</span> <span class="n">acol</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">)</span>
-<a name="ln-419"></a>
-<a name="ln-420"></a>    <span class="c">!! Main Loop</span>
-<a name="ln-421"></a>    <span class="k">DO </span><span class="n">JJ</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rank_in</span>
-<a name="ln-422"></a>       <span class="c">!! Pick a pivot vector</span>
-<a name="ln-423"></a>       <span class="n">local_JJ</span>  <span class="o">=</span> <span class="n">JJ</span> <span class="o">-</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_row</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-424"></a>       <span class="k">CALL </span><span class="n">GetPivot</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">,</span> <span class="n">JJ</span><span class="p">,</span> <span class="n">pivot_vector</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">pi_j</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-425"></a>            <span class="p">&amp;</span> <span class="n">insert_value</span><span class="p">,</span> <span class="n">local_pivots</span><span class="p">,</span> <span class="n">num_local_pivots</span><span class="p">)</span>
-<a name="ln-426"></a>
-<a name="ln-427"></a>       <span class="c">!! l[pi[j],j] = sqrt(d[pi[j]])</span>
-<a name="ln-428"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">pi_j</span> <span class="p">.</span><span class="n">GE</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_column</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">pi_j</span> <span class="p">.</span><span class="n">LT</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">end_column</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-429"></a><span class="k">          </span><span class="n">local_pi_j</span> <span class="o">=</span> <span class="n">pi_j</span> <span class="o">-</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_column</span> <span class="o">+</span> <span class="mi">1</span>
-<a name="ln-430"></a>          <span class="n">insert_value</span> <span class="o">=</span> <span class="nb">SQRT</span><span class="p">(</span><span class="n">insert_value</span><span class="p">)</span>
-<a name="ln-431"></a>          <span class="n">inverse_factor</span> <span class="o">=</span> <span class="mf">1.0_NTREAL</span><span class="o">/</span><span class="n">insert_value</span>
-<a name="ln-432"></a>          <span class="c">!! Insert</span>
-<a name="ln-433"></a>          <span class="k">IF</span> <span class="p">(</span><span class="n">JJ</span> <span class="p">.</span><span class="n">GE</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_row</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">JJ</span> <span class="p">.</span><span class="n">LT</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">end_row</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-434"></a><span class="k">             CALL </span><span class="n">AppendToVector</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">(</span><span class="n">local_pi_j</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-435"></a>                  <span class="p">&amp;</span> <span class="n">index_l</span><span class="p">(:,</span><span class="n">local_pi_j</span><span class="p">),</span> <span class="n">values_l</span><span class="p">(:,</span> <span class="n">local_pi_j</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-436"></a>                  <span class="p">&amp;</span> <span class="n">local_JJ</span><span class="p">,</span> <span class="n">insert_value</span><span class="p">)</span>
-<a name="ln-437"></a>          <span class="k">END IF</span>
-<a name="ln-438"></a>          <span class="c">!! Extract column J for sending later</span>
-<a name="ln-439"></a>          <span class="n">recv_num_values</span> <span class="o">=</span> <span class="n">values_per_column_l</span><span class="p">(</span><span class="n">local_pi_j</span><span class="p">)</span>
-<a name="ln-440"></a>          <span class="n">recv_index</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">)</span> <span class="o">=</span> <span class="n">index_l</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">,</span><span class="n">local_pi_j</span><span class="p">)</span>
-<a name="ln-441"></a>          <span class="n">recv_values</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">)</span> <span class="o">=</span> <span class="n">values_l</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">,</span> <span class="n">local_pi_j</span><span class="p">)</span>
-<a name="ln-442"></a>       <span class="k">END IF</span>
-<a name="ln-443"></a><span class="k">       </span><span class="n">col_root</span> <span class="o">=</span> <span class="n">col_root_lookup</span><span class="p">(</span><span class="n">pi_j</span><span class="p">)</span>
-<a name="ln-444"></a>
-<a name="ln-445"></a>       <span class="c">!! Broadcast column JJ, and Inverse Factor</span>
-<a name="ln-446"></a>       <span class="k">CALL </span><span class="n">BroadcastVector</span><span class="p">(</span><span class="n">recv_num_values</span><span class="p">,</span> <span class="n">recv_index</span><span class="p">,</span> <span class="n">recv_values</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-447"></a>            <span class="p">&amp;</span> <span class="n">col_root</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">row_comm</span><span class="p">)</span>
-<a name="ln-448"></a>       <span class="k">CALL </span><span class="n">MPI_Bcast</span><span class="p">(</span><span class="n">inverse_factor</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">col_root</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-449"></a>            <span class="p">&amp;</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">row_comm</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
-<a name="ln-450"></a>
-<a name="ln-451"></a>       <span class="c">!! Extract the row of A to a dense matrix for easy lookup</span>
-<a name="ln-452"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="nb">MAX</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="p">),</span><span class="mi">1</span><span class="p">),</span> <span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<a name="ln-453"></a>          <span class="n">a_buf</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">inner_index</span><span class="p">(</span><span class="n">II</span><span class="p">))</span> <span class="o">=</span> <span class="n">acol</span><span class="p">%</span><span class="n">values</span><span class="p">(</span><span class="n">II</span><span class="p">)</span>
-<a name="ln-454"></a>       <span class="k">END DO</span>
-<a name="ln-455"></a>
-<a name="ln-456"></a>       <span class="c">!! Compute Dot Products</span>
-<a name="ln-457"></a>       <span class="k">CALL </span><span class="n">DotAllPivoted</span><span class="p">(</span><span class="n">recv_num_values</span><span class="p">,</span> <span class="n">recv_index</span><span class="p">,</span> <span class="n">recv_values</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-458"></a>            <span class="p">&amp;</span> <span class="n">values_per_column_l</span><span class="p">,</span> <span class="n">index_l</span><span class="p">,</span> <span class="n">values_l</span><span class="p">,</span> <span class="n">local_pivots</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-459"></a>            <span class="p">&amp;</span> <span class="n">num_local_pivots</span><span class="p">,</span> <span class="n">dot_values</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">column_comm</span><span class="p">)</span>
-<a name="ln-460"></a>
-<a name="ln-461"></a>       <span class="c">!! Loop over other columns</span>
-<a name="ln-462"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_local_pivots</span>
-<a name="ln-463"></a>          <span class="c">!! Insert Into L</span>
-<a name="ln-464"></a>          <span class="n">local_pi_i</span> <span class="o">=</span> <span class="n">local_pivots</span><span class="p">(</span><span class="n">II</span><span class="p">)</span>
-<a name="ln-465"></a>          <span class="n">Aval</span> <span class="o">=</span> <span class="n">a_buf</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">)</span>
-<a name="ln-466"></a>          <span class="n">insert_value</span> <span class="o">=</span> <span class="n">inverse_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">Aval</span> <span class="o">-</span> <span class="n">dot_values</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
-<a name="ln-467"></a>          <span class="k">IF</span> <span class="p">(</span><span class="nb">ABS</span><span class="p">(</span><span class="n">insert_value</span><span class="p">)</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-468"></a><span class="k">             IF</span> <span class="p">(</span><span class="n">JJ</span> <span class="p">.</span><span class="n">GE</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_row</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">JJ</span> <span class="p">.</span><span class="n">LT</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">end_row</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-469"></a><span class="k">                CALL </span><span class="n">AppendToVector</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-470"></a>                     <span class="p">&amp;</span> <span class="n">index_l</span><span class="p">(:,</span><span class="n">local_pi_i</span><span class="p">),</span> <span class="n">values_l</span><span class="p">(:,</span> <span class="n">local_pi_i</span><span class="p">),</span> <span class="p">&amp;</span>
-<a name="ln-471"></a>                     <span class="p">&amp;</span> <span class="n">local_JJ</span><span class="p">,</span> <span class="n">insert_value</span><span class="p">)</span>
-<a name="ln-472"></a>             <span class="k">END IF</span>
-<a name="ln-473"></a><span class="k">          END IF</span>
-<a name="ln-474"></a>          <span class="c">!! Update Diagonal Array</span>
-<a name="ln-475"></a>          <span class="n">diag</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">)</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">)</span> <span class="o">-</span> <span class="n">insert_value</span><span class="o">**</span><span class="mi">2</span>
-<a name="ln-476"></a>       <span class="k">END DO</span>
-<a name="ln-477"></a>
-<a name="ln-478"></a>       <span class="c">!! Clear up the A buffer</span>
-<a name="ln-479"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="nb">MAX</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="p">),</span><span class="mi">1</span><span class="p">),</span> <span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-<a name="ln-480"></a>          <span class="n">a_buf</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">inner_index</span><span class="p">(</span><span class="n">II</span><span class="p">))</span> <span class="o">=</span> <span class="mi">0</span>
-<a name="ln-481"></a>       <span class="k">END DO</span>
-<a name="ln-482"></a>
-<a name="ln-483"></a><span class="k">    END DO</span>
-<a name="ln-484"></a>
-<a name="ln-485"></a>    <span class="c">!! Unpack</span>
-<a name="ln-486"></a>    <span class="k">CALL </span><span class="n">UnpackCholesky</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">,</span> <span class="n">index_l</span><span class="p">,</span> <span class="n">values_l</span><span class="p">,</span> <span class="n">LMat</span><span class="p">)</span>
-<a name="ln-487"></a>
-<a name="ln-488"></a>    <span class="c">!! Cleanup</span>
-<a name="ln-489"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
-<a name="ln-490"></a><span class="k">       CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">LMat</span><span class="p">)</span>
-<a name="ln-491"></a>       <span class="k">CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-492"></a>    <span class="k">END IF</span>
-<a name="ln-493"></a><span class="k">    DEALLOCATE</span><span class="p">(</span><span class="n">local_pivots</span><span class="p">)</span>
-<a name="ln-494"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">pivot_vector</span><span class="p">)</span>
-<a name="ln-495"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">diag</span><span class="p">)</span>
-<a name="ln-496"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">dense_a</span><span class="p">)</span>
-<a name="ln-497"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">)</span>
-<a name="ln-498"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">index_l</span><span class="p">)</span>
-<a name="ln-499"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">values_l</span><span class="p">)</span>
-<a name="ln-500"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">recv_index</span><span class="p">)</span>
-<a name="ln-501"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">recv_values</span><span class="p">)</span>
-<a name="ln-502"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">dot_values</span><span class="p">)</span>
-<a name="ln-503"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">a_buf</span><span class="p">)</span>
-<a name="ln-504"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">col_root_lookup</span><span class="p">)</span>
-<a name="ln-505"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">)</span>
-<a name="ln-506"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">acol</span><span class="p">)</span>
-<a name="ln-507"></a>  <span class="k">END SUBROUTINE </span><span class="n">PivotedCholeskyDecomposition</span>
-<a name="ln-508"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-509"></a><span class="k">END MODULE </span><span class="n">LinearSolversModule</span>
+<a name="ln-375"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Method&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="s2">&quot;Pivoted Cholesky Decomposition&quot;</span><span class="p">)</span>
+<a name="ln-376"></a>       <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;Target_Rank&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">rank_in</span><span class="p">)</span>
+<a name="ln-377"></a>       <span class="k">CALL </span><span class="n">PrintParameters</span><span class="p">(</span><span class="n">solver_parameters</span><span class="p">)</span>
+<a name="ln-378"></a>    <span class="k">END IF</span>
+<a name="ln-379"></a>
+<a name="ln-380"></a><span class="k">    CALL </span><span class="n">ConstructEmptyMatrix</span><span class="p">(</span><span class="n">LMat</span><span class="p">,</span> <span class="n">AMat</span><span class="p">)</span>
+<a name="ln-381"></a>
+<a name="ln-382"></a>    <span class="c">!! Construct the pivot vector</span>
+<a name="ln-383"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">pivot_vector</span><span class="p">(</span><span class="n">AMat</span><span class="p">%</span><span class="n">actual_matrix_dimension</span><span class="p">))</span>
+<a name="ln-384"></a>    <span class="k">DO </span><span class="n">JJ</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">AMat</span><span class="p">%</span><span class="n">actual_matrix_dimension</span>
+<a name="ln-385"></a>       <span class="n">pivot_vector</span><span class="p">(</span><span class="n">JJ</span><span class="p">)</span> <span class="o">=</span> <span class="n">JJ</span>
+<a name="ln-386"></a>    <span class="k">END DO</span>
+<a name="ln-387"></a>
+<a name="ln-388"></a>    <span class="c">!! First get the local matrix in a dense recommendation for quick lookup</span>
+<a name="ln-389"></a>    <span class="k">CALL </span><span class="n">MergeMatrixLocalBlocks</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">sparse_a</span><span class="p">)</span>
+<a name="ln-390"></a>    <span class="k">CALL </span><span class="n">ConstructMatrixDFromS</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">,</span> <span class="n">dense_a</span><span class="p">)</span>
+<a name="ln-391"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">local_pivots</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-392"></a>
+<a name="ln-393"></a>    <span class="c">!! Extract the diagonal</span>
+<a name="ln-394"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">diag</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-395"></a>    <span class="k">CALL </span><span class="n">ConstructDiag</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">Lmat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">,</span> <span class="n">dense_a</span><span class="p">,</span> <span class="n">diag</span><span class="p">)</span>
+<a name="ln-396"></a>
+<a name="ln-397"></a>    <span class="c">!! Root Lookups</span>
+<a name="ln-398"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">col_root_lookup</span><span class="p">(</span><span class="n">AMat</span><span class="p">%</span><span class="n">logical_matrix_dimension</span><span class="p">))</span>
+<a name="ln-399"></a>    <span class="k">CALL </span><span class="n">ConstructRankLookup</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">,</span> <span class="n">col_root_lookup</span><span class="p">)</span>
+<a name="ln-400"></a>
+<a name="ln-401"></a>    <span class="c">!! Allocate space for L</span>
+<a name="ln-402"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-403"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">index_l</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">,</span> <span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-404"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">values_l</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">,</span> <span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-405"></a>    <span class="n">values_per_column_l</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-406"></a>
+<a name="ln-407"></a>    <span class="c">!! Buffer for fast indexing of A</span>
+<a name="ln-408"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">a_buf</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-409"></a>    <span class="n">a_buf</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-410"></a>
+<a name="ln-411"></a>    <span class="c">!! Allocate space for a received column</span>
+<a name="ln-412"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">recv_index</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">))</span>
+<a name="ln-413"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">recv_values</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">rows</span><span class="p">))</span>
+<a name="ln-414"></a>    <span class="k">ALLOCATE</span><span class="p">(</span><span class="n">dot_values</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">%</span><span class="n">columns</span><span class="p">))</span>
+<a name="ln-415"></a>
+<a name="ln-416"></a>    <span class="c">!! Pregather the full column of A.</span>
+<a name="ln-417"></a>    <span class="k">CALL </span><span class="n">GatherMatrixColumn</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">,</span> <span class="n">acol</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">)</span>
+<a name="ln-418"></a>
+<a name="ln-419"></a>    <span class="c">!! Main Loop</span>
+<a name="ln-420"></a>    <span class="k">DO </span><span class="n">JJ</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">rank_in</span>
+<a name="ln-421"></a>       <span class="c">!! Pick a pivot vector</span>
+<a name="ln-422"></a>       <span class="n">local_JJ</span>  <span class="o">=</span> <span class="n">JJ</span> <span class="o">-</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_row</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-423"></a>       <span class="k">CALL </span><span class="n">GetPivot</span><span class="p">(</span><span class="n">AMat</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">,</span> <span class="n">JJ</span><span class="p">,</span> <span class="n">pivot_vector</span><span class="p">,</span> <span class="n">diag</span><span class="p">,</span> <span class="n">pi_j</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-424"></a>            <span class="p">&amp;</span> <span class="n">insert_value</span><span class="p">,</span> <span class="n">local_pivots</span><span class="p">,</span> <span class="n">num_local_pivots</span><span class="p">)</span>
+<a name="ln-425"></a>
+<a name="ln-426"></a>       <span class="c">!! l[pi[j],j] = sqrt(d[pi[j]])</span>
+<a name="ln-427"></a>       <span class="k">IF</span> <span class="p">(</span><span class="n">pi_j</span> <span class="p">.</span><span class="n">GE</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_column</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">pi_j</span> <span class="p">.</span><span class="n">LT</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">end_column</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-428"></a><span class="k">          </span><span class="n">local_pi_j</span> <span class="o">=</span> <span class="n">pi_j</span> <span class="o">-</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_column</span> <span class="o">+</span> <span class="mi">1</span>
+<a name="ln-429"></a>          <span class="n">insert_value</span> <span class="o">=</span> <span class="nb">SQRT</span><span class="p">(</span><span class="n">insert_value</span><span class="p">)</span>
+<a name="ln-430"></a>          <span class="n">inverse_factor</span> <span class="o">=</span> <span class="mf">1.0_NTREAL</span><span class="o">/</span><span class="n">insert_value</span>
+<a name="ln-431"></a>          <span class="c">!! Insert</span>
+<a name="ln-432"></a>          <span class="k">IF</span> <span class="p">(</span><span class="n">JJ</span> <span class="p">.</span><span class="n">GE</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_row</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">JJ</span> <span class="p">.</span><span class="n">LT</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">end_row</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-433"></a><span class="k">             CALL </span><span class="n">AppendToVector</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">(</span><span class="n">local_pi_j</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-434"></a>                  <span class="p">&amp;</span> <span class="n">index_l</span><span class="p">(:,</span><span class="n">local_pi_j</span><span class="p">),</span> <span class="n">values_l</span><span class="p">(:,</span> <span class="n">local_pi_j</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-435"></a>                  <span class="p">&amp;</span> <span class="n">local_JJ</span><span class="p">,</span> <span class="n">insert_value</span><span class="p">)</span>
+<a name="ln-436"></a>          <span class="k">END IF</span>
+<a name="ln-437"></a>          <span class="c">!! Extract column J for sending later</span>
+<a name="ln-438"></a>          <span class="n">recv_num_values</span> <span class="o">=</span> <span class="n">values_per_column_l</span><span class="p">(</span><span class="n">local_pi_j</span><span class="p">)</span>
+<a name="ln-439"></a>          <span class="n">recv_index</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">)</span> <span class="o">=</span> <span class="n">index_l</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">,</span><span class="n">local_pi_j</span><span class="p">)</span>
+<a name="ln-440"></a>          <span class="n">recv_values</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">)</span> <span class="o">=</span> <span class="n">values_l</span><span class="p">(:</span><span class="n">recv_num_values</span><span class="p">,</span> <span class="n">local_pi_j</span><span class="p">)</span>
+<a name="ln-441"></a>       <span class="k">END IF</span>
+<a name="ln-442"></a><span class="k">       </span><span class="n">col_root</span> <span class="o">=</span> <span class="n">col_root_lookup</span><span class="p">(</span><span class="n">pi_j</span><span class="p">)</span>
+<a name="ln-443"></a>
+<a name="ln-444"></a>       <span class="c">!! Broadcast column JJ, and Inverse Factor</span>
+<a name="ln-445"></a>       <span class="k">CALL </span><span class="n">BroadcastVector</span><span class="p">(</span><span class="n">recv_num_values</span><span class="p">,</span> <span class="n">recv_index</span><span class="p">,</span> <span class="n">recv_values</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-446"></a>            <span class="p">&amp;</span> <span class="n">col_root</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">row_comm</span><span class="p">)</span>
+<a name="ln-447"></a>       <span class="k">CALL </span><span class="n">MPI_Bcast</span><span class="p">(</span><span class="n">inverse_factor</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">MPINTREAL</span><span class="p">,</span> <span class="n">col_root</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-448"></a>            <span class="p">&amp;</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">row_comm</span><span class="p">,</span> <span class="n">ierr</span><span class="p">)</span>
+<a name="ln-449"></a>
+<a name="ln-450"></a>       <span class="c">!! Extract the row of A to a dense matrix for easy lookup</span>
+<a name="ln-451"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="nb">MAX</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="p">),</span><span class="mi">1</span><span class="p">),</span> <span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-452"></a>          <span class="n">a_buf</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">inner_index</span><span class="p">(</span><span class="n">II</span><span class="p">))</span> <span class="o">=</span> <span class="n">acol</span><span class="p">%</span><span class="n">values</span><span class="p">(</span><span class="n">II</span><span class="p">)</span>
+<a name="ln-453"></a>       <span class="k">END DO</span>
+<a name="ln-454"></a>
+<a name="ln-455"></a>       <span class="c">!! Compute Dot Products</span>
+<a name="ln-456"></a>       <span class="k">CALL </span><span class="n">DotAllPivoted</span><span class="p">(</span><span class="n">recv_num_values</span><span class="p">,</span> <span class="n">recv_index</span><span class="p">,</span> <span class="n">recv_values</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-457"></a>            <span class="p">&amp;</span> <span class="n">values_per_column_l</span><span class="p">,</span> <span class="n">index_l</span><span class="p">,</span> <span class="n">values_l</span><span class="p">,</span> <span class="n">local_pivots</span><span class="p">,</span> <span class="p">&amp;</span>
+<a name="ln-458"></a>            <span class="p">&amp;</span> <span class="n">num_local_pivots</span><span class="p">,</span> <span class="n">dot_values</span><span class="p">,</span> <span class="n">LMat</span><span class="p">%</span><span class="n">process_grid</span><span class="p">%</span><span class="n">column_comm</span><span class="p">)</span>
+<a name="ln-459"></a>
+<a name="ln-460"></a>       <span class="c">!! Loop over other columns</span>
+<a name="ln-461"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_local_pivots</span>
+<a name="ln-462"></a>          <span class="c">!! Insert Into L</span>
+<a name="ln-463"></a>          <span class="n">local_pi_i</span> <span class="o">=</span> <span class="n">local_pivots</span><span class="p">(</span><span class="n">II</span><span class="p">)</span>
+<a name="ln-464"></a>          <span class="n">Aval</span> <span class="o">=</span> <span class="n">a_buf</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">)</span>
+<a name="ln-465"></a>          <span class="n">insert_value</span> <span class="o">=</span> <span class="n">inverse_factor</span> <span class="o">*</span> <span class="p">(</span><span class="n">Aval</span> <span class="o">-</span> <span class="n">dot_values</span><span class="p">(</span><span class="n">II</span><span class="p">))</span>
+<a name="ln-466"></a>          <span class="k">IF</span> <span class="p">(</span><span class="nb">ABS</span><span class="p">(</span><span class="n">insert_value</span><span class="p">)</span> <span class="p">.</span><span class="n">GT</span><span class="p">.</span> <span class="n">solver_parameters</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-467"></a><span class="k">             IF</span> <span class="p">(</span><span class="n">JJ</span> <span class="p">.</span><span class="n">GE</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">start_row</span> <span class="p">.</span><span class="nb">AND</span><span class="p">.</span> <span class="n">JJ</span> <span class="p">.</span><span class="n">LT</span><span class="p">.</span> <span class="n">AMat</span><span class="p">%</span><span class="n">end_row</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-468"></a><span class="k">                CALL </span><span class="n">AppendToVector</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-469"></a>                     <span class="p">&amp;</span> <span class="n">index_l</span><span class="p">(:,</span><span class="n">local_pi_i</span><span class="p">),</span> <span class="n">values_l</span><span class="p">(:,</span> <span class="n">local_pi_i</span><span class="p">),</span> <span class="p">&amp;</span>
+<a name="ln-470"></a>                     <span class="p">&amp;</span> <span class="n">local_JJ</span><span class="p">,</span> <span class="n">insert_value</span><span class="p">)</span>
+<a name="ln-471"></a>             <span class="k">END IF</span>
+<a name="ln-472"></a><span class="k">          END IF</span>
+<a name="ln-473"></a>          <span class="c">!! Update Diagonal Array</span>
+<a name="ln-474"></a>          <span class="n">diag</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">)</span> <span class="o">=</span> <span class="n">diag</span><span class="p">(</span><span class="n">local_pi_i</span><span class="p">)</span> <span class="o">-</span> <span class="n">insert_value</span><span class="o">**</span><span class="mi">2</span>
+<a name="ln-475"></a>       <span class="k">END DO</span>
+<a name="ln-476"></a>
+<a name="ln-477"></a>       <span class="c">!! Clear up the A buffer</span>
+<a name="ln-478"></a>       <span class="k">DO </span><span class="n">II</span> <span class="o">=</span> <span class="nb">MAX</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="p">),</span><span class="mi">1</span><span class="p">),</span> <span class="n">acol</span><span class="p">%</span><span class="n">outer_index</span><span class="p">(</span><span class="n">pi_j</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+<a name="ln-479"></a>          <span class="n">a_buf</span><span class="p">(</span><span class="n">acol</span><span class="p">%</span><span class="n">inner_index</span><span class="p">(</span><span class="n">II</span><span class="p">))</span> <span class="o">=</span> <span class="mi">0</span>
+<a name="ln-480"></a>       <span class="k">END DO</span>
+<a name="ln-481"></a>
+<a name="ln-482"></a><span class="k">    END DO</span>
+<a name="ln-483"></a>
+<a name="ln-484"></a>    <span class="c">!! Unpack</span>
+<a name="ln-485"></a>    <span class="k">CALL </span><span class="n">UnpackCholesky</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">,</span> <span class="n">index_l</span><span class="p">,</span> <span class="n">values_l</span><span class="p">,</span> <span class="n">LMat</span><span class="p">)</span>
+<a name="ln-486"></a>
+<a name="ln-487"></a>    <span class="c">!! Cleanup</span>
+<a name="ln-488"></a>    <span class="k">IF</span> <span class="p">(</span><span class="n">solver_parameters</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span> <span class="k">THEN</span>
+<a name="ln-489"></a><span class="k">       CALL </span><span class="n">PrintMatrixInformation</span><span class="p">(</span><span class="n">LMat</span><span class="p">)</span>
+<a name="ln-490"></a>       <span class="k">CALL </span><span class="n">ExitSubLog</span>
+<a name="ln-491"></a>    <span class="k">END IF</span>
+<a name="ln-492"></a><span class="k">    DEALLOCATE</span><span class="p">(</span><span class="n">local_pivots</span><span class="p">)</span>
+<a name="ln-493"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">pivot_vector</span><span class="p">)</span>
+<a name="ln-494"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">diag</span><span class="p">)</span>
+<a name="ln-495"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">dense_a</span><span class="p">)</span>
+<a name="ln-496"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">values_per_column_l</span><span class="p">)</span>
+<a name="ln-497"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">index_l</span><span class="p">)</span>
+<a name="ln-498"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">values_l</span><span class="p">)</span>
+<a name="ln-499"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">recv_index</span><span class="p">)</span>
+<a name="ln-500"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">recv_values</span><span class="p">)</span>
+<a name="ln-501"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">dot_values</span><span class="p">)</span>
+<a name="ln-502"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">a_buf</span><span class="p">)</span>
+<a name="ln-503"></a>    <span class="k">DEALLOCATE</span><span class="p">(</span><span class="n">col_root_lookup</span><span class="p">)</span>
+<a name="ln-504"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">sparse_a</span><span class="p">)</span>
+<a name="ln-505"></a>    <span class="k">CALL </span><span class="n">DestructMatrix</span><span class="p">(</span><span class="n">acol</span><span class="p">)</span>
+<a name="ln-506"></a>  <span class="k">END SUBROUTINE </span><span class="n">PivotedCholeskyDecomposition</span>
+<a name="ln-507"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-508"></a><span class="k">END MODULE </span><span class="n">LinearSolversModule</span>
 </pre></div>
 
     </section>

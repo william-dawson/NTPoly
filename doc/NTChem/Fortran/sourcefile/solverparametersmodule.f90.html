@@ -450,27 +450,25 @@
 <a name="ln-185"></a>
 <a name="ln-186"></a>    <span class="k">CALL </span><span class="n">WriteHeader</span><span class="p">(</span><span class="s2">&quot;Solver Parameters&quot;</span><span class="p">)</span>
 <a name="ln-187"></a>    <span class="k">CALL </span><span class="n">EnterSubLog</span>
-<a name="ln-188"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;be_verbose&quot;</span><span class="p">,</span><span class="n">bool_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span>
-<a name="ln-189"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;do_load_balancing&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-190"></a>         <span class="p">&amp;</span> <span class="n">bool_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span>
-<a name="ln-191"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;converge_diff&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">converge_diff</span><span class="p">)</span>
-<a name="ln-192"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;threshold&quot;</span><span class="p">,</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span>
-<a name="ln-193"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iterations&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">max_iterations</span><span class="p">)</span>
-<a name="ln-194"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;DAC Base Size&quot;</span><span class="p">,</span> <span class="n">int_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">dac_base_size</span><span class="p">)</span>
-<a name="ln-195"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;DAC Base Sparsity&quot;</span><span class="p">,</span> <span class="p">&amp;</span>
-<a name="ln-196"></a>         <span class="p">&amp;</span> <span class="n">float_value_in</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">dac_base_sparsity</span><span class="p">)</span>
-<a name="ln-197"></a>    <span class="k">CALL </span><span class="n">ExitSubLog</span>
-<a name="ln-198"></a>  <span class="k">END SUBROUTINE </span><span class="n">PrintParameters</span>
-<a name="ln-199"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-200"></a>  <span class="c">!&gt; Cleanup the solver parameters datastructure.</span>
-<a name="ln-201"></a>  <span class="k">PURE SUBROUTINE </span><span class="n">DestructSolverParameters</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
-<a name="ln-202"></a>    <span class="c">!&gt; The parameter object.</span>
-<a name="ln-203"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">this</span>
-<a name="ln-204"></a>
-<a name="ln-205"></a>    <span class="k">CALL </span><span class="n">DestructPermutation</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">)</span>
-<a name="ln-206"></a>  <span class="k">END SUBROUTINE </span><span class="n">DestructSolverParameters</span>
-<a name="ln-207"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
-<a name="ln-208"></a><span class="k">END MODULE </span><span class="n">SolverParametersModule</span>
+<a name="ln-188"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;be_verbose&quot;</span><span class="p">,</span><span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">be_verbose</span><span class="p">)</span>
+<a name="ln-189"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;do_load_balancing&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">do_load_balancing</span><span class="p">)</span>
+<a name="ln-190"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;converge_diff&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">converge_diff</span><span class="p">)</span>
+<a name="ln-191"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;threshold&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">threshold</span><span class="p">)</span>
+<a name="ln-192"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;max_iterations&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">max_iterations</span><span class="p">)</span>
+<a name="ln-193"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;DAC Base Size&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">dac_base_size</span><span class="p">)</span>
+<a name="ln-194"></a>    <span class="k">CALL </span><span class="n">WriteElement</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="s2">&quot;DAC Base Sparsity&quot;</span><span class="p">,</span> <span class="k">value</span><span class="o">=</span><span class="n">this</span><span class="p">%</span><span class="n">dac_base_sparsity</span><span class="p">)</span>
+<a name="ln-195"></a>    <span class="k">CALL </span><span class="n">ExitSubLog</span>
+<a name="ln-196"></a>  <span class="k">END SUBROUTINE </span><span class="n">PrintParameters</span>
+<a name="ln-197"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-198"></a>  <span class="c">!&gt; Cleanup the solver parameters datastructure.</span>
+<a name="ln-199"></a>  <span class="k">PURE SUBROUTINE </span><span class="n">DestructSolverParameters</span><span class="p">(</span><span class="n">this</span><span class="p">)</span>
+<a name="ln-200"></a>    <span class="c">!&gt; The parameter object.</span>
+<a name="ln-201"></a>    <span class="k">TYPE</span><span class="p">(</span><span class="n">SolverParameters_t</span><span class="p">),</span> <span class="k">INTENT</span><span class="p">(</span><span class="n">INOUT</span><span class="p">)</span> <span class="kd">::</span> <span class="n">this</span>
+<a name="ln-202"></a>
+<a name="ln-203"></a>    <span class="k">CALL </span><span class="n">DestructPermutation</span><span class="p">(</span><span class="n">this</span><span class="p">%</span><span class="n">BalancePermutation</span><span class="p">)</span>
+<a name="ln-204"></a>  <span class="k">END SUBROUTINE </span><span class="n">DestructSolverParameters</span>
+<a name="ln-205"></a><span class="c">!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+<a name="ln-206"></a><span class="k">END MODULE </span><span class="n">SolverParametersModule</span>
 </pre></div>
 
     </section>
