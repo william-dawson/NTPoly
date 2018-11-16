@@ -4,8 +4,6 @@
 #include "TripletList.h"
 #include "Wrapper.h"
 
-#include <iostream>
-
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
 #include "PSMatrix_c.h"

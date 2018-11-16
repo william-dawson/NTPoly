@@ -7,6 +7,7 @@ enable_language(Fortran)
 ################################################################################
 ## Packages
 find_package(MPI REQUIRED)
+find_package(BLAS)
 find_package(SWIG 3.0)
 
 ################################################################################
@@ -14,7 +15,7 @@ find_package(SWIG 3.0)
 if (NOT FORTRAN_ONLY)
   enable_testing()
 else()
-  MESSAGE(WARNING "Fortran only! No local testing will be generated.")
+  message(WARNING "Fortran only! No local testing will be generated.")
 endif()
 
 ################################################################################
@@ -23,7 +24,8 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_Fortran_MODULE_DIRECTORY ${CMAKE_BINARY_DIR}/include)
-install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/ DESTINATION include)
+install(DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/
+        DESTINATION ${CMAKE_INSTALL_PREFIX}/include)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
 
 ################################################################################
@@ -41,15 +43,15 @@ endif()
 ################################################################################
 ## Check MPI Features
 option(USE_MPIH OFF)
-if (NOT ${MPI_Fortran_HAVE_F90_MODULE})
+if (USE_MPIH OR NOT ${MPI_Fortran_HAVE_F90_MODULE})
   add_definitions(-DUSE_MPIH)
 endif()
 
 option(NOIALLGATHER OFF)
 if (NOIALLGATHER)
   add_definitions(-DNOIALLGATHER)
-  MESSAGE(STATUS "IAllgather replacement activated.")
-  MESSAGE(STATUS "Note that this may reduce parallel performance.")
+  message(STATUS "IAllgather replacement activated.")
+  message(STATUS "Note that this may reduce parallel performance.")
 endif()
 
 ################################################################################
