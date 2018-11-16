@@ -6,8 +6,14 @@ enable_language(Fortran)
 
 ################################################################################
 ## Packages
-find_package(MPI REQUIRED)
-find_package(BLAS)
+if (NOT CMAKE_TOOLCHAIN_FILE)
+  message(WARNING "Building without a toolchain file. "
+          "If this does not work, please see the example toolchain files in "
+          "the Targets directory and set the parameters that match your "
+          "system.")
+  find_package(MPI REQUIRED)
+  find_package(BLAS)
+endif()
 find_package(SWIG 3.0)
 
 ################################################################################
@@ -30,10 +36,16 @@ file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/scratch)
 
 ################################################################################
 ## Compiler Flags
-set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
-set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
-set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
-set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
+if (CMAKE_TOOLCHAIN_FILE)
+  set(CMAKE_Fortran_FLAGS_DEBUG ${F_TOOLCHAINFLAGS_DEBUG})
+  set(CMAKE_CXX_FLAGS_DEBUG ${CXX_TOOLCHAINFLAGS_DEBUG})
+  set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
+  set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
+else()
+  find_package(OpenMP)
+  set(CMAKE_Fortran_FLAGS_RELEASE
+    "${CMAKE_Fortran_FLAGS_RELEASE} ${OpenMP_Fortran_FLAGS}")
+endif()
 
 if (NOT CMAKE_BUILD_TYPE)
   set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_RELEASE})
