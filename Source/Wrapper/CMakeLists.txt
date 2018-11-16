@@ -28,7 +28,7 @@ set(Wsrc
 )
 
 ################################################################################
-add_library(NTPolyWrapper STATIC ${Wsrc})
+add_library(NTPolyWrapper ${Wsrc})
 target_link_libraries(NTPolyWrapper NTPoly)
 
 include(GNUInstallDirs)
