@@ -36,8 +36,8 @@ set(CMAKE_Fortran_FLAGS_RELEASE ${F_TOOLCHAINFLAGS_RELEASE})
 set(CMAKE_CXX_FLAGS_RELEASE ${CXX_TOOLCHAINFLAGS_RELEASE})
 
 if (NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_Fortran_FLAGS ${F_TOOLCHAINFLAGS_RELEASE})
-  set(CMAKE_CXX_FLAGS ${CXX_TOOLCHAINFLAGS_RELEASE})
+  set(CMAKE_Fortran_FLAGS ${CMAKE_Fortran_FLAGS_RELEASE})
+  set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE})
 endif()
 
 ################################################################################
