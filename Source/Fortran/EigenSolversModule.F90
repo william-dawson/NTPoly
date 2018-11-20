@@ -15,7 +15,8 @@ MODULE EigenSolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, ConjugateMatrix, TransposeMatrix, GetMatrixSize, &
        & FillMatrixFromTripletList, CommSplitMatrix, ConvertMatrixToReal, &
-       & FillMatrixIdentity, GetMatrixTripletList, PrintMatrixInformation
+       & FillMatrixIdentity, GetMatrixTripletList, PrintMatrixInformation, &
+       & GatherMatrixToProcess
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList, &
@@ -128,8 +129,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list, sorted_triplet_list, triplet_w
-    TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(TripletList_r) :: triplet_w, triplet_list
     TYPE(Matrix_lsr) :: sparse
     TYPE(Matrix_lsr) :: local_a, local_v
     TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
@@ -148,8 +148,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list, sorted_triplet_list, triplet_w
-    TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: send_list
+    TYPE(TripletList_c) :: triplet_w, triplet_list
     TYPE(Matrix_lsc) :: sparse
     TYPE(Matrix_lsc) :: local_a, local_v
     TYPE(Matrix_ldc) :: dense_a, dense_v, dense_w
