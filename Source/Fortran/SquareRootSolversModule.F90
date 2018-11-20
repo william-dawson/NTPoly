@@ -12,7 +12,8 @@ MODULE SquareRootSolversModule
        & IncrementMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -46,6 +47,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .FALSE.)
     END IF
 
+    !! Cleanup
+    CALL DestructSolverParameters(solver_parameters)
+
   END SUBROUTINE SquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
@@ -69,11 +73,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     IF (PRESENT(order_in)) THEN
-       CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .TRUE.,&
+       CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .TRUE., &
             & order_in)
     ELSE
        CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .TRUE.)
     END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(solver_parameters)
 
   END SUBROUTINE InverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
