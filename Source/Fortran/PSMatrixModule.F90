@@ -87,6 +87,7 @@ MODULE PSMatrixModule
   PUBLIC :: ConjugateMatrix
   PUBLIC :: CommSplitMatrix
   PUBLIC :: ResizeMatrix
+  PUBLIC :: GatherMatrixToProcess
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrix_ps
@@ -169,6 +170,10 @@ MODULE PSMatrixModule
   END INTERFACE
   INTERFACE CommSplitMatrix
      MODULE PROCEDURE CommSplitMatrix_ps
+  END INTERFACE
+  INTERFACE GatherMatrixToProcess
+     MODULE PROCEDURE GatherMatrixToProcess_psr
+     MODULE PROCEDURE GatherMatrixToProcess_psc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
@@ -1238,11 +1243,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Temporary Variables
-    TYPE(Matrix_lsr) :: merged_local_data
-    TYPE(Matrix_lsr) :: merged_local_dataT
-    TYPE(Matrix_lsr) :: merged_columns
-    TYPE(Matrix_lsr) :: merged_columnsT
-    TYPE(Matrix_lsr) :: full_gathered
+    TYPE(Matrix_lsr) :: local_mat
 
     INCLUDE "distributed_includes/PrintMatrix.f90"
   END SUBROUTINE PrintMatrix_psr
@@ -1254,11 +1255,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Temporary Variables
-    TYPE(Matrix_lsc) :: merged_local_data
-    TYPE(Matrix_lsc) :: merged_local_dataT
-    TYPE(Matrix_lsc) :: merged_columns
-    TYPE(Matrix_lsc) :: merged_columnsT
-    TYPE(Matrix_lsc) :: full_gathered
+    TYPE(Matrix_lsc) :: local_mat
 
     INCLUDE "distributed_includes/PrintMatrix.f90"
   END SUBROUTINE PrintMatrix_psc
@@ -1692,5 +1689,39 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "distributed_includes/ResizeMatrix.f90"
   END SUBROUTINE ResizeMatrix_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This subroutine gathers the entire matrix into a local matrix on the
+  !! given process. This routine is used when printing, but also is useful for
+  !! debugging.
+  SUBROUTINE GatherMatrixToProcess_psr(this, local_mat, proc_id)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
+    !> Which process to gather on.
+    INTEGER, INTENT(IN) :: proc_id
+    !! Local Variables
+    TYPE(TripletList_r) :: tlist, sorted
+    TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: slist
+
+    INCLUDE "distributed_includes/GatherMatrixToProcess.f90"
+  END SUBROUTINE GatherMatrixToProcess_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This subroutine gathers the entire matrix into a local matrix on the
+  !! given process. This routine is used when printing, but also is useful for
+  !! debugging.
+  SUBROUTINE GatherMatrixToProcess_psc(this, local_mat, proc_id)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
+    !> Which process to gather on.
+    INTEGER, INTENT(IN) :: proc_id
+    !! Local Variables
+    TYPE(TripletList_c) :: tlist, sorted
+    TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: slist
+
+    INCLUDE "distributed_includes/GatherMatrixToProcess.f90"
+  END SUBROUTINE GatherMatrixToProcess_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule
