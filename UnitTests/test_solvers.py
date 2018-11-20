@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 31
+    mat_dim = 3
 
     @classmethod
     def setUpClass(self):
@@ -134,6 +134,30 @@ class TestSolvers(unittest.TestCase):
         self.isp.SetLoadBalance(permutation)
 
         nt.InverseSolvers.Invert(overlap_matrix, inverse_matrix, self.isp)
+
+        inverse_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_choleskyinvert(self):
+        '''Test routines to invert matrices.'''
+        # Starting Matrix
+        matrix1 = self.create_matrix(SPD=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        self.CheckMat = inv(csc_matrix(matrix1))
+
+        # Result Matrix
+        overlap_matrix = nt.Matrix_ps(self.input_file, False)
+        inverse_matrix = nt.Matrix_ps(self.mat_dim)
+        permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.isp.SetLoadBalance(permutation)
+
+        nt.InverseSolvers.CholeskyInvert(
+            overlap_matrix, inverse_matrix, self.isp)
 
         inverse_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()

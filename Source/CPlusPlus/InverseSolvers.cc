@@ -9,15 +9,20 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
-void InverseSolvers::Invert(const Matrix_ps &Overlap, Matrix_ps &InverseMat,
+void InverseSolvers::CholeskyInvert(const Matrix_ps &Matrix,
+                                    Matrix_ps &InverseMat,
+                                    const SolverParameters &solver_parameters) {
+  CholeskyInvert_wrp(GetIH(Matrix), GetIH(InverseMat),
+                     GetIH(solver_parameters));
+}
+void InverseSolvers::Invert(const Matrix_ps &Matrix, Matrix_ps &InverseMat,
                             const SolverParameters &solver_parameters) {
-  Invert_wrp(GetIH(Overlap), GetIH(InverseMat), GetIH(solver_parameters));
+  Invert_wrp(GetIH(Matrix), GetIH(InverseMat), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
-void InverseSolvers::PseudoInverse(const Matrix_ps &Overlap,
+void InverseSolvers::PseudoInverse(const Matrix_ps &Matrix,
                                    Matrix_ps &InverseMat,
                                    const SolverParameters &solver_parameters) {
-  PseudoInverse_wrp(GetIH(Overlap), GetIH(InverseMat),
-                    GetIH(solver_parameters));
+  PseudoInverse_wrp(GetIH(Matrix), GetIH(InverseMat), GetIH(solver_parameters));
 }
 } // namespace NTPoly

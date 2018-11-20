@@ -2,18 +2,21 @@
 !> Helper Routines for Computing The Cholesky Decomposition
 MODULE CholeskyModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, MPINTINTEGER
-  USE DMatrixModule, ONLY : Matrix_ldr
+  USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, DestructMatrix, &
+       & ConstructMatrixSFromD, ConstructMatrixDFromS, CholeskyFactor, &
+       & CholeskyInvert
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
        & TestReduceSizeRequest, TestReduceInnerRequest, TestReduceDataRequest
-  USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixFromTripletList
+  USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixFromTripletList, &
+       & GatherMatrixToProcess, ConstructEmptyMatrix
   USE ProcessGridModule, ONLY : ProcessGrid_t
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, TransposeMatrix, &
-       & DestructMatrix
+       & DestructMatrix, MatrixToTripletList
   USE SVectorModule, ONLY : DotSparseVectors
-  USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
-       & DestructTripletList
+  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
+       & ConstructTripletList, AppendToTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_r
   USE NTMPIModule
   IMPLICIT NONE
@@ -28,11 +31,11 @@ MODULE CholeskyModule
   PUBLIC :: GatherMatrixColumn
   PUBLIC :: GetPivot
   PUBLIC :: UnpackCholesky
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\
-  PUBLIC :: CholeskyFactor_r
-  PUBLIC :: CholeskyFactor_c
-  PUBLIC :: CholeskyInvert_r
-  PUBLIC :: CholeskyInvert_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ComputeFactor_r
+  PUBLIC :: ComputeFactor_c
+  PUBLIC :: ComputeInverse_r
+  PUBLIC :: ComputeInverse_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE AppendToVector
      MODULE PROCEDURE AppendToVector_r
@@ -60,44 +63,64 @@ MODULE CholeskyModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cholesky factor of a real matrix (this = LLT).
-  SUBROUTINE CholeskyFactor_r(mat, factor, parameters)
+  SUBROUTINE ComputeFactor_r(mat, factor, parameters)
     !> The matrix to invert.
     TYPE(Matrix_ps), INTENT(IN)  :: mat
     !> The inverse of that matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: factor
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN) :: parameters
-  END SUBROUTINE CholeskyFactor_r
+    TYPE(Matrix_lsr) :: smat, sfac
+    TYPE(Matrix_ldr) :: dmat, dfac
+    TYPE(TripletList_r) :: tlist
+
+    INCLUDE "solver_includes/CholeskyFactor.f90"
+  END SUBROUTINE ComputeFactor_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cholesky factor of a complex matrix (this = LLT).
-  SUBROUTINE CholeskyFactor_c(mat, factor, parameters)
+  SUBROUTINE ComputeFactor_c(mat, factor, parameters)
     !> The matrix to invert.
     TYPE(Matrix_ps), INTENT(IN)  :: mat
     !> The inverse of that matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: factor
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN) :: parameters
-  END SUBROUTINE CholeskyFactor_c
+    TYPE(Matrix_lsc) :: smat, sfac
+    TYPE(Matrix_ldc) :: dmat, dfac
+    TYPE(TripletList_c) :: tlist
+
+    INCLUDE "solver_includes/CholeskyFactor.f90"
+  END SUBROUTINE ComputeFactor_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Invert a lower triangular matrix (real).
-  SUBROUTINE CholeskyInvert_r(mat, factor, parameters)
+  SUBROUTINE ComputeInverse_r(mat, factor, parameters)
     !> The matrix to invert.
     TYPE(Matrix_ps), INTENT(IN)  :: mat
     !> The inverse of that matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: factor
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN) :: parameters
-  END SUBROUTINE CholeskyInvert_r
+    TYPE(Matrix_lsr) :: smat, sinv
+    TYPE(Matrix_ldr) :: dmat, dinv
+    TYPE(TripletList_r) :: tlist
+
+    INCLUDE "solver_includes/CholeskyInvert.f90"
+  END SUBROUTINE ComputeInverse_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Invert a lower triangular matrix (complex).
-  SUBROUTINE CholeskyInvert_c(mat, factor, parameters)
+  SUBROUTINE ComputeInverse_c(mat, factor, parameters)
     !> The matrix to invert.
     TYPE(Matrix_ps), INTENT(IN)  :: mat
     !> The inverse of that matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: factor
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN) :: parameters
-  END SUBROUTINE CholeskyInvert_c
+    TYPE(Matrix_lsc) :: smat, sinv
+    TYPE(Matrix_ldc) :: dmat, dinv
+    TYPE(TripletList_c) :: tlist
+
+    INCLUDE "solver_includes/CholeskyInvert.f90"
+  END SUBROUTINE ComputeInverse_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to insert a value into a sparse vector.
   PURE SUBROUTINE AppendToVector_r(values_per, indices, values, insert_row, &

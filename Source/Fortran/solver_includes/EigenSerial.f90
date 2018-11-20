@@ -6,6 +6,7 @@
 
   !! Perform the local decomposition
   CALL ConstructTripletList(triplet_w)
+  CALL ConstructTripletList(triplet_list)
   IF (this%process_grid%within_slice_rank .EQ. 0) THEN
      CALL ConstructMatrixDFromS(local_a, dense_a)
      IF (PRESENT(eigenvalues_out)) THEN

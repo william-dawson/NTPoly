@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the matrix inversion module for calling from other languages.
 MODULE InverseSolversModule_wrp
-  USE InverseSolversModule, ONLY : Invert, PseudoInverse
+  USE InverseSolversModule, ONLY : CholeskyInvert, Invert, PseudoInverse
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -9,9 +9,28 @@ MODULE InverseSolversModule_wrp
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: CholeskyInvert_wrp
   PUBLIC :: Invert_wrp
   PUBLIC :: PseudoInverse_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Invert a matrix using the Cholesky decomposition.
+  SUBROUTINE CholeskyInvert_wrp(ih_Mat1, ih_InverseMat, ih_solver_parameters) &
+       & bind(c,name="CholeskyInvert_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_Mat1
+    TYPE(Matrix_ps_wrp) :: h_InverseMat
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
+
+    h_Mat1 = TRANSFER(ih_Mat1,h_Mat1)
+    h_InverseMat = TRANSFER(ih_InverseMat,h_InverseMat)
+    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
+
+    CALL CholeskyInvert(h_Mat1%data, h_InverseMat%data, &
+         & h_solver_parameters%data)
+  END SUBROUTINE CholeskyInvert_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
   SUBROUTINE Invert_wrp(ih_Mat1, ih_InverseMat, ih_solver_parameters) &
        & bind(c,name="Invert_wrp")

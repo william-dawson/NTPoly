@@ -42,7 +42,7 @@ MODULE DMatrixModule
   PUBLIC :: TransposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
-  PUBLIC :: CholeskyDecomposition
+  PUBLIC :: CholeskyFactor
   PUBLIC :: CholeskyInvert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE Matrix_ldr
@@ -99,9 +99,9 @@ MODULE DMatrixModule
      MODULE PROCEDURE EigenDecomposition_ldr
      MODULE PROCEDURE EigenDecomposition_ldc
   END INTERFACE
-  INTERFACE CholeskyDecomposition
-     MODULE PROCEDURE CholeskyDecomposition_ldr
-     MODULE PROCEDURE CholeskyDecomposition_ldc
+  INTERFACE CholeskyFactor
+     MODULE PROCEDURE CholeskyFactor_ldr
+     MODULE PROCEDURE CholeskyFactor_ldc
   END INTERFACE
   INTERFACE CholeskyInvert
      MODULE PROCEDURE CholeskyInvert_ldr
@@ -365,7 +365,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cholesky decomposition a matrix.
   !> Wraps a standard dense linear algebra routine.
-  SUBROUTINE CholeskyDecomposition_ldr(MatA, MatL)
+  SUBROUTINE CholeskyFactor_ldr(MatA, MatL)
     !> MatA the matrix to decompose.
     TYPE(Matrix_ldr), INTENT(IN) :: MatA
     !> The eigenvectors.
@@ -392,7 +392,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END DO
 
-  END SUBROUTINE CholeskyDecomposition_ldr
+  END SUBROUTINE CholeskyFactor_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Invert a lower triangular matrix.
   !> Wraps a standard dense linear algebra routine.
@@ -414,12 +414,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LDA = N
 
     !! Run Lapack
-    CALL DPOTRI(uplo, N, MatL%data, LDA, INFO)
+    CALL DPOTRI(uplo, N, MatInv%data, LDA, INFO)
 
-    !! Remove the upper triangle of the matrix
+    !! Fill symmetric
     DO II = 1, MatInv%rows
        DO JJ = II + 1, MatInv%columns
-          MatInv%data(II,JJ) = 0
+          MatInv%data(II,JJ) = MatInv%data(JJ,II)
        END DO
     END DO
 
@@ -690,7 +690,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cholesky decomposition a matrix.
   !> Wraps a standard dense linear algebra routine.
-  SUBROUTINE CholeskyDecomposition_ldc(MatA, MatL)
+  SUBROUTINE CholeskyFactor_ldc(MatA, MatL)
     !> MatA the matrix to decompose.
     TYPE(Matrix_ldc), INTENT(IN) :: MatA
     !> The eigenvectors.
@@ -717,7 +717,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
     END DO
 
-  END SUBROUTINE CholeskyDecomposition_ldc
+  END SUBROUTINE CholeskyFactor_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Invert a lower triangular matrix.
   !> Wraps a standard dense linear algebra routine.
@@ -739,12 +739,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LDA = N
 
     !! Run Lapack
-    CALL ZPOTRI(uplo, N, MatL%data, LDA, INFO)
+    CALL ZPOTRI(uplo, N, MatInv%data, LDA, INFO)
 
-    !! Remove the upper triangle of the matrix
+    !! Fill symmetric
     DO II = 1, MatInv%rows
        DO JJ = II + 1, MatInv%columns
-          MatInv%data(II,JJ) = 0
+          MatInv%data(II,JJ) = MatInv%data(JJ,II)
        END DO
     END DO
 
