@@ -34,3 +34,4 @@
   DO II = 1, this%process_grid%slice_size
      CALL DestructTripletList(slist(II))
   END DO
+  DEALLOCATE(slist)
