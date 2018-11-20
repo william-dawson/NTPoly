@@ -744,7 +744,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Fill symmetric
     DO II = 1, MatInv%rows
        DO JJ = II + 1, MatInv%columns
-          MatInv%data(II,JJ) = MatInv%data(JJ,II)
+          MatInv%data(II,JJ) = CONJG(MatInv%data(JJ,II))
        END DO
     END DO
 

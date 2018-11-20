@@ -44,7 +44,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        solver_parameters = SolverParameters_t()
     END IF
 
-    !! Log
+    !! Write solver parameters.
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Cholesky Inverse Solver")
        CALL EnterSubLog
