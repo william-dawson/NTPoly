@@ -1,6 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
+  USE CholeskyModule, ONLY : CholeskyFactor_c, &
+       & CholeskyInvert_r, CholeskyInvert_c
   USE DataTypesModule, ONLY : NTREAL
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
@@ -16,10 +18,54 @@ MODULE InverseSolversModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
+  PUBLIC :: CholeskyInverse
   PUBLIC :: Invert
   PUBLIC :: PseudoInverse
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute the inverse of a matrix.
+  !> Compute the inverse of a matrix using the Cholesky decomposition.
+  !! Currently this is serial, only use for testing!
+  SUBROUTINE CholeskyInverse(Mat, INverseMat, solver_parameters_in)
+    !> The matrix to invert.
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    !> The inverse of that matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Data
+    TYPE(Matrix_ps) :: CholeskyFactor
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    !! Log
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Cholesky Inverse Solver")
+       CALL EnterSubLog
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    !! Branch to implementation
+    IF (Mat%is_complex) THEN
+       CALL CholeskyFactor_c(Mat, CholeskyFactor, solver_parameters)
+       CALL CholeskyInvert_c(CholeskyFactor, InverseMat, solver_parameters)
+    ELSE
+       ! CALL CholeskyFactor_r(Mat, InverseMat, solver_parameters)
+       CALL CholeskyInvert_r(CholeskyFactor, InverseMat, solver_parameters)
+    END IF
+
+    !! Cleanup
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE CholeskyInverse
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the inverse of a matrix using matrix functions.
   !> An implementation of Hotelling's method \cite palser1998canonical.
   SUBROUTINE Invert(Mat, InverseMat, solver_parameters_in)
     !> The matrix to invert.

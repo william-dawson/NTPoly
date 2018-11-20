@@ -42,6 +42,8 @@ MODULE DMatrixModule
   PUBLIC :: TransposeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
+  PUBLIC :: CholeskyDecomposition
+  PUBLIC :: CholeskyInvert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE Matrix_ldr
      MODULE PROCEDURE ConstructEmptyMatrix_ldr
@@ -96,6 +98,14 @@ MODULE DMatrixModule
   INTERFACE EigenDecomposition
      MODULE PROCEDURE EigenDecomposition_ldr
      MODULE PROCEDURE EigenDecomposition_ldc
+  END INTERFACE
+  INTERFACE CholeskyDecomposition
+     MODULE PROCEDURE CholeskyDecomposition_ldr
+     MODULE PROCEDURE CholeskyDecomposition_ldc
+  END INTERFACE
+  INTERFACE CholeskyInvert
+     MODULE PROCEDURE CholeskyInvert_ldr
+     MODULE PROCEDURE CholeskyInvert_ldc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the empty constructor.
@@ -352,6 +362,68 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(IWork)
 
   END SUBROUTINE EigenDecomposition_ldr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the cholesky decomposition a matrix.
+  !> Wraps a standard dense linear algebra routine.
+  SUBROUTINE CholeskyDecomposition_ldr(MatA, MatL)
+    !> MatA the matrix to decompose.
+    TYPE(Matrix_ldr), INTENT(IN) :: MatA
+    !> The eigenvectors.
+    TYPE(Matrix_ldr), INTENT(INOUT) :: MatL
+    !! Local variables
+    CHARACTER, PARAMETER :: uplo = 'L'
+    INTEGER :: N, LDA
+    INTEGER :: INFO
+    INTEGER :: II, JJ
+
+    MatL = Matrix_ldr(MatA%rows,MatA%columns)
+    MatL%data = MatA%data
+
+    N = SIZE(MatA%data,DIM=1)
+    LDA = N
+
+    !! Run Lapack
+    CALL DPOTRF(uplo, N, MatL%data, LDA, INFO)
+
+    !! Remove the upper trinagle of the matrix
+    DO II = 1, matA%rows
+       DO JJ = II + 1, matA%columns
+          MatL%data(II,JJ) = 0
+       END DO
+    END DO
+
+  END SUBROUTINE CholeskyDecomposition_ldr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Invert a lower triangular matrix.
+  !> Wraps a standard dense linear algebra routine.
+  SUBROUTINE CholeskyInvert_ldr(MatL, MatInv)
+    !> MatA the matrix to decompose.
+    TYPE(Matrix_ldr), INTENT(IN) :: MatL
+    !> The eigenvectors.
+    TYPE(Matrix_ldr), INTENT(INOUT) :: MatInv
+    !! Local variables
+    CHARACTER, PARAMETER :: uplo = 'L'
+    INTEGER :: N, LDA
+    INTEGER :: INFO
+    INTEGER :: II, JJ
+
+    MatInv = Matrix_ldr(MatL%rows,MatL%columns)
+    MatInv%data = MatL%data
+
+    N = SIZE(MatInv%data,DIM=1)
+    LDA = N
+
+    !! Run Lapack
+    CALL DPOTRI(uplo, N, MatL%data, LDA, INFO)
+
+    !! Remove the upper triangle of the matrix
+    DO II = 1, MatInv%rows
+       DO JJ = II + 1, MatInv%columns
+          MatInv%data(II,JJ) = 0
+       END DO
+    END DO
+
+  END SUBROUTINE CholeskyInvert_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine style wrapper for the constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldc(this, rows, columns)
@@ -615,5 +687,67 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(IWork)
 
   END SUBROUTINE EigenDecomposition_ldc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the cholesky decomposition a matrix.
+  !> Wraps a standard dense linear algebra routine.
+  SUBROUTINE CholeskyDecomposition_ldc(MatA, MatL)
+    !> MatA the matrix to decompose.
+    TYPE(Matrix_ldc), INTENT(IN) :: MatA
+    !> The eigenvectors.
+    TYPE(Matrix_ldc), INTENT(INOUT) :: MatL
+    !! Local variables
+    CHARACTER, PARAMETER :: uplo = 'L'
+    INTEGER :: N, LDA
+    INTEGER :: INFO
+    INTEGER :: II, JJ
+
+    MatL = Matrix_ldc(MatA%rows,MatA%columns)
+    MatL%data = MatA%data
+
+    N = SIZE(MatA%data,DIM=1)
+    LDA = N
+
+    !! Run Lapack
+    CALL ZPOTRF(uplo, N, MatL%data, LDA, INFO)
+
+    !! Remove the upper triangle of the matrix
+    DO II = 1, matA%rows
+       DO JJ = II + 1, matA%columns
+          MatL%data(II,JJ) = 0
+       END DO
+    END DO
+
+  END SUBROUTINE CholeskyDecomposition_ldc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Invert a lower triangular matrix.
+  !> Wraps a standard dense linear algebra routine.
+  SUBROUTINE CholeskyInvert_ldc(MatL, MatInv)
+    !> MatA the matrix to decompose.
+    TYPE(Matrix_ldc), INTENT(IN) :: MatL
+    !> The eigenvectors.
+    TYPE(Matrix_ldc), INTENT(INOUT) :: MatInv
+    !! Local variables
+    CHARACTER, PARAMETER :: uplo = 'L'
+    INTEGER :: N, LDA
+    INTEGER :: INFO
+    INTEGER :: II, JJ
+
+    MatInv = Matrix_ldc(MatL%rows,MatL%columns)
+    MatInv%data = MatL%data
+
+    N = SIZE(MatInv%data,DIM=1)
+    LDA = N
+
+    !! Run Lapack
+    CALL ZPOTRI(uplo, N, MatL%data, LDA, INFO)
+
+    !! Remove the upper triangle of the matrix
+    DO II = 1, MatInv%rows
+       DO JJ = II + 1, MatInv%columns
+          MatInv%data(II,JJ) = 0
+       END DO
+    END DO
+
+  END SUBROUTINE CholeskyInvert_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DMatrixModule
