@@ -26,7 +26,8 @@ MODULE RootSolversModule
   PUBLIC :: ComputeInverseRoot
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general matrix root.
-  SUBROUTINE ComputeRoot(InputMat, OutputMat, root, solver_parameters_in)
+  RECURSIVE SUBROUTINE ComputeRoot(InputMat, OutputMat, root, &
+       & solver_parameters_in)
     !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> OutputMat = InputMat^1/root.
@@ -130,7 +131,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeRootImplementation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a general inverse matrix root.
-  SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, solver_parameters_in)
+  RECURSIVE SUBROUTINE ComputeInverseRoot(InputMat, OutputMat, root, &
+       & solver_parameters_in)
     !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> OutputMat = InputMat^-1/root.
