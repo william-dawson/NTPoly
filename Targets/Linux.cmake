@@ -14,4 +14,4 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -openmp -fPIC")
 
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -openmp -fPIC")
-set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fPIC")
+set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fPIC -fcheck=all")
