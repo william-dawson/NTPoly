@@ -1,9 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Solve the matrix equation AX = B
 MODULE LinearSolversModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DMatrixModule, ONLY : Matrix_ldr, DestructMatrix, &
-       & ConstructMatrixDFromS
+  USE DataTypesModule, ONLY : NTREAL
+  USE DMatrixModule, ONLY : DestructMatrix
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader, WriteListElement
@@ -13,8 +12,7 @@ MODULE LinearSolversModule
        & MatrixMultiply, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & TransposeMatrix, DestructMatrix, ConjugateMatrix, CopyMatrix, &
-       & FillMatrixIdentity, MergeMatrixLocalBlocks, PrintMatrixInformation
-  USE SMatrixModule, ONLY : Matrix_lsr
+       & FillMatrixIdentity, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
   IMPLICIT NONE

@@ -1,8 +1,8 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to store specifications for basic data types.
 MODULE DataTypesModule
-  USE ISO_C_BINDING, ONLY : C_DOUBLE, C_DOUBLE_COMPLEX
   USE NTMPIModule
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY : C_DOUBLE, C_DOUBLE_COMPLEX
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

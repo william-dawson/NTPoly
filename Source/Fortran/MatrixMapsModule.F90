@@ -3,8 +3,7 @@
 MODULE MatrixMapsModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
-       & GetMatrixTripletList, FillMatrixFromTripletList, &
-       & DestructMatrix
+       & GetMatrixTripletList, FillMatrixFromTripletList
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & DestructTripletList, AppendToTripletList, GetTripletAt, &
        & ConstructTripletList

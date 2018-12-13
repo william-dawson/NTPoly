@@ -26,8 +26,8 @@ MODULE PSMatrixModule
        & DestructTripletList, SortTripletList, AppendToTripletList, &
        & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
        & ShiftTripletList
-  USE ISO_C_BINDING
   USE NTMPIModule
+  USE, INTRINSIC :: ISO_C_BINDING
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
