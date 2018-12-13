@@ -370,7 +370,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: realval, cval
     INTEGER :: bytes_per_character
-    CHARACTER(len=1) :: temp_char
     LOGICAL :: found_comment_line
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: full_buffer_counter
@@ -384,7 +383,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        !! Setup Involves Just The Root Opening And Reading Parameter Data
        CALL StartTimer("MPI Read Text")
-       bytes_per_character = sizeof(temp_char)
+       CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
        IF (IsRoot(process_grid_in)) THEN
           header_length = 0
           local_file_handler = 16
@@ -703,7 +702,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
     TYPE(Matrix_lsr) :: merged_local_data
-    REAL(NTREAL) :: temp_data
 
     INCLUDE "distributed_includes/WriteMatrixToBinary.f90"
 
@@ -720,7 +718,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
     TYPE(Matrix_lsc) :: merged_local_data
-    COMPLEX(NTCOMPLEX) :: temp_data
 
     INCLUDE "distributed_includes/WriteMatrixToBinary.f90"
 
