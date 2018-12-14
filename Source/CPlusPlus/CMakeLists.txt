@@ -75,4 +75,4 @@ install(TARGETS NTPolyCPP
 install(EXPORT ntpolycpp-export
         FILE NTPolyCPPConfig.cmake
         NAMESPACE NTPoly::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPolyCPP)
