@@ -11,8 +11,7 @@ MODULE DensityMatrixSolversModule
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
        & DotMatrix, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
-       & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
-       & ConjugateMatrix
+       & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
   IMPLICIT NONE

@@ -4,8 +4,7 @@
   INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
   INTEGER(KIND=MPI_OFFSET_KIND) :: write_offset
   !! Temporary Variables
-  INTEGER :: temp_int
-  INTEGER :: bytes_per_int, bytes_per_data
+  INTEGER :: bytes_per_int, bytes_per_entry
   INTEGER, DIMENSION(4) :: header_buffer
   INTEGER :: mpi_status(MPI_STATUS_SIZE)
   INTEGER(KIND=MPI_OFFSET_KIND) :: zero_offset = 0
@@ -16,8 +15,8 @@
   CALL MergeMatrixLocalBlocks(this, merged_local_data)
 
   !! Determine Write Location
-  bytes_per_int = sizeof(temp_int)
-  bytes_per_data = sizeof(temp_data)
+  CALL MPI_Type_size(MPINTINTEGER, bytes_per_int, ierr)
+  CALL MPI_Type_extent(triplet_mpi_type, bytes_per_entry, ierr)
   header_size = bytes_per_int*4
   ALLOCATE(local_values_buffer(this%process_grid%slice_size))
   CALL MPI_Allgather(SIZE(merged_local_data%values), 1, MPINTINTEGER,&
@@ -27,7 +26,7 @@
   write_offset = write_offset + header_size
   DO counter = 1,this%process_grid%within_slice_rank
      write_offset = write_offset + &
-          & local_values_buffer(counter)*(bytes_per_int*2+bytes_per_data*1)
+          & local_values_buffer(counter)*(bytes_per_entry)
   END DO
 
   !! Write The File

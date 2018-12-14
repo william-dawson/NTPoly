@@ -5,7 +5,7 @@
 MODULE MatrixMemoryPoolModule
   USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX
   USE TripletModule, ONLY : Triplet_r, Triplet_c
-  USE ISO_C_BINDING, ONLY : c_int
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
