@@ -22,13 +22,12 @@
   CHARACTER(len=MAX_LINE_LENGTH) :: temp_string2
   INTEGER :: temp_length
   INTEGER :: bytes_per_character
-  CHARACTER(len=1) :: temp_char
   INTEGER :: ierr
 
   !! Merge all the local data
   CALL MergeMatrixLocalBlocks(this, merged_local_data)
 
-  bytes_per_character = sizeof(temp_char)
+  CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
 
   !! Create the matrix size line
   NEW_LINE_LENGTH = LEN(new_line('A'))
@@ -109,8 +108,7 @@
   write_offset = 0
   write_offset = write_offset + header_size
   DO counter = 1,this%process_grid%within_slice_rank
-     write_offset = write_offset + &
-          & local_values_buffer(counter)
+     write_offset = write_offset + local_values_buffer(counter)
   END DO
 
   !! Global Write
@@ -123,10 +121,10 @@
      IF (this%process_grid%within_slice_rank .EQ. 0) THEN
         header_offset = 0
         CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line1, &
-             & LEN(header_line1), MPI_CHARACTER,mpi_status,ierr)
+             & LEN(header_line1), MPI_CHARACTER, mpi_status,ierr)
         header_offset = header_offset + LEN(header_line1)
         CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line2, &
-             & LEN(header_line2), MPI_CHARACTER,mpi_status,ierr)
+             & LEN(header_line2), MPI_CHARACTER, mpi_status,ierr)
      END IF
      !! Write Local Data
      CALL MPI_File_set_view(mpi_file_handler,write_offset,MPI_CHARACTER,&
