@@ -318,7 +318,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill The New Matrix
     CALL ConstructEmptyMatrix(new_mat, this%actual_matrix_dimension, grid, &
-         & this%is_complex)
+         & new_mat%is_complex)
     IF (this%is_complex) THEN
        CALL FillMatrixFromTripletList(new_mat, triplet_list_c)
     ELSE
