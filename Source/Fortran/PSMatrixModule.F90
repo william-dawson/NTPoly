@@ -3,6 +3,7 @@
 MODULE PSMatrixModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
        & MPINTINTEGER
+  USE ErrorModule, ONLY : Error_t, SetGenericError, CheckMPIError
   USE LoggingModule, ONLY : &
        & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
   USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
@@ -374,9 +375,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: full_buffer_counter
     LOGICAL :: end_of_buffer
-    LOGICAL :: error_occured
+    LOGICAL :: header_success
     INTEGER :: ierr
-
+    TYPE(Error_t) :: err
 
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromMatrixMarket(this, file_name, global_grid)
@@ -388,34 +389,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           header_length = 0
           local_file_handler = 16
           OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
-          IF (ierr .EQ. 0) THEN
-             !! Parse the header.
-             READ(local_file_handler,fmt='(A)') input_buffer
-             error_occured = ParseMMHeader(input_buffer, sparsity_type, &
-                  & data_type, pattern_type)
-             header_length = header_length + LEN_TRIM(input_buffer) + 1
-             !! First Read In The Comment Lines
-             found_comment_line = .TRUE.
-             DO WHILE (found_comment_line)
-                READ(local_file_handler,fmt='(A)') input_buffer
-                !! +1 for newline
-                header_length = header_length + LEN_TRIM(input_buffer) + 1
-                IF (.NOT. input_buffer(1:1) .EQ. '%') THEN
-                   found_comment_line = .FALSE.
-                END IF
-             END DO
-             !! Get The Matrix Parameters
-             READ(input_buffer,*) matrix_rows, matrix_columns, total_values
-             CLOSE(local_file_handler)
-          ELSE
-             WRITE(*,*) file_name, " doesn't exist"
+          IF (ierr .NE. 0) THEN
+             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", .TRUE.)
           END IF
-       ELSE
-          ierr = 0
-       END IF
-
-       IF (ierr .NE. 0) THEN
-          CALL MPI_Abort(process_grid_in%global_comm, -1, ierr)
+          !! Parse the header.
+          READ(local_file_handler,fmt='(A)') input_buffer
+          header_success = ParseMMHeader(input_buffer, sparsity_type, &
+               & data_type, pattern_type)
+          IF (.NOT. header_success) THEN
+             CALL SetGenericError(err, "Invalid File Header", .TRUE.)
+          END IF
+          header_length = header_length + LEN_TRIM(input_buffer) + 1
+          !! First Read In The Comment Lines
+          found_comment_line = .TRUE.
+          DO WHILE (found_comment_line)
+             READ(local_file_handler,fmt='(A)') input_buffer
+             !! +1 for newline
+             header_length = header_length + LEN_TRIM(input_buffer) + 1
+             IF (.NOT. input_buffer(1:1) .EQ. '%') THEN
+                found_comment_line = .FALSE.
+             END IF
+          END DO
+          !! Get The Matrix Parameters
+          READ(input_buffer,*) matrix_rows, matrix_columns, total_values
+          CLOSE(local_file_handler)
        END IF
 
        !! Broadcast Parameters
@@ -580,20 +577,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary variables
     INTEGER :: mpi_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
+    TYPE(Error_t) :: err
+    LOGICAL :: error_occured
 
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromBinary(this, file_name, global_grid)
     ELSE
        CALL StartTimer("MPI Read Binary")
-
        CALL MPI_File_open(process_grid_in%global_comm, file_name, &
             & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
-       IF (ierr .NE. 0) THEN
-          IF (IsRoot(process_grid_in)) THEN
-             WRITE(*,*) file_name, " doesn't exist"
-          END IF
-          CALL MPI_Abort(process_grid_in%global_comm, -1, ierr)
-       END IF
+       error_occured = CheckMPIError(err, TRIM(file_name)//" doesn't exist", &
+            & ierr, .TRUE.)
 
        !! Get The Matrix Parameters
        IF (IsRoot(process_grid_in)) THEN

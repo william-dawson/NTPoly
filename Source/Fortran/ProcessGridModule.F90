@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to manage the process grid.
 MODULE ProcessGridModule
+  USE ErrorModule, ONLY : Error_t, SetGenericError
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
   USE NTMPIModule
@@ -184,6 +185,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: num_threads
 #endif
     INTEGER :: ierr
+    TYPE(Error_t) :: err
 
     CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
     !! Grid Dimensions
@@ -196,9 +198,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Do a sanity check
     IF (grid%num_process_rows*grid%num_process_columns*grid%num_process_slices &
          & .NE. grid%total_processors) THEN
-       CALL WriteHeader(&
-            & "Error: you didn't specify a consistent process grid size")
-       CALL MPI_Abort(grid%global_comm, -1, ierr)
+       CALL SetGenericError(err, "you didn't specify a consistent process&
+            & grid size", .TRUE.)
+    END IF
+    IF (grid%num_process_slices .GT. 1) THEN
+       IF (MOD(MAX(grid%num_process_rows, grid%num_process_columns), &
+            & MIN(grid%num_process_rows, grid%num_process_columns)) &
+            & .NE. 0) THEN
+          CALL SetGenericError(err, "when using multiple slices, either rows&
+               & or columns must be a multiple of the other.", .TRUE.)
+       END IF
     END IF
 
     !! Grid ID
