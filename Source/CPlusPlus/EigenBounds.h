@@ -24,6 +24,13 @@ public:
   //!\param solver_parameters parameters for the solver
   static void PowerBounds(const Matrix_ps &matrix, double *max_power_eig,
                           const SolverParameters &solver_parameters);
+  //! Compute K largest eigenvalues with subspace iteration.
+  //!\param matrix the matrix to compute the eigenvectors of.
+  //!\param vecs the output matrix of eigenvectors.
+  //!\param k the number of vectors to compute.
+  //!\param solver_parameters parameters for the solver
+  static void SubspaceIteration(const Matrix_ps &matrix, Matrix_ps &vecs, int k,
+                                const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

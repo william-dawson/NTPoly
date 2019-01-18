@@ -2,6 +2,10 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DMatrixModule, ONLY : Matrix_ldr, ConstructMatrixDFromS, &
+       & ConstructMatrixSFromD, EigenDecomposition, MultiplyMatrix, &
+       & TransposeMatrix, IncrementMatrix, ConstructEmptyMatrix, MatrixNorm, &
+       & CopyMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
@@ -9,10 +13,13 @@ MODULE EigenBoundsModule
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, DotMatrix, &
        & IncrementMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
-       & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList
+       & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList, &
+       & ConvertMatrixToComplex, GatherMatrixToProcess, TransposeMatrix, &
+       & ResizeMatrix, PrintMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SMatrixModule, ONLY : Matrix_lsr, MatrixToTripletList
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & AppendToTripletList, DestructTripletList
+       & AppendToTripletList, DestructTripletList, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r
   USE NTMPIModule
   IMPLICIT NONE
@@ -20,6 +27,7 @@ MODULE EigenBoundsModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: GershgorinBounds
   PUBLIC :: PowerBounds
+  PUBLIC :: SubspaceIteration
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
   !> Uses Gershgorin's theorem.
@@ -155,5 +163,214 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE PowerBounds
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute K largest eigenvalues with subspace iteration.
+  SUBROUTINE SubspaceIteration(this,vecs,k,solver_parameters_in)
+    !> The matrix to compute the eigenvectors of.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The eigenvectors, stored in a sparse matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: vecs
+    !> The number of vectors to compute
+    INTEGER, INTENT(IN) :: k
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Temporary matrices
+    TYPE(Matrix_ps) :: temp_mat
+    TYPE(Matrix_ps) :: vecs2
+    TYPE(Matrix_ps) :: vecst
+    TYPE(Matrix_ldr) :: ritz_values, ritz_values2
+    TYPE(MatrixMemoryPool_p) :: pool
+    !! Temporary triplets
+    TYPE(TripletList_r) :: temp_list
+    TYPE(Triplet_r) :: temp_triplet
+    !! For the loop
+    REAL(NTREAL) :: norm_value
+    INTEGER :: II
+    INTEGER :: ierr
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Subspace Iteration Solver")
+       CALL EnterSubLog
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    !! Initial guess
+    CALL ConstructEmptyMatrix(temp_mat, this%actual_matrix_dimension, &
+         & this%process_grid, .FALSE.)
+    temp_list = TripletList_r()
+    IF (this%process_grid%global_rank .EQ. 0) THEN
+       DO II =1 , k
+          temp_triplet%index_row = II
+          temp_triplet%index_column = II
+          temp_triplet%point_value = 1.0_NTREAL
+          CALL AppendToTripletList(temp_list,temp_triplet)
+       END DO
+    END IF
+    CALL FillMatrixFromTripletList(temp_mat, temp_list)
+    IF (this%is_complex) THEN
+       CALL ConvertMatrixToComplex(temp_mat, vecs)
+    ELSE
+       CALL CopyMatrix(temp_mat, vecs)
+    END IF
+
+    !! Iteration
+    CALL ConstructEmptyMatrix(ritz_values, k, 1)
+    ritz_values%data = 0
+    DO II = 1,solver_parameters%max_iterations
+       IF (solver_parameters%be_verbose .AND. II .GT. 1) THEN
+          CALL WriteListElement(key="Round", value=II-1)
+          CALL EnterSubLog
+          CALL WriteElement(key="Convergence", value=norm_value)
+          CALL ExitSubLog
+       END IF
+
+       !! x = Ax
+       CALL MatrixMultiply(this, vecs, vecs2, memory_pool_in=pool)
+
+       !! Orthogonalize
+       CALL OrthogonalizeVectors(vecs2, temp_mat, k, pool, solver_parameters)
+
+       !! Update to our next guess.
+       CALL UpdateIteration(this, temp_mat, vecs, k, ritz_values2, pool, &
+            & solver_parameters)
+
+       !! Check convergence
+       CALL IncrementMatrix(ritz_values2, ritz_values, alpha_in=-1.0_NTREAL)
+       norm_value = MAXVAL(ABS(ritz_values%data))
+       CALL MPI_Allreduce(MPI_IN_PLACE, norm_value, 1, MPINTREAL, MPI_SUM, &
+            & this%process_grid%within_slice_comm, ierr)
+       CALL CopyMatrix(ritz_values2, ritz_values)
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+    END DO
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations",value=II-1)
+    END IF
+
+  END SUBROUTINE SubspaceIteration
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This helper routine will orthogonalize some vectors.
+  SUBROUTINE OrthogonalizeVectors(invec, outvec, num_vecs, pool, params)
+    !> The matrix of vectors to orthogonalize.
+    TYPE(Matrix_ps), INTENT(IN) :: invec
+    !> The orthogonalized vectors which are computed.
+    TYPE(Matrix_ps), INTENT(INOUT) :: outvec
+    !> The number of vectors actually stored.
+    INTEGER, INTENT(IN) :: num_vecs
+    !> A memory pool for calculations.
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN) :: params
+    !! Local variables
+    TYPE(Matrix_ps) :: invecT
+    TYPE(Matrix_ps) :: S
+    TYPE(Matrix_ps) :: rotation
+    TYPE(Matrix_lsr) :: local_sparse
+    TYPE(Matrix_ldr) :: local_dense, local_v, local_w, local_s, local_vt
+    TYPE(TripletList_r) :: triplet_list
+    REAL(NTREAL) :: temp_val
+    INTEGER :: II
+
+    !! Compute the overlap matrix.
+    CALL TransposeMatrix(invec, invecT)
+    CALL MatrixMultiply(invecT, invec, S, memory_pool_in=pool)
+
+    !! Slice out the overlap matrix.
+    CALL ResizeMatrix(S, num_vecs)
+    CALL GatherMatrixToProcess(S, local_sparse, 0)
+
+    IF (invec%process_grid%within_slice_rank .EQ. 0) THEN
+       CALL ConstructMatrixDFromS(local_sparse, local_dense)
+
+       !! Compute the inverse square root matrix.
+       CALL EigenDecomposition(local_dense, local_v, local_w)
+       CALL TransposeMatrix(local_v, local_vt)
+       DO II = 1, num_vecs
+          temp_val = 1.0_NTREAL/SQRT(local_w%data(II,1))
+          local_vt%data(II,:) = temp_val * local_vt%data(II,:)
+       END DO
+       CALL MultiplyMatrix(local_v, local_vt, local_dense)
+       CALL ConstructMatrixSFromD(local_dense, local_sparse)
+       CALL MatrixToTripletList(local_sparse, triplet_list)
+    ELSE
+       CALL ConstructTripletList(triplet_list)
+    END IF
+
+    !! Rotate
+    CALL ConstructEmptyMatrix(rotation, invec)
+    CALL FillMatrixFromTripletList(rotation, triplet_list, &
+         & preduplicated_in=.TRUE.)
+    CALL MatrixMultiply(invec, rotation, outvec, memory_pool_in=pool)
+  END SUBROUTINE OrthogonalizeVectors
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This helper routine will compute the next guess.
+  !! To do this we diagonalize the matrix in the subspace of trial vectors,
+  !! and rotate.
+  SUBROUTINE UpdateIteration(mat, invec, outvec, num_vecs, ritz_values, pool, &
+       & params)
+    !> The matrix we are computing the eigenvalues of.
+    TYPE(Matrix_ps), INTENT(IN) :: mat
+    !> The matrix of trial vectors.
+    TYPE(Matrix_ps), INTENT(IN) :: invec
+    !> The updated guess.
+    TYPE(Matrix_ps), INTENT(INOUT) :: outvec
+    !> The number of vectors actually stored.
+    INTEGER, INTENT(IN) :: num_vecs
+    !> The ritz values are stored here
+    TYPE(Matrix_ldr) :: ritz_values
+    !> A memory pool for calculations.
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN) :: params
+    !! Local variables
+    TYPE(Matrix_ps) :: vt
+    TYPE(Matrix_ps) :: Av
+    TYPE(Matrix_ps) :: vAv
+    TYPE(Matrix_ps) :: rotation
+    TYPE(Matrix_lsr) :: local_sparse
+    TYPE(Matrix_ldr) :: local_dense, local_v
+    TYPE(TripletList_r) :: triplet_list
+
+    !! Compute the overlap matrix.
+    CALL MatrixMultiply(mat, invec, Av, memory_pool_in=pool)
+    CALL TransposeMatrix(invec, vt)
+    CALL MatrixMultiply(vt, Av, vAv, memory_pool_in=pool)
+
+    !! Slice out the reduced matrix.
+    CALL ResizeMatrix(vAv, num_vecs)
+    CALL GatherMatrixToProcess(vAv, local_sparse, 0)
+
+    IF (invec%process_grid%within_slice_rank .EQ. 0) THEN
+       CALL ConstructMatrixDFromS(local_sparse, local_dense)
+
+       !! Compute the eigendecomposition
+       CALL EigenDecomposition(local_dense, local_v, ritz_values)
+
+       !! Rotate
+       CALL ConstructMatrixSFromD(local_v, local_sparse)
+       CALL MatrixToTripletList(local_sparse, triplet_list)
+    ELSE
+       CALL ConstructTripletList(triplet_list)
+       CALL ConstructEmptyMatrix(ritz_values, num_vecs, 1)
+       ritz_values%data = 0
+    END IF
+    CALL ConstructEmptyMatrix(rotation, invec)
+    CALL FillMatrixFromTripletList(rotation, triplet_list, &
+         & preduplicated_in=.TRUE.)
+    CALL MatrixMultiply(invec, rotation, outvec)
+
+    !! Cleanup
+  END SUBROUTINE UpdateIteration
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule

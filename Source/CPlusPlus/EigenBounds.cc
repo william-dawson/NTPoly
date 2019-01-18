@@ -17,4 +17,10 @@ void EigenBounds::PowerBounds(const Matrix_ps &matrix, double *max_value,
                               const SolverParameters &solver_parameters) {
   PowerBounds_wrp(GetIH(matrix), max_value, GetIH(solver_parameters));
 }
+void EigenBounds::SubspaceIteration(const Matrix_ps &matrix, Matrix_ps &vecs,
+                                    int k,
+                                    const SolverParameters &solver_parameters) {
+  SubspaceIteration_wrp(GetIH(matrix), GetIH(vecs), &k,
+                        GetIH(solver_parameters));
+}
 } // namespace NTPoly

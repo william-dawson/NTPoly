@@ -611,6 +611,37 @@ class TestSolvers(unittest.TestCase):
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
+    def test_subspaceiteration(self):
+        '''Test routine which computes largest eigenvalues with subspace
+        iteration'''
+        # Starting Matrix
+        matrix1 = self.create_matrix(SPD=True,scaled=True)
+        self.write_matrix(matrix1, self.input_file)
+        num_vals = 5
+
+        # Reference values
+        CheckD, vec = eigsh(matrix1, which="LM", k=num_vals)
+        CheckV = csr_matrix(vec)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        V = nt.Matrix_ps(input_matrix.GetActualDimension())
+        W = nt.Matrix_ps(input_matrix.GetActualDimension())
+        nt.EigenBounds.SubspaceIteration(input_matrix, V, num_vals, self.isp)
+        V.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file)
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
+                :num_vals]
+            normval = max(abs(CheckD - ResultD))
+            print("Max Error:", normval)
+
+        global_error = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_error, THRESHOLD*100)
+
     def test_hermitefunction(self):
         '''Test routines to compute using Hermite polynomials.'''
         # Starting Matrix
@@ -672,6 +703,7 @@ class TestSolvers(unittest.TestCase):
         u_matrix.WriteToMatrixMarket(result_file)
 
         self.check_result()
+
 
 class TestSolvers_c(TestSolvers):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
