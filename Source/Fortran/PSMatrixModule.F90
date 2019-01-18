@@ -3,7 +3,8 @@
 MODULE PSMatrixModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
        & MPINTINTEGER
-  USE ErrorModule, ONLY : Error_t, SetGenericError, CheckMPIError
+  USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError, &
+       & CheckMPIError
   USE LoggingModule, ONLY : &
        & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
   USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
@@ -382,6 +383,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromMatrixMarket(this, file_name, global_grid)
     ELSE
+       CALL ConstructError(err, process_grid_in%global_comm)
        !! Setup Involves Just The Root Opening And Reading Parameter Data
        CALL StartTimer("MPI Read Text")
        CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
@@ -583,6 +585,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromBinary(this, file_name, global_grid)
     ELSE
+       CALL ConstructError(err, process_grid_in%global_comm)
        CALL StartTimer("MPI Read Binary")
        CALL MPI_File_open(process_grid_in%global_comm, file_name, &
             & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)

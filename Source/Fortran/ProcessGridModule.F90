@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to manage the process grid.
 MODULE ProcessGridModule
-  USE ErrorModule, ONLY : Error_t, SetGenericError
+  USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
   USE NTMPIModule
@@ -187,6 +187,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
     TYPE(Error_t) :: err
 
+    CALL ConstructError(err, world_comm_)
     CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
     !! Grid Dimensions
     grid%num_process_rows = process_rows_
@@ -205,7 +206,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (MOD(MAX(grid%num_process_rows, grid%num_process_columns), &
             & MIN(grid%num_process_rows, grid%num_process_columns)) &
             & .NE. 0) THEN
-          CALL SetGenericError(err, "when using multiple slices, either rows&
+          CALL SetGenericError(err, "when using slices >1, either rows&
                & or columns must be a multiple of the other.", .TRUE.)
        END IF
     END IF
