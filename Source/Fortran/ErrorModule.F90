@@ -26,28 +26,16 @@ MODULE ErrorModule
      !> Store an error caused by a bad allocation call.
      INTEGER :: alloc_error
      LOGICAL :: alloc_error_set !< flag for whether alloc error occurred.
-     !> MPI Rank so it is possible to know who is root.
-     INTEGER :: mpi_rank = 0
   END TYPE Error_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Default constructor for an error type.
-  SUBROUTINE ConstructError(this, comm_in)
+  SUBROUTINE ConstructError(this)
     !> The newly constructed error type
     TYPE(Error_t), INTENT(INOUT) :: this
-    !> A communicator for this error to exist on.
-    INTEGER, INTENT(IN), OPTIONAL :: comm_in
-    !! Local Data
-    INTEGER :: mpi_error
 
     this%error_set = .FALSE.
     this%mpi_error_set = .FALSE.
     this%alloc_error_set = .FALSE.
-
-    IF (PRESENT(comm_in)) THEN
-       CALL MPI_Comm_rank(comm_in,this%mpi_rank,mpi_error)
-    ELSE
-       CALL MPI_Comm_rank(MPI_COMM_WORLD,this%mpi_rank,mpi_error)
-    END IF
   END SUBROUTINE ConstructError
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Routine to call if a generic error has occurred.
@@ -164,23 +152,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Print Out Information About The Error
     IF (ErrorOccurred(this)) THEN
-       IF (this%mpi_rank .EQ. 0) THEN
-          WRITE(*,'(A)') "#An error has occurred."
-          IF (this%alloc_error_set) THEN
-             WRITE(*,'(A)') "#Of type: alloc error."
-             WRITE(*,'(I3)') this%alloc_error
-          ELSE IF (this%mpi_error_set) THEN
-             WRITE(*,'(A)') "#Of type: mpi error."
-             CALL MPI_Error_String(this%mpi_error,error_string,error_string_len, &
-                  & error_string_error)
-             WRITE(*,'(A)') TRIM(error_string)
-          ELSE
-             WRITE(*,'(A)') "#Of type: generic error."
-          END IF
-          WRITE(*,'(A)') "#Details:"
-          WRITE(*,'(A)',ADVANCE='no') "#"
-          WRITE(*,'(A)') TRIM(this%error_description)
+       WRITE(*,'(A)') "#An error has occurred."
+       IF (this%alloc_error_set) THEN
+          WRITE(*,'(A)') "#Of type: alloc error."
+          WRITE(*,'(I3)') this%alloc_error
+       ELSE IF (this%mpi_error_set) THEN
+          WRITE(*,'(A)') "#Of type: mpi error."
+          CALL MPI_Error_String(this%mpi_error,error_string,error_string_len, &
+               & error_string_error)
+          WRITE(*,'(A)') TRIM(error_string)
+       ELSE
+          WRITE(*,'(A)') "#Of type: generic error."
        END IF
+       WRITE(*,'(A)') "#Details:"
+       WRITE(*,'(A)',ADVANCE='no') "#"
+       WRITE(*,'(A)') TRIM(this%error_description)
     ELSE
        CALL SetGenericError(temp_error, &
             & "No Error Occurred, but PrintError Called")

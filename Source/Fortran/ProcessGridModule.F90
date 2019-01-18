@@ -187,7 +187,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
     TYPE(Error_t) :: err
 
-    CALL ConstructError(err, world_comm_)
+    CALL ConstructError(err)
     CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
     !! Grid Dimensions
     grid%num_process_rows = process_rows_
