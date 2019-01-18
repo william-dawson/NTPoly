@@ -50,7 +50,6 @@ add_test(Regression222 ${BASH_PROGRAM} ${TestScript} 2 2 2 8)
 add_test(Regression321 ${BASH_PROGRAM} ${TestScript} 3 2 1 6)
 add_test(Regression213 ${BASH_PROGRAM} ${TestScript} 2 1 3 6)
 add_test(Regression611 ${BASH_PROGRAM} ${TestScript} 6 1 1 6)
-add_test(Regression232 ${BASH_PROGRAM} ${TestScript} 2 3 2 12)
 
 set(CurrentTestScript ${CMAKE_BINARY_DIR}/bin/CurrentTest.sh)
 add_test(CurrentTest ${BASH_PROGRAM} ${CurrentTestScript} 1 1 1 1)
