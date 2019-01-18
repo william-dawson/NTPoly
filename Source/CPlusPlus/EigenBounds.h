@@ -24,6 +24,19 @@ public:
   //!\param solver_parameters parameters for the solver
   static void PowerBounds(const Matrix_ps &matrix, double *max_power_eig,
                           const SolverParameters &solver_parameters);
+  //! Compute interior eigenvalues of a matrix.
+  //!\param matrix the matrix to compute the eigenvectors of.
+  //!\param density The density matrix that splits the spectrum of this matrix.
+  //!\param nel The number of electrons.
+  //!\param nvals The number of values to compute. Negative if they should be
+  //!below
+  //! the gap, positive if above.
+  //!\param vecs the output matrix of eigenvectors.
+  //!\param solver_parameters parameters for the solver
+  static void InteriorEigenvalues(const Matrix_ps &matrix,
+                                  const Matrix_ps &density, int nel, int nvals,
+                                  Matrix_ps &vecs,
+                                  const SolverParameters &solver_parameters);
   //! Compute K largest eigenvalues with subspace iteration.
   //!\param matrix the matrix to compute the eigenvectors of.
   //!\param vecs the output matrix of eigenvectors.

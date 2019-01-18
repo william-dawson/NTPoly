@@ -54,7 +54,8 @@ class TestSolvers(unittest.TestCase):
         '''Cleanup this test'''
         nt.DestructGlobalProcessGrid()
 
-    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
+    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, gap=None,
+                      rank=None):
         '''
         Create the test matrix with the following parameters.
         '''
@@ -69,6 +70,11 @@ class TestSolvers(unittest.TestCase):
             mat = (1.0 / self.mat_dim) * mat
         if rank:
             mat = mat[rank:].dot(mat[rank:].T)
+
+        if gap:
+            w, v = eigh(mat.todense())
+            w[gap + 1:] += 5.0
+            mat = v.dot(diag(w)).dot(v.T)
 
         return csr_matrix(mat)
 
@@ -615,13 +621,12 @@ class TestSolvers(unittest.TestCase):
         '''Test routine which computes largest eigenvalues with subspace
         iteration'''
         # Starting Matrix
-        matrix1 = self.create_matrix(SPD=True,scaled=True)
+        matrix1 = self.create_matrix(SPD=True, scaled=True)
         self.write_matrix(matrix1, self.input_file)
         num_vals = 5
 
         # Reference values
         CheckD, vec = eigsh(matrix1, which="LM", k=num_vals)
-        CheckV = csr_matrix(vec)
 
         # Result Matrix
         input_matrix = nt.Matrix_ps(self.input_file, False)
@@ -640,7 +645,47 @@ class TestSolvers(unittest.TestCase):
             print("Max Error:", normval)
 
         global_error = comm.bcast(normval, root=0)
-        self.assertLessEqual(global_error, THRESHOLD*100)
+        self.assertLessEqual(global_error, THRESHOLD * 100)
+
+    def test_interioreigenvalues(self):
+        '''Test routine which computes interior eigenvalues'''
+        # Starting Matrix
+        matrix1 = self.create_matrix(gap=10)
+        matrix2 = identity(matrix1.shape[0])
+        self.write_matrix(matrix1, self.input_file)
+        self.write_matrix(matrix2, self.input_file2)
+        num_vals = 3
+        nel = 20
+
+        # Reference values
+        CheckD, vec = eigh(matrix1.todense())
+        print(CheckD)
+        CheckD = CheckD[int(nel/2)+1:int(nel/2)+1 + num_vals]
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        overlap = nt.Matrix_ps(self.input_file2, False)
+        density = nt.Matrix_ps(input_matrix.GetActualDimension())
+        nt.DensityMatrixSolvers.PM(input_matrix, overlap, nel, density,
+                                   self.isp)
+        V = nt.Matrix_ps(input_matrix.GetActualDimension())
+        nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
+                                           num_vals, V, self.isp)
+        V.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file)
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
+                :num_vals]
+            print(ResultD)
+            print(CheckD)
+            normval = max(abs(CheckD - ResultD))
+            print("Max Error:", normval)
+
+        global_error = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_error, THRESHOLD * 100)
 
     def test_hermitefunction(self):
         '''Test routines to compute using Hermite polynomials.'''
@@ -705,7 +750,6 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
 
-
 class TestSolvers_r(TestSolvers):
     def test_cholesky(self):
         '''Test subroutine that computes the cholesky decomposition.'''
@@ -752,6 +796,7 @@ class TestSolvers_r(TestSolvers):
         comm.barrier()
 
         self.check_result()
+
 
 class TestSolvers_c(TestSolvers):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):

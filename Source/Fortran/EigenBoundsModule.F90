@@ -6,6 +6,7 @@ MODULE EigenBoundsModule
        & ConstructMatrixSFromD, EigenDecomposition, MultiplyMatrix, &
        & TransposeMatrix, IncrementMatrix, ConstructEmptyMatrix, MatrixNorm, &
        & CopyMatrix
+  USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
@@ -15,7 +16,7 @@ MODULE EigenBoundsModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList, &
        & ConvertMatrixToComplex, GatherMatrixToProcess, TransposeMatrix, &
-       & ResizeMatrix, PrintMatrix
+       & ResizeMatrix, PrintMatrix, FillMatrixIdentity, ConjugateMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SMatrixModule, ONLY : Matrix_lsr, MatrixToTripletList
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
@@ -27,6 +28,7 @@ MODULE EigenBoundsModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: GershgorinBounds
   PUBLIC :: PowerBounds
+  PUBLIC :: InteriorEigenvalues
   PUBLIC :: SubspaceIteration
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
@@ -164,6 +166,92 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE PowerBounds
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute interior eigenvalues of a matrix.
+  SUBROUTINE InteriorEigenvalues(this, density, nel, nvals, eigvecs, &
+       & solver_parameters_in)
+    !> The matrix to compute the interior eigenvalues of.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The density matrix that splits the spectrum of this matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: density
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The number of values to compute. Negative if they should be below
+    !! the gap, positive if above.
+    INTEGER, INTENT(IN) :: nvals
+    !> The computed eigenvectors.
+    TYPE(Matrix_ps), INTENT(INOUT) :: eigvecs
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local matrices
+    TYPE(Matrix_ps) :: target_density
+    TYPE(Matrix_ps) :: identity
+    TYPE(Matrix_ps) :: vec, vecT
+    TYPE(Matrix_ps) :: tempmat
+    TYPE(Matrix_ps) :: reduced_matrix, shifted_matrix
+    !! Local variables
+    INTEGER :: target_dim
+    REAL(NTREAL) :: min_val, max_val
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    !! Setup whether to compute the left or right spectrum.
+    CALL ConstructEmptyMatrix(identity, density)
+    CALL FillMatrixIdentity(identity)
+    IF (nvals .GT. 0) THEN
+       target_dim = this%actual_matrix_dimension - 0.5*nel
+       CALL CopyMatrix(identity, target_density)
+       CALL IncrementMatrix(density, target_density, alpha_in=-1.0_NTREAL, &
+            & threshold_in=solver_parameters%threshold)
+    ELSE
+       target_dim = 0.5*nel
+       CALL CopyMatrix(density, target_density)
+    END IF
+
+    !! Compute the pivoted cholesky decomposition.
+    CALL PivotedCholeskyDecomposition(target_density, vec, target_dim, &
+         & solver_parameters_in=solver_parameters)
+
+    !! Construct the reduced matrix.
+    CALL MatrixMultiply(this, vec, tempmat, &
+         & threshold_in=solver_parameters%threshold)
+    CALL TransposeMatrix(vec, vecT)
+    IF (vec%is_complex) THEN
+       CALL ConjugateMatrix(vecT)
+    END IF
+    CALL MatrixMultiply(vecT, tempmat, reduced_matrix, &
+         & threshold_in=solver_parameters%threshold)
+    CALL ResizeMatrix(reduced_matrix, target_dim)
+
+    !! Shift the matrix to get the extreme absolute values.
+    CALL GershgorinBounds(reduced_matrix, min_val, max_val)
+    IF (nvals .GT. 0) THEN
+       CALL CopyMatrix(identity, shifted_matrix)
+       CALL ScaleMatrix(shifted_matrix, max_val)
+       CALL IncrementMatrix(reduced_matrix, shifted_matrix, &
+            & alpha_in=-1.0_NTREAL)
+    ELSE
+       CALL CopyMatrix(reduced_matrix, shifted_matrix)
+       CALL IncrementMatrix(identity, shifted_matrix, &
+            & alpha_in=-1.0_NTREAL*min_val)
+    END IF
+
+    !! Subspace iteration.
+    CALL SubspaceIteration(shifted_matrix, eigvecs, ABS(nvals), &
+         & solver_parameters)
+
+    !! Rotate back
+
+    !! Cleanup
+
+  END SUBROUTINE InteriorEigenvalues
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
   SUBROUTINE SubspaceIteration(this,vecs,k,solver_parameters_in)
     !> The matrix to compute the eigenvectors of.
@@ -252,6 +340,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
+       WRITE(*,*) ritz_values%data
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog

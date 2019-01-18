@@ -2,7 +2,8 @@
 !> Wraps the eigenbounds module for calling from other languages.
 MODULE EigenBoundsModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds, SubspaceIteration
+  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds, &
+      & InteriorEigenvalues, SubspaceIteration
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -12,6 +13,7 @@ MODULE EigenBoundsModule_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: GershgorinBounds_wrp
   PUBLIC :: PowerBounds_wrp
+  PUBLIC :: InteriorEigenvalues_wrp
   PUBLIC :: SubspaceIteration_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
@@ -41,6 +43,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL PowerBounds(h_this%data, max_value, h_solver_parameters%data)
   END SUBROUTINE PowerBounds_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute K largest eigenvalues with subspace iteration.
+  SUBROUTINE InteriorEigenvalues_wrp(ih_this, ih_density, nels, nvals, &
+       & ih_vecs, ih_solver_parameters) bind(c,name="InteriorEigenvalues_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_density(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: nels
+    INTEGER(kind=c_int), INTENT(IN) :: nvals
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_vecs(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_this
+    TYPE(Matrix_ps_wrp) :: h_density
+    TYPE(Matrix_ps_wrp) :: h_vecs
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
+
+    h_this = TRANSFER(ih_this,h_this)
+    h_density = TRANSFER(ih_density,h_density)
+    h_vecs = TRANSFER(ih_vecs,h_vecs)
+    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
+
+    CALL InteriorEigenvalues(h_this%data, h_density%data, nels, nvals, &
+         & h_vecs%data, h_solver_parameters%data)
+  END SUBROUTINE InteriorEigenvalues_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
   SUBROUTINE SubspaceIteration_wrp(ih_this, ih_vecs, k, ih_solver_parameters) &
