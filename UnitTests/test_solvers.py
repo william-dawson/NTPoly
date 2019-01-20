@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 31
+    mat_dim = 4
 
     @classmethod
     def setUpClass(self):
@@ -654,13 +654,16 @@ class TestSolvers(unittest.TestCase):
         matrix2 = identity(matrix1.shape[0])
         self.write_matrix(matrix1, self.input_file)
         self.write_matrix(matrix2, self.input_file2)
-        num_vals = 3
-        nel = 20
+        num_vals = 1
+        nel = 4
 
         # Reference values
         CheckD, vec = eigh(matrix1.todense())
         print(CheckD)
-        CheckD = CheckD[int(nel/2)+1:int(nel/2)+1 + num_vals]
+        leftD = CheckD[int(nel/2) - num_vals:int(nel/2)]
+        rightD = CheckD[int(nel/2):int(nel/2) + num_vals]
+        print("left", leftD)
+        print("right", rightD)
 
         # Result Matrix
         input_matrix = nt.Matrix_ps(self.input_file, False)
@@ -668,10 +671,14 @@ class TestSolvers(unittest.TestCase):
         density = nt.Matrix_ps(input_matrix.GetActualDimension())
         nt.DensityMatrixSolvers.PM(input_matrix, overlap, nel, density,
                                    self.isp)
-        V = nt.Matrix_ps(input_matrix.GetActualDimension())
+        leftV = nt.Matrix_ps(input_matrix.GetActualDimension())
         nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
-                                           num_vals, V, self.isp)
-        V.WriteToMatrixMarket(result_file)
+                                           -num_vals, leftV, self.isp)
+        leftV.WriteToMatrixMarket(result_file)
+        rightV = nt.Matrix_ps(input_matrix.GetActualDimension())
+        nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
+                                           num_vals, rightV, self.isp)
+        rightV.WriteToMatrixMarket(result_file)
         comm.barrier()
 
         normval = 0
@@ -680,8 +687,8 @@ class TestSolvers(unittest.TestCase):
             ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
                 :num_vals]
             print(ResultD)
-            print(CheckD)
-            normval = max(abs(CheckD - ResultD))
+            print(leftD)
+            normval = max(abs(leftD - ResultD))
             print("Max Error:", normval)
 
         global_error = comm.bcast(normval, root=0)

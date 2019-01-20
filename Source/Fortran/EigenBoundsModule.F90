@@ -228,23 +228,32 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(vecT, tempmat, reduced_matrix, &
          & threshold_in=solver_parameters%threshold)
     CALL ResizeMatrix(reduced_matrix, target_dim)
+    WRITE(*,*) "REDUCED"
+    CALL PrintMatrix(reduced_matrix)
 
     !! Shift the matrix to get the extreme absolute values.
-    CALL GershgorinBounds(reduced_matrix, min_val, max_val)
+    CALL GershgorinBounds(this, min_val, max_val)
+    CALL ConstructEmptyMatrix(shifted_matrix, reduced_matrix)
     IF (nvals .GT. 0) THEN
-       CALL CopyMatrix(identity, shifted_matrix)
+       CALL FillMatrixIdentity(shifted_matrix)
        CALL ScaleMatrix(shifted_matrix, max_val)
        CALL IncrementMatrix(reduced_matrix, shifted_matrix, &
             & alpha_in=-1.0_NTREAL)
     ELSE
-       CALL CopyMatrix(reduced_matrix, shifted_matrix)
-       CALL IncrementMatrix(identity, shifted_matrix, &
-            & alpha_in=-1.0_NTREAL*min_val)
+       CALL FillMatrixIdentity(shifted_matrix)
+       CALL ScaleMatrix(shifted_matrix, -1.0_NTREAL*min_val)
+       CALL IncrementMatrix(reduced_matrix, shifted_matrix)
     END IF
+    WRITE(*,*) "SHIFTED"
+    CALL PrintMatrix(shifted_matrix)
+    WRITE(*,*) "MIN/MAX", min_val, max_val
 
     !! Subspace iteration.
     CALL SubspaceIteration(shifted_matrix, eigvecs, ABS(nvals), &
          & solver_parameters)
+
+    WRITE(*,*) "RESULT"
+    CALL PrintMatrix(eigvecs)
 
     !! Rotate back
 
