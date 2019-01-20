@@ -244,18 +244,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(shifted_matrix, -1.0_NTREAL*min_val)
        CALL IncrementMatrix(reduced_matrix, shifted_matrix)
     END IF
-    WRITE(*,*) "SHIFTED"
     CALL PrintMatrix(shifted_matrix)
-    WRITE(*,*) "MIN/MAX", min_val, max_val
 
     !! Subspace iteration.
-    CALL SubspaceIteration(shifted_matrix, eigvecs, ABS(nvals), &
+    CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
          & solver_parameters)
 
-    WRITE(*,*) "RESULT"
-    CALL PrintMatrix(eigvecs)
-
     !! Rotate back
+    CALL ResizeMatrix(eigvecs, this%actual_matrix_dimension)
+    CALL MatrixMultiply(vec, tempmat, eigvecs, &
+         & threshold_in=solver_parameters%threshold)
 
     !! Cleanup
 

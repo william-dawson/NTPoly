@@ -659,11 +659,8 @@ class TestSolvers(unittest.TestCase):
 
         # Reference values
         CheckD, vec = eigh(matrix1.todense())
-        print(CheckD)
         leftD = CheckD[int(nel/2) - num_vals:int(nel/2)]
         rightD = CheckD[int(nel/2):int(nel/2) + num_vals]
-        print("left", leftD)
-        print("right", rightD)
 
         # Result Matrix
         input_matrix = nt.Matrix_ps(self.input_file, False)
@@ -678,7 +675,7 @@ class TestSolvers(unittest.TestCase):
         rightV = nt.Matrix_ps(input_matrix.GetActualDimension())
         nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
                                            num_vals, rightV, self.isp)
-        rightV.WriteToMatrixMarket(result_file)
+        rightV.WriteToMatrixMarket(result_file2)
         comm.barrier()
 
         normval = 0
@@ -690,7 +687,18 @@ class TestSolvers(unittest.TestCase):
             print(leftD)
             normval = max(abs(leftD - ResultD))
             print("Max Error:", normval)
+        global_error = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_error, THRESHOLD * 100)
 
+        normval = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file2)
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
+                :num_vals]
+            print(ResultD)
+            print(rightD)
+            normval = max(abs(rightD - ResultD))
+            print("Max Error:", normval)
         global_error = comm.bcast(normval, root=0)
         self.assertLessEqual(global_error, THRESHOLD * 100)
 
