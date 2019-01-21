@@ -652,12 +652,12 @@ class TestSolvers(unittest.TestCase):
     def test_interioreigenvalues(self):
         '''Test routine which computes interior eigenvalues'''
         # Starting Matrix
+        nel = int(self.mat_dim)
         matrix1 = self.create_matrix(gap=10)
         matrix2 = identity(matrix1.shape[0])
         self.write_matrix(matrix1, self.input_file)
         self.write_matrix(matrix2, self.input_file2)
         num_vals = 2
-        nel = int(matrix1.shape[0])
 
         # Reference values
         CheckD, vec = eigh(matrix1.todense())
