@@ -244,8 +244,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     WRITE(*,*) "MIN/MAX", min_val, max_val
 
-    WRITE(*,*) "::::::::::NVALS", ABS(nvals)
-
     !! Subspace iteration.
     CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
          & solver_parameters)
@@ -256,7 +254,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=solver_parameters%threshold)
 
     !! Cleanup
-
+    CALL DestructMatrix(target_density)
+    CALL DestructMatrix(identity)
+    CALL DestructMatrix(vec)
+    CALL DestructMatrix(vecT)
+    CALL DestructMatrix(tempmat)
+    CALL DestructMatrix(reduced_matrix)
+    CALL DestructMatrix(shifted_matrix)
   END SUBROUTINE InteriorEigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
@@ -364,6 +368,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Total_Iterations",value=II-1)
     END IF
 
+    CALL PrintMatrix(this)
+    CALL PrintMatrix(vecs)
+    
+    !! Cleanup
+    CALL DestructMatrix(temp_mat)
+    CALL DestructMatrix(vecs2)
+    CALL DestructMatrix(vecst)
+    CALL DestructMatrix(ritz_values)
+    CALL DestructMatrix(ritz_values2)
+    CALL DestructMatrixMemoryPool(pool)
+    CALL DestructTripletList(temp_list)
   END SUBROUTINE SubspaceIteration
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This helper routine will orthogonalize some vectors.
