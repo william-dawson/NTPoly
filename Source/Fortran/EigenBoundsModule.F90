@@ -2,10 +2,10 @@
 !> A module for computing estimates of the bounds of a matrix's spectrum.
 MODULE EigenBoundsModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DMatrixModule, ONLY : Matrix_ldr, ConstructMatrixDFromS, &
+  USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, ConstructMatrixDFromS, &
        & ConstructMatrixSFromD, EigenDecomposition, MultiplyMatrix, &
        & TransposeMatrix, IncrementMatrix, ConstructEmptyMatrix, MatrixNorm, &
-       & CopyMatrix
+       & CopyMatrix, ConjugateMatrix, DestructMatrix
   USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
@@ -18,7 +18,7 @@ MODULE EigenBoundsModule
        & ConvertMatrixToComplex, GatherMatrixToProcess, TransposeMatrix, &
        & ResizeMatrix, PrintMatrix, FillMatrixIdentity, ConjugateMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE SMatrixModule, ONLY : Matrix_lsr, MatrixToTripletList
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, DestructTripletList, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r
@@ -228,8 +228,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(vecT, tempmat, reduced_matrix, &
          & threshold_in=solver_parameters%threshold)
     CALL ResizeMatrix(reduced_matrix, target_dim)
-    WRITE(*,*) "REDUCED"
-    CALL PrintMatrix(reduced_matrix)
 
     !! Shift the matrix to get the extreme absolute values.
     CALL GershgorinBounds(this, min_val, max_val)
@@ -244,7 +242,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(shifted_matrix, -1.0_NTREAL*min_val)
        CALL IncrementMatrix(reduced_matrix, shifted_matrix)
     END IF
-    CALL PrintMatrix(shifted_matrix)
+    WRITE(*,*) "MIN/MAX", min_val, max_val
+
+    WRITE(*,*) "::::::::::NVALS", ABS(nvals)
 
     !! Subspace iteration.
     CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
@@ -332,11 +332,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(this, vecs, vecs2, memory_pool_in=pool)
 
        !! Orthogonalize
-       CALL OrthogonalizeVectors(vecs2, temp_mat, k, pool, solver_parameters)
+       IF (this%is_complex) THEN
+          CALL OrthogonalizeVectors_r(vecs2, temp_mat, k, pool, &
+               & solver_parameters)
+       ELSE
+          CALL OrthogonalizeVectors_r(vecs2, temp_mat, k, pool, &
+               & solver_parameters)
+       END IF
 
        !! Update to our next guess.
-       CALL UpdateIteration(this, temp_mat, vecs, k, ritz_values2, pool, &
-            & solver_parameters)
+       IF (this%is_complex) THEN
+          CALL UpdateIteration_c(this, temp_mat, vecs, k, ritz_values2, pool, &
+               & solver_parameters)
+       ELSE
+          CALL UpdateIteration_r(this, temp_mat, vecs, k, ritz_values2, pool, &
+               & solver_parameters)
+       END IF
 
        !! Check convergence
        CALL IncrementMatrix(ritz_values2, ritz_values, alpha_in=-1.0_NTREAL)
@@ -347,7 +358,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
-       WRITE(*,*) ritz_values%data
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
@@ -357,7 +367,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SubspaceIteration
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This helper routine will orthogonalize some vectors.
-  SUBROUTINE OrthogonalizeVectors(invec, outvec, num_vecs, pool, params)
+  SUBROUTINE OrthogonalizeVectors_r(invec, outvec, num_vecs, pool, params)
     !> The matrix of vectors to orthogonalize.
     TYPE(Matrix_ps), INTENT(IN) :: invec
     !> The orthogonalized vectors which are computed.
@@ -369,51 +379,37 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The parameters for this calculation.
     TYPE(SolverParameters_t), INTENT(IN) :: params
     !! Local variables
-    TYPE(Matrix_ps) :: invecT
-    TYPE(Matrix_ps) :: S
-    TYPE(Matrix_ps) :: rotation
     TYPE(Matrix_lsr) :: local_sparse
-    TYPE(Matrix_ldr) :: local_dense, local_v, local_w, local_s, local_vt
+    TYPE(Matrix_ldr) :: local_dense, local_v, local_s, local_vt
     TYPE(TripletList_r) :: triplet_list
-    REAL(NTREAL) :: temp_val
-    INTEGER :: II
 
-    !! Compute the overlap matrix.
-    CALL TransposeMatrix(invec, invecT)
-    CALL MatrixMultiply(invecT, invec, S, memory_pool_in=pool)
+    INCLUDE "solver_includes/OrthogonalizeVectors.f90"
+  END SUBROUTINE OrthogonalizeVectors_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This helper routine will orthogonalize some vectors.
+  SUBROUTINE OrthogonalizeVectors_c(invec, outvec, num_vecs, pool, params)
+    !> The matrix of vectors to orthogonalize.
+    TYPE(Matrix_ps), INTENT(IN) :: invec
+    !> The orthogonalized vectors which are computed.
+    TYPE(Matrix_ps), INTENT(INOUT) :: outvec
+    !> The number of vectors actually stored.
+    INTEGER, INTENT(IN) :: num_vecs
+    !> A memory pool for calculations.
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN) :: params
+    !! Local variables
+    TYPE(Matrix_lsc) :: local_sparse
+    TYPE(Matrix_ldc) :: local_dense, local_v, local_s, local_vt
+    TYPE(TripletList_c) :: triplet_list
 
-    !! Slice out the overlap matrix.
-    CALL ResizeMatrix(S, num_vecs)
-    CALL GatherMatrixToProcess(S, local_sparse, 0)
-
-    IF (invec%process_grid%within_slice_rank .EQ. 0) THEN
-       CALL ConstructMatrixDFromS(local_sparse, local_dense)
-
-       !! Compute the inverse square root matrix.
-       CALL EigenDecomposition(local_dense, local_v, local_w)
-       CALL TransposeMatrix(local_v, local_vt)
-       DO II = 1, num_vecs
-          temp_val = 1.0_NTREAL/SQRT(local_w%data(II,1))
-          local_vt%data(II,:) = temp_val * local_vt%data(II,:)
-       END DO
-       CALL MultiplyMatrix(local_v, local_vt, local_dense)
-       CALL ConstructMatrixSFromD(local_dense, local_sparse)
-       CALL MatrixToTripletList(local_sparse, triplet_list)
-    ELSE
-       CALL ConstructTripletList(triplet_list)
-    END IF
-
-    !! Rotate
-    CALL ConstructEmptyMatrix(rotation, invec)
-    CALL FillMatrixFromTripletList(rotation, triplet_list, &
-         & preduplicated_in=.TRUE.)
-    CALL MatrixMultiply(invec, rotation, outvec, memory_pool_in=pool)
-  END SUBROUTINE OrthogonalizeVectors
+    INCLUDE "solver_includes/OrthogonalizeVectors.f90"
+  END SUBROUTINE OrthogonalizeVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This helper routine will compute the next guess.
   !! To do this we diagonalize the matrix in the subspace of trial vectors,
   !! and rotate.
-  SUBROUTINE UpdateIteration(mat, invec, outvec, num_vecs, ritz_values, pool, &
+  SUBROUTINE UpdateIteration_r(mat, invec, outvec, num_vecs, ritz_values, pool, &
        & params)
     !> The matrix we are computing the eigenvalues of.
     TYPE(Matrix_ps), INTENT(IN) :: mat
@@ -429,44 +425,39 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !> The parameters for this calculation.
     TYPE(SolverParameters_t), INTENT(IN) :: params
-    !! Local variables
-    TYPE(Matrix_ps) :: vt
-    TYPE(Matrix_ps) :: Av
-    TYPE(Matrix_ps) :: vAv
-    TYPE(Matrix_ps) :: rotation
+    !! Local Variables
     TYPE(Matrix_lsr) :: local_sparse
     TYPE(Matrix_ldr) :: local_dense, local_v
     TYPE(TripletList_r) :: triplet_list
 
-    !! Compute the overlap matrix.
-    CALL MatrixMultiply(mat, invec, Av, memory_pool_in=pool)
-    CALL TransposeMatrix(invec, vt)
-    CALL MatrixMultiply(vt, Av, vAv, memory_pool_in=pool)
+    INCLUDE "solver_includes/UpdateIteration.f90"
+  END SUBROUTINE UpdateIteration_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This helper routine will compute the next guess.
+  !! To do this we diagonalize the matrix in the subspace of trial vectors,
+  !! and rotate.
+  SUBROUTINE UpdateIteration_c(mat, invec, outvec, num_vecs, ritz_values, pool, &
+       & params)
+    !> The matrix we are computing the eigenvalues of.
+    TYPE(Matrix_ps), INTENT(IN) :: mat
+    !> The matrix of trial vectors.
+    TYPE(Matrix_ps), INTENT(IN) :: invec
+    !> The updated guess.
+    TYPE(Matrix_ps), INTENT(INOUT) :: outvec
+    !> The number of vectors actually stored.
+    INTEGER, INTENT(IN) :: num_vecs
+    !> The ritz values are stored here
+    TYPE(Matrix_ldr) :: ritz_values
+    !> A memory pool for calculations.
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    !> The parameters for this calculation.
+    TYPE(SolverParameters_t), INTENT(IN) :: params
+    !! Local Variables
+    TYPE(Matrix_lsc) :: local_sparse
+    TYPE(Matrix_ldc) :: local_dense, local_v
+    TYPE(TripletList_c) :: triplet_list
 
-    !! Slice out the reduced matrix.
-    CALL ResizeMatrix(vAv, num_vecs)
-    CALL GatherMatrixToProcess(vAv, local_sparse, 0)
-
-    IF (invec%process_grid%within_slice_rank .EQ. 0) THEN
-       CALL ConstructMatrixDFromS(local_sparse, local_dense)
-
-       !! Compute the eigendecomposition
-       CALL EigenDecomposition(local_dense, local_v, ritz_values)
-
-       !! Rotate
-       CALL ConstructMatrixSFromD(local_v, local_sparse)
-       CALL MatrixToTripletList(local_sparse, triplet_list)
-    ELSE
-       CALL ConstructTripletList(triplet_list)
-       CALL ConstructEmptyMatrix(ritz_values, num_vecs, 1)
-       ritz_values%data = 0
-    END IF
-    CALL ConstructEmptyMatrix(rotation, invec)
-    CALL FillMatrixFromTripletList(rotation, triplet_list, &
-         & preduplicated_in=.TRUE.)
-    CALL MatrixMultiply(invec, rotation, outvec)
-
-    !! Cleanup
-  END SUBROUTINE UpdateIteration
+    INCLUDE "solver_includes/UpdateIteration.f90"
+  END SUBROUTINE UpdateIteration_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule

@@ -41,6 +41,7 @@ MODULE DMatrixModule
   PUBLIC :: IncrementMatrix
   PUBLIC :: MultiplyMatrix
   PUBLIC :: TransposeMatrix
+  PUBLIC :: ConjugateMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE Matrix_ldr
      MODULE PROCEDURE ConstructEmptyMatrix_ldr
@@ -95,6 +96,10 @@ MODULE DMatrixModule
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_ldr
      MODULE PROCEDURE TransposeMatrix_ldc
+  END INTERFACE
+  INTERFACE ConjugateMatrix
+     MODULE PROCEDURE ConjugateMatrix_ldr
+     MODULE PROCEDURE ConjugateMatrix_ldc
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the empty constructor.
@@ -217,6 +222,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "dense_includes/TransposeMatrix.f90"
 
   END SUBROUTINE TransposeMatrix_ldr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the conjugate of a matrix.
+  !! Does nothing for real matrices.
+  SUBROUTINE ConjugateMatrix_ldr(this)
+    !> The matrix to compute the conjugate of, modified in place.
+    TYPE(Matrix_ldr), INTENT(INOUT) :: this
+  END SUBROUTINE ConjugateMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
   !> to another.
@@ -474,6 +486,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE TransposeMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the conjugate of a matrix.
+  SUBROUTINE ConjugateMatrix_ldc(this)
+    !> The matrix to compute the conjugate of, modified in place.
+    TYPE(Matrix_ldc), INTENT(INOUT) :: this
+
+    this%data = CONJG(this%data)
+  END SUBROUTINE ConjugateMatrix_ldc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
   !> to another.
   PURE SUBROUTINE ComposeMatrix_ldc(mat_array, block_rows, block_columns, &
@@ -555,7 +575,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The eigenvectors.
     TYPE(Matrix_ldc), INTENT(INOUT) :: MatV
     !> The eigenvalues.
-    TYPE(Matrix_ldc), INTENT(INOUT), OPTIONAL :: MatW
+    TYPE(Matrix_ldr), INTENT(INOUT), OPTIONAL :: MatW
     !! Standard parameters
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
@@ -600,7 +620,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       MatW = Matrix_ldc(MatA%rows, 1)
+       MatW = Matrix_ldr(MatA%rows, 1)
        DO II = 1, N
           MatW%data(II,1) = W(II)
        END DO

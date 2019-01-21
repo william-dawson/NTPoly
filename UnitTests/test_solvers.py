@@ -39,7 +39,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 4
+    mat_dim = 33
 
     @classmethod
     def setUpClass(self):
@@ -627,6 +627,7 @@ class TestSolvers(unittest.TestCase):
 
         # Reference values
         CheckD, vec = eigsh(matrix1, which="LM", k=num_vals)
+        CheckD = CheckD[:num_vals]
 
         # Result Matrix
         input_matrix = nt.Matrix_ps(self.input_file, False)
@@ -638,10 +639,11 @@ class TestSolvers(unittest.TestCase):
 
         normval = 0
         if (self.my_rank == 0):
+            from numpy import sort
             ResultV = mmread(result_file)
             ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
                 :num_vals]
-            normval = max(abs(CheckD - ResultD))
+            normval = max(abs(sort(CheckD) - sort(ResultD)))
             print("Max Error:", normval)
 
         global_error = comm.bcast(normval, root=0)
@@ -654,11 +656,13 @@ class TestSolvers(unittest.TestCase):
         matrix2 = identity(matrix1.shape[0])
         self.write_matrix(matrix1, self.input_file)
         self.write_matrix(matrix2, self.input_file2)
-        num_vals = 1
-        nel = 4
+        num_vals = 2
+        nel = int(matrix1.shape[0])
 
         # Reference values
         CheckD, vec = eigh(matrix1.todense())
+        if (self.my_rank == 0):
+            print(CheckD)
         leftD = CheckD[int(nel/2) - num_vals:int(nel/2)]
         rightD = CheckD[int(nel/2):int(nel/2) + num_vals]
 
@@ -681,26 +685,29 @@ class TestSolvers(unittest.TestCase):
         normval = 0
         if (self.my_rank == 0):
             ResultV = mmread(result_file)
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
-                :num_vals]
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
+            ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
+            print("::",CheckD)
             print(ResultD)
             print(leftD)
             normval = max(abs(leftD - ResultD))
             print("Max Error:", normval)
         global_error = comm.bcast(normval, root=0)
-        self.assertLessEqual(global_error, THRESHOLD * 100)
 
         normval = 0
         if (self.my_rank == 0):
             ResultV = mmread(result_file2)
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
-                :num_vals]
+            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
+            ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
+            print("::",CheckD)
             print(ResultD)
             print(rightD)
             normval = max(abs(rightD - ResultD))
             print("Max Error:", normval)
-        global_error = comm.bcast(normval, root=0)
+        global_error2 = comm.bcast(normval, root=0)
+
         self.assertLessEqual(global_error, THRESHOLD * 100)
+        self.assertLessEqual(global_error2, THRESHOLD * 100)
 
     def test_hermitefunction(self):
         '''Test routines to compute using Hermite polynomials.'''
