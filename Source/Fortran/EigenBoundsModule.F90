@@ -246,18 +246,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Subspace iteration.
-    IF (PRESENT(eigenvalues_out)) THEN
-       CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
-            & eigenvalues_out, solver_parameters)
-    ELSE
-       CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
-            & solver_parameters_in=solver_parameters)
-    END IF
+    CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
+         & solver_parameters_in=solver_parameters)
 
     !! Rotate back
     CALL ResizeMatrix(tempmat, this%actual_matrix_dimension)
     CALL MatrixMultiply(vec, tempmat, eigvecs, &
          & threshold_in=solver_parameters%threshold)
+
+    !! Compute eigenvalues.
+    IF (PRESENT(eigenvalues_out)) THEN
+       CALL TransposeMatrix(eigvecs, vecT)
+       CALL MatrixMultiply(vecT, this, tempmat)
+       CALL MatrixMultiply(tempmat, eigvecs, eigenvalues_out, &
+            & threshold_in=solver_parameters%threshold)
+       CALL ResizeMatrix(eigenvalues_out, ABS(nvals))
+    END IF
 
     !! Cleanup
     CALL DestructMatrix(target_density)
@@ -381,7 +385,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(eigenvalues_out)) THEN
        CALL TransposeMatrix(vecs, vecst)
        CALL MatrixMultiply(vecst, this, temp_mat, memory_pool_in=pool)
-       CALL MatrixMultiply(temp_mat, vecs, eigenvalues_out, memory_pool_in=pool)
+       CALL MatrixMultiply(temp_mat, vecs, eigenvalues_out, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL ResizeMatrix(eigenvalues_out, k)
     END IF
 
