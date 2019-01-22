@@ -12,7 +12,7 @@ MODULE EigenBoundsModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, DotMatrix, &
-       & IncrementMatrix, ScaleMatrix
+       & IncrementMatrix, ScaleMatrix, MatrixTrace
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList, &
        & ConvertMatrixToComplex, GatherMatrixToProcess, TransposeMatrix, &
@@ -230,7 +230,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ResizeMatrix(reduced_matrix, target_dim)
 
     !! Shift the matrix to get the extreme absolute values.
-    CALL GershgorinBounds(this, min_val, max_val)
+    CALL GershgorinBounds(reduced_matrix, min_val, max_val)
     CALL ConstructEmptyMatrix(shifted_matrix, reduced_matrix)
     IF (nvals .GT. 0) THEN
        CALL FillMatrixIdentity(shifted_matrix)
@@ -242,14 +242,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(shifted_matrix, -1.0_NTREAL*min_val)
        CALL IncrementMatrix(reduced_matrix, shifted_matrix)
     END IF
-    WRITE(*,*) "MIN/MAX", min_val, max_val
 
     !! Subspace iteration.
     CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
          & solver_parameters)
 
     !! Rotate back
-    CALL ResizeMatrix(eigvecs, this%actual_matrix_dimension)
+    CALL ResizeMatrix(tempmat, this%actual_matrix_dimension)
     CALL MatrixMultiply(vec, tempmat, eigvecs, &
          & threshold_in=solver_parameters%threshold)
 
@@ -368,9 +367,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Total_Iterations",value=II-1)
     END IF
 
-    CALL PrintMatrix(this)
-    CALL PrintMatrix(vecs)
-    
     !! Cleanup
     CALL DestructMatrix(temp_mat)
     CALL DestructMatrix(vecs2)
