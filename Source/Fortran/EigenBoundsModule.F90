@@ -168,7 +168,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute interior eigenvalues of a matrix.
   SUBROUTINE InteriorEigenvalues(this, density, nel, nvals, eigvecs, &
-       & solver_parameters_in)
+       & eigenvalues_out, solver_parameters_in)
     !> The matrix to compute the interior eigenvalues of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The density matrix that splits the spectrum of this matrix.
@@ -180,6 +180,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: nvals
     !> The computed eigenvectors.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigvecs
+    !> The eigenvalues, stored in a sparse matrix.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !> The parameters for this calculation.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
@@ -244,8 +246,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Subspace iteration.
-    CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
-         & solver_parameters)
+    IF (PRESENT(eigenvalues_out)) THEN
+       CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
+            & eigenvalues_out, solver_parameters)
+    ELSE
+       CALL SubspaceIteration(shifted_matrix, tempmat, ABS(nvals), &
+            & solver_parameters_in=solver_parameters)
+    END IF
 
     !! Rotate back
     CALL ResizeMatrix(tempmat, this%actual_matrix_dimension)
@@ -263,13 +270,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE InteriorEigenvalues
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
-  SUBROUTINE SubspaceIteration(this,vecs,k,solver_parameters_in)
+  SUBROUTINE SubspaceIteration(this, vecs, k, eigenvalues_out, &
+       & solver_parameters_in)
     !> The matrix to compute the eigenvectors of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The eigenvectors, stored in a sparse matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: vecs
     !> The number of vectors to compute
     INTEGER, INTENT(IN) :: k
+    !> The eigenvalues, stored in a sparse matrix.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !> The parameters for this calculation.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
@@ -365,6 +375,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
        CALL WriteElement(key="Total_Iterations",value=II-1)
+    END IF
+
+    !! Compute eigenvalues.
+    IF (PRESENT(eigenvalues_out)) THEN
+       CALL TransposeMatrix(vecs, vecst)
+       CALL MatrixMultiply(vecst, this, temp_mat, memory_pool_in=pool)
+       CALL MatrixMultiply(temp_mat, vecs, eigenvalues_out, memory_pool_in=pool)
+       CALL ResizeMatrix(eigenvalues_out, k)
     END IF
 
     !! Cleanup

@@ -64,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL InteriorEigenvalues(h_this%data, h_density%data, nels, nvals, &
-         & h_vecs%data, h_solver_parameters%data)
+         & h_vecs%data, solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE InteriorEigenvalues_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
@@ -83,7 +83,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL SubspaceIteration(h_this%data, h_vecs%data, k, &
-         & h_solver_parameters%data)
+         & solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE SubspaceIteration_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule_wrp
