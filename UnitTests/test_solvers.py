@@ -74,8 +74,9 @@ class TestSolvers(unittest.TestCase):
             mat = mat[rank:].dot(mat[rank:].T)
 
         if gap:
-            w, v = eigh(mat)
+            w, v = eigh(mat.todense())
             w[gap + 1:] += 5.0
+            w[-1] = w[-2] + (w[-2]-w[-3])
             mat = csr_matrix(v.dot(diag(w)).dot(v.T))
 
         return csr_matrix(mat)
@@ -761,7 +762,7 @@ class TestSolvers_r(TestSolvers):
 
         self.check_result()
 
-    def a_test_interioreigenvalues(self):
+    def test_interioreigenvalues(self):
         '''Test routine which computes interior eigenvalues'''
         # Starting Matrix
         nel = int(self.mat_dim / 2) * 2
