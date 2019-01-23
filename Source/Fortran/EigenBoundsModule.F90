@@ -9,6 +9,7 @@ MODULE EigenBoundsModule
   USE LinearSolversModule, ONLY : PivotedCholeskyDecomposition
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
+  USE MatrixMapsModule, ONLY : MapMatrix_psr
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, DotMatrix, &
@@ -16,7 +17,8 @@ MODULE EigenBoundsModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList, &
        & ConvertMatrixToComplex, GatherMatrixToProcess, TransposeMatrix, &
-       & ResizeMatrix, PrintMatrix, FillMatrixIdentity, ConjugateMatrix
+       & ResizeMatrix, PrintMatrix, FillMatrixIdentity, ConjugateMatrix, &
+       & ConvertMatrixToReal
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
@@ -260,7 +262,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(vecT, this, tempmat)
        CALL MatrixMultiply(tempmat, eigvecs, eigenvalues_out, &
             & threshold_in=solver_parameters%threshold)
-       CALL ResizeMatrix(eigenvalues_out, ABS(nvals))
+       CALL CopyMatrix(eigenvalues_out, tempmat)
+       CALL ResizeMatrix(tempmat, ABS(nvals))
+       CALL MapMatrix_psr(tempmat, eigenvalues_out, DiagonalMap)
     END IF
 
     !! Cleanup
@@ -384,10 +388,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute eigenvalues.
     IF (PRESENT(eigenvalues_out)) THEN
        CALL TransposeMatrix(vecs, vecst)
+       IF (vecst%is_complex) THEN
+          CALL ConjugateMatrix(vecst)
+       END IF
        CALL MatrixMultiply(vecst, this, temp_mat, memory_pool_in=pool)
        CALL MatrixMultiply(temp_mat, vecs, eigenvalues_out, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL ResizeMatrix(eigenvalues_out, k)
+       IF (eigenvalues_out%is_complex) THEN
+          CALL ConvertMatrixToReal(eigenvalues_out, temp_mat)
+       ELSE
+          CALL CopyMatrix(eigenvalues_out, temp_mat)
+       END IF
+       CALL MapMatrix_psr(temp_mat, eigenvalues_out, DiagonalMap)
     END IF
 
     !! Cleanup
@@ -493,5 +506,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     INCLUDE "solver_includes/UpdateIteration.f90"
   END SUBROUTINE UpdateIteration_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  FUNCTION DiagonalMap(row, column, val) RESULT(valid)
+    !> The row value of an element.
+    INTEGER, INTENT(INOUT) :: row
+    !> The column value of an element.
+    INTEGER, INTENT(INOUT) :: column
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+    !> Set this to false to filter an element.
+    LOGICAL :: valid
+
+    IF (row .EQ. column) THEN
+       valid = .TRUE.
+    ELSE
+       valid = .FALSE.
+    END IF
+  END FUNCTION DiagonalMap
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule
