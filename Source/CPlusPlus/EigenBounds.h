@@ -29,13 +29,13 @@ public:
   //!\param density The density matrix that splits the spectrum of this matrix.
   //!\param nel The number of electrons.
   //!\param nvals The number of values to compute. Negative if they should be
-  //!below
+  //! below
   //! the gap, positive if above.
   //!\param vecs the output matrix of eigenvectors.
   //!\param solver_parameters parameters for the solver
   static void InteriorEigenvalues(const Matrix_ps &matrix,
                                   const Matrix_ps &density, int nel, int nvals,
-                                  Matrix_ps &vecs,
+                                  Matrix_ps &vecs, Matrix_ps &vals,
                                   const SolverParameters &solver_parameters);
   //! Compute K largest eigenvalues with subspace iteration.
   //!\param matrix the matrix to compute the eigenvectors of.
@@ -43,6 +43,7 @@ public:
   //!\param k the number of vectors to compute.
   //!\param solver_parameters parameters for the solver
   static void SubspaceIteration(const Matrix_ps &matrix, Matrix_ps &vecs, int k,
+                                Matrix_ps &vals,
                                 const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly

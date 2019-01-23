@@ -46,44 +46,52 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
   SUBROUTINE InteriorEigenvalues_wrp(ih_this, ih_density, nels, nvals, &
-       & ih_vecs, ih_solver_parameters) bind(c,name="InteriorEigenvalues_wrp")
+       & ih_vecs, ih_vals, ih_solver_parameters) &
+       bind(c,name="InteriorEigenvalues_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_density(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: nels
     INTEGER(kind=c_int), INTENT(IN) :: nvals
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_vecs(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_vals(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_density
     TYPE(Matrix_ps_wrp) :: h_vecs
+    TYPE(Matrix_ps_wrp) :: h_vals
     TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
     h_density = TRANSFER(ih_density,h_density)
     h_vecs = TRANSFER(ih_vecs,h_vecs)
+    h_vals = TRANSFER(ih_vals,h_vals)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL InteriorEigenvalues(h_this%data, h_density%data, nels, nvals, &
-         & h_vecs%data, solver_parameters_in=h_solver_parameters%data)
+         & h_vecs%data, h_vals%data, &
+         & solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE InteriorEigenvalues_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute K largest eigenvalues with subspace iteration.
-  SUBROUTINE SubspaceIteration_wrp(ih_this, ih_vecs, k, ih_solver_parameters) &
-       & bind(c,name="SubspaceIteration_wrp")
+  SUBROUTINE SubspaceIteration_wrp(ih_this, ih_vecs, k, ih_vals, &
+       & ih_solver_parameters) bind(c,name="SubspaceIteration_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_vecs(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: k
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_vals(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_vecs
+    TYPE(Matrix_ps_wrp) :: h_vals
     TYPE(SolverParameters_wrp) :: h_solver_parameters
 
     h_this = TRANSFER(ih_this,h_this)
     h_vecs = TRANSFER(ih_vecs,h_vecs)
+    h_vals = TRANSFER(ih_vals,h_vals)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL SubspaceIteration(h_this%data, h_vecs%data, k, &
-         & solver_parameters_in=h_solver_parameters%data)
+         & h_vals%data, solver_parameters_in=h_solver_parameters%data)
   END SUBROUTINE SubspaceIteration_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule_wrp

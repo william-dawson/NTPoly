@@ -635,9 +635,10 @@ class TestSolvers(unittest.TestCase):
         # Result Matrix
         input_matrix = nt.Matrix_ps(self.input_file, False)
         V = nt.Matrix_ps(input_matrix.GetActualDimension())
-        W = nt.Matrix_ps(input_matrix.GetActualDimension())
-        nt.EigenBounds.SubspaceIteration(input_matrix, V, num_vals, self.isp)
+        W = nt.Matrix_ps(num_vals)
+        nt.EigenBounds.SubspaceIteration(input_matrix, V, num_vals, W, self.isp)
         V.WriteToMatrixMarket(result_file)
+        W.WriteToMatrixMarket(result_file2)
         comm.barrier()
 
         normval = 0
@@ -646,6 +647,17 @@ class TestSolvers(unittest.TestCase):
             ResultV = mmread(result_file)
             ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
                 :num_vals]
+            normval = max(abs(sort(CheckD) - sort(ResultD)))
+            print("Max Error:", normval)
+
+        global_error = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_error, THRESHOLD * 100)
+
+        normval = 0
+        if (self.my_rank == 0):
+            from numpy import sort
+            ResultD = mmread(result_file2)
+            ResultD = diag(ResultD.todense())
             normval = max(abs(sort(CheckD) - sort(ResultD)))
             print("Max Error:", normval)
 
@@ -785,36 +797,38 @@ class TestSolvers_r(TestSolvers):
         density = nt.Matrix_ps(input_matrix.GetActualDimension())
         nt.DensityMatrixSolvers.PM(input_matrix, overlap, nel, density,
                                    self.isp)
-        leftV = nt.Matrix_ps(input_matrix.GetActualDimension())
-        nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
-                                           -num_vals, leftV, self.isp)
-        leftV.WriteToMatrixMarket(result_file)
-        rightV = nt.Matrix_ps(input_matrix.GetActualDimension())
-        nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
-                                           num_vals, rightV, self.isp)
-        rightV.WriteToMatrixMarket(result_file2)
-        comm.barrier()
 
-        normval = 0
-        if (self.my_rank == 0):
-            ResultV = mmread(result_file)
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
-            ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
-            normval = max(abs(array(leftD) - array(ResultD)))
-            print("Max Error:", normval)
-        global_error = comm.bcast(normval, root=0)
+        for vals, CheckEigs in zip([-num_vals,num_vals],[leftD,rightD]):
+            V = nt.Matrix_ps(input_matrix.GetActualDimension())
+            W = nt.Matrix_ps(num_vals)
+            nt.EigenBounds.InteriorEigenvalues(input_matrix, density, nel,
+                                               vals, V, W, self.isp)
+            V.WriteToMatrixMarket(result_file)
+            W.WriteToMatrixMarket(result_file2)
+            comm.barrier()
 
-        normval = 0
-        if (self.my_rank == 0):
-            ResultV = mmread(result_file2)
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
-            ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
-            normval = max(abs(array(rightD) - array(ResultD)))
-            print("Max Error:", normval)
-        global_error2 = comm.bcast(normval, root=0)
+            normval = 0
+            if (self.my_rank == 0):
+                ResultV = mmread(result_file)
+                ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
+                ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
+                normval = max(abs(array(CheckEigs) - array(ResultD)))
+                print("Max Error:", normval)
+            global_error = comm.bcast(normval, root=0)
+            self.assertLessEqual(global_error, THRESHOLD * 100)
 
-        self.assertLessEqual(global_error, THRESHOLD * 100)
-        self.assertLessEqual(global_error2, THRESHOLD * 100)
+            normval = 0
+            if (self.my_rank == 0):
+                from numpy import sort
+                ResultD = mmread(result_file2)
+                ResultD = diag(ResultD.todense())
+                ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
+                normval =  max(abs(array(CheckEigs) - array(ResultD)))
+                print(CheckEigs)
+                print(ResultD)
+                print("Max Error:", normval)
+            global_error = comm.bcast(normval, root=0)
+            self.assertLessEqual(global_error, THRESHOLD * 100)
 
 
 class TestSolvers_c(TestSolvers):

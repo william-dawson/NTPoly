@@ -19,14 +19,15 @@ void EigenBounds::PowerBounds(const Matrix_ps &matrix, double *max_value,
 }
 void EigenBounds::InteriorEigenvalues(
     const Matrix_ps &matrix, const Matrix_ps &density, int nel, int nvals,
-    Matrix_ps &vecs, const SolverParameters &solver_parameters) {
+    Matrix_ps &vecs, Matrix_ps &vals,
+    const SolverParameters &solver_parameters) {
   InteriorEigenvalues_wrp(GetIH(matrix), GetIH(density), &nel, &nvals,
-                        GetIH(vecs), GetIH(solver_parameters));
+                          GetIH(vecs), GetIH(vals), GetIH(solver_parameters));
 }
 void EigenBounds::SubspaceIteration(const Matrix_ps &matrix, Matrix_ps &vecs,
-                                    int k,
+                                    int k, Matrix_ps &vals,
                                     const SolverParameters &solver_parameters) {
-  SubspaceIteration_wrp(GetIH(matrix), GetIH(vecs), &k,
+  SubspaceIteration_wrp(GetIH(matrix), GetIH(vecs), &k, GetIH(vals),
                         GetIH(solver_parameters));
 }
 } // namespace NTPoly
