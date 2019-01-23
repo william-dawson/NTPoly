@@ -126,6 +126,30 @@ class TestSolvers(unittest.TestCase):
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
+    def check_eigenvalues(self, matrix, vals, num_vals):
+        '''Check the result of an eigenvalue calculation.'''
+        normval = 0
+        if (self.my_rank == 0):
+            ResultV = mmread(result_file)
+            ResultD = diag((ResultV.H.dot(matrix).dot(ResultV)).todense())
+            ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
+            CheckD = sorted(vals, reverse=True, key=abs)[:num_vals]
+            normval = max(abs(array(CheckD) - array(ResultD)))
+            print("Max Error:", normval)
+        global_error = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_error, THRESHOLD * 100)
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultD = mmread(result_file2)
+            ResultD = diag(ResultD.todense())
+            ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
+            CheckD = sorted(vals, reverse=True, key=abs)[:num_vals]
+            normval = max(abs(array(CheckD) - array(ResultD)))
+            print("Max Error:", normval)
+        global_error = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_error, THRESHOLD * 100)
+
     def test_invert(self):
         '''Test routines to invert matrices.'''
         # Starting Matrix
@@ -641,28 +665,7 @@ class TestSolvers(unittest.TestCase):
         W.WriteToMatrixMarket(result_file2)
         comm.barrier()
 
-        normval = 0
-        if (self.my_rank == 0):
-            from numpy import sort
-            ResultV = mmread(result_file)
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())[
-                :num_vals]
-            normval = max(abs(sort(CheckD) - sort(ResultD)))
-            print("Max Error:", normval)
-
-        global_error = comm.bcast(normval, root=0)
-        self.assertLessEqual(global_error, THRESHOLD * 100)
-
-        normval = 0
-        if (self.my_rank == 0):
-            from numpy import sort
-            ResultD = mmread(result_file2)
-            ResultD = diag(ResultD.todense())
-            normval = max(abs(sort(CheckD) - sort(ResultD)))
-            print("Max Error:", normval)
-
-        global_error = comm.bcast(normval, root=0)
-        self.assertLessEqual(global_error, THRESHOLD * 100)
+        self.check_eigenvalues(matrix1, CheckD, num_vals)
 
     def test_hermitefunction(self):
         '''Test routines to compute using Hermite polynomials.'''
@@ -807,28 +810,7 @@ class TestSolvers_r(TestSolvers):
             W.WriteToMatrixMarket(result_file2)
             comm.barrier()
 
-            normval = 0
-            if (self.my_rank == 0):
-                ResultV = mmread(result_file)
-                ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
-                ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
-                normval = max(abs(array(CheckEigs) - array(ResultD)))
-                print("Max Error:", normval)
-            global_error = comm.bcast(normval, root=0)
-            self.assertLessEqual(global_error, THRESHOLD * 100)
-
-            normval = 0
-            if (self.my_rank == 0):
-                from numpy import sort
-                ResultD = mmread(result_file2)
-                ResultD = diag(ResultD.todense())
-                ResultD = sorted(ResultD, reverse=True, key=abs)[:num_vals]
-                normval =  max(abs(array(CheckEigs) - array(ResultD)))
-                print(CheckEigs)
-                print(ResultD)
-                print("Max Error:", normval)
-            global_error = comm.bcast(normval, root=0)
-            self.assertLessEqual(global_error, THRESHOLD * 100)
+            self.check_eigenvalues(matrix1, CheckEigs, num_vals)
 
 
 class TestSolvers_c(TestSolvers):
