@@ -63,11 +63,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order.
   !> Implements Knuth shuffle.
-  SUBROUTINE ConstructRandomPermutation(this, matrix_dimension)
+  SUBROUTINE ConstructRandomPermutation(this, matrix_dimension, seedval_in)
     !> A permutation that reverses the original order.
     TYPE(Permutation_t), INTENT(inout) :: this
     !> The size of the matrix.
     INTEGER, INTENT(in) :: matrix_dimension
+    !> An optional integer which can set the seed.
+    INTEGER, INTENT(IN), OPTIONAL :: seedval_in
     !! Local Data
     INTEGER :: counter
     INTEGER :: random_integer
@@ -76,10 +78,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: seed
     INTEGER :: seed_size
 
-    !! Temporary, seed the random number generator
+    !! Seed the random number generator
     CALL RANDOM_SEED(size=seed_size)
     ALLOCATE(seed(seed_size))
-    seed = 0
+    IF (PRESENT(seedval_in)) THEN
+       seed = seedval_in
+    ELSE
+       seed = 1
+    END IF
     CALL RANDOM_SEED(put=seed)
 
     !! First fill by counting.
@@ -103,13 +109,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order, but there is no
   !> permutation from beyond the actual matrix dimension.
   SUBROUTINE ConstructLimitedRandomPermutation(this, actual_matrix_dimension, &
-       & logical_matrix_dimension)
+       & logical_matrix_dimension, seedval_in)
     !> The permutation to construct.
     TYPE(Permutation_t), INTENT(inout) :: this
     !> Actual size of the matrix.
     INTEGER, INTENT(in) :: actual_matrix_dimension
     !> Padded size of the matrix.
     INTEGER, INTENT(in) :: logical_matrix_dimension
+    !> An optional integer which can set the seed.
+    INTEGER, INTENT(IN), OPTIONAL :: seedval_in
     !! Local Data
     INTEGER :: counter
     INTEGER :: random_integer
@@ -118,10 +126,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(:), ALLOCATABLE :: seed
     INTEGER :: seed_size
 
-    !! Temporary, seed the random number generator
+    !! Seed the random number generator
     CALL RANDOM_SEED(size=seed_size)
     ALLOCATE(seed(seed_size))
-    seed = 0
+    IF (PRESENT(seedval_in)) THEN
+       seed = seedval_in
+    ELSE
+       seed = 1
+    END IF
     CALL RANDOM_SEED(put=seed)
 
     !! First fill by counting.
