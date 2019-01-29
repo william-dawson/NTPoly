@@ -8,6 +8,24 @@ MODULE TripletModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A data type for a triplet of integer, integer, double.
+  !> As this is related to matrix multiplication, the referencing indices are
+  !> rows and columns.
+  TYPE, PUBLIC :: Triplet_r
+     INTEGER(kind=c_int) :: index_column !< column value.
+     INTEGER(kind=c_int) :: index_row    !< row value.
+     REAL(NTREAL)        :: point_value  !< actual value at those indices.
+  END TYPE Triplet_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A data type for a triplet of integer, integer, complex.
+  !> As this is related to matrix multiplication, the referencing indices are
+  !> rows and columns.
+  TYPE, PUBLIC :: Triplet_c
+     INTEGER(kind=c_int) :: index_column !< column value.
+     INTEGER(kind=c_int) :: index_row    !< row value.
+     COMPLEX(NTCOMPLEX)  :: point_value  !< actual value at those indices.
+  END TYPE Triplet_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SetTriplet
   PUBLIC :: GetTripletValues
   PUBLIC :: CompareTriplets
@@ -31,24 +49,6 @@ MODULE TripletModule
      MODULE PROCEDURE ConvertTripletToReal
      MODULE PROCEDURE ConvertTripletToComplex
   END INTERFACE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a triplet of integer, integer, double.
-  !> As this is related to matrix multiplication, the referencing indices are
-  !> rows and columns.
-  TYPE, PUBLIC :: Triplet_r
-     INTEGER(kind=c_int) :: index_column !< column value.
-     INTEGER(kind=c_int) :: index_row    !< row value.
-     REAL(NTREAL)        :: point_value  !< actual value at those indices.
-  END TYPE Triplet_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a triplet of integer, integer, complex.
-  !> As this is related to matrix multiplication, the referencing indices are
-  !> rows and columns.
-  TYPE, PUBLIC :: Triplet_c
-     INTEGER(kind=c_int) :: index_column !< column value.
-     INTEGER(kind=c_int) :: index_row    !< row value.
-     COMPLEX(NTCOMPLEX)  :: point_value  !< actual value at those indices.
-  END TYPE Triplet_c
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
   PURE SUBROUTINE SetTriplet_r(this,index_column,index_row,point_value)
