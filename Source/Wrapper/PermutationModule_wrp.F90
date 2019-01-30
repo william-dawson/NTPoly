@@ -43,11 +43,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructReversePermutation_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order.
-  SUBROUTINE ConstructRandomPermutation_wrp(ih_this, matrix_dimension, seed) &
+  SUBROUTINE ConstructRandomPermutation_wrp(ih_this, matrix_dimension) &
        & bind(c,name="ConstructRandomPermutation_wrp")
     INTEGER(kind=c_int), INTENT(OUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: matrix_dimension
-    INTEGER(kind=c_int), INTENT(IN) :: seed
     TYPE(Permutation_wrp) :: h_this
 
     ALLOCATE(h_this%data)

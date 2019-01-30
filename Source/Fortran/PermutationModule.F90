@@ -2,6 +2,8 @@
 !> Module for load balancing the matrix multiplication calculation.
 MODULE PermutationModule
   USE DataTypesModule, ONLY : NTREAL
+  USE ProcessGridModule, ONLY : global_grid, ProcessGrid_t
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -24,9 +26,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that preserves the original order.
   SUBROUTINE ConstructDefaultPermutation(this, matrix_dimension)
     !> The permutation to construct.
-    TYPE(Permutation_t), INTENT(inout) :: this
+    TYPE(Permutation_t), INTENT(INOUT) :: this
     !> The dimension of the matrix.
-    INTEGER, INTENT(in) :: matrix_dimension
+    INTEGER, INTENT(IN) :: matrix_dimension
     !! Local Data
     INTEGER :: counter
 
@@ -44,9 +46,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that reverses the original order.
   SUBROUTINE ConstructReversePermutation(this, matrix_dimension)
     !> A permutation that reverses the original order.
-    TYPE(Permutation_t), INTENT(inout) :: this
+    TYPE(Permutation_t), INTENT(INOUT) :: this
     !> The size of the matrix.
-    INTEGER, INTENT(in) :: matrix_dimension
+    INTEGER, INTENT(IN) :: matrix_dimension
     !! Local Data
     INTEGER :: counter
 
@@ -63,30 +65,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order.
   !> Implements Knuth shuffle.
-  SUBROUTINE ConstructRandomPermutation(this, matrix_dimension, seedval_in)
+  SUBROUTINE ConstructRandomPermutation(this, matrix_dimension, &
+       & process_grid_in)
     !> A permutation that reverses the original order.
-    TYPE(Permutation_t), INTENT(inout) :: this
+    TYPE(Permutation_t), INTENT(INOUT) :: this
     !> The size of the matrix.
-    INTEGER, INTENT(in) :: matrix_dimension
-    !> An optional integer which can set the seed.
-    INTEGER, INTENT(IN), OPTIONAL :: seedval_in
+    INTEGER, INTENT(IN) :: matrix_dimension
+    !> A permutation should be shared amongst these processes.
+    !> This is to synchronize random number across processes.
+    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_in
     !! Local Data
     INTEGER :: counter
     INTEGER :: random_integer
     REAL(KIND=NTREAL) :: rand_temp
     INTEGER :: swap_space
-    INTEGER, DIMENSION(:), ALLOCATABLE :: seed
-    INTEGER :: seed_size
-
-    !! Seed the random number generator
-    CALL RANDOM_SEED(size=seed_size)
-    ALLOCATE(seed(seed_size))
-    IF (PRESENT(seedval_in)) THEN
-       seed = seedval_in
-    ELSE
-       seed = 1
-    END IF
-    CALL RANDOM_SEED(put=seed)
+    INTEGER :: ierr
 
     !! First fill by counting.
     CALL ConstructDefaultPermutation(this,matrix_dimension)
@@ -100,6 +93,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        this%index_lookup(random_integer) = swap_space
     END DO shuffle
 
+    !! Broadcast the lookup (so each process has the same value)
+    IF (PRESENT(process_grid_in)) THEN
+       CALL MPI_Bcast(this%index_lookup, SIZE(this%index_lookup), &
+            & MPI_INTEGER, 0, process_grid_in%global_comm, ierr)
+    ELSE
+       CALL MPI_Bcast(this%index_lookup, SIZE(this%index_lookup), &
+            & MPI_INTEGER, 0, global_grid%global_comm, ierr)
+    END IF
+
     !! Compute the reverse lookup
     reverse: DO counter=1,matrix_dimension
        this%reverse_index_lookup(this%index_lookup(counter)) = counter
@@ -109,32 +111,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order, but there is no
   !> permutation from beyond the actual matrix dimension.
   SUBROUTINE ConstructLimitedRandomPermutation(this, actual_matrix_dimension, &
-       & logical_matrix_dimension, seedval_in)
+       & logical_matrix_dimension, process_grid_in)
     !> The permutation to construct.
     TYPE(Permutation_t), INTENT(inout) :: this
     !> Actual size of the matrix.
-    INTEGER, INTENT(in) :: actual_matrix_dimension
+    INTEGER, INTENT(IN) :: actual_matrix_dimension
     !> Padded size of the matrix.
-    INTEGER, INTENT(in) :: logical_matrix_dimension
-    !> An optional integer which can set the seed.
-    INTEGER, INTENT(IN), OPTIONAL :: seedval_in
+    INTEGER, INTENT(IN) :: logical_matrix_dimension
+    !> A permutation should be shared amongst these processes.
+    !> This is to synchronize random number across processes.
+    TYPE(ProcessGrid_t), INTENT(INOUT), OPTIONAL :: process_grid_in
     !! Local Data
     INTEGER :: counter
     INTEGER :: random_integer
     REAL(KIND=NTREAL) :: rand_temp
     INTEGER :: swap_space
-    INTEGER, DIMENSION(:), ALLOCATABLE :: seed
-    INTEGER :: seed_size
-
-    !! Seed the random number generator
-    CALL RANDOM_SEED(size=seed_size)
-    ALLOCATE(seed(seed_size))
-    IF (PRESENT(seedval_in)) THEN
-       seed = seedval_in
-    ELSE
-       seed = 1
-    END IF
-    CALL RANDOM_SEED(put=seed)
+    INTEGER :: ierr
 
     !! First fill by counting.
     CALL ConstructDefaultPermutation(this,logical_matrix_dimension)
@@ -148,6 +140,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & this%index_lookup(random_integer)
        this%index_lookup(random_integer) = swap_space
     END DO shuffle
+
+    !! Broadcast the lookup (so each process has the same value)
+    IF (PRESENT(process_grid_in)) THEN
+       CALL MPI_Bcast(this%index_lookup, SIZE(this%index_lookup), &
+            & MPI_INTEGER, 0, process_grid_in%global_comm, ierr)
+    ELSE
+       CALL MPI_Bcast(this%index_lookup, SIZE(this%index_lookup), &
+            & MPI_INTEGER, 0, global_grid%global_comm, ierr)
+    END IF
 
     !! Compute the reverse lookup
     reverse: DO counter=1,logical_matrix_dimension

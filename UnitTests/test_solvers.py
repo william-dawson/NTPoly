@@ -673,29 +673,6 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
-    def test_seed(self):
-        '''Test the random permuation with a seed.'''
-        # Starting Matrix
-        matrix1 = self.create_matrix()
-        self.write_matrix(matrix1, self.input_file)
-
-        # Check Matrix
-        self.CheckMat = inv(csc_matrix(matrix1))
-
-        # Result Matrix
-        overlap_matrix = nt.Matrix_ps(self.input_file, False)
-        inverse_matrix = nt.Matrix_ps(self.mat_dim)
-        permutation = nt.Permutation(overlap_matrix.GetLogicalDimension())
-        permutation.SetRandomPermutation(12)
-        self.isp.SetLoadBalance(permutation)
-
-        nt.InverseSolvers.Invert(overlap_matrix, inverse_matrix, self.isp)
-
-        inverse_matrix.WriteToMatrixMarket(result_file)
-        comm.barrier()
-
-        self.check_result()
-
 class TestSolvers_c(TestSolvers):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''

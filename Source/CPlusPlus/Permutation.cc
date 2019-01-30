@@ -27,9 +27,9 @@ void Permutation::SetReversePermutation() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Permutation::SetRandomPermutation(int seed) {
+void Permutation::SetRandomPermutation() {
   was_filled = true;
-  ConstructRandomPermutation_wrp(ih_this, &matrix_dimension, &seed);
+  ConstructRandomPermutation_wrp(ih_this, &matrix_dimension);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
