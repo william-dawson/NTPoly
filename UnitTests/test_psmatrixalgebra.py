@@ -209,6 +209,39 @@ class TestPSMatrixAlgebra:
 
             self.check_result()
 
+    def test_multiply_grid(self):
+        '''
+        Test routines to multiply two matrices with a default process grid.
+        '''
+        nt.DestructGlobalProcessGrid()
+        nt.ConstructGlobalProcessGrid()
+        for param in self.parameters:
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            matrix2 = param.create_matrix(snum=2, complex=self.complex2)
+            self.write_matrix(matrix1, self.input_file1)
+            self.write_matrix(matrix2, self.input_file2)
+
+            self.CheckMat = matrix1.dot(matrix2)
+            comm.barrier()
+
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            else:
+                ntmatrix1 = nt.Matrix_ps(param.rows)
+            if param.sparsity2 > 0.0:
+                ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
+            else:
+                ntmatrix2 = nt.Matrix_ps(param.rows)
+            ntmatrix3 = nt.Matrix_ps(param.rows)
+            memory_pool = nt.PMatrixMemoryPool(ntmatrix1)
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, memory_pool)
+            ntmatrix3.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+        nt.DestructGlobalProcessGrid()
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
+
     def test_reverse(self):
         '''Test routines to permute a matrix.'''
         for param in self.parameters:

@@ -152,7 +152,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(process_slices_in)) THEN
        process_slices = process_slices_in
     ELSE
-       process_slices = 1
+       CALL ComputeNumSlices(total_processors, process_slices)
     END IF
 
     !! Create a 3D grid
@@ -296,20 +296,29 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup a process grid specifying only the slices
   SUBROUTINE ConstructNewProcessGrid_onlyslice(grid, world_comm_, &
-       & process_slices)
+       & process_slices_in)
     !> The grid to construct
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
     !> A communicator that every process in the grid is a part of.
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     !> The number of grid slices.
-    INTEGER(kind=c_int), INTENT(IN) :: process_slices
+    INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: process_slices_in
     !! Local Data
-    INTEGER :: process_rows, process_columns
+    LOGICAL :: be_verbose
+    INTEGER :: process_rows, process_columns, process_slices
     INTEGER :: total_processors
     INTEGER :: ierr
 
     !! Total processors
     CALL MPI_COMM_SIZE(world_comm_, total_processors, ierr)
+
+    !! Process Optional Parameters
+    IF (PRESENT(process_slices_in)) THEN
+       process_slices = process_slices_in
+    ELSE
+       CALL ComputeNumSlices(total_processors, process_slices)
+    END IF
+    WRITE(*,*) "COMPUTED NUMBER OF SLICES", process_slices
 
     !! Create a 3D grid
     CALL ComputeGridSize(total_processors, process_slices, process_rows, &
@@ -621,5 +630,34 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE ComputeGridSize
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Pick an appropriate number of process slices for this calculation.
+  !> This routine will focus on whether we can make a square slice grid,
+  !> which gives pretty ideal performance.
+  SUBROUTINE ComputeNumSlices(total_processors, slices)
+    !> Total processors in the grid.
+    INTEGER, INTENT(IN) :: total_processors
+    !> Number of slices to use.
+    INTEGER, INTENT(OUT) :: slices
+    !! Local Variables
+    INTEGER :: slice_size
+    INTEGER :: slice_dim
+    LOGICAL :: found
+
+    !! Try manually values [4, 3, 2]. If they don't work, give up and use 1.
+    found = .FALSE.
+    DO slices = MIN(4, total_processors), 2, -1
+       slice_size = total_processors / slices
+       IF (slice_size * slices .NE. total_processors) CYCLE
+       
+       slice_dim  = FLOOR(SQRT(REAL(slice_size)))
+       IF (slice_dim*slice_dim .EQ. slice_size) THEN
+          FOUND = .TRUE.
+          EXIT
+       END IF
+    END DO
+    IF (.NOT. FOUND) slices = 1
+
+  END SUBROUTINE ComputeNumSlices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ProcessGridModule
