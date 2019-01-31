@@ -22,7 +22,8 @@ public:
   void SetDefaultPermutation();
   //! Fills the load balancer with a reverse schedule.
   void SetReversePermutation();
-  //! ills the load balancer with a random schedule.
+  //! Fills the load balancer with a random schedule.
+  //! \param the seed for the random number generator.
   void SetRandomPermutation();
 
 public:
