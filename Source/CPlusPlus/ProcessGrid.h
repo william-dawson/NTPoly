@@ -27,10 +27,6 @@ public:
   //! a part of.
   //! \param[in] process_slices number of grid slices.
   ProcessGrid(MPI_Comm world_comm, int process_slices);
-  //! Construct the process grid.
-  //! \param[in] world_comm a communicator that every process in the grid is
-  //! a part of.
-  ProcessGrid(MPI_Comm world_comm);
   //! Construct the process grid from comm world
   //! \param[in] process_slices number of grid slices.
   ProcessGrid(int process_slices);
@@ -89,11 +85,6 @@ void ConstructGlobalProcessGrid(int process_rows, int process_columns,
 //! \param[in] be_verbose verbosity flag.
 void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_slices,
                                 bool be_verbose = false);
-//! Construct the global process grid.
-//! \param[in] world_comm a communicator that every process in the grid is
-//! a part of.
-//! \param[in] be_verbose verbosity flag.
-void ConstructGlobalProcessGrid(MPI_Comm world_comm, bool be_verbose = false);
 //! Construct the global process grid from comm world
 //! \param[in] process_slices number of grid slices.
 //! \param[in] be_verbose verbosity flag.
