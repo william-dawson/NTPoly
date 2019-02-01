@@ -460,7 +460,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & MAX_LINE_LENGTH*bytes_per_character
           IF (local_offset + local_data_size_plus_buffer .GT. &
                & total_file_size) THEN
-             local_data_size_plus_buffer = (total_file_size - local_offset)
+             local_data_size_plus_buffer = total_file_size - local_offset
+          END IF
+          IF (this%process_grid%global_rank .EQ. &
+               & this%process_grid%total_processors-1) THEN
+             local_data_size_plus_buffer = total_file_size - local_offset
           END IF
        ELSE
           local_data_size_plus_buffer = 0
