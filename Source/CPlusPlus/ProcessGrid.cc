@@ -31,12 +31,6 @@ ProcessGrid::ProcessGrid(MPI_Comm world_comm, int process_slices) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-ProcessGrid::ProcessGrid(MPI_Comm world_comm) {
-  MPI_Fint temp_comm = MPI_Comm_c2f(world_comm);
-  ConstructProcessGrid_default_wrp(ih_this, &temp_comm);
-}
-
-////////////////////////////////////////////////////////////////////////////////
 ProcessGrid::ProcessGrid(int process_slices) {
   MPI_Fint temp_comm = MPI_Comm_c2f(MPI_COMM_WORLD);
   ConstructProcessGrid_onlyslice_wrp(ih_this, &temp_comm, &process_slices);
@@ -97,12 +91,6 @@ void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_slices,
   MPI_Fint temp_comm = MPI_Comm_c2f(world_comm);
   ConstructGlobalProcessGrid_onlyslice_wrp(&temp_comm, &process_slices,
                                            &be_verbose);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-void ConstructGlobalProcessGrid(MPI_Comm world_comm, bool be_verbose) {
-  MPI_Fint temp_comm = MPI_Comm_c2f(world_comm);
-  ConstructGlobalProcessGrid_default_wrp(&temp_comm, &be_verbose);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
