@@ -139,6 +139,18 @@ class TestPSMatrix(unittest.TestCase):
         self.assertEqual(total_procs, new_total_procs)
         del new_grid
 
+    def test_grid_none(self):
+        '''
+        Test the most simplified process interface
+        '''
+        total_procs = self.process_rows * self.process_columns * \
+            self.process_slices
+        new_grid = nt.ProcessGrid()
+        new_total_procs = new_grid.GetNumRows() * new_grid.GetNumColumns() * \
+            new_grid.GetNumSlices()
+        self.assertEqual(total_procs, new_total_procs)
+        del new_grid
+
     def test_read(self):
         '''Test our ability to read and write matrices.'''
         for param in self.parameters:
@@ -305,8 +317,8 @@ class TestPSMatrix(unittest.TestCase):
             space_mat = zeros((new_dim, new_dim))
             if self.complex:
                 space_mat = 1j * space_mat
-            space_mat[:end_row - start_row + 1, :end_col -
-                      start_col + 1] = sub_mat.todense()
+            space_mat[:end_row - start_row + 1, :end_col
+                      - start_col + 1] = sub_mat.todense()
             self.CheckMat = csr_matrix(space_mat)
 
             # Compute with ntpoly
@@ -342,8 +354,8 @@ class TestPSMatrix(unittest.TestCase):
                 matrix1[:small_size, :small_size], self.input_file1)
 
             self.CheckMat = matrix1
-            self.CheckMat[:,small_size:] = 0
-            self.CheckMat[small_size:,:] = 0
+            self.CheckMat[:, small_size:] = 0
+            self.CheckMat[small_size:, :] = 0
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.Resize(param.rows)
             ntmatrix1.WriteToMatrixMarket(self.result_file)
@@ -381,8 +393,8 @@ class TestPSMatrix(unittest.TestCase):
             self.CheckMat = matrix1
             for i in range(0, param.rows):
                 for j in range(0, param.columns):
-                    if self.CheckMat[i,j] > 0.5:
-                        self.CheckMat[i,j] = 0
+                    if self.CheckMat[i, j] > 0.5:
+                        self.CheckMat[i, j] = 0
 
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
@@ -415,8 +427,8 @@ class TestPSMatrix_c(TestPSMatrix):
             self.CheckMat = matrix1
             for i in range(0, param.rows):
                 for j in range(0, param.columns):
-                    if abs(self.CheckMat[i,j]) > 0.5:
-                        self.CheckMat[i,j] = 0
+                    if abs(self.CheckMat[i, j]) > 0.5:
+                        self.CheckMat[i, j] = 0
 
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())
