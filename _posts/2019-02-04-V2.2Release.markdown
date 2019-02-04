@@ -1,0 +1,32 @@
+---
+layout: post
+title:  "Release of Version 2.2"
+date:   2019-02-04 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.2](/NTPoly/downloads) of NTPoly is now available.
+
+Going from version 2.0 to 2.2 includes the following changes.
+
+Bug Fixes:
+* Added a destructor for solver parameters.
+* Fixed a bug in complex matrices when you change a matrices's process grid
+* Fixed a bug with matrix summation for edge case
+* Fixed a memory leak with the solver parameters
+* Fixed a serious bug with file i/o when a small matrix is read by many
+  processes
+* Fixed example build instructions.
+* Logger Deactivation.
+
+Build System:
+* Better warnings.
+* Compilation with NAG compiler
+* Simplified Mac target files.
+
+Features:
+* Automatic grid size (but it is not chosen in a particularly tuned way, this
+  is simply for ease of use)
+* Matrix maps for performing unitary operations on matrices.
+* Matrix resize function.
+* Sanity checks for grid size
