@@ -20,6 +20,10 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1
+    - os: linux
+      sudo: required
+      dist: trusty
       env: TESTOS="LINUX" FORTRAN_ONLY=1 SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
     - os: linux
       sudo: required

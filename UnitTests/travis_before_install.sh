@@ -2,7 +2,7 @@
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
-  if [[ "$NOIALLGATHER" == "1" ]]; then
+  if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich
   else
     if [ -f "openmpi-3.0.1/README" ]; then
