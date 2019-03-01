@@ -2,7 +2,7 @@
   INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
   !! Local MPI Variables
   INTEGER :: mpi_file_handler
-  INTEGER :: mpi_status(MPI_STATUS_SIZE)
+  INTEGER :: message_status(MPI_STATUS_SIZE)
   INTEGER, DIMENSION(:), ALLOCATABLE :: local_values_buffer
   !! Local Data
   INTEGER :: triplet_list_string_length
@@ -121,10 +121,10 @@
      IF (this%process_grid%within_slice_rank .EQ. 0) THEN
         header_offset = 0
         CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line1, &
-             & LEN(header_line1), MPI_CHARACTER, mpi_status,ierr)
+             & LEN(header_line1), MPI_CHARACTER, message_status, ierr)
         header_offset = header_offset + LEN(header_line1)
         CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line2, &
-             & LEN(header_line2), MPI_CHARACTER, mpi_status,ierr)
+             & LEN(header_line2), MPI_CHARACTER, message_status, ierr)
      END IF
      !! Write Local Data
      CALL MPI_File_set_view(mpi_file_handler,write_offset,MPI_CHARACTER,&

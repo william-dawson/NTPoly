@@ -6,7 +6,7 @@
   !! Temporary Variables
   INTEGER :: bytes_per_int, bytes_per_entry
   INTEGER, DIMENSION(4) :: header_buffer
-  INTEGER :: mpi_status(MPI_STATUS_SIZE)
+  INTEGER :: message_status(MPI_STATUS_SIZE)
   INTEGER(KIND=MPI_OFFSET_KIND) :: zero_offset = 0
   INTEGER :: counter
   INTEGER :: ierr
@@ -50,7 +50,7 @@
            header_buffer(4) = 0
         END IF
         CALL MPI_File_write_at(mpi_file_handler, zero_offset, header_buffer, &
-             & 4, MPINTINTEGER, mpi_status,ierr)
+             & 4, MPINTINTEGER, message_status, ierr)
      END IF
      !! Write The Rest
      CALL MPI_File_set_view(mpi_file_handler,write_offset,triplet_mpi_type,&
