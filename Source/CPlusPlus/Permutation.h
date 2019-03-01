@@ -23,7 +23,6 @@ public:
   //! Fills the load balancer with a reverse schedule.
   void SetReversePermutation();
   //! Fills the load balancer with a random schedule.
-  //! \param the seed for the random number generator.
   void SetRandomPermutation();
 
 public:
