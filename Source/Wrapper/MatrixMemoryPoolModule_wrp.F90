@@ -38,7 +38,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixMemoryPool_lr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the destructor for a matrix memory pool
-  PURE SUBROUTINE DestructMatrixMemoryPool_lr_wrp(ih_this) &
+  SUBROUTINE DestructMatrixMemoryPool_lr_wrp(ih_this) &
        & bind(c,name="DestructMatrixMemoryPool_lr_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(MatrixMemoryPool_lr_wrp) :: h_this
@@ -63,7 +63,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixMemoryPool_lc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the destructor for a matrix memory pool
-  PURE SUBROUTINE DestructMatrixMemoryPool_lc_wrp(ih_this) &
+  SUBROUTINE DestructMatrixMemoryPool_lc_wrp(ih_this) &
        & bind(c,name="DestructMatrixMemoryPool_lc_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(MatrixMemoryPool_lc_wrp) :: h_this

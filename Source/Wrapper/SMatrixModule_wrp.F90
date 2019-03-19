@@ -71,7 +71,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromFile_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
-  PURE SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp(ih_this, &
+  SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp(ih_this, &
        & ih_triplet_list, rows, columns) &
        & bind(c,name="ConstructMatrixFromTripletList_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -89,7 +89,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix with zero values in it.
-  PURE SUBROUTINE ConstructZeroMatrix_lsr_wrp(ih_this, rows, columns) &
+  SUBROUTINE ConstructZeroMatrix_lsr_wrp(ih_this, rows, columns) &
        & bind(c,name="ConstructZeroMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: columns
@@ -103,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructZeroMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
-  PURE SUBROUTINE DestructMatrix_lsr_wrp(ih_this) &
+  SUBROUTINE DestructMatrix_lsr_wrp(ih_this) &
        & bind(c,name="DestructMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
@@ -115,7 +115,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the copy a sparse matrix routine.
-  PURE SUBROUTINE CopyMatrix_lsr_wrp(ih_matA, ih_matB) &
+  SUBROUTINE CopyMatrix_lsr_wrp(ih_matA, ih_matB) &
        & bind(c,name="CopyMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
@@ -128,7 +128,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
-  PURE SUBROUTINE GetMatrixRows_lsr_wrp(ih_this, rows) &
+  SUBROUTINE GetMatrixRows_lsr_wrp(ih_this, rows) &
        & bind(c,name="GetMatrixRows_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: rows
@@ -139,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixRows_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
-  PURE SUBROUTINE GetMatrixColumns_lsr_wrp(ih_this, columns) &
+  SUBROUTINE GetMatrixColumns_lsr_wrp(ih_this, columns) &
        & bind(c,name="GetMatrixColumns_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: columns
@@ -153,7 +153,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] ih_this the matrix to extrat from.
   !! @param[in] row_number the row to extract
   !! @param[out] ih_row_out the matrix representing that row
-  PURE SUBROUTINE ExtractMatrixRow_lsr_wrp(ih_this, row_number, ih_row_out) &
+  SUBROUTINE ExtractMatrixRow_lsr_wrp(ih_this, row_number, ih_row_out) &
        & bind(c,name="ExtractMatrixRow_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: row_number
@@ -172,7 +172,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] ih_this the matrix to extrat from.
   !! @param[in] column_number the row to extract.
   !! @param[out] ih_column_out the matrix representing that column.
-  PURE SUBROUTINE ExtractMatrixColumn_lsr_wrp(ih_this, column_number, &
+  SUBROUTINE ExtractMatrixColumn_lsr_wrp(ih_this, column_number, &
        & ih_column_out) bind(c,name="ExtractMatrixColumn_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: column_number
@@ -188,7 +188,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ExtractMatrixColumn_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
-  PURE SUBROUTINE TransposeMatrix_lsr_wrp(ih_matA, ih_matAT) &
+  SUBROUTINE TransposeMatrix_lsr_wrp(ih_matA, ih_matAT) &
        & bind(c,name="TransposeMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matAT(SIZE_wrp)
@@ -265,7 +265,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromFile_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
-  PURE SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp(ih_this, &
+  SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp(ih_this, &
        & ih_triplet_list, rows, columns) &
        & bind(c,name="ConstructMatrixFromTripletList_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
@@ -283,7 +283,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix with zero values in it.
-  PURE SUBROUTINE ConstructZeroMatrix_lsc_wrp(ih_this, rows, columns) &
+  SUBROUTINE ConstructZeroMatrix_lsc_wrp(ih_this, rows, columns) &
        & bind(c,name="ConstructZeroMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: columns
@@ -297,7 +297,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructZeroMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
-  PURE SUBROUTINE DestructMatrix_lsc_wrp(ih_this) &
+  SUBROUTINE DestructMatrix_lsc_wrp(ih_this) &
        & bind(c,name="DestructMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_this
@@ -309,7 +309,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the copy a sparse matrix routine.
-  PURE SUBROUTINE CopyMatrix_lsc_wrp(ih_matA, ih_matB) &
+  SUBROUTINE CopyMatrix_lsc_wrp(ih_matA, ih_matB) &
        & bind(c,name="CopyMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
@@ -322,7 +322,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
-  PURE SUBROUTINE GetMatrixRows_lsc_wrp(ih_this, rows) &
+  SUBROUTINE GetMatrixRows_lsc_wrp(ih_this, rows) &
        & bind(c,name="GetMatrixRows_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: rows
@@ -333,7 +333,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixRows_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
-  PURE SUBROUTINE GetMatrixColumns_lsc_wrp(ih_this, columns) &
+  SUBROUTINE GetMatrixColumns_lsc_wrp(ih_this, columns) &
        & bind(c,name="GetMatrixColumns_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: columns
@@ -347,7 +347,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] ih_this the matrix to extrat from.
   !! @param[in] row_number the row to extract
   !! @param[out] ih_row_out the matrix representing that row
-  PURE SUBROUTINE ExtractMatrixRow_lsc_wrp(ih_this, row_number, ih_row_out) &
+  SUBROUTINE ExtractMatrixRow_lsc_wrp(ih_this, row_number, ih_row_out) &
        & bind(c,name="ExtractMatrixRow_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: row_number
@@ -366,7 +366,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] ih_this the matrix to extrat from.
   !! @param[in] column_number the row to extract.
   !! @param[out] ih_column_out the matrix representing that column.
-  PURE SUBROUTINE ExtractMatrixColumn_lsc_wrp(ih_this, column_number, &
+  SUBROUTINE ExtractMatrixColumn_lsc_wrp(ih_this, column_number, &
        & ih_column_out) bind(c,name="ExtractMatrixColumn_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: column_number
@@ -382,7 +382,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ExtractMatrixColumn_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
-  PURE SUBROUTINE TransposeMatrix_lsc_wrp(ih_matA, ih_matAT) &
+  SUBROUTINE TransposeMatrix_lsc_wrp(ih_matA, ih_matAT) &
        & bind(c,name="TransposeMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matAT(SIZE_wrp)
@@ -395,7 +395,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix conjugate function.
-  PURE SUBROUTINE ConjugateMatrix_lsc_wrp(ih_matA) &
+  SUBROUTINE ConjugateMatrix_lsc_wrp(ih_matA) &
        & bind(c,name="ConjugateMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_matA

@@ -25,7 +25,7 @@ MODULE ChebyshevSolversModule_wrp
   PUBLIC :: ChebyshevCompute_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the empty polynomial constructor.
-  PURE SUBROUTINE ConstructChebyshevPolynomial_wrp(ih_this, degree) &
+  SUBROUTINE ConstructChebyshevPolynomial_wrp(ih_this, degree) &
        & bind(c,name="ConstructChebyshevPolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: degree
@@ -37,7 +37,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructChebyshevPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
-  PURE SUBROUTINE DestructChebyshevPolynomial_wrp(ih_this) &
+  SUBROUTINE DestructChebyshevPolynomial_wrp(ih_this) &
        & bind(c,name="DestructChebyshevPolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(ChebyshevPolynomial_wrp) :: h_this
