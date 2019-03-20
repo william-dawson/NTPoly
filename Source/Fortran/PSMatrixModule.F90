@@ -1693,7 +1693,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! debugging.
   SUBROUTINE GatherMatrixToProcess_psr(this, local_mat, proc_id)
     !> The matrix to gather.
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
@@ -1710,7 +1710,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! debugging.
   SUBROUTINE GatherMatrixToProcess_psc(this, local_mat, proc_id)
     !> The matrix to gather.
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
     !> Which process to gather on.

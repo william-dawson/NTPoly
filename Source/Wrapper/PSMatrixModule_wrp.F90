@@ -168,7 +168,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix
-  PURE SUBROUTINE DestructMatrix_ps_wrp(ih_this) &
+  SUBROUTINE DestructMatrix_ps_wrp(ih_this) &
        & BIND(c,NAME="DestructMatrix_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
@@ -269,7 +269,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixPermutation_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Actual Dimension accessor.
-  PURE SUBROUTINE GetMatrixActualDimension_ps_wrp(ih_this, mat_dimension) &
+  SUBROUTINE GetMatrixActualDimension_ps_wrp(ih_this, mat_dimension) &
        & BIND(c,NAME="GetMatrixActualDimension_ps_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(OUT) :: mat_dimension
@@ -280,7 +280,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetMatrixActualDimension_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Logical Dimension accessor.
-  PURE SUBROUTINE GetMatrixLogicalDimension_ps_wrp(ih_this, mat_dimension) &
+  SUBROUTINE GetMatrixLogicalDimension_ps_wrp(ih_this, mat_dimension) &
        & BIND(c,NAME="GetMatrixLogicalDimension_ps_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(OUT) :: mat_dimension
@@ -378,7 +378,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE TransposeMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix conjugate function.
-  PURE SUBROUTINE ConjugateMatrix_ps_wrp(ih_matA) &
+  SUBROUTINE ConjugateMatrix_ps_wrp(ih_matA) &
        & BIND(c,NAME="ConjugateMatrix_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_matA

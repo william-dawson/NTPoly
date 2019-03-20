@@ -55,7 +55,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructRandomPermutation_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
-  PURE SUBROUTINE DestructPermutation_wrp(ih_this) &
+  SUBROUTINE DestructPermutation_wrp(ih_this) &
        & bind(c,name="DestructPermutation_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Permutation_wrp) :: h_this

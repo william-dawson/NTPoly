@@ -18,7 +18,7 @@ MODULE PMatrixMemoryPoolModule_wrp
   PUBLIC :: DestructMatrixMemoryPool_p_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
-  PURE SUBROUTINE ConstructMatrixMemoryPool_p_wrp(ih_this, ih_matrix) &
+  SUBROUTINE ConstructMatrixMemoryPool_p_wrp(ih_this, ih_matrix) &
        & bind(c,name="ConstructMatrixMemoryPool_p_wrp")
     !! Parameters
     INTEGER(kind=c_int), INTENT(out) :: ih_this(SIZE_wrp)
@@ -34,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMatrixMemoryPool_p_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
-  PURE SUBROUTINE DestructMatrixMemoryPool_p_wrp(ih_this) &
+  SUBROUTINE DestructMatrixMemoryPool_p_wrp(ih_this) &
        & bind(c,name="DestructMatrixMemoryPool_p_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(MatrixMemoryPool_p_wrp) :: h_this

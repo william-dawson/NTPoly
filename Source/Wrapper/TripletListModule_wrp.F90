@@ -56,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructs a triplet list.
   !! @param[inout] ih_this handle to the triplet list to destruct.
-  PURE SUBROUTINE DestructTripletList_r_wrp(ih_this) &
+  SUBROUTINE DestructTripletList_r_wrp(ih_this) &
        & bind(c,name="DestructTripletList_r_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(TripletList_r_wrp) :: h_this
@@ -68,7 +68,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
-  PURE SUBROUTINE ResizeTripletList_r_wrp(ih_this, size) &
+  SUBROUTINE ResizeTripletList_r_wrp(ih_this, size) &
        & bind(c,name="ResizeTripletList_r_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: size
@@ -79,7 +79,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
-  PURE SUBROUTINE AppendToTripletList_r_wrp(ih_this, index_column, index_row, &
+  SUBROUTINE AppendToTripletList_r_wrp(ih_this, index_column, index_row, &
        & point_value) bind(c,name="AppendToTripletList_r_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index_column
@@ -97,7 +97,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE AppendToTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
-  PURE SUBROUTINE SetTripletAt_r_wrp(ih_this, index, index_column, index_row, &
+  SUBROUTINE SetTripletAt_r_wrp(ih_this, index, index_column, index_row, &
        & point_value) bind(c,name="SetTripletAt_r_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index
@@ -116,7 +116,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetTripletAt_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
-  PURE SUBROUTINE GetTripletAt_r_wrp(ih_this, index, index_column, index_row, &
+  SUBROUTINE GetTripletAt_r_wrp(ih_this, index, index_column, index_row, &
        & point_value) bind(c,name="GetTripletAt_r_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)     :: index
@@ -135,7 +135,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetTripletAt_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.
-  PURE SUBROUTINE SortTripletList_r_wrp(ih_this, matrix_columns, matrix_rows, &
+  SUBROUTINE SortTripletList_r_wrp(ih_this, matrix_columns, matrix_rows, &
        & ih_sorted) bind(c,name="SortTripletList_r_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: matrix_columns
@@ -154,7 +154,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SortTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of entries in a triplet list.
-  PURE FUNCTION GetTripletListSize_r_wrp(ih_this) RESULT(list_size) &
+  FUNCTION GetTripletListSize_r_wrp(ih_this) RESULT(list_size) &
        & bind(c,name="GetTripletListSize_r_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int) :: list_size
@@ -178,7 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructs a triplet list.
   !! @param[inout] ih_this handle to the triplet list to destruct.
-  PURE SUBROUTINE DestructTripletList_c_wrp(ih_this) &
+  SUBROUTINE DestructTripletList_c_wrp(ih_this) &
        & bind(c,name="DestructTripletList_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(TripletList_c_wrp) :: h_this
@@ -190,7 +190,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
-  PURE SUBROUTINE ResizeTripletList_c_wrp(ih_this, size) &
+  SUBROUTINE ResizeTripletList_c_wrp(ih_this, size) &
        & bind(c,name="ResizeTripletList_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: size
@@ -201,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the end of the triplet list.
-  PURE SUBROUTINE AppendToTripletList_c_wrp(ih_this, index_column, index_row, &
+  SUBROUTINE AppendToTripletList_c_wrp(ih_this, index_column, index_row, &
        & point_value_real, point_value_imag) &
        & bind(c,name="AppendToTripletList_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
@@ -221,7 +221,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE AppendToTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
-  PURE SUBROUTINE SetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
+  SUBROUTINE SetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
        & point_value_real, point_value_imag) bind(c,name="SetTripletAt_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: index
@@ -241,7 +241,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetTripletAt_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
-  PURE SUBROUTINE GetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
+  SUBROUTINE GetTripletAt_c_wrp(ih_this, index, index_column, index_row, &
        & point_value_real, point_value_imag) bind(c,name="GetTripletAt_c_wrp")
     INTEGER(kind=c_int), INTENT(IN)     :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)     :: index
@@ -262,7 +262,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GetTripletAt_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.
-  PURE SUBROUTINE SortTripletList_c_wrp(ih_this, matrix_columns, matrix_rows, &
+  SUBROUTINE SortTripletList_c_wrp(ih_this, matrix_columns, matrix_rows, &
        & ih_sorted) bind(c,name="SortTripletList_c_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: matrix_columns
@@ -281,7 +281,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SortTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of entries in a triplet list.
-  PURE FUNCTION GetTripletListSize_c_wrp(ih_this) RESULT(list_size) &
+  FUNCTION GetTripletListSize_c_wrp(ih_this) RESULT(list_size) &
        & bind(c,name="GetTripletListSize_c_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int) :: list_size

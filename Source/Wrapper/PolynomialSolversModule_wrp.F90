@@ -25,7 +25,7 @@ MODULE PolynomialSolversModule_wrp
   PUBLIC :: PatersonStockmeyerCompute_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the empty polynomial constructor.
-  PURE SUBROUTINE ConstructPolynomial_wrp(ih_this, degree) &
+  SUBROUTINE ConstructPolynomial_wrp(ih_this, degree) &
        & bind(c,name="ConstructPolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: degree
@@ -37,7 +37,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
-  PURE SUBROUTINE DestructPolynomial_wrp(ih_this) &
+  SUBROUTINE DestructPolynomial_wrp(ih_this) &
        & bind(c,name="DestructPolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Polynomial_wrp) :: h_this
