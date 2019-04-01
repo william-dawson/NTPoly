@@ -62,6 +62,7 @@ Build with:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
+
 ```
 
 And then run with:
@@ -70,6 +71,7 @@ mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 \
 --basis_functions 100
+
 ```
 
 ## Input Parameters

@@ -49,14 +49,17 @@ Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
+  
 ```
 C++ Build Instructions:
 ```
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
+
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
   -lblas
+
 ```
 
 (for the intel compiler, build an intermediate main.o object using the
@@ -69,6 +72,7 @@ mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
 --density Density.mtx
+
 ```
 
 Setup python environment:
@@ -82,6 +86,7 @@ mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
 --density Density.mtx
+
 ```
 
 ## Triplet List

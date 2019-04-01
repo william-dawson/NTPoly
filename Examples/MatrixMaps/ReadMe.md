@@ -29,6 +29,7 @@ Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
+
 ```
 
 C++ Build Instructions:
@@ -39,6 +40,7 @@ mpicxx main.cc -c \
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
   -llapack -lblas
+
 ```
 
 (for the intel compiler, build an intermediate main.o object using the
@@ -49,6 +51,7 @@ And then run with:
 ```
 mpirun -np 1 ./example \
 --process_slices 1 --input_matrix input.mtx --output_matrix output.mtx
+
 ```
 
 In the build directory, there is also a /python folder, which is used for
@@ -64,6 +67,7 @@ Run with python:
 ```
 mpirun -np 1 python main.py \
 --process_slices 1 --input_matrix input.mtx --output_matrix output.mtx
+
 ```
 
 ## Mapping Procedure - Fortran

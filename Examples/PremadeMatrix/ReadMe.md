@@ -20,7 +20,7 @@ by having the codes communicate via the file system.
 
 First, use your code to compute the required matrices. Then, write those
 matrices to file using the standard Matrix Market format. This format is
-described at the 
+described at the
 [Matrix Market Exchange](http://math.nist.gov/MatrixMarket/formats.html>)
 website.
 
@@ -48,15 +48,18 @@ Fortran Build Instructions:
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
+
 ```
 
 C++ Build Instructions:
 ```
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
+
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
   -lblas
+
 ```
 
 (for the intel compiler, build an intermediate main.o object using the
@@ -71,6 +74,7 @@ mpirun -np 1 ./example \
 --number_of_electrons 10 --threshold 1e-6 \
 --converge_overlap 1e-3 --converge_density 1e-5 \
 --density Density.mtx
+
 ```
 
 Note that we're using the Fortran wrapper to link, and as a result we
@@ -95,6 +99,7 @@ mpirun -np 1 python main.py \
 --number_of_electrons 10 --threshold 1e-6 \
 --converge_overlap 1e-3 --converge_density 1e-5 \
 --density Density.mtx
+
 ```
 
 ## Construct the process grid.
