@@ -1,4 +1,4 @@
-# Pre-made Matrix Example
+# Premade Matrix Example
 
 In this example, we will show you how to use NTPoly to compute the
 density matrix for a hamiltonian and overlap matrix stored in a file. This
