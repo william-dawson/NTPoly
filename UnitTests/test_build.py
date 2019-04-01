@@ -4,16 +4,20 @@ A script that tests the build instructions of the examples.
 '''
 from sys import argv
 from subprocess import call
-import os
-
+from os import environ, chdir
+from os.path import join
 
 def parse_command(fin, num_commands=1):
-    '''Keep parsing a command until a blank line is reached.'''
+    '''
+    Keep parsing a command which is wrapped in the github markdown style
+    code blocks.
+    '''
     ret_strings = []
+    fin.readline()
     for i in range(0, num_commands):
         return_string = ""
         temp_string = fin.readline()
-        while(temp_string != '\n'):
+        while(temp_string != '\n' and temp_string != "\`\`\`"):
             return_string = return_string + temp_string
             temp_string = fin.readline()
         ret_strings.append(return_string)
@@ -25,11 +29,11 @@ if __name__ == "__main__":
     check_directory = argv[1]
     check_command = argv[2]
 
-    env_var = os.environ.copy()
+    env_var = environ.copy()
 
     build_commands = []
     run_commands = []
-    with open(check_directory + "/ReadMe.md", 'r') as fin:
+    with open(join(check_directory, "ReadMe.md"), 'r') as fin:
         while True:
             line = fin.readline()
             if not line:
@@ -55,12 +59,13 @@ if __name__ == "__main__":
     for i in range(0, len(run_commands)):
         run_commands[i] = [x for x in run_commands[i].split() if x != "\\"]
 
-    os.chdir(check_directory)
+    chdir(check_directory)
     for bc in build_commands:
         check = call(bc)
         if check != 0:
             print("Build Error")
             exit(-1)
+
     for rc in run_commands:
         rc = " ".join(rc)
         check = call(rc, shell=True, env=env_var)
