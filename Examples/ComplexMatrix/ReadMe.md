@@ -35,17 +35,20 @@ Would be transformed in to:
 See the premade matrix example for details. Build with something like:
 
 Fortran Build Instructions:
+```
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
+```
 
 C++ Build Instructions:
+```
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
-
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
   -lblas
+```
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
@@ -56,24 +59,33 @@ C++ compiler, and link with the fortran compiler using the flags:
 First you need to generate the input and comparison matrix. This can be done
 using the `generate.py` program I provided.
 
-> python generate.py 512 input.mtx exp.mtx
+```
+python generate.py 512 input.mtx exp.mtx
+```
 
 And then run with:
+```
 mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --input_file input.mtx --exponential_file exp-nt.mtx
+```
 
 Setup python environment:
+```
 export PYTHONPATH=../../Build/python
+```
 
 Run with python:
+```
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --input_file input.mtx --exponential_file exp-nt.mtx
+```
 
 Finally you can compare the two results:
-
-> python compare.py exp.mtx exp-nt.mtx
+```
+python compare.py exp.mtx exp-nt.mtx
+```
 
 ## Program Description
 
