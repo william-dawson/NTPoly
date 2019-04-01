@@ -318,7 +318,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ComputeNumSlices(total_processors, process_slices)
     END IF
-    WRITE(*,*) "COMPUTED NUMBER OF SLICES", process_slices
 
     !! Create a 3D grid
     CALL ComputeGridSize(total_processors, process_slices, process_rows, &
@@ -649,7 +648,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO slices = MIN(4, total_processors), 2, -1
        slice_size = total_processors / slices
        IF (slice_size * slices .NE. total_processors) CYCLE
-       
+
        slice_dim  = FLOOR(SQRT(REAL(slice_size)))
        IF (slice_dim*slice_dim .EQ. slice_size) THEN
           FOUND = .TRUE.

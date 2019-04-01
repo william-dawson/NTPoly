@@ -5,13 +5,12 @@ A test suite for paralle matrices.
 import unittest
 import NTPolySwig as nt
 from random import randrange, seed, sample
-import scipy
-import scipy.sparse
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
 from scipy.io import mmread, mmwrite
 from numpy import zeros
-import os
+from os import environ
+from os.path import join
 import sys
 from mpi4py import MPI
 from helpers import THRESHOLD
@@ -54,13 +53,13 @@ class TestPSMatrix(unittest.TestCase):
     # Parameters for the tests
     parameters = []
     # Input file name 1
-    input_file1 = scratch_dir + "/matrix1.mtx"
+    input_file1 = join(scratch_dir, "matrix1.mtx")
     # Input file name 2
-    input_file2 = scratch_dir + "/matrix2.mtx"
+    input_file2 = join(scratch_dir, "matrix2.mtx")
     # Input file name 3
-    input_file3 = scratch_dir + "/matrix3.mtx"
+    input_file3 = join(scratch_dir, "matrix3.mtx")
     # Where to store the result file
-    result_file = scratch_dir + "/result.mtx"
+    result_file = join(scratch_dir, "result.mtx")
     # Matrix to compare against
     CheckMat = 0
     # Rank of the current process.
@@ -78,9 +77,9 @@ class TestPSMatrix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         '''Set up test suite.'''
-        rows = int(os.environ['PROCESS_ROWS'])
-        columns = int(os.environ['PROCESS_COLUMNS'])
-        slices = int(os.environ['PROCESS_SLICES'])
+        rows = int(environ['PROCESS_ROWS'])
+        columns = int(environ['PROCESS_COLUMNS'])
+        slices = int(environ['PROCESS_SLICES'])
         # global process grid
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
@@ -92,9 +91,9 @@ class TestPSMatrix(unittest.TestCase):
     def setUp(self):
         '''Set up specific tests.'''
         mat_size = 33
-        self.process_rows = int(os.environ['PROCESS_ROWS'])
-        self.process_columns = int(os.environ['PROCESS_COLUMNS'])
-        self.process_slices = int(os.environ['PROCESS_SLICES'])
+        self.process_rows = int(environ['PROCESS_ROWS'])
+        self.process_columns = int(environ['PROCESS_COLUMNS'])
+        self.process_slices = int(environ['PROCESS_SLICES'])
 
         self.grid = nt.ProcessGrid(
             self.process_rows, self.process_columns, self.process_slices)
@@ -160,6 +159,24 @@ class TestPSMatrix(unittest.TestCase):
 
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+    def test_readcircular(self):
+        '''Test our ability to read and write matrices created by ntpoly.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.CheckMat = matrix1
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            ntmatrix2 = nt.Matrix_ps(self.result_file, False)
+            comm.barrier()
+            ntmatrix2.WriteToMatrixMarket(self.result_file)
             comm.barrier()
 
             self.check_result()
