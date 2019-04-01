@@ -21,13 +21,13 @@ complex number i to Mab. We also subtract i from the symmetric entry
 Mba. For example, the adjacency matrix:
 
 > [0, 1]
-
+>
 > [0, 0]
 
 Would be transformed in to:
 
 > [0, 1 + i]
-
+>
 > [1 - i, 0]
 
 ## Build System
@@ -93,7 +93,7 @@ First, we read in the original matrix in the `input.mtx` file. We now need
 to know which edges are going in only one direction. We can do that by
 computing:
 
-Sym = (input + input.T)
+> Sym = (input + input.T)
 
 Then dividing the diagonal entries of Sym by 2, and subtracting off the
 original matrix. Then, we iterate over the the entries of the guide, and add
@@ -101,5 +101,5 @@ the complex number i to a new triplet list. Notice how this triplet list is
 of a different type which is especially for complex values. However, when we
 finally construct matrix, it is done as normal.
 
-[1] Guo, Krystal, and Bojan Mohar. "Hermitian adjacency matrix of digraphs
-and mixed graphs." Journal of Graph Theory 85, no. 1 (2017): 217-248.
+> [1] Guo, Krystal, and Bojan Mohar. "Hermitian adjacency matrix of digraphs
+> and mixed graphs." Journal of Graph Theory 85, no. 1 (2017): 217-248.
