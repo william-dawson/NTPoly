@@ -5,9 +5,7 @@ A test suite for local matrices.
 import unittest
 import NTPolySwig as nt
 
-import scipy
 from numpy import sum, multiply, conj
-import scipy.sparse
 from random import uniform, randint
 from scipy.linalg import eigh
 from scipy.sparse import random, csr_matrix

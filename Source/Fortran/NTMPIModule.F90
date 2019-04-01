@@ -3,8 +3,8 @@
 !! just writing "USE MPI" does not work.
 MODULE NTMPIModule
 #if USE_MPIH
-  include "mpif.h"
+  INCLUDE "mpif.h"
 #else
   USE MPI
 #endif
-END MODULE
+END MODULE NTMPIModule
