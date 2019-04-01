@@ -1,5 +1,3 @@
-  !! Parameters
-  INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
   !! Local MPI Variables
   INTEGER :: mpi_file_handler
   INTEGER :: message_status(MPI_STATUS_SIZE)
@@ -20,6 +18,7 @@
   INTEGER :: NEW_LINE_LENGTH
   CHARACTER(len=MAX_LINE_LENGTH*2) :: temp_string1
   CHARACTER(len=MAX_LINE_LENGTH) :: temp_string2
+  CHARACTER(len=MAX_LINE_LENGTH) :: temp_string3
   INTEGER :: temp_length
   INTEGER :: bytes_per_character
   INTEGER :: ierr
@@ -38,13 +37,11 @@
   WRITE(temp_string1,'(A)') "%%MatrixMarket matrix coordinate real general" &
        & //new_line('A')//"%"//new_line('A')
 #endif
-  ALLOCATE(CHARACTER(&
-       & len=LEN_TRIM(temp_string1)) :: header_line1)
+  ALLOCATE(CHARACTER(len=LEN_TRIM(temp_string1)) :: header_line1)
   header_line1 = TRIM(temp_string1)
 
-  WRITE(temp_string2,*) this%actual_matrix_dimension, &
-       & this%actual_matrix_dimension, GetMatrixSize(this)
-  !! I don't understand why the +1 is needed, but it is.
+  CALL WriteMMSize(temp_string2, this%actual_matrix_dimension, &
+       & this%actual_matrix_dimension, GetMatrixSize(this))
   ALLOCATE(CHARACTER(&
        & len=LEN_TRIM(temp_string2)+NEW_LINE_LENGTH+1) :: header_line2)
   WRITE(header_line2,*) TRIM(temp_string2)//new_line('A')
@@ -62,17 +59,17 @@
   triplet_list_string_length = 0
   DO counter = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & REAL(triplet_list%data(counter)%point_value), &
           & AIMAG(triplet_list%data(counter)%point_value), &
-          & new_line('A')
+          & add_newline_in=.TRUE.)
 #else
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
-          & triplet_list%data(counter)%point_value, &
-          & new_line('A')
+          & triplet_list%data(counter)%point_value, add_newline_in=.TRUE.)
 #endif
+     WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
      triplet_list_string_length = triplet_list_string_length + &
           & LEN_TRIM(temp_string2)
      triplet_list_string_length = triplet_list_string_length + NEW_LINE_LENGTH
@@ -83,17 +80,17 @@
   offset_counter = 1
   DO counter = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & REAL(triplet_list%data(counter)%point_value), &
           & AIMAG(triplet_list%data(counter)%point_value), &
-          & new_line('A')
+          & add_newline_in=.TRUE.)
 #else
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
-          & triplet_list%data(counter)%point_value, &
-          & new_line('A')
+          & triplet_list%data(counter)%point_value, add_newline_in=.TRUE.)
 #endif
+     WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
      temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
      WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
           & temp_string2(1:temp_length)

@@ -2,6 +2,7 @@
   INTEGER :: file_handler
   INTEGER :: counter
   INTEGER :: size_of_this
+  CHARACTER(LEN=MAX_LINE_LENGTH) :: tempstr
 
   !! Process Optional Parameters
   IF (PRESENT(file_name_in)) THEN
@@ -23,17 +24,21 @@
 #endif
 
   WRITE(file_handler,'(A)') "%"
-  WRITE(file_handler,*) this%rows, this%columns, size_of_this
+  CALL WriteMMSize(tempstr, this%rows, this%columns, &
+       & INT(size_of_this, KIND=NTLONG))
+  WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
   DO counter = 1,size_of_this
 #ifdef ISCOMPLEX
-     WRITE(file_handler,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(tempstr, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & REAL(triplet_list%data(counter)%point_value), &
-          & AIMAG(triplet_list%data(counter)%point_value)
+          & AIMAG(triplet_list%data(counter)%point_value))
+     WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
 #else
-     WRITE(file_handler,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(tempstr, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
-          & triplet_list%data(counter)%point_value
+          & triplet_list%data(counter)%point_value)
+     WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
 #endif
   END DO
 

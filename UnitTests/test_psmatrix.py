@@ -104,9 +104,9 @@ class TestPSMatrix(unittest.TestCase):
 
         self.my_rank = comm.Get_rank()
         self.parameters = []
+        self.parameters.append(TestParameters(mat_size, mat_size, 0.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
-        self.parameters.append(TestParameters(mat_size, mat_size, 0.0))
 
     def tearDown(self):
         '''Cleanup this test.'''
