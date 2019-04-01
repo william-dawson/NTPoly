@@ -2,20 +2,21 @@
 !> A Module For Performing Distributed Sparse Matrix Operations.
 MODULE PSMatrixModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
-       & MPINTINTEGER
+       & MPINTINTEGER, NTLONG
   USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError, &
        & CheckMPIError
-  USE LoggingModule, ONLY : &
-       & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
-  USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
-  USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
-  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
-       & SplitProcessGrid
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement, WriteHeader
+  USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX, WriteMMSize, &
+       & WriteMMLine, MAX_LINE_LENGTH
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
        & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
        & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
+  USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
+  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
+       & SplitProcessGrid
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
@@ -1306,7 +1307,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to calculate the number of non-zero entries of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The number of non-zero entries in the matrix.
-    INTEGER(c_long) :: total_size
+    INTEGER(NTLONG) :: total_size
     !! Local Data
     !integer :: local_size
     REAL(NTREAL) :: local_size
@@ -1330,7 +1331,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(local_size,temp_size,1,MPINTREAL,MPI_SUM,&
          & this%process_grid%within_slice_comm, ierr)
 
-    total_size = INT(temp_size,kind=c_long)
+    total_size = INT(temp_size, kind=NTLONG)
 
   END FUNCTION GetMatrixSize_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
