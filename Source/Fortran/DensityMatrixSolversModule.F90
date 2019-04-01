@@ -267,7 +267,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO midpoints
        !! Undo scaling.
        chemical_potential_out = lambda - &
-            & (Hamiltonian%actual_matrix_dimension*midpoint - nel*0.5_NTREAL)/alpha
+            & (Hamiltonian%actual_matrix_dimension*midpoint - nel*0.5_NTREAL) &
+            & /alpha
     END IF
 
     IF (solver_parameters%be_verbose) THEN

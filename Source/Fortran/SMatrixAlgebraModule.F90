@@ -96,7 +96,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
-    !> Will scale a sparse matrix by a constant.
+  !> Will scale a sparse matrix by a constant.
   PURE SUBROUTINE ScaleMatrix_lsc_c(matA,constant)
     !> Matrix A.
     TYPE(Matrix_lsc), INTENT(INOUT) :: matA
@@ -213,8 +213,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !> C := alpha*matA*op( matB ) + beta*matC
   !! @param[inout] blocked_memory_pool_in
-  SUBROUTINE GemmMatrix_lsr(matA, matB, matC, IsATransposed_in, IsBTransposed_in, &
-       & alpha_in, beta_in, threshold_in, blocked_memory_pool_in)
+  SUBROUTINE GemmMatrix_lsr(matA, matB, matC, IsATransposed_in, &
+       & IsBTransposed_in, alpha_in, beta_in, threshold_in, &
+       & blocked_memory_pool_in)
     !> Matrix A.
     TYPE(Matrix_lsr), INTENT(IN)  :: matA
     !> Matrix B.

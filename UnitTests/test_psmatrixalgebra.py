@@ -7,20 +7,21 @@ from helpers import result_file
 from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
-import scipy
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
 from scipy.io import mmread, mmwrite
 from numpy import sum, multiply, conj
-import os
+from os.path import join
+from os import environ
 from mpi4py import MPI
 # MPI global communicator.
 comm = MPI.COMM_WORLD
 
 
-rows = int(os.environ['PROCESS_ROWS'])
-columns = int(os.environ['PROCESS_COLUMNS'])
-slices = int(os.environ['PROCESS_SLICES'])
+rows = int(environ['PROCESS_ROWS'])
+columns = int(environ['PROCESS_COLUMNS'])
+slices = int(environ['PROCESS_SLICES'])
+
 
 class TestParameters:
     '''An internal class for holding internal class parameters.'''
@@ -60,13 +61,13 @@ class TestPSMatrixAlgebra:
     # Parameters for the tests
     parameters = []
     # Place to store the result matrix.
-    result_file = scratch_dir + "/result.mtx"
+    result_file = join(scratch_dir, "result.mtx")
     # Input file name 1
-    input_file1 = scratch_dir + "/matrix1.mtx"
+    input_file1 = join(scratch_dir, "matrix1.mtx")
     # Input file name 2
-    input_file2 = scratch_dir + "/matrix2.mtx"
+    input_file2 = join(scratch_dir, "matrix2.mtx")
     # Input file name 3
-    input_file3 = scratch_dir + "/matrix3.mtx"
+    input_file3 = join(scratch_dir, "matrix3.mtx")
     # Matrix to compare against.
     CheckMat = 0
     # Rank of the current process.
