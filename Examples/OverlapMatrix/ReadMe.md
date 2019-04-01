@@ -9,37 +9,37 @@ Imagine we are writing a program that computes an overlap matrix, and then
 uses NTPoly to compute the inverse square root. Let's begin by imagining
 we have 6 MPI processes, arranged in a 2x3 grid.
 
-|        | Row 1      | Row 2     |
-|--------| -----------| --------- |
-Column 1 | Process 1  | Process 2 |
-Column 2 | Process 3  | Process 4 |
-Column 3 | Process 5  | Process 6 |
+> |        | Row 1      | Row 2     |
+> |--------| -----------| --------- |
+> Column 1 | Process 1  | Process 2 |
+> Column 2 | Process 3  | Process 4 |
+> Column 3 | Process 5  | Process 6 |
 
 We can also divide up the overlap matrix in exactly the same way. So
 the 6x6 matrix below:
 
-|                         |
-|-------------------------|
-| a11 a12 a13 a14 a15 a16 |
-| a21 a22 a23 a24 a25 a26 |
-| a31 a32 a33 a34 a35 a36 |
-| a41 a42 a43 a44 a45 a46 |
-| a51 a52 a53 a54 a55 a56 |
-| a61 a62 a63 a64 a65 a66 |
+> |                         |
+> |-------------------------|
+> | a11 a12 a13 a14 a15 a16 |
+> | a21 a22 a23 a24 a25 a26 |
+> | a31 a32 a33 a34 a35 a36 |
+> | a41 a42 a43 a44 a45 a46 |
+> | a51 a52 a53 a54 a55 a56 |
+> | a61 a62 a63 a64 a65 a66 |
 
 is divided up like this:
 
-|          | Row 1                   | Row 2                   |
-|----------|-------------------------|-------------------------|
-| Column 1 | a11 a12 a13 a21 a22 a23 | a14 a15 a16 a24 a25 a26 |
-| Column 2 | a31 a32 a33 a41 a42 a43 | a34 a35 a36 a44 a45 a46 |
-| Column 3 | a51 a52 a53 a61 a62 a63 | a54 a55 a56 a64 a65 a66 |
+> |          | Row 1                   | Row 2                   |
+> |----------|-------------------------|-------------------------|
+> | Column 1 | a11 a12 a13 a21 a22 a23 | a14 a15 a16 a24 a25 a26 |
+> | Column 2 | a31 a32 a33 a41 a42 a43 | a34 a35 a36 a44 a45 a46 |
+> | Column 3 | a51 a52 a53 a61 a62 a63 | a54 a55 a56 a64 a65 a66 |
 
 Then process 1 is responsible for computing matrix elements:
 
-| Process 1               |
-|-------------------------|
-| a11 a12 a13 a21 a22 a23 |
+> | Process 1               |
+> |-------------------------|
+> | a11 a12 a13 a21 a22 a23 |
 
 Once those elements are computed, we can construct the distributed matrix, and
 then call the solver.
@@ -57,16 +57,20 @@ The following steps are carried out.
 
 ## Build System
 
-Build with
+Build with:
+```
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
+```
 
 And then run with:
+```
 mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 \
 --basis_functions 100
+```
 
 ## Input Parameters
 
