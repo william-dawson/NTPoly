@@ -25,36 +25,46 @@ library file is in Build/lib and the necessary modules are in Build/include.
 I can build this example using gfortran with the following command:
 
 Fortran Build Instructions:
+```
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
+```
 
 C++ Build Instructions:
+```
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
   -llapack -lblas
+```
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
 -qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++).
 
 And then run with:
+```
 mpirun -np 1 ./example \
 --process_slices 1 --input_matrix input.mtx --output_matrix output.mtx
+```
 
 In the build directory, there is also a /python folder, which is used for
 linking against a python program. Python requires you to set the Python path
 to this directory so that it knows where to look for the python module files.
 
 Setup python environment:
+```
 export PYTHONPATH=../../Build/python
+```
 
 Run with python:
+```
 mpirun -np 1 python main.py \
 --process_slices 1 --input_matrix input.mtx --output_matrix output.mtx
+```
 
 ## Mapping Procedure - Fortran
 
