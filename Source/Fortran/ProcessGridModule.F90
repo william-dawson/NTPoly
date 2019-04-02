@@ -331,9 +331,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructNewProcessGrid_onlyslice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
-  !! Note that this makes a complete and independent copy of the process grid.
-  !! Which of course means that whatever is currently stored in new_grid will
-  !! be destroyed, so do not leave any matrices pointing to it.
+  !> Note that this makes a complete and independent copy of the process grid.
+  !> Which of course means that whatever is currently stored in new_grid will
+  !> be destroyed, so do not leave any matrices pointing to it.
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
@@ -403,9 +403,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
-  !! Be careful about doing this. Matrices have pointers to process grids. If
-  !! you destruct a process grid without destructing the matrices pointing to
-  !! it, they will become unusable.
+  !> Be careful about doing this. Matrices have pointers to process grids. If
+  !> you destruct a process grid without destructing the matrices pointing to
+  !> it, they will become unusable.
   RECURSIVE SUBROUTINE DestructProcessGrid(grid_in)
     !> The grid to destruct. If none specified this destroys the global grid.
     TYPE(ProcessGrid_t), OPTIONAL, INTENT(INOUT) :: grid_in
@@ -604,7 +604,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMyRow
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sometimes we only want to specify for a process grid the number of slices
-  !! and then automatically compute the right number of rows and columns.
+  !> and then automatically compute the right number of rows and columns.
   SUBROUTINE ComputeGridSize(total_processors, set_slices, rows, columns)
     !> Total processors in the grid
     INTEGER, INTENT(IN) :: total_processors

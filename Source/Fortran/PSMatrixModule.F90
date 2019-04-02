@@ -561,7 +561,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Faster than text, so this is good for check pointing.
   RECURSIVE SUBROUTINE ConstructMatrixFromBinary_ps(this, file_name, &
        & process_grid_in)
-    !! Parameters
     !> The file being constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> Grid to distribute the matrix on.
@@ -676,7 +675,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a binary file.
   !> Faster than text, so this is good for check pointing.
   SUBROUTINE WriteMatrixToBinary_ps(this,file_name)
-    !! Parameters
     !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The name of the file to write to.
@@ -1171,7 +1169,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
   PURE FUNCTION GetMatrixActualDimension_ps(this) RESULT(DIMENSION)
-    !! Parameters
     !> The matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> Dimension of the matrix
@@ -1309,7 +1306,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of non-zero entries in the matrix.
     INTEGER(NTLONG) :: total_size
     !! Local Data
-    !integer :: local_size
     REAL(NTREAL) :: local_size
     REAL(NTREAL) :: temp_size
     TYPE(Matrix_lsc) :: merged_local_data_c
@@ -1604,8 +1600,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MergeMatrixLocalBlocks_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Merge together the local matrix blocks into one big matrix.
-  !! @param[inout] this the distributed sparse matrix.
-  !! @param[inout] merged_matrix the merged matrix.
   PURE SUBROUTINE MergeMatrixLocalBlocks_psc(this, merged_matrix)
     !> The distributed sparse matrix to merge from.
     TYPE(Matrix_ps), INTENT(IN) :: this
@@ -1647,9 +1641,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConvertMatrixToComplex
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Change the size of a matrix.
-  !! If the new size is smaller, then values outside that range are deleted.
-  !! IF the new size is bigger, zero padding is applied.
-  !! Warning: this requires a full data redistribution.
+  !> If the new size is smaller, then values outside that range are deleted.
+  !> IF the new size is bigger, zero padding is applied.
+  !> Warning: this requires a full data redistribution.
   SUBROUTINE ResizeMatrix(this, new_size)
     !> The matrix to resize.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
@@ -1690,8 +1684,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !! given process. This routine is used when printing, but also is useful for
-  !! debugging.
+  !> given process. This routine is used when printing, but also is useful for
+  !> debugging.
   SUBROUTINE GatherMatrixToProcess_psr(this, local_mat, proc_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
@@ -1707,8 +1701,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GatherMatrixToProcess_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !! given process. This routine is used when printing, but also is useful for
-  !! debugging.
+  !> given process. This routine is used when printing, but also is useful for
+  !> debugging.
   SUBROUTINE GatherMatrixToProcess_psc(this, local_mat, proc_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this

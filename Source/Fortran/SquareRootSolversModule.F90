@@ -118,7 +118,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SquareRootSelector
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root or inverse square root of a matrix.
-  !! Based on the Newton-Schultz algorithm presented in: \cite jansik2007linear
+  !> Based on the Newton-Schultz algorithm presented in: \cite jansik2007linear
   SUBROUTINE NewtonSchultzISROrder2(Mat, OutMat, solver_parameters, &
        & compute_inverse)
     !> The matrix to compute
@@ -259,7 +259,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE NewtonSchultzISROrder2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root or inverse square root of a matrix.
-  !! Based on the Newton-Schultz algorithm with higher order polynomials.
+  !> Based on the Newton-Schultz algorithm with higher order polynomials.
   SUBROUTINE NewtonSchultzISRTaylor(Mat, OutMat, solver_parameters, &
        & taylor_order, compute_inverse)
     !> Matrix to Compute
