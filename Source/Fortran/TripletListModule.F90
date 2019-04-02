@@ -303,7 +303,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: matrix_rows
     !> A now sorted version of the list. This routine will allocate it.
     TYPE(TripletList_r), INTENT(OUT) :: sorted_list
-    !> False if you don't need the final bubble sort.
+    !> False if you do not need the final bubble sort.
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     TYPE(Triplet_r) :: temporary
@@ -325,7 +325,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: matrix_rows
     !> A now sorted version of the list. This routine will allocate it.
     TYPE(TripletList_c), INTENT(OUT) :: sorted_list
-    !> False if you don't need the final bubble sort.
+    !> False if you do not need the final bubble sort.
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     TYPE(Triplet_c) :: temporary

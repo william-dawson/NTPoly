@@ -25,7 +25,7 @@ MODULE ProcessGridModule
      INTEGER, PUBLIC :: my_row !< which row is the current process in.
      INTEGER, PUBLIC :: my_column !< which column is the current process in.
      !! Ranks for communication
-     INTEGER, PUBLIC :: global_rank !< current process's rank amongst processes.
+     INTEGER, PUBLIC :: global_rank !< current process rank amongst processes.
      !> rank for within slice communication.
      INTEGER, PUBLIC :: within_slice_rank
      !> rank for between slice communication.
@@ -199,15 +199,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Do a sanity check
     IF (grid%num_process_rows*grid%num_process_columns*grid%num_process_slices &
          & .NE. grid%total_processors) THEN
-       CALL SetGenericError(err, "you didn't specify a consistent process&
-            & grid size", .TRUE.)
+       CALL SetGenericError(err, &
+            & "you did not specify a consistent process grid size", .TRUE.)
     END IF
     IF (grid%num_process_slices .GT. 1) THEN
        IF (MOD(MAX(grid%num_process_rows, grid%num_process_columns), &
             & MIN(grid%num_process_rows, grid%num_process_columns)) &
             & .NE. 0) THEN
-          CALL SetGenericError(err, "when using slices >1, either rows&
-               & or columns must be a multiple of the other.", .TRUE.)
+          CALL SetGenericError(err, &
+               & "if slices >1, either rows or columns must be a multiple"//&
+               & "of the other.", &
+               & .TRUE.)
        END IF
     END IF
 
@@ -331,7 +333,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
   !! Note that this makes a complete and independent copy of the process grid.
   !! Which of course means that whatever is currently stored in new_grid will
-  !! be destroyed, so don't leave any matrices pointing to it.
+  !! be destroyed, so do not leave any matrices pointing to it.
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
@@ -601,7 +603,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END FUNCTION GetMyRow
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Sometimes we only want to specify a process grid's number of slices
+  !> Sometimes we only want to specify for a process grid the number of slices
   !! and then automatically compute the right number of rows and columns.
   SUBROUTINE ComputeGridSize(total_processors, set_slices, rows, columns)
     !> Total processors in the grid
@@ -643,7 +645,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: slice_dim
     LOGICAL :: found
 
-    !! Try manually values [4, 3, 2]. If they don't work, give up and use 1.
+    !! Try manually values [4, 3, 2]. If they do not work, give up and use 1.
     found = .FALSE.
     DO slices = MIN(4, total_processors), 2, -1
        slice_size = total_processors / slices

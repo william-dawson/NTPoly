@@ -771,7 +771,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToMatrixMarket_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
-  !> should pass in triplet lists with global coordinates. It doesn't matter
+  !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
   SUBROUTINE FillMatrixFromTripletList_psr(this,triplet_list,preduplicated_in)
     !> The matrix to fill.
@@ -801,7 +801,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixFromTripletList_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
-  !> should pass in triplet lists with global coordinates. It doesn't matter
+  !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
   SUBROUTINE FillMatrixFromTripletList_psc(this,triplet_list,preduplicated_in)
     !> The matrix to fill.
@@ -872,7 +872,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation.
-  !> If you don't specify permuterows, will default to permuting rows.
+  !> If you do not specify permuterows, will default to permuting rows.
   SUBROUTINE FillMatrixPermutation_ps(this, permutation_vector, permute_rows_in)
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this

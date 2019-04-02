@@ -139,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION CompareTriplets_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Returns an MPI Derived Data Type For A Triplet.
-  !> We statically store this derived type so that we don't have to recreate
+  !> We statically store this derived type so that we do not have to recreate
   !> it every time this function is called. Thus this functional call should
   !> add very little overhead.
   FUNCTION GetMPITripletType_r() RESULT(mpi_triplet_type)
@@ -172,7 +172,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetMPITripletType_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Returns an MPI Derived Data Type For A Triplet.
-  !> We statically store this derived type so that we don't have to recreate
+  !> We statically store this derived type so that we do not have to recreate
   !> it every time this function is called. Thus this functional call should
   !> add very little overhead.
   FUNCTION GetMPITripletType_c() RESULT(mpi_triplet_type)

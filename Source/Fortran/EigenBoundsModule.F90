@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A module for computing estimates of the bounds of a matrix's spectrum.
+!> A module for computing estimates of the bounds of the spectrum of a matrix.
 MODULE EigenBoundsModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -22,7 +22,7 @@ MODULE EigenBoundsModule
   PUBLIC :: PowerBounds
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
-  !> Uses Gershgorin's theorem.
+  !> Uses the Gershgorin theorem.
   SUBROUTINE GershgorinBounds(this,min_value,max_value)
     !> The matrix to compute the min/max of.
     TYPE(Matrix_ps), INTENT(IN) :: this

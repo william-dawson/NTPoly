@@ -356,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           cc = -64.0_NTREAL/35.0_NTREAL
           dd = 128.0_NTREAL/35.0_NTREAL
 
-          !! Knuth's method
+          !! The method of Knuth
           !! p = (z+x+b) * (z+c) + d
           !! z = x * (x+a)
           !! a = (A-1)/2

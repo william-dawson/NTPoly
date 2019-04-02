@@ -78,7 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%coefficients(degree) = coefficient
   END SUBROUTINE SetCoefficient_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute A Matrix Polynomial Using Horner's Method.
+  !> Compute A Matrix Polynomial Using the method of Horner.
   SUBROUTINE Compute_stand(InputMat, OutputMat, poly, solver_parameters_in)
     !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
@@ -161,7 +161,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE Compute_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
+  !> Compute A Matrix Polynomial Using The Paterson and Stockmeyer method.
   !> This method first factors the polynomial to reduce the number of
   !> matrix multiplies required.
   SUBROUTINE FactorizedCompute_stand(InputMat, OutputMat, poly, &
