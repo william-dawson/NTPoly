@@ -17,7 +17,7 @@ public:
   //! Value at that location.
   double point_value;
 };
-
+//! A Class For Storing Triplets of Integer, Integer, complex<Double>.
 class Triplet_c {
 public:
   //! Column location.

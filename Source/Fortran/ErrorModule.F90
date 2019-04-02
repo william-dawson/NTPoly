@@ -68,7 +68,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Routine to call to check if an MPI error has occurred.
   FUNCTION CheckMPIError(this, error_description, mpi_error, &
        & immediate_cleanup_in) RESULT(error_occurred)
-    !! Parameters
     !> The error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.

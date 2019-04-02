@@ -14,7 +14,7 @@ MODULE DataTypesModule
   INTEGER, PARAMETER, PUBLIC :: NTCOMPLEX = C_DOUBLE_COMPLEX
   !> MPI complex datatype with the precision we will use in this program.
   INTEGER, PARAMETER, PUBLIC :: MPINTCOMPLEX = MPI_DOUBLE_COMPLEX
-  !> A long integer type for when normal ints won't do
+  !> A long integer type for when normal ints will not do
   INTEGER, PARAMETER, PUBLIC :: NTLONG = C_LONG
   !> MPI Integer type we will use in this program.
   INTEGER, PARAMETER, PUBLIC :: MPINTINTEGER = MPI_INT

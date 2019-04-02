@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class Matrix_ps;
+//! A datatype which stores a process grid and all its communicators.
 class ProcessGrid {
 public:
   //! Construct the process grid.

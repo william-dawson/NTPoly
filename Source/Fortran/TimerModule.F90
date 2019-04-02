@@ -143,7 +143,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Parameters
     !> Name of the timer.
     CHARACTER(len=*), INTENT(IN) :: timer_name
-    !> The position of the timer. 0 means the timer hasn't been registered.
+    !> The position of the timer. 0 means the timer has not been registered.
     INTEGER :: timer_position
     !! Local Data
     INTEGER :: counter
