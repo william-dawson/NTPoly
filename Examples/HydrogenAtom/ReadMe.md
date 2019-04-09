@@ -48,8 +48,8 @@ Fortran Build Instructions:
 ```
 mpif90 main.f90 -o example \
   -I../../Build/include \
-  -L../../Build/lib -lNTPoly -fopenmp -lblas
-  
+  -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
+
 ```
 C++ Build Instructions:
 ```
@@ -58,7 +58,7 @@ mpicxx main.cc -c \
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
-  -lblas
+  -llapack -lblas
 
 ```
 
