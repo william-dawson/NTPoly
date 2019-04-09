@@ -39,7 +39,7 @@ class TestSolvers():
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 3
+    mat_dim = 31
 
     @classmethod
     def setUpClass(self):
