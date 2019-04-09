@@ -30,7 +30,7 @@ MODULE SolverParametersModule_wrp
   PUBLIC :: SetParametersDACBaseSparsity_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the iterat solver parameters.
-  PURE SUBROUTINE ConstructSolverParameters_wrp(ih_this) &
+  SUBROUTINE ConstructSolverParameters_wrp(ih_this) &
        & bind(c,name="ConstructSolverParameters_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(SolverParameters_wrp) :: h_this
@@ -41,7 +41,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a iterative solver parameter type.
-  PURE SUBROUTINE DestructSolverParameters_wrp(ih_this) &
+  SUBROUTINE DestructSolverParameters_wrp(ih_this) &
        & bind(c,name="DestructSolverParameters_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(SolverParameters_wrp) :: h_this
@@ -53,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the convergence difference.
-  PURE SUBROUTINE SetParametersConvergeDiff_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersConvergeDiff_wrp(ih_this,new_value) &
        & bind(c,name="SetParametersConvergeDiff_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: new_value
@@ -64,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersConvergeDiff_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the max iterations.
-  PURE SUBROUTINE SetParametersMaxIterations_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersMaxIterations_wrp(ih_this,new_value) &
        & bind(c,name="SetParametersMaxIterations_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: new_value
@@ -75,7 +75,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersMaxIterations_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the threshold.
-  PURE SUBROUTINE SetParametersThreshold_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersThreshold_wrp(ih_this,new_value) &
        & bind(c,name="SetParametersThreshold_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: new_value
@@ -86,7 +86,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersThreshold_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the verbosity.
-  PURE SUBROUTINE SetParametersBeVerbose_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersBeVerbose_wrp(ih_this,new_value) &
        & bind(c,name="SetParametersBeVerbose_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     LOGICAL(kind=c_bool), INTENT(IN) :: new_value
@@ -97,7 +97,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersBeVerbose_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the load balancing permutation.
-  PURE SUBROUTINE SetParametersLoadBalance_wrp(ih_this,ih_new_value) &
+  SUBROUTINE SetParametersLoadBalance_wrp(ih_this,ih_new_value) &
        & bind(c,name="SetParametersLoadBalance_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_new_value(SIZE_wrp)

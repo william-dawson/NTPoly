@@ -4,7 +4,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
 else
   if  [ ! -z ${NOIALLGATHER+x} ]; then
     cmake .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake \
-          -DNOIALLGATHER=YES -DCMAKE_BUILD_TYPE=Release ;
+          -DNOIALLGATHER=YES -DCMAKE_BUILD_TYPE=Debug ;
   elif [ -z ${FORTRAN_ONLY+x} ]; then
     cmake .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake \
           -DCMAKE_BUILD_TYPE=Release ;

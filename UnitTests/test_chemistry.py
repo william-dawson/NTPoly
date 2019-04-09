@@ -7,12 +7,12 @@ from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt
 from numpy import diag, sqrt
-import scipy
 from scipy.sparse.linalg import norm
 from scipy.io import mmread, mmwrite
 from scipy.linalg import eigh, funm
 from scipy.sparse import csr_matrix, rand
-import os
+from os import environ
+from os.path import join
 from mpi4py import MPI
 # MPI global communicator
 comm = MPI.COMM_WORLD
@@ -48,7 +48,7 @@ class TestChemistry:
 
         # Add a gap
         w, v = eigh(wfock)
-        gap = (w[-1] - w[0])/2.0
+        gap = (w[-1] - w[0]) / 2.0
         w[self.nel:] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
@@ -56,8 +56,8 @@ class TestChemistry:
             wfock = v.T.dot(diag(w).dot(v))
 
         # Compute the density
-        w[:int(self.nel/2)] = 2.0
-        w[int(self.nel/2):] = 0.0
+        w[:int(self.nel / 2)] = 2.0
+        w[int(self.nel / 2):] = 0.0
         if self.is_complex:
             density = isq.dot(v.dot(diag(w).dot(v.conj().T))).dot(isq)
         else:
@@ -75,9 +75,9 @@ class TestChemistry:
     @classmethod
     def setUpClass(self):
         '''Set up all of the tests.'''
-        rows = int(os.environ['PROCESS_ROWS'])
-        columns = int(os.environ['PROCESS_COLUMNS'])
-        slices = int(os.environ['PROCESS_SLICES'])
+        rows = int(environ['PROCESS_ROWS'])
+        columns = int(environ['PROCESS_COLUMNS'])
+        slices = int(environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
 
     @classmethod
@@ -90,16 +90,16 @@ class TestChemistry:
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
-        self.geomh1 = os.environ["GEOMH1"]
-        self.geomo1 = os.environ["GEOMO1"]
-        self.geomo2 = os.environ["GEOMO2"]
-        self.geomd2 = os.environ["GEOMD2"]
-        self.realio = os.environ["REALIO"]
+        self.geomh1 = environ["GEOMH1"]
+        self.geomo1 = environ["GEOMO1"]
+        self.geomo2 = environ["GEOMO2"]
+        self.geomd2 = environ["GEOMD2"]
+        self.realio = environ["REALIO"]
         self.nel = 10
 
-        self.hamiltonian = scratch_dir + "/rf.mtx"
-        self.overlap = scratch_dir + "/rs.mtx"
-        self.density = scratch_dir + "/rd.mtx"
+        self.hamiltonian = join(scratch_dir, "rf.mtx")
+        self.overlap = join(scratch_dir, "rs.mtx")
+        self.density = join(scratch_dir, "rd.mtx")
         self.mat_dim = 7
 
     def check_full(self):
@@ -226,6 +226,7 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
     '''Specialization for real matrices'''
     # complex test
     is_complex = False
+
     def testrealio(self):
         '''Test routines to read data produced by a real chemistry program.'''
         density_matrix = nt.Matrix_ps(self.realio)

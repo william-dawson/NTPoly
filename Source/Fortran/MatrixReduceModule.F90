@@ -1,8 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Module for reducing matrices across processes.
 MODULE MatrixReduceModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
-       & MPINTINTEGER
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, MPINTCOMPLEX, MPINTINTEGER
   USE SMatrixAlgebraModule, ONLY : IncrementMatrix
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix, &
        & DestructMatrix, CopyMatrix
@@ -113,7 +112,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndComposeMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align it one matrix
-  !! @param[inout]
   SUBROUTINE ReduceAndComposeMatrixData_lsr(matrix, communicator, &
        & gathered_matrix, helper)
     !> The matrix to send.
@@ -147,11 +145,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndComposeMatrixData_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align it one matrix
-  !! next to another.
-  !! @param[in] matrix to send.
-  !! @param[inout] communicator to send along.
-  !! @param[inout] gathered_matrix the matrix we are gathering.
-  !! @param[inout] helper a helper associated with this gather.
+  !> next to another.
+  !> @param[in] matrix to send.
+  !> @param[inout] communicator to send along.
+  !> @param[inout] gathered_matrix the matrix we are gathering.
+  !> @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndComposeMatrixData_lsc(matrix, communicator, &
        & gathered_matrix, helper)
     !> The matrix to send.
@@ -273,13 +271,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
   SUBROUTINE ReduceAndSumMatrixSizes_lsc(matrix, communicator,  &
        & gathered_matrix, helper)
-    !! The matrix to send.
+    !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
-    !! The communicator to send along.
+    !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
-    !! The helper associated with this gather.
+    !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
     INCLUDE "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
@@ -322,9 +320,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndSumMatrixData_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine to call for gathering and summing up the data.
-  !! @param[in] matrix to send.
-  !! @param[inout] communicator to send along.
-  !! @param[inout] helper a helper associated with this gather.
   SUBROUTINE ReduceAndSumMatrixData_lsc(matrix, gathered_matrix, communicator, &
        & helper)
     !> The matrix to send.

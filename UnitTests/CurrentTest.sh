@@ -26,7 +26,7 @@ export PROCESS_ROWS="$2"
 export PROCESS_SLICES="$3"
 export PROCESSES="$4"
 
-TestName="$(git rev-parse --abbrev-ref HEAD)"
+TestName="$(git rev-parse --abbrev-ref HEAD || echo \"none\")"
 BranchFile="@CMAKE_SOURCE_DIR@/UnitTests/$TestName.sh"
 
 if [ -f $BranchFile ]

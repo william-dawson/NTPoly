@@ -27,7 +27,7 @@ MODULE SMatrixAlgebraModule_wrp
   PUBLIC :: MatrixMultiply_lsc_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
-  PURE SUBROUTINE ScaleMatrix_lsr_wrp(ih_this, constant) &
+  SUBROUTINE ScaleMatrix_lsr_wrp(ih_this, constant) &
        & bind(c,name="ScaleMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
@@ -38,7 +38,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix incrementing function.
-  PURE SUBROUTINE IncrementMatrix_lsr_wrp(ih_matA, ih_matB, alpha_in, &
+  SUBROUTINE IncrementMatrix_lsr_wrp(ih_matA, ih_matB, alpha_in, &
        & threshold_in) bind(c,name="IncrementMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
@@ -53,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
-  PURE SUBROUTINE DotMatrix_lsr_wrp(ih_matA, ih_matB, product) &
+  SUBROUTINE DotMatrix_lsr_wrp(ih_matA, ih_matB, product) &
        & bind(c,name="DotMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
@@ -113,7 +113,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixMultiply_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
-  PURE SUBROUTINE ScaleMatrix_lsc_wrp(ih_this, constant) &
+  SUBROUTINE ScaleMatrix_lsc_wrp(ih_this, constant) &
        & bind(c,name="ScaleMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
@@ -124,7 +124,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix incrementing function.
-  PURE SUBROUTINE IncrementMatrix_lsc_wrp(ih_matA, ih_matB, alpha_in, &
+  SUBROUTINE IncrementMatrix_lsc_wrp(ih_matA, ih_matB, alpha_in, &
        & threshold_in) bind(c,name="IncrementMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
@@ -139,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE IncrementMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
-  PURE SUBROUTINE DotMatrix_lsc_wrp(ih_matA, ih_matB, product_real, &
+  SUBROUTINE DotMatrix_lsc_wrp(ih_matA, ih_matB, product_real, &
        & product_imag) bind(c,name="DotMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)

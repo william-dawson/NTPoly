@@ -10,6 +10,7 @@ class Matrix_ps;
 class TripletList_r;
 class TripletList_c;
 ////////////////////////////////////////////////////////////////////////////////
+//! A function object defining an operation on a complex triplet list.
 class ComplexOperation {
 public:
   //! An operation to apply to a matrix element.
@@ -22,6 +23,7 @@ public:
   //! When an operation is performed, this is the data to modify.
   Triplet_c data;
 };
+//! A function object defining an operation on a real triplet list.
 class RealOperation {
 public:
   //! An operation to apply to a matrix element.

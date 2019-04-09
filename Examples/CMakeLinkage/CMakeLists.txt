@@ -12,6 +12,7 @@ find_package(NTPoly REQUIRED)
 find_package(NTPolyWrapper REQUIRED)
 find_package(NTPolyCPP REQUIRED)
 find_package(OpenMP)
+find_package(BLAS)
 
 ################################################################################
 ## Output Locations
@@ -21,7 +22,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 ## Fortran Version
 add_executable(example_fortran ${CMAKE_SOURCE_DIR}/../PremadeMatrix/main.f90)
 target_link_libraries(example_fortran NTPoly::NTPoly ${MPI_Fortran_LIBRARIES}
-                      ${OpenMP_Fortran_LIBRARIES})
+                      ${OpenMP_Fortran_LIBRARIES} ${BLAS_LIBRARIES})
+target_include_directories(example_fortran PRIVATE ${MPI_INCLUDE_PATH})
 install(TARGETS example_fortran DESTINATION bin)
 
 ## C++ Version

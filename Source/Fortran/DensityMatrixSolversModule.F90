@@ -31,7 +31,7 @@ MODULE DensityMatrixSolversModule
   ! PUBLIC :: HPCPPlus
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
-  !! Based on the PM algorithm presented in \cite palser1998canonical
+  !> Based on the PM algorithm presented in \cite palser1998canonical
   SUBROUTINE PM(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
@@ -272,7 +272,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO midpoints
        !! Undo scaling.
        chemical_potential_out = lambda - &
-            & (Hamiltonian%actual_matrix_dimension*midpoint - nel*0.5_NTREAL)/alpha
+            & (Hamiltonian%actual_matrix_dimension*midpoint - nel*0.5_NTREAL) &
+            & /alpha
     END IF
 
     IF (solver_parameters%be_verbose) THEN
@@ -281,10 +282,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     DEALLOCATE(sigma_array)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE PM
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS2 method.
-  !! Based on the TRS2 algorithm presented in \cite niklasson2002.
+  !> Based on the TRS2 algorithm presented in \cite niklasson2002.
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from
@@ -488,10 +490,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     DEALLOCATE(sigma_array)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE TRS2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS4 method.
-  !! Based on the TRS4 algorithm presented in \cite niklasson2002
+  !> Based on the TRS4 algorithm presented in \cite niklasson2002
   SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
@@ -727,10 +730,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     DEALLOCATE(sigma_array)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE TRS4
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the HPCP method.
-  !! Based on the algorithm presented in \cite truflandier2016communication.
+  !> Based on the algorithm presented in \cite truflandier2016communication.
   SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
@@ -963,17 +967,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     DEALLOCATE(sigma_array)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE HPCP
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the HPCP+ method.
-  !! Based on the algorithm presented in \cite truflandier2016communication
-  !! @param[in] Hamiltonian the matrix to compute the corresponding density from.
-  !! @param[in] InverseSquareRoot of the overlap matrix.
-  !! @param[in] nel the number of electrons.
-  !! @param[out] Density the density matrix computed by this routine.
-  !! @param[out] energy_value_out the energy of the system (optional).
-  !! @param[out] chemical_potential_out the chemical potential (optional).
-  !! @param[in] solver_parameters_in parameters for the solver (optional).
   SUBROUTINE HPCPPlus(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !! Parameters
@@ -1242,6 +1239,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     DEALLOCATE(sigma_array)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE HPCPPlus
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix of a system using the eigendecomposition.

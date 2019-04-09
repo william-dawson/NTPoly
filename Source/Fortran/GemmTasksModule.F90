@@ -52,7 +52,7 @@ MODULE GemmTasksModule
   ENUM, BIND(c)
     !> Something is in progress.
     ENUMERATOR :: TaskRunningAB
-    !> A and B matrix both missing, so it can't do gemm.
+    !> A and B matrix both missing, so it cannot do gemm.
     ENUMERATOR :: AwaitingAB
     !> Actually call gemm and compute a block, and send its size.
     ENUMERATOR :: GemmAB

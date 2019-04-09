@@ -42,4 +42,4 @@ install(TARGETS NTPolyWrapper
 install(EXPORT ntpolywrapper-export
         FILE NTPolyWrapperConfig.cmake
         NAMESPACE NTPoly::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPolyWrapper)

@@ -12,7 +12,7 @@ class TripletList_r;
 class MatrixMemoryPool_c;
 class TripletList_c;
 ////////////////////////////////////////////////////////////////////////////////
-//! A datatype for storing a CSR matrix.
+//! A datatype for storing a CSR matrix (real values).
 class Matrix_lsr {
 public:
   //! Basic constructor.
@@ -106,7 +106,7 @@ private:
   //! Assignment operator, locked.
   Matrix_lsr &operator=(const Matrix_lsr &);
 };
-
+//! A datatype for storing a CSR matrix (complex values).
 class Matrix_lsc {
 public:
   //! Basic constructor.

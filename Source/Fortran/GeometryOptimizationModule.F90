@@ -11,7 +11,8 @@ MODULE GeometryOptimizationModule
        & IncrementMatrix, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, ConstructEmptyMatrix, &
        & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
   IMPLICIT NONE
   PRIVATE
@@ -170,6 +171,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     END IF
 
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
     !! Cleanup
     CALL DestructMatrix(WorkingDensity)
     CALL DestructMatrix(WorkingOverlap)
@@ -179,10 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(AddBranch)
     CALL DestructMatrix(SubtractBranch)
     CALL DestructMatrixMemoryPool(pool1)
-
-    IF (solver_parameters%be_verbose) THEN
-       CALL ExitSubLog
-    END IF
+    CALL DestructSolverParameters(solver_parameters)
 
   END SUBROUTINE PurificationExtrapolate
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -236,13 +238,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(TempMat, ISQMat, NewDensity, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
-    CALL DestructMatrix(SQRMat)
-    CALL DestructMatrix(ISQMat)
-    CALL DestructMatrix(TempMat)
-
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
+
+    !! Cleanup
+    CALL DestructMatrix(SQRMat)
+    CALL DestructMatrix(ISQMat)
+    CALL DestructMatrix(TempMat)
+    CALL DestructSolverParameters(solver_parameters)
 
   END SUBROUTINE LowdinExtrapolate
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

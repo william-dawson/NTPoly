@@ -2,18 +2,21 @@
 !> A Module For Performing Distributed Sparse Matrix Operations.
 MODULE PSMatrixModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
-       & MPINTINTEGER
-  USE LoggingModule, ONLY : &
-       & EnterSubLog, ExitSubLog, WriteElement, WriteListElement, WriteHeader
-  USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX
-  USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
-  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
-       & SplitProcessGrid
+       & MPINTINTEGER, NTLONG
+  USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError, &
+       & CheckMPIError
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteListElement, WriteHeader
+  USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX, WriteMMSize, &
+       & WriteMMLine, MAX_LINE_LENGTH
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
        & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
        & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
+  USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
+  USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
+       & SplitProcessGrid
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
@@ -26,8 +29,8 @@ MODULE PSMatrixModule
        & DestructTripletList, SortTripletList, AppendToTripletList, &
        & SymmetrizeTripletList, GetTripletAt, RedistributeTripletLists, &
        & ShiftTripletList
-  USE ISO_C_BINDING
   USE NTMPIModule
+  USE, INTRINSIC :: ISO_C_BINDING
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -318,7 +321,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill The New Matrix
     CALL ConstructEmptyMatrix(new_mat, this%actual_matrix_dimension, grid, &
-         & new_mat%is_complex)
+         & this%is_complex)
     IF (this%is_complex) THEN
        CALL FillMatrixFromTripletList(new_mat, triplet_list_c)
     ELSE
@@ -370,53 +373,49 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: realval, cval
     INTEGER :: bytes_per_character
-    CHARACTER(len=1) :: temp_char
     LOGICAL :: found_comment_line
-    INTEGER :: mpi_status(MPI_STATUS_SIZE)
+    INTEGER :: message_status(MPI_STATUS_SIZE)
     INTEGER :: full_buffer_counter
     LOGICAL :: end_of_buffer
-    LOGICAL :: error_occured
+    LOGICAL :: header_success
     INTEGER :: ierr
-
+    TYPE(Error_t) :: err
 
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromMatrixMarket(this, file_name, global_grid)
     ELSE
+       CALL ConstructError(err)
        !! Setup Involves Just The Root Opening And Reading Parameter Data
        CALL StartTimer("MPI Read Text")
-       bytes_per_character = sizeof(temp_char)
+       CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
        IF (IsRoot(process_grid_in)) THEN
           header_length = 0
           local_file_handler = 16
           OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
-          IF (ierr .EQ. 0) THEN
-             !! Parse the header.
-             READ(local_file_handler,fmt='(A)') input_buffer
-             error_occured = ParseMMHeader(input_buffer, sparsity_type, &
-                  & data_type, pattern_type)
-             header_length = header_length + LEN_TRIM(input_buffer) + 1
-             !! First Read In The Comment Lines
-             found_comment_line = .TRUE.
-             DO WHILE (found_comment_line)
-                READ(local_file_handler,fmt='(A)') input_buffer
-                !! +1 for newline
-                header_length = header_length + LEN_TRIM(input_buffer) + 1
-                IF (.NOT. input_buffer(1:1) .EQ. '%') THEN
-                   found_comment_line = .FALSE.
-                END IF
-             END DO
-             !! Get The Matrix Parameters
-             READ(input_buffer,*) matrix_rows, matrix_columns, total_values
-             CLOSE(local_file_handler)
-          ELSE
-             WRITE(*,*) file_name, " doesn't exist"
+          IF (ierr .NE. 0) THEN
+             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", .TRUE.)
           END IF
-       ELSE
-          ierr = 0
-       END IF
-
-       IF (ierr .NE. 0) THEN
-          CALL MPI_Abort(process_grid_in%global_comm, -1, ierr)
+          !! Parse the header.
+          READ(local_file_handler,fmt='(A)') input_buffer
+          header_success = ParseMMHeader(input_buffer, sparsity_type, &
+               & data_type, pattern_type)
+          IF (.NOT. header_success) THEN
+             CALL SetGenericError(err, "Invalid File Header", .TRUE.)
+          END IF
+          header_length = header_length + LEN_TRIM(input_buffer) + 1
+          !! First Read In The Comment Lines
+          found_comment_line = .TRUE.
+          DO WHILE (found_comment_line)
+             READ(local_file_handler,fmt='(A)') input_buffer
+             !! +1 for newline
+             header_length = header_length + LEN_TRIM(input_buffer) + 1
+             IF (.NOT. input_buffer(1:1) .EQ. '%') THEN
+                found_comment_line = .FALSE.
+             END IF
+          END DO
+          !! Get The Matrix Parameters
+          READ(input_buffer,*) matrix_rows, matrix_columns, total_values
+          CLOSE(local_file_handler)
        END IF
 
        !! Broadcast Parameters
@@ -462,7 +461,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & MAX_LINE_LENGTH*bytes_per_character
           IF (local_offset + local_data_size_plus_buffer .GT. &
                & total_file_size) THEN
-             local_data_size_plus_buffer = (total_file_size - local_offset)
+             local_data_size_plus_buffer = total_file_size - local_offset
+          END IF
+          IF (this%process_grid%global_rank .EQ. &
+               & this%process_grid%total_processors-1) THEN
+             local_data_size_plus_buffer = total_file_size - local_offset
           END IF
        ELSE
           local_data_size_plus_buffer = 0
@@ -474,7 +477,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Do Actual Reading
        CALL MPI_File_read_at_all(mpi_file_handler, local_offset, &
             & mpi_input_buffer, INT(local_data_size_plus_buffer), &
-            & MPI_CHARACTER, mpi_status, ierr)
+            & MPI_CHARACTER, message_status, ierr)
 
        !! Trim Off The Half Read Line At The Start
        IF (.NOT. this%process_grid%global_rank .EQ. &
@@ -558,7 +561,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Faster than text, so this is good for check pointing.
   RECURSIVE SUBROUTINE ConstructMatrixFromBinary_ps(this, file_name, &
        & process_grid_in)
-    !! Parameters
     !> The file being constructed.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> Grid to distribute the matrix on.
@@ -579,28 +581,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
     INTEGER :: bytes_per_int, bytes_per_data
     !! Temporary variables
-    INTEGER :: mpi_status(MPI_STATUS_SIZE)
+    INTEGER :: message_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
+    TYPE(Error_t) :: err
+    LOGICAL :: error_occured
 
     IF (.NOT. PRESENT(process_grid_in)) THEN
        CALL ConstructMatrixFromBinary(this, file_name, global_grid)
     ELSE
+       CALL ConstructError(err)
        CALL StartTimer("MPI Read Binary")
-
        CALL MPI_File_open(process_grid_in%global_comm, file_name, &
             & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
-       IF (ierr .NE. 0) THEN
-          IF (IsRoot(process_grid_in)) THEN
-             WRITE(*,*) file_name, " doesn't exist"
-          END IF
-          CALL MPI_Abort(process_grid_in%global_comm, -1, ierr)
-       END IF
+       error_occured = CheckMPIError(err, TRIM(file_name)//" doesn't exist", &
+            & ierr, .TRUE.)
 
        !! Get The Matrix Parameters
        IF (IsRoot(process_grid_in)) THEN
           local_offset = 0
           CALL MPI_File_read_at(mpi_file_handler, local_offset, &
-               & matrix_information, 4, MPINTINTEGER, mpi_status, ierr)
+               & matrix_information, 4, MPINTINTEGER, message_status, ierr)
           matrix_rows = matrix_information(1)
           matrix_columns = matrix_information(2)
           total_values = matrix_information(3)
@@ -652,11 +652,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (this%is_complex) THEN
           CALL ConstructTripletList(triplet_list_c, local_triplets)
           CALL MPI_File_read_all(mpi_file_handler, triplet_list_c%data, &
-               & local_triplets, triplet_mpi_type, mpi_status,ierr)
+               & local_triplets, triplet_mpi_type, message_status, ierr)
        ELSE
           CALL ConstructTripletList(triplet_list_r, local_triplets)
           CALL MPI_File_read_all(mpi_file_handler, triplet_list_r%data, &
-               & local_triplets, triplet_mpi_type, mpi_status,ierr)
+               & local_triplets, triplet_mpi_type, message_status, ierr)
        END IF
        CALL MPI_File_close(mpi_file_handler,ierr)
        CALL StopTimer("MPI Read Binary")
@@ -675,7 +675,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a binary file.
   !> Faster than text, so this is good for check pointing.
   SUBROUTINE WriteMatrixToBinary_ps(this,file_name)
-    !! Parameters
     !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The name of the file to write to.
@@ -703,7 +702,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
     TYPE(Matrix_lsr) :: merged_local_data
-    REAL(NTREAL) :: temp_data
 
     INCLUDE "distributed_includes/WriteMatrixToBinary.f90"
 
@@ -720,7 +718,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
     TYPE(Matrix_lsc) :: merged_local_data
-    COMPLEX(NTCOMPLEX) :: temp_data
 
     INCLUDE "distributed_includes/WriteMatrixToBinary.f90"
 
@@ -772,7 +769,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToMatrixMarket_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
-  !> should pass in triplet lists with global coordinates. It doesn't matter
+  !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
   SUBROUTINE FillMatrixFromTripletList_psr(this,triplet_list,preduplicated_in)
     !> The matrix to fill.
@@ -802,7 +799,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixFromTripletList_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
-  !> should pass in triplet lists with global coordinates. It doesn't matter
+  !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
   SUBROUTINE FillMatrixFromTripletList_psc(this,triplet_list,preduplicated_in)
     !> The matrix to fill.
@@ -873,7 +870,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE FillMatrixIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation.
-  !> If you don't specify permuterows, will default to permuting rows.
+  !> If you do not specify permuterows, will default to permuting rows.
   SUBROUTINE FillMatrixPermutation_ps(this, permutation_vector, permute_rows_in)
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
@@ -1172,7 +1169,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the actual dimension of the matrix.
   PURE FUNCTION GetMatrixActualDimension_ps(this) RESULT(DIMENSION)
-    !! Parameters
     !> The matrix.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> Dimension of the matrix
@@ -1308,9 +1304,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to calculate the number of non-zero entries of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The number of non-zero entries in the matrix.
-    INTEGER(c_long) :: total_size
+    INTEGER(NTLONG) :: total_size
     !! Local Data
-    !integer :: local_size
     REAL(NTREAL) :: local_size
     REAL(NTREAL) :: temp_size
     TYPE(Matrix_lsc) :: merged_local_data_c
@@ -1332,7 +1327,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(local_size,temp_size,1,MPINTREAL,MPI_SUM,&
          & this%process_grid%within_slice_comm, ierr)
 
-    total_size = INT(temp_size,kind=c_long)
+    total_size = INT(temp_size, kind=NTLONG)
 
   END FUNCTION GetMatrixSize_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1605,8 +1600,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MergeMatrixLocalBlocks_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Merge together the local matrix blocks into one big matrix.
-  !! @param[inout] this the distributed sparse matrix.
-  !! @param[inout] merged_matrix the merged matrix.
   PURE SUBROUTINE MergeMatrixLocalBlocks_psc(this, merged_matrix)
     !> The distributed sparse matrix to merge from.
     TYPE(Matrix_ps), INTENT(IN) :: this
@@ -1648,9 +1641,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConvertMatrixToComplex
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Change the size of a matrix.
-  !! If the new size is smaller, then values outside that range are deleted.
-  !! IF the new size is bigger, zero padding is applied.
-  !! Warning: this requires a full data redistribution.
+  !> If the new size is smaller, then values outside that range are deleted.
+  !> IF the new size is bigger, zero padding is applied.
+  !> Warning: this requires a full data redistribution.
   SUBROUTINE ResizeMatrix(this, new_size)
     !> The matrix to resize.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
@@ -1691,11 +1684,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !! given process. This routine is used when printing, but also is useful for
-  !! debugging.
+  !> given process. This routine is used when printing, but also is useful for
+  !> debugging.
   SUBROUTINE GatherMatrixToProcess_psr(this, local_mat, proc_id)
     !> The matrix to gather.
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
@@ -1708,11 +1701,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GatherMatrixToProcess_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !! given process. This routine is used when printing, but also is useful for
-  !! debugging.
+  !> given process. This routine is used when printing, but also is useful for
+  !> debugging.
   SUBROUTINE GatherMatrixToProcess_psc(this, local_mat, proc_id)
     !> The matrix to gather.
-    TYPE(Matrix_ps), INTENT(IN) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
     !> Which process to gather on.

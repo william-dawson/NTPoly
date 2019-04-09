@@ -1,10 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> This module wraps the MPI include statement because on certain platforms
-!! just writing "USE MPI" does not work.
+!> just writing "USE MPI" does not work.
 MODULE NTMPIModule
 #if USE_MPIH
-  include "mpif.h"
+  INCLUDE "mpif.h"
 #else
   USE MPI
 #endif
-END MODULE
+END MODULE NTMPIModule

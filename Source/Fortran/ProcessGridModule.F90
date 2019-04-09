@@ -1,10 +1,11 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to manage the process grid.
 MODULE ProcessGridModule
+  USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError
   USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
   USE NTMPIModule
-  USE ISO_C_BINDING, ONLY : c_int, c_bool
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY : c_int, c_bool
 #ifdef _OPENMP
   USE omp_lib, ONLY : omp_get_num_threads
 #endif
@@ -24,7 +25,7 @@ MODULE ProcessGridModule
      INTEGER, PUBLIC :: my_row !< which row is the current process in.
      INTEGER, PUBLIC :: my_column !< which column is the current process in.
      !! Ranks for communication
-     INTEGER, PUBLIC :: global_rank !< current process's rank amongst processes.
+     INTEGER, PUBLIC :: global_rank !< current process rank amongst processes.
      !> rank for within slice communication.
      INTEGER, PUBLIC :: within_slice_rank
      !> rank for between slice communication.
@@ -151,7 +152,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(process_slices_in)) THEN
        process_slices = process_slices_in
     ELSE
-       process_slices = 1
+       CALL ComputeNumSlices(total_processors, process_slices)
     END IF
 
     !! Create a 3D grid
@@ -184,7 +185,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: num_threads
 #endif
     INTEGER :: ierr
+    TYPE(Error_t) :: err
 
+    CALL ConstructError(err)
     CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
     !! Grid Dimensions
     grid%num_process_rows = process_rows_
@@ -196,9 +199,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Do a sanity check
     IF (grid%num_process_rows*grid%num_process_columns*grid%num_process_slices &
          & .NE. grid%total_processors) THEN
-       CALL WriteHeader(&
-            & "Error: you didn't specify a consistent process grid size")
-       CALL MPI_Abort(grid%global_comm, -1, ierr)
+       CALL SetGenericError(err, &
+            & "you did not specify a consistent process grid size", .TRUE.)
+    END IF
+    IF (grid%num_process_slices .GT. 1) THEN
+       IF (MOD(MAX(grid%num_process_rows, grid%num_process_columns), &
+            & MIN(grid%num_process_rows, grid%num_process_columns)) &
+            & .NE. 0) THEN
+          CALL SetGenericError(err, &
+               & "if slices >1, either rows or columns must be a multiple"//&
+               & "of the other.", &
+               & .TRUE.)
+       END IF
     END IF
 
     !! Grid ID
@@ -286,20 +298,28 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup a process grid specifying only the slices
   SUBROUTINE ConstructNewProcessGrid_onlyslice(grid, world_comm_, &
-       & process_slices)
+       & process_slices_in)
     !> The grid to construct
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
     !> A communicator that every process in the grid is a part of.
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     !> The number of grid slices.
-    INTEGER(kind=c_int), INTENT(IN) :: process_slices
+    INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: process_slices_in
     !! Local Data
-    INTEGER :: process_rows, process_columns
+    LOGICAL :: be_verbose
+    INTEGER :: process_rows, process_columns, process_slices
     INTEGER :: total_processors
     INTEGER :: ierr
 
     !! Total processors
     CALL MPI_COMM_SIZE(world_comm_, total_processors, ierr)
+
+    !! Process Optional Parameters
+    IF (PRESENT(process_slices_in)) THEN
+       process_slices = process_slices_in
+    ELSE
+       CALL ComputeNumSlices(total_processors, process_slices)
+    END IF
 
     !! Create a 3D grid
     CALL ComputeGridSize(total_processors, process_slices, process_rows, &
@@ -311,9 +331,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructNewProcessGrid_onlyslice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
-  !! Note that this makes a complete and independent copy of the process grid.
-  !! Which of course means that whatever is currently stored in new_grid will
-  !! be destroyed, so don't leave any matrices pointing to it.
+  !> Note that this makes a complete and independent copy of the process grid.
+  !> Which of course means that whatever is currently stored in new_grid will
+  !> be destroyed, so do not leave any matrices pointing to it.
   SUBROUTINE CopyProcessGrid(old_grid, new_grid)
     !> The grid to copy.
     TYPE(ProcessGrid_t), INTENT(IN) :: old_grid
@@ -383,9 +403,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopyProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a process grid.
-  !! Be careful about doing this. Matrices have pointers to process grids. If
-  !! you destruct a process grid without destructing the matrices pointing to
-  !! it, they will become unusable.
+  !> Be careful about doing this. Matrices have pointers to process grids. If
+  !> you destruct a process grid without destructing the matrices pointing to
+  !> it, they will become unusable.
   RECURSIVE SUBROUTINE DestructProcessGrid(grid_in)
     !> The grid to destruct. If none specified this destroys the global grid.
     TYPE(ProcessGrid_t), OPTIONAL, INTENT(INOUT) :: grid_in
@@ -583,8 +603,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END FUNCTION GetMyRow
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Sometimes we only want to specify a process grid's number of slices
-  !! and then automatically compute the right number of rows and columns.
+  !> Sometimes we only want to specify for a process grid the number of slices
+  !> and then automatically compute the right number of rows and columns.
   SUBROUTINE ComputeGridSize(total_processors, set_slices, rows, columns)
     !> Total processors in the grid
     INTEGER, INTENT(IN) :: total_processors
@@ -611,5 +631,34 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE ComputeGridSize
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Pick an appropriate number of process slices for this calculation.
+  !> This routine will focus on whether we can make a square slice grid,
+  !> which gives pretty ideal performance.
+  SUBROUTINE ComputeNumSlices(total_processors, slices)
+    !> Total processors in the grid.
+    INTEGER, INTENT(IN) :: total_processors
+    !> Number of slices to use.
+    INTEGER, INTENT(OUT) :: slices
+    !! Local Variables
+    INTEGER :: slice_size
+    INTEGER :: slice_dim
+    LOGICAL :: found
+
+    !! Try manually values [4, 3, 2]. If they do not work, give up and use 1.
+    found = .FALSE.
+    DO slices = MIN(4, total_processors), 2, -1
+       slice_size = total_processors / slices
+       IF (slice_size * slices .NE. total_processors) CYCLE
+
+       slice_dim  = FLOOR(SQRT(REAL(slice_size)))
+       IF (slice_dim*slice_dim .EQ. slice_size) THEN
+          FOUND = .TRUE.
+          EXIT
+       END IF
+    END DO
+    IF (.NOT. FOUND) slices = 1
+
+  END SUBROUTINE ComputeNumSlices
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ProcessGridModule
