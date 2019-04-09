@@ -762,7 +762,7 @@ class TestSolvers_r(TestSolvers):
 
     def test_pivotedcholesky(self):
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
-        matrix1 = mmread(os.environ["CholTest"])
+        matrix1 = mmread(environ["CholTest"])
         rank = 2
         self.write_matrix(matrix1, self.input_file)
 

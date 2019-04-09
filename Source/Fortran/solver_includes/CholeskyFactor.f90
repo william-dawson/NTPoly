@@ -1,5 +1,6 @@
   !! Convert to dense and factorize
-  CALL GatherMatrixToProcess(mat, smat, 0)
+  CALL CopyMatrix(mat, tempmat)
+  CALL GatherMatrixToProcess(tempmat, smat, 0)
   CALL ConstructTripletList(tlist)
   IF (mat%process_grid%within_slice_rank .EQ. 0) THEN
      CALL ConstructMatrixDFromS(smat, dmat)
@@ -17,3 +18,4 @@
   CALL DestructMatrix(dmat)
   CALL DestructMatrix(sfac)
   CALL DestructMatrix(dfac)
+  CALL DestructMatrix(tempmat)

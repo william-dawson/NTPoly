@@ -18,7 +18,8 @@ MODULE LinearSolversModule
        & TransposeMatrix, DestructMatrix, ConjugateMatrix, CopyMatrix, &
        & FillMatrixIdentity, MergeMatrixLocalBlocks, PrintMatrixInformation
   USE SMatrixModule, ONLY : Matrix_lsr
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE

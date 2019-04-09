@@ -2,7 +2,8 @@
   INTEGER :: II, mat_dim
 
   mat_dim = this%actual_matrix_dimension
-  CALL GatherMatrixToProcess(this, local_a, 0)
+  CALL CopyMatrix(this, tempmat)
+  CALL GatherMatrixToProcess(tempmat, local_a, 0)
 
   !! Perform the local decomposition
   CALL ConstructTripletList(triplet_w)
@@ -41,3 +42,4 @@
   CALL DestructMatrix(sparse)
   CALL DestructTripletList(triplet_w)
   CALL DestructTripletList(triplet_list)
+  CALL DestructMatrix(tempmat)

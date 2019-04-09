@@ -9,7 +9,8 @@ MODULE CholeskyModule
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
        & TestReduceSizeRequest, TestReduceInnerRequest, TestReduceDataRequest
   USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixFromTripletList, &
-       & GatherMatrixToProcess, ConstructEmptyMatrix
+       & GatherMatrixToProcess, ConstructEmptyMatrix, DestructMatrix, &
+       & CopyMatrix
   USE ProcessGridModule, ONLY : ProcessGrid_t
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, TransposeMatrix, &
@@ -73,6 +74,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: smat, sfac
     TYPE(Matrix_ldr) :: dmat, dfac
     TYPE(TripletList_r) :: tlist
+    TYPE(Matrix_ps) :: tempmat
 
     INCLUDE "solver_includes/CholeskyFactor.f90"
   END SUBROUTINE ComputeFactor_r
@@ -88,6 +90,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: smat, sfac
     TYPE(Matrix_ldc) :: dmat, dfac
     TYPE(TripletList_c) :: tlist
+    TYPE(Matrix_ps) :: tempmat
 
     INCLUDE "solver_includes/CholeskyFactor.f90"
   END SUBROUTINE ComputeFactor_c
@@ -103,6 +106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: smat, sinv
     TYPE(Matrix_ldr) :: dmat, dinv
     TYPE(TripletList_r) :: tlist
+    TYPE(Matrix_ps) :: tempmat
 
     INCLUDE "solver_includes/CholeskyInvert.f90"
   END SUBROUTINE ComputeInverse_r
@@ -118,6 +122,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: smat, sinv
     TYPE(Matrix_ldc) :: dmat, dinv
     TYPE(TripletList_c) :: tlist
+    TYPE(Matrix_ps) :: tempmat
 
     INCLUDE "solver_includes/CholeskyInvert.f90"
   END SUBROUTINE ComputeInverse_c

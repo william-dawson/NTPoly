@@ -133,6 +133,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: sparse
     TYPE(Matrix_lsr) :: local_a, local_v
     TYPE(Matrix_ldr) :: dense_a, dense_v, dense_w
+    TYPE(Matrix_ps) :: tempmat
 
     INCLUDE "solver_includes/EigenSerial.f90"
   END SUBROUTINE EigenSerial_r
@@ -152,6 +153,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: sparse
     TYPE(Matrix_lsc) :: local_a, local_v
     TYPE(Matrix_ldc) :: dense_a, dense_v, dense_w
+    TYPE(Matrix_ps) :: tempmat
 
     INCLUDE "solver_includes/EigenSerial.f90"
   END SUBROUTINE EigenSerial_c

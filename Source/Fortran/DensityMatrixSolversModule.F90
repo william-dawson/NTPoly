@@ -15,7 +15,8 @@ MODULE DensityMatrixSolversModule
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
        & ConjugateMatrix, GetMatrixSlice, TransposeMatrix, ConjugateMatrix, &
        & GetMatrixTripletList, PrintMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList
   USE NTMPIModule
   IMPLICIT NONE
