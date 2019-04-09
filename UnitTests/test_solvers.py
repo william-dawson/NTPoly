@@ -28,7 +28,7 @@ warnings.filterwarnings(action="ignore", module="scipy",
                         message="^internal gelsd")
 
 
-class TestSolvers(unittest.TestCase):
+class TestSolvers():
     '''A test class for the different kinds of solvers.'''
     # First input file.
     input_file = join(scratch_dir, "input.mtx")
@@ -737,7 +737,7 @@ class TestSolvers(unittest.TestCase):
         self.assertLessEqual(global_error, THRESHOLD)
 
 
-class TestSolvers_r(TestSolvers):
+class TestSolvers_r(TestSolvers, unittest.TestCase):
     def test_cholesky(self):
         '''Test subroutine that computes the cholesky decomposition.'''
         # Starting Matrix
@@ -785,7 +785,7 @@ class TestSolvers_r(TestSolvers):
         self.check_result()
 
 
-class TestSolvers_c(TestSolvers):
+class TestSolvers_c(TestSolvers, unittest.TestCase):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''
         Create the test matrix with the following parameters.
