@@ -29,7 +29,11 @@ if (SWIG_FOUND)
     SET_SOURCE_FILES_PROPERTIES(${file} PROPERTIES CPLUSPLUS ON)
   endforeach(file)
   set(CMAKE_SWIG_OUTDIR ${CMAKE_BINARY_DIR}/python)
-  swig_add_module(NTPolySwig python ${Swigsrc})
+  if(${CMAKE_VERSION} VERSION_LESS "3.8.0")
+     swig_add_module(NTPolySwig python ${Swigsrc})
+  else()
+     swig_add_library(NTPolySwig LANGUAGE python SOURCES ${Swigsrc})
+  endif()
   swig_link_libraries(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly
                       ${PYTHON_LIBRARIES} ${TOOLCHAIN_LIBS})
   set_target_properties(_NTPolySwig PROPERTIES
