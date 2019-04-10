@@ -1,0 +1,25 @@
+---
+layout: post
+title:  "Release of Version 2.3"
+date:   2019-02-04 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.3](/NTPoly/downloads) of NTPoly is now available.
+
+Version 2.3 is mostly a bug fix release.
+
+Bug Fixes:
+* Fixed linkage error that was present when using MPICH and GCC together.
+* Fixed bug where unit tests would fail when not using the git repository.
+* Fixed I/O when using the Cray compilers.
+
+Miscellaneous:
+* Fixed documentation errors.
+* Made readmes easier to read when rendered.
+* Removed some compilation noise.
+* Improved unit test code by using join instead of + "/", and did various code
+reductions.
+
+Special thanks to Jacob Leamer and Laura Ratcliff for their assistance with
+these bug fixes. 

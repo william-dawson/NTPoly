@@ -13,6 +13,7 @@ have release versions available below.
 
 ### Stable Releases
 
+* [Version 2.2](https://github.com/william-dawson/NTPoly/releases/tag/ntpoly-v2.3)
 * [Version 2.2](https://github.com/william-dawson/NTPoly/releases/tag/ntpoly-v2.2)
 * [Version 1.3](https://github.com/william-dawson/NTPoly/releases/tag/v1.3)
 * [CPC Submission](https://github.com/william-dawson/NTPoly/releases/tag/1.0-cpc)
