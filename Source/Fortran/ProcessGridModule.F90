@@ -306,7 +306,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of grid slices.
     INTEGER(kind=c_int), INTENT(IN), OPTIONAL :: process_slices_in
     !! Local Data
-    LOGICAL :: be_verbose
     INTEGER :: process_rows, process_columns, process_slices
     INTEGER :: total_processors
     INTEGER :: ierr
