@@ -24,7 +24,7 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression222"
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression211"
     - os: linux
       sudo: required
       dist: trusty
