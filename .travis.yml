@@ -16,22 +16,22 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
+      env: TESTOS="LINUX" TESTEXAMPLES=1 DEBUG=1 MAKETEST="ctest -R Regression111""
+    - os: linux
+      sudo: required
+      dist: trusty
       env: TESTOS="LINUX" TESTEXAMPLES=1 NOIALLGATHER=1 MAKETEST="make test"
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST=":"
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression222"
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" FORTRAN_ONLY=1 SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=":"
-    - os: linux
-      sudo: required
-      dist: trusty
-      env: TESTOS="LINUX" SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=":"
+      env: TESTOS="LINUX" SKIPSWIG=1 MAKETEST=":"
     - os: osx
       sudo: required
-      env: TESTOS="OSX" MAKETEST=":"
+      env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
 
 cache:
   pip: true
