@@ -22,6 +22,7 @@ MODULE DensityMatrixSolversModule
   PUBLIC :: TRS2
   PUBLIC :: TRS4
   PUBLIC :: HPCP
+  PUBLIC :: ScaleAndFold
   PUBLIC :: EnergyDensityMatrix
   ! PUBLIC :: HPCPPlus
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1236,6 +1237,184 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DEALLOCATE(sigma_array)
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE HPCPPlus
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix from a Hamiltonian using the Scale and Fold
+  !> method. Based on the method of \cite rubensson2011nonmonotonic .
+  !> Note that for this method, you must provide the value of the homo and
+  !> lumo gap. It is not necessary for these to be accurate, but give a
+  !> conservative value.
+  SUBROUTINE ScaleAndFold(Hamiltonian, InverseSquareRoot, nel, Density, &
+       & homo, lumo, energy_value_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> A conservative estimate of the highest occupied eigenvalue.
+    REAL(NTREAL), INTENT(IN) :: homo
+    !> A conservative estimate of the lowest unoccupied eigenvalue.
+    REAL(NTREAL), INTENT(IN) :: lumo
+    !> Parameters for the solver (optional).
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    !! Local Matrices
+    TYPE(Matrix_ps) :: WorkingHamiltonian
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: X_k, X_k2, TempMat
+    !! Local Variables
+    REAL(NTREAL) :: e_min, e_max
+    REAL(NTREAL) :: Beta, BetaBar, alpha
+    REAL(NTREAL) :: trace_value
+    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value2
+    !! Temporary Variables
+    TYPE(MatrixMemoryPool_p) :: pool
+    INTEGER :: outer_counter, inner_counter
+    INTEGER :: total_iterations
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", value="Scale and Fold")
+       CALL WriteCitation("rubensson2011nonmonotonic")
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(Density, Hamiltonian)
+    CALL ConstructEmptyMatrix(WorkingHamiltonian, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k, Hamiltonian)
+    CALL ConstructEmptyMatrix(X_k2, Hamiltonian)
+    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Compute the working hamiltonian.
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+
+    !! Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL PermuteMatrix(WorkingHamiltonian, WorkingHamiltonian, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
+       CALL PermuteMatrix(Identity, Identity, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
+    END IF
+
+    !! Compute the lambda scaling value.
+    CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
+
+    !! Initialize
+    CALL CopyMatrix(WorkingHamiltonian,X_k)
+    CALL ScaleMatrix(X_k,-1.0_NTREAL)
+    CALL IncrementMatrix(Identity,X_k,alpha_in=e_max)
+    CALL ScaleMatrix(X_k,1.0_NTREAL/(e_max-e_min))
+    Beta = (e_max - lumo) / (e_max - e_min)
+    BetaBar = (e_max - homo) / (e_max - e_min)
+
+    !! Iterate
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+    outer_counter = 1
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
+    energy_value = 0.0_NTREAL
+    DO outer_counter = 1,solver_parameters%max_iterations
+       !! Determine the path
+       CALL MatrixTrace(X_k, trace_value)
+       IF (trace_value .GT. 0.5*nel) THEN
+          alpha = 2.0/(2.0 - Beta)
+          CALL ScaleMatrix(X_k, alpha)
+          CALL IncrementMatrix(Identity, X_k, alpha_in=(1.0_NTREAL-alpha))
+          CALL MatrixMultiply(X_k,X_k,X_k2, &
+               & threshold_in=solver_parameters%threshold, &
+               & memory_pool_in=pool)
+          CALL CopyMatrix(X_k2, X_k)
+          Beta = (alpha * Beta + 1 - alpha)**2
+          BetaBar = (alpha * BetaBar + 1 - alpha)**2
+       ELSE
+          alpha = 2.0/(1.0 + BetaBar)
+          CALL MatrixMultiply(X_k,X_k,X_k2, &
+               & threshold_in=solver_parameters%threshold, &
+               & memory_pool_in=pool)
+          CALL ScaleMatrix(X_k, 2*alpha)
+          CALL IncrementMatrix(X_k2, X_k, alpha_in=-1.0_NTREAL*alpha**2)
+          Beta = 2.0 * alpha * Beta - alpha**2 * Beta**2
+          BetaBar = 2.0 * alpha * BetaBar - alpha**2 * BetaBar ** 2
+       END IF
+
+       !! Energy value based convergence
+       energy_value2 = energy_value
+       CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
+       energy_value = 2.0_NTREAL*energy_value
+       norm_value = ABS(energy_value - energy_value2)
+
+       IF (solver_parameters%be_verbose) THEN
+          CALL WriteListElement(key="Round", value=outer_counter)
+          CALL EnterSubLog
+          CALL WriteElement(key="Convergence", value=norm_value)
+          CALL WriteElement("Energy_Value", value=energy_value)
+          CALL ExitSubLog
+       END IF
+
+       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+          EXIT
+       END IF
+    END DO
+    total_iterations = outer_counter-1
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+       CALL WriteElement(key="Total_Iterations", value=outer_counter)
+       CALL PrintMatrixInformation(X_k)
+    END IF
+
+    IF (PRESENT(energy_value_out)) THEN
+       energy_value_out = energy_value
+    END IF
+
+    !! Undo Load Balancing Step
+    IF (solver_parameters%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(X_k, X_k, &
+            & solver_parameters%BalancePermutation, memorypool_in=pool)
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(X_k)
+    CALL DestructMatrix(X_k2)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrixMemoryPool(pool)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(solver_parameters)
+  END SUBROUTINE SCALEANDFOLD
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the energy-weighted density matrix.
   SUBROUTINE EnergyDensityMatrix(Hamiltonian, Density, EnergyDensity, &
