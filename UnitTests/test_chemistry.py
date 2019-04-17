@@ -123,25 +123,21 @@ class TestChemistry:
         self.assertLessEqual(global_norm, EXTRAPTHRESHOLD)
 
     def compute_cp(self):
-        '''Compute the chemical potential'''
+        '''Compute the chemical potential, homo, lumo'''
         fock_matrix = mmread(self.hamiltonian)
         overlap_matrix = mmread(self.overlap)
         eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
                         eigvals_only=True)
         homo = int(self.nel / 2) - 1
         lumo = homo + 1
-        return eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo]) / 2.0
+        cp = eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo]) / 2.0
+        return cp, eig_vals[homo], eig_vals[lumo]
 
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
-        fock_matrix = mmread(self.hamiltonian)
-        overlap_matrix = mmread(self.overlap)
-        eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
-                        eigvals_only=True)
-        homo = int(self.nel / 2) - 1
-        lumo = homo + 1
+        cp, homo, lumo = self.compute_cp()
 
-        if computed > eig_vals[homo] and computed < eig_vals[lumo]:
+        if computed > homo and computed < lumo:
             self.assertTrue(True)
         else:
             self.assertTrue(False)
@@ -172,6 +168,36 @@ class TestChemistry:
         self.check_full()
         if cpcheck:
             self.check_cp(chemical_potential)
+        comm.barrier()
+
+    def test_scaleandfold(self):
+        '''Test the scale and fold method.'''
+        SRoutine = nt.DensityMatrixSolvers.ScaleAndFold
+        self.create_matrices()
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+
+        # This method needs the homo and lumo
+        cp, homo, lumo = self.compute_cp()
+        print(":::::", homo, lumo, cp)
+        energy_value = SRoutine(fock_matrix, inverse_sqrt_matrix,
+                                self.nel, density_matrix,
+                                homo, lumo, self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
         comm.barrier()
 
     def test_pm(self):
