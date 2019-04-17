@@ -2,18 +2,22 @@
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
-  if [ -f "openmpi-3.0.1/README" ]; then
-   echo "Using cached openmpi";
+  if [[ "$MPICH" == "1" ]]; then
+    sudo apt-get install mpich
   else
-    wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz;
-    tar xvf openmpi-3.0.1.tar.gz >/dev/null;
-    cd openmpi-3.0.1;
-    ./configure >/dev/null 2>&1;
-    make >/dev/null 2>&1;
+    if [ -f "openmpi-3.0.1/README" ]; then
+     echo "Using cached openmpi";
+    else
+      wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz;
+      tar xvf openmpi-3.0.1.tar.gz >/dev/null;
+      cd openmpi-3.0.1;
+      ./configure >/dev/null 2>&1;
+      make >/dev/null 2>&1;
+    fi
+    cd openmpi-3.0.1
+    sudo make install >/dev/null 2>&1
+    cd ../
   fi
-  cd openmpi-3.0.1
-  sudo make install >/dev/null 2>&1
-  cd ../
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
@@ -29,9 +33,6 @@ if [[ "$TESTOS" == "OSX" ]]; then
 else
   sudo ldconfig
   sudo apt-get install python-dev
-  if [[ -z ${SKIPDOXYGEN+x} ]]; then
-    sudo apt-get install doxygen
-  fi
   if [[ -z ${SKIPSWIG+x} ]] ; then
     if [ -f "swig-3.0.12/README" ]; then
       echo "Using cached swig";

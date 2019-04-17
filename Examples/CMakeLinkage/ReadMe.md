@@ -17,12 +17,12 @@ way, so this might not work for cross compiling. But the main way of
 getting NTPoly to link will be the same.
 
 > find_package(NTPoly REQUIRED)
-
+>
 > target_link_libraries(my_executable NTPoly::NTPoly)
 
 And for C++:
 > find_package(NTPolyWrapper REQUIRED)
-
+>
 > find_package(NTPolyCPP REQUIRED)
-
+>
 > target_link_libraries(my_executable NTPoly::NTPolyWrapper NTPoly::NTPolyCPP)

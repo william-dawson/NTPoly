@@ -3,7 +3,6 @@ A test suite for the different solvers.'''
 import unittest
 import NTPolySwig as nt
 import warnings
-import scipy
 from scipy.linalg import pinv, funm, polar, cholesky
 from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
@@ -13,13 +12,14 @@ from numpy import zeros, sqrt, power, \
 from numpy.linalg import eigh, svd
 from numpy.linalg import norm as normd
 from random import random
-import os
 from numpy.polynomial.chebyshev import chebfit, chebval
 from numpy.polynomial.hermite import hermfit, hermval
 from mpi4py import MPI
 from helpers import THRESHOLD
 from helpers import result_file, result_file2
 from helpers import scratch_dir
+from os import environ
+from os.path import join
 
 
 # MPI global communicator.
@@ -31,9 +31,9 @@ warnings.filterwarnings(action="ignore", module="scipy",
 class TestSolvers(unittest.TestCase):
     '''A test class for the different kinds of solvers.'''
     # First input file.
-    input_file = scratch_dir + "/input.mtx"
+    input_file = join(scratch_dir, "input.mtx")
     # Second input file.
-    input_file2 = scratch_dir + "/input2.mtx"
+    input_file2 = join(scratch_dir, "input2.mtx")
     # Matrix to compare against.
     CheckMat = 0
     # Rank of the current process.
@@ -44,9 +44,9 @@ class TestSolvers(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         '''Set up all of the tests.'''
-        rows = int(os.environ['PROCESS_ROWS'])
-        columns = int(os.environ['PROCESS_COLUMNS'])
-        slices = int(os.environ['PROCESS_SLICES'])
+        rows = int(environ['PROCESS_ROWS'])
+        columns = int(environ['PROCESS_COLUMNS'])
+        slices = int(environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
     @classmethod
@@ -755,7 +755,7 @@ class TestSolvers_r(TestSolvers):
 
     def test_pivotedcholesky(self):
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
-        matrix1 = mmread(os.environ["CholTest"])
+        matrix1 = mmread(environ["CholTest"])
         rank = 2
         self.write_matrix(matrix1, self.input_file)
 

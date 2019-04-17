@@ -69,7 +69,7 @@
         END IF
      END DO
   END DO
-  !! Reset send buffer offsets. But since we're using MPI now, use zero
+  !! Reset send buffer offsets. But since we are using MPI now, use zero
   !! based indexing.
   send_buffer_offsets(1) = 0
   DO II = 2, working_matrix%process_grid%slice_size

@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> This module contains helpers for processing matrix market files.
 MODULE MatrixMarketModule
+  USE DataTypesModule, ONLY : NTREAL, NTLONG
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ENUM, BIND(c)
@@ -26,7 +27,20 @@ MODULE MatrixMarketModule
     ENUMERATOR :: MM_HERMITIAN=4
   END ENUM
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The longest line size possible according to the spec.
+  INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ParseMMHeader
+  PUBLIC :: WriteMMSize
+  PUBLIC :: WriteMMLine
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  INTERFACE WriteMMLine
+     MODULE PROCEDURE WriteMMLine_ii
+     MODULE PROCEDURE WriteMMLine_iif
+     MODULE PROCEDURE WriteMMLine_iiff
+     MODULE PROCEDURE WriteMMLine_f
+     MODULE PROCEDURE WriteMMLine_ff
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Parse a matrix market header.
   FUNCTION ParseMMHeader(line,sparsity_type,data_type,pattern_type) &
@@ -98,5 +112,212 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END SELECT
 
   END FUNCTION ParseMMHeader
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write the line describing the size of the matrix
+  PURE SUBROUTINE WriteMMSize(outstring, rows, columns, values_in)
+    !> The final string is written to this variable.
+    CHARACTER(LEN=MAX_LINE_LENGTH), INTENT(INOUT) :: outstring
+    !> The number of rows of the matrix
+    INTEGER, INTENT(IN) :: rows
+    !> The number of columns of the matrix
+    INTEGER, INTENT(IN) :: columns
+    !> The total number of non zero values in the matrix (for sparse format).
+    INTEGER(KIND=NTLONG), INTENT(IN), OPTIONAL :: values_in
+    !! Local variables
+    CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1, temp2, temp3
+
+    !! Write everything to strings.
+    WRITE(temp1, *) rows
+    WRITE(temp2, *) columns
+    IF (PRESENT(values_in)) THEN
+       WRITE(temp3, *) values_in
+    ELSE
+       WRITE(temp3, *) ""
+    END IF
+
+    !! Combine
+    WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
+         & ADJUSTL(TRIM(temp3))
+
+  END SUBROUTINE WriteMMSize
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a single line that would correspond to a matrix market entry.
+  PURE SUBROUTINE WriteMMLine_ii(outstring, row, column, add_newline_in)
+    !> The final string is written to this variable.
+    CHARACTER(LEN=MAX_LINE_LENGTH), INTENT(INOUT) :: outstring
+    !> The first coordinate value
+    INTEGER, INTENT(IN) :: row
+    !> The second coordinate value
+    INTEGER, INTENT(IN) :: column
+    !> Whether to append a new line to the output (default=F)
+    LOGICAL, INTENT(IN), OPTIONAL :: add_newline_in
+    !! Local variables
+    CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1, temp2
+    LOGICAL :: add_newline
+
+    !! Process Optional Arguments
+    IF (PRESENT(add_newline_in)) THEN
+       add_newline = add_newline_in
+    ELSE
+       add_newline = .FALSE.
+    END IF
+
+    !! Write everything to strings.
+    WRITE(temp1, *) row
+    WRITE(temp2, *) column
+
+    !! Combine
+    IF (add_newline) THEN
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), &
+            & ADJUSTL(TRIM(temp2))//NEW_LINE('A')
+    ELSE
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2))
+    END IF
+  END SUBROUTINE WriteMMLine_ii
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a single line that would correspond to a matrix market entry.
+  PURE SUBROUTINE WriteMMLine_iif(outstring, row, column, val, add_newline_in)
+    !> The final string is written to this variable.
+    CHARACTER(LEN=MAX_LINE_LENGTH), INTENT(INOUT) :: outstring
+    !> The first coordinate value
+    INTEGER, INTENT(IN) :: row
+    !> The second coordinate value
+    INTEGER, INTENT(IN) :: column
+    !> The value at that coordinate
+    REAL(NTREAL), INTENT(IN) :: val
+    !> Whether to append a new line to the output (default=F)
+    LOGICAL, INTENT(IN), OPTIONAL :: add_newline_in
+    !! Local variables
+    CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1, temp2, temp3
+    LOGICAL :: add_newline
+
+    !! Process Optional Arguments
+    IF (PRESENT(add_newline_in)) THEN
+       add_newline = add_newline_in
+    ELSE
+       add_newline = .FALSE.
+    END IF
+
+    !! Write everything to strings.
+    WRITE(temp1, *) row
+    WRITE(temp2, *) column
+    WRITE(temp3, *) val
+
+    !! Combine
+    IF (add_newline) THEN
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
+            & ADJUSTL(TRIM(temp3))//NEW_LINE('A')
+    ELSE
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
+            & ADJUSTL(TRIM(temp3))
+    END IF
+  END SUBROUTINE WriteMMLine_iif
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a single line that would correspond to a matrix market entry.
+  PURE SUBROUTINE WriteMMLine_iiff(outstring, row, column, val1, val2, &
+       & add_newline_in)
+    !> The final string is written to this variable.
+    CHARACTER(LEN=MAX_LINE_LENGTH), INTENT(INOUT) :: outstring
+    !> The first coordinate value
+    INTEGER, INTENT(IN) :: row
+    !> The second coordinate value
+    INTEGER, INTENT(IN) :: column
+    !> The value at that coordinate
+    REAL(NTREAL), INTENT(IN) :: val1
+    !> The second value at the coordinate
+    REAL(NTREAL), INTENT(IN) :: val2
+    !> Whether to append a new line to the output (default=F)
+    LOGICAL, INTENT(IN), OPTIONAL :: add_newline_in
+    !! Local variables
+    CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1, temp2, temp3, temp4
+    LOGICAL :: add_newline
+
+    !! Process Optional Arguments
+    IF (PRESENT(add_newline_in)) THEN
+       add_newline = add_newline_in
+    ELSE
+       add_newline = .FALSE.
+    END IF
+
+    !! Write everything to strings.
+    WRITE(temp1, *) row
+    WRITE(temp2, *) column
+    WRITE(temp3, *) val1
+    WRITE(temp4, *) val2
+
+    !! Combine
+    IF (add_newline) THEN
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), &
+            & ADJUSTL(TRIM(temp2)), ADJUSTL(TRIM(temp3)), &
+            & ADJUSTL(TRIM(temp4))//NEW_LINE('A')
+    ELSE
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), &
+            & ADJUSTL(TRIM(temp2)), ADJUSTL(TRIM(temp3)), ADJUSTL(TRIM(temp4))
+    END IF
+  END SUBROUTINE WriteMMLine_iiff
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a single line that would correspond to a matrix market entry.
+  PURE SUBROUTINE WriteMMLine_f(outstring, val, add_newline_in)
+    !> The final string is written to this variable.
+    CHARACTER(LEN=MAX_LINE_LENGTH), INTENT(INOUT) :: outstring
+    !> The value at that coordinate
+    REAL(NTREAL), INTENT(IN) :: val
+    !> Whether to append a new line to the output (default=F)
+    LOGICAL, INTENT(IN), OPTIONAL :: add_newline_in
+    !! Local Variables
+    CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1
+    LOGICAL :: add_newline
+
+    !! Process Optional Arguments
+    IF (PRESENT(add_newline_in)) THEN
+       add_newline = add_newline_in
+    ELSE
+       add_newline = .FALSE.
+    END IF
+
+    !! Write everything to strings.
+    WRITE(temp1, *) val
+
+    !! Combine
+    IF (add_newline) THEN
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1))//NEW_LINE('A')
+    ELSE
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1))
+    END IF
+  END SUBROUTINE WriteMMLine_f
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write a single line that would correspond to a matrix market entry.
+  PURE SUBROUTINE WriteMMLine_ff(outstring, val1, val2, add_newline_in)
+    !> The final string is written to this variable.
+    CHARACTER(LEN=MAX_LINE_LENGTH), INTENT(INOUT) :: outstring
+    !> The value at that coordinate
+    REAL(NTREAL), INTENT(IN) :: val1
+    !> The second value at that coordinate
+    REAL(NTREAL), INTENT(IN) :: val2
+    !> Whether to append a new line to the output (default=F)
+    LOGICAL, INTENT(IN), OPTIONAL :: add_newline_in
+    !! Local variables
+    CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1, temp2
+    LOGICAL :: add_newline
+
+    !! Process Optional Arguments
+    IF (PRESENT(add_newline_in)) THEN
+       add_newline = add_newline_in
+    ELSE
+       add_newline = .FALSE.
+    END IF
+
+    !! Write everything to strings.
+    WRITE(temp1, *) val1
+    WRITE(temp2, *) val2
+
+    !! Combine
+    IF (add_newline) THEN
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)) &
+            & //NEW_LINE('A')
+    ELSE
+       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2))
+    END IF
+  END SUBROUTINE WriteMMLine_ff
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE MatrixMarketModule

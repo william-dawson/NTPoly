@@ -15,7 +15,8 @@ MODULE ProcessGridModule_wrp
   END TYPE ProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructGlobalProcessGrid_wrp
-  PUBLIC :: ConstructGlobalProcessGridabr_wrp
+  PUBLIC :: ConstructGlobalProcessGrid_onlyslice_wrp
+  PUBLIC :: ConstructGlobalProcessGrid_default_wrp
   PUBLIC :: GetGlobalMySlice_wrp
   PUBLIC :: GetGlobalMyColumn_wrp
   PUBLIC :: GetGlobalMyRow_wrp
@@ -25,7 +26,8 @@ MODULE ProcessGridModule_wrp
   PUBLIC :: DestructGlobalProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid_wrp
-  PUBLIC :: ConstructProcessGridabr_wrp
+  PUBLIC :: ConstructProcessGrid_onlyslice_wrp
+  PUBLIC :: ConstructProcessGrid_default_wrp
   PUBLIC :: CopyProcessGrid_wrp
   PUBLIC :: GetMySlice_wrp
   PUBLIC :: GetMyColumn_wrp
@@ -49,13 +51,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructGlobalProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
-  SUBROUTINE ConstructGlobalProcessGridabr_wrp(world_comm_, process_slices_, &
-       & be_verbose) bind(c,name="ConstructGlobalProcessGridabr_wrp")
+  SUBROUTINE ConstructGlobalProcessGrid_onlyslice_wrp(world_comm_, &
+       & process_slices_, be_verbose) &
+       & bind(c,name="ConstructGlobalProcessGrid_onlyslice_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
     LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
-    CALL ConstructProcessGrid(world_comm_, process_slices_, be_verbose)
-  END SUBROUTINE ConstructGlobalProcessGridabr_wrp
+    CALL ConstructProcessGrid(world_comm_, process_slices_in=process_slices_, &
+         & be_verbose_in=be_verbose)
+  END SUBROUTINE ConstructGlobalProcessGrid_onlyslice_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Wrap the process grid construction routine.
+  SUBROUTINE ConstructGlobalProcessGrid_default_wrp(world_comm_, be_verbose) &
+       & bind(c,name="ConstructGlobalProcessGrid_default_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
+    CALL ConstructProcessGrid(world_comm_, be_verbose_in=be_verbose)
+  END SUBROUTINE ConstructGlobalProcessGrid_default_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.
   FUNCTION GetGlobalMySlice_wrp() RESULT(return_val) &
@@ -127,17 +139,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a process grid.
-  SUBROUTINE ConstructProcessGridabr_wrp(ih_grid, world_comm_, process_slices_) &
-       & bind(c,name="ConstructProcessGridabr_wrp")
+  SUBROUTINE ConstructProcessGrid_onlyslice_wrp(ih_grid, world_comm_, &
+       & process_slices_) bind(c,name="ConstructProcessGrid_onlyslice_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_grid(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
     TYPE(ProcessGrid_wrp) :: h_grid
 
     ALLOCATE(h_grid%data)
-    CALL ConstructNewProcessGrid(h_grid%data, world_comm_, process_slices_)
+    CALL ConstructNewProcessGrid(h_grid%data, world_comm_, &
+         & process_slices_in=process_slices_)
     ih_grid = TRANSFER(h_grid,ih_grid)
-  END SUBROUTINE ConstructProcessGridabr_wrp
+  END SUBROUTINE ConstructProcessGrid_onlyslice_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Construct a process grid.
+  SUBROUTINE ConstructProcessGrid_default_wrp(ih_grid, world_comm_) &
+       & bind(c,name="ConstructProcessGrid_default_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_grid(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: world_comm_
+    TYPE(ProcessGrid_wrp) :: h_grid
+
+    ALLOCATE(h_grid%data)
+    CALL ConstructNewProcessGrid(h_grid%data, world_comm_)
+    ih_grid = TRANSFER(h_grid,ih_grid)
+  END SUBROUTINE ConstructProcessGrid_default_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a process grid.
   SUBROUTINE CopyProcessGrid_wrp(ih_old_grid, ih_new_grid) &

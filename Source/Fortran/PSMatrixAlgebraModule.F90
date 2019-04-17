@@ -320,7 +320,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the elements in a matrix into a single value.
   SUBROUTINE MatrixGrandSum_psc(this, sum)
-    !! Parameters
     !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN)  :: this
     !> The sum of all elements.
@@ -351,7 +350,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication. C_ij = A_ij * B_ij.
   !> Also known as a Hadamard product.
   RECURSIVE SUBROUTINE PairwiseMultiplyMatrix_ps(matA, matB, matC)
-    !! Parameters
     !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)  :: matA
     !> Matrix B.
@@ -383,7 +381,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a distributed sparse matrix along the rows.
   FUNCTION MatrixNorm_ps(this) RESULT(norm_value)
-    !! Parameters
     !> The matrix to compute the norm of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The norm value of the full distributed sparse matrix.
@@ -529,7 +526,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
   SUBROUTINE MatrixTrace_psr(this, trace_value)
-    !! Parameters
     !> The matrix to compute the trace of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The trace value of the full distributed sparse matrix.

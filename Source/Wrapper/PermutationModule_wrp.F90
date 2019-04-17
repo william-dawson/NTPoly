@@ -2,7 +2,8 @@
 !> Wraps the permutation module for calling from other languages.
 MODULE PermutationModule_wrp
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation, &
-       ConstructReversePermutation, ConstructRandomPermutation, DestructPermutation
+       & ConstructReversePermutation, ConstructRandomPermutation, &
+       & DestructPermutation
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -21,8 +22,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that preserves the original order.
   SUBROUTINE ConstructDefaultPermutation_wrp(ih_this, matrix_dimension) &
        & bind(c,name="ConstructDefaultPermutation_wrp")
-    INTEGER(kind=c_int), INTENT(out) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: matrix_dimension
+    INTEGER(kind=c_int), INTENT(OUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: matrix_dimension
     TYPE(Permutation_wrp) :: h_this
 
     ALLOCATE(h_this%data)
@@ -33,8 +34,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that reverses the original order.
   SUBROUTINE ConstructReversePermutation_wrp(ih_this, matrix_dimension) &
        & bind(c,name="ConstructReversePermutation_wrp")
-    INTEGER(kind=c_int), INTENT(out) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: matrix_dimension
+    INTEGER(kind=c_int), INTENT(OUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: matrix_dimension
     TYPE(Permutation_wrp) :: h_this
 
     ALLOCATE(h_this%data)
@@ -45,8 +46,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Constructs a permutation that has a random order.
   SUBROUTINE ConstructRandomPermutation_wrp(ih_this, matrix_dimension) &
        & bind(c,name="ConstructRandomPermutation_wrp")
-    INTEGER(kind=c_int), INTENT(out) :: ih_this(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(in) :: matrix_dimension
+    INTEGER(kind=c_int), INTENT(OUT) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: matrix_dimension
     TYPE(Permutation_wrp) :: h_this
 
     ALLOCATE(h_this%data)
@@ -55,9 +56,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructRandomPermutation_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
-  PURE SUBROUTINE DestructPermutation_wrp(ih_this) &
+  SUBROUTINE DestructPermutation_wrp(ih_this) &
        & bind(c,name="DestructPermutation_wrp")
-    INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Permutation_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)

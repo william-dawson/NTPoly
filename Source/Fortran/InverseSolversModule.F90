@@ -21,7 +21,7 @@ MODULE InverseSolversModule
   PUBLIC :: PseudoInverse
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
-  !> An implementation of Hotelling's method \cite palser1998canonical.
+  !> An implementation of the method of Hotelling \cite palser1998canonical.
   SUBROUTINE Invert(Mat, InverseMat, solver_parameters_in)
     !> The matrix to invert.
     TYPE(Matrix_ps), INTENT(IN)  :: Mat
@@ -143,7 +143,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
-  !> An implementation of Hotelling's method \cite palser1998canonical.
+  !> An implementation of the method of Hotelling \cite palser1998canonical.
   SUBROUTINE PseudoInverse(Mat, InverseMat, solver_parameters_in)
     !> The matrix to compute the pseudo inverse of.
     TYPE(Matrix_ps), INTENT(IN)  :: Mat
