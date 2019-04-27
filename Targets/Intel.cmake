@@ -9,9 +9,9 @@ set(CMAKE_CXX_COMPILER mpiicpc)
 set(TOOLCHAIN_LIBS "-lblas")
 
 # Release suggestions
-set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -qopenmp -lgomp -fPIC")
-set(F_TOOLCHAINFLAGS_RELEASE "-O3 -fpp -qopenmp -fPIC")
+set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -qopenmp -lgomp")
+set(F_TOOLCHAINFLAGS_RELEASE "-O3 -fpp -qopenmp")
 
 # Debug suggestions
-set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -qopenmp -lgomp -fPIC")
-set(F_TOOLCHAINFLAGS_DEBUG "-check bounds -O0 -fpp -qopenmp -fPIC -DPURE=")
+set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -qopenmp -lgomp")
+set(F_TOOLCHAINFLAGS_DEBUG "-check bounds -O0 -fpp -qopenmp -DPURE=")
