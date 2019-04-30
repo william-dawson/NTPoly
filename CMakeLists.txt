@@ -18,6 +18,7 @@ find_package(SWIG 3.0)
 
 ################################################################################
 ## Testing
+option(FORTRAN_ONLY "Build only the Fortran bindings." OFF)
 if (NOT FORTRAN_ONLY)
   enable_testing()
 else()
@@ -54,12 +55,14 @@ endif()
 
 ################################################################################
 ## Check MPI Features
-option(USE_MPIH OFF)
+option(USE_MPIH "Use mpi.h for systems that don't have the mpi module" OFF)
 if (USE_MPIH OR NOT ${MPI_Fortran_HAVE_F90_MODULE})
   add_definitions(-DUSE_MPIH)
 endif()
 
-option(NOIALLGATHER OFF)
+option(NOIALLGATHER 
+  "A (slower) alternative communication strategy if iallgather not implemented"
+  OFF)
 if (NOIALLGATHER)
   add_definitions(-DNOIALLGATHER)
   message(STATUS "IAllgather replacement activated.")
