@@ -40,7 +40,7 @@ set(Fsrc
 
 ################################################################################
 add_library(NTPoly ${Fsrc})
-if (NOT FORTRAN_ONLY)
+if (NOT NOSWIG)
   set_target_properties(NTPoly PROPERTIES POSITION_INDEPENDENT_CODE True)
 endif()
 target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES}
