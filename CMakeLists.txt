@@ -86,6 +86,4 @@ subdirs(Source)
 
 if (NOT NOSWIG)
   subdirs(UnitTests)
-else()
-  add_custom_target(test echo "Swig disabled. No unit tests were generated.")
 endif()
