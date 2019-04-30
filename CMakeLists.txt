@@ -35,7 +35,8 @@ endif()
 if (NOT NOSWIG)
   enable_testing()
 else()
-  message(WARNING "Swig disabled. No local testing will be generated.")
+  message(WARNING
+          "Swig disabled. No python bindings or testing will be generated.")
 endif()
 
 ################################################################################
