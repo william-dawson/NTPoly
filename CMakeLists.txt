@@ -1,6 +1,6 @@
 ################################################################################
 ## Basic Setup
-cmake_minimum_required (VERSION 3.2)
+cmake_minimum_required (VERSION 3.12)
 project(NTPoly VERSION 2.3)
 enable_language(Fortran)
 

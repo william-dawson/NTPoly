@@ -1,18 +1,6 @@
 ################################################################################
-# Probe some information about python
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  find_package(PythonInterp REQUIRED)
-endif()
+find_package (Python COMPONENTS Development)
 
-include(ConfigPython.cmake)
-if (APPLE)
-  get_py_lib()
-  message(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
-endif()
-get_py_include()
-message(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
-
-include_directories(${PYTHON_INCLUDE_PATH})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/Source/C)
 include_directories(${CMAKE_SOURCE_DIR}/Source/CPlusPlus)
@@ -34,7 +22,7 @@ else()
    swig_add_library(NTPolySwig LANGUAGE python SOURCES ${Swigsrc})
 endif()
 swig_link_libraries(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly
-                    ${PYTHON_LIBRARIES} ${TOOLCHAIN_LIBS})
+                    Python::Python ${TOOLCHAIN_LIBS})
 set_target_properties(_NTPolySwig PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
   LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python

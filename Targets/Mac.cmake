@@ -4,7 +4,6 @@ set(CMAKE_SYSTEM_NAME Darwin)
 set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_Fortran_COMPILER mpif90)
 set(CMAKE_CXX_COMPILER mpicxx)
-set(PYTHON_EXECUTABLE python2)
 
 # Library Files
 set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp")
@@ -16,4 +15,4 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0")
 set(F_TOOLCHAINFLAGS_DEBUG
-  "-fcheck=ALL -O0 -fexternal-blas -cpp -Wall -DPURE=")
+  "-fcheck=all -O0 -fexternal-blas -cpp -Wall -DPURE=")

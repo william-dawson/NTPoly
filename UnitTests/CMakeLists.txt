@@ -11,8 +11,6 @@ set(TestFiles
     test_solvers.py
 )
 
-find_package(PythonInterp REQUIRED)
-
 ################################################################################
 find_package(MPI REQUIRED)
 execute_process(COMMAND ${MPIEXEC} --version
@@ -22,6 +20,8 @@ if (${mpiversion} MATCHES "OpenRTE")
 else()
   set(oversubscribe "")
 endif()
+
+find_package(Python COMPONENTS Interpreter)
 
 configure_file(__init__.py __init__.py COPYONLY)
 configure_file(helpers.py helpers.py COPYONLY)

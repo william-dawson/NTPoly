@@ -33,7 +33,7 @@ if [ -f $BranchFile ]
 then
   source "@CMAKE_SOURCE_DIR@/UnitTests/$TestName.sh"
   @MPIEXEC@ @MPIEXEC_NUMPROC_FLAG@ $PROCESSES @oversubscribe@ \
-  @PYTHON_EXECUTABLE@ -m unittest -v $BRANCHTEST
+  @Python_EXECUTABLE@ -m unittest -v $BRANCHTEST
 else
   echo "No local testfile ${BranchFile}"
 fi
