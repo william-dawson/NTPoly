@@ -19,7 +19,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
     cd ../
   fi
   wget https://github.com/Kitware/CMake/releases/download/v3.14.3/cmake-3.14.3.tar.gz;
-  tar xvf cmake-3.14.3.tar.gz 2>&1;
+  tar xvf cmake-3.14.3.tar.gz > /dev/null 2>&1
   cd cmake-3.14.3;
   ./bootstrap && make && sudo make install;
   cd ../
