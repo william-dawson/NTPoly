@@ -47,7 +47,7 @@ void ConstructGuoMatrix(const NTPoly::Matrix_ps &InMat,
     temp = tlist.GetTripletAt(i);
     temp_c.index_row = temp.index_row;
     temp_c.index_column = temp.index_column;
-    temp_c.point_value = std::complex<double>(0.0,1.0);
+    temp_c.point_value = std::complex<double>(0.0, 1.0);
     clist.Append(temp_c);
   }
   NTPoly::Matrix_ps CMatrix(SMat.GetActualDimension());

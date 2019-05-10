@@ -1,4 +1,5 @@
 # Generic modules
+import numpy
 import sys
 
 # NTPoly
@@ -8,7 +9,6 @@ import NTPolySwig as nt
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
-import numpy
 
 ##########################################################################
 if __name__ == "__main__":
