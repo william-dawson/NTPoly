@@ -7,7 +7,7 @@ categories: blog update
 
 [Version 2.3.1](/NTPoly/downloads) of NTPoly is now available.
 
-Version 2.3.1 contains some minor fixes and improvements.
+Version 2.3.1 contains some fixes and minor improvements.
 
 Bug Fixes:
 * Major fix to the implementation of the purification based extrapolation
