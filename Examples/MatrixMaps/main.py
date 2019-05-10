@@ -20,6 +20,7 @@ class TestOperation(nt.RealOperation):
             return True
         return False
 
+
 ##########################################################################
 if __name__ == "__main__":
     rank = comm.Get_rank()

@@ -13,5 +13,5 @@ set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -lgomp")
 set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -openmp")
 
 # Debug suggestions
-set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -openmp")
-set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all")
+set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -openmp -Wall")
+set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall")

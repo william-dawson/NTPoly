@@ -1,4 +1,6 @@
 # Generic modules
+import random
+import numpy
 import sys
 
 # NT Poly
@@ -8,9 +10,6 @@ import NTPolySwig as nt
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
-import numpy
-
-import random
 
 ##########################################################################
 if __name__ == "__main__":
