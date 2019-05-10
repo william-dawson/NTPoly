@@ -1,0 +1,30 @@
+---
+layout: post
+title:  "Release of Version 2.3.1"
+date:   2019-05-09 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.3.1](/NTPoly/downloads) of NTPoly is now available.
+
+Version 2.3.1 contains some minor fixes and improvements.
+
+Bug Fixes:
+* Major fix to the implementation of the purification based extrapolation
+ technique (thanks to Victor Yu).
+
+Features:
+* Rubennson's Scale and Fold purification technique.
+
+Miscellaneous:
+* cmake now automatically handles the use of position independent code.
+* More options for cmake.
+* Improvements to the CI system.
+
+I would note that the Scale and Fold technique requires knowledge about the
+homo and lumo band locations, which makes it less easy to use. However, the
+performance is good, so I think this should at least be included as a
+benchmark to compare new methods against.
+
+I hope that this new version of NTPoly is easier to compile. I am also planning
+on adding it to the SPACK package manager soon. 
