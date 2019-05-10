@@ -1275,7 +1275,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: energy_value, energy_value2
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: outer_counter, inner_counter
+    INTEGER :: outer_counter
     INTEGER :: total_iterations
 
     !! Optional Parameters
