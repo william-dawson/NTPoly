@@ -46,9 +46,10 @@ class TestChemistry:
         isq = funm(overlap.todense(), lambda x: 1.0 / sqrt(x))
         wfock = isq.dot(fock.todense()).dot(isq)
 
-        # Add a gap
+        # Add 2 gaps
         w, v = eigh(wfock)
         gap = (w[-1] - w[0]) / 2.0
+        w[self.shellgap:] += gap
         w[self.nel:] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
@@ -96,6 +97,7 @@ class TestChemistry:
         self.geomd2 = environ["GEOMD2"]
         self.realio = environ["REALIO"]
         self.nel = 10
+        self.shellgap = 3
 
         self.hamiltonian = join(scratch_dir, "rf.mtx")
         self.overlap = join(scratch_dir, "rs.mtx")
@@ -193,6 +195,35 @@ class TestChemistry:
         energy_value = SRoutine(fock_matrix, inverse_sqrt_matrix,
                                 self.nel, density_matrix,
                                 homo, lumo, self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_full()
+        comm.barrier()
+
+    def test_dac(self):
+        '''Test the divide and conquer purify method.'''
+        SRoutine = nt.DensityMatrixSolvers.DACPurify
+        self.create_matrices()
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+        # This method needs some locations of gaps
+        gap_list = [self.shellgap, self.nel / 2]
+        energy_value, chemical_potential = SRoutine(fock_matrix,
+                                                    inverse_sqrt_matrix,
+                                                    gap_list, density_matrix,
+                                                    self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()

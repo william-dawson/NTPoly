@@ -1,6 +1,8 @@
 #include "DensityMatrixSolvers.h"
 #include "PSMatrix.h"
 #include "SolverParameters.h"
+using std::vector;
+#include <iostream>
 
 ////////////////////////////////////////////////////////////////////////////////
 extern "C" {
@@ -59,6 +61,18 @@ void DensityMatrixSolvers::ScaleAndFold(
     const SolverParameters &solver_parameters) {
   ScaleAndFold_wrp(GetIH(Hamiltonian), GetIH(Overlap), &nel, GetIH(Density),
                    &homo, &lumo, &energy_value_out, GetIH(solver_parameters));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void DensityMatrixSolvers::DACPurify(
+    const Matrix_ps &Hamiltonian, const Matrix_ps &Overlap,
+    vector<int> gap_list, Matrix_ps &Density, double &energy_value_out,
+    double &chemical_potential_out, const SolverParameters &solver_parameters) {
+  int len;
+  len = (int)gap_list.size();
+  DACPurify_wrp(GetIH(Hamiltonian), GetIH(Overlap), &gap_list[0], &len,
+                GetIH(Density), &energy_value_out, &chemical_potential_out,
+                GetIH(solver_parameters));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

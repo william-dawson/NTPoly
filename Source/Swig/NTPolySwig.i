@@ -38,6 +38,11 @@ using namespace NTPoly;
 
 %include <complex.i>
 %include "std_string.i"
+%include "std_vector.i"
+
+namespace std {
+   %template(IntVector) vector<int>;
+}
 
 %feature("director") RealOperation;
 %feature("director") ComplexOperation;

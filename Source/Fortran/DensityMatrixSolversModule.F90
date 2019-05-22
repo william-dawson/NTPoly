@@ -23,6 +23,7 @@ MODULE DensityMatrixSolversModule
   PUBLIC :: TRS4
   PUBLIC :: HPCP
   PUBLIC :: ScaleAndFold
+  PUBLIC :: DACPurify
   PUBLIC :: EnergyDensityMatrix
   ! PUBLIC :: HPCPPlus
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1414,7 +1415,101 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructSolverParameters(solver_parameters)
-  END SUBROUTINE SCALEANDFOLD
+  END SUBROUTINE ScaleAndFold
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix using a divide and conquer approach.
+  SUBROUTINE DACPurify(Hamiltonian, InverseSquareRoot, gap_list, Density, &
+       & energy_value_out, chemical_potential_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from.
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The locations of gaps in the spectrum.
+    INTEGER, DIMENSION(:), INTENT(IN) :: gap_list
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> The chemical potential (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> Parameters for the solver (optional).
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+    REAL(NTREAL) :: chemical_potential, energy_value
+    !! Local Variables
+    TYPE(Matrix_ps) :: DH, TempMat, Identity, WorkingHamiltonian
+    TYPE(MatrixMemoryPool_p) :: pool
+    INTEGER :: II
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    !! Setup the local matrices
+    CALL ConstructEmptyMatrix(DH, Hamiltonian)
+    CALL ConstructEmptyMatrix(Identity, Hamiltonian)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Compute the working hamiltonian.
+    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+
+    !! Log solver information
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", value="Divide and Conquer")
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    !! Main Loop
+    DO II = 1, SIZE(gap_list)
+       !! Purify
+       CALL TRS4(WorkingHamiltonian, Identity, 2*gap_list(II), Density, &
+            & energy_value, chemical_potential, solver_parameters)
+
+       !! Rotate into the reduced subspace
+       CALL CopyMatrix(Identity, DH)
+       CALL IncrementMatrix(Density, DH, alpha_in=-1.0_NTREAL)
+       CALL MatrixMultiply(DH,WorkingHamiltonian,TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(TempMat,DH,WorkingHamiltonian, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    END DO
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot,Density,TempMat, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+
+    !! Optional Parameters
+    IF (PRESENT(chemical_potential_out)) THEN
+       chemical_potential_out = chemical_potential
+    END IF
+    IF (PRESENT(energy_value_out)) THEN
+       energy_value_out = energy_value
+    END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrixMemoryPool(pool)
+    CALL DestructMatrix(DH)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(WorkingHamiltonian)
+
+  END SUBROUTINE DACPurify
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the energy-weighted density matrix.
   SUBROUTINE EnergyDensityMatrix(Hamiltonian, Density, EnergyDensity, &

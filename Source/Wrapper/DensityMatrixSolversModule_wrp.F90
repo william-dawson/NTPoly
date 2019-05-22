@@ -3,7 +3,7 @@
 MODULE DensityMatrixSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2, TRS4, HPCP, PM, ScaleAndFold, &
-       & EnergyDensityMatrix
+       & DACPurify, EnergyDensityMatrix
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -16,6 +16,7 @@ MODULE DensityMatrixSolversModule_wrp
   PUBLIC :: TRS4_wrp
   PUBLIC :: HPCP_wrp
   PUBLIC :: ScaleAndFold_wrp
+  PUBLIC :: DACPurify_wrp
   PUBLIC :: EnergyDensityMatrix_wrp
   ! PUBLIC :: HPCPPlus_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -150,6 +151,39 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_Density%data, homo, lumo, energy_value_out, &
          & h_solver_parameters%data)
   END SUBROUTINE ScaleAndFold_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix with a divide and conquer approach
+  SUBROUTINE DACPurify_wrp(ih_Hamiltonian, ih_InverseSquareRoot, gap_list, &
+       & ngaps, ih_Density, energy_value_out, chemical_potential_out, &
+       & ih_solver_parameters) bind(c,name="DACPurify_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Hamiltonian(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_InverseSquareRoot(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ngaps
+    INTEGER(kind=c_int), DIMENSION(ngaps), INTENT(IN) :: gap_list
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_Density(SIZE_wrp)
+    REAL(NTREAL), INTENT(OUT) :: energy_value_out
+    REAL(NTREAL), INTENT(OUT) :: chemical_potential_out
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_Hamiltonian
+    TYPE(Matrix_ps_wrp) :: h_InverseSquareRoot
+    TYPE(Matrix_ps_wrp) :: h_Density
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
+    INTEGER(kind=c_int), DIMENSION(ngaps) :: agap_list
+    INTEGER :: II
+
+    h_Hamiltonian = TRANSFER(ih_Hamiltonian,h_Hamiltonian)
+    h_InverseSquareRoot = TRANSFER(ih_InverseSquareRoot,h_InverseSquareRoot)
+    h_Density = TRANSFER(ih_Density,h_Density)
+    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
+
+    DO II = 1, ngaps
+       agap_list(II) = gap_list(II)
+    END DO
+
+    CALL DACPurify(h_Hamiltonian%data, h_InverseSquareRoot%data, agap_list,&
+         & h_Density%data, energy_value_out, chemical_potential_out,&
+         & h_solver_parameters%data)
+  END SUBROUTINE DACPurify_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the energy-weighted density matrix.
   SUBROUTINE EnergyDensityMatrix_wrp(ih_Hamiltonian, ih_Density, &
