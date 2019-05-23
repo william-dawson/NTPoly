@@ -49,7 +49,7 @@ class TestChemistry:
         # Add a gap
         w, v = eigh(wfock)
         gap = (w[-1] - w[0]) / 2.0
-        w[self.nel:] += gap
+        w[int(self.nel)/2:] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
         else:
