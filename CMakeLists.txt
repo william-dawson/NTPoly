@@ -1,7 +1,7 @@
 ################################################################################
 ## Basic Setup
 cmake_minimum_required (VERSION 3.2)
-project(NTPoly VERSION 2.3)
+project(NTPoly VERSION 2.3.1)
 enable_language(Fortran)
 
 ################################################################################
@@ -17,11 +17,26 @@ endif()
 find_package(SWIG 3.0)
 
 ################################################################################
+## Options
+option(FORTRAN_ONLY "Build only the Fortran bindings." OFF)
+option(NOSWIG "Don't build the swig bindings." OFF)
+option(USE_MPIH "Use mpi.h for systems that don't have the mpi module" OFF)
+option(NOIALLGATHER
+  "A (slower) alternative communication strategy if iallgather not implemented"
+  OFF)
+
+## Process these options
+if (NOT SWIG_FOUND OR FORTRAN_ONLY)
+  set(NOSWIG TRUE)
+endif()
+
+################################################################################
 ## Testing
-if (NOT FORTRAN_ONLY)
+if (NOT NOSWIG)
   enable_testing()
 else()
-  message(WARNING "Fortran only! No local testing will be generated.")
+  message(WARNING
+          "Swig disabled. No python bindings or testing will be generated.")
 endif()
 
 ################################################################################
@@ -62,12 +77,10 @@ ENDIF()
 
 ################################################################################
 ## Check MPI Features
-option(USE_MPIH OFF)
 if (USE_MPIH OR NOT ${MPI_Fortran_HAVE_F90_MODULE})
   add_definitions(-DUSE_MPIH)
 endif()
 
-option(NOIALLGATHER OFF)
 if (NOIALLGATHER)
   add_definitions(-DNOIALLGATHER)
   message(STATUS "IAllgather replacement activated.")
@@ -90,6 +103,6 @@ ENDIF()
 subdirs(Documentation)
 subdirs(Source)
 
-if (NOT FORTRAN_ONLY)
+if (NOT NOSWIG)
   subdirs(UnitTests)
 endif()

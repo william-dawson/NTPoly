@@ -12,26 +12,26 @@ matrix:
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST=1
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST="make test"
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST=1 NOIALLGATHER=1
+      env: TESTOS="LINUX" TESTEXAMPLES=1 DEBUG=1 MAKETEST="ctest -R Regression111""
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1
+      env: TESTOS="LINUX" TESTEXAMPLES=1 NOIALLGATHER=1 MAKETEST="make test"
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" FORTRAN_ONLY=1 SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
+      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression211"
     - os: linux
       sudo: required
       dist: trusty
-      env: TESTOS="LINUX" SKIPDOXYGEN=1 SKIPSWIG=1 MAKETEST=0
+      env: TESTOS="LINUX" SKIPSWIG=1 MAKETEST=":"
     - os: osx
       sudo: required
-      env: TESTOS="OSX" MAKETEST=0
+      env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
 
 cache:
   pip: true
@@ -46,7 +46,7 @@ script:
   - cd Build
   - bash ../UnitTests/travis_run_cmake.sh
   - make
-  - if [ "$MAKETEST" = 1 ]; then make test; fi
+  - eval "$MAKETEST"
   - cd ../UnitTests/
   - bash travis_check_examples.sh
 

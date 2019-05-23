@@ -3,7 +3,7 @@
 MODULE DensityMatrixSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2, TRS4, HPCP, PM, DenseSolver, &
-       & EnergyDensityMatrix
+       & ScaleAndFold, EnergyDensityMatrix
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
@@ -16,6 +16,7 @@ MODULE DensityMatrixSolversModule_wrp
   PUBLIC :: TRS4_wrp
   PUBLIC :: HPCP_wrp
   PUBLIC :: DenseSolver_wrp
+  PUBLIC :: ScaleAndFold_wrp
   PUBLIC :: EnergyDensityMatrix_wrp
   ! PUBLIC :: HPCPPlus_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -148,6 +149,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_Density%data, energy_value_out, chemical_potential_out, &
          & h_solver_parameters%data)
   END SUBROUTINE DenseSolver_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix from a Hamiltonian using the Scale and Fold
+  !> method.
+  SUBROUTINE ScaleAndFold_wrp(ih_Hamiltonian, ih_InverseSquareRoot, nel, &
+       & ih_Density, homo, lumo, energy_value_out, ih_solver_parameters) &
+       & bind(c,name="ScaleAndFold_wrp")
+    INTEGER(kind=c_int), INTENT(IN) :: ih_Hamiltonian(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_InverseSquareRoot(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: nel
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_Density(SIZE_wrp)
+    REAL(NTREAL), INTENT(OUT) :: energy_value_out
+    REAL(NTREAL), INTENT(IN) :: homo
+    REAL(NTREAL), INTENT(IN) :: lumo
+    INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_Hamiltonian
+    TYPE(Matrix_ps_wrp) :: h_InverseSquareRoot
+    TYPE(Matrix_ps_wrp) :: h_Density
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
+
+    h_Hamiltonian = TRANSFER(ih_Hamiltonian,h_Hamiltonian)
+    h_InverseSquareRoot = TRANSFER(ih_InverseSquareRoot,h_InverseSquareRoot)
+    h_Density = TRANSFER(ih_Density,h_Density)
+    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
+
+    CALL ScaleAndFold(h_Hamiltonian%data, h_InverseSquareRoot%data, nel, &
+         & h_Density%data, homo, lumo, energy_value_out, &
+         & h_solver_parameters%data)
+  END SUBROUTINE ScaleAndFold_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the energy-weighted density matrix.
   SUBROUTINE EnergyDensityMatrix_wrp(ih_Hamiltonian, ih_Density, &

@@ -7,6 +7,7 @@ from subprocess import call
 from os import environ, chdir
 from os.path import join
 
+
 def parse_command(fin, num_commands=1):
     '''
     Keep parsing a command which is wrapped in the github markdown style

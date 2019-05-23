@@ -80,6 +80,24 @@ public:
                           Matrix_ps &Density, double &energy_value_out,
                           double &chemical_potential_out,
                           const SolverParameters &solver_parameters);
+  //! Compute the density matrix from a Hamiltonian using the Scale and Fold
+  //! method. Based on the method of \cite rubensson2011nonmonotonic .
+  //! Note that for this method, you must provide the value of the homo and
+  //! lumo gap. It is not necessary for these to be accurate, but give a
+  //! conservative value.
+  //!\param Hamiltonian the matrix to compute the corresponding density from.
+  //!\param InverseSquareRoot of the overlap matrix.
+  //!\param nel the number of electrons.
+  //!\param Density the density matrix computed by this routine.
+  //!\param homo A conservative estimate of the highest occupied eigenvalue.
+  //!\param lumo A conservative estimate of the lowest unoccupied eigenvalue.
+  //!\param energy_value_out the energy of the system (optional).
+  //!\param solver_parameters parameters for the solver
+  static void ScaleAndFold(const Matrix_ps &Hamiltonian,
+                           const Matrix_ps &InverseSquareRoot, int nel,
+                           Matrix_ps &Density, double homo, double lumo,
+                           double &energy_value_out,
+                           const SolverParameters &solver_parameters);
   //! Compute the energy-weighted density matrix.
   //!\param Hamiltonian the matrix to compute from.
   //!\param Density the density matrix.

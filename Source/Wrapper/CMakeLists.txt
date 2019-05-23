@@ -30,6 +30,10 @@ set(Wsrc
 
 ################################################################################
 add_library(NTPolyWrapper ${Wsrc})
+if (NOT NOSWIG)
+   set_target_properties(NTPolyWrapper PROPERTIES
+        POSITION_INDEPENDENT_CODE True)
+endif()
 target_link_libraries(NTPolyWrapper NTPoly)
 
 include(GNUInstallDirs)

@@ -125,7 +125,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(KIND=NTLONG), INTENT(IN), OPTIONAL :: values_in
     !! Local variables
     CHARACTER(LEN=MAX_LINE_LENGTH) :: temp1, temp2, temp3
-    LOGICAL :: new_line
 
     !! Write everything to strings.
     WRITE(temp1, *) rows

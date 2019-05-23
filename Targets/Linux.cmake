@@ -9,9 +9,9 @@ set(CMAKE_CXX_COMPILER mpicxx)
 set(TOOLCHAIN_LIBS "-llapack -lblas")
 
 # Release suggestions
-set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -lgomp -fPIC")
-set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -openmp -fPIC")
+set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp -lgomp")
+set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -openmp")
 
 # Debug suggestions
-set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -openmp -fPIC")
-set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fPIC -fcheck=all")
+set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -openmp -Wall")
+set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall")

@@ -58,6 +58,9 @@ set(Chead
 
 ################################################################################
 add_library(NTPolyCPP ${Csrc} ${Chead})
+if (NOT NOSWIG)
+   set_target_properties(NTPolyCPP PROPERTIES POSITION_INDEPENDENT_CODE True)
+endif()
 target_link_libraries(NTPolyCPP NTPolyWrapper)
 
 set_target_properties(NTPolyCPP PROPERTIES PUBLIC_HEADER "${Chead}")
