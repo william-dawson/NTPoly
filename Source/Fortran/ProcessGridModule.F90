@@ -633,7 +633,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Pick an appropriate number of process slices for this calculation.
   !> This routine will focus on whether we can make a valid process grid with
-  !> several slices. 
+  !> several slices.
   SUBROUTINE ComputeNumSlices(total_processors, slices)
     !> Total processors in the grid.
     INTEGER, INTENT(IN) :: total_processors
