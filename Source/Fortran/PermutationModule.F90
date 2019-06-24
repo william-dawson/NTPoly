@@ -32,6 +32,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: counter
 
+    CALL DestructPermutation(this)
+
     ALLOCATE(this%index_lookup(matrix_dimension))
     ALLOCATE(this%reverse_index_lookup(matrix_dimension))
 
@@ -51,6 +53,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: matrix_dimension
     !! Local Data
     INTEGER :: counter
+
+    CALL DestructPermutation(this)
 
     ALLOCATE(this%index_lookup(matrix_dimension))
     ALLOCATE(this%reverse_index_lookup(matrix_dimension))

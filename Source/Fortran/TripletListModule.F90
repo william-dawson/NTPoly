@@ -8,6 +8,7 @@ MODULE TripletListModule
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC, MM_HERMITIAN
   USE, INTRINSIC :: ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
+  PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A data type for a list of triplets.
   TYPE :: TripletList_r
