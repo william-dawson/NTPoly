@@ -1,4 +1,3 @@
-
   INTEGER :: II
   LOGICAL :: valid
   INTEGER :: num_slices
