@@ -1,9 +1,7 @@
 '''
-@package test_psmatrixalgebra
 A test suite for parallel matrix algebra.
 '''
 from helpers import THRESHOLD
-from helpers import result_file
 from helpers import scratch_dir
 import unittest
 import NTPolySwig as nt

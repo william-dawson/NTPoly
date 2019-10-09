@@ -1,6 +1,6 @@
-'''@package test_chemistry
+"""
 A test suite for chemistry focused solvers.
-'''
+"""
 from helpers import THRESHOLD, EXTRAPTHRESHOLD
 from helpers import result_file
 from helpers import scratch_dir
@@ -49,7 +49,7 @@ class TestChemistry:
         # Add a gap
         w, v = eigh(wfock)
         gap = (w[-1] - w[0]) / 2.0
-        w[int(self.nel)/2:] += gap
+        w[int(self.nel/2):] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
         else:
@@ -190,9 +190,8 @@ class TestChemistry:
         # This method needs the homo and lumo
         cp, homo, lumo = self.compute_cp()
         print(":::::", homo, lumo, cp)
-        energy_value = SRoutine(fock_matrix, inverse_sqrt_matrix,
-                                self.nel, density_matrix,
-                                homo, lumo, self.solver_parameters)
+        SRoutine(fock_matrix, inverse_sqrt_matrix, self.nel, density_matrix,
+                 homo, lumo, self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()

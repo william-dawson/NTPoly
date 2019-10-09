@@ -1,22 +1,21 @@
-''' @package test_solvers
+'''
 A test suite for the different solvers.'''
 import unittest
 import NTPolySwig as nt
 import warnings
-from scipy.linalg import pinv, funm, polar, cholesky
+from scipy.linalg import pinv, funm, polar
 from scipy.sparse import csr_matrix, csc_matrix, rand, identity
 from scipy.io import mmread, mmwrite
 from scipy.sparse.linalg import norm, inv, eigsh
-from numpy import zeros, sqrt, power, \
-    sign, exp, log, sin, cos, linspace, diag, dot, array, sort
-from numpy.linalg import eigh, svd
+from numpy import sqrt, power, \
+    sign, exp, log, sin, cos, linspace, diag, dot, sort
+from numpy.linalg import eigh
 from numpy.linalg import norm as normd
-from random import random
 from numpy.polynomial.chebyshev import chebfit, chebval
 from numpy.polynomial.hermite import hermfit, hermval
 from mpi4py import MPI
 from helpers import THRESHOLD
-from helpers import result_file, result_file2
+from helpers import result_file
 from helpers import scratch_dir
 from os import environ
 from os.path import join
@@ -98,7 +97,6 @@ class TestSolvers(unittest.TestCase):
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
-        global_norm = comm.bcast(normval, root=0)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
@@ -113,7 +111,6 @@ class TestSolvers(unittest.TestCase):
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
-        global_norm = comm.bcast(normval, root=0)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 

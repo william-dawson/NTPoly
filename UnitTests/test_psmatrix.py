@@ -1,6 +1,5 @@
 '''
-@package test_matrix
-A test suite for paralle matrices.
+A test suite for parallel matrices.
 '''
 import unittest
 import NTPolySwig as nt
@@ -14,7 +13,6 @@ from os.path import join
 import sys
 from mpi4py import MPI
 from helpers import THRESHOLD
-from helpers import result_file
 from helpers import scratch_dir
 # MPI global communicator.
 comm = MPI.COMM_WORLD

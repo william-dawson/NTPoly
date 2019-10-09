@@ -7,18 +7,14 @@ import NTPolySwig as nt
 
 from numpy import sum, multiply, conj
 from random import uniform, randint
-from scipy.linalg import eigh
 from scipy.sparse import random, csr_matrix
 from scipy.sparse.linalg import norm
-from numpy import diag
-from numpy.linalg import norm as normd
 
 from scipy.io import mmwrite, mmread
 from os import environ
 from os.path import join
 
 from helpers import THRESHOLD
-from helpers import result_file
 
 
 class TestParameters:

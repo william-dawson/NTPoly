@@ -30,6 +30,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   sudo pip2 install scipy --upgrade --no-cache-dir
   sudo pip2 install numpy --upgrade --no-cache-dir
   sudo pip2 install mpi4py --upgrade --no-cache-dir
+  sudo pip2 install flake8 --upgrade --no-cache-dir
 else
   sudo ldconfig
   sudo apt-get install python-dev
@@ -49,6 +50,7 @@ else
   sudo pip install scipy --upgrade
   sudo pip install numpy --upgrade
   sudo pip install mpi4py --upgrade
+  sudo pip install flake8 --upgrade
 fi
 
 test -n $CC  && unset CC
