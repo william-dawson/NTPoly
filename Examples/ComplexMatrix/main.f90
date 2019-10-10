@@ -6,6 +6,7 @@ PROGRAM ComplexMatrix
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE ExponentialSolversModule, ONLY : ComputeExponential
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
+  USE MatrixMarketModule, ONLY : MM_SYMMETRIC
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & DestructMatrix, TransposeMatrix, GetMatrixTripletList, &
@@ -15,7 +16,7 @@ PROGRAM ComplexMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList, &
        & GetTripletAt, TripletList_c, ConstructTripletList, &
-       & AppendToTripletList, SymmetrizeTripletList, MM_SYMMETRIC
+       & AppendToTripletList, SymmetrizeTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE MPI
   IMPLICIT NONE

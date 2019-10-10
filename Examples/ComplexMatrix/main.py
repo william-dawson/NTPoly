@@ -7,9 +7,9 @@ comm = MPI.COMM_WORLD
 
 
 def ConstructGuoMatrix(InMat, OutMat):
-    '''
+    """
     Construct the Hermitian matrix from a nonsymmetric matrix.
-    '''
+    """
     # First Symmetrize The Input Matrix.
     tlist = nt.TripletList_r()
     stlist = nt.TripletList_r()
