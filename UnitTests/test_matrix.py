@@ -1,24 +1,10 @@
-'''
-@package testSparseMatrix
+"""
 A test suite for local matrices.
-'''
+"""
 import unittest
 import NTPolySwig as nt
 
-from numpy import sum, multiply, conj
-from random import uniform, randint
-from scipy.linalg import eigh
-from scipy.sparse import random, csr_matrix
-from scipy.sparse.linalg import norm
-from numpy import diag
-from numpy.linalg import norm as normd
-
 from scipy.io import mmwrite, mmread
-from os import environ
-from os.path import join
-
-from helpers import THRESHOLD
-from helpers import result_file
 
 
 class TestParameters:
@@ -41,6 +27,8 @@ class TestParameters:
         '''
         Function to create a matrix for a given set of parameters.
         '''
+        from scipy.sparse import random, csr_matrix
+
         r = self.rows
         c = self.columns
         s = self.sparsity
@@ -57,6 +45,8 @@ class TestParameters:
 
 class TestLocalMatrix(unittest.TestCase):
     '''A test class for local matrices.'''
+    from os import environ
+    from os.path import join
     # Parameters for the matrices
     parameters = []
     # Location of the scratch directory.
@@ -67,6 +57,20 @@ class TestLocalMatrix(unittest.TestCase):
     SMatrix = nt.Matrix_lsr
     MatrixMemoryPool = nt.MatrixMemoryPool_r
     complex = False
+
+    def _compare_mat(self, val1, val2):
+        from helpers import THRESHOLD
+        from scipy.sparse.linalg import norm
+
+        normval = abs(norm(val1 - val2))
+        self.assertLessEqual(normval, THRESHOLD)
+
+    def _compare(self, val1, val2):
+        from helpers import THRESHOLD
+        from scipy.linalg import norm
+
+        normval = abs(norm(val1 - val2))
+        self.assertLessEqual(normval, THRESHOLD)
 
     def setUp(self):
         '''Set up a test.'''
@@ -89,8 +93,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix2 = self.SMatrix(self.file1)
             matrix2.WriteToMatrixMarket(self.file2)
             ResultMat = mmread(self.file2)
-            normval = abs(norm(matrix1 - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(matrix1, ResultMat)
 
     def test_readcircular(self):
         '''Test routines to read a matrix produced by ntpoly.'''
@@ -102,8 +105,8 @@ class TestLocalMatrix(unittest.TestCase):
             matrix3 = self.SMatrix(self.file2)
             matrix3.WriteToMatrixMarket(self.file3)
             ResultMat = mmread(self.file3)
-            normval = abs(norm(matrix1 - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+
+            self._compare_mat(matrix1, ResultMat)
 
     def test_readsymmetric(self):
         '''Test routines to read and write matrices.'''
@@ -114,11 +117,12 @@ class TestLocalMatrix(unittest.TestCase):
             matrix2 = self.SMatrix(self.file1)
             matrix2.WriteToMatrixMarket(self.file2)
             ResultMat = mmread(self.file2)
-            normval = abs(norm(matrix1 - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+
+            self._compare_mat(matrix1, ResultMat)
 
     def test_addition(self):
         '''Test routines to add together matrices.'''
+        from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
@@ -131,8 +135,8 @@ class TestLocalMatrix(unittest.TestCase):
             matrix2.Increment(matrix1, alpha, 0.0)
             matrix2.WriteToMatrixMarket(self.file2)
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_addzero(self):
         '''Test routines to add together a matrix and zero.'''
@@ -146,8 +150,7 @@ class TestLocalMatrix(unittest.TestCase):
             matrix2.Increment(matrix1, 1.0, 0.0)
             matrix2.WriteToMatrixMarket(self.file2)
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_addzeroreverse(self):
         '''Test routines to add together a matrix and zero.'''
@@ -161,11 +164,11 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1.Increment(matrix2, 1.0, 0.0)
             matrix1.WriteToMatrixMarket(self.file2)
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_dot(self):
         '''Test routines to dot two matrices.'''
+        from numpy import sum, multiply
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
@@ -175,8 +178,8 @@ class TestLocalMatrix(unittest.TestCase):
             matrix1 = self.SMatrix(self.file1)
             matrix2 = self.SMatrix(self.file2)
             result = matrix2.Dot(matrix1)
-            normval = result - check
-            self.assertLessEqual(normval, THRESHOLD)
+
+            self._compare(result, check)
 
     def test_transpose(self):
         '''Test routines to transpose a matrix.'''
@@ -191,11 +194,13 @@ class TestLocalMatrix(unittest.TestCase):
 
             CheckMat = matrix1.T
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_pairwise(self):
         '''Test routines to pairwise multiply two matrices.'''
+        from scipy.sparse import csr_matrix
+        from numpy import multiply
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
@@ -212,11 +217,11 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix3.WriteToMatrixMarket(self.file3)
 
             ResultMat = mmread(self.file3)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_multiply(self):
         '''Test routines to multiply two matrices.'''
+        from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex).H
@@ -224,7 +229,7 @@ class TestLocalMatrix(unittest.TestCase):
             mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
             beta = 0.0
-            if abs(beta) > THRESHOLD:
+            if abs(beta) > 0.0:
                 CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
             else:
                 CheckMat = alpha * matrix1.dot(matrix2)
@@ -240,11 +245,11 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix3.WriteToMatrixMarket(self.file3)
 
             ResultMat = mmread(self.file3)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_multiply_zero(self):
         '''Test routines to multiply two matrices where one is zero.'''
+        from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = 0 * param.create_matrix(complex=self.complex).H
@@ -252,7 +257,7 @@ class TestLocalMatrix(unittest.TestCase):
             mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
             beta = 0.0
-            if abs(beta) > THRESHOLD:
+            if abs(beta) > 0.0:
                 CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
             else:
                 CheckMat = alpha * matrix1.dot(matrix2)
@@ -268,11 +273,11 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix3.WriteToMatrixMarket(self.file3)
 
             ResultMat = mmread(self.file3)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_get_row(self):
         '''Test function that extracts a row from the matrix'''
+        from random import randint
         for param in self.parameters:
             if param.rows == 0:
                 continue
@@ -287,11 +292,11 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix2.WriteToMatrixMarket(self.file2)
 
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_get_column(self):
         '''Test function that extracts a column from the matrix'''
+        from random import randint
         for param in self.parameters:
             if param.columns == 0:
                 continue
@@ -306,8 +311,7 @@ class TestLocalMatrix(unittest.TestCase):
             ntmatrix2.WriteToMatrixMarket(self.file2)
 
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
 
 class TestLocalMatrix_c(TestLocalMatrix):
@@ -330,11 +334,11 @@ class TestLocalMatrix_c(TestLocalMatrix):
 
             CheckMat = matrix1.H
             ResultMat = mmread(self.file2)
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_dot(self):
         '''Test routines to dot two matrices.'''
+        from numpy import sum, multiply, conj
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
@@ -343,9 +347,9 @@ class TestLocalMatrix_c(TestLocalMatrix):
             check = sum(multiply(conj(matrix1.todense()), matrix2.todense()))
             matrix1 = self.SMatrix(self.file1)
             matrix2 = self.SMatrix(self.file2)
-            result = matrix2.Dot(matrix1)
-            normval = result - check
-            self.assertLessEqual(normval, THRESHOLD)
+            result = matrix1.Dot(matrix2)
+
+            self._compare(result, check)
 
 
 ###############################################################################

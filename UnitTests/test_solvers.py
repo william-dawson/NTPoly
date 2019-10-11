@@ -1,25 +1,13 @@
-''' @package test_solvers
-A test suite for the different solvers.'''
+"""
+A test suite for the different solvers.
+"""
 import unittest
 import NTPolySwig as nt
 import warnings
-from scipy.linalg import pinv, funm, polar, cholesky
-from scipy.sparse import csr_matrix, csc_matrix, rand, identity
-from scipy.io import mmread, mmwrite
-from scipy.sparse.linalg import norm, inv, eigsh
-from numpy import zeros, sqrt, power, \
-    sign, exp, log, sin, cos, linspace, diag, dot, array, sort
-from numpy.linalg import eigh, svd
-from numpy.linalg import norm as normd
-from random import random
-from numpy.polynomial.chebyshev import chebfit, chebval
-from numpy.polynomial.hermite import hermfit, hermval
+from scipy.sparse import csr_matrix
+from scipy.io import mmread
 from mpi4py import MPI
-from helpers import THRESHOLD
-from helpers import result_file, result_file2
-from helpers import scratch_dir
-from os import environ
-from os.path import join
+from helpers import result_file
 
 
 # MPI global communicator.
@@ -30,6 +18,8 @@ warnings.filterwarnings(action="ignore", module="scipy",
 
 class TestSolvers(unittest.TestCase):
     '''A test class for the different kinds of solvers.'''
+    from os.path import join
+    from helpers import scratch_dir
     # First input file.
     input_file = join(scratch_dir, "input.mtx")
     # Second input file.
@@ -43,6 +33,7 @@ class TestSolvers(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
+        from os import environ
         '''Set up all of the tests.'''
         rows = int(environ['PROCESS_ROWS'])
         columns = int(environ['PROCESS_COLUMNS'])
@@ -58,6 +49,7 @@ class TestSolvers(unittest.TestCase):
         '''
         Create the test matrix with the following parameters.
         '''
+        from scipy.sparse import rand, identity
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
         mat = mat + mat.T
         if SPD:
@@ -73,6 +65,7 @@ class TestSolvers(unittest.TestCase):
         return csr_matrix(mat)
 
     def write_matrix(self, mat, file_name):
+        from scipy.io import mmwrite
         if self.my_rank == 0:
             mmwrite(file_name, csr_matrix(mat))
         comm.barrier()
@@ -90,6 +83,8 @@ class TestSolvers(unittest.TestCase):
 
     def check_result(self):
         '''Compare two computed matrices.'''
+        from helpers import THRESHOLD
+        from scipy.sparse.linalg import norm
         normval = 0
         relative_error = 0
         if (self.my_rank == 0):
@@ -98,12 +93,15 @@ class TestSolvers(unittest.TestCase):
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
-        global_norm = comm.bcast(normval, root=0)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
     def check_diag(self):
         '''Compare two diagonal matrices.'''
+        from helpers import THRESHOLD
+        from numpy.linalg import norm as normd
+        from scipy.sparse.linalg import norm
+        from numpy import diag, sort
         normval = 0
         relative_error = 0
         if (self.my_rank == 0):
@@ -113,12 +111,13 @@ class TestSolvers(unittest.TestCase):
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
-        global_norm = comm.bcast(normval, root=0)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
     def test_invert(self):
         '''Test routines to invert matrices.'''
+        from scipy.sparse.linalg import inv
+        from scipy.sparse import csc_matrix
         # Starting Matrix
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -142,6 +141,7 @@ class TestSolvers(unittest.TestCase):
 
     def test_pseudoinverse(self):
         '''Test routines to compute the pseudoinverse of matrices.'''
+        from scipy.linalg import pinv
         # Starting Matrix.
         matrix1 = self.create_matrix(rank=int(self.mat_dim / 2))
         self.write_matrix(matrix1, self.input_file)
@@ -166,6 +166,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_inversesquareroot(self):
         '''Test routines to compute the inverse square root of matrices.'''
+        from scipy.linalg import funm
+        from numpy import sqrt
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
         matrix1 = self.create_matrix(SPD=True, diag_dom=True)
         self.write_matrix(matrix1, self.input_file)
@@ -189,6 +191,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_squareroot(self):
         '''Test routines to compute the square root of matrices.'''
+        from scipy.linalg import funm
+        from numpy import sqrt
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
         matrix1 = self.create_matrix(SPD=True)
         self.write_matrix(matrix1, self.input_file)
@@ -211,6 +215,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_inverseroot(self):
         '''Test routines to compute  general matrix inverse root.'''
+        from scipy.linalg import funm
+        from numpy import power
         roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
             print("Root:", root)
@@ -239,6 +245,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_root(self):
         '''Test routines to compute  general matrix root.'''
+        from scipy.linalg import funm
+        from numpy import power
         roots = [1, 2, 3, 4, 5, 6, 7, 8]
         for root in roots:
             print("Root", root)
@@ -266,6 +274,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_signfunction(self):
         '''Test routines to compute the matrix sign function.'''
+        from scipy.linalg import funm
+        from numpy import sign
         # Starting Matrix
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -288,6 +298,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_exponentialfunction(self):
         '''Test routines to compute the matrix exponential.'''
+        from scipy.linalg import funm
+        from numpy import exp
         # Starting Matrix
         matrix1 = 8 * self.create_matrix(scaled=True)
         self.write_matrix(matrix1, self.input_file)
@@ -313,6 +325,8 @@ class TestSolvers(unittest.TestCase):
         '''
         Test routines to compute the matrix exponential using the pade method.
         '''
+        from scipy.linalg import funm
+        from numpy import exp
         # Starting Matrix
         matrix1 = 8 * self.create_matrix(scaled=True)
         self.write_matrix(matrix1, self.input_file)
@@ -336,6 +350,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_logarithmfunction(self):
         '''Test routines to compute the matrix logarithm.'''
+        from scipy.linalg import funm
+        from numpy import log
         # Starting Matrix. Care taken to make sure eigenvalues are positive.
         matrix1 = self.create_matrix(scaled=True, diag_dom=True)
         self.write_matrix(matrix1, self.input_file)
@@ -383,6 +399,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_sinfunction(self):
         '''Test routines to compute the matrix sine.'''
+        from scipy.linalg import funm
+        from numpy import sin
         # Starting Matrix
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -405,6 +423,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_cosfunction(self):
         '''Test routines to compute the matrix cosine.'''
+        from scipy.linalg import funm
+        from numpy import cos
         # Starting Matrix
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -430,6 +450,8 @@ class TestSolvers(unittest.TestCase):
         Test routines to compute a matrix polynomial using horner's
         method.
         '''
+        from numpy.linalg import eigh
+        from numpy import diag, dot
         # Coefficients of the polynomial
         coef = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
 
@@ -467,6 +489,8 @@ class TestSolvers(unittest.TestCase):
     def test_patersonstockmeyerfunction(self):
         '''Test routines to compute a matrix polynomial using the paterson
         stockmeyer method.'''
+        from numpy.linalg import eigh
+        from numpy import diag, dot
         # Coefficients of the polynomial
         coef = [1.0, 0.5, 0.25, 0.125, 0.0625, 0.03125, 0.015625]
 
@@ -504,6 +528,9 @@ class TestSolvers(unittest.TestCase):
 
     def test_chebyshevfunction(self):
         '''Test routines to compute using Chebyshev polynomials.'''
+        from scipy.linalg import funm
+        from numpy.polynomial.chebyshev import chebfit, chebval
+        from numpy import cos, linspace, sin
         # Starting Matrix
         matrix1 = self.create_matrix(scaled=True)
         self.write_matrix(matrix1, self.input_file)
@@ -537,6 +564,9 @@ class TestSolvers(unittest.TestCase):
     def test_recursivechebyshevfunction(self):
         '''Test routines to compute using Chebyshev polynomials
         recursively.'''
+        from scipy.linalg import funm
+        from numpy.polynomial.chebyshev import chebfit, chebval
+        from numpy import exp, linspace
         # Starting Matrix
         matrix1 = self.create_matrix(scaled=True)
         self.write_matrix(matrix1, self.input_file)
@@ -569,6 +599,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_cgsolve(self):
         '''Test routines to solve general matrix equations with CG.'''
+        from scipy.sparse.linalg import inv
+        from scipy.sparse import csc_matrix
         # Starting Matrix
         A = self.create_matrix(SPD=True)
         B = self.create_matrix()
@@ -596,6 +628,8 @@ class TestSolvers(unittest.TestCase):
 
     def test_powermethod(self):
         '''Test routines to compute eigenvalues with the power method.'''
+        from helpers import THRESHOLD
+        from scipy.sparse.linalg import eigsh
         # Starting Matrix
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -613,6 +647,9 @@ class TestSolvers(unittest.TestCase):
 
     def test_hermitefunction(self):
         '''Test routines to compute using Hermite polynomials.'''
+        from scipy.linalg import funm
+        from numpy.polynomial.hermite import hermfit, hermval
+        from numpy import cos, linspace, sin
         # Starting Matrix
         matrix1 = self.create_matrix(scaled=True)
         self.write_matrix(matrix1, self.input_file)
@@ -645,6 +682,7 @@ class TestSolvers(unittest.TestCase):
 
     def test_polarfunction(self):
         '''Test routines to compute the matrix polar decomposition.'''
+        from scipy.linalg import polar
         # Starting Matrix
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
@@ -679,6 +717,7 @@ class TestSolvers_c(TestSolvers):
         '''
         Create the test matrix with the following parameters.
         '''
+        from scipy.sparse import rand, identity
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
         mat += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
         mat = mat + mat.H

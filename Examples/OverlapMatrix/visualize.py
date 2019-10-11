@@ -1,10 +1,10 @@
-################################################################################
+"""
+Visualize two matrices side by side.
+"""
 import matplotlib.pyplot as plt
-import numpy
-from matplotlib.colors import LogNorm
 from scipy.io import mmread
 
-################################################################################
+###############################################################################
 if __name__ == "__main__":
     input_mat = mmread("input.mtx")
     output_mat = mmread("output.mtx")

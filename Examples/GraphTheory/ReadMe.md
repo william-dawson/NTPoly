@@ -11,8 +11,8 @@ extra wires between various machines. This situation is modeled by constructing
 an adjacency matrix representation of the graph. If Nodes I and J are
 connected, then A_ij is nonzero. In this example, we pick some arbitrary
 values for the matrix elements. Once the matrix has been set up,
-we compute the resolvent of the matrix (cI - A)^-1, which is a necessary building
-block for computing the Katz centrality measure.
+we compute the resolvent of the matrix (cI - A)^-1, which is a necessary
+building block for computing the Katz centrality measure.
 
 ## Build System
 

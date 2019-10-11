@@ -1,26 +1,30 @@
-##########################################################################
-import sys
-import scipy
-import scipy.io
-import numpy
+"""
+Visualize a matrix with a log scale.
+"""
+from sys import argv
+from scipy.io import mmread
+from numpy import seterr, floor, abs, log10
 from matplotlib import pyplot as plt
-from matplotlib.colors import LogNorm
 
-##########################################################################
+
 if __name__ == "__main__":
-    numpy.seterr(all='raise')
-    file_1 = sys.argv[1]
+    # This will allow us to catch floating point errors ourself.
+    seterr(all='raise')
 
-    matrix1 = scipy.io.mmread(file_1)
+    # Get the input matrix
+    file_1 = argv[1]
+    matrix1 = mmread(file_1)
+
+    # Convert to dense so we can set everything to a log scale
     printable = matrix1.todense()
     for j in range(0, printable.shape[1]):
         for i in range(0, printable.shape[0]):
             try:
-                printable[j, i] = numpy.floor(
-                    numpy.log10(numpy.abs(printable[j, i])))
-            except:
+                printable[j, i] = floor(log10(abs(printable[j, i])))
+            except FloatingPointError:
                 printable[j, i] = -10
 
+    # Plot
     fig, ax = plt.subplots()
     cax = ax.matshow(printable)
     cbar = fig.colorbar(cax)
