@@ -11,23 +11,23 @@ matrix:
   include:
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST="make test"
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 DEBUG=1 MAKETEST="ctest -R Regression111""
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 NOIALLGATHER=1 MAKETEST="make test"
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression211"
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" SKIPSWIG=1 MAKETEST=":"
     - os: osx
       sudo: required
