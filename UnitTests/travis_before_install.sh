@@ -5,7 +5,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich
   else
-    sudo apt-get install openmpi-bin
+    sudo apt-get install openmpi-bin libopenmpi-dev
   fi
 fi
 
