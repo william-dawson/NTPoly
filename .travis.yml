@@ -32,6 +32,10 @@ matrix:
     - os: osx
       sudo: required
       env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
+    - os: linux
+      arch: ppc64le
+      sudo: required
+      env: MAKETEST="ctest -R Regression211"
 
 before_install:
   - travis_wait bash UnitTests/travis_before_install.sh
