@@ -16,8 +16,8 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install doxygen
   brew install cmake
   brew install swig
-  sudo pip2 install scipy --upgrade --no-cache-dir
   sudo pip2 install numpy --upgrade --no-cache-dir
+  sudo pip2 install scipy --upgrade --no-cache-dir
   sudo pip2 install mpi4py --upgrade --no-cache-dir
   sudo pip2 install flake8 --upgrade --no-cache-dir
 else
@@ -25,8 +25,8 @@ else
   sudo apt-get install python-dev python-pip python-all-dev
   sudo apt-get install python-setuptools python-wheel
   sudo apt-get install swig
-  sudo pip install scipy --upgrade
   sudo pip install numpy --upgrade
+  sudo pip install scipy --upgrade
   sudo pip install mpi4py --upgrade
   sudo pip install flake8 --upgrade
 fi
