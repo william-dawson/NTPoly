@@ -1,6 +1,6 @@
 os: linux
 sudo: required
-dist: xenial
+dist: bionic
 
 notifications:
   email: false
@@ -32,12 +32,6 @@ matrix:
     - os: osx
       sudo: required
       env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
-
-cache:
-  pip: true
-  directories:
-    - openmpi-3.0.1
-    - swig-3.0.12
 
 before_install:
   - travis_wait bash UnitTests/travis_before_install.sh

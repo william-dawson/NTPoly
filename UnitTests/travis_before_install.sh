@@ -5,18 +5,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich
   else
-    if [ -f "openmpi-3.0.1/README" ]; then
-     echo "Using cached openmpi";
-    else
-      wget https://www.open-mpi.org/software/ompi/v3.0/downloads/openmpi-3.0.1.tar.gz;
-      tar xvf openmpi-3.0.1.tar.gz >/dev/null;
-      cd openmpi-3.0.1;
-      ./configure >/dev/null 2>&1;
-      make >/dev/null 2>&1;
-    fi
-    cd openmpi-3.0.1
-    sudo make install >/dev/null 2>&1
-    cd ../
+    sudo apt-get install openmpi
   fi
 fi
 
@@ -33,20 +22,8 @@ if [[ "$TESTOS" == "OSX" ]]; then
   sudo pip2 install flake8 --upgrade --no-cache-dir
 else
   sudo ldconfig
-  sudo apt-get install python-dev
-  if [[ -z ${SKIPSWIG+x} ]] ; then
-    if [ -f "swig-3.0.12/README" ]; then
-      echo "Using cached swig";
-    else
-      wget https://downloads.sourceforge.net/swig/swig-3.0.12.tar.gz;
-      tar xvf swig-3.0.12.tar.gz >/dev/null;
-    fi
-    cd swig-3.0.12;
-    ./configure >/dev/null 2>&1;
-    make >/dev/null 2>&1;
-    sudo make install >/dev/null 2>&1
-    cd ../
-  fi
+  sudo apt-get install python-dev python-pip
+  sudo apt-get install swig
   sudo pip install scipy --upgrade
   sudo pip install numpy --upgrade
   sudo pip install mpi4py --upgrade
