@@ -20,7 +20,7 @@ matrix:
     - os: linux
       sudo: required
       dist: bionic
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 NOIALLGATHER=1 MAKETEST="make test"
+      env: TESTOS="LINUX" TESTEXAMPLES=1 NOIALLGATHER=1 MAKETEST="make test"
     - os: linux
       sudo: required
       dist: bionic
@@ -45,7 +45,6 @@ script:
   - bash ../UnitTests/travis_run_cmake.sh
   - make
   - eval "$MAKETEST"
-  - cat Testing/Temporary/LastTest.log
   - cd ../UnitTests/
   - bash travis_check_examples.sh
   - bash travis_lint.sh
