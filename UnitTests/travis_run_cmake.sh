@@ -3,7 +3,8 @@ if [[ "$TESTOS" == "OSX" ]]; then
     -DCMAKE_BUILD_TYPE=Release ;
 else
   if  [ ! -z ${NOIALLGATHER+x} ]; then
-    cmake .. -DNOIALLGATHER=YES -DCMAKE_BUILD_TYPE=Debug ;
+    cmake .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake \
+          -DCMAKE_BUILD_TYPE=Debug -DNOIALLGATHER=YES;
   elif [ ! -z ${DEBUG+x} ]; then
     cmake .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Linux.cmake \
           -DCMAKE_BUILD_TYPE=Debug ;
