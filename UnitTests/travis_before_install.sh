@@ -5,7 +5,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libhwloc-plugins libmpich-dev
   else
-    sudo apt-get install openmpi-bin libopenmpi-dev libhwloc-contrib-plugins openmpi-doc opencl-icd
+    sudo apt-get install openmpi-bin libopenmpi-dev libhwloc-contrib-plugins
   fi
 fi
 
@@ -22,7 +22,8 @@ if [[ "$TESTOS" == "OSX" ]]; then
   sudo pip2 install flake8 --upgrade --no-cache-dir
 else
   sudo ldconfig
-  sudo apt-get install python-dev python-pip python-all-dev python-setuptools python-wheel
+  sudo apt-get install python-dev python-pip python-all-dev
+  sudo apt-get install python-setuptools python-wheel
   sudo apt-get install swig
   sudo pip install scipy --upgrade
   sudo pip install numpy --upgrade
