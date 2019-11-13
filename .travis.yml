@@ -9,14 +9,14 @@ language: C++
 
 matrix:
   include:
-    - os: linux
-      sudo: required
-      dist: bionic
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST="make test"
-    - os: linux
-      sudo: required
-      dist: bionic
-      env: TESTOS="LINUX" TESTEXAMPLES=1 DEBUG=1 MAKETEST="ctest -R Regression111""
+    # - os: linux
+    #   sudo: required
+    #   dist: bionic
+    #   env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST="make test"
+    # - os: linux
+    #   sudo: required
+    #   dist: bionic
+    #   env: TESTOS="LINUX" TESTEXAMPLES=1 DEBUG=1 MAKETEST="ctest -R Regression111""
     - os: linux
       sudo: required
       dist: bionic
@@ -25,13 +25,13 @@ matrix:
       sudo: required
       dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression211"
-    - os: linux
-      sudo: required
-      dist: bionic
-      env: TESTOS="LINUX" SKIPSWIG=1 MAKETEST=":"
-    - os: osx
-      sudo: required
-      env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
+    # - os: linux
+    #   sudo: required
+    #   dist: bionic
+    #   env: TESTOS="LINUX" SKIPSWIG=1 MAKETEST=":"
+    # - os: osx
+    #   sudo: required
+    #   env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
     - os: linux
       arch: ppc64le
       sudo: required
@@ -45,6 +45,7 @@ script:
   - bash ../UnitTests/travis_run_cmake.sh
   - make
   - eval "$MAKETEST"
+  - cat Testing/Temporary/LastTest.log
   - cd ../UnitTests/
   - bash travis_check_examples.sh
   - bash travis_lint.sh
