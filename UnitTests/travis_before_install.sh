@@ -3,9 +3,9 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
   if [[ "$MPICH" == "1" ]]; then
-    sudo apt-get install mpich libhwloc-plugins libmpich-dev
+    sudo apt-get install mpich libmpich-dev
   else
-    sudo apt-get install openmpi-bin libopenmpi-dev libhwloc-contrib-plugins
+    sudo apt-get install openmpi-bin libopenmpi-dev
   fi
 fi
 
