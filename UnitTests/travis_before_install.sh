@@ -3,9 +3,9 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
   if [[ "$MPICH" == "1" ]]; then
-    sudo apt-get install mpich
+    sudo apt-get install mpich libhwloc-plugins libmpich-dev
   else
-    sudo apt-get install openmpi-bin libopenmpi-dev
+    sudo apt-get install openmpi-bin libopenmpi-dev libhwloc-contrib-plugins openmpi-doc opencl-icd
   fi
 fi
 
@@ -22,7 +22,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   sudo pip2 install flake8 --upgrade --no-cache-dir
 else
   sudo ldconfig
-  sudo apt-get install python-dev python-pip
+  sudo apt-get install python-dev python-pip python-all-dev python-setuptools python-wheel
   sudo apt-get install swig
   sudo pip install scipy --upgrade
   sudo pip install numpy --upgrade
