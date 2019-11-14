@@ -18,5 +18,25 @@ jobs:
         cd Build
         bash ../UnitTests/travis_run_cmake.sh
         make
+        cd ../
       env:
-        TestOS: LINUX
+        TESTOS: LINUX
+    - name: regression tests
+      run: |
+        cd Build
+        eval "$MAKETEST"
+        cd ../
+      env:
+        MAKETEST: "make test"
+    - name: check examples
+      run: |
+        cd UnitTests
+        bash travis_check_examples.sh
+        cd ../
+      env:
+        TESTEXAMPLES: 1
+    - name: lint
+      run: |
+        cd UnitTests
+        bash travis_lint.sh
+        cd ../
