@@ -39,13 +39,14 @@ mpicxx main.cc -c \
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
-  -lblas
+  -lblas -lmpi_cxx
 
 ```
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
--qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++).
+-qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++ .
+-lmpicxx is only necessary for openmpi, with mpich it should be omitted.).
 
 And then run with:
 ```
