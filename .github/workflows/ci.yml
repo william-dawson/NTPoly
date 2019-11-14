@@ -1,5 +1,4 @@
 name:                     CI
-
 on:                       [push]
 
 jobs:
@@ -49,35 +48,37 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
-    runs-on:              ubuntu-latest
-
     steps:
     - uses:               actions/checkout@v1
-      with:
-        TESTOS:           ${{ matrix.testos }}
-        MAKETEST:         ${{ matrix.maketest }}
-        TESTEXAMPLES:     ${{ matrix.testexamples }}
-        DEBUG:            ${{ matrix.debug }}
-        NOALLIGATHER:     ${{ matrix.noalligather }}
-        MPICH:            ${{ matrix.mpich }}
     - name:               setup environment
       run:                bash UnitTests/travis_before_install.sh
+      env:
+        TESTOS:           ${{ matrix.testos }}
+        MPICH:            ${{ matrix.mpich }}
     - name:               build ntpoly
       run:                |
         cd Build
         bash ../UnitTests/travis_run_cmake.sh
         make
         cd ../
+      env:
+        TESTOS:           ${{ matrix.testos }}
+        DEBUG:            ${{ matrix.debug }}
+        NOALLIGATHER:     ${{ matrix.noalligather }}
     - name:               regression tests
       run:                |
         cd Build
         eval "$MAKETEST"
         cd ../
+      env:
+        MAKETEST:         ${{ matrix.maketest }}
     - name:               check examples
       run:                |
         cd UnitTests
         bash travis_check_examples.sh
         cd ../
+      env:
+        TESTEXAMPLES:     ${{ matrix.testexamples }}
     - name:               lint
       run:                |
         cd UnitTests
