@@ -1,0 +1,18 @@
+---
+layout: post
+title:  "Release of Version 2.3.2"
+date:   2019-11-14 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.3.2](/NTPoly/downloads) of NTPoly is now available.
+
+Version 2.3.2 contains some fixes.
+
+Bug Fixes:
+* @vyu16 found some memory that was not being deallocated.
+
+Miscellaneous:
+* Build system fixes for newer versions of OpenMPI.
+* Continuous integration simplified.
+* Code cleanup with the flake8 tool.
