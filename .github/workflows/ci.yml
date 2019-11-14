@@ -48,6 +48,7 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
+    runs-on:              ubuntu-latest
     steps:
     - uses:               actions/checkout@v1
     - name:               setup environment
