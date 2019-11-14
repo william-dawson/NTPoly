@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v1
     - name: setup environment
       run: bash UnitTests/travis_before_install.sh
       env:
