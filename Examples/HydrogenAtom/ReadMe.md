@@ -58,7 +58,7 @@ mpicxx main.cc -c \
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
-  -lblas
+  -lblas -lmpi_cxx
 
 ```
 
