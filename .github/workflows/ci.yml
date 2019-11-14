@@ -6,6 +6,7 @@ jobs:
   build:
     strategy:
       matrix:
+        os: [macos-latest]
         include:
           # - os: ubuntu-latest
           #   testos: LINUX
