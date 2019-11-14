@@ -12,7 +12,7 @@ jobs:
     - name: setup environment
       run: bash UnitTests/travis_before_install.sh
       env:
-        TestOS: "LINUX" 
+        TESTOS: "LINUX" 
     - name: build ntpoly
       run: |
         cd Build
