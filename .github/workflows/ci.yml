@@ -1,79 +1,85 @@
-name: CI
+name:                     CI
 
-on: [push]
+on:                       [push]
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [macos-latest]
+        name:             [ubuntu-standard, ubuntu-debug, ubuntu-nogather,
+                           ubuntu-mpich, mac]
         include:
-          # - os: ubuntu-latest
-          #   testos: LINUX
-          #   maketest: "make test"
-          #   testexamples: 1
-          #   debug: 0
-          #   noalligather: 0
-          #   mpich: 0
-          # - os: ubuntu-latest
-          #   testos: LINUX
-          #   maketest: "ctest -R Regression111"
-          #   testexamples: 1
-          #   debug: 1
-          #   noalligather: 0
-          #   mpich: 0
-          # - os: ubuntu-latest
-          #   testos: LINUX
-          #   maketest: "make test"
-          #   testexamples: 1
-          #   debug: 0
-          #   noalligather: 1
-          #   mpich: 0
-          - os: ubuntu-latest
-            testos: LINUX
-            maketest: "ctest -R Regression211"
-            testexamples: 0
-            debug: 0
+          - name:         ubuntu-standard
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "make test"
+            testexamples: 1
+            debug:        0
             noalligather: 0
-            mpich: 1
-          - os: macos-latest
-            testos: OSX
-            maketest: "ctest -R Regression111"
-            testexamples: 0
-            debug: 0
+            mpich:        0
+          - name:         ubuntu-debug
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "ctest -R Regression111"
+            testexamples: 1
+            debug:        1
             noalligather: 0
-            mpich: 0
-    runs-on: ubuntu-latest
+            mpich:        0
+          - name:         ubuntu-nogather
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "make test"
+            testexamples: 1
+            debug:        0
+            noalligather: 1
+            mpich:        0
+          - name:         ubuntu-mpich
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "ctest -R Regression211"
+            testexamples: 0
+            debug:        0
+            noalligather: 0
+            mpich:        1
+          - name:         mac
+            os:           macos-latest
+            testos:       OSX
+            maketest:     "ctest -R Regression111"
+            testexamples: 0
+            debug:        0
+            noalligather: 0
+            mpich:        0
+    runs-on:              ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v1
+    - uses:               actions/checkout@v1
       with:
-        TESTOS: ${{ matrix.testos }}
-        MAKETEST: ${{ matrix.maketest }}
-        TESTEXAMPLES: ${{ matrix.testexamples }}
-        DEBUG: ${{ matrix.debug }}
-        NOALLIGATHER: ${{ matrix.noalligather }}
-        MPICH: ${{ matrix.mpich }}
-    - name: setup environment
-      run: bash UnitTests/travis_before_install.sh
-    - name: build ntpoly
-      run: |
+        TESTOS:           ${{ matrix.testos }}
+        MAKETEST:         ${{ matrix.maketest }}
+        TESTEXAMPLES:     ${{ matrix.testexamples }}
+        DEBUG:            ${{ matrix.debug }}
+        NOALLIGATHER:     ${{ matrix.noalligather }}
+        MPICH:            ${{ matrix.mpich }}
+    - name:               setup environment
+      run:                bash UnitTests/travis_before_install.sh
+    - name:               build ntpoly
+      run:                |
         cd Build
         bash ../UnitTests/travis_run_cmake.sh
         make
         cd ../
-    - name: regression tests
-      run: |
+    - name:               regression tests
+      run:                |
         cd Build
         eval "$MAKETEST"
         cd ../
-    - name: check examples
-      run: |
+    - name:               check examples
+      run:                |
         cd UnitTests
         bash travis_check_examples.sh
         cd ../
-    - name: lint
-      run: |
+    - name:               lint
+      run:                |
         cd UnitTests
         bash travis_lint.sh
         cd ../
