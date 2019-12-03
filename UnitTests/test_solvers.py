@@ -72,6 +72,7 @@ class TestSolvers():
 
     def setUp(self):
         '''Set up all of the tests.'''
+        from os import environ
         # Rank of the current process.
         self.my_rank = comm.Get_rank()
         # Parameters for iterative solvers.
@@ -80,6 +81,7 @@ class TestSolvers():
         self.fsp = nt.SolverParameters()
         self.fsp.SetVerbosity(True)
         self.isp.SetVerbosity(True)
+        self.cholesky_matrix = mmread(environ["CholTest"])
 
     def check_result(self):
         '''Compare two computed matrices.'''
@@ -141,6 +143,8 @@ class TestSolvers():
 
     def test_choleskyinvert(self):
         '''Test routines to invert matrices.'''
+        from scipy.sparse.linalg import inv
+        from scipy.sparse import csc_matrix
         # Starting Matrix
         matrix1 = self.create_matrix(SPD=True)
         self.write_matrix(matrix1, self.input_file)
@@ -736,48 +740,28 @@ class TestSolvers():
         self.check_result()
 
     def test_denseeigendecomposition(self):
+        from scipy.linalg import eigh
+        from numpy import diag
         '''Test the dense eigen decomposition'''
         matrix1 = self.create_matrix()
         self.write_matrix(matrix1, self.input_file)
 
         w, vdense = eigh(matrix1.todense())
-        CheckV = csr_matrix(vdense)
 
         ntmatrix = nt.Matrix_ps(self.input_file)
         V = nt.Matrix_ps(self.mat_dim)
         W = nt.Matrix_ps(self.mat_dim)
-
         nt.EigenSolvers.ReferenceEigenDecomposition(ntmatrix, V, W, self.fsp)
-        V.WriteToMatrixMarket(result_file)
-        W.WriteToMatrixMarket(result_file2)
 
-        normval = 0
-        relative_error = 0
-        normval2 = 0
-        relative_error2 = 0
-        if (self.my_rank == 0):
-            ResultV = mmread(result_file)
-            CheckD = diag((CheckV.H.dot(matrix1).dot(CheckV)).todense())
-            ResultD = diag((ResultV.H.dot(matrix1).dot(ResultV)).todense())
-            normval = abs(normd(CheckD - ResultD))
-            relative_error = normval / normd(CheckD)
-            print("Norm:", normval)
-            print("Relative_Error:", relative_error)
-
-            ResultW = diag((mmread(result_file2)).todense())
-            normval = abs(normd(CheckD - ResultW))
-            relative_error = normval / normd(CheckD)
-            print("Norm:", normval2)
-            print("Relative_Error:", relative_error2)
-
-        global_norm = comm.bcast(normval, root=0)
-        global_error = comm.bcast(relative_error, root=0)
-        self.assertLessEqual(global_error, THRESHOLD)
+        W.WriteToMatrixMarket(result_file)
+        self.CheckMat = csr_matrix(diag(w))
+        self.check_diag()
 
 
 class TestSolvers_r(TestSolvers, unittest.TestCase):
     def test_cholesky(self):
         '''Test subroutine that computes the cholesky decomposition.'''
+        from scipy.linalg import cholesky
         # Starting Matrix
         matrix1 = self.create_matrix(SPD=True)
         self.write_matrix(matrix1, self.input_file)
@@ -800,7 +784,7 @@ class TestSolvers_r(TestSolvers, unittest.TestCase):
 
     def test_pivotedcholesky(self):
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
-        matrix1 = mmread(environ["CholTest"])
+        matrix1 = self.cholesky_matrix
         rank = 2
         self.write_matrix(matrix1, self.input_file)
 
