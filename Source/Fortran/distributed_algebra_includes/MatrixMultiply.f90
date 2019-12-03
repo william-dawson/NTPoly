@@ -249,6 +249,9 @@
   DEALLOCATE(row_helper)
   DEALLOCATE(column_helper)
   DEALLOCATE(slice_helper)
+  DEALLOCATE(ATasks)
+  DEALLOCATE(BTasks)
+  DEALLOCATE(ABTasks)
 
   !! Deallocate Buffers From A
   DO II=1,matAB%process_grid%number_of_blocks_rows

@@ -1,6 +1,6 @@
 os: linux
 sudo: required
-dist: xenial
+dist: bionic
 
 notifications:
   email: false
@@ -11,33 +11,27 @@ matrix:
   include:
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 MAKETEST="make test"
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 DEBUG=1 MAKETEST="ctest -R Regression111""
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" TESTEXAMPLES=1 NOIALLGATHER=1 MAKETEST="make test"
     - os: linux
       sudo: required
-      dist: trusty
-      env: TESTOS="LINUX" TESTEXAMPLES=1 MPICH=1 MAKETEST="ctest -R Regression211"
+      dist: bionic
+      env: TESTOS="LINUX" MPICH=1 MAKETEST="ctest -R Regression211"
     - os: linux
       sudo: required
-      dist: trusty
+      dist: bionic
       env: TESTOS="LINUX" SKIPSWIG=1 MAKETEST=":"
     - os: osx
       sudo: required
       env: TESTOS="OSX" MAKETEST="ctest -R Regression111"
-
-cache:
-  pip: true
-  directories:
-    - openmpi-3.0.1
-    - swig-3.0.12
 
 before_install:
   - travis_wait bash UnitTests/travis_before_install.sh
@@ -49,6 +43,7 @@ script:
   - eval "$MAKETEST"
   - cd ../UnitTests/
   - bash travis_check_examples.sh
+  - bash travis_lint.sh
 
 addons:
   apt:

@@ -37,3 +37,4 @@
   CALL ConstructMatrixFromTripletList(matAB, sorted_pruned_list, mat_c_rows, &
        & mat_c_columns)
   CALL DestructTripletList(sorted_pruned_list)
+  CALL DestructTripletList(unsorted_pruned_list)

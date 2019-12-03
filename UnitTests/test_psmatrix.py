@@ -1,21 +1,9 @@
-'''
-@package test_matrix
-A test suite for paralle matrices.
-'''
+"""
+A test suite for parallel matrices.
+"""
 import unittest
 import NTPolySwig as nt
-from random import randrange, seed, sample
-from scipy.sparse import random, csr_matrix
-from scipy.sparse.linalg import norm
-from scipy.io import mmread, mmwrite
-from numpy import zeros
-from os import environ
-from os.path import join
-import sys
 from mpi4py import MPI
-from helpers import THRESHOLD
-from helpers import result_file
-from helpers import scratch_dir
 # MPI global communicator.
 comm = MPI.COMM_WORLD
 
@@ -37,6 +25,7 @@ class TestParameters:
         '''
         Create the test matrix with the following parameters.
         '''
+        from scipy.sparse import csr_matrix, random
         r = self.rows
         c = self.columns
         s = self.sparsity
@@ -50,6 +39,8 @@ class TestParameters:
 
 class TestPSMatrix(unittest.TestCase):
     '''A test class for parallel matrices.'''
+    from helpers import scratch_dir
+    from os.path import join
     # Parameters for the tests
     parameters = []
     # Input file name 1
@@ -70,6 +61,8 @@ class TestPSMatrix(unittest.TestCase):
     complex = False
 
     def write_matrix(self, mat, file_name):
+        from scipy.sparse import csr_matrix
+        from scipy.io import mmwrite
         if self.my_rank == 0:
             mmwrite(file_name, csr_matrix(mat))
         comm.barrier()
@@ -77,6 +70,7 @@ class TestPSMatrix(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         '''Set up test suite.'''
+        from os import environ
         rows = int(environ['PROCESS_ROWS'])
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
@@ -90,6 +84,7 @@ class TestPSMatrix(unittest.TestCase):
 
     def setUp(self):
         '''Set up specific tests.'''
+        from os import environ
         mat_size = 33
         self.process_rows = int(environ['PROCESS_ROWS'])
         self.process_columns = int(environ['PROCESS_COLUMNS'])
@@ -113,6 +108,9 @@ class TestPSMatrix(unittest.TestCase):
 
     def check_result(self):
         '''Compare two matrices.'''
+        from helpers import THRESHOLD
+        from scipy.sparse.linalg import norm
+        from scipy.io import mmread
         normval = 0
         if (self.my_rank == 0):
             ResultMat = mmread(self.result_file)
@@ -263,6 +261,8 @@ class TestPSMatrix(unittest.TestCase):
 
     def test_repartition(self):
         '''Test extraction of triplet list via repartition function.'''
+        from sys import maxsize
+        from random import randrange, seed, sample
         for param in self.parameters:
             matrix1 = param.create_matrix(self.complex)
             self.write_matrix(matrix1, self.input_file1)
@@ -274,7 +274,7 @@ class TestPSMatrix(unittest.TestCase):
                 ntmatrix1 = nt.Matrix_ps(param.rows)
 
             # Compute a random permutation
-            seed_val = randrange(sys.maxsize)
+            seed_val = randrange(maxsize)
             global_seed = comm.bcast(seed_val, root=0)
             seed(global_seed)
             dimension = ntmatrix1.GetActualDimension()
@@ -308,6 +308,10 @@ class TestPSMatrix(unittest.TestCase):
 
     def test_slice(self):
         '''Test slicing of a matrix.'''
+        from sys import maxsize
+        from numpy import zeros
+        from scipy.sparse import csr_matrix
+        from random import randrange, seed, sample
         for param in self.parameters:
             matrix1 = param.create_matrix(self.complex)
             self.write_matrix(matrix1, self.input_file1)
@@ -319,7 +323,7 @@ class TestPSMatrix(unittest.TestCase):
                 ntmatrix1 = nt.Matrix_ps(param.rows)
 
             # Compute a random slicing
-            seed_val = randrange(sys.maxsize)
+            seed_val = randrange(maxsize)
             global_seed = comm.bcast(seed_val, root=0)
             seed(global_seed)
             dimension = ntmatrix1.GetActualDimension()

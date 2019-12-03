@@ -1,6 +1,3 @@
-# Generic modules
-import sys
-
 # NTPoly
 import NTPolySwig as nt
 
@@ -10,12 +7,14 @@ comm = MPI.COMM_WORLD
 
 ##########################################################################
 if __name__ == "__main__":
+    from sys import argv
+
     rank = comm.Get_rank()
 
     # Process The Input Parameters
-    for i in range(1, len(sys.argv), 2):
-        argument = sys.argv[i]
-        argument_value = sys.argv[i + 1]
+    for i in range(1, len(argv), 2):
+        argument = argv[i]
+        argument_value = argv[i + 1]
         if argument == '--hamiltonian':
             hamiltonian_file = argument_value
         elif argument == '--overlap':

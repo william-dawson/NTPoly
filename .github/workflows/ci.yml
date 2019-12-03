@@ -1,0 +1,87 @@
+name:                     CI
+on:                       [push]
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        name:             [ubuntu-standard, ubuntu-debug, ubuntu-nogather,
+                           ubuntu-mpich, mac]
+        include:
+          - name:         ubuntu-standard
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "make test"
+            testexamples: 1
+            debug:        0
+            noalligather: 0
+            mpich:        0
+          - name:         ubuntu-debug
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "ctest -R Regression111"
+            testexamples: 1
+            debug:        1
+            noalligather: 0
+            mpich:        0
+          - name:         ubuntu-nogather
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "make test"
+            testexamples: 1
+            debug:        0
+            noalligather: 1
+            mpich:        0
+          - name:         ubuntu-mpich
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "ctest -R Regression211"
+            testexamples: 0
+            debug:        0
+            noalligather: 0
+            mpich:        1
+          - name:         mac
+            os:           macos-latest
+            testos:       OSX
+            maketest:     "ctest -R Regression111"
+            testexamples: 0
+            debug:        0
+            noalligather: 0
+            mpich:        0
+    runs-on:              ${{ matrix.os }}
+    steps:
+    - uses:               actions/checkout@v1
+    - name:               setup environment
+      run:                bash UnitTests/travis_before_install.sh
+      env:
+        TESTOS:           ${{ matrix.testos }}
+        MPICH:            ${{ matrix.mpich }}
+    - name:               build ntpoly
+      run:                |
+        cd Build
+        bash ../UnitTests/travis_run_cmake.sh
+        make
+        cd ../
+      env:
+        TESTOS:           ${{ matrix.testos }}
+        DEBUG:            ${{ matrix.debug }}
+        NOALLIGATHER:     ${{ matrix.noalligather }}
+    - name:               regression tests
+      run:                |
+        cd Build
+        eval "$MAKETEST"
+        cd ../
+      env:
+        MAKETEST:         ${{ matrix.maketest }}
+    - name:               check examples
+      run:                |
+        cd UnitTests
+        bash travis_check_examples.sh
+        cd ../
+      env:
+        TESTEXAMPLES:     ${{ matrix.testexamples }}
+    - name:               lint
+      run:                |
+        cd UnitTests
+        bash travis_lint.sh
+        cd ../

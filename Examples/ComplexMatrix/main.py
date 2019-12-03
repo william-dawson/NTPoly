@@ -1,6 +1,3 @@
-# Generic modules
-import sys
-
 # NTPoly
 import NTPolySwig as nt
 
@@ -8,12 +5,11 @@ import NTPolySwig as nt
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
-##########################################################################
-
 
 def ConstructGuoMatrix(InMat, OutMat):
-    '''Construct the Hermitian matrix
-    '''
+    """
+    Construct the Hermitian matrix from a nonsymmetric matrix.
+    """
     # First Symmetrize The Input Matrix.
     tlist = nt.TripletList_r()
     stlist = nt.TripletList_r()
@@ -56,13 +52,15 @@ def ConstructGuoMatrix(InMat, OutMat):
 
 ##########################################################################
 if __name__ == "__main__":
+    from sys import argv
+
     rank = comm.Get_rank()
     total_processors = comm.Get_size()
 
     # Process The Input Parameters
-    for i in range(1, len(sys.argv), 2):
-        argument = sys.argv[i]
-        argument_value = sys.argv[i + 1]
+    for i in range(1, len(argv), 2):
+        argument = argv[i]
+        argument_value = argv[i + 1]
         if argument == '--input_file':
             input_file = argument_value
         if argument == '--exponential_file':

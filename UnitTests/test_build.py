@@ -1,7 +1,6 @@
-##########################################################################
-''' @package test_build.py
+"""
 A script that tests the build instructions of the examples.
-'''
+"""
 from sys import argv
 from subprocess import call
 from os import environ, chdir
@@ -18,7 +17,7 @@ def parse_command(fin, num_commands=1):
     for i in range(0, num_commands):
         return_string = ""
         temp_string = fin.readline()
-        while(temp_string != '\n' and temp_string != "\`\`\`"):
+        while(temp_string != '\n' and temp_string != "```"):
             return_string = return_string + temp_string
             temp_string = fin.readline()
         ret_strings.append(return_string)

@@ -1,18 +1,8 @@
-'''@package test_chemistry
+"""
 A test suite for chemistry focused solvers.
-'''
-from helpers import THRESHOLD, EXTRAPTHRESHOLD
-from helpers import result_file
-from helpers import scratch_dir
+"""
 import unittest
 import NTPolySwig as nt
-from numpy import diag, sqrt
-from scipy.sparse.linalg import norm
-from scipy.io import mmread, mmwrite
-from scipy.linalg import eigh, funm
-from scipy.sparse import csr_matrix, rand
-from os import environ
-from os.path import join
 from mpi4py import MPI
 # MPI global communicator
 comm = MPI.COMM_WORLD
@@ -29,6 +19,10 @@ class TestChemistry:
         '''
         Create the test matrix with the following parameters.
         '''
+        from numpy import diag, sqrt
+        from scipy.linalg import eigh, funm
+        from scipy.sparse import csr_matrix, rand
+
         fock = rand(self.mat_dim, self.mat_dim, density=1.0)
         if self.is_complex:
             fock += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
@@ -49,7 +43,7 @@ class TestChemistry:
         # Add a gap
         w, v = eigh(wfock)
         gap = (w[-1] - w[0]) / 2.0
-        w[self.nel:] += gap
+        w[int(self.nel/2):] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
         else:
@@ -68,6 +62,9 @@ class TestChemistry:
         self.write_matrix(density, self.density)
 
     def write_matrix(self, mat, file_name):
+        from scipy.io import mmwrite
+        from scipy.sparse import csr_matrix
+
         if self.my_rank == 0:
             mmwrite(file_name, csr_matrix(mat))
         comm.barrier()
@@ -75,6 +72,7 @@ class TestChemistry:
     @classmethod
     def setUpClass(self):
         '''Set up all of the tests.'''
+        from os import environ
         rows = int(environ['PROCESS_ROWS'])
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
@@ -87,6 +85,10 @@ class TestChemistry:
 
     def setUp(self):
         '''Set up an individual test.'''
+        from os import environ
+        from os.path import join
+        from helpers import scratch_dir
+
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
@@ -104,6 +106,10 @@ class TestChemistry:
 
     def check_full(self):
         '''Compare two computed matrices.'''
+        from helpers import THRESHOLD, result_file
+        from scipy.sparse.linalg import norm
+        from scipy.io import mmread
+
         normval = 0
         if (self.my_rank == 0):
             ResultMat = 2.0 * mmread(result_file)
@@ -114,6 +120,10 @@ class TestChemistry:
 
     def check_full_extrap(self):
         '''Compare two computed matrices.'''
+        from helpers import EXTRAPTHRESHOLD, result_file
+        from scipy.sparse.linalg import norm
+        from scipy.io import mmread
+
         normval = 0
         if (self.my_rank == 0):
             ResultMat = 2.0 * mmread(result_file)
@@ -124,6 +134,9 @@ class TestChemistry:
 
     def compute_cp(self):
         '''Compute the chemical potential, homo, lumo'''
+        from scipy.io import mmread
+        from scipy.linalg import eigh
+
         fock_matrix = mmread(self.hamiltonian)
         overlap_matrix = mmread(self.overlap)
         eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
@@ -144,6 +157,8 @@ class TestChemistry:
 
     def basic_solver(self, SRoutine, cpcheck=True):
         '''Test various kinds of density matrix solvers.'''
+        from helpers import result_file
+
         self.create_matrices()
         fock_matrix = nt.Matrix_ps(self.hamiltonian)
         overlap_matrix = nt.Matrix_ps(self.overlap)
@@ -172,6 +187,8 @@ class TestChemistry:
 
     def test_scaleandfold(self):
         '''Test the scale and fold method.'''
+        from helpers import result_file
+
         SRoutine = nt.DensityMatrixSolvers.ScaleAndFold
         self.create_matrices()
         fock_matrix = nt.Matrix_ps(self.hamiltonian)
@@ -190,9 +207,8 @@ class TestChemistry:
         # This method needs the homo and lumo
         cp, homo, lumo = self.compute_cp()
         print(":::::", homo, lumo, cp)
-        energy_value = SRoutine(fock_matrix, inverse_sqrt_matrix,
-                                self.nel, density_matrix,
-                                homo, lumo, self.solver_parameters)
+        SRoutine(fock_matrix, inverse_sqrt_matrix, self.nel, density_matrix,
+                 homo, lumo, self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -222,6 +238,10 @@ class TestChemistry:
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''
+        from helpers import THRESHOLD, result_file
+        from scipy.sparse.linalg import norm
+        from scipy.io import mmread
+
         # Reference Solution
         self.create_matrices()
         fmat = mmread(self.hamiltonian)
@@ -255,6 +275,10 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
 
     def testrealio(self):
         '''Test routines to read data produced by a real chemistry program.'''
+        from helpers import THRESHOLD, result_file
+        from scipy.sparse.linalg import norm
+        from scipy.io import mmread
+
         density_matrix = nt.Matrix_ps(self.realio)
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -270,6 +294,8 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
 
     def test_PExtrapolate(self):
         '''Test the density extrapolation routine.'''
+        from helpers import result_file
+
         f1 = nt.Matrix_ps(self.geomh1)
         o1 = nt.Matrix_ps(self.geomo1)
         o2 = nt.Matrix_ps(self.geomo2)
@@ -296,6 +322,7 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
         comm.barrier()
 
     def test_SExtrapolate(self):
+        from helpers import result_file
         '''Test the density extrapolation routine.'''
         f1 = nt.Matrix_ps(self.geomh1)
         o1 = nt.Matrix_ps(self.geomo1)

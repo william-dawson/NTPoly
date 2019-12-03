@@ -1,17 +1,8 @@
-'''
-@package test_psmatrixalgebra
+"""
 A test suite for parallel matrix algebra.
-'''
-from helpers import THRESHOLD
-from helpers import result_file
-from helpers import scratch_dir
+"""
 import unittest
 import NTPolySwig as nt
-from scipy.sparse import random, csr_matrix
-from scipy.sparse.linalg import norm
-from scipy.io import mmread, mmwrite
-from numpy import sum, multiply, conj
-from os.path import join
 from os import environ
 from mpi4py import MPI
 # MPI global communicator.
@@ -41,6 +32,7 @@ class TestParameters:
         '''
         Create the test matrix with the following parameters.
         '''
+        from scipy.sparse import random
         r = self.rows
         c = self.columns
         if snum == 1:
@@ -58,6 +50,8 @@ class TestParameters:
 
 class TestPSMatrixAlgebra:
     '''A test class for parallel matrix algebra.'''
+    from os.path import join
+    from helpers import scratch_dir
     # Parameters for the tests
     parameters = []
     # Place to store the result matrix.
@@ -80,6 +74,8 @@ class TestPSMatrixAlgebra:
     mat_size = 33
 
     def write_matrix(self, mat, file_name):
+        from scipy.sparse import csr_matrix
+        from scipy.io import mmwrite
         if self.my_rank == 0:
             mmwrite(file_name, csr_matrix(mat))
         comm.barrier()
@@ -112,12 +108,20 @@ class TestPSMatrixAlgebra:
 
     def check_result(self):
         '''Compare two matrices.'''
+        from helpers import THRESHOLD
+        from scipy.sparse.linalg import norm
+        from scipy.io import mmread
         normval = 0
         if (self.my_rank == 0):
             ResultMat = mmread(self.result_file)
             normval = abs(norm(self.CheckMat - ResultMat))
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
+
+    def check_floats(self, val1, val2):
+        from helpers import THRESHOLD
+        normval = abs(val1 - val2)
+        self.assertLessEqual(normval, THRESHOLD)
 
     def test_addition_pg(self):
         '''Test routines to add together matrices with an explicit grid.'''
@@ -159,6 +163,8 @@ class TestPSMatrixAlgebra:
 
     def test_pairwisemultiply(self):
         '''Test routines to pairwise multiply two matrices.'''
+        from scipy.sparse import csr_matrix
+        from numpy import multiply
         for param in self.parameters:
             matrix1 = param.create_matrix(snum=1, complex=self.complex1)
             matrix2 = param.create_matrix(snum=2, complex=self.complex2)
@@ -288,6 +294,7 @@ class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
 
     def test_dot(self):
         '''Test routines to add together matrices.'''
+        from numpy import sum, multiply
         for param in self.parameters:
             matrix1 = param.create_matrix(snum=1, complex=self.complex1)
             matrix2 = param.create_matrix(snum=2, complex=self.complex2)
@@ -311,9 +318,7 @@ class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
             result = ntmatrix2.Dot(ntmatrix1)
             comm.barrier()
 
-            normval = abs(result - check)
-
-            self.assertLessEqual(normval, THRESHOLD)
+            self.check_floats(result, check)
 
 
 class TestPSMatrixAlgebra_c(TestPSMatrixAlgebra, unittest.TestCase):
@@ -325,6 +330,7 @@ class TestPSMatrixAlgebra_c(TestPSMatrixAlgebra, unittest.TestCase):
 
     def test_dot(self):
         '''Test routines to add together matrices.'''
+        from numpy import sum, multiply, conj
         for param in self.parameters:
             comm.barrier()
             matrix1 = param.create_matrix(snum=1, complex=self.complex1)
@@ -348,13 +354,10 @@ class TestPSMatrixAlgebra_c(TestPSMatrixAlgebra, unittest.TestCase):
             else:
                 ntmatrix2 = nt.Matrix_ps(param.rows)
 
-            result = ntmatrix2.Dot(ntmatrix1)
+            result = ntmatrix1.Dot(ntmatrix2)
             comm.barrier()
 
-            check = check.real
-
-            normval = abs(result - check)
-            self.assertLessEqual(normval, THRESHOLD)
+            self.check_floats(result, check.real)
 
 
 class TestPSMatrixAlgebra_rc(TestPSMatrixAlgebra, unittest.TestCase):
