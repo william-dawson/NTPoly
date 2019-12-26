@@ -3,8 +3,7 @@
 MODULE MatrixMapsModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
-       & GetMatrixTripletList, FillMatrixFromTripletList, &
-       & DestructMatrix
+       & GetMatrixTripletList, FillMatrixFromTripletList
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & DestructTripletList, AppendToTripletList, GetTripletAt, &
        & ConstructTripletList
@@ -211,8 +210,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MapMatrixArray_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a triplet list, apply this procedure to each element.
-  SUBROUTINE MapTripletListArray_r(inlist, outlist, proc, supp_in, num_slices_in, &
-       & my_slice_in)
+  SUBROUTINE MapTripletListArray_r(inlist, outlist, proc, supp_in, &
+       & num_slices_in, my_slice_in)
     !> The matrix to apply the procedure to.
     TYPE(TripletList_r), INTENT(IN) :: inlist
     !> The matrix where each element has had proc called on it.
@@ -248,8 +247,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MapTripletListArray_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a triplet list, apply this procedure to each element.
-  SUBROUTINE MapTripletListArray_c(inlist, outlist, proc, supp_in, num_slices_in, &
-       & my_slice_in)
+  SUBROUTINE MapTripletListArray_c(inlist, outlist, proc, supp_in, &
+       & num_slices_in, my_slice_in)
     !> The matrix to apply the procedure to.
     TYPE(TripletList_c), INTENT(IN) :: inlist
     !> The matrix where each element has had proc called on it.

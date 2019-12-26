@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class Matrix_ps;
+//! A datatype which stores a process grid and all its communicators.
 class ProcessGrid {
 public:
   //! Construct the process grid.
@@ -25,11 +26,13 @@ public:
   //! Construct the process grid.
   //! \param[in] world_comm a communicator that every process in the grid is
   //! a part of.
-  //! \param[in] process_rows number of grid rows.
+  //! \param[in] process_slices number of grid slices.
   ProcessGrid(MPI_Comm world_comm, int process_slices);
   //! Construct the process grid from comm world
   //! \param[in] process_slices number of grid slices.
   ProcessGrid(int process_slices);
+  //! Construct the process grid with no parameters.
+  ProcessGrid();
   //! Copy constructor.
   //!\param old_grid to copy from.
   ProcessGrid(const ProcessGrid &old_grid);
@@ -87,6 +90,9 @@ void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_slices,
 //! \param[in] process_slices number of grid slices.
 //! \param[in] be_verbose verbosity flag.
 void ConstructGlobalProcessGrid(int process_slices, bool be_verbose = false);
+//! Construct the global process grid from comm world
+//! \param[in] be_verbose verbosity flag.
+void ConstructGlobalProcessGrid(bool be_verbose = false);
 //! Get the slice of the current process.
 int GetGlobalMySlice();
 //! Get the column of the current process.

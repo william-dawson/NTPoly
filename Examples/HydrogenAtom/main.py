@@ -1,6 +1,3 @@
-# Generic modules
-import sys
-
 # NTPoly
 import NTPolySwig as nt
 
@@ -8,10 +5,12 @@ import NTPolySwig as nt
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
-import numpy
 
 ##########################################################################
 if __name__ == "__main__":
+    from sys import argv
+    from numpy import arange, linspace
+
     rank = comm.Get_rank()
     total_processors = comm.Get_size()
 
@@ -19,9 +18,9 @@ if __name__ == "__main__":
     x_end = 6.28
 
     # Process The Input Parameters
-    for i in range(1, len(sys.argv), 2):
-        argument = sys.argv[i]
-        argument_value = sys.argv[i + 1]
+    for i in range(1, len(argv), 2):
+        argument = argv[i]
+        argument_value = argv[i + 1]
         if argument == '--convergence_threshold':
             convergence_threshold = float(argument_value)
         elif argument == '--density':
@@ -52,12 +51,12 @@ if __name__ == "__main__":
     start_row = local_grid_points * rank
     if rank == total_processors - 1:
         local_grid_points = grid_points - rank * local_grid_points
-    full_range = numpy.arange(grid_points)
+    full_range = arange(grid_points)
     local_rows = full_range[start_row:start_row + local_grid_points]
 
     # Construct A Linear Space.
-    full_x, grid_spacing = numpy.linspace(x_start, x_end, num=grid_points,
-                                          retstep=True)
+    full_x, grid_spacing = linspace(x_start, x_end, num=grid_points,
+                                    retstep=True)
     x_values = full_x[start_row:start_row + local_grid_points]
 
     # Construct The Kinetic Energy Operator.

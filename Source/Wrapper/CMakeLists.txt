@@ -29,7 +29,11 @@ set(Wsrc
 )
 
 ################################################################################
-add_library(NTPolyWrapper STATIC ${Wsrc})
+add_library(NTPolyWrapper ${Wsrc})
+if (NOT NOSWIG)
+   set_target_properties(NTPolyWrapper PROPERTIES
+        POSITION_INDEPENDENT_CODE True)
+endif()
 target_link_libraries(NTPolyWrapper NTPoly)
 
 include(GNUInstallDirs)
@@ -42,4 +46,4 @@ install(TARGETS NTPolyWrapper
 install(EXPORT ntpolywrapper-export
         FILE NTPolyWrapperConfig.cmake
         NAMESPACE NTPoly::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPolyWrapper)

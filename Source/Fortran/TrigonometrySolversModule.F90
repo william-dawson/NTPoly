@@ -5,14 +5,15 @@ MODULE TrigonometrySolversModule
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteListElement, WriteElement, WriteCitation
+       & WriteElement, WriteCitation
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, &
        & ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -47,6 +48,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ScaleSquareTrigonometry(ShiftedMat, OutputMat)
     END IF
+
+    !! Cleanup
     CALL DestructMatrix(ShiftedMat)
   END SUBROUTINE Sine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -100,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Taylor")
+       CALL WriteElement(key="Method", value="Taylor")
        CALL WriteCitation("higham2003computing")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -176,6 +179,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(TempMat)
     CALL DestructMatrix(IdentityMat)
     CALL DestructMatrix(Ak)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ScaleSquareTrigonometryTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute trigonometric functions of a matrix.
@@ -216,7 +220,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Chebyshev")
+       CALL WriteElement(key="Method", value="Chebyshev")
        CALL WriteCitation("serbin1980algorithm higham2003computing yau1993reducing")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -329,6 +333,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(T6)
     CALL DestructMatrix(T8)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ScaleSquareTrigonometry
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TrigonometrySolversModule

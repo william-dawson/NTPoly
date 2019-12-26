@@ -1,6 +1,6 @@
   CALL StartTimer("GEMM")
 
-  !! The threshold needs to be smaller if we're doing a sliced version
+  !! The threshold needs to be smaller if we are doing a sliced version
   !! because you might flush a value that would be kept in the summed version.
   IF (matA%process_grid%num_process_slices .GT. 1) THEN
      working_threshold = threshold/(matA%process_grid%num_process_slices*1000)
@@ -73,7 +73,7 @@
         CASE(LocalGatherA)
            ATasks(II) = TaskRunningA
            !$OMP TASK DEFAULT(SHARED), PRIVATE(JJ2), FIRSTPRIVATE(II)
-           !! First Align The Data We're Working With
+           !! First Align The Data We Are Working With
            DO JJ2=1, &
                 & matAB%process_grid%number_of_blocks_columns/ &
                 & matAB%process_grid%num_process_slices
@@ -127,7 +127,7 @@
         CASE(LocalGatherB)
            BTasks(JJ) = TaskRunningB
            !$OMP TASK DEFAULT(SHARED), PRIVATE(II2), FIRSTPRIVATE(JJ)
-           !! First Transpose The Data We're Working With
+           !! First Transpose The Data We Are Working With
            DO II2=1, matAB%process_grid%number_of_blocks_rows/&
                 & matAB%process_grid%num_process_slices
               CALL TransposeMatrix(matB%LMAT(duplicate_start_row+&
@@ -249,6 +249,9 @@
   DEALLOCATE(row_helper)
   DEALLOCATE(column_helper)
   DEALLOCATE(slice_helper)
+  DEALLOCATE(ATasks)
+  DEALLOCATE(BTasks)
+  DEALLOCATE(ABTasks)
 
   !! Deallocate Buffers From A
   DO II=1,matAB%process_grid%number_of_blocks_rows

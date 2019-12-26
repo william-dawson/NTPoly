@@ -20,7 +20,7 @@ the full density matrix in real space, however the equations in real space are
 very simple and will allow us to demonstrate the concepts.
 
 We need to solve the following equation:
-(-1/2 d/dr2 - 1/r)x = Ex
+> (-1/2 d/dr2 - 1/r)x = Ex
 
 The kinetic energy operator is based on a 5 point stencil central difference
 formula. See the following link:
@@ -45,36 +45,50 @@ The following steps are carried out.
 See the pre-made matrix example for details. Build with something like:
 
 Fortran Build Instructions:
+```
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
 
+```
 C++ Build Instructions:
+```
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
-  -lblas
+  -lblas -lmpi_cxx
+
+```
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
--qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++).
+-qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++ .
+-lmpicxx is only necessary for openmpi, with mpich it should be omitted.).
 
 And then run with:
+```
 mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
 --density Density.mtx
 
+```
+
 Setup python environment:
+```
 export PYTHONPATH=../../Build/python
+```
 
 Run with python:
+```
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-5 --grid_points 100 \
 --density Density.mtx
+
+```
 
 ## Triplet List
 
@@ -84,7 +98,7 @@ to write to. Instead, we construct an intermediary data structure which will
 store all the entries of the matrix, and then use it to build the matrix. The
 triplet list is a list of triplets:
 
-[row, column, value]
+> [row, column, value]
 
 Where row and column are global indices of the matrix. Each MPI process can
 contribute any entry to the matrix, but each entry can only be contributed by

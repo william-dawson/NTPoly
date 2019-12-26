@@ -17,7 +17,8 @@ MODULE ExponentialSolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
   USE RootSolversModule, ONLY : ComputeRoot
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   USE SquareRootSolversModule, ONLY : SquareRoot
   IMPLICIT NONE
   PRIVATE
@@ -67,7 +68,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Chebyshev")
+       CALL WriteElement(key="Method", value="Chebyshev")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -86,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sub_solver_parameters%threshold = sub_solver_parameters%threshold/sigma_val
 
     IF (solver_parameters%be_verbose) THEN
-       CALL WriteElement(key="Sigma", float_value_in=sigma_val)
+       CALL WriteElement(key="Sigma", value=sigma_val)
     END IF
 
     !! Expand Chebyshev Series
@@ -141,6 +142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructPolynomial(polynomial)
     CALL DestructMatrix(ScaledMat)
     CALL DestructMatrix(TempMat)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a pade approximation.
@@ -180,7 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Pade")
+       CALL WriteElement(key="Method", value="Pade")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -199,8 +201,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyMatrix(InputMat, ScaledMat)
     CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
     IF (solver_parameters%be_verbose) THEN
-       CALL WriteElement(key="Sigma", float_value_in=sigma_val)
-       CALL WriteElement(key="Scaling_Steps", int_value_in=sigma_counter)
+       CALL WriteElement(key="Sigma", value=sigma_val)
+       CALL WriteElement(key="Scaling_Steps", value=sigma_counter)
     END IF
 
     !! Sub Solver Parameters
@@ -263,6 +265,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(LeftMat)
     CALL DestructMatrix(RightMat)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeExponentialPade
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a taylor series expansion.
@@ -303,7 +306,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Taylor")
+       CALL WriteElement(key="Method", value="Taylor")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -362,6 +365,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Ak)
     CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeExponentialTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
@@ -403,7 +407,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Chebyshev")
+       CALL WriteElement(key="Method", value="Chebyshev")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -424,7 +428,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
     IF (solver_parameters%be_verbose) THEN
-       CALL WriteElement(key="Sigma", int_value_in=sigma_val)
+       CALL WriteElement(key="Sigma", value=sigma_val)
     END IF
     f_sub_solver_parameters%threshold = &
          & f_sub_solver_parameters%threshold/REAL(2**(sigma_counter-1),NTREAL)
@@ -484,6 +488,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(ScaledMat)
     CALL DestructMatrix(IdentityMat)
     CALL DestructMatrix(TempMat)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeLogarithm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix using a taylor series expansion.
@@ -522,7 +527,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Taylor")
+       CALL WriteElement(key="Method", value="Taylor")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -593,6 +598,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(IdentityMat)
     CALL DestructMatrix(Ak)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeLogarithmTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ExponentialSolversModule

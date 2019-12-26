@@ -11,45 +11,60 @@ extra wires between various machines. This situation is modeled by constructing
 an adjacency matrix representation of the graph. If Nodes I and J are
 connected, then A_ij is nonzero. In this example, we pick some arbitrary
 values for the matrix elements. Once the matrix has been set up,
-we compute the resolvent of the matrix (cI - A)^-1, which is a necessary building
-block for computing the Katz centrality measure.
+we compute the resolvent of the matrix (cI - A)^-1, which is a necessary
+building block for computing the Katz centrality measure.
 
 ## Build System
 
 See the premade matrix example for details. Build with something like:
 
 Fortran Build Instructions:
+```
 mpif90 main.f90 -o example \
   -I../../Build/include \
   -L../../Build/lib -lNTPoly -fopenmp -lblas
 
+```
+
 C++ Build Instructions:
+```
 mpicxx main.cc -c \
   -I../../Source/CPlusPlus -I../../Source/C
 
 mpif90 main.o -o example \
   -L../../Build/lib -lNTPolyCPP -lNTPolyWrapper -lNTPoly -fopenmp -lstdc++ \
-  -lblas
+  -lblas -lmpi_cxx
+
+```
 
 (for the intel compiler, build an intermediate main.o object using the
 C++ compiler, and link with the fortran compiler using the flags:
--qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++).
+-qopenmp -cxxlib -nofor_main. When using Clang, use -lc++ instead of -lstdc++ .
+-lmpicxx is only necessary for openmpi, with mpich it should be omitted.).
 
 And then run with:
+```
 mpirun -np 1 ./example \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-4 \
 --number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
 
+```
+
 Setup python environment:
+```
 export PYTHONPATH=../../Build/python
+```
 
 Run with python:
+```
 mpirun -np 1 python main.py \
 --process_rows 1 --process_columns 1 --process_slices 1 \
 --threshold 1e-6 --convergence_threshold 1e-4 \
 --number_of_nodes 2048 --extra_connections 128 \
 --attenuation 0.7 --output_file Output.mtx
+
+```
 
 as with the other examples.

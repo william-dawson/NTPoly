@@ -1,13 +1,13 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling locally stored CSR matrices.
 MODULE SMatrixModule
-  USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
-  USE MatrixMarketModule, ONLY : ParseMMHeader
+  USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX, NTLONG
+  USE MatrixMarketModule, ONLY : ParseMMHeader, WriteMMSize, WriteMMLine, &
+       & MAX_LINE_LENGTH
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
-       & DestructTripletList, SetTripletAt, ConstructTripletList, &
-       & AppendToTripletList, SymmetrizeTripletList, ConvertTripletListType
+       & DestructTripletList, ConstructTripletList, AppendToTripletList, &
+       & SymmetrizeTripletList, ConvertTripletListType
   USE TripletModule, ONLY : Triplet_r, Triplet_c
-  USE TimerModule, ONLY : StartTimer, StopTimer
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

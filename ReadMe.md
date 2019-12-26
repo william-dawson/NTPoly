@@ -1,10 +1,10 @@
 Project Overview
 ================================================================================
 
-[![Build Status](https://travis-ci.org/william-dawson/NTPoly.svg?branch=travis-ci)](https://travis-ci.org/william-dawson/NTPoly)
+[![Build Status](https://travis-ci.com/william-dawson/NTPoly.svg?branch=master)](https://travis-ci.com/william-dawson/NTPoly)
 
 NTPoly is a massively parallel library for computing the functions of sparse,
-symmetric matrices based on polynomial expansions. For sufficiently sparse
+Hermitian matrices based on polynomial expansions. For sufficiently sparse
 matrices, most of the matrix functions in NTPoly can be computed in linear
 time.
 
@@ -26,25 +26,20 @@ The following optional software can greatly enhance the NTPoly experience:
 
 * BLAS: for multiplying dense matrices, if they emerge in the calculation.
 * A C++ Compiler for building C++ bindings.
-* Doxygen: for building documentation.
-* Python (Version 2.7+): for testing.
+* Ford: for building documentation.
+* Doxygen: for building C++ documentation.
+* SWIG (Version 3.0+): for building the Python bindings.
+* Python (Version 2.7+): if you would like python bindings.
 * MPI4PY: for testing.
 * SciPy: for testing.
 * NumPy: for testing.
-* SWIG (Version 3.0+): for building the Python bindings.
 
 NTPoly uses CMake as a build system. First, take a look in the Targets
-directory. You'll find a list of `.cmake` files which have example configurations
-on popular systems. You should copy one of these files, and create your own
-mymachine.cmake file. Then, cd into the Build directory, and type:
+directory. You'll find a list of `.cmake` files which have example
+configurations on popular systems. You should copy one of these files, and
+create your own mymachine.cmake file. Then, cd into the Build directory, and
+type:
 > cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake ..
-
-There are a few options you can pass to CMake to modify the build. You can set
-`-DCMAKE_BUILD_TYPE=Debug` for debugging purposes. You can set the install
-directory using the standard `-DCMAKE_INSTALL_PREFIX=/path/to/dir`. You can
-also set `-DFORTRAN_ONLY=YES` if you want to only build the Fortran interface.
-Note that with just the Fortran interface, it is not possible to perform local
-tests.
 
 After that you can build using:
 > make
@@ -52,11 +47,28 @@ After that you can build using:
 And for the documentation:
 > make doc
 
-[Online documentation](https://william-dawson.github.io/NTPoly/documentation/) is also
-available. Further details about the library can be found on the
-[Wiki](https://github.com/william-dawson/NTPoly/wiki).
-If you aren't cross compiling, you can perform local tests using:
+If you aren't cross compiling and have built the python bindings, you can
+perform local tests using:
 > make test
+
+There are a few options you can pass to CMake to modify the build. A few
+useful standard options are:
+* `-DCMAKE_BUILD_TYPE=` `Debug` or `Release`.
+* `-DCMAKE_INSTALL_PREFIX=` followed by the path to your desired install
+ directory.
+
+There are also some custom options special for NTPoly:
+* `-DFORTRAN_ONLY=` set to `Yes` if you only want to build the Fortran bindings.
+* `-DNOSWIG=` set to `Yes` if you don't want to build Python bindings.
+* `-DUSE_MPIH=` on some systems, there is no `use mpi` feature for Fortran,
+ just `#include "mpi.h"`. You can set this option to activate the later.
+* `-DNOIALLGATHER=` on older MPI implementations, there is no non blocking
+ collective operations. You can disable this feature using this option, but
+ beware this might reduce performance.
+
+[Online documentation](https://william-dawson.github.io/NTPoly/documentation/)
+is also available. Further details about the library can be found on the
+[Wiki](https://github.com/william-dawson/NTPoly/wiki).
 
 Basic Theory
 --------------------------------------------------------------------------------

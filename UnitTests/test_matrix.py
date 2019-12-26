@@ -1,25 +1,10 @@
-'''
-@package testSparseMatrix
+"""
 A test suite for local matrices.
-'''
+"""
 import unittest
 import NTPolySwig as nt
 
-import scipy
-from numpy import sum, multiply, conj
-import scipy.sparse
-from random import uniform, randint
-from scipy.linalg import eigh
-from scipy.sparse import random, csr_matrix
-from scipy.sparse.linalg import norm
-from numpy import diag
-from numpy.linalg import norm as normd
-
 from scipy.io import mmwrite, mmread
-import os
-
-from helpers import THRESHOLD
-from helpers import result_file
 
 
 class TestParameters:
@@ -42,6 +27,8 @@ class TestParameters:
         '''
         Function to create a matrix for a given set of parameters.
         '''
+        from scipy.sparse import random, csr_matrix
+
         r = self.rows
         c = self.columns
         s = self.sparsity
@@ -58,13 +45,32 @@ class TestParameters:
 
 class TestLocalMatrix(unittest.TestCase):
     '''A test class for local matrices.'''
+    from os import environ
+    from os.path import join
     # Parameters for the matrices
     parameters = []
     # Location of the scratch directory.
-    scratch_dir = os.environ['SCRATCHDIR']
+    scratch_dir = environ['SCRATCHDIR']
+    file1 = join(scratch_dir, "matrix1.mtx")
+    file2 = join(scratch_dir, "matrix2.mtx")
+    file3 = join(scratch_dir, "matrix3.mtx")
     SMatrix = nt.Matrix_lsr
     MatrixMemoryPool = nt.MatrixMemoryPool_r
     complex = False
+
+    def _compare_mat(self, val1, val2):
+        from helpers import THRESHOLD
+        from scipy.sparse.linalg import norm
+
+        normval = abs(norm(val1 - val2))
+        self.assertLessEqual(normval, THRESHOLD)
+
+    def _compare(self, val1, val2):
+        from helpers import THRESHOLD
+        from scipy.linalg import norm
+
+        normval = abs(norm(val1 - val2))
+        self.assertLessEqual(normval, THRESHOLD)
 
     def setUp(self):
         '''Set up a test.'''
@@ -83,217 +89,229 @@ class TestLocalMatrix(unittest.TestCase):
         '''Test routines to read and write matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(matrix1 - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            mmwrite(self.file1, matrix1)
+            matrix2 = self.SMatrix(self.file1)
+            matrix2.WriteToMatrixMarket(self.file2)
+            ResultMat = mmread(self.file2)
+            self._compare_mat(matrix1, ResultMat)
+
+    def test_readcircular(self):
+        '''Test routines to read a matrix produced by ntpoly.'''
+        for param in self.parameters:
+            matrix1 = param.create_matrix(complex=self.complex)
+            mmwrite(self.file1, matrix1)
+            matrix2 = self.SMatrix(self.file1)
+            matrix2.WriteToMatrixMarket(self.file2)
+            matrix3 = self.SMatrix(self.file2)
+            matrix3.WriteToMatrixMarket(self.file3)
+            ResultMat = mmread(self.file3)
+
+            self._compare_mat(matrix1, ResultMat)
 
     def test_readsymmetric(self):
         '''Test routines to read and write matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex, square=True)
             matrix1 = matrix1 + matrix1.H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(matrix1 - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            mmwrite(self.file1, matrix1)
+            matrix2 = self.SMatrix(self.file1)
+            matrix2.WriteToMatrixMarket(self.file2)
+            ResultMat = mmread(self.file2)
+
+            self._compare_mat(matrix1, ResultMat)
 
     def test_addition(self):
         '''Test routines to add together matrices.'''
+        from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
             CheckMat = alpha * matrix1 + matrix2
-            matrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix2.mtx")
+            matrix1 = self.SMatrix(self.file1)
+            matrix2 = self.SMatrix(self.file2)
             matrix2.Increment(matrix1, alpha, 0.0)
-            matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            matrix2.WriteToMatrixMarket(self.file2)
+            ResultMat = mmread(self.file2)
+
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_addzero(self):
         '''Test routines to add together a matrix and zero.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.file1, matrix1)
 
             CheckMat = matrix1
-            matrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SMatrix(matrix1.GetColumns(),
-                                   matrix1.GetRows())
+            matrix1 = self.SMatrix(self.file1)
+            matrix2 = self.SMatrix(matrix1.GetColumns(), matrix1.GetRows())
             matrix2.Increment(matrix1, 1.0, 0.0)
-            matrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            matrix2.WriteToMatrixMarket(self.file2)
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_addzeroreverse(self):
         '''Test routines to add together a matrix and zero.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.file1, matrix1)
 
             CheckMat = matrix1
-            matrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix1 = self.SMatrix(self.file1)
             matrix2 = self.SMatrix(matrix1.GetColumns(), matrix1.GetRows())
             matrix1.Increment(matrix2, 1.0, 0.0)
-            matrix1.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            matrix1.WriteToMatrixMarket(self.file2)
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_dot(self):
         '''Test routines to dot two matrices.'''
+        from numpy import sum, multiply
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2)
             check = sum(multiply(matrix1.todense(), matrix2.todense()))
-            matrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix2.mtx")
+            matrix1 = self.SMatrix(self.file1)
+            matrix2 = self.SMatrix(self.file2)
             result = matrix2.Dot(matrix1)
-            normval = result - check
-            self.assertLessEqual(normval, THRESHOLD)
+
+            self._compare(result, check)
 
     def test_transpose(self):
         '''Test routines to transpose a matrix.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.file1, matrix1)
 
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SMatrix(self.file1)
             matrix2T = self.SMatrix(matrix2.GetRows(), matrix2.GetColumns())
             matrix2T.Transpose(matrix2)
-            matrix2T.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+            matrix2T.WriteToMatrixMarket(self.file2)
 
             CheckMat = matrix1.T
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file2)
+
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_pairwise(self):
         '''Test routines to pairwise multiply two matrices.'''
+        from scipy.sparse import csr_matrix
+        from numpy import multiply
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2)
             CheckMat = csr_matrix(
                 multiply(matrix1.todense(), matrix2.todense()))
 
-            ntmatrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            ntmatrix2 = self.SMatrix(self.scratch_dir + "/matrix2.mtx")
+            ntmatrix1 = self.SMatrix(self.file1)
+            ntmatrix2 = self.SMatrix(self.file2)
             ntmatrix3 = self.SMatrix(
                 ntmatrix1.GetColumns(), ntmatrix1.GetRows())
             ntmatrix3.PairwiseMultiply(ntmatrix1, ntmatrix2)
-            ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
+            ntmatrix3.WriteToMatrixMarket(self.file3)
 
-            ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file3)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_multiply(self):
         '''Test routines to multiply two matrices.'''
+        from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex).H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
             beta = 0.0
-            if abs(beta) > THRESHOLD:
+            if abs(beta) > 0.0:
                 CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
             else:
                 CheckMat = alpha * matrix1.dot(matrix2)
 
-            ntmatrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            ntmatrix2 = self.SMatrix(self.scratch_dir + "/matrix2.mtx")
+            ntmatrix1 = self.SMatrix(self.file1)
+            ntmatrix2 = self.SMatrix(self.file2)
             ntmatrix3 = self.SMatrix(ntmatrix2.GetColumns(),
                                      ntmatrix1.GetRows())
             memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
                                                 ntmatrix1.GetRows())
             ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta,
                            0.0, memory_pool)
-            ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
+            ntmatrix3.WriteToMatrixMarket(self.file3)
 
-            ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file3)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_multiply_zero(self):
         '''Test routines to multiply two matrices where one is zero.'''
+        from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = 0 * param.create_matrix(complex=self.complex).H
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
             beta = 0.0
-            if abs(beta) > THRESHOLD:
+            if abs(beta) > 0.0:
                 CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
             else:
                 CheckMat = alpha * matrix1.dot(matrix2)
 
-            ntmatrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            ntmatrix2 = self.SMatrix(self.scratch_dir + "/matrix2.mtx")
+            ntmatrix1 = self.SMatrix(self.file1)
+            ntmatrix2 = self.SMatrix(self.file2)
             ntmatrix3 = self.SMatrix(ntmatrix2.GetColumns(),
                                      ntmatrix1.GetRows())
             memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
                                                 ntmatrix1.GetRows())
             ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, False, alpha, beta,
                            0.0, memory_pool)
-            ntmatrix3.WriteToMatrixMarket(self.scratch_dir + "/matrix3.mtx")
+            ntmatrix3.WriteToMatrixMarket(self.file3)
 
-            ResultMat = mmread(self.scratch_dir + "/matrix3.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file3)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_get_row(self):
         '''Test function that extracts a row from the matrix'''
+        from random import randint
         for param in self.parameters:
             if param.rows == 0:
                 continue
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.file1, matrix1)
             row_num = randint(0, param.rows - 1)
             CheckMat = matrix1[row_num, :]
 
-            ntmatrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix1 = self.SMatrix(self.file1)
             ntmatrix2 = self.SMatrix(ntmatrix1.GetColumns(), 1)
             ntmatrix1.ExtractRow(row_num, ntmatrix2)
-            ntmatrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+            ntmatrix2.WriteToMatrixMarket(self.file2)
 
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_get_column(self):
         '''Test function that extracts a column from the matrix'''
+        from random import randint
         for param in self.parameters:
             if param.columns == 0:
                 continue
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.file1, matrix1)
             column_num = randint(0, param.columns - 1)
             CheckMat = matrix1[:, column_num]
 
-            ntmatrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
+            ntmatrix1 = self.SMatrix(self.file1)
             ntmatrix2 = self.SMatrix(1, ntmatrix1.GetRows())
             ntmatrix1.ExtractColumn(column_num, ntmatrix2)
-            ntmatrix2.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+            ntmatrix2.WriteToMatrixMarket(self.file2)
 
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
 
 
 class TestLocalMatrix_c(TestLocalMatrix):
@@ -306,32 +324,32 @@ class TestLocalMatrix_c(TestLocalMatrix):
         '''Test routines to compute the conjugate transpose of a matrix.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
+            mmwrite(self.file1, matrix1)
 
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
+            matrix2 = self.SMatrix(self.file1)
             matrix2T = self.SMatrix(matrix2.GetRows(), matrix2.GetColumns())
             matrix2T.Transpose(matrix2)
             matrix2T.Conjugate()
-            matrix2T.WriteToMatrixMarket(self.scratch_dir + "/matrix2.mtx")
+            matrix2T.WriteToMatrixMarket(self.file2)
 
             CheckMat = matrix1.H
-            ResultMat = mmread(self.scratch_dir + "/matrix2.mtx")
-            normval = abs(norm(CheckMat - ResultMat))
-            self.assertLessEqual(normval, THRESHOLD)
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
 
     def test_dot(self):
         '''Test routines to dot two matrices.'''
+        from numpy import sum, multiply, conj
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
             matrix2 = param.create_matrix(complex=self.complex)
-            mmwrite(self.scratch_dir + "/matrix1.mtx", matrix1)
-            mmwrite(self.scratch_dir + "/matrix2.mtx", matrix2)
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2)
             check = sum(multiply(conj(matrix1.todense()), matrix2.todense()))
-            matrix1 = self.SMatrix(self.scratch_dir + "/matrix1.mtx")
-            matrix2 = self.SMatrix(self.scratch_dir + "/matrix2.mtx")
-            result = matrix2.Dot(matrix1)
-            normval = result - check
-            self.assertLessEqual(normval, THRESHOLD)
+            matrix1 = self.SMatrix(self.file1)
+            matrix2 = self.SMatrix(self.file2)
+            result = matrix1.Dot(matrix2)
+
+            self._compare(result, check)
 
 
 ###############################################################################

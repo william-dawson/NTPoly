@@ -24,7 +24,7 @@ MODULE HermiteSolversModule_wrp
   PUBLIC :: HermiteCompute_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the hermite polynomial constructor.
-  PURE SUBROUTINE ConstructHermitePolynomial_wrp(ih_this, degree) &
+  SUBROUTINE ConstructHermitePolynomial_wrp(ih_this, degree) &
        & bind(c,name="ConstructHermitePolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: degree
@@ -36,7 +36,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructHermitePolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
-  PURE SUBROUTINE DestructHermitePolynomial_wrp(ih_this) &
+  SUBROUTINE DestructHermitePolynomial_wrp(ih_this) &
        & bind(c,name="DestructHermitePolynomial_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(HermitePolynomial_wrp) :: h_this

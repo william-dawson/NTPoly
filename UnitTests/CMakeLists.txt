@@ -14,6 +14,7 @@ set(TestFiles
 find_package(PythonInterp REQUIRED)
 
 ################################################################################
+find_package(MPI REQUIRED)
 execute_process(COMMAND ${MPIEXEC} --version
                 OUTPUT_VARIABLE mpiversion OUTPUT_STRIP_TRAILING_WHITESPACE)
 if (${mpiversion} MATCHES "OpenRTE")

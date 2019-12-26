@@ -45,9 +45,9 @@ PROGRAM MatrixMapsProgram
   !! Print out parameters.
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
-  CALL WriteElement(key="input_matrix", text_value_in=input_matrix)
-  CALL WriteElement(key="output_matrix", text_value_in=output_matrix)
-  CALL WriteElement(key="process_slices", int_value_in=process_slices)
+  CALL WriteElement(key="input_matrix", value=input_matrix)
+  CALL WriteElement(key="output_matrix", value=output_matrix)
+  CALL WriteElement(key="process_slices", value=process_slices)
   CALL ExitSubLog
 
   !! Read in the matrices from file.

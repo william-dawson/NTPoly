@@ -40,7 +40,14 @@ set(Fsrc
 )
 
 ################################################################################
-add_library(NTPoly STATIC ${Fsrc})
+add_library(NTPoly ${Fsrc})
+if (NOT NOSWIG)
+  set_target_properties(NTPoly PROPERTIES POSITION_INDEPENDENT_CODE True)
+endif()
+target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES}
+                      ${OpenMP_Fortran_LIBRARIES} ${BLAS_LIBRARIES})
+target_include_directories(NTPoly PUBLIC ${MPI_Fortran_INCLUDE_PATH})
+
 include(GNUInstallDirs)
 install(TARGETS NTPoly
         EXPORT ntpoly-export

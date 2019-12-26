@@ -6,6 +6,7 @@ PROGRAM ComplexMatrix
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE ExponentialSolversModule, ONLY : ComputeExponential
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
+  USE MatrixMarketModule, ONLY : MM_SYMMETRIC
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & DestructMatrix, TransposeMatrix, GetMatrixTripletList, &
@@ -15,7 +16,7 @@ PROGRAM ComplexMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList, &
        & GetTripletAt, TripletList_c, ConstructTripletList, &
-       & AppendToTripletList, SymmetrizeTripletList, MM_SYMMETRIC
+       & AppendToTripletList, SymmetrizeTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE MPI
   IMPLICIT NONE
@@ -65,12 +66,12 @@ PROGRAM ComplexMatrix
 
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
-  CALL WriteElement(key="input_file", text_value_in=input_file)
-  CALL WriteElement(key="exponential_file", text_value_in=exponential_file)
-  CALL WriteElement(key="process_rows", int_value_in=process_rows)
-  CALL WriteElement(key="process_columns", int_value_in=process_columns)
-  CALL WriteElement(key="process_slices", int_value_in=process_slices)
-  CALL WriteElement(key="threshold", float_value_in=threshold)
+  CALL WriteElement(key="input_file", value=input_file)
+  CALL WriteElement(key="exponential_file", value=exponential_file)
+  CALL WriteElement(key="process_rows", value=process_rows)
+  CALL WriteElement(key="process_columns", value=process_columns)
+  CALL WriteElement(key="process_slices", value=process_slices)
+  CALL WriteElement(key="threshold", value=threshold)
   CALL ExitSubLog
 
   !! Construct The Hermitian Matrix

@@ -1,8 +1,6 @@
-  !! Parameters
-  INTEGER, PARAMETER :: MAX_LINE_LENGTH = 1024
   !! Local MPI Variables
   INTEGER :: mpi_file_handler
-  INTEGER :: mpi_status(MPI_STATUS_SIZE)
+  INTEGER :: message_status(MPI_STATUS_SIZE)
   INTEGER, DIMENSION(:), ALLOCATABLE :: local_values_buffer
   !! Local Data
   INTEGER :: triplet_list_string_length
@@ -20,15 +18,15 @@
   INTEGER :: NEW_LINE_LENGTH
   CHARACTER(len=MAX_LINE_LENGTH*2) :: temp_string1
   CHARACTER(len=MAX_LINE_LENGTH) :: temp_string2
+  CHARACTER(len=MAX_LINE_LENGTH) :: temp_string3
   INTEGER :: temp_length
   INTEGER :: bytes_per_character
-  CHARACTER(len=1) :: temp_char
   INTEGER :: ierr
 
   !! Merge all the local data
   CALL MergeMatrixLocalBlocks(this, merged_local_data)
 
-  bytes_per_character = sizeof(temp_char)
+  CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
 
   !! Create the matrix size line
   NEW_LINE_LENGTH = LEN(new_line('A'))
@@ -39,13 +37,11 @@
   WRITE(temp_string1,'(A)') "%%MatrixMarket matrix coordinate real general" &
        & //new_line('A')//"%"//new_line('A')
 #endif
-  ALLOCATE(CHARACTER(&
-       & len=LEN_TRIM(temp_string1)) :: header_line1)
+  ALLOCATE(CHARACTER(len=LEN_TRIM(temp_string1)) :: header_line1)
   header_line1 = TRIM(temp_string1)
 
-  WRITE(temp_string2,*) this%actual_matrix_dimension, &
-       & this%actual_matrix_dimension, GetMatrixSize(this)
-  !! I don't understand why the +1 is needed, but it is.
+  CALL WriteMMSize(temp_string2, this%actual_matrix_dimension, &
+       & this%actual_matrix_dimension, GetMatrixSize(this))
   ALLOCATE(CHARACTER(&
        & len=LEN_TRIM(temp_string2)+NEW_LINE_LENGTH+1) :: header_line2)
   WRITE(header_line2,*) TRIM(temp_string2)//new_line('A')
@@ -63,17 +59,17 @@
   triplet_list_string_length = 0
   DO counter = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & REAL(triplet_list%data(counter)%point_value), &
           & AIMAG(triplet_list%data(counter)%point_value), &
-          & new_line('A')
+          & add_newline_in=.TRUE.)
 #else
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
-          & triplet_list%data(counter)%point_value, &
-          & new_line('A')
+          & triplet_list%data(counter)%point_value, add_newline_in=.TRUE.)
 #endif
+     WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
      triplet_list_string_length = triplet_list_string_length + &
           & LEN_TRIM(temp_string2)
      triplet_list_string_length = triplet_list_string_length + NEW_LINE_LENGTH
@@ -84,17 +80,17 @@
   offset_counter = 1
   DO counter = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
           & REAL(triplet_list%data(counter)%point_value), &
           & AIMAG(triplet_list%data(counter)%point_value), &
-          & new_line('A')
+          & add_newline_in=.TRUE.)
 #else
-     WRITE(temp_string2,*) triplet_list%data(counter)%index_row, &
+     CALL WriteMMLine(temp_string3, triplet_list%data(counter)%index_row, &
           & triplet_list%data(counter)%index_column, &
-          & triplet_list%data(counter)%point_value, &
-          & new_line('A')
+          & triplet_list%data(counter)%point_value, add_newline_in=.TRUE.)
 #endif
+     WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
      temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
      WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
           & temp_string2(1:temp_length)
@@ -109,8 +105,7 @@
   write_offset = 0
   write_offset = write_offset + header_size
   DO counter = 1,this%process_grid%within_slice_rank
-     write_offset = write_offset + &
-          & local_values_buffer(counter)
+     write_offset = write_offset + local_values_buffer(counter)
   END DO
 
   !! Global Write
@@ -123,10 +118,10 @@
      IF (this%process_grid%within_slice_rank .EQ. 0) THEN
         header_offset = 0
         CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line1, &
-             & LEN(header_line1), MPI_CHARACTER,mpi_status,ierr)
+             & LEN(header_line1), MPI_CHARACTER, message_status, ierr)
         header_offset = header_offset + LEN(header_line1)
         CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line2, &
-             & LEN(header_line2), MPI_CHARACTER,mpi_status,ierr)
+             & LEN(header_line2), MPI_CHARACTER, message_status, ierr)
      END IF
      !! Write Local Data
      CALL MPI_File_set_view(mpi_file_handler,write_offset,MPI_CHARACTER,&

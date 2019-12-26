@@ -11,7 +11,8 @@ MODULE ChebyshevSolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, FillMatrixIdentity, &
        & PrintMatrixInformation, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -113,8 +114,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Standard")
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Method", value="Standard")
+       CALL WriteElement(key="Degree", value=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -183,6 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Tkminus2)
     CALL DestructMatrix(BalancedInput)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE Compute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
@@ -223,8 +225,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Recursive")
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Method", value="Recursive")
+       CALL WriteElement(key="Degree", value=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -268,7 +270,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             &  pool, 1, solver_parameters)
     END IF
     IF (solver_parameters%be_verbose) THEN
-       CALL ExitSubLog
        CALL PrintMatrixInformation(OutputMat)
     END IF
 
@@ -289,6 +290,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrix(BalancedInput)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE FactorizedCompute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The workhorse routine for the factorized chebyshev computation function.

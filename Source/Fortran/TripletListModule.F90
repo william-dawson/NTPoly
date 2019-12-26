@@ -6,9 +6,25 @@ MODULE TripletListModule
   USE TripletModule, ONLY : Triplet_r, Triplet_c, CompareTriplets, &
        & ConvertTripletType
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC, MM_SKEW_SYMMETRIC, MM_HERMITIAN
-  USE TimerModule, ONLY : StartTimer, StopTimer
-  USE ISO_C_BINDING, ONLY : c_int
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
+  PRIVATE
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A data type for a list of triplets.
+  TYPE :: TripletList_r
+     !> Internal representation of the data.
+     TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: DATA
+     !> Current number of elements in the triplet list
+     INTEGER :: CurrentSize
+  END TYPE TripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> A data type for a list of triplets.
+  TYPE :: TripletList_c
+     !> Internal representation of the data.
+     TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: DATA
+     !> Current number of elements in the triplet list
+     INTEGER :: CurrentSize
+  END TYPE TripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: TripletList_r
   PUBLIC :: TripletList_c
@@ -16,7 +32,6 @@ MODULE TripletListModule
   PUBLIC :: DestructTripletList
   PUBLIC :: ResizeTripletList
   PUBLIC :: AppendToTripletList
-  PUBLIC :: AccumulateTripletList
   PUBLIC :: SetTripletAt
   PUBLIC :: GetTripletAt
   PUBLIC :: SortTripletList
@@ -47,10 +62,6 @@ MODULE TripletListModule
   INTERFACE AppendToTripletList
      MODULE PROCEDURE AppendToTripletList_r
      MODULE PROCEDURE AppendToTripletList_c
-  END INTERFACE
-  INTERFACE AccumulateTripletList
-     MODULE PROCEDURE AccumulateTripletList_r
-     MODULE PROCEDURE AccumulateTripletList_c
   END INTERFACE
   INTERFACE SetTripletAt
      MODULE PROCEDURE SetTripletAt_r
@@ -88,22 +99,6 @@ MODULE TripletListModule
      MODULE PROCEDURE ConvertTripletListToReal
      MODULE PROCEDURE ConvertTripletListToComplex
   END INTERFACE
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a list of triplets.
-  TYPE :: TripletList_r
-     !> Internal representation of the data.
-     TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: DATA
-     !> Current number of elements in the triplet list
-     INTEGER :: CurrentSize
-  END TYPE TripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> A data type for a list of triplets.
-  TYPE :: TripletList_c
-     !> Internal representation of the data.
-     TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: DATA
-     !> Current number of elements in the triplet list
-     INTEGER :: CurrentSize
-  END TYPE TripletList_c
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for constructing a triplet list.
   PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)
@@ -221,28 +216,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE AppendToTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> (Just for a related project)
-  PURE SUBROUTINE AccumulateTripletList_r(this, triplet_value)
-    !> This the triplet list to append to.
-    TYPE(TripletList_r), INTENT(INOUT) :: this
-    !> The value to add in.
-    TYPE(Triplet_r), INTENT(IN)        :: triplet_value
-
-    INCLUDE "triplet_includes/AccumulateTripletList.f90"
-
-  END SUBROUTINE AccumulateTripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> (Just for a related project)
-  PURE SUBROUTINE AccumulateTripletList_c(this, triplet_value)
-    !> This the triplet list to append to.
-    TYPE(TripletList_c), INTENT(INOUT) :: this
-    !> The value to add in.
-    TYPE(Triplet_c), INTENT(IN)        :: triplet_value
-
-    INCLUDE "triplet_includes/AccumulateTripletList.f90"
-
-  END SUBROUTINE AccumulateTripletList_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
   PURE SUBROUTINE SetTripletAt_r(this,index,triplet_value)
     !> The triplet list to set.
@@ -304,7 +277,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: matrix_rows
     !> A now sorted version of the list. This routine will allocate it.
     TYPE(TripletList_r), INTENT(OUT) :: sorted_list
-    !> False if you don't need the final bubble sort.
+    !> False if you do not need the final bubble sort.
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     TYPE(Triplet_r) :: temporary
@@ -326,7 +299,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: matrix_rows
     !> A now sorted version of the list. This routine will allocate it.
     TYPE(TripletList_c), INTENT(OUT) :: sorted_list
-    !> False if you don't need the final bubble sort.
+    !> False if you do not need the final bubble sort.
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
     TYPE(Triplet_c) :: temporary

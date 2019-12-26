@@ -11,7 +11,8 @@ MODULE InverseSolversModule
        & MatrixNorm, MatrixSigma, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -20,7 +21,7 @@ MODULE InverseSolversModule
   PUBLIC :: PseudoInverse
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
-  !> An implementation of Hotelling's method \cite palser1998canonical.
+  !> An implementation of the method of Hotelling \cite palser1998canonical.
   SUBROUTINE Invert(Mat, InverseMat, solver_parameters_in)
     !> The matrix to invert.
     TYPE(Matrix_ps), INTENT(IN)  :: Mat
@@ -87,9 +88,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL WriteListElement(key="Round", value=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement(key="Convergence", value=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -119,7 +120,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", value=outer_counter-1)
        CALL PrintMatrixInformation(InverseMat)
     END IF
 
@@ -138,10 +139,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Temp2)
     CALL DestructMatrix(BalancedMat)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
-  !> An implementation of Hotelling's method \cite palser1998canonical.
+  !> An implementation of the method of Hotelling \cite palser1998canonical.
   SUBROUTINE PseudoInverse(Mat, InverseMat, solver_parameters_in)
     !> The matrix to compute the pseudo inverse of.
     TYPE(Matrix_ps), INTENT(IN)  :: Mat
@@ -208,9 +210,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+          CALL WriteListElement(key="Round", value=outer_counter-1)
           CALL EnterSubLog
-          CALL WriteListElement(key="Convergence", float_value_in=norm_value)
+          CALL WriteListElement(key="Convergence", value=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -239,7 +241,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", value=outer_counter-1)
        CALL PrintMatrixInformation(InverseMat)
     END IF
 
@@ -258,6 +260,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Temp2)
     CALL DestructMatrix(BalancedMat)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE PseudoInverse
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE InverseSolversModule

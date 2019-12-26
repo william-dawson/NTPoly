@@ -8,10 +8,11 @@ MODULE GeometryOptimizationModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, &
-       & IncrementMatrix, MatrixTrace, ScaleMatrix
+       & IncrementMatrix, ScaleMatrix, DotMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, ConstructEmptyMatrix, &
-       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+       & PrintMatrixInformation, CopyMatrix
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot
   IMPLICIT NONE
   PRIVATE
@@ -39,18 +40,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingDensity
     TYPE(Matrix_ps) :: WorkingOverlap
-    TYPE(Matrix_ps) :: AddBranch, SubtractBranch
-    TYPE(Matrix_ps) :: TempMat1, TempMat2
-    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: TempMat
     !! Local Variables
-    REAL(NTREAL) :: subtract_trace
-    REAL(NTREAL) :: add_trace
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: norm_value
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool1
     INTEGER :: outer_counter
-    INTEGER :: total_iterations
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -62,7 +58,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Purification")
+       CALL WriteElement(key="Method", value="Purification")
        CALL WriteCitation("niklasson2010trace")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -71,8 +67,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(NewDensity, PreviousDensity)
     CALL ConstructEmptyMatrix(WorkingDensity, PreviousDensity)
     CALL ConstructEmptyMatrix(WorkingOverlap, PreviousDensity)
-    CALL ConstructEmptyMatrix(Identity, PreviousDensity)
-    CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
     CALL CopyMatrix(PreviousDensity, WorkingDensity)
@@ -84,14 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
        CALL PermuteMatrix(WorkingOverlap, WorkingOverlap, &
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
-       CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool1)
     END IF
-
-    !! Finish Setup
-    CALL CopyMatrix(WorkingDensity, NewDensity)
-    CALL CopyMatrix(WorkingDensity, AddBranch)
-    CALL CopyMatrix(WorkingDensity, SubtractBranch)
 
     !! Iterate
     IF (solver_parameters%be_verbose) THEN
@@ -99,42 +86,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
-       !! Figure Out Sigma Value. After which, XnS is stored in TempMat
-       IF (outer_counter .GT. 1) THEN
-          CALL MatrixMultiply(AddBranch, WorkingOverlap, TempMat1, &
-               & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-          CALL MatrixTrace(TempMat1, add_trace)
-          CALL MatrixMultiply(SubtractBranch, WorkingOverlap, TempMat2, &
-               & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-          CALL MatrixTrace(TempMat2, subtract_trace)
-          IF (ABS(nel - add_trace) .GT. ABS(nel - subtract_trace)) THEN
-             !! Subtract Branch
-             trace_value = subtract_trace
-             CALL IncrementMatrix(AddBranch, NewDensity, -1.0_NTREAL)
-             norm_value = MatrixNorm(NewDensity)
-             CALL CopyMatrix(AddBranch, NewDensity)
-             CALL CopyMatrix(TempMat2, TempMat1)
-          ELSE
-             !! Add Branch
-             trace_value = add_trace
-             CALL IncrementMatrix(SubtractBranch, NewDensity, -1.0_NTREAL)
-             norm_value = MatrixNorm(NewDensity)
-             CALL CopyMatrix(SubtractBranch, NewDensity)
-          END IF
-       ELSE
-          CALL MatrixMultiply(NewDensity, WorkingOverlap, TempMat1, &
-               & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+       !! Xn+1 = Xn S1 Xn
+       CALL MatrixMultiply(WorkingDensity, WorkingOverlap, TempMat, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+       CALL MatrixMultiply(TempMat, WorkingDensity, NewDensity, &
+            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
+
+       !! Figure Out Sigma Value
+       CALL DotMatrix(WorkingDensity, WorkingOverlap, trace_value)
+
+       !! Xn+1 = 2 Xn - Xn S1 Xn
+       IF (nel * 0.5_NTREAL .GT. trace_value) THEN
+          CALL ScaleMatrix(NewDensity, -1.0_NTREAL)
+          CALL IncrementMatrix(WorkingDensity, NewDensity, 2.0_NTREAL)
        END IF
 
-       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", int_value_in=outer_counter-1)
+       !! Check Convergence
+       CALL IncrementMatrix(NewDensity, WorkingDensity, -1.0_NTREAL)
+       norm_value = MatrixNorm(WorkingDensity)
+
+       IF (solver_parameters%be_verbose) THEN
+          CALL WriteListElement(key="Round", value=outer_counter)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", float_value_in=norm_value)
-          CALL WriteElement(key="Trace", float_value_in=trace_value)
-          CALL WriteElement(key="AddTrace", float_value_in=add_trace)
-          CALL WriteElement(key="SubtractTrace", float_value_in=subtract_trace)
+          CALL WriteElement(key="Convergence", value=norm_value)
+          CALL WriteElement(key="Trace", value=trace_value)
           CALL ExitSubLog
        END IF
 
@@ -142,25 +118,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           EXIT
        END IF
 
-       !! Compute (I - XnS)Xn
-       CALL IncrementMatrix(Identity, TempMat1, -1.0_NTREAL)
-       CALL ScaleMatrix(TempMat1, -1.0_NTREAL)
-       CALL MatrixMultiply(TempMat1, NewDensity, TempMat2, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
-
-       !! Subtracted Version Xn - (I - XnS)Xn
-       CALL CopyMatrix(NewDensity, SubtractBranch)
-       CALL IncrementMatrix(TempMat2, SubtractBranch, -1.0_NTREAL)
-
-       !! Added Version Xn + (I - XnS)Xn
-       CALL CopyMatrix(NewDensity, AddBranch)
-       CALL IncrementMatrix(TempMat2, AddBranch)
-
+       !! Xn = Xn+1
+       CALL CopyMatrix(NewDensity, WorkingDensity)
     END DO
-    total_iterations = outer_counter-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",int_value_in=total_iterations)
+       CALL WriteElement(key="Total_Iterations", value=outer_counter)
        CALL PrintMatrixInformation(NewDensity)
     END IF
 
@@ -170,19 +133,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & solver_parameters%BalancePermutation, memorypool_in=pool1)
     END IF
 
-    !! Cleanup
-    CALL DestructMatrix(WorkingDensity)
-    CALL DestructMatrix(WorkingOverlap)
-    CALL DestructMatrix(Identity)
-    CALL DestructMatrix(TempMat1)
-    CALL DestructMatrix(TempMat2)
-    CALL DestructMatrix(AddBranch)
-    CALL DestructMatrix(SubtractBranch)
-    CALL DestructMatrixMemoryPool(pool1)
-
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingDensity)
+    CALL DestructMatrix(WorkingOverlap)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrixMemoryPool(pool1)
+    CALL DestructSolverParameters(solver_parameters)
 
   END SUBROUTINE PurificationExtrapolate
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -219,7 +179,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Lowdin")
+       CALL WriteElement(key="Method", value="Lowdin")
        CALL WriteCitation("exner2002comparison")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -236,13 +196,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixMultiply(TempMat, ISQMat, NewDensity, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool1)
 
-    CALL DestructMatrix(SQRMat)
-    CALL DestructMatrix(ISQMat)
-    CALL DestructMatrix(TempMat)
-
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
     END IF
+
+    !! Cleanup
+    CALL DestructMatrix(SQRMat)
+    CALL DestructMatrix(ISQMat)
+    CALL DestructMatrix(TempMat)
+    CALL DestructSolverParameters(solver_parameters)
 
   END SUBROUTINE LowdinExtrapolate
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

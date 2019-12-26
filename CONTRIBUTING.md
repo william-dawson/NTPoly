@@ -20,7 +20,8 @@ module (this makes it easier to parse the output).
 The source code is beautified using the atom beautify package. If you don't
 want to install a beautifier that is ok, just mention that you need someone
 to run a beautify script in your pull request. The C++ beautifier is set to
-clang-format.
+clang-format. For python code, the code is checked for style issues with the
+flake8 tool during the CI stage.
 
 If your code makes use of something from the literature, put a reference to it
 in the Citations.bib file.

@@ -1,6 +1,3 @@
-# Generic modules
-import sys
-
 # NT Poly
 import NTPolySwig as nt
 
@@ -8,19 +5,20 @@ import NTPolySwig as nt
 from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
-import numpy
-
-import random
 
 ##########################################################################
 if __name__ == "__main__":
+    from sys import argv
+    from numpy import zeros
+    from random import randint
+
     rank = comm.Get_rank()
     total_processors = comm.Get_size()
 
     # Process The Input Parameters
-    for i in range(1, len(sys.argv), 2):
-        argument = sys.argv[i]
-        argument_value = sys.argv[i + 1]
+    for i in range(1, len(argv), 2):
+        argument = argv[i]
+        argument_value = argv[i + 1]
         if argument == '--output_file':
             output_file = argument_value
         elif argument == '--process_rows':
@@ -96,11 +94,11 @@ if __name__ == "__main__":
             triplet_list.Append(temp_triplet)
 
     # Finally the random extra connections.
-    extra_scratch = numpy.zeros(number_of_nodes)
+    extra_scratch = zeros(number_of_nodes)
     counter = 0
     while counter < extra_connections:
-        extra_source_node = random.randint(0, number_of_nodes - 1)
-        extra_destination_node = random.randint(0, number_of_nodes - 1)
+        extra_source_node = randint(0, number_of_nodes - 1)
+        extra_destination_node = randint(0, number_of_nodes - 1)
         if extra_scratch[extra_source_node] != 1 and \
                 extra_scratch[extra_destination_node] != 1 and \
                 extra_source_node != extra_destination_node and \

@@ -1,14 +1,18 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing General Matrix Polynomials.
 MODULE PolynomialSolversModule
-  USE DataTypesModule
-  USE LoadBalancerModule
-  USE LoggingModule
-  USE PMatrixMemoryPoolModule
-  USE PSMatrixAlgebraModule
-  USE PSMatrixModule
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
-  USE TimerModule
+  USE DataTypesModule, ONLY : NTREAL
+  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
+       & WriteCitation, WriteHeader
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
+       & ScaleMatrix
+  USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, FillMatrixIdentity, &
+       & ConstructEmptyMatrix, CopyMatrix
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -74,7 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%coefficients(degree) = coefficient
   END SUBROUTINE SetCoefficient_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute A Matrix Polynomial Using Horner's Method.
+  !> Compute A Matrix Polynomial Using the method of Horner.
   SUBROUTINE Compute_stand(InputMat, OutputMat, poly, solver_parameters_in)
     !> The input matrix
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
@@ -106,9 +110,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Horner")
+       CALL WriteElement(key="Method", value="Horner")
        CALL PrintParameters(solver_parameters)
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Degree", value=degree-1)
     END IF
 
     !! Initial values for matrices
@@ -154,9 +158,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Temporary)
     CALL DestructMatrix(Identity)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE Compute_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
+  !> Compute A Matrix Polynomial Using The Paterson and Stockmeyer method.
   !> This method first factors the polynomial to reduce the number of
   !> matrix multiplies required.
   SUBROUTINE FactorizedCompute_stand(InputMat, OutputMat, poly, &
@@ -200,10 +205,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="Paterson Stockmeyer")
+       CALL WriteElement(key="Method", value="Paterson Stockmeyer")
        CALL WriteCitation("paterson1973number")
        CALL PrintParameters(solver_parameters)
-       CALL WriteElement(key="Degree", int_value_in=degree-1)
+       CALL WriteElement(key="Degree", value=degree-1)
     END IF
 
     ALLOCATE(x_powers(s_value+1))
@@ -269,6 +274,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Xs)
     CALL DestructMatrix(Temp)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE FactorizedCompute_stand
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PolynomialSolversModule

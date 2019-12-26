@@ -72,9 +72,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", text_value_in="FOE")
-       CALL WriteElement(key="Degree", &
-            & int_value_in=solver_parameters%max_iterations)
+       CALL WriteElement(key="Method", value="FOE")
+       CALL WriteElement(key="Degree", value=solver_parameters%max_iterations)
        CALL PrintParameters(solver_parameters)
     END IF
 

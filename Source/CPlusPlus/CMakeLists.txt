@@ -57,8 +57,11 @@ set(Chead
 )
 
 ################################################################################
-add_library(NTPolyCPP STATIC ${Csrc} ${Chead})
-target_link_libraries(NTPolyCPP NTPolyWrapper)
+add_library(NTPolyCPP ${Csrc} ${Chead})
+if (NOT NOSWIG)
+   set_target_properties(NTPolyCPP PROPERTIES POSITION_INDEPENDENT_CODE True)
+endif()
+target_link_libraries(NTPolyCPP NTPolyWrapper ${MPI_CXX_LIBRARIES})
 
 set_target_properties(NTPolyCPP PROPERTIES PUBLIC_HEADER "${Chead}")
 target_include_directories(NTPolyCPP PUBLIC
@@ -77,4 +80,4 @@ install(TARGETS NTPolyCPP
 install(EXPORT ntpolycpp-export
         FILE NTPolyCPPConfig.cmake
         NAMESPACE NTPoly::
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPolyCPP)

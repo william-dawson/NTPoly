@@ -1,6 +1,3 @@
-# Generic modules
-import sys
-
 # NTPoly
 import NTPolySwig as nt
 
@@ -9,9 +6,10 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 
 
-##########################################################################
-# This is the function we will map on to the matrix.
 class TestOperation(nt.RealOperation):
+    """
+    This is the function we will map on to the matrix.
+    """
     # Notice how you overload the call operator.
     def __call__(self):
         # This object contains a triplet called data for you to modify.
@@ -20,14 +18,16 @@ class TestOperation(nt.RealOperation):
             return True
         return False
 
+
 ##########################################################################
 if __name__ == "__main__":
+    from sys import argv
     rank = comm.Get_rank()
 
     # Process The Input Parameters
-    for i in range(1, len(sys.argv), 2):
-        argument = sys.argv[i]
-        argument_value = sys.argv[i + 1]
+    for i in range(1, len(argv), 2):
+        argument = argv[i]
+        argument_value = argv[i + 1]
         if argument == '--input_matrix':
             input_matrix = argument_value
         elif argument == '--output_matrix':

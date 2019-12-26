@@ -22,7 +22,7 @@ public:
   void SetDefaultPermutation();
   //! Fills the load balancer with a reverse schedule.
   void SetReversePermutation();
-  //! ills the load balancer with a random schedule.
+  //! Fills the load balancer with a random schedule.
   void SetRandomPermutation();
 
 public:

@@ -234,7 +234,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
   PURE SUBROUTINE SplitMatrix_ldr(this, block_rows, block_columns, &
        & split_array, block_size_row_in, block_size_column_in)
-    !! Parameters
     !> The matrix to split.
     TYPE(Matrix_ldr), INTENT(IN) :: this
     !> Number of rows to split the matrix into.
@@ -328,7 +327,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a dense matrix to a sparse matrix.
   PURE SUBROUTINE ConstructMatrixSFromD_ldc(dense_matrix, sparse_matrix, &
        & threshold_in)
-    !! Parameters
     !> The matrix to convert.
     TYPE(Matrix_ldc), INTENT(IN) :: dense_matrix
     !> The sparse output matrix.

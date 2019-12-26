@@ -5,7 +5,7 @@
 MODULE MatrixMemoryPoolModule
   USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX
   USE TripletModule, ONLY : Triplet_r, Triplet_c
-  USE ISO_C_BINDING, ONLY : c_int
+  USE, INTRINSIC :: ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -182,8 +182,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION CheckMemoryPoolValidity_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Checks if a given memory pool has been validly allocated to handle
-    !> Checks if a given memory pool has been validly allocated to handle
-    !> the given parameters.
+  !> Checks if a given memory pool has been validly allocated to handle
+  !> the given parameters.
   PURE FUNCTION CheckMemoryPoolValidity_lc(this, columns, rows) RESULT(isvalid)
     !> The memory pool to check.
     TYPE(MatrixMemoryPool_lc), INTENT(in) :: this
