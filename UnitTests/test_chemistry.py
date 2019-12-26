@@ -92,6 +92,7 @@ class TestChemistry:
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.SolverParameters()
         self.solver_parameters.SetVerbosity(True)
+        self.solver_parameters.SetMaxIterations(10000)
         self.geomh1 = environ["GEOMH1"]
         self.geomo1 = environ["GEOMO1"]
         self.geomo2 = environ["GEOMO2"]
