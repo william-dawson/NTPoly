@@ -33,3 +33,4 @@
   END IF
 
   sparse_matrix = SMTYPE(temporary_list, rows, columns)
+  CALL DestructTripletList(temporary_list)

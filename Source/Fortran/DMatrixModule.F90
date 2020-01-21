@@ -7,7 +7,7 @@ MODULE DMatrixModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & AppendToTripletList, ConstructTripletList
+       & AppendToTripletList, ConstructTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
