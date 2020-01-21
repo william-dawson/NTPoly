@@ -22,6 +22,8 @@
   CALL ScaleMatrix(matC,alpha)
 
   !! Cleanup
+  CALL DestructMatrix(untransposedMatA)
+  CALL DestructMatrix(untransposedMatB)
   CALL DestructMatrix(DenseA)
   CALL DestructMatrix(DenseB)
   CALL DestructMatrix(DenseC)
