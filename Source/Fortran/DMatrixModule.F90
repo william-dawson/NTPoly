@@ -271,6 +271,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DOUBLE PRECISION, PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
+    CALL DestructMatrix(MatC)
     MatC = Matrix_ldr(MatA%rows,MatB%columns)
 
     !! Setup Lapack
@@ -466,6 +467,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     COMPLEX*16, PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
+    CALL DestructMatrix(MatC)
     MatC = Matrix_ldc(MatA%rows,MatB%columns)
 
     !! Setup Lapack
