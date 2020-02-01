@@ -1,21 +1,22 @@
+  CALL ConstructMatrixDFromS(matA, DenseA)
+  CALL ConstructMatrixDFromS(matB, DenseB)
+
   !! Handle Transposed Case
   IF (IsATransposed) THEN
-     CALL TransposeMatrix(matA,untransposedMatA)
+     CALL TransposeMatrix(DenseA,untransposedMatA)
   ELSE
-     CALL CopyMatrix(matA,untransposedMatA)
+     CALL CopyMatrix(DenseA,untransposedMatA)
   END IF
   IF (IsBTransposed) THEN
-     CALL TransposeMatrix(matB,untransposedMatB)
+     CALL TransposeMatrix(DenseB,untransposedMatB)
   ELSE
-     CALL CopyMatrix(matB,untransposedMatB)
+     CALL CopyMatrix(DenseB,untransposedMatB)
   END IF
 
   !! Convert Forward
-  CALL ConstructMatrixDFromS(untransposedMatA, DenseA)
-  CALL ConstructMatrixDFromS(untransposedMatB, DenseB)
 
   !! Multiply
-  CALL MultiplyMatrix(DenseA, DenseB, DenseC)
+  CALL MultiplyMatrix(untransposedMatA, untransposedMatB, DenseC)
 
   !! Convert Back
   CALL ConstructMatrixSFromD(DenseC, matC, threshold)

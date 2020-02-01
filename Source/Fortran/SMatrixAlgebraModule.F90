@@ -3,7 +3,8 @@
 MODULE SMatrixAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, ConstructMatrixDFromS, &
-       & ConstructMatrixSFromD, MultiplyMatrix, DestructMatrix
+       & ConstructMatrixSFromD, CopyMatrix, MultiplyMatrix, TransposeMatrix, &
+       & DestructMatrix
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, MatrixMemoryPool_lc, &
        & DestructMatrixMemoryPool, CheckMemoryPoolValidity, SetPoolSparsity, &
        & ConstructMatrixMemoryPool
@@ -420,8 +421,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Threshold for flushing values.
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Data
-    TYPE(Matrix_lsr) :: untransposedMatA
-    TYPE(Matrix_lsr) :: untransposedMatB
+    TYPE(Matrix_ldr) :: untransposedMatA
+    TYPE(Matrix_ldr) :: untransposedMatB
     TYPE(Matrix_ldr) :: DenseA
     TYPE(Matrix_ldr) :: DenseB
     TYPE(Matrix_ldr) :: DenseC
@@ -447,8 +448,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Threshold for flushing values.
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Data
-    TYPE(Matrix_lsc) :: untransposedMatA
-    TYPE(Matrix_lsc) :: untransposedMatB
+    TYPE(Matrix_ldc) :: untransposedMatA
+    TYPE(Matrix_ldc) :: untransposedMatB
     TYPE(Matrix_ldc) :: DenseA
     TYPE(Matrix_ldc) :: DenseB
     TYPE(Matrix_ldc) :: DenseC
