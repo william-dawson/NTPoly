@@ -564,7 +564,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LDC = M
 
     !! Multiply
-    CALL ConstructEmptyMatrix(MatC, MatA%rows, MatB%columns)
+    CALL ConstructEmptyMatrix(MatC, M, N)
     CALL ZGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
          & LDB, BETA, MatC%data, LDC)
 

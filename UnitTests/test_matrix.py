@@ -247,6 +247,90 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = mmread(self.file3)
             self._compare_mat(CheckMat, ResultMat)
 
+    def test_multiply_nt(self):
+        '''Test routines to multiply two matrices.'''
+        from random import uniform
+        for param in self.parameters:
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex).H
+            mmwrite(self.file1, matrix1)
+            mmwrite(self.file2, matrix2.T)
+            alpha = uniform(1.0, 2.0)
+            beta = 0.0
+            if abs(beta) > 0.0:
+                CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
+            else:
+                CheckMat = alpha * matrix1.dot(matrix2)
+
+            ntmatrix1 = self.SMatrix(self.file1)
+            ntmatrix2 = self.SMatrix(self.file2)
+            ntmatrix3 = self.SMatrix(ntmatrix2.GetRows(),
+                                     ntmatrix1.GetRows())
+            memory_pool = self.MatrixMemoryPool(ntmatrix2.GetRows(),
+                                                ntmatrix1.GetRows())
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, False, True, alpha, beta,
+                           0.0, memory_pool)
+            ntmatrix3.WriteToMatrixMarket(self.file3)
+
+            ResultMat = mmread(self.file3)
+            self._compare_mat(CheckMat, ResultMat)
+
+    def test_multiply_tn(self):
+        '''Test routines to multiply two matrices.'''
+        from random import uniform
+        for param in self.parameters:
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex).H
+            mmwrite(self.file1, matrix1.T)
+            mmwrite(self.file2, matrix2)
+            alpha = uniform(1.0, 2.0)
+            beta = 0.0
+            if abs(beta) > 0.0:
+                CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
+            else:
+                CheckMat = alpha * matrix1.dot(matrix2)
+
+            ntmatrix1 = self.SMatrix(self.file1)
+            ntmatrix2 = self.SMatrix(self.file2)
+            ntmatrix3 = self.SMatrix(ntmatrix2.GetColumns(),
+                                     ntmatrix1.GetColumns())
+            memory_pool = self.MatrixMemoryPool(ntmatrix2.GetColumns(),
+                                                ntmatrix1.GetColumns())
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, True, False, alpha, beta,
+                           0.0, memory_pool)
+            ntmatrix3.WriteToMatrixMarket(self.file3)
+
+            ResultMat = mmread(self.file3)
+            self._compare_mat(CheckMat, ResultMat)
+
+    def test_multiply_tt(self):
+        '''Test routines to multiply two matrices.'''
+        from random import uniform
+        for param in self.parameters:
+            matrix1 = param.create_matrix(complex=self.complex)
+            matrix2 = param.create_matrix(complex=self.complex).H
+            mmwrite(self.file1, matrix1.T)
+            mmwrite(self.file2, matrix2.T)
+            alpha = uniform(1.0, 2.0)
+            beta = 0.0
+            if abs(beta) > 0.0:
+                CheckMat = alpha * matrix1.dot(matrix2) + beta * matrix1
+            else:
+                CheckMat = alpha * matrix1.dot(matrix2)
+
+            ntmatrix1 = self.SMatrix(self.file1)
+            ntmatrix2 = self.SMatrix(self.file2)
+            ntmatrix3 = self.SMatrix(ntmatrix2.GetRows(),
+                                     ntmatrix1.GetColumns())
+            memory_pool = self.MatrixMemoryPool(ntmatrix2.GetRows(),
+                                                ntmatrix1.GetColumns())
+            ntmatrix3.Gemm(ntmatrix1, ntmatrix2, True, True, alpha, beta,
+                           0.0, memory_pool)
+            ntmatrix3.WriteToMatrixMarket(self.file3)
+
+            ResultMat = mmread(self.file3)
+            self._compare_mat(CheckMat, ResultMat)
+
     def test_multiply_zero(self):
         '''Test routines to multiply two matrices where one is zero.'''
         from random import uniform
