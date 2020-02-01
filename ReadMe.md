@@ -1,6 +1,6 @@
 Project Overview
 ================================================================================
-![Build Status](https://github.com/actions/william-dawson/workflows/ci/badge.svg)
+![Build Status](https://github.com/william-dawson/NTPoly/workflows/ci/badge.svg)
 
 NTPoly is a massively parallel library for computing the functions of sparse,
 Hermitian matrices based on polynomial expansions. For sufficiently sparse
