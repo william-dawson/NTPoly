@@ -421,8 +421,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Threshold for flushing values.
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Data
-    TYPE(Matrix_ldr) :: untransposedMatA
-    TYPE(Matrix_ldr) :: untransposedMatB
     TYPE(Matrix_ldr) :: DenseA
     TYPE(Matrix_ldr) :: DenseB
     TYPE(Matrix_ldr) :: DenseC
@@ -448,8 +446,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Threshold for flushing values.
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Data
-    TYPE(Matrix_ldc) :: untransposedMatA
-    TYPE(Matrix_ldc) :: untransposedMatB
     TYPE(Matrix_ldc) :: DenseA
     TYPE(Matrix_ldc) :: DenseB
     TYPE(Matrix_ldc) :: DenseC

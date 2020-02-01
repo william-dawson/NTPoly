@@ -252,16 +252,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
-  SUBROUTINE MultiplyMatrix_ldr(MatA,MatB,MatC)
+  SUBROUTINE MultiplyMatrix_ldr(MatA, MatB, MatC, IsATransposed_in, &
+      & IsBTransposed_in)
     !> The first matrix.
     TYPE(Matrix_ldr), INTENT(IN) :: MatA
     !> The second matrix.
     TYPE(Matrix_ldr), INTENT(IN) :: MatB
     !> MatC = MatA*MatB.
     TYPE(Matrix_ldr), INTENT(INOUT) :: MatC
+    !> True if A is already transposed.
+    LOGICAL, OPTIONAL, INTENT(IN) :: IsATransposed_in
+    !> True if B is already transposed.
+    LOGICAL, OPTIONAL, INTENT(IN) :: IsBTransposed_in
     !! Local variables
-    CHARACTER, PARAMETER :: TRANSA = 'N'
-    CHARACTER, PARAMETER :: TRANSB = 'N'
+    CHARACTER :: TRANSA
+    CHARACTER :: TRANSB
     INTEGER :: M
     INTEGER :: N
     INTEGER :: K
@@ -271,16 +276,55 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DOUBLE PRECISION, PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
-    CALL ConstructEmptyMatrix(MatC, MatA%rows, MatB%columns)
+    !! Optional Parameters
+    TRANSA = 'N'
+    IF (PRESENT(IsATransposed_in)) THEN
+       IF (IsATransposed_in) THEN
+        TRANSA = 'T'
+       END IF
+    END IF
+    TRANSB = 'N'
+    IF (PRESENT(IsBTransposed_in)) THEN
+       IF (IsBTransposed_in) THEN
+        TRANSB = 'T'
+       END IF
+    END IF
 
     !! Setup Lapack
-    M = MatA%rows
-    N = MatB%columns
-    K = MatA%columns
-    LDA = M
-    LDB = K
+    IF (TRANSA .EQ. 'T') THEN
+      M = MatA%columns
+    ELSE
+      M = MatA%rows
+    END IF
+
+    IF (TRANSB .EQ. 'T') THEN
+      N = MatB%rows
+    ELSE
+      N = MatB%columns
+    END IF
+
+    IF (TRANSA .EQ. 'T') THEN
+      K = MatA%rows
+    ELSE
+      K = MatA%columns
+    END IF
+
+    IF (TRANSA .EQ. 'T') THEN
+      LDA = K
+    ELSE
+      LDA = M
+    END IF
+
+    IF (TRANSB .EQ. 'T') THEN
+      LDB = N
+    ELSE
+      LDB = K
+    END IF
+
     LDC = M
 
+    !! Multiply
+    CALL ConstructEmptyMatrix(MatC, M, N)
     CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
          & LDB, BETA, MatC%data, LDC)
 
@@ -448,16 +492,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
-  SUBROUTINE MultiplyMatrix_ldc(MatA,MatB,MatC)
+  SUBROUTINE MultiplyMatrix_ldc(MatA, MatB, MatC, IsATransposed_in, &
+      & IsBTransposed_in)
     !> The first matrix.
     TYPE(Matrix_ldc), INTENT(IN) :: MatA
     !> The second matrix.
     TYPE(Matrix_ldc), INTENT(IN) :: MatB
     !> MatC = MatA*MatB.
     TYPE(Matrix_ldc), INTENT(INOUT) :: MatC
+    !> True if A is already transposed.
+    LOGICAL, OPTIONAL, INTENT(IN) :: IsATransposed_in
+    !> True if B is already transposed.
+    LOGICAL, OPTIONAL, INTENT(IN) :: IsBTransposed_in
     !! Local variables
-    CHARACTER, PARAMETER :: TRANSA = 'N'
-    CHARACTER, PARAMETER :: TRANSB = 'N'
+    CHARACTER :: TRANSA
+    CHARACTER :: TRANSB
     INTEGER :: M
     INTEGER :: N
     INTEGER :: K
@@ -467,16 +516,55 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     COMPLEX*16, PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
-    CALL ConstructEmptyMatrix(MatC, MatA%rows, MatB%columns)
+    !! Optional Parameters
+    TRANSA = 'N'
+    IF (PRESENT(IsATransposed_in)) THEN
+       IF (IsATransposed_in) THEN
+        TRANSA = 'T'
+       END IF
+    END IF
+    TRANSB = 'N'
+    IF (PRESENT(IsBTransposed_in)) THEN
+       IF (IsBTransposed_in) THEN
+        TRANSB = 'T'
+       END IF
+    END IF
 
     !! Setup Lapack
-    M = MatA%rows
-    N = MatB%columns
-    K = MatA%columns
-    LDA = M
-    LDB = K
+    IF (TRANSA .EQ. 'T') THEN
+      M = MatA%columns
+    ELSE
+      M = MatA%rows
+    END IF
+
+    IF (TRANSB .EQ. 'T') THEN
+      N = MatB%rows
+    ELSE
+      N = MatB%columns
+    END IF
+
+    IF (TRANSA .EQ. 'T') THEN
+      K = MatA%rows
+    ELSE
+      K = MatA%columns
+    END IF
+
+    IF (TRANSA .EQ. 'T') THEN
+      LDA = K
+    ELSE
+      LDA = M
+    END IF
+
+    IF (TRANSB .EQ. 'T') THEN
+      LDB = N
+    ELSE
+      LDB = K
+    END IF
+
     LDC = M
 
+    !! Multiply
+    CALL ConstructEmptyMatrix(MatC, MatA%rows, MatB%columns)
     CALL ZGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
          & LDB, BETA, MatC%data, LDC)
 
