@@ -52,14 +52,14 @@ jobs:
     steps:
     - uses:               actions/checkout@v1
     - name:               setup environment
-      run:                bash UnitTests/travis_before_install.sh
+      run:                bash UnitTests/before_install.sh
       env:
         TESTOS:           ${{ matrix.testos }}
         MPICH:            ${{ matrix.mpich }}
     - name:               build ntpoly
       run:                |
         cd Build
-        bash ../UnitTests/travis_run_cmake.sh
+        bash ../UnitTests/run_cmake.sh
         make
         cd ../
       env:
@@ -76,12 +76,12 @@ jobs:
     - name:               check examples
       run:                |
         cd UnitTests
-        bash travis_check_examples.sh
+        bash check_examples.sh
         cd ../
       env:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
     - name:               lint
       run:                |
         cd UnitTests
-        bash travis_lint.sh
+        bash lint.sh
         cd ../

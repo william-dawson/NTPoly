@@ -22,6 +22,7 @@
   !! Allocate Memory
   CALL ConstructEmptyMatrix(out_matrix, out_columns, out_rows)
 
+  !! Copy
   DO JJ = 1, block_columns
      DO II = 1, block_rows
         out_matrix%data(row_offsets(II):row_offsets(II+1)-1, &

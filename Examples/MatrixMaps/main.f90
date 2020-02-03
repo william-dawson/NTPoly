@@ -69,9 +69,9 @@ PROGRAM MatrixMapsProgram
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This is the function we will map on to the matrix.
   FUNCTION TestFunction(row, column, val) RESULT(valid)
-    INTEGER, INTENT(INOUT) :: row
-    INTEGER, INTENT(INOUT) :: column
-    REAL(NTREAL), INTENT(INOUT) :: val
+    INTEGER, INTENT(INOUT), OPTIONAL :: row
+    INTEGER, INTENT(INOUT), OPTIONAL :: column
+    REAL(NTREAL), INTENT(INOUT), OPTIONAL :: val
     LOGICAL :: valid
 
     IF (row .GE. column) THEN
