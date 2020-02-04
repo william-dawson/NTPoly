@@ -1,0 +1,22 @@
+---
+layout: post
+title:  "Release of Version 2.4"
+date:   2020-02-04 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.4](/NTPoly/downloads) of NTPoly is now available.
+
+The main improvement in 2.4 is related to dense matrix operations. As a backup
+plan, NTPoly can convert to dense matrix multiplication when it determines that 
+a block is not very sparse. I noticed that there were some potential bugs in 
+this code when using older compilers. I also discovered that the performance 
+was sub-optimal because we were still transposing those matrices using the 
+sparse data structures. Version 2.4 fixes those issues, and in general improves
+the code.
+
+As another minor improvement, I've set the matrix maps module to allow optional
+arguments.
+
+Finally, we've fully switched from Travis-CI to Github actions, and I've
+removed any legacy files that were only there for Travis.
