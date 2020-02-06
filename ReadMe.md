@@ -135,6 +135,30 @@ The following features and methods have been implemented in NTPoly:
     * Load Balancing Matrices
     * File I/O
 
+Driver Usage
+--------------------------------------------------------------------------------
+Drivers are to put into the `Driver` directory. Currently there is only one
+driver, `InverseDriver`, which computes the inverse of a sparse matrix.
+The following input parameters should be passed to this driver:
+
+> --input followed by the name of the input matrix file.
+
+> --threshold for flushing small values to zero.
+
+> --loop_times how many times to convert the inverse.
+
+For benchmarking purposes, the threshold should be set to `1e-5` or
+`1e-6`. A smaller values will lead to denser matrices and longer compute
+times. Input files are in the `Benchmarks` directory.
+
+The final parameter `loop_times` controls how many times the inverse is
+computed. In real world applications, we frequently need to compute the
+same function on many different matrices with similar structure. By increasing
+the loop_times, you can simulate this type of workload.
+
+Example run:
+> mpirun -np 4 ./bin/InverseDriver --input ../Benchmarks/004.xyz-input631G.in.mtx --threshold 1e-6 --loop_times 1
+
 Citation
 --------------------------------------------------------------------------------
 A description of the techniques used in NTPoly can be found in the following
