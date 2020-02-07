@@ -54,7 +54,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: degree
 
     ALLOCATE(this%coefficients(degree))
-    this%coefficients = 0
+    this%coefficients = 0_NTREAL
   END SUBROUTINE ConstructPolynomial_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
