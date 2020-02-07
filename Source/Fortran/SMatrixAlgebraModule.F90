@@ -44,8 +44,8 @@ MODULE SMatrixAlgebraModule
      MODULE PROCEDURE PairwiseMultiplyMatrix_lsc
   END INTERFACE
   INTERFACE MatrixMultiply
-     MODULE PROCEDURE GemmMatrix_lsr
-     MODULE PROCEDURE GemmMatrix_lsc
+     MODULE PROCEDURE MatrixMultiply_lsr
+     MODULE PROCEDURE MatrixMultiply_lsc
   END INTERFACE
   INTERFACE MatrixColumnNorm
      MODULE PROCEDURE MatrixColumnNorm_lsr
@@ -77,9 +77,9 @@ MODULE SMatrixAlgebraModule
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
-  PURE SUBROUTINE ScaleMatrix_lsr(matA,constant)
-    !> Matrix A.
-    TYPE(Matrix_lsr), INTENT(INOUT) :: matA
+  PURE SUBROUTINE ScaleMatrix_lsr(this, constant)
+    !> The matrix to scale.
+    TYPE(Matrix_lsr), INTENT(INOUT) :: this
     !> Constant scale factor.
     REAL(NTREAL), INTENT(IN) :: constant
 
@@ -87,9 +87,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
-  PURE SUBROUTINE ScaleMatrix_lsc(matA,constant)
-    !> Matrix A.
-    TYPE(Matrix_lsc), INTENT(INOUT) :: matA
+  PURE SUBROUTINE ScaleMatrix_lsc(this, constant)
+    !> The matrix to scale.
+    TYPE(Matrix_lsc), INTENT(INOUT) :: this
     !> Constant scale factor.
     REAL(NTREAL), INTENT(IN) :: constant
 
@@ -97,9 +97,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ScaleMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
-  PURE SUBROUTINE ScaleMatrix_lsc_c(matA,constant)
-    !> Matrix A.
-    TYPE(Matrix_lsc), INTENT(INOUT) :: matA
+  PURE SUBROUTINE ScaleMatrix_lsc_c(this, constant)
+    !> The matrix to scale.
+    TYPE(Matrix_lsc), INTENT(INOUT) :: this
     !> Constant scale factor.
     COMPLEX(NTCOMPLEX), INTENT(IN) :: constant
 
@@ -213,7 +213,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !> C := alpha*matA*op( matB ) + beta*matC
-  SUBROUTINE GemmMatrix_lsr(matA, matB, matC, IsATransposed_in, &
+  SUBROUTINE MatrixMultiply_lsr(matA, matB, matC, IsATransposed_in, &
        & IsBTransposed_in, alpha_in, beta_in, threshold_in, &
        & blocked_memory_pool_in)
     !> Matrix A.
@@ -244,11 +244,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr) :: blocked_memory_pool
 
     INCLUDE "sparse_includes/GemmMatrix.f90"
-  END SUBROUTINE GemmMatrix_lsr
+  END SUBROUTINE MatrixMultiply_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !> C := alpha*matA*op( matB ) + beta*matC
-  SUBROUTINE GemmMatrix_lsc(matA, matB, matC, IsATransposed_in, &
+  SUBROUTINE MatrixMultiply_lsc(matA, matB, matC, IsATransposed_in, &
        & IsBTransposed_in, alpha_in, beta_in, threshold_in, &
        & blocked_memory_pool_in)
     !> Matrix A.
@@ -279,7 +279,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lc) :: blocked_memory_pool
 
     INCLUDE "sparse_includes/GemmMatrix.f90"
-  END SUBROUTINE GemmMatrix_lsc
+  END SUBROUTINE MatrixMultiply_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a sparse matrix along the columns.
   PURE SUBROUTINE MatrixColumnNorm_lsr(this, norm_per_column)

@@ -1,1 +1,1 @@
-  matA%values = constant * matA%values
+  this%values = constant * this%values

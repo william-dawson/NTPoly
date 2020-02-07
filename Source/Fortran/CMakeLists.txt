@@ -10,6 +10,8 @@ set(Fsrc
     GemmTasksModule.F90
     GeometryOptimizationModule.F90
     HermiteSolversModule.F90
+    HMatrixAlgebraModule.F90
+    HMatrixModule.F90
     InverseSolversModule.F90
     LinearSolversModule.F90
     LoadBalancerModule.F90

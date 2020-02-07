@@ -18,7 +18,7 @@ MODULE PSMatrixModule
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
        & SplitProcessGrid
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
-       & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
+       & PrintMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
        & ConstructMatrixFromTripletList
   USE TimerModule, ONLY : StartTimer, StopTimer
