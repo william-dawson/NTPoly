@@ -50,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(in) :: degree
 
     ALLOCATE(this%coefficients(degree))
-    this%coefficients = 0
+    this%coefficients = 0.0_NTREAL
   END SUBROUTINE ConstructPolynomial_horner
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a Hermite polynomial object.

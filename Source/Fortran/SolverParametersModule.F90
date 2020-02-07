@@ -37,7 +37,7 @@ MODULE SolverParametersModule
   PUBLIC :: DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default convergence difference.
-  REAL(NTREAL), PARAMETER, PUBLIC :: CONVERGENCE_DIFF_CONST = 1e-6
+  REAL(NTREAL), PARAMETER, PUBLIC :: CONVERGENCE_DIFF_CONST = 1e-6_NTREAL
   !> The default maximum number of iterations.
   INTEGER, PARAMETER, PUBLIC :: MAX_ITERATIONS_CONST = 1000
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -64,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        this%converge_diff = converge_diff_in
     END IF
     IF (.NOT. PRESENT(threshold_in)) THEN
-       this%threshold = 0.0
+       this%threshold = 0.0_NTREAL
     ELSE
        this%threshold = threshold_in
     END IF

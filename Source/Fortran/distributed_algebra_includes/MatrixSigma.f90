@@ -16,7 +16,7 @@
        & this%process_grid%column_comm, ierr)
   CALL MPI_Allreduce(MAXVAL(column_sigma_contribution),sigma_value,1, &
        & MPINTREAL,MPI_MAX, this%process_grid%row_comm, ierr)
-  sigma_value = 1.0d+0/(sigma_value**2)
+  sigma_value = 1.0_NTREAL/(sigma_value**2)
 
   DEALLOCATE(column_sigma_contribution)
   CALL DestructMatrix(LMAT)

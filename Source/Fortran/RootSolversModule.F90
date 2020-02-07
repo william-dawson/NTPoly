@@ -282,7 +282,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
           CALL WriteListElement(key="Round", value=outer_counter-1)

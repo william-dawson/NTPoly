@@ -253,21 +253,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Expand the Chebyshev Polynomial.
     coefficients(1) = 7.651976865579664e-01_NTREAL
-    coefficients(2) = 0
+    coefficients(2) = 0_NTREAL
     coefficients(3) = -2.298069698638004e-01_NTREAL
-    coefficients(4) = 0
+    coefficients(4) = 0_NTREAL
     coefficients(5) = 4.953277928219409e-03_NTREAL
-    coefficients(6) = 0
+    coefficients(6) = 0_NTREAL
     coefficients(7) = -4.187667600472235e-05_NTREAL
-    coefficients(8) = 0
+    coefficients(8) = 0_NTREAL
     coefficients(9) = 1.884468822397086e-07_NTREAL
-    coefficients(10) = 0
+    coefficients(10) = 0_NTREAL
     coefficients(11) = -5.261224549346905e-10_NTREAL
-    coefficients(12) = 0
+    coefficients(12) = 0_NTREAL
     coefficients(13) = 9.999906645345580e-13_NTREAL
-    coefficients(14) = 0
+    coefficients(14) = 0_NTREAL
     coefficients(15) = -2.083597362700025e-15_NTREAL
-    coefficients(16) = 0
+    coefficients(16) = 0_NTREAL
     coefficients(17) = 9.181480886537484e-17_NTREAL
 
     !! Basic T Values.
