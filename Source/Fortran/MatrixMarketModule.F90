@@ -136,7 +136,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Combine
-    WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
+    WRITE(outstring, '(A A A)') ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
          & ADJUSTL(TRIM(temp3))
 
   END SUBROUTINE WriteMMSize
@@ -168,10 +168,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Combine
     IF (add_newline) THEN
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), &
-            & ADJUSTL(TRIM(temp2))//NEW_LINE('A')
+       WRITE(outstring, '(A A A)') ADJUSTL(TRIM(temp1)), &
+            & ADJUSTL(TRIM(temp2)) // NEW_LINE('A')
     ELSE
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2))
+       WRITE(outstring, '(A A)') ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2))
     END IF
   END SUBROUTINE WriteMMLine_ii
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -205,10 +205,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Combine
     IF (add_newline) THEN
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
-            & ADJUSTL(TRIM(temp3))//NEW_LINE('A')
+       WRITE(outstring, '(A A A A)') ADJUSTL(TRIM(temp1)), &
+            & ADJUSTL(TRIM(temp2)), ADJUSTL(TRIM(temp3)) // NEW_LINE('A')
     ELSE
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
+       WRITE(outstring, '(A A A)') ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)), &
             & ADJUSTL(TRIM(temp3))
     END IF
   END SUBROUTINE WriteMMLine_iif
@@ -247,11 +247,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Combine
     IF (add_newline) THEN
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), &
+       WRITE(outstring, '(A A A A A)') ADJUSTL(TRIM(temp1)), &
             & ADJUSTL(TRIM(temp2)), ADJUSTL(TRIM(temp3)), &
-            & ADJUSTL(TRIM(temp4))//NEW_LINE('A')
+            & ADJUSTL(TRIM(temp4)) // NEW_LINE('A')
     ELSE
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), &
+       WRITE(outstring, '(A A A A)') ADJUSTL(TRIM(temp1)), &
             & ADJUSTL(TRIM(temp2)), ADJUSTL(TRIM(temp3)), ADJUSTL(TRIM(temp4))
     END IF
   END SUBROUTINE WriteMMLine_iiff
@@ -280,9 +280,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Combine
     IF (add_newline) THEN
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1))//NEW_LINE('A')
+       WRITE(outstring, '(A A)') ADJUSTL(TRIM(temp1)) // NEW_LINE('A')
     ELSE
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1))
+       WRITE(outstring, '(A)') ADJUSTL(TRIM(temp1))
     END IF
   END SUBROUTINE WriteMMLine_f
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -313,10 +313,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Combine
     IF (add_newline) THEN
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)) &
-            & //NEW_LINE('A')
+       WRITE(outstring, '(A A A)') ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2)) &
+            & // NEW_LINE('A')
     ELSE
-       WRITE(outstring, *) ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2))
+       WRITE(outstring, '(A A)') ADJUSTL(TRIM(temp1)), ADJUSTL(TRIM(temp2))
     END IF
   END SUBROUTINE WriteMMLine_ff
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

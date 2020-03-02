@@ -110,27 +110,34 @@
 
   !! Global Write
   IF (this%process_grid%between_slice_rank .EQ. 0) THEN
-     CALL MPI_File_open(this%process_grid%within_slice_comm,file_name, &
-          & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY),MPI_INFO_NULL, &
+     CALL MPI_File_open(this%process_grid%within_slice_comm, file_name, &
+          & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY), MPI_INFO_NULL, &
           & mpi_file_handler,ierr)
-     CALL MPI_File_set_size(mpi_file_handler,zero_size,ierr)
+     CALL MPI_File_set_size(mpi_file_handler, zero_size, ierr)
+
      !! Write Header
+     header_offset = 0
+     CALL MPI_File_set_view(mpi_file_handler, header_offset, MPI_CHARACTER, &
+          & MPI_CHARACTER, "native", MPI_INFO_NULL, ierr)
      IF (this%process_grid%within_slice_rank .EQ. 0) THEN
-        header_offset = 0
-        CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line1, &
+        CALL MPI_File_write(mpi_file_handler, header_line1, &
              & LEN(header_line1), MPI_CHARACTER, message_status, ierr)
-        header_offset = header_offset + LEN(header_line1)
-        CALL MPI_File_write_at(mpi_file_handler,header_offset,header_line2, &
+     END IF
+     header_offset = header_offset + LEN(header_line1)
+     CALL MPI_File_set_view(mpi_file_handler, header_offset, MPI_CHARACTER, &
+          & MPI_CHARACTER, "native", MPI_INFO_NULL, ierr)
+     IF (this%process_grid%within_slice_rank .EQ. 0) THEN
+        CALL MPI_File_write(mpi_file_handler, header_line2, &
              & LEN(header_line2), MPI_CHARACTER, message_status, ierr)
      END IF
+
      !! Write Local Data
-     CALL MPI_File_set_view(mpi_file_handler,write_offset,MPI_CHARACTER,&
-          & MPI_CHARACTER,"native",MPI_INFO_NULL,ierr)
-     CALL MPI_File_write(mpi_file_handler,write_buffer, &
-          & triplet_list_string_length,&
-          & MPI_CHARACTER,MPI_STATUS_IGNORE,ierr)
+     CALL MPI_File_set_view(mpi_file_handler, write_offset, MPI_CHARACTER, &
+          & MPI_CHARACTER, "native", MPI_INFO_NULL, ierr)
+     CALL MPI_File_write(mpi_file_handler, write_buffer, &
+          & triplet_list_string_length, MPI_CHARACTER, MPI_STATUS_IGNORE, ierr)
 
      !! Cleanup
-     CALL MPI_File_close(mpi_file_handler,ierr)
+     CALL MPI_File_close(mpi_file_handler, ierr)
   END IF
-  CALL MPI_Barrier(this%process_grid%global_comm,ierr)
+  CALL MPI_Barrier(this%process_grid%global_comm, ierr)
