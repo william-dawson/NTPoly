@@ -120,17 +120,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle the optional parameters
     IF (.NOT. PRESENT(alpha_in)) THEN
-       alpha = 1.0d+0
+       alpha = 1.0_NTREAL
     ELSE
        alpha = alpha_in
     END IF
     IF (.NOT. PRESENT(beta_in)) THEN
-       beta = 0.0
+       beta = 0.0_NTREAL
     ELSE
        beta = beta_in
     END IF
     IF (.NOT. PRESENT(threshold_in)) THEN
-       threshold = 0.0
+       threshold = 0.0_NTREAL
     ELSE
        threshold = threshold_in
     END IF
@@ -449,12 +449,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (.NOT. PRESENT(alpha_in)) THEN
-       alpha = 1.0d+0
+       alpha = 1.0_NTREAL
     ELSE
        alpha = alpha_in
     END IF
     IF (.NOT. PRESENT(threshold_in)) THEN
-       threshold = 0
+       threshold = 0.0_NTREAL
     ELSE
        threshold = threshold_in
     END IF

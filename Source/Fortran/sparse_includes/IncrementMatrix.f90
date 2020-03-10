@@ -10,12 +10,12 @@
 
   !! Process Optional Parameters
   IF (.NOT. PRESENT(alpha_in)) THEN
-     alpha = 1.0d+0
+     alpha = 1.0_NTREAL
   ELSE
      alpha = alpha_in
   END IF
   IF (.NOT. PRESENT(threshold_in)) THEN
-     threshold = 0.0d+0
+     threshold = 0.0_NTREAL
   ELSE
      threshold = threshold_in
   END IF

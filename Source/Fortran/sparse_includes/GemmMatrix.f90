@@ -1,3 +1,4 @@
+  REAL(NTREAL), PARAMETER :: sparsity_threshold = 0.1_NTREAL
   !! Counters and temporary data
   INTEGER :: mat_c_columns, mat_c_rows
   !! For Efficiency Purposes
@@ -7,12 +8,12 @@
 
   !! Process Optional Parameters
   IF (.NOT. PRESENT(alpha_in)) THEN
-     alpha = 1.0d+0
+     alpha = 1.0_NTREAL
   ELSE
      alpha = alpha_in
   END IF
   IF (.NOT. PRESENT(beta_in)) THEN
-     beta = 0.0
+     beta = 0.0_NTREAL
   ELSE
      beta = beta_in
   END IF
@@ -55,7 +56,7 @@
   END IF
 
   !! Decide whether to do dense or sparse version.
-  IF (MIN(sparsity_a, sparsity_b) .GT. 0.3) THEN
+  IF (MIN(sparsity_a, sparsity_b) .GT. sparsity_threshold) THEN
      CALL DenseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
           & alpha, threshold)
   ELSE

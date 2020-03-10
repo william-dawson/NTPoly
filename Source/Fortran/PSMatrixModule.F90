@@ -786,7 +786,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Permutation_t) :: basic_permutation
     TYPE(ReduceHelper_t) :: gather_helper
-    REAL(NTREAL), PARAMETER :: threshold = 0.0
+    REAL(NTREAL), PARAMETER :: threshold = 0.0_NTREAL
     LOGICAL :: preduplicated
 
     IF (this%is_complex) THEN
@@ -816,7 +816,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: temp_matrix
     TYPE(Permutation_t) :: basic_permutation
     TYPE(ReduceHelper_t) :: gather_helper
-    REAL(NTREAL), PARAMETER :: threshold = 0.0
+    REAL(NTREAL), PARAMETER :: threshold = 0.0_NTREAL
     LOGICAL :: preduplicated
 
     IF (.NOT. this%is_complex) THEN

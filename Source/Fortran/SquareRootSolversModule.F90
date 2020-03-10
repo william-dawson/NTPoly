@@ -182,7 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0d+0
+    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        !! Compute X_k
        CALL MatrixMultiply(SquareRootMat,InverseSquareRootMat,X_k, &
