@@ -20,7 +20,7 @@ MODULE PSMatrixModule
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
-       & ConstructMatrixFromTripletList
+       & ConstructMatrixFromTripletList, ConstructEmptyMatrix
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, Triplet_c, GetMPITripletType_r, &
        & GetMPITripletType_c
@@ -175,8 +175,10 @@ MODULE PSMatrixModule
      MODULE PROCEDURE CommSplitMatrix_ps
   END INTERFACE
   INTERFACE GatherMatrixToProcess
-     MODULE PROCEDURE GatherMatrixToProcess_psr
-     MODULE PROCEDURE GatherMatrixToProcess_psc
+     MODULE PROCEDURE GatherMatrixToProcess_psr_id
+     MODULE PROCEDURE GatherMatrixToProcess_psr_all
+     MODULE PROCEDURE GatherMatrixToProcess_psc_id
+     MODULE PROCEDURE GatherMatrixToProcess_psc_all
   END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
@@ -1684,37 +1686,69 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !> given process. This routine is used when printing, but also is useful for
-  !> debugging.
-  SUBROUTINE GatherMatrixToProcess_psr(this, local_mat, proc_id)
+  !> given process. The process id is a within_slice id, so the data will
+  !> still be replicated across slices.
+  SUBROUTINE GatherMatrixToProcess_psr_id(this, local_mat, within_slice_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
-    INTEGER, INTENT(IN) :: proc_id
+    INTEGER, INTENT(IN) :: within_slice_id
     !! Local Variables
     TYPE(TripletList_r) :: tlist, sorted
     TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: slist
 
     INCLUDE "distributed_includes/GatherMatrixToProcess.f90"
-  END SUBROUTINE GatherMatrixToProcess_psr
+  END SUBROUTINE GatherMatrixToProcess_psr_id
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This subroutine gathers the entire matrix into a local matrix on to
+  !> every process.
+  SUBROUTINE GatherMatrixToProcess_psr_all(this, local_mat)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
+    !! Local Variables
+    TYPE(Matrix_lsr) :: local, localT
+    TYPE(Matrix_lsr) :: merged_columns
+    TYPE(Matrix_lsr) :: merged_columnsT
+    TYPE(Matrix_lsr) :: gathered
+
+    INCLUDE "distributed_includes/GatherMatrixToAll.f90"
+  END SUBROUTINE GatherMatrixToProcess_psr_all
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !> given process. This routine is used when printing, but also is useful for
-  !> debugging.
-  SUBROUTINE GatherMatrixToProcess_psc(this, local_mat, proc_id)
+  !> given process. The process id is a within_slice id, so the data will
+  !> still be replicated across slices.
+  SUBROUTINE GatherMatrixToProcess_psc_id(this, local_mat, within_slice_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
-    INTEGER, INTENT(IN) :: proc_id
+    INTEGER, INTENT(IN) :: within_slice_id
     !! Local Variables
     TYPE(TripletList_c) :: tlist, sorted
     TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: slist
 
     INCLUDE "distributed_includes/GatherMatrixToProcess.f90"
-  END SUBROUTINE GatherMatrixToProcess_psc
+  END SUBROUTINE GatherMatrixToProcess_psc_id
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This subroutine gathers the entire matrix into a local matrix on to
+  !> every process.
+  SUBROUTINE GatherMatrixToProcess_psc_all(this, local_mat)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
+    !! Local Variables
+    TYPE(Matrix_lsc) :: local, localT
+    TYPE(Matrix_lsc) :: merged_columns
+    TYPE(Matrix_lsc) :: merged_columnsT
+    TYPE(Matrix_lsc) :: gathered
+
+    INCLUDE "distributed_includes/GatherMatrixToAll.f90"
+  END SUBROUTINE GatherMatrixToProcess_psc_all
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule
