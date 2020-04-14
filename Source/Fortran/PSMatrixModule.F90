@@ -1686,14 +1686,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !> given process.
-  SUBROUTINE GatherMatrixToProcess_psr_id(this, local_mat, proc_id)
+  !> given process. The process id is a within_slice id, so the data will
+  !> still be replicated across slices.
+  SUBROUTINE GatherMatrixToProcess_psr_id(this, local_mat, within_slice_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
-    INTEGER, INTENT(IN) :: proc_id
+    INTEGER, INTENT(IN) :: within_slice_id
     !! Local Variables
     TYPE(TripletList_r) :: tlist, sorted
     TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: slist
@@ -1718,14 +1719,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE GatherMatrixToProcess_psr_all
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !> given process.
-  SUBROUTINE GatherMatrixToProcess_psc_id(this, local_mat, proc_id)
+  !> given process. The process id is a within_slice id, so the data will
+  !> still be replicated across slices.
+  SUBROUTINE GatherMatrixToProcess_psc_id(this, local_mat, within_slice_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
-    INTEGER, INTENT(IN) :: proc_id
+    INTEGER, INTENT(IN) :: within_slice_id
     !! Local Variables
     TYPE(TripletList_c) :: tlist, sorted
     TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: slist
