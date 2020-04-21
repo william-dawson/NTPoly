@@ -3,7 +3,6 @@
 PROGRAM HydrogenAtom
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, CopyMatrix, &

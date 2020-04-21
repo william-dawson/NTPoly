@@ -4,7 +4,8 @@ PROGRAM PremadeMatrixProgram
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
-  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
+  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
+       & DestructPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
@@ -111,6 +112,7 @@ PROGRAM PremadeMatrixProgram
   CALL WriteMatrixToMatrixMarket(Density,density_file_out)
 
   !! Cleanup
+  CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
   CALL DestructMatrix(Hamiltonian)
