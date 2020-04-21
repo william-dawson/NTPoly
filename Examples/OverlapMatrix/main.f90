@@ -2,7 +2,8 @@
 !> An example that shows how to compute the overlap matrix.
 PROGRAM OverlapExample
   USE DataTypesModule, ONLY : NTREAL
-  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
+  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
+       & DestructPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
@@ -124,6 +125,7 @@ PROGRAM OverlapExample
 
   !! Cleanup
   CALL PrintAllTimers()
+  CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
   CALL DestructProcessGrid
