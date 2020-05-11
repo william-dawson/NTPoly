@@ -106,6 +106,13 @@ int Matrix_ps::GetActualDimension() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+int Matrix_ps::GetSize() const {
+  int temp;
+  GetMatrixSize_ps_wrp(ih_this, &temp);
+  return temp;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::GetTripletList(TripletList_r &triplet_list) const {
   GetMatrixTripletList_psr_wrp(ih_this, triplet_list.ih_this);
 }

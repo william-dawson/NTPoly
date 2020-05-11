@@ -14,6 +14,7 @@ set(Fsrc
     LinearSolversModule.F90
     LoadBalancerModule.F90
     LoggingModule.F90
+    MatrixConversionModule.F90
     MatrixMarketModule.F90
     MatrixMapsModule.F90
     MatrixMemoryPoolModule.F90

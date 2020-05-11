@@ -29,6 +29,7 @@ MODULE PSMatrixModule_wrp
   PUBLIC :: FillMatrixIdentity_ps_wrp
   PUBLIC :: GetMatrixActualDimension_ps_wrp
   PUBLIC :: GetMatrixLogicalDimension_ps_wrp
+  PUBLIC :: GetMatrixSize_ps_wrp
   PUBLIC :: GetMatrixTripletList_psr_wrp
   PUBLIC :: GetMatrixTripletList_psc_wrp
   PUBLIC :: GetMatrixBlock_psr_wrp
@@ -289,6 +290,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     mat_dimension = GetMatrixLogicalDimension(h_this%data)
   END SUBROUTINE GetMatrixLogicalDimension_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get the total number of non-zero entries in the distributed sparse matrix.
+  SUBROUTINE GetMatrixSize_ps_wrp(ih_this, matsize) &
+       & BIND(c,NAME="GetMatrixSize_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    INTEGER(KIND=c_int), INTENT(OUT) :: matsize
+    TYPE(Matrix_ps_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    matsize = GetMatrixSize(h_this%data)
+  END SUBROUTINE GetMatrixSize_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
   SUBROUTINE GetMatrixTripletList_psr_wrp(ih_this, ih_triplet_list) &
