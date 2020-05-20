@@ -12,24 +12,15 @@
         IF (j + this%start_row - 1 .EQ. i + this%start_column - 1 .AND. &
              & j+this%start_row-1 .LE. this%actual_matrix_dimension) THEN
            total_values = total_values + 1
-           triplet_list%data(total_values)%index_column = i
-           triplet_list%data(total_values)%index_row = j
+           triplet_list%data(total_values)%index_column = i + this%start_column - 1 
+           triplet_list%data(total_values)%index_row = j + this%start_row - 1
            triplet_list%data(total_values)%point_value = 1.0
         END IF
      END DO column_iter
   END DO row_iter
+  triplet_list%CurrentSize = total_values
 
   !! Finish constructing
-  CALL ConstructTripletList(unsorted_triplet_list, total_values)
-  unsorted_triplet_list%data = triplet_list%data(:total_values)
-  CALL SortTripletList(unsorted_triplet_list,this%local_columns,&
-       & this%local_rows, sorted_triplet_list)
-  CALL ConstructMatrixFromTripletList(local_matrix, sorted_triplet_list, &
-       & this%local_rows, this%local_columns)
+  CALL FillMatrixFromTripletList(this, unsorted_triplet_list, prepartitioned_in=.TRUE.)
 
-  CALL SplitMatrixToLocalBlocks(this, local_matrix)
-
-  CALL DestructMatrix(local_matrix)
   CALL DestructTripletList(triplet_list)
-  CALL DestructTripletList(unsorted_triplet_list)
-  CALL DestructTripletList(sorted_triplet_list)

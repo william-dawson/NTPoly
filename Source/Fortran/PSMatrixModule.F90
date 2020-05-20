@@ -773,15 +773,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
   !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
-  SUBROUTINE FillMatrixFromTripletList_psr(this,triplet_list,preduplicated_in)
+  !> However, if you explicitly set prepartitioned_in to True, all data must be
+  !> on the correct process. In that case, there is no communication required.
+  SUBROUTINE FillMatrixFromTripletList_psr(this, triplet_list, &
+       & preduplicated_in, prepartitioned_in)
     !> The matrix to fill.
     TYPE(Matrix_ps) :: this
     !> The triplet list of values.
     TYPE(TripletList_r) :: triplet_list
     !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
+    !> If all lists only contain local matrix elements set this to true.
+    LOGICAL, INTENT(IN), OPTIONAL :: prepartitioned_in
     !! Local Data
     TYPE(Matrix_ps) :: temp_matrix
+    TYPE(TripletList_r) :: shifted
     TYPE(TripletList_r) :: sorted_triplet_list
     TYPE(Matrix_lsr) :: local_matrix
     TYPE(Matrix_lsr) :: gathered_matrix
@@ -790,6 +796,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0_NTREAL
     LOGICAL :: preduplicated
+    LOGICAL :: prepartitioned
+    INTEGER :: local_column, local_row
+    INTEGER :: II
 
     IF (this%is_complex) THEN
        CALL ConvertMatrixToReal(this, temp_matrix)
@@ -803,14 +812,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
   !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
-  SUBROUTINE FillMatrixFromTripletList_psc(this,triplet_list,preduplicated_in)
+  !> However, if you explicitly set prepartitioned_in to True, all data must be
+  !> on the correct process. In that case, there is no communication required.
+  SUBROUTINE FillMatrixFromTripletList_psc(this, triplet_list, &
+       & preduplicated_in, prepartitioned_in)
     !> The matrix to fill.
     TYPE(Matrix_ps) :: this
     !> The triplet list of values.
     TYPE(TripletList_c) :: triplet_list
     !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
+    !> If all lists only contain local matrix elements set this to true.
+    LOGICAL, INTENT(IN), OPTIONAL :: prepartitioned_in
     !! Local Data
+    TYPE(TripletList_c) :: shifted
     TYPE(TripletList_c) :: sorted_triplet_list
     TYPE(Matrix_lsc) :: local_matrix
     TYPE(Matrix_lsc) :: gathered_matrix
@@ -820,6 +835,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ReduceHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0_NTREAL
     LOGICAL :: preduplicated
+    LOGICAL :: prepartitioned
+    INTEGER :: local_column, local_row
+    INTEGER :: II
 
     IF (.NOT. this%is_complex) THEN
        CALL ConvertMatrixToComplex(this, temp_matrix)
