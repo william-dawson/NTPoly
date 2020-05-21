@@ -40,7 +40,6 @@
      CALL AppendToTripletList(send_triplet_lists(process_id+1), temp_triplet)
   END DO
 
-
   !! Actual Send
   CALL RedistributeTripletLists(send_triplet_lists, &
        & this%process_grid%within_slice_comm, gathered_list)
