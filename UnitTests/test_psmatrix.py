@@ -429,7 +429,7 @@ class TestPSMatrix(unittest.TestCase):
 
     def test_snap(self):
         '''Test the sparsity pattern setting routine.'''
-        from scipy.sparse import dok_matrix, csr_matrix
+        from scipy.sparse import dok_matrix
 
         for param in self.parameters:
             matrix1 = param.create_matrix(self.complex)
