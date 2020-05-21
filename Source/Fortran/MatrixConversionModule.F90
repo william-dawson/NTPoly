@@ -3,11 +3,11 @@
 !> to data structures used in other programs.
 MODULE MatrixConversionModule
   USE DataTypesModule, ONLY : NTREAL
-  USE MatrixMapsModule, ONLY : MapMatrix_psr
   USE PSMatrixModule, ONLY : Matrix_ps, ConvertMatrixToReal, CopyMatrix, &
-       & DestructMatrix
+       & DestructMatrix, MergeMatrixLocalBlocks, SplitMatrixToLocalBlocks
   USE PSMatrixAlgebraModule, ONLY : PairwiseMultiplyMatrix, ScaleMatrix, &
        & IncrementMatrix
+  USE SMatrixModule, ONLY : Matrix_lsr, DestructMatrix
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -27,16 +27,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: filtered
     TYPE(Matrix_ps) :: pattern_1s
     TYPE(Matrix_ps) :: pattern_0s
-    TYPE(Matrix_ps) :: pattern_real
-    INTEGER :: II
+    TYPE(Matrix_lsr) :: local_mat
 
     !! First we need to make sure that the sparsity pattern is all 1s.
     IF (pattern%is_complex) THEN
-       CALL ConvertMatrixToReal(pattern, pattern_real)
+       CALL ConvertMatrixToReal(pattern, pattern_1s)
     ELSE
-       CALL CopyMatrix(pattern, pattern_real)
+       CALL CopyMatrix(pattern, pattern_1s)
     END IF
-    CALL MapMatrix_psr(pattern_real, pattern_1s, SetMatrixToOne)
+    CALL MergeMatrixLocalBlocks(pattern_1s, local_mat)
+    local_mat%values = 1.0_NTREAL
+    CALL SplitMatrixToLocalBlocks(pattern_1s, local_mat)
 
     !! Then all zeros
     CALL CopyMatrix(pattern_1s, pattern_0s)
@@ -54,19 +55,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     CALL DestructMatrix(pattern_1s)
     CALL DestructMatrix(pattern_0s)
-    CALL DestructMatrix(pattern_real)
     CALL DestructMatrix(filtered)
+    CALL DestructMatrix(local_mat)
 
   END SUBROUTINE SnapMatrixToSparsityPattern
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  FUNCTION SetMatrixToOne(row, column, val) RESULT(valid)
-    INTEGER, INTENT(INOUT), OPTIONAL :: row
-    INTEGER, INTENT(INOUT), OPTIONAL :: column
-    REAL(NTREAL), INTENT(INOUT), OPTIONAL :: val
-    LOGICAL :: valid
-
-    val = 1.0_NTREAL
-    valid = .TRUE.
-  END FUNCTION SetMatrixToOne
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE

@@ -15,14 +15,8 @@
 
   IF (prepartitioned) THEN
      !! Shift and sort the local entries.
-     CALL ConstructTripletList(shifted, triplet_list%CurrentSize)
-     shifted%data(:triplet_list%CurrentSize) = triplet_list%data(:triplet_list%CurrentSize)
-     DO II = 1, shifted%CurrentSize
-        local_column = shifted%data(II)%index_column - this%start_column + 1
-        local_row = shifted%data(II)%index_row - this%start_row + 1
-        shifted%data(II)%index_column = local_column
-        shifted%data(II)%index_row = local_row
-     END DO
+     shifted = triplet_list
+     CALL ShiftTripletList(shifted, 1 - this%start_row, 1 - this%start_column)
      CALL SortTripletList(shifted, this%local_columns, &
           & this%local_rows, sorted_triplet_list)
      !! Build
@@ -41,28 +35,19 @@
      !! Now we can just construct a local matrix.
      CALL ConstructMatrixFromTripletList(local_matrix, sorted_triplet_list, &
           & this%local_rows, this%local_columns)
-     !! And reduce over the Z dimension. This can be accomplished by
-     !! summing up.
+
+     !! And reduce over the Z dimension. 
      IF (.NOT. preduplicated .AND. &
           & .NOT. this%process_grid%num_process_slices .EQ. 1) THEN
-        CALL ReduceAndSumMatrixSizes(local_matrix, &
-             & this%process_grid%between_slice_comm, gathered_matrix, &
-             & gather_helper)
-        DO WHILE(.NOT. TestReduceSizeRequest(gather_helper))
-        END DO
-        CALL ReduceAndSumMatrixData(local_matrix, gathered_matrix, &
-             & this%process_grid%between_slice_comm, gather_helper)
-        DO WHILE(.NOT. TestReduceInnerRequest(gather_helper))
-        END DO
-        DO WHILE(.NOT. TestReduceDataRequest(gather_helper))
-        END DO
-        CALL ReduceAndSumMatrixCleanup(local_matrix, gathered_matrix, &
-             & threshold, gather_helper)
+        CALL ReduceAndSumMatrix(local_matrix, gathered_matrix, threshold, &
+             & this%process_grid%between_slice_comm)
         CALL SplitMatrixToLocalBlocks(this, gathered_matrix)
      ELSE
         CALL SplitMatrixToLocalBlocks(this, local_matrix)
      END IF
-     CALL StopTimer("FillFromTriplet")
   END IF
+
   CALL DestructMatrix(local_matrix)
   CALL DestructTripletList(sorted_triplet_list)
+
+  CALL StopTimer("FillFromTriplet")

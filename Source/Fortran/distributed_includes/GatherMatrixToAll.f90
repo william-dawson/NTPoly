@@ -1,37 +1,15 @@
-  !! Local Data
-  TYPE(ReduceHelper_t) :: row_helper
-  TYPE(ReduceHelper_t) :: column_helper
 
   CALL MergeMatrixLocalBlocks(this, local)
 
   !! Merge Columns
   CALL TransposeMatrix(local, localT)
-  CALL ReduceAndComposeMatrixSizes(localT, this%process_grid%column_comm, &
-       & merged_columns, column_helper)
-  DO WHILE(.NOT. TestReduceSizeRequest(column_helper))
-  END DO
-  CALL ReduceAndComposeMatrixData(localT, this%process_grid%column_comm, &
-       & merged_columns, column_helper)
-  DO WHILE(.NOT. TestReduceInnerRequest(column_helper))
-  END DO
-  DO WHILE(.NOT. TestReduceDataRequest(column_helper))
-  END DO
-  CALL ReduceAndComposeMatrixCleanup(localT, merged_columns, column_helper)
+  CALL ReduceAndComposeMatrix(localT, merged_columns, &
+       & this%process_grid%column_comm)
 
   !! Merge Rows
   CALL TransposeMatrix(merged_columns, merged_columnsT)
-  CALL ReduceAndComposeMatrixSizes(merged_columnsT, &
-       & this%process_grid%row_comm, gathered, row_helper)
-  DO WHILE(.NOT. TestReduceSizeRequest(row_helper))
-  END DO
-  CALL ReduceAndComposeMatrixData(merged_columnsT, &
-       & this%process_grid%row_comm, gathered, row_helper)
-  DO WHILE(.NOT. TestReduceInnerRequest(row_helper))
-  END DO
-  DO WHILE(.NOT. TestReduceDataRequest(row_helper))
-  END DO
-  CALL ReduceAndComposeMatrixCleanup(merged_columnsT, gathered, &
-        & row_helper)
+  CALL ReduceAndComposeMatrix(merged_columnsT, gathered, &
+       & this%process_grid%row_comm)
 
   !! Remove the excess rows and columns that come from the logical size.
   CALL ConstructEmptyMatrix(local_mat, this%actual_matrix_dimension, &

@@ -40,7 +40,6 @@ MODULE TripletListModule
   PUBLIC :: RedistributeTripletLists
   PUBLIC :: ShiftTripletList
   PUBLIC :: ConvertTripletListType
-  PUBLIC :: CopyTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE TripletList_r
      MODULE PROCEDURE ConstructTripletList_r
