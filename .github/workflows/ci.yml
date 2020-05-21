@@ -82,6 +82,4 @@ jobs:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
     - name:               lint
       run:                |
-        cd UnitTests
-        bash lint.sh
-        cd ../
+        bash UnitTests/lint.sh
