@@ -1,4 +1,4 @@
-if [ -z ${TESTEXAMPLES+x} ]; then
+if [ "$TESTEXAMPLES" == "0" ]; then
   echo "Skipping examples"
 else
   set -e
