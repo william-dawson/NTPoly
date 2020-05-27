@@ -24,7 +24,8 @@ We need to solve the following equation:
 
 The kinetic energy operator is based on a 5 point stencil central difference
 formula. See the following link:
-http://www.holoborodko.com/pavel/numerical-methods/numerical-derivative/central-differences/
+http://www.holoborodko.com/pavel/numerical-methods/numerical-derivative/
+central-differences/
 
 The potential energy operator is diagonal in real space.
 

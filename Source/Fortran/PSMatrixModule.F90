@@ -392,7 +392,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           local_file_handler = 16
           OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
           IF (ierr .NE. 0) THEN
-             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", .TRUE.)
+             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", &
+                  & .TRUE.)
           END IF
           !! Parse the header.
           READ(local_file_handler,fmt='(A)') input_buffer

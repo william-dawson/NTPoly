@@ -216,7 +216,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Grid ID
     CALL MPI_COMM_RANK(grid%global_comm,grid%global_rank,ierr)
     grid%my_slice = grid%global_rank/grid%slice_size
-    grid%my_row = MOD(grid%global_rank, grid%slice_size)/grid%num_process_columns
+    grid%my_row = MOD(grid%global_rank, grid%slice_size)/ &
+         & grid%num_process_columns
     grid%my_column = MOD(grid%global_rank, grid%num_process_columns)
 
     !! Grid Communicators

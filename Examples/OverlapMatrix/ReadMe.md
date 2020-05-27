@@ -95,17 +95,18 @@ Next we need to divide up the matrix. First, we compute how many matrix rows
 and columns are stored locally. This is just the total matrix size divided
 by the number of process rows/columns.
 
-Second, we compute the starting and ending rows/columns. In the ProcessGridModule,
-there are global variables "my_row" and "my_column" which gives the xy coordinates
-of a given process. This information can be used to compute the starting row
-and column, and then we just add to those values the number of local rows/columns.
+Second, we compute the starting and ending rows/columns. In the
+ProcessGridModule, there are global variables "my_row" and "my_column" which
+gives the xy coordinates of a given process. This information can be used to
+compute the starting row and column, and then we just add to those values the
+number of local rows/columns.
 
 ## Compute The Local Matrix Elements
 
 Now that we know the local rows and columns of the matrix, we can compute
-the local matrix elements. We do that by looping over the local rows and columns,
-and calling the "ComputeIntegral" function. This ComputeIntegral function is of
-course just a dummy function.
+the local matrix elements. We do that by looping over the local rows and
+columns, and calling the "ComputeIntegral" function. This ComputeIntegral
+function is of course just a dummy function.
 
 Since we don't know a priori which integrals can be neglected, what we do is
 compute each one, and then test if the value is bigger than some threshold.

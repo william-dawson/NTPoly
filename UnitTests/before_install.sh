@@ -3,6 +3,9 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get update
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
+  sudo apt-get install gawk
+  sudo apt-get install clang-format
+  sudo apt-get install emacs
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
@@ -18,6 +21,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install cmake
   brew install swig
   brew install clang-format
+  brew install emacs
   sudo pip2 install numpy --upgrade --no-cache-dir
   sudo pip2 install scipy --upgrade --no-cache-dir
   sudo pip2 install mpi4py --upgrade --no-cache-dir

@@ -6,7 +6,7 @@
   INTEGER, DIMENSION(:), ALLOCATABLE :: inserted_per_row
   !! Counters and temporary variables
   INTEGER :: counter
-  INTEGER :: temp_index
+  INTEGER :: idx
   INTEGER :: alloc_stat
   INTEGER :: list_length
 
@@ -43,10 +43,10 @@
              & values_per_row(counter-1)
      END DO
      DO counter = 1, input_list%CurrentSize
-        temp_index = input_list%DATA(counter)%index_column
-        sorted_list%DATA(offset_array(temp_index)+inserted_per_row(temp_index))=&
+        idx = input_list%DATA(counter)%index_column
+        sorted_list%DATA(offset_array(idx)+inserted_per_row(idx))=&
              & input_list%DATA(counter)
-        inserted_per_row(temp_index) = inserted_per_row(temp_index) + 1
+        inserted_per_row(idx) = inserted_per_row(idx) + 1
      END DO
 
      !! Finish with bubble sort
