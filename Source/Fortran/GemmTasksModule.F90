@@ -3,7 +3,7 @@
 MODULE GemmTasksModule
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ENUM, BIND(c)
+ENUM, BIND(c)
      !> Something is in progress
      ENUMERATOR :: TaskRunningA
      !> First we gather the blocks of A and send the size.
