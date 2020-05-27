@@ -41,9 +41,9 @@ PROGRAM PremadeMatrixProgram
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,command_argument_COUNT(),2
-     CALL get_command_ARGUMENT(counter,argument)
-     CALL get_command_ARGUMENT(counter+1,argument_value)
+  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
+     CALL GET_COMMAND_ARGUMENT(counter,argument)
+     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
      SELECT CASE(argument)
      CASE('--hamiltonian')
         hamiltonian_file = argument_value
