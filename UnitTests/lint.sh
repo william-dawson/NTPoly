@@ -23,7 +23,7 @@ done
 
 set -e
 # 80 Column Limit
-for f in $(find -L Source Examples Targets UnitTests); do
+for f in $(find -L Source Targets UnitTests); do
 	awk 'NF > 80 {print FILENAME ; print "Line " NR ; print ; stat = 1} \
 	              END {exit stat}' FS= $f 2>/dev/null
 done

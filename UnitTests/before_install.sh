@@ -5,6 +5,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install gawk
   sudo apt-get install clang-format
+  sudo apt-get install emacs
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
