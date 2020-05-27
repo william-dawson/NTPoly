@@ -221,7 +221,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Chebyshev")
-       CALL WriteCitation("serbin1980algorithm higham2003computing yau1993reducing")
+       CALL WriteCitation("serbin1980algorithm higham2003computing&
+            & yau1993reducing")
        CALL PrintParameters(solver_parameters)
     END IF
 

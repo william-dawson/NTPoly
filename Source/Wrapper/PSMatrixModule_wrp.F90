@@ -330,7 +330,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list.
   SUBROUTINE GetMatrixBlock_psr_wrp(ih_this, ih_triplet_list, start_row, &
-       & end_row, start_column, end_column) BIND(c,NAME="GetMatrixBlock_psr_wrp")
+       & end_row, start_column, end_column) &
+       & BIND(c,NAME="GetMatrixBlock_psr_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(IN) :: start_row, end_row
@@ -346,7 +347,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list.
   SUBROUTINE GetMatrixBlock_psc_wrp(ih_this, ih_triplet_list, start_row, &
-       & end_row, start_column, end_column) BIND(c,NAME="GetMatrixBlock_psc_wrp")
+       & end_row, start_column, end_column) &
+       & BIND(c,NAME="GetMatrixBlock_psc_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_triplet_list(SIZE_wrp)
     INTEGER(KIND=c_int), INTENT(IN) :: start_row, end_row

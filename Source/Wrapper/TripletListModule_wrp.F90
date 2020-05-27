@@ -32,7 +32,7 @@ MODULE TripletListModule_wrp
   PUBLIC :: GetTripletAt_r_wrp
   PUBLIC :: SortTripletList_r_wrp
   PUBLIC :: GetTripletListSize_r_wrp
-  ! !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructTripletList_c_wrp
   PUBLIC :: DestructTripletList_c_wrp
   PUBLIC :: ResizeTripletList_c_wrp

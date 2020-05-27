@@ -1,3 +1,5 @@
+set -e
+
 # Python
 flake8 UnitTests
 flake8 Examples
@@ -16,6 +18,11 @@ for f in $(find . -type f -name "*.*90"); do
                   --eval="(f90-indent-subprogram)" -f save-buffer 2>/dev/null
 done
 
+# 80 Column Limit
+for f in $(find -L Source Examples Targets UnitTests); do
+	awk 'NF > 80 {print FILENAME ; print "Line " NR ; print ; stat = 1} \
+	              END {exit stat}' FS= $f 2>/dev/null
+done
+
 # If git returns any changes, we know there is a problem.
-set -e
 git --no-pager diff --exit-code
