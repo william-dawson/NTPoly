@@ -3,6 +3,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get update
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
+  sudo apt-get install gawk
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
