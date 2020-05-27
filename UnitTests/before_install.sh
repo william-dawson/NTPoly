@@ -4,6 +4,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install gawk
+  sudo apt-get install clang-format
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
