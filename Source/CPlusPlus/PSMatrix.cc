@@ -1,5 +1,5 @@
-#include "PMatrixMemoryPool.h"
 #include "PSMatrix.h"
+#include "PMatrixMemoryPool.h"
 #include "Permutation.h"
 #include "ProcessGrid.h"
 #include "TripletList.h"
