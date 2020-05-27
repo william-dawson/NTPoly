@@ -56,83 +56,83 @@ MODULE SMatrixModule
      MODULE PROCEDURE ConstructEmptyMatrix_lsr
      MODULE PROCEDURE ConstructMatrixFromFile_lsr
      MODULE PROCEDURE ConstructMatrixFromTripletList_lsr
-  END INTERFACE
+  END INTERFACE Matrix_lsr
   INTERFACE Matrix_lsc
      MODULE PROCEDURE ConstructEmptyMatrix_lsc
      MODULE PROCEDURE ConstructMatrixFromFile_lsc
      MODULE PROCEDURE ConstructMatrixFromTripletList_lsc
-  END INTERFACE
+  END INTERFACE Matrix_lsc
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrixSub_lsr
      MODULE PROCEDURE ConstructEmptyMatrixSub_lsc
-  END INTERFACE
+  END INTERFACE ConstructEmptyMatrix
   INTERFACE ConstructMatrixFromFile
      MODULE PROCEDURE ConstructMatrixFromFileSub_lsr
      MODULE PROCEDURE ConstructMatrixFromFileSub_lsc
-  END INTERFACE
+  END INTERFACE ConstructMatrixFromFile
   INTERFACE ConstructMatrixFromTripletList
      MODULE PROCEDURE ConstructMatrixFromTripletListSub_lsr
      MODULE PROCEDURE ConstructMatrixFromTripletListSub_lsc
-  END INTERFACE
+  END INTERFACE ConstructMatrixFromTripletList
   INTERFACE DestructMatrix
      MODULE PROCEDURE DestructMatrix_lsr
      MODULE PROCEDURE DestructMatrix_lsc
-  END INTERFACE
+  END INTERFACE DestructMatrix
   INTERFACE CopyMatrix
      MODULE PROCEDURE CopyMatrix_lsr
      MODULE PROCEDURE CopyMatrix_lsc
-  END INTERFACE
+  END INTERFACE CopyMatrix
   INTERFACE GetMatrixRows
      MODULE PROCEDURE GetMatrixRows_lsr
      MODULE PROCEDURE GetMatrixRows_lsc
-  END INTERFACE
+  END INTERFACE GetMatrixRows
   INTERFACE GetMatrixColumns
      MODULE PROCEDURE GetMatrixColumns_lsr
      MODULE PROCEDURE GetMatrixColumns_lsc
-  END INTERFACE
+  END INTERFACE GetMatrixColumns
   INTERFACE ExtractMatrixRow
      MODULE PROCEDURE ExtractMatrixRow_lsr
      MODULE PROCEDURE ExtractMatrixRow_lsc
-  END INTERFACE
+  END INTERFACE ExtractMatrixRow
   INTERFACE ExtractMatrixColumn
      MODULE PROCEDURE ExtractMatrixColumn_lsr
      MODULE PROCEDURE ExtractMatrixColumn_lsc
-  END INTERFACE
+  END INTERFACE ExtractMatrixColumn
   INTERFACE SplitMatrix
      MODULE PROCEDURE SplitMatrix_lsr
      MODULE PROCEDURE SplitMatrix_lsc
-  END INTERFACE
+  END INTERFACE SplitMatrix
   INTERFACE SplitMatrixColumns
      MODULE PROCEDURE SplitMatrixColumns_lsr
      MODULE PROCEDURE SplitMatrixColumns_lsc
-  END INTERFACE
+  END INTERFACE SplitMatrixColumns
   INTERFACE ComposeMatrix
      MODULE PROCEDURE ComposeMatrix_lsr
      MODULE PROCEDURE ComposeMatrix_lsc
-  END INTERFACE
+  END INTERFACE ComposeMatrix
   INTERFACE ComposeMatrixColumns
      MODULE PROCEDURE ComposeMatrixColumns_lsr
      MODULE PROCEDURE ComposeMatrixColumns_lsc
-  END INTERFACE
+  END INTERFACE ComposeMatrixColumns
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_lsr
      MODULE PROCEDURE TransposeMatrix_lsc
-  END INTERFACE
+  END INTERFACE TransposeMatrix
   INTERFACE ConjugateMatrix
      MODULE PROCEDURE ConjugateMatrix_lsc
-  END INTERFACE
+  END INTERFACE ConjugateMatrix
   INTERFACE PrintMatrix
      MODULE PROCEDURE PrintMatrix_lsr
      MODULE PROCEDURE PrintMatrix_lsc
-  END INTERFACE
+  END INTERFACE PrintMatrix
   INTERFACE MatrixToTripletList
      MODULE PROCEDURE MatrixToTripletList_lsr
      MODULE PROCEDURE MatrixToTripletList_lsc
-  END INTERFACE
+  END INTERFACE MatrixToTripletList
   INTERFACE ConvertMatrixType
      MODULE PROCEDURE ConvertMatrixType_lsrtolsc
      MODULE PROCEDURE ConvertMatrixType_lsctolsr
-  END INTERFACE
+  END INTERFACE ConvertMatrixType
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine type wrapper for the constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSub_lsr(this, rows, columns, zero_in)

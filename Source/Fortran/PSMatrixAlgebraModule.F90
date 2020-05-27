@@ -37,34 +37,34 @@ MODULE PSMatrixAlgebraModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixSigma
      MODULE PROCEDURE MatrixSigma_ps
-  END INTERFACE
+  END INTERFACE MatrixSigma
   INTERFACE MatrixMultiply
      MODULE PROCEDURE MatrixMultiply_ps
-  END INTERFACE
+  END INTERFACE MatrixMultiply
   INTERFACE MatrixGrandSum
      MODULE PROCEDURE MatrixGrandSum_psr
      MODULE PROCEDURE MatrixGrandSum_psc
-  END INTERFACE
+  END INTERFACE MatrixGrandSum
   INTERFACE PairwiseMultiplyMatrix
      MODULE PROCEDURE PairwiseMultiplyMatrix_ps
-  END INTERFACE
+  END INTERFACE PairwiseMultiplyMatrix
   INTERFACE MatrixNorm
      MODULE PROCEDURE MatrixNorm_ps
-  END INTERFACE
+  END INTERFACE MatrixNorm
   INTERFACE DotMatrix
      MODULE PROCEDURE DotMatrix_psr
      MODULE PROCEDURE DotMatrix_psc
-  END INTERFACE
+  END INTERFACE DotMatrix
   INTERFACE IncrementMatrix
      MODULE PROCEDURE IncrementMatrix_ps
-  END INTERFACE
+  END INTERFACE IncrementMatrix
   INTERFACE ScaleMatrix
      MODULE PROCEDURE ScaleMatrix_psr
      MODULE PROCEDURE ScaleMatrix_psc
-  END INTERFACE
+  END INTERFACE ScaleMatrix
   INTERFACE MatrixTrace
      MODULE PROCEDURE MatrixTrace_psr
-  END INTERFACE
+  END INTERFACE MatrixTrace
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute sigma for the inversion method.
   !> See \cite ozaki2001efficient for details.

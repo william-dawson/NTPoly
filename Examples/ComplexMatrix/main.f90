@@ -41,9 +41,9 @@ PROGRAM ComplexMatrix
 
   !! Process The Input
   !! Process the input parameters.
-  DO counter=1,command_argument_count(),2
-     CALL get_command_argument(counter,argument)
-     CALL get_command_argument(counter+1,argument_value)
+  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
+     CALL GET_COMMAND_ARGUMENT(counter,argument)
+     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
      SELECT CASE(argument)
      CASE('--input_file')
         input_file = argument_value
@@ -66,12 +66,12 @@ PROGRAM ComplexMatrix
 
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
-  CALL WriteElement(key="input_file", value=input_file)
-  CALL WriteElement(key="exponential_file", value=exponential_file)
-  CALL WriteElement(key="process_rows", value=process_rows)
-  CALL WriteElement(key="process_columns", value=process_columns)
-  CALL WriteElement(key="process_slices", value=process_slices)
-  CALL WriteElement(key="threshold", value=threshold)
+  CALL WriteElement(key="input_file", VALUE=input_file)
+  CALL WriteElement(key="exponential_file", VALUE=exponential_file)
+  CALL WriteElement(key="process_rows", VALUE=process_rows)
+  CALL WriteElement(key="process_columns", VALUE=process_columns)
+  CALL WriteElement(key="process_slices", VALUE=process_slices)
+  CALL WriteElement(key="threshold", VALUE=threshold)
   CALL ExitSubLog
 
   !! Construct The Hermitian Matrix

@@ -17,6 +17,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install doxygen
   brew install cmake
   brew install swig
+  brew install clang-format
   sudo pip2 install numpy --upgrade --no-cache-dir
   sudo pip2 install scipy --upgrade --no-cache-dir
   sudo pip2 install mpi4py --upgrade --no-cache-dir

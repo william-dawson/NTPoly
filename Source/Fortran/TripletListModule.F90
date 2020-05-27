@@ -43,62 +43,62 @@ MODULE TripletListModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE TripletList_r
      MODULE PROCEDURE ConstructTripletList_r
-  END INTERFACE
+  END INTERFACE TripletList_r
   INTERFACE TripletList_c
      MODULE PROCEDURE ConstructTripletList_c
-  END INTERFACE
+  END INTERFACE TripletList_c
   INTERFACE ConstructTripletList
      MODULE PROCEDURE ConstructTripletListSup_r
      MODULE PROCEDURE ConstructTripletListSup_c
-  END INTERFACE
+  END INTERFACE ConstructTripletList
   INTERFACE DestructTripletList
      MODULE PROCEDURE DestructTripletList_r
      MODULE PROCEDURE DestructTripletList_c
-  END INTERFACE
+  END INTERFACE DestructTripletList
   INTERFACE ResizeTripletList
      MODULE PROCEDURE ResizeTripletList_r
      MODULE PROCEDURE ResizeTripletList_c
-  END INTERFACE
+  END INTERFACE ResizeTripletList
   INTERFACE AppendToTripletList
      MODULE PROCEDURE AppendToTripletList_r
      MODULE PROCEDURE AppendToTripletList_c
-  END INTERFACE
+  END INTERFACE AppendToTripletList
   INTERFACE SetTripletAt
      MODULE PROCEDURE SetTripletAt_r
      MODULE PROCEDURE SetTripletAt_c
-  END INTERFACE
+  END INTERFACE SetTripletAt
   INTERFACE GetTripletAt
      MODULE PROCEDURE GetTripletAt_r
      MODULE PROCEDURE GetTripletAt_c
-  END INTERFACE
+  END INTERFACE GetTripletAt
   INTERFACE SortTripletList
      MODULE PROCEDURE SortTripletList_r
      MODULE PROCEDURE SortTripletList_c
-  END INTERFACE
+  END INTERFACE SortTripletList
   INTERFACE SortDenseTripletList
      MODULE PROCEDURE SortDenseTripletList_r
      MODULE PROCEDURE SortDenseTripletList_c
-  END INTERFACE
+  END INTERFACE SortDenseTripletList
   INTERFACE SymmetrizeTripletList
      MODULE PROCEDURE SymmetrizeTripletList_r
      MODULE PROCEDURE SymmetrizeTripletList_c
-  END INTERFACE
+  END INTERFACE SymmetrizeTripletList
   INTERFACE GetTripletListSize
      MODULE PROCEDURE GetTripletListSize_r
      MODULE PROCEDURE GetTripletListSize_c
-  END INTERFACE
+  END INTERFACE GetTripletListSize
   INTERFACE RedistributeTripletLists
      MODULE PROCEDURE RedistributeTripletLists_r
      MODULE PROCEDURE RedistributeTripletLists_c
-  END INTERFACE
+  END INTERFACE RedistributeTripletLists
   INTERFACE ShiftTripletList
      MODULE PROCEDURE ShiftTripletList_r
      MODULE PROCEDURE ShiftTripletList_c
-  END INTERFACE
+  END INTERFACE ShiftTripletList
   INTERFACE ConvertTripletListType
      MODULE PROCEDURE ConvertTripletListToReal
      MODULE PROCEDURE ConvertTripletListToComplex
-  END INTERFACE
+  END INTERFACE ConvertTripletListType
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for constructing a triplet list.
   PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)
@@ -541,7 +541,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL ConstructTripletList(rout_triplet, cin_triplet%CurrentSize)
     DO II = 1, cin_triplet%CurrentSize
-       CALL ConvertTripletType(cin_triplet%data(II), rout_triplet%data(II))
+       CALL ConvertTripletType(cin_triplet%DATA(II), rout_triplet%DATA(II))
     END DO
 
   END SUBROUTINE ConvertTripletListToReal
@@ -557,7 +557,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL ConstructTripletList(cout_triplet, rin_triplet%CurrentSize)
     DO II = 1, rin_triplet%CurrentSize
-       CALL ConvertTripletType(rin_triplet%data(II), cout_triplet%data(II))
+       CALL ConvertTripletType(rin_triplet%DATA(II), cout_triplet%DATA(II))
     END DO
 
   END SUBROUTINE ConvertTripletListToComplex

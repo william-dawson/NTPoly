@@ -31,16 +31,16 @@ MODULE HermiteSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructPolynomial
      MODULE PROCEDURE ConstructPolynomial_horner
-  END INTERFACE
+  END INTERFACE ConstructPolynomial
   INTERFACE DestructPolynomial
      MODULE PROCEDURE DestructPolynomial_horner
-  END INTERFACE
+  END INTERFACE DestructPolynomial
   INTERFACE SetCoefficient
      MODULE PROCEDURE SetCoefficient_horner
-  END INTERFACE
+  END INTERFACE SetCoefficient
   INTERFACE Compute
      MODULE PROCEDURE Compute_horner
-  END INTERFACE
+  END INTERFACE Compute
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a Hermite polynomial object.
   PURE SUBROUTINE ConstructPolynomial_horner(this, degree)
@@ -112,8 +112,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Hermite Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", value="Standard")
-       CALL WriteElement(key="Degree", value=degree-1)
+       CALL WriteElement(key="Method", VALUE="Standard")
+       CALL WriteElement(key="Degree", VALUE=degree-1)
        CALL PrintParameters(solver_parameters)
     END IF
 

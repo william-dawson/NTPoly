@@ -10,8 +10,8 @@ extern "C" {
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 //////////////////////////////////////////////////////////////////////////////
-void MatrixConversion::SnapMatrixToSparsityPattern(Matrix_ps& mata,
-	                                               const Matrix_ps& matb) {
+void MatrixConversion::SnapMatrixToSparsityPattern(Matrix_ps &mata,
+                                                   const Matrix_ps &matb) {
   SnapMatrixToSparsityPattern_wrp(mata.ih_this, matb.ih_this);
 }
 } // namespace NTPoly

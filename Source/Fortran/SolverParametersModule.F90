@@ -26,7 +26,7 @@ MODULE SolverParametersModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SolverParameters_t
      MODULE PROCEDURE SolverParameters_init
-  END INTERFACE
+  END INTERFACE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SetParametersConvergeDiff
   PUBLIC :: SetParametersMaxIterations
@@ -144,11 +144,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Solver Parameters")
     CALL EnterSubLog
-    CALL WriteElement(key="be_verbose", value=this%be_verbose)
-    CALL WriteElement(key="do_load_balancing", value=this%do_load_balancing)
-    CALL WriteElement(key="converge_diff", value=this%converge_diff)
-    CALL WriteElement(key="threshold", value=this%threshold)
-    CALL WriteElement(key="max_iterations", value=this%max_iterations)
+    CALL WriteElement(key="be_verbose", VALUE=this%be_verbose)
+    CALL WriteElement(key="do_load_balancing", VALUE=this%do_load_balancing)
+    CALL WriteElement(key="converge_diff", VALUE=this%converge_diff)
+    CALL WriteElement(key="threshold", VALUE=this%threshold)
+    CALL WriteElement(key="max_iterations", VALUE=this%max_iterations)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -60,26 +60,26 @@ MODULE MatrixMemoryPoolModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixMemoryPool_lr
      MODULE PROCEDURE ConstructMatrixMemoryPool_lr
-  END INTERFACE
+  END INTERFACE MatrixMemoryPool_lr
   INTERFACE MatrixMemoryPool_lc
      MODULE PROCEDURE ConstructMatrixMemoryPool_lc
-  END INTERFACE
+  END INTERFACE MatrixMemoryPool_lc
   INTERFACE ConstructMatrixMemoryPool
      MODULE PROCEDURE ConstructMatrixMemoryPoolSub_lr
      MODULE PROCEDURE ConstructMatrixMemoryPoolSub_lc
-  END INTERFACE
+  END INTERFACE ConstructMatrixMemoryPool
   INTERFACE DestructMatrixMemoryPool
      MODULE PROCEDURE DestructMatrixMemoryPool_lr
      MODULE PROCEDURE DestructMatrixMemoryPool_lc
-  END INTERFACE
+  END INTERFACE DestructMatrixMemoryPool
   INTERFACE CheckMemoryPoolValidity
      MODULE PROCEDURE CheckMemoryPoolValidity_lr
      MODULE PROCEDURE CheckMemoryPoolValidity_lc
-  END INTERFACE
+  END INTERFACE CheckMemoryPoolValidity
   INTERFACE SetPoolSparsity
      MODULE PROCEDURE SetPoolSparsity_lr
      MODULE PROCEDURE SetPoolSparsity_lc
-  END INTERFACE
+  END INTERFACE SetPoolSparsity
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for the constructor.
   SUBROUTINE ConstructMatrixMemoryPoolSub_lr(this, columns, rows, sparsity_in)

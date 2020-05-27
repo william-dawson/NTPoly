@@ -15,7 +15,7 @@ MODULE EigenBoundsModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
   SUBROUTINE GershgorinBounds_wrp(ih_this, min_value,max_value) &
-       & bind(c,name="GershgorinBounds_wrp")
+       & BIND(c,name="GershgorinBounds_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(INOUT) :: min_value
     REAL(NTREAL), INTENT(INOUT) :: max_value
@@ -23,12 +23,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
 
-    CALL GershgorinBounds(h_this%data, min_value, max_value)
+    CALL GershgorinBounds(h_this%DATA, min_value, max_value)
   END SUBROUTINE GershgorinBounds_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the largest eigenvalue using the power method.
   SUBROUTINE PowerBounds_wrp(ih_this, max_value, ih_solver_parameters) &
-       & bind(c,name="PowerBounds_wrp")
+       & BIND(c,name="PowerBounds_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(INOUT) :: max_value
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -38,7 +38,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PowerBounds(h_this%data, max_value, h_solver_parameters%data)
+    CALL PowerBounds(h_this%DATA, max_value, h_solver_parameters%DATA)
   END SUBROUTINE PowerBounds_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule_wrp

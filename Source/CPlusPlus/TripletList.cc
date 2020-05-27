@@ -1,5 +1,5 @@
-#include "Triplet.h"
 #include "TripletList.h"
+#include "Triplet.h"
 
 #include <complex>
 

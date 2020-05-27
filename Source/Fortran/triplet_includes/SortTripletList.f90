@@ -34,8 +34,8 @@
 
      !! Do a first pass bucket sort
      DO counter = 1, input_list%CurrentSize
-        values_per_row(input_list%data(counter)%index_column) = &
-             & values_per_row(input_list%data(counter)%index_column) + 1
+        values_per_row(input_list%DATA(counter)%index_column) = &
+             & values_per_row(input_list%DATA(counter)%index_column) + 1
      END DO
      offset_array(1) = 1
      DO counter = 2, UBOUND(offset_array,dim=1)
@@ -43,9 +43,9 @@
              & values_per_row(counter-1)
      END DO
      DO counter = 1, input_list%CurrentSize
-        temp_index = input_list%data(counter)%index_column
-        sorted_list%data(offset_array(temp_index)+inserted_per_row(temp_index))=&
-             & input_list%data(counter)
+        temp_index = input_list%DATA(counter)%index_column
+        sorted_list%DATA(offset_array(temp_index)+inserted_per_row(temp_index))=&
+             & input_list%DATA(counter)
         inserted_per_row(temp_index) = inserted_per_row(temp_index) + 1
      END DO
 
@@ -56,11 +56,11 @@
         DO WHILE (swap_occured .EQV. .TRUE.)
            swap_occured = .FALSE.
            DO counter = 2, sorted_list%CurrentSize
-              IF (CompareTriplets(sorted_list%data(counter-1), &
-                   & sorted_list%data(counter))) THEN
-                 temporary = sorted_list%data(counter)
-                 sorted_list%data(counter) = sorted_list%data(counter-1)
-                 sorted_list%data(counter-1) = temporary
+              IF (CompareTriplets(sorted_list%DATA(counter-1), &
+                   & sorted_list%DATA(counter))) THEN
+                 temporary = sorted_list%DATA(counter)
+                 sorted_list%DATA(counter) = sorted_list%DATA(counter-1)
+                 sorted_list%DATA(counter-1) = temporary
                  swap_occured = .TRUE.
               END IF
            END DO

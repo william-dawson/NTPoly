@@ -25,7 +25,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL SnapMatrixToSparsityPattern(h_matA%data, h_matB%data)
+    CALL SnapMatrixToSparsityPattern(h_matA%DATA, h_matB%DATA)
   END SUBROUTINE SnapMatrixToSparsityPattern_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-END MODULE
+END MODULE MatrixConversionModule_wrp

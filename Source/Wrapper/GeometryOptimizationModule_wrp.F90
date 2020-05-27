@@ -17,7 +17,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
   SUBROUTINE PurificationExtrapolate_wrp(ih_PreviousDensity, ih_Overlap, &
        & nel, ih_NewDensity, ih_solver_parameters) &
-       & bind(c,name="PurificationExtrapolate_wrp")
+       & BIND(c,name="PurificationExtrapolate_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_PreviousDensity(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_Overlap(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: nel
@@ -33,14 +33,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_NewDensity = TRANSFER(ih_NewDensity,h_NewDensity)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PurificationExtrapolate(h_PreviousDensity%data, h_Overlap%data, nel, &
-         & h_NewDensity%data, h_solver_parameters%data)
+    CALL PurificationExtrapolate(h_PreviousDensity%DATA, h_Overlap%DATA, nel, &
+         & h_NewDensity%DATA, h_solver_parameters%DATA)
   END SUBROUTINE PurificationExtrapolate_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
   SUBROUTINE LowdinExtrapolate_wrp(ih_PreviousDensity, ih_OldOverlap, &
        & ih_NewOverlap, ih_NewDensity, ih_solver_parameters) &
-       & bind(c,name="LowdinExtrapolate_wrp")
+       & BIND(c,name="LowdinExtrapolate_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_PreviousDensity(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_OldOverlap(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_NewOverlap(SIZE_wrp)
@@ -58,8 +58,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_NewDensity = TRANSFER(ih_NewDensity,h_NewDensity)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL LowdinExtrapolate(h_PreviousDensity%data, h_OldOverlap%data, &
-         & h_NewOverlap%data, h_NewDensity%data, h_solver_parameters%data)
+    CALL LowdinExtrapolate(h_PreviousDensity%DATA, h_OldOverlap%DATA, &
+         & h_NewOverlap%DATA, h_NewDensity%DATA, h_solver_parameters%DATA)
   END SUBROUTINE LowdinExtrapolate_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE GeometryOptimizationModule_wrp

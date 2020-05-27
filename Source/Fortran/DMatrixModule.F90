@@ -44,54 +44,54 @@ MODULE DMatrixModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE Matrix_ldr
      MODULE PROCEDURE ConstructEmptyMatrix_ldr
-  END INTERFACE
+  END INTERFACE Matrix_ldr
   INTERFACE Matrix_ldc
      MODULE PROCEDURE ConstructEmptyMatrix_ldc
-  END INTERFACE
+  END INTERFACE Matrix_ldc
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrixSup_ldr
      MODULE PROCEDURE ConstructEmptyMatrixSup_ldc
-  END INTERFACE
+  END INTERFACE ConstructEmptyMatrix
   INTERFACE ConstructMatrixDFromS
      MODULE PROCEDURE ConstructMatrixDFromS_ldr
      MODULE PROCEDURE ConstructMatrixDFromS_ldc
-  END INTERFACE
+  END INTERFACE ConstructMatrixDFromS
   INTERFACE ConstructMatrixSFromD
      MODULE PROCEDURE ConstructMatrixSFromD_ldr
      MODULE PROCEDURE ConstructMatrixSFromD_ldc
-  END INTERFACE
+  END INTERFACE ConstructMatrixSFromD
   INTERFACE CopyMatrix
      MODULE PROCEDURE CopyMatrix_ldr
      MODULE PROCEDURE CopyMatrix_ldc
-  END INTERFACE
+  END INTERFACE CopyMatrix
   INTERFACE DestructMatrix
      MODULE PROCEDURE DestructMatrix_ldr
      MODULE PROCEDURE DestructMatrix_ldc
-  END INTERFACE
+  END INTERFACE DestructMatrix
   INTERFACE SplitMatrix
      MODULE PROCEDURE SplitMatrix_ldr
      MODULE PROCEDURE SplitMatrix_ldc
-  END INTERFACE
+  END INTERFACE SplitMatrix
   INTERFACE ComposeMatrix
      MODULE PROCEDURE ComposeMatrix_ldr
      MODULE PROCEDURE ComposeMatrix_ldc
-  END INTERFACE
+  END INTERFACE ComposeMatrix
   INTERFACE MatrixNorm
      MODULE PROCEDURE MatrixNorm_ldr
      MODULE PROCEDURE MatrixNorm_ldc
-  END INTERFACE
+  END INTERFACE MatrixNorm
   INTERFACE IncrementMatrix
      MODULE PROCEDURE IncrementMatrix_ldr
      MODULE PROCEDURE IncrementMatrix_ldc
-  END INTERFACE
+  END INTERFACE IncrementMatrix
   INTERFACE MultiplyMatrix
      MODULE PROCEDURE MultiplyMatrix_ldr
      MODULE PROCEDURE MultiplyMatrix_ldc
-  END INTERFACE
+  END INTERFACE MultiplyMatrix
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_ldr
      MODULE PROCEDURE TransposeMatrix_ldc
-  END INTERFACE
+  END INTERFACE TransposeMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the empty constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldr(this, rows, columns)
@@ -197,7 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = 0
     DO II =1, this%rows
        DO JJ = 1,  this%columns
-          norm = norm + this%data(II,JJ)**2
+          norm = norm + this%DATA(II,JJ)**2
        END DO
     END DO
   END FUNCTION MatrixNorm_ldr
@@ -253,7 +253,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
   SUBROUTINE MultiplyMatrix_ldr(MatA, MatB, MatC, IsATransposed_in, &
-      & IsBTransposed_in)
+       & IsBTransposed_in)
     !> The first matrix.
     TYPE(Matrix_ldr), INTENT(IN) :: MatA
     !> The second matrix.
@@ -280,53 +280,53 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TRANSA = 'N'
     IF (PRESENT(IsATransposed_in)) THEN
        IF (IsATransposed_in) THEN
-        TRANSA = 'T'
+          TRANSA = 'T'
        END IF
     END IF
     TRANSB = 'N'
     IF (PRESENT(IsBTransposed_in)) THEN
        IF (IsBTransposed_in) THEN
-        TRANSB = 'T'
+          TRANSB = 'T'
        END IF
     END IF
 
     !! Setup Lapack
     IF (TRANSA .EQ. 'T') THEN
-      M = MatA%columns
+       M = MatA%columns
     ELSE
-      M = MatA%rows
+       M = MatA%rows
     END IF
 
     IF (TRANSB .EQ. 'T') THEN
-      N = MatB%rows
+       N = MatB%rows
     ELSE
-      N = MatB%columns
+       N = MatB%columns
     END IF
 
     IF (TRANSA .EQ. 'T') THEN
-      K = MatA%rows
+       K = MatA%rows
     ELSE
-      K = MatA%columns
+       K = MatA%columns
     END IF
 
     IF (TRANSA .EQ. 'T') THEN
-      LDA = K
+       LDA = K
     ELSE
-      LDA = M
+       LDA = M
     END IF
 
     IF (TRANSB .EQ. 'T') THEN
-      LDB = N
+       LDB = N
     ELSE
-      LDB = K
+       LDB = K
     END IF
 
     LDC = M
 
     !! Multiply
     CALL ConstructEmptyMatrix(MatC, M, N)
-    CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
-         & LDB, BETA, MatC%data, LDC)
+    CALL DGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%DATA, LDA, MatB%DATA, &
+         & LDB, BETA, MatC%DATA, LDC)
 
   END SUBROUTINE MultiplyMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -435,7 +435,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = 0
     DO II =1, this%rows
        DO JJ = 1,  this%columns
-          val = this%data(II,JJ)
+          val = this%DATA(II,JJ)
           conjval = CONJG(val)
           norm = norm + REAL(val*conjval,KIND=NTREAL)
        END DO
@@ -493,7 +493,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A wrapper for multiplying two dense matrices.
   SUBROUTINE MultiplyMatrix_ldc(MatA, MatB, MatC, IsATransposed_in, &
-      & IsBTransposed_in)
+       & IsBTransposed_in)
     !> The first matrix.
     TYPE(Matrix_ldc), INTENT(IN) :: MatA
     !> The second matrix.
@@ -520,53 +520,53 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TRANSA = 'N'
     IF (PRESENT(IsATransposed_in)) THEN
        IF (IsATransposed_in) THEN
-        TRANSA = 'T'
+          TRANSA = 'T'
        END IF
     END IF
     TRANSB = 'N'
     IF (PRESENT(IsBTransposed_in)) THEN
        IF (IsBTransposed_in) THEN
-        TRANSB = 'T'
+          TRANSB = 'T'
        END IF
     END IF
 
     !! Setup Lapack
     IF (TRANSA .EQ. 'T') THEN
-      M = MatA%columns
+       M = MatA%columns
     ELSE
-      M = MatA%rows
+       M = MatA%rows
     END IF
 
     IF (TRANSB .EQ. 'T') THEN
-      N = MatB%rows
+       N = MatB%rows
     ELSE
-      N = MatB%columns
+       N = MatB%columns
     END IF
 
     IF (TRANSA .EQ. 'T') THEN
-      K = MatA%rows
+       K = MatA%rows
     ELSE
-      K = MatA%columns
+       K = MatA%columns
     END IF
 
     IF (TRANSA .EQ. 'T') THEN
-      LDA = K
+       LDA = K
     ELSE
-      LDA = M
+       LDA = M
     END IF
 
     IF (TRANSB .EQ. 'T') THEN
-      LDB = N
+       LDB = N
     ELSE
-      LDB = K
+       LDB = K
     END IF
 
     LDC = M
 
     !! Multiply
     CALL ConstructEmptyMatrix(MatC, M, N)
-    CALL ZGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%data, LDA, MatB%data, &
-         & LDB, BETA, MatC%data, LDC)
+    CALL ZGEMM(TRANSA, TRANSB, M, N, K, ALPHA, MatA%DATA, LDA, MatB%DATA, &
+         & LDB, BETA, MatC%DATA, LDC)
 
   END SUBROUTINE MultiplyMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

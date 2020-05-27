@@ -71,11 +71,11 @@ MODULE ProcessGridModule
   INTERFACE ConstructProcessGrid
      MODULE PROCEDURE ConstructProcessGrid_full
      MODULE PROCEDURE ConstructProcessGrid_onlyslice
-  END INTERFACE
+  END INTERFACE ConstructProcessGrid
   INTERFACE ConstructNewProcessGrid
      MODULE PROCEDURE ConstructNewProcessGrid_full
      MODULE PROCEDURE ConstructNewProcessGrid_onlyslice
-  END INTERFACE
+  END INTERFACE ConstructNewProcessGrid
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
   SUBROUTINE ConstructProcessGrid_full(world_comm_, process_rows_, &
@@ -111,15 +111,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Process Grid")
        CALL EnterSubLog
        CALL WriteListElement("Process Rows", &
-            & value=global_grid%num_process_rows)
+            & VALUE=global_grid%num_process_rows)
        CALL WriteListElement(key = "Process Columns", &
-            & value=global_grid%num_process_columns)
+            & VALUE=global_grid%num_process_columns)
        CALL WriteListElement(key = "Process Slices", &
-            & value=global_grid%num_process_slices)
+            & VALUE=global_grid%num_process_slices)
        CALL WriteListElement(key = "Column Blocks", &
-            & value=global_grid%number_of_blocks_columns)
+            & VALUE=global_grid%number_of_blocks_columns)
        CALL WriteListElement(key = "Row Blocks", &
-            & value=global_grid%number_of_blocks_rows)
+            & VALUE=global_grid%number_of_blocks_rows)
        CALL ExitSubLog
     END IF
 

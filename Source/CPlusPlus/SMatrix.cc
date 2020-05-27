@@ -1,5 +1,5 @@
-#include "MatrixMemoryPool.h"
 #include "SMatrix.h"
+#include "MatrixMemoryPool.h"
 #include "TripletList.h"
 using std::complex;
 using std::string;

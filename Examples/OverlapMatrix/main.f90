@@ -47,9 +47,9 @@ PROGRAM OverlapExample
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,command_argument_count(),2
-     CALL get_command_argument(counter,argument)
-     CALL get_command_argument(counter+1,argument_value)
+  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
+     CALL GET_COMMAND_ARGUMENT(counter,argument)
+     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
      SELECT CASE(argument)
      CASE('--basis_functions')
         READ(argument_value,*) basis_functions

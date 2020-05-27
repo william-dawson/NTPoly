@@ -1,3 +1,3 @@
-  IF (ALLOCATED(this%data)) THEN
-     DEALLOCATE(this%data)
+  IF (ALLOCATED(this%DATA)) THEN
+     DEALLOCATE(this%DATA)
   END IF

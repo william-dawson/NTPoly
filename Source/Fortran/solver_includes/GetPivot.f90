@@ -19,7 +19,7 @@
   CALL MPI_Allreduce(MPI_IN_PLACE, max_diag, 1, MPI_2DOUBLE_PRECISION, &
        & MPI_MAXLOC, process_grid%row_comm, ierr)
   index = INT(max_diag(2))
-  value = max_diag(1)
+  VALUE = max_diag(1)
 
   swap = pivot_vector(index)
   pivot_vector(index) = pivot_vector(start_index)

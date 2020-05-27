@@ -11,9 +11,9 @@
      DO II = this%start_column, this%end_column - 1
         IF (JJ .EQ. II .AND. JJ .LE. this%actual_matrix_dimension) THEN
            total = total + 1
-           triplet_list%data(total)%index_column = II
-           triplet_list%data(total)%index_row = JJ
-           triplet_list%data(total)%point_value = 1.0
+           triplet_list%DATA(total)%index_column = II
+           triplet_list%DATA(total)%index_row = JJ
+           triplet_list%DATA(total)%point_value = 1.0
         END IF
      END DO
   END DO

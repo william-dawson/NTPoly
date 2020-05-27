@@ -1,6 +1,7 @@
-if [ -z ${TESTEXAMPLES+x} ]; then
+if [ "$TESTEXAMPLES" == "0" ]; then
   echo "Skipping examples"
 else
+  set -e
   python test_build.py ../Examples/ComplexMatrix/ run-fortran
   python test_build.py ../Examples/ComplexMatrix/ run-c++
   python test_build.py ../Examples/ComplexMatrix/ run-python
