@@ -69,7 +69,7 @@ public:
   //! the logical dimension is scaled so each process has an even slice.
   int GetLogicalDimension() const;
   //! Get the total number of non-zero entries in the matrix
-  int GetSize() const;
+  long int GetSize() const;
   //! Extracts a triplet list of the data that is stored on this process.
   //! Data is returned with absolute coordinates.
   //! \param triplet_list the list to fill.

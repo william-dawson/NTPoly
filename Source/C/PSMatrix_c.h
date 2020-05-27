@@ -30,7 +30,7 @@ void FillMatrixPermutation_ps_wrp(int *ih_this, const int *ih_permutation,
 void FillMatrixIdentity_ps_wrp(int *ih_this);
 void GetMatrixActualDimension_ps_wrp(const int *ih_this, int *size);
 void GetMatrixLogicalDimension_ps_wrp(const int *ih_this, int *size);
-void GetMatrixSize_ps_wrp(const int *ih_this, int *size);
+void GetMatrixSize_ps_wrp(const int *ih_this, long int *size);
 void GetMatrixTripletList_psr_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixTripletList_psc_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixBlock_psr_wrp(const int *ih_this, int *ih_triplet_list,

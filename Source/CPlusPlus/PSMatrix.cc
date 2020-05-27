@@ -106,8 +106,8 @@ int Matrix_ps::GetActualDimension() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-int Matrix_ps::GetSize() const {
-  int temp;
+long int Matrix_ps::GetSize() const {
+  long int temp;
   GetMatrixSize_ps_wrp(ih_this, &temp);
   return temp;
 }
