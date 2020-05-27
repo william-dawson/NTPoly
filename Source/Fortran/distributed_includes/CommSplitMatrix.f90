@@ -31,21 +31,21 @@
            !! The smaller process grid only needs to send to process 2
            CALL ConstructTripletList(send_list(1))
            CALL ConstructTripletList(send_list(2), full_list%CurrentSize)
-           send_list(2)%data(:fsize) = full_list%data(:fsize)
+           send_list(2)%DATA(:fsize) = full_list%DATA(:fsize)
            DO counter = 3, between_grid_size
               CALL ConstructTripletList(send_list(counter))
            END DO
         ELSE
            !! The larger process grid only needs to send to process 1
            CALL ConstructTripletList(send_list(1), full_list%CurrentSize)
-           send_list(1)%data(:fsize) = full_list%data(:fsize)
+           send_list(1)%DATA(:fsize) = full_list%DATA(:fsize)
            DO counter = 2, between_grid_size
               CALL ConstructTripletList(send_list(counter))
            END DO
         END IF
         CALL ConstructTripletList(send_list(between_grid_rank+1), &
              & full_list%CurrentSize)
-        send_list(between_grid_rank+1)%data(:fsize) = full_list%data(:fsize)
+        send_list(between_grid_rank+1)%DATA(:fsize) = full_list%DATA(:fsize)
         CALL RedistributeTripletLists(send_list, between_grid_comm, new_list)
      END IF
 

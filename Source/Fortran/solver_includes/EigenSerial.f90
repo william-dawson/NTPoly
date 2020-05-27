@@ -12,7 +12,7 @@
      CALL ConstructTripletList(send_list(counter))
   END DO
   list_size = triplet_list%CurrentSize
-  send_list(1)%data(:list_size) = triplet_list%data(:list_size)
+  send_list(1)%DATA(:list_size) = triplet_list%DATA(:list_size)
   CALL DestructTripletList(triplet_list)
   CALL RedistributeTripletLists(send_list, &
        & this%process_grid%within_slice_comm, triplet_list)
@@ -30,9 +30,9 @@
         CALL EigenDecomposition(dense_a, dense_v, dense_w)
         CALL ConstructTripletList(triplet_w, mat_dim)
         DO counter = 1, mat_dim
-           triplet_w%data(counter)%index_row = counter
-           triplet_w%data(counter)%index_column = counter
-           triplet_w%data(counter)%point_value = dense_w%data(counter,1)
+           triplet_w%DATA(counter)%index_row = counter
+           triplet_w%DATA(counter)%index_column = counter
+           triplet_w%DATA(counter)%point_value = dense_w%DATA(counter,1)
         END DO
      ELSE
         CALL EigenDecomposition(dense_a, dense_v)

@@ -23,9 +23,9 @@
   END DO
   ALLOCATE(location_list_within_slice(initial_triplet_list%CurrentSize))
   DO counter = 1, initial_triplet_list%CurrentSize
-     temp_row = row_lookup(initial_triplet_list%data(counter)%index_row)
+     temp_row = row_lookup(initial_triplet_list%DATA(counter)%index_row)
      temp_column = &
-          & column_lookup(initial_triplet_list%data(counter)%index_column)
+          & column_lookup(initial_triplet_list%DATA(counter)%index_column)
      location_list_within_slice(counter) = &
           & temp_column+temp_row*this%process_grid%num_process_columns
   END DO
@@ -46,11 +46,11 @@
 
   !! Adjust Indices to Local
   DO counter = 1, gathered_list%CurrentSize
-     gathered_list%data(counter)%index_row = &
-          & reverse_index_lookup(gathered_list%data(counter)%index_row) - &
+     gathered_list%DATA(counter)%index_row = &
+          & reverse_index_lookup(gathered_list%DATA(counter)%index_row) - &
           & this%start_row + 1
-     gathered_list%data(counter)%index_column = &
-          & reverse_index_lookup(gathered_list%data(counter)%index_column) - &
+     gathered_list%DATA(counter)%index_column = &
+          & reverse_index_lookup(gathered_list%DATA(counter)%index_column) - &
           & this%start_column + 1
   END DO
   CALL StartTimer("SortTripletList")

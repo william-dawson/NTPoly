@@ -5,26 +5,26 @@ MODULE MatrixMarketModule
   IMPLICIT NONE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ENUM, BIND(c)
-    !> Sparse coordinate file.
-    ENUMERATOR :: MM_COORDINATE=1
-    !> Dense array file.
-    ENUMERATOR :: MM_ARRAY=2
-    !> Real data being read in.
-    ENUMERATOR :: MM_REAL=1
-    !> Integer data being read in.
-    ENUMERATOR :: MM_INTEGER=2
-    !>Complex numbers being read in.
-    ENUMERATOR :: MM_COMPLEX=3
-    !> Just a pattern of non zeros.
-    ENUMERATOR :: MM_PATTERN=4
-    !> File lacks symmetry.
-    ENUMERATOR :: MM_GENERAL=1
-    !> File is symmetric
-    ENUMERATOR :: MM_SYMMETRIC=2
-    !> File is skew symmetric.
-    ENUMERATOR :: MM_SKEW_SYMMETRIC=3
-    !> File is hermitian.
-    ENUMERATOR :: MM_HERMITIAN=4
+     !> Sparse coordinate file.
+     ENUMERATOR :: MM_COORDINATE=1
+     !> Dense array file.
+     ENUMERATOR :: MM_ARRAY=2
+     !> Real data being read in.
+     ENUMERATOR :: MM_REAL=1
+     !> Integer data being read in.
+     ENUMERATOR :: MM_INTEGER=2
+     !>Complex numbers being read in.
+     ENUMERATOR :: MM_COMPLEX=3
+     !> Just a pattern of non zeros.
+     ENUMERATOR :: MM_PATTERN=4
+     !> File lacks symmetry.
+     ENUMERATOR :: MM_GENERAL=1
+     !> File is symmetric
+     ENUMERATOR :: MM_SYMMETRIC=2
+     !> File is skew symmetric.
+     ENUMERATOR :: MM_SKEW_SYMMETRIC=3
+     !> File is hermitian.
+     ENUMERATOR :: MM_HERMITIAN=4
   END ENUM
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The longest line size possible according to the spec.
@@ -40,7 +40,7 @@ MODULE MatrixMarketModule
      MODULE PROCEDURE WriteMMLine_iiff
      MODULE PROCEDURE WriteMMLine_f
      MODULE PROCEDURE WriteMMLine_ff
-  END INTERFACE
+  END INTERFACE WriteMMLine
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Parse a matrix market header.
   FUNCTION ParseMMHeader(line,sparsity_type,data_type,pattern_type) &

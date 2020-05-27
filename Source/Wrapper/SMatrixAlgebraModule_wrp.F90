@@ -28,18 +28,18 @@ MODULE SMatrixAlgebraModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
   SUBROUTINE ScaleMatrix_lsr_wrp(ih_this, constant) &
-       & bind(c,name="ScaleMatrix_lsr_wrp")
+       & BIND(c,name="ScaleMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL ScaleMatrix(h_this%data,constant)
+    CALL ScaleMatrix(h_this%DATA,constant)
   END SUBROUTINE ScaleMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix incrementing function.
   SUBROUTINE IncrementMatrix_lsr_wrp(ih_matA, ih_matB, alpha_in, &
-       & threshold_in) bind(c,name="IncrementMatrix_lsr_wrp")
+       & threshold_in) BIND(c,name="IncrementMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: alpha_in
@@ -49,12 +49,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL IncrementMatrix(h_matA%data, h_matB%data, alpha_in, threshold_in)
+    CALL IncrementMatrix(h_matA%DATA, h_matB%DATA, alpha_in, threshold_in)
   END SUBROUTINE IncrementMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
   SUBROUTINE DotMatrix_lsr_wrp(ih_matA, ih_matB, product) &
-       & bind(c,name="DotMatrix_lsr_wrp")
+       & BIND(c,name="DotMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(OUT) :: product
@@ -63,12 +63,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL DotMatrix(h_matA%data, h_matB%data, product)
+    CALL DotMatrix(h_matA%DATA, h_matB%DATA, product)
   END SUBROUTINE DotMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.
   SUBROUTINE PairwiseMultiplyMatrix_lsr_wrp(ih_matA, ih_matB, ih_matC) &
-       & bind(c,name="PairwiseMultiplyMatrix_lsr_wrp")
+       & BIND(c,name="PairwiseMultiplyMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -80,13 +80,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matB = TRANSFER(ih_matB,h_matB)
     h_matC = TRANSFER(ih_matC,h_matC)
 
-    CALL PairwiseMultiplyMatrix(h_matA%data, h_matB%data, h_matC%data)
+    CALL PairwiseMultiplyMatrix(h_matA%DATA, h_matB%DATA, h_matC%DATA)
   END SUBROUTINE PairwiseMultiplyMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix multiplication function.
   SUBROUTINE MatrixMultiply_lsr_wrp(ih_matA, ih_matB, ih_matC, IsATransposed, &
        & IsBTransposed, alpha, beta, threshold, ih_blocked_memory_pool) &
-       & bind(c,name="MatrixMultiply_lsr_wrp")
+       & BIND(c,name="MatrixMultiply_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -107,25 +107,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_blocked_memory_pool = TRANSFER(ih_blocked_memory_pool, &
          & h_blocked_memory_pool)
 
-    CALL MatrixMultiply(h_matA%data, h_matB%data, h_matC%data, &
+    CALL MatrixMultiply(h_matA%DATA, h_matB%DATA, h_matC%DATA, &
          & LOGICAL(IsATransposed), LOGICAL(IsBTransposed), alpha, &
-         & beta, threshold, h_blocked_memory_pool%data)
+         & beta, threshold, h_blocked_memory_pool%DATA)
   END SUBROUTINE MatrixMultiply_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
   SUBROUTINE ScaleMatrix_lsc_wrp(ih_this, constant) &
-       & bind(c,name="ScaleMatrix_lsc_wrp")
+       & BIND(c,name="ScaleMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL ScaleMatrix(h_this%data,constant)
+    CALL ScaleMatrix(h_this%DATA,constant)
   END SUBROUTINE ScaleMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix incrementing function.
   SUBROUTINE IncrementMatrix_lsc_wrp(ih_matA, ih_matB, alpha_in, &
-       & threshold_in) bind(c,name="IncrementMatrix_lsc_wrp")
+       & threshold_in) BIND(c,name="IncrementMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: alpha_in
@@ -135,12 +135,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL IncrementMatrix(h_matA%data, h_matB%data, alpha_in, threshold_in)
+    CALL IncrementMatrix(h_matA%DATA, h_matB%DATA, alpha_in, threshold_in)
   END SUBROUTINE IncrementMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix dot product function.
   SUBROUTINE DotMatrix_lsc_wrp(ih_matA, ih_matB, product_real, &
-       & product_imag) bind(c,name="DotMatrix_lsc_wrp")
+       & product_imag) BIND(c,name="DotMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(OUT) :: product_real
@@ -151,7 +151,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL DotMatrix(h_matA%data, h_matB%data, product)
+    CALL DotMatrix(h_matA%DATA, h_matB%DATA, product)
 
     product_real = REAL(product)
     product_imag = AIMAG(product)
@@ -159,7 +159,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap pairwise matrix multiplication function.
   SUBROUTINE PairwiseMultiplyMatrix_lsc_wrp(ih_matA, ih_matB, ih_matC) &
-       & bind(c,name="PairwiseMultiplyMatrix_lsc_wrp")
+       & BIND(c,name="PairwiseMultiplyMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -171,13 +171,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matB = TRANSFER(ih_matB,h_matB)
     h_matC = TRANSFER(ih_matC,h_matC)
 
-    CALL PairwiseMultiplyMatrix(h_matA%data, h_matB%data, h_matC%data)
+    CALL PairwiseMultiplyMatrix(h_matA%DATA, h_matB%DATA, h_matC%DATA)
   END SUBROUTINE PairwiseMultiplyMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap matrix multiplication function.
   SUBROUTINE MatrixMultiply_lsc_wrp(ih_matA, ih_matB, ih_matC, IsATransposed, &
        & IsBTransposed, alpha, beta, threshold, ih_blocked_memory_pool) &
-       & bind(c,name="MatrixMultiply_lsc_wrp")
+       & BIND(c,name="MatrixMultiply_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -198,9 +198,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_blocked_memory_pool = TRANSFER(ih_blocked_memory_pool, &
          & h_blocked_memory_pool)
 
-    CALL MatrixMultiply(h_matA%data, h_matB%data, h_matC%data, &
+    CALL MatrixMultiply(h_matA%DATA, h_matB%DATA, h_matC%DATA, &
          & LOGICAL(IsATransposed), LOGICAL(IsBTransposed), alpha, &
-         & beta, threshold, h_blocked_memory_pool%data)
+         & beta, threshold, h_blocked_memory_pool%DATA)
   END SUBROUTINE MatrixMultiply_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule_wrp

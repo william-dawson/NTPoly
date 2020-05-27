@@ -47,8 +47,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(KIND=c_int), INTENT(IN) :: matrix_dim
     TYPE(Matrix_ps_wrp) :: h_this
 
-    ALLOCATE(h_this%data)
-    CALL ConstructEmptyMatrix(h_this%data,matrix_dim)
+    ALLOCATE(h_this%DATA)
+    CALL ConstructEmptyMatrix(h_this%DATA,matrix_dim)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructEmptyMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -62,8 +62,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ProcessGrid_wrp) :: h_grid
 
     h_grid = TRANSFER(ih_grid,h_grid)
-    ALLOCATE(h_this%data)
-    CALL ConstructEmptyMatrix(h_this%data,matrix_dim,h_grid%data)
+    ALLOCATE(h_this%DATA)
+    CALL ConstructEmptyMatrix(h_this%DATA,matrix_dim,h_grid%DATA)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructEmptyMatrixPG_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -82,8 +82,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(counter:counter) = file_name(counter)
     END DO
 
-    ALLOCATE(h_this%data)
-    CALL ConstructMatrixFromMatrixMarket(h_this%data,local_string)
+    ALLOCATE(h_this%DATA)
+    CALL ConstructMatrixFromMatrixMarket(h_this%DATA,local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -105,9 +105,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(counter:counter) = file_name(counter)
     END DO
 
-    ALLOCATE(h_this%data)
+    ALLOCATE(h_this%DATA)
     h_grid = TRANSFER(ih_grid,h_grid)
-    CALL ConstructMatrixFromMatrixMarket(h_this%data,local_string,h_grid%data)
+    CALL ConstructMatrixFromMatrixMarket(h_this%DATA,local_string,h_grid%DATA)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromMatrixMarketPG_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -126,8 +126,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(counter:counter) = file_name(counter)
     END DO
 
-    ALLOCATE(h_this%data)
-    CALL ConstructMatrixFromBinary(h_this%data,local_string)
+    ALLOCATE(h_this%DATA)
+    CALL ConstructMatrixFromBinary(h_this%DATA,local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromBinary_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -149,9 +149,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(counter:counter) = file_name(counter)
     END DO
 
-    ALLOCATE(h_this%data)
+    ALLOCATE(h_this%DATA)
     h_grid = TRANSFER(ih_grid,h_grid)
-    CALL ConstructMatrixFromBinary(h_this%data,local_string,h_grid%data)
+    CALL ConstructMatrixFromBinary(h_this%DATA,local_string,h_grid%DATA)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromBinaryPG_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -165,7 +165,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL CopyMatrix(h_matA%data,h_matB%data)
+    CALL CopyMatrix(h_matA%DATA,h_matB%DATA)
   END SUBROUTINE CopyMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a distributed sparse matrix
@@ -175,8 +175,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrix(h_this%data)
-    DEALLOCATE(h_this%data)
+    CALL DestructMatrix(h_this%DATA)
+    DEALLOCATE(h_this%DATA)
   END SUBROUTINE DestructMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a file.
@@ -195,7 +195,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL WriteMatrixToBinary(h_this%data,local_string)
+    CALL WriteMatrixToBinary(h_this%DATA,local_string)
   END SUBROUTINE WriteMatrixToBinary_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a matrix market file.
@@ -214,7 +214,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL WriteMatrixToMatrixMarket(h_this%data,local_string)
+    CALL WriteMatrixToMatrixMarket(h_this%DATA,local_string)
   END SUBROUTINE WriteMatrixToMatrixMarket_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists.
@@ -227,7 +227,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL FillMatrixFromTripletList(h_this%data, h_triplet_list%data)
+    CALL FillMatrixFromTripletList(h_this%DATA, h_triplet_list%DATA)
   END SUBROUTINE FillMatrixFromTripletList_psr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists.
@@ -240,7 +240,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL FillMatrixFromTripletList(h_this%data, h_triplet_list%data)
+    CALL FillMatrixFromTripletList(h_this%DATA, h_triplet_list%DATA)
   END SUBROUTINE FillMatrixFromTripletList_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with the identity matrix.
@@ -250,7 +250,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL FillMatrixIdentity(h_this%data)
+    CALL FillMatrixIdentity(h_this%DATA)
   END SUBROUTINE FillMatrixIdentity_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation matrix.
@@ -265,7 +265,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     h_permutation = TRANSFER(ih_permutation,h_permutation)
 
-    CALL FillMatrixPermutation(h_this%data,h_permutation%data%index_lookup, &
+    CALL FillMatrixPermutation(h_this%DATA,h_permutation%DATA%index_lookup, &
          & permute_rows_in = LOGICAL(permute_rows))
   END SUBROUTINE FillMatrixPermutation_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -277,7 +277,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    mat_dimension = GetMatrixActualDimension(h_this%data)
+    mat_dimension = GetMatrixActualDimension(h_this%DATA)
   END SUBROUTINE GetMatrixActualDimension_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Logical Dimension accessor.
@@ -288,7 +288,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    mat_dimension = GetMatrixLogicalDimension(h_this%data)
+    mat_dimension = GetMatrixLogicalDimension(h_this%DATA)
   END SUBROUTINE GetMatrixLogicalDimension_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the total number of non-zero entries in the distributed sparse matrix.
@@ -299,7 +299,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    matsize = GetMatrixSize(h_this%data)
+    matsize = GetMatrixSize(h_this%DATA)
   END SUBROUTINE GetMatrixSize_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
@@ -312,7 +312,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL GetMatrixTripletList(h_this%data,h_triplet_list%data)
+    CALL GetMatrixTripletList(h_this%DATA,h_triplet_list%DATA)
   END SUBROUTINE GetMatrixTripletList_psr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extracts a triplet list of the data that is stored on this process.
@@ -325,7 +325,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL GetMatrixTripletList(h_this%data,h_triplet_list%data)
+    CALL GetMatrixTripletList(h_this%DATA,h_triplet_list%DATA)
   END SUBROUTINE GetMatrixTripletList_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract an arbitrary block of a matrix into a triplet list.
@@ -340,7 +340,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL GetMatrixBlock(h_this%data,h_triplet_list%data, start_row, end_row,&
+    CALL GetMatrixBlock(h_this%DATA,h_triplet_list%DATA, start_row, end_row,&
          & start_column, end_column)
   END SUBROUTINE GetMatrixBlock_psr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -356,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    CALL GetMatrixBlock(h_this%data,h_triplet_list%data, start_row, end_row,&
+    CALL GetMatrixBlock(h_this%DATA,h_triplet_list%DATA, start_row, end_row,&
          & start_column, end_column)
   END SUBROUTINE GetMatrixBlock_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -372,7 +372,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_this = TRANSFER(ih_this,h_this)
     h_submatrix = TRANSFER(ih_submatrix,h_submatrix)
-    CALL GetMatrixSlice(h_this%data,h_submatrix%data, start_row, end_row,&
+    CALL GetMatrixSlice(h_this%DATA,h_submatrix%DATA, start_row, end_row,&
          & start_column, end_column)
   END SUBROUTINE GetMatrixSlice_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -386,7 +386,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_transmat = TRANSFER(ih_transmat,h_transmat)
-    CALL TransposeMatrix(h_matA%data,h_transmat%data)
+    CALL TransposeMatrix(h_matA%DATA,h_transmat%DATA)
   END SUBROUTINE TransposeMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix conjugate function.
@@ -396,7 +396,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_matA
 
     h_matA  = TRANSFER(ih_matA,h_matA)
-    CALL ConjugateMatrix(h_matA%data)
+    CALL ConjugateMatrix(h_matA%DATA)
   END SUBROUTINE ConjugateMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix resize function.
@@ -407,7 +407,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this  = TRANSFER(ih_this,h_this)
-    CALL ResizeMatrix(h_this%data, new_size)
+    CALL ResizeMatrix(h_this%DATA, new_size)
   END SUBROUTINE ResizeMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Returns a handle to the process grid this matrix is distributed on.
@@ -419,7 +419,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(ProcessGrid_wrp) :: h_grid
 
     h_this = TRANSFER(ih_this,h_this)
-    h_grid%data => h_this%data%process_grid
+    h_grid%DATA => h_this%DATA%process_grid
     ih_grid = TRANSFER(h_grid, ih_grid)
   END SUBROUTINE GetMatrixProcessGrid_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

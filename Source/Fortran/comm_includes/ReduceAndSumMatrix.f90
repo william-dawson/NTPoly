@@ -7,5 +7,5 @@
   END DO
   DO WHILE(.NOT. TestReduceDataRequest(helper))
   END DO
-  
+
   CALL ReduceAndSumMatrixCleanup(matrix, gathered_matrix, threshold, helper)

@@ -19,7 +19,7 @@ MODULE PMatrixMemoryPoolModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
   SUBROUTINE ConstructMatrixMemoryPool_p_wrp(ih_this, ih_matrix) &
-       & bind(c,name="ConstructMatrixMemoryPool_p_wrp")
+       & BIND(c,name="ConstructMatrixMemoryPool_p_wrp")
     !! Parameters
     INTEGER(kind=c_int), INTENT(out) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: ih_matrix(SIZE_wrp)
@@ -28,19 +28,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matrix = TRANSFER(ih_matrix,h_matrix)
 
-    ALLOCATE(h_this%data)
-    h_this%data = MatrixMemoryPool_p(h_matrix%data)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = MatrixMemoryPool_p(h_matrix%DATA)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_p_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a permutation object.
   SUBROUTINE DestructMatrixMemoryPool_p_wrp(ih_this) &
-       & bind(c,name="DestructMatrixMemoryPool_p_wrp")
+       & BIND(c,name="DestructMatrixMemoryPool_p_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(MatrixMemoryPool_p_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrixMemoryPool(h_this%data)
+    CALL DestructMatrixMemoryPool(h_this%DATA)
   END SUBROUTINE DestructMatrixMemoryPool_p_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PMatrixMemoryPoolModule_wrp

@@ -95,7 +95,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL EnterSubLog
     IF (timer_position > 0) THEN
        CALL WriteElement(key=timer_name, &
-            & value=elapsed_times(timer_position))
+            & VALUE=elapsed_times(timer_position))
     END IF
     CALL ExitSubLog
   END SUBROUTINE PrintTimer
@@ -109,7 +109,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL EnterSubLog
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        CALL WriteElement(key=timer_list(timer_position), &
-            & value=elapsed_times(timer_position))
+            & VALUE=elapsed_times(timer_position))
     END DO
     CALL ExitSubLog
   END SUBROUTINE PrintAllTimers
@@ -131,7 +131,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_Allreduce(elapsed, max_time, 1, MPI_DOUBLE ,MPI_MAX, &
             & global_grid%global_comm, ierr)
        CALL WriteElement(key=timer_list(timer_position), &
-            & value=max_time)
+            & VALUE=max_time)
     END DO
 
     CALL ExitSubLog

@@ -16,7 +16,7 @@
      CALL ConstructTripletList(slist(II))
   END DO
   CALL ConstructTripletList(slist(within_slice_id+1), list_size)
-  slist(within_slice_id+1)%data(:list_size) = tlist%data(:list_size)
+  slist(within_slice_id+1)%DATA(:list_size) = tlist%DATA(:list_size)
   CALL DestructTripletList(tlist)
   CALL RedistributeTripletLists(slist, this%process_grid%within_slice_comm, &
        & tlist)

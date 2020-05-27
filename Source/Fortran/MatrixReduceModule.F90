@@ -55,35 +55,35 @@ MODULE MatrixReduceModule
   INTERFACE ReduceAndComposeMatrixSizes
      MODULE PROCEDURE ReduceAndComposeMatrixSizes_lsr
      MODULE PROCEDURE ReduceAndComposeMatrixSizes_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndComposeMatrixSizes
   INTERFACE ReduceAndComposeMatrixData
      MODULE PROCEDURE ReduceAndComposeMatrixData_lsr
      MODULE PROCEDURE ReduceAndComposeMatrixData_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndComposeMatrixData
   INTERFACE ReduceAndComposeMatrixCleanup
      MODULE PROCEDURE ReduceAndComposeMatrixCleanup_lsr
      MODULE PROCEDURE ReduceAndComposeMatrixCleanup_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndComposeMatrixCleanup
   INTERFACE ReduceAndComposeMatrix
      MODULE PROCEDURE ReduceAndComposeMatrix_lsr
      MODULE PROCEDURE ReduceAndComposeMatrix_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndComposeMatrix
   INTERFACE ReduceAndSumMatrixSizes
      MODULE PROCEDURE ReduceAndSumMatrixSizes_lsr
      MODULE PROCEDURE ReduceAndSumMatrixSizes_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndSumMatrixSizes
   INTERFACE ReduceAndSumMatrixData
      MODULE PROCEDURE ReduceAndSumMatrixData_lsr
      MODULE PROCEDURE ReduceAndSumMatrixData_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndSumMatrixData
   INTERFACE ReduceAndSumMatrixCleanup
      MODULE PROCEDURE ReduceAndSumMatrixCleanup_lsr
      MODULE PROCEDURE ReduceAndSumMatrixCleanup_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndSumMatrixCleanup
   INTERFACE ReduceAndSumMatrix
      MODULE PROCEDURE ReduceAndSumMatrix_lsr
      MODULE PROCEDURE ReduceAndSumMatrix_lsc
-  END INTERFACE
+  END INTERFACE ReduceAndSumMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
   SUBROUTINE ReduceAndComposeMatrixSizes_lsr(matrix, communicator, &

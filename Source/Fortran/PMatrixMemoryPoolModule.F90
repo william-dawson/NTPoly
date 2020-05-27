@@ -21,13 +21,13 @@ MODULE PMatrixMemoryPoolModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixMemoryPool_p
      MODULE PROCEDURE ConstructMatrixMemoryPool_p
-  END INTERFACE
+  END INTERFACE MatrixMemoryPool_p
   INTERFACE DestructMatrixMemoryPool
      MODULE PROCEDURE DestructMatrixMemoryPool_p
-  END INTERFACE
+  END INTERFACE DestructMatrixMemoryPool
   INTERFACE CheckMemoryPoolValidity
      MODULE PROCEDURE CheckMemoryPoolValidity_p
-  END INTERFACE
+  END INTERFACE CheckMemoryPoolValidity
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Distributed Matrix Memory Pool object.
   PURE FUNCTION ConstructMatrixMemoryPool_p(matrix) RESULT(this)

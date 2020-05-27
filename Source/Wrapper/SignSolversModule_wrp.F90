@@ -14,7 +14,7 @@ MODULE SignSolversModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix sign function.
   SUBROUTINE SignFunction_wrp(ih_Mat1, ih_SignMat, ih_solver_parameters) &
-       & bind(c,name="SignFunction_wrp")
+       & BIND(c,name="SignFunction_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_SignMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -26,12 +26,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_SignMat = TRANSFER(ih_SignMat,h_SignMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL SignFunction(h_Mat1%data, h_SignMat%data, h_solver_parameters%data)
+    CALL SignFunction(h_Mat1%DATA, h_SignMat%DATA, h_solver_parameters%DATA)
   END SUBROUTINE SignFunction_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the polar decomposition of a matrix Mat1 = U*H.
   SUBROUTINE PolarDecomposition_wrp(ih_Mat1, ih_Umat, ih_Hmat, &
-       & ih_solver_parameters) bind(c,name="PolarDecomposition_wrp")
+       & ih_solver_parameters) BIND(c,name="PolarDecomposition_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Umat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Hmat(SIZE_wrp)
@@ -46,8 +46,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_Hmat = TRANSFER(ih_Hmat,h_Hmat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PolarDecomposition(h_Mat1%data, h_Umat%data, h_Hmat%data, &
-         & h_solver_parameters%data)
+    CALL PolarDecomposition(h_Mat1%DATA, h_Umat%DATA, h_Hmat%DATA, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE PolarDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SignSolversModule_wrp

@@ -5,4 +5,4 @@
      alpha = alpha_in
   END IF
 
-  MatB%data = MatB%data + alpha*MatA%data
+  MatB%DATA = MatB%DATA + alpha*MatA%DATA

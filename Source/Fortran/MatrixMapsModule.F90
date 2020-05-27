@@ -18,18 +18,18 @@ MODULE MatrixMapsModule
   INTERFACE MapMatrix_psr
      MODULE PROCEDURE MapMatrix_psr
      MODULE PROCEDURE MapMatrixArray_psr
-  END INTERFACE
+  END INTERFACE MapMatrix_psr
   INTERFACE MapMatrix_psc
      MODULE PROCEDURE MapMatrix_psc
      MODULE PROCEDURE MapMatrixArray_psc
-  END INTERFACE
+  END INTERFACE MapMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MapTripletList
      MODULE PROCEDURE MapTripletList_r
      MODULE PROCEDURE MapTripletList_c
      MODULE PROCEDURE MapTripletListArray_r
      MODULE PROCEDURE MapTripletListArray_c
-  END INTERFACE
+  END INTERFACE MapTripletList
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Given a distributed matrix, apply this procedure to each element (real).
   SUBROUTINE MapMatrix_psr(inmat, outmat, proc)

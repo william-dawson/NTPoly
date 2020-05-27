@@ -11,9 +11,9 @@
         IF (permutation_vector(II) .GE. this%start_column .AND. &
              & permutation_vector(II) .LT. this%end_column) THEN
            total = total + 1
-           triplet_list%data(total)%index_column = permutation_vector(II)
-           triplet_list%data(total)%index_row = II
-           triplet_list%data(total)%point_value = 1.0
+           triplet_list%DATA(total)%index_column = permutation_vector(II)
+           triplet_list%DATA(total)%index_row = II
+           triplet_list%DATA(total)%point_value = 1.0
         END IF
      END DO
   ELSE
@@ -21,9 +21,9 @@
         IF (permutation_vector(II) .GE. this%start_row .AND. &
              & permutation_vector(II) .LT. this%end_row) THEN
            total = total + 1
-           triplet_list%data(total)%index_column = II
-           triplet_list%data(total)%index_row = permutation_vector(II)
-           triplet_list%data(total)%point_value = 1.0
+           triplet_list%DATA(total)%index_column = II
+           triplet_list%DATA(total)%index_row = permutation_vector(II)
+           triplet_list%DATA(total)%point_value = 1.0
         END IF
      END DO
   END IF

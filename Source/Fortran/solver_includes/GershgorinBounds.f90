@@ -7,19 +7,19 @@
   per_column_max = 0
   CALL GetMatrixTripletList(this, triplet_list)
   DO counter = 1, triplet_list%CurrentSize
-     local_column = triplet_list%data(counter)%index_column - &
+     local_column = triplet_list%DATA(counter)%index_column - &
           & this%start_column + 1
-     IF (triplet_list%data(counter)%index_row .EQ. &
-          & triplet_list%data(counter)%index_column) THEN
+     IF (triplet_list%DATA(counter)%index_row .EQ. &
+          & triplet_list%DATA(counter)%index_column) THEN
         per_column_min(local_column) = per_column_min(local_column) + &
-             & REAL(triplet_list%data(counter)%point_value,KIND=NTREAL)
+             & REAL(triplet_list%DATA(counter)%point_value,KIND=NTREAL)
         per_column_max(local_column) = per_column_max(local_column) + &
-             & REAL(triplet_list%data(counter)%point_value,KIND=NTREAL)
+             & REAL(triplet_list%DATA(counter)%point_value,KIND=NTREAL)
      ELSE
         per_column_min(local_column) = per_column_min(local_column) - &
-             & ABS(triplet_list%data(counter)%point_value)
+             & ABS(triplet_list%DATA(counter)%point_value)
         per_column_max(local_column) = per_column_max(local_column) + &
-             & ABS(triplet_list%data(counter)%point_value)
+             & ABS(triplet_list%DATA(counter)%point_value)
      END IF
   END DO
 

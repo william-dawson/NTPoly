@@ -15,7 +15,7 @@
         temporary%index_column = outer_counter
         temporary%index_row = this%inner_index(total_counter)
         temporary%point_value = this%values(total_counter)
-        triplet_list%data(total_counter) = temporary
+        triplet_list%DATA(total_counter) = temporary
         total_counter = total_counter + 1
      END DO
   END DO
