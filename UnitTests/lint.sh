@@ -1,7 +1,4 @@
-which flake8
-which clang-format
-which emacs
-which awk
+set -e
 
 # Python
 flake8 UnitTests
@@ -21,7 +18,6 @@ for f in $(find . -type f -name "*.*90"); do
                   --eval="(f90-indent-subprogram)" -f save-buffer 2>/dev/null
 done
 
-set -e
 # 80 Column Limit
 for f in $(find -L Source Targets UnitTests); do
 	awk 'NF > 80 {print FILENAME ; print "Line " NR ; print ; stat = 1} \

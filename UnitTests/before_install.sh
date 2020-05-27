@@ -21,6 +21,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install cmake
   brew install swig
   brew install clang-format
+  brew install emacs
   sudo pip2 install numpy --upgrade --no-cache-dir
   sudo pip2 install scipy --upgrade --no-cache-dir
   sudo pip2 install mpi4py --upgrade --no-cache-dir
