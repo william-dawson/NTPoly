@@ -7,7 +7,7 @@ MODULE PSMatrixModule_wrp
   USE PSMatrixModule
   USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp
   USE WrapperModule, ONLY : SIZE_wrp
-  USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
+  USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool, c_long
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -295,7 +295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE GetMatrixSize_ps_wrp(ih_this, matsize) &
        & BIND(c,NAME="GetMatrixSize_ps_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(KIND=c_int), INTENT(OUT) :: matsize
+    INTEGER(KIND=c_long), INTENT(OUT) :: matsize
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
