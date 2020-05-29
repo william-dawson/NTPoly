@@ -1,0 +1,19 @@
+---
+layout: post
+title:  "Release of Version 2.5"
+date:   2020-05-29 11:00:00 +0900
+categories: blog update
+---
+
+[Version 2.5](/NTPoly/downloads) of NTPoly is now available.
+
+Features:
+- Ability to gather a matrix on to each process locally.
+- Ability to change a matrix to a fixed sparsity pattern to facilitate conversion.
+
+Bug Fixes:
+- Some bug fixes related to the formatting of matrix market output.
+
+Miscellaneous:
+- Automatic Code Linting
+- Some cleaning up of constants
