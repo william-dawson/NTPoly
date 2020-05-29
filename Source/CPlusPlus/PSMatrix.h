@@ -14,6 +14,7 @@ class TripletList_r;
 class TripletList_c;
 class ProcessGrid;
 class MatrixMapper;
+class MatrixConversion;
 ////////////////////////////////////////////////////////////////////////////////
 //! A Module For Performing Distributed Sparse Matrix Operations.
 class Matrix_ps {
@@ -67,6 +68,8 @@ public:
   int GetActualDimension() const;
   //! the logical dimension is scaled so each process has an even slice.
   int GetLogicalDimension() const;
+  //! Get the total number of non-zero entries in the matrix
+  long int GetSize() const;
   //! Extracts a triplet list of the data that is stored on this process.
   //! Data is returned with absolute coordinates.
   //! \param triplet_list the list to fill.
@@ -174,6 +177,7 @@ private:
   template <class T> friend class TripletList;
   friend class PMatrixMemoryPool;
   friend class MatrixMapper;
+  friend class MatrixConversion;
 };
 } // namespace NTPoly
 #endif

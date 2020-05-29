@@ -14,7 +14,7 @@ MODULE TrigonometrySolversModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the sine of a matrix.
   SUBROUTINE Sine_wrp(ih_InputMat, ih_OutputMat, ih_solver_parameters) &
-       & bind(c,name="Sine_wrp")
+       & BIND(c,name="Sine_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
@@ -26,13 +26,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_OutputMat = TRANSFER(ih_OutputMat, h_OutputMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL Sine(h_InputMat%data, h_OutputMat%data, &
-         & h_solver_parameters%data)
+    CALL Sine(h_InputMat%DATA, h_OutputMat%DATA, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE Sine_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cosine of a matrix.
   SUBROUTINE Cosine_wrp(ih_InputMat, ih_OutputMat, ih_solver_parameters) &
-       & bind(c,name="Cosine_wrp")
+       & BIND(c,name="Cosine_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_solver_parameters(SIZE_wrp)
@@ -44,8 +44,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_OutputMat = TRANSFER(ih_OutputMat, h_OutputMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL Cosine(h_InputMat%data, h_OutputMat%data, &
-         & h_solver_parameters%data)
+    CALL Cosine(h_InputMat%DATA, h_OutputMat%DATA, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE Cosine_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TrigonometrySolversModule_wrp

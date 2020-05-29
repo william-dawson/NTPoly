@@ -2,7 +2,8 @@
 !> An example that shows how to compute the overlap matrix.
 PROGRAM OverlapExample
   USE DataTypesModule, ONLY : NTREAL
-  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
+  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
+       & DestructPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
@@ -46,9 +47,9 @@ PROGRAM OverlapExample
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,command_argument_count(),2
-     CALL get_command_argument(counter,argument)
-     CALL get_command_argument(counter+1,argument_value)
+  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
+     CALL GET_COMMAND_ARGUMENT(counter,argument)
+     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
      SELECT CASE(argument)
      CASE('--basis_functions')
         READ(argument_value,*) basis_functions
@@ -124,6 +125,7 @@ PROGRAM OverlapExample
 
   !! Cleanup
   CALL PrintAllTimers()
+  CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
   CALL DestructProcessGrid

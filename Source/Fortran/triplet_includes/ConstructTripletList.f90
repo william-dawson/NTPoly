@@ -7,7 +7,7 @@
      size = 0
   END IF
 
-  IF (ALLOCATED(this%data)) DEALLOCATE(this%data)
+  IF (ALLOCATED(this%DATA)) DEALLOCATE(this%DATA)
   this%CurrentSize = size
 
-  ALLOCATE(this%data(size))
+  ALLOCATE(this%DATA(size))

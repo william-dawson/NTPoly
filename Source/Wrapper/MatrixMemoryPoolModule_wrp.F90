@@ -26,51 +26,51 @@ MODULE MatrixMemoryPoolModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Matrix Memory Pool constructor.
   SUBROUTINE ConstructMatrixMemoryPool_lr_wrp(ih_this, columns, rows) &
-       & bind(c,name="ConstructMatrixMemoryPool_lr_wrp")
+       & BIND(c,name="ConstructMatrixMemoryPool_lr_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: columns
     INTEGER(kind=c_int), INTENT(in) :: rows
     TYPE(MatrixMemoryPool_lr_wrp) :: h_this
 
-    ALLOCATE(h_this%data)
-    h_this%data = MatrixMemoryPool_lr(columns,rows)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = MatrixMemoryPool_lr(columns,rows)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_lr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the destructor for a matrix memory pool
   SUBROUTINE DestructMatrixMemoryPool_lr_wrp(ih_this) &
-       & bind(c,name="DestructMatrixMemoryPool_lr_wrp")
+       & BIND(c,name="DestructMatrixMemoryPool_lr_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(MatrixMemoryPool_lr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrixMemoryPool(h_this%data)
-    DEALLOCATE(h_this%data)
+    CALL DestructMatrixMemoryPool(h_this%DATA)
+    DEALLOCATE(h_this%DATA)
     !ih_this = 0
   END SUBROUTINE DestructMatrixMemoryPool_lr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the Matrix Memory Pool constructor.
   SUBROUTINE ConstructMatrixMemoryPool_lc_wrp(ih_this, columns, rows) &
-       & bind(c,name="ConstructMatrixMemoryPool_lc_wrp")
+       & BIND(c,name="ConstructMatrixMemoryPool_lc_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: columns
     INTEGER(kind=c_int), INTENT(in) :: rows
     TYPE(MatrixMemoryPool_lc_wrp) :: h_this
 
-    ALLOCATE(h_this%data)
-    h_this%data = MatrixMemoryPool_lc(columns,rows)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = MatrixMemoryPool_lc(columns,rows)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_lc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the destructor for a matrix memory pool
   SUBROUTINE DestructMatrixMemoryPool_lc_wrp(ih_this) &
-       & bind(c,name="DestructMatrixMemoryPool_lc_wrp")
+       & BIND(c,name="DestructMatrixMemoryPool_lc_wrp")
     INTEGER(kind=c_int), INTENT(inout) :: ih_this(SIZE_wrp)
     TYPE(MatrixMemoryPool_lc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrixMemoryPool(h_this%data)
-    DEALLOCATE(h_this%data)
+    CALL DestructMatrixMemoryPool(h_this%DATA)
+    DEALLOCATE(h_this%DATA)
     !ih_this = 0
   END SUBROUTINE DestructMatrixMemoryPool_lc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

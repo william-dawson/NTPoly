@@ -30,51 +30,51 @@ MODULE SMatrixAlgebraModule
      MODULE PROCEDURE ScaleMatrix_lsr
      MODULE PROCEDURE ScaleMatrix_lsc
      MODULE PROCEDURE ScaleMatrix_lsc_c
-  END INTERFACE
+  END INTERFACE ScaleMatrix
   INTERFACE IncrementMatrix
      MODULE PROCEDURE IncrementMatrix_lsr
      MODULE PROCEDURE IncrementMatrix_lsc
-  END INTERFACE
+  END INTERFACE IncrementMatrix
   INTERFACE DotMatrix
      MODULE PROCEDURE DotMatrix_lsr
      MODULE PROCEDURE DotMatrix_lsc
-  END INTERFACE
+  END INTERFACE DotMatrix
   INTERFACE PairwiseMultiplyMatrix
      MODULE PROCEDURE PairwiseMultiplyMatrix_lsr
      MODULE PROCEDURE PairwiseMultiplyMatrix_lsc
-  END INTERFACE
+  END INTERFACE PairwiseMultiplyMatrix
   INTERFACE MatrixMultiply
      MODULE PROCEDURE GemmMatrix_lsr
      MODULE PROCEDURE GemmMatrix_lsc
-  END INTERFACE
+  END INTERFACE MatrixMultiply
   INTERFACE MatrixColumnNorm
      MODULE PROCEDURE MatrixColumnNorm_lsr
      MODULE PROCEDURE MatrixColumnNorm_lsc
-  END INTERFACE
+  END INTERFACE MatrixColumnNorm
   INTERFACE MatrixNorm
      MODULE PROCEDURE MatrixNorm_lsr
      MODULE PROCEDURE MatrixNorm_lsc
-  END INTERFACE
+  END INTERFACE MatrixNorm
   INTERFACE MatrixGrandSum
      MODULE PROCEDURE MatrixGrandSum_lsr
      MODULE PROCEDURE MatrixGrandSum_lsc
-  END INTERFACE
+  END INTERFACE MatrixGrandSum
   INTERFACE MultiplyBlock
      MODULE PROCEDURE MultiplyBlock_lsr
      MODULE PROCEDURE MultiplyBlock_lsc
-  END INTERFACE
+  END INTERFACE MultiplyBlock
   INTERFACE PruneList
      MODULE PROCEDURE PruneList_lsr
      MODULE PROCEDURE PruneList_lsc
-  END INTERFACE
+  END INTERFACE PruneList
   INTERFACE SparseBranch
      MODULE PROCEDURE SparseBranch_lsr
      MODULE PROCEDURE SparseBranch_lsc
-  END INTERFACE
+  END INTERFACE SparseBranch
   INTERFACE DenseBranch
      MODULE PROCEDURE DenseBranch_lsr
      MODULE PROCEDURE DenseBranch_lsc
-  END INTERFACE
+  END INTERFACE DenseBranch
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
   PURE SUBROUTINE ScaleMatrix_lsr(matA,constant)

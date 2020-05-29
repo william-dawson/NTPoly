@@ -30,7 +30,7 @@ MODULE SolverParametersModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SolverParameters_t
      MODULE PROCEDURE SolverParameters_init
-  END INTERFACE
+  END INTERFACE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SetParametersConvergeDiff
   PUBLIC :: SetParametersMaxIterations

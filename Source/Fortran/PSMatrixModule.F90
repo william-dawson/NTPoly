@@ -9,18 +9,15 @@ MODULE PSMatrixModule
        & WriteListElement, WriteHeader
   USE MatrixMarketModule, ONLY : ParseMMHeader, MM_COMPLEX, WriteMMSize, &
        & WriteMMLine, MAX_LINE_LENGTH
-  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
-       & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
-       & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
-       & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
-       & TestReduceInnerRequest, TestReduceDataRequest
+  USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrix, &
+       & ReduceAndSumMatrix
   USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation
   USE ProcessGridModule, ONLY : ProcessGrid_t, global_grid, IsRoot, &
        & SplitProcessGrid
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, &
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
-       & ConstructMatrixFromTripletList
+       & ConstructMatrixFromTripletList, ConstructEmptyMatrix
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, Triplet_c, GetMPITripletType_r, &
        & GetMPITripletType_c
@@ -95,89 +92,91 @@ MODULE PSMatrixModule
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrix_ps
      MODULE PROCEDURE ConstructEmptyMatrix_ps_cp
-  END INTERFACE
+  END INTERFACE ConstructEmptyMatrix
   INTERFACE DestructMatrix
      MODULE PROCEDURE DestructMatrix_ps
-  END INTERFACE
+  END INTERFACE DestructMatrix
   INTERFACE CopyMatrix
      MODULE PROCEDURE CopyMatrix_ps
-  END INTERFACE
+  END INTERFACE CopyMatrix
   INTERFACE ConstructMatrixFromMatrixMarket
      MODULE PROCEDURE ConstructMatrixFromMatrixMarket_ps
-  END INTERFACE
+  END INTERFACE ConstructMatrixFromMatrixMarket
   INTERFACE ConstructMatrixFromBinary
      MODULE PROCEDURE ConstructMatrixFromBinary_ps
-  END INTERFACE
+  END INTERFACE ConstructMatrixFromBinary
   INTERFACE WriteMatrixToMatrixMarket
      MODULE PROCEDURE WriteMatrixToMatrixMarket_ps
-  END INTERFACE
+  END INTERFACE WriteMatrixToMatrixMarket
   INTERFACE WriteMatrixToBinary
      MODULE PROCEDURE WriteMatrixToBinary_ps
-  END INTERFACE
+  END INTERFACE WriteMatrixToBinary
   INTERFACE FillMatrixFromTripletList
      MODULE PROCEDURE FillMatrixFromTripletList_psr
      MODULE PROCEDURE FillMatrixFromTripletList_psc
-  END INTERFACE
+  END INTERFACE FillMatrixFromTripletList
   INTERFACE FillMatrixIdentity
      MODULE PROCEDURE FillMatrixIdentity_ps
-  END INTERFACE
+  END INTERFACE FillMatrixIdentity
   INTERFACE FillMatrixPermutation
      MODULE PROCEDURE FillMatrixPermutation_ps
-  END INTERFACE
+  END INTERFACE FillMatrixPermutation
   INTERFACE GetMatrixActualDimension
      MODULE PROCEDURE GetMatrixActualDimension_ps
-  END INTERFACE
+  END INTERFACE GetMatrixActualDimension
   INTERFACE GetMatrixLogicalDimension
      MODULE PROCEDURE GetMatrixLogicalDimension_ps
-  END INTERFACE
+  END INTERFACE GetMatrixLogicalDimension
   INTERFACE GetMatrixTripletList
      MODULE PROCEDURE GetMatrixTripletList_psr
      MODULE PROCEDURE GetMatrixTripletList_psc
-  END INTERFACE
+  END INTERFACE GetMatrixTripletList
   INTERFACE GetMatrixBlock
      MODULE PROCEDURE GetMatrixBlock_psr
      MODULE PROCEDURE GetMatrixBlock_psc
-  END INTERFACE
+  END INTERFACE GetMatrixBlock
   INTERFACE PrintMatrix
      MODULE PROCEDURE PrintMatrix_ps
-  END INTERFACE
+  END INTERFACE PrintMatrix
   INTERFACE PrintMatrixInformation
      MODULE PROCEDURE PrintMatrixInformation_ps
-  END INTERFACE
+  END INTERFACE PrintMatrixInformation
   INTERFACE GetMatrixLoadBalance
      MODULE PROCEDURE GetMatrixLoadBalance_ps
-  END INTERFACE
+  END INTERFACE GetMatrixLoadBalance
   INTERFACE GetMatrixSize
      MODULE PROCEDURE GetMatrixSize_ps
-  END INTERFACE
+  END INTERFACE GetMatrixSize
   INTERFACE FilterMatrix
      MODULE PROCEDURE FilterMatrix_ps
-  END INTERFACE
+  END INTERFACE FilterMatrix
   INTERFACE RedistributeData
      MODULE PROCEDURE RedistributeData_psr
      MODULE PROCEDURE RedistributeData_psc
-  END INTERFACE
+  END INTERFACE RedistributeData
   INTERFACE MergeMatrixLocalBlocks
      MODULE PROCEDURE MergeMatrixLocalBlocks_psr
      MODULE PROCEDURE MergeMatrixLocalBlocks_psc
-  END INTERFACE
+  END INTERFACE MergeMatrixLocalBlocks
   INTERFACE SplitMatrixToLocalBlocks
      MODULE PROCEDURE SplitMatrixToLocalBlocks_psr
      MODULE PROCEDURE SplitMatrixToLocalBlocks_psc
-  END INTERFACE
+  END INTERFACE SplitMatrixToLocalBlocks
   INTERFACE TransposeMatrix
      MODULE PROCEDURE TransposeMatrix_ps
-  END INTERFACE
+  END INTERFACE TransposeMatrix
   INTERFACE ConjugateMatrix
      MODULE PROCEDURE ConjugateMatrix_ps
-  END INTERFACE
+  END INTERFACE ConjugateMatrix
   INTERFACE CommSplitMatrix
      MODULE PROCEDURE CommSplitMatrix_ps
-  END INTERFACE
+  END INTERFACE CommSplitMatrix
   INTERFACE GatherMatrixToProcess
-     MODULE PROCEDURE GatherMatrixToProcess_psr
-     MODULE PROCEDURE GatherMatrixToProcess_psc
-  END INTERFACE
+     MODULE PROCEDURE GatherMatrixToProcess_psr_id
+     MODULE PROCEDURE GatherMatrixToProcess_psr_all
+     MODULE PROCEDURE GatherMatrixToProcess_psc_id
+     MODULE PROCEDURE GatherMatrixToProcess_psc_all
+  END INTERFACE GatherMatrixToProcess
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim_, process_grid_in, &
@@ -393,7 +392,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           local_file_handler = 16
           OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
           IF (ierr .NE. 0) THEN
-             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", .TRUE.)
+             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", &
+                  & .TRUE.)
           END IF
           !! Parse the header.
           READ(local_file_handler,fmt='(A)') input_buffer
@@ -482,7 +482,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Trim Off The Half Read Line At The Start
        IF (.NOT. this%process_grid%global_rank .EQ. &
             & this%process_grid%RootID) THEN
-          full_buffer_counter = INDEX(mpi_input_buffer,new_line('A')) + 1
+          full_buffer_counter = INDEX(mpi_input_buffer,new_LINE('A')) + 1
        ELSE
           full_buffer_counter = 1
        END IF
@@ -500,7 +500,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        DO WHILE(.NOT. end_of_buffer)
           current_line_length = INDEX(mpi_input_buffer(full_buffer_counter:),&
-               new_line('A'))
+               new_LINE('A'))
 
           IF (current_line_length .EQ. 0) THEN !! Hit The End Of The Buffer
              end_of_buffer = .TRUE.
@@ -651,11 +651,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
        IF (this%is_complex) THEN
           CALL ConstructTripletList(triplet_list_c, local_triplets)
-          CALL MPI_File_read_all(mpi_file_handler, triplet_list_c%data, &
+          CALL MPI_File_read_all(mpi_file_handler, triplet_list_c%DATA, &
                & local_triplets, triplet_mpi_type, message_status, ierr)
        ELSE
           CALL ConstructTripletList(triplet_list_r, local_triplets)
-          CALL MPI_File_read_all(mpi_file_handler, triplet_list_r%data, &
+          CALL MPI_File_read_all(mpi_file_handler, triplet_list_r%DATA, &
                & local_triplets, triplet_mpi_type, message_status, ierr)
        END IF
        CALL MPI_File_close(mpi_file_handler,ierr)
@@ -771,23 +771,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
   !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
-  SUBROUTINE FillMatrixFromTripletList_psr(this,triplet_list,preduplicated_in)
+  !> However, if you explicitly set prepartitioned_in to True, all data must be
+  !> on the correct process. In that case, there is no communication required.
+  SUBROUTINE FillMatrixFromTripletList_psr(this, triplet_list, &
+       & preduplicated_in, prepartitioned_in)
     !> The matrix to fill.
     TYPE(Matrix_ps) :: this
     !> The triplet list of values.
     TYPE(TripletList_r) :: triplet_list
     !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
+    !> If all lists only contain local matrix elements set this to true.
+    LOGICAL, INTENT(IN), OPTIONAL :: prepartitioned_in
     !! Local Data
     TYPE(Matrix_ps) :: temp_matrix
+    TYPE(TripletList_r) :: shifted
     TYPE(TripletList_r) :: sorted_triplet_list
     TYPE(Matrix_lsr) :: local_matrix
     TYPE(Matrix_lsr) :: gathered_matrix
     !! Local Data
     TYPE(Permutation_t) :: basic_permutation
-    TYPE(ReduceHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0_NTREAL
     LOGICAL :: preduplicated
+    LOGICAL :: prepartitioned
 
     IF (this%is_complex) THEN
        CALL ConvertMatrixToReal(this, temp_matrix)
@@ -801,23 +807,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine fills in a matrix based on local triplet lists. Each process
   !> should pass in triplet lists with global coordinates. It does not matter
   !> where each triplet is stored, as long as global coordinates are given.
-  SUBROUTINE FillMatrixFromTripletList_psc(this,triplet_list,preduplicated_in)
+  !> However, if you explicitly set prepartitioned_in to True, all data must be
+  !> on the correct process. In that case, there is no communication required.
+  SUBROUTINE FillMatrixFromTripletList_psc(this, triplet_list, &
+       & preduplicated_in, prepartitioned_in)
     !> The matrix to fill.
     TYPE(Matrix_ps) :: this
     !> The triplet list of values.
     TYPE(TripletList_c) :: triplet_list
     !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
+    !> If all lists only contain local matrix elements set this to true.
+    LOGICAL, INTENT(IN), OPTIONAL :: prepartitioned_in
     !! Local Data
+    TYPE(TripletList_c) :: shifted
     TYPE(TripletList_c) :: sorted_triplet_list
     TYPE(Matrix_lsc) :: local_matrix
     TYPE(Matrix_lsc) :: gathered_matrix
     !! Local Data
     TYPE(Matrix_ps) :: temp_matrix
     TYPE(Permutation_t) :: basic_permutation
-    TYPE(ReduceHelper_t) :: gather_helper
     REAL(NTREAL), PARAMETER :: threshold = 0.0_NTREAL
     LOGICAL :: preduplicated
+    LOGICAL :: prepartitioned
 
     IF (.NOT. this%is_complex) THEN
        CALL ConvertMatrixToComplex(this, temp_matrix)
@@ -847,9 +859,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
-    TYPE(TripletList_r) :: unsorted_triplet_list
-    TYPE(TripletList_r) :: sorted_triplet_list
-    TYPE(Matrix_lsr) :: local_matrix
 
     INCLUDE "distributed_includes/FillMatrixIdentity.f90"
 
@@ -861,9 +870,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
-    TYPE(TripletList_c) :: unsorted_triplet_list
-    TYPE(TripletList_c) :: sorted_triplet_list
-    TYPE(Matrix_lsc) :: local_matrix
 
     INCLUDE "distributed_includes/FillMatrixIdentity.f90"
 
@@ -906,9 +912,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN) :: rows
     !! Local Data
     TYPE(TripletList_r) :: triplet_list
-    TYPE(TripletList_r) :: unsorted_triplet_list
-    TYPE(TripletList_r) :: sorted_triplet_list
-    TYPE(Matrix_lsr) :: local_matrix
 
     INCLUDE "distributed_includes/FillMatrixPermutation.f90"
 
@@ -924,9 +927,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN) :: rows
     !! Local Data
     TYPE(TripletList_c) :: triplet_list
-    TYPE(TripletList_c) :: unsorted_triplet_list
-    TYPE(TripletList_c) :: sorted_triplet_list
-    TYPE(Matrix_lsc) :: local_matrix
 
     INCLUDE "distributed_includes/FillMatrixPermutation.f90"
 
@@ -1201,11 +1201,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Load_Balance")
     CALL EnterSubLog
-    CALL WriteListElement(key="min_size", value=min_size)
-    CALL WriteListElement(key="max_size", value=max_size)
+    CALL WriteListElement(key="min_size", VALUE=min_size)
+    CALL WriteListElement(key="max_size", VALUE=max_size)
     CALL ExitSubLog
-    CALL WriteElement(key="Dimension",value=this%actual_matrix_dimension)
-    CALL WriteElement(key="Sparsity", value=sparsity)
+    CALL WriteElement(key="Dimension",VALUE=this%actual_matrix_dimension)
+    CALL WriteElement(key="Sparsity", VALUE=sparsity)
   END SUBROUTINE PrintMatrixInformation_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a distributed sparse matrix.
@@ -1684,37 +1684,69 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ResizeMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !> given process. This routine is used when printing, but also is useful for
-  !> debugging.
-  SUBROUTINE GatherMatrixToProcess_psr(this, local_mat, proc_id)
+  !> given process. The process id is a within_slice id, so the data will
+  !> still be replicated across slices.
+  SUBROUTINE GatherMatrixToProcess_psr_id(this, local_mat, within_slice_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
-    INTEGER, INTENT(IN) :: proc_id
+    INTEGER, INTENT(IN) :: within_slice_id
     !! Local Variables
     TYPE(TripletList_r) :: tlist, sorted
     TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: slist
 
     INCLUDE "distributed_includes/GatherMatrixToProcess.f90"
-  END SUBROUTINE GatherMatrixToProcess_psr
+  END SUBROUTINE GatherMatrixToProcess_psr_id
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This subroutine gathers the entire matrix into a local matrix on to
+  !> every process.
+  SUBROUTINE GatherMatrixToProcess_psr_all(this, local_mat)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
+    !! Local Variables
+    TYPE(Matrix_lsr) :: local, localT
+    TYPE(Matrix_lsr) :: merged_columns
+    TYPE(Matrix_lsr) :: merged_columnsT
+    TYPE(Matrix_lsr) :: gathered
+
+    INCLUDE "distributed_includes/GatherMatrixToAll.f90"
+  END SUBROUTINE GatherMatrixToProcess_psr_all
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
-  !> given process. This routine is used when printing, but also is useful for
-  !> debugging.
-  SUBROUTINE GatherMatrixToProcess_psc(this, local_mat, proc_id)
+  !> given process. The process id is a within_slice id, so the data will
+  !> still be replicated across slices.
+  SUBROUTINE GatherMatrixToProcess_psc_id(this, local_mat, within_slice_id)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
-    INTEGER, INTENT(IN) :: proc_id
+    INTEGER, INTENT(IN) :: within_slice_id
     !! Local Variables
     TYPE(TripletList_c) :: tlist, sorted
     TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: slist
 
     INCLUDE "distributed_includes/GatherMatrixToProcess.f90"
-  END SUBROUTINE GatherMatrixToProcess_psc
+  END SUBROUTINE GatherMatrixToProcess_psc_id
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This subroutine gathers the entire matrix into a local matrix on to
+  !> every process.
+  SUBROUTINE GatherMatrixToProcess_psc_all(this, local_mat)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
+    !! Local Variables
+    TYPE(Matrix_lsc) :: local, localT
+    TYPE(Matrix_lsc) :: merged_columns
+    TYPE(Matrix_lsc) :: merged_columnsT
+    TYPE(Matrix_lsc) :: gathered
+
+    INCLUDE "distributed_includes/GatherMatrixToAll.f90"
+  END SUBROUTINE GatherMatrixToProcess_psc_all
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule

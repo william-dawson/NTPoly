@@ -30,6 +30,7 @@ void FillMatrixPermutation_ps_wrp(int *ih_this, const int *ih_permutation,
 void FillMatrixIdentity_ps_wrp(int *ih_this);
 void GetMatrixActualDimension_ps_wrp(const int *ih_this, int *size);
 void GetMatrixLogicalDimension_ps_wrp(const int *ih_this, int *size);
+void GetMatrixSize_ps_wrp(const int *ih_this, long int *size);
 void GetMatrixTripletList_psr_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixTripletList_psc_wrp(const int *ih_this, int *ih_triplet_list);
 void GetMatrixBlock_psr_wrp(const int *ih_this, int *ih_triplet_list,
@@ -43,8 +44,8 @@ void GetMatrixSlice_wrp(const int *ih_this, int *ih_submatrix, int *start_row,
 void TransposeMatrix_ps_wrp(const int *ih_matA, int *ih_transmat);
 void ConjugateMatrix_ps_wrp(int *ih_matA);
 void ConjugateMatrix_ps_wrp(int *ih_matA);
-void ResizeMatrix_ps_wrp(int *ih_this, const int* new_size);
-void GetMatrixProcessGrid_ps_wrp(const int* ih_this, int* ih_grid);
+void ResizeMatrix_ps_wrp(int *ih_this, const int *new_size);
+void GetMatrixProcessGrid_ps_wrp(const int *ih_this, int *ih_grid);
 
 void DotMatrix_psr_wrp(const int *ih_matA, const int *ih_matB, double *product);
 void DotMatrix_psc_wrp(const int *ih_matA, const int *ih_matB,

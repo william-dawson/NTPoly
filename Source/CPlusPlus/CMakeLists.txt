@@ -10,6 +10,7 @@ set(Csrc
     InverseSolvers.cc
     LinearSolvers.cc
     LoadBalancer.cc
+    MatrixConversion.cc
     MatrixMapper.cc
     MatrixMemoryPool.cc
     Permutation.cc
@@ -38,6 +39,7 @@ set(Chead
     InverseSolvers.h
     LinearSolvers.h
     LoadBalancer.h
+    MatrixConversion.h
     MatrixMapper.h
     MatrixMemoryPool.h
     Permutation.h

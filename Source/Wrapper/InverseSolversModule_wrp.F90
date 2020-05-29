@@ -33,7 +33,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
   SUBROUTINE Invert_wrp(ih_Mat1, ih_InverseMat, ih_solver_parameters) &
-       & bind(c,name="Invert_wrp")
+       & BIND(c,name="Invert_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -45,12 +45,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_InverseMat = TRANSFER(ih_InverseMat,h_InverseMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL Invert(h_Mat1%data, h_InverseMat%data, h_solver_parameters%data)
+    CALL Invert(h_Mat1%DATA, h_InverseMat%DATA, h_solver_parameters%DATA)
   END SUBROUTINE Invert_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
   SUBROUTINE PseudoInverse_wrp(ih_Mat1, ih_InverseMat, ih_solver_parameters) &
-       & bind(c,name="PseudoInverse_wrp")
+       & BIND(c,name="PseudoInverse_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -62,7 +62,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_InverseMat = TRANSFER(ih_InverseMat,h_InverseMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PseudoInverse(h_Mat1%data, h_InverseMat%data, h_solver_parameters%data)
+    CALL PseudoInverse(h_Mat1%DATA, h_InverseMat%DATA, h_solver_parameters%DATA)
   END SUBROUTINE PseudoInverse_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE InverseSolversModule_wrp

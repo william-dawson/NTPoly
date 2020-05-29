@@ -31,7 +31,7 @@
      END DO
   END DO
   CALL ConstructTripletList(unsorted_pruned_list, pruned_counter-1)
-  unsorted_pruned_list%data = memorypool%pruned_list(1:pruned_counter-1)
+  unsorted_pruned_list%DATA = memorypool%pruned_list(1:pruned_counter-1)
   CALL SortTripletList(unsorted_pruned_list, mat_c_columns, mat_c_rows, &
        & sorted_pruned_list, bubble_in=.TRUE.)
   CALL ConstructMatrixFromTripletList(matAB, sorted_pruned_list, mat_c_rows, &

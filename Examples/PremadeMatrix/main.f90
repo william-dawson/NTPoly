@@ -4,7 +4,8 @@ PROGRAM PremadeMatrixProgram
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
-  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation
+  USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
+       & DestructPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
@@ -40,9 +41,9 @@ PROGRAM PremadeMatrixProgram
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,command_argument_count(),2
-     CALL get_command_argument(counter,argument)
-     CALL get_command_argument(counter+1,argument_value)
+  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
+     CALL GET_COMMAND_ARGUMENT(counter,argument)
+     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
      SELECT CASE(argument)
      CASE('--hamiltonian')
         hamiltonian_file = argument_value
@@ -73,16 +74,16 @@ PROGRAM PremadeMatrixProgram
 
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
-  CALL WriteElement(key="hamiltonian", value=hamiltonian_file)
-  CALL WriteElement(key="overlap", value=overlap_file)
-  CALL WriteElement(key="density", value=density_file_out)
-  CALL WriteElement(key="process_rows", value=process_rows)
-  CALL WriteElement(key="process_columns", value=process_columns)
-  CALL WriteElement(key="process_slices", value=process_slices)
-  CALL WriteElement(key="number_of_electrons", value=number_of_electrons)
-  CALL WriteElement(key="threshold", value=threshold)
-  CALL WriteElement(key="converge_overlap", value=converge_overlap)
-  CALL WriteElement(key="converge_density", value=converge_density)
+  CALL WriteElement(key="hamiltonian", VALUE=hamiltonian_file)
+  CALL WriteElement(key="overlap", VALUE=overlap_file)
+  CALL WriteElement(key="density", VALUE=density_file_out)
+  CALL WriteElement(key="process_rows", VALUE=process_rows)
+  CALL WriteElement(key="process_columns", VALUE=process_columns)
+  CALL WriteElement(key="process_slices", VALUE=process_slices)
+  CALL WriteElement(key="number_of_electrons", VALUE=number_of_electrons)
+  CALL WriteElement(key="threshold", VALUE=threshold)
+  CALL WriteElement(key="converge_overlap", VALUE=converge_overlap)
+  CALL WriteElement(key="converge_density", VALUE=converge_density)
   CALL ExitSubLog
 
   !! Read in the matrices from file.
@@ -111,6 +112,7 @@ PROGRAM PremadeMatrixProgram
   CALL WriteMatrixToMatrixMarket(Density,density_file_out)
 
   !! Cleanup
+  CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
   CALL DestructMatrix(Hamiltonian)

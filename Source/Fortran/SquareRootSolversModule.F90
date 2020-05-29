@@ -217,9 +217,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(SquareRootMat,SQRT(lambda))
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", value=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=outer_counter)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", value=norm_value)
+          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -229,7 +229,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", value=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 
@@ -402,9 +402,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", value=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=outer_counter)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", value=norm_value)
+          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL ExitSubLog
        END IF
 
@@ -414,7 +414,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", value=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 

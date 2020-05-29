@@ -14,7 +14,7 @@ MODULE SquareRootSolversModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
   SUBROUTINE InverseSquareRoot_wrp(ih_Mat1, ih_InverseSquareRootMat, &
-       & ih_solver_parameters) bind(c,name="InverseSquareRoot_wrp")
+       & ih_solver_parameters) BIND(c,name="InverseSquareRoot_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_InverseSquareRootMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -27,13 +27,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_InverseSquareRootMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL InverseSquareRoot(h_Mat1%data, h_InverseSquareRootMat%data, &
-         & h_solver_parameters%data)
+    CALL InverseSquareRoot(h_Mat1%DATA, h_InverseSquareRootMat%DATA, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE InverseSquareRoot_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root of a matrix.
   SUBROUTINE SquareRoot_wrp(ih_Mat1, ih_SquareRootMat, ih_solver_parameters) &
-       & bind(c,name="SquareRoot_wrp")
+       & BIND(c,name="SquareRoot_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Mat1(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_SquareRootMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
@@ -45,8 +45,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_SquareRootMat = TRANSFER(ih_SquareRootMat, h_SquareRootMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL SquareRoot(h_Mat1%data, h_SquareRootMat%data, &
-         & h_solver_parameters%data)
+    CALL SquareRoot(h_Mat1%DATA, h_SquareRootMat%DATA, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE SquareRoot_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SquareRootSolversModule_wrp

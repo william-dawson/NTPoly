@@ -36,19 +36,19 @@ MODULE TripletModule
   INTERFACE SetTriplet
      MODULE PROCEDURE SetTriplet_r
      MODULE PROCEDURE SetTriplet_c
-  END INTERFACE
+  END INTERFACE SetTriplet
   INTERFACE GetTripletValues
      MODULE PROCEDURE GetTripletValues_r
      MODULE PROCEDURE GetTripletValues_c
-  END INTERFACE
+  END INTERFACE GetTripletValues
   INTERFACE CompareTriplets
      MODULE PROCEDURE CompareTriplets_r
      MODULE PROCEDURE CompareTriplets_c
-  END INTERFACE
+  END INTERFACE CompareTriplets
   INTERFACE ConvertTripletType
      MODULE PROCEDURE ConvertTripletToReal
      MODULE PROCEDURE ConvertTripletToComplex
-  END INTERFACE
+  END INTERFACE ConvertTripletType
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the values of a triplet.
   PURE SUBROUTINE SetTriplet_r(this,index_column,index_row,point_value)

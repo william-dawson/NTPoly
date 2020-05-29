@@ -23,7 +23,7 @@ MODULE PSMatrixAlgebraModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   SUBROUTINE IncrementMatrix_ps_wrp(ih_matA, ih_matB, alpha_in,threshold_in) &
-       & bind(c,name="IncrementMatrix_ps_wrp")
+       & BIND(c,name="IncrementMatrix_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: alpha_in
@@ -33,12 +33,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL IncrementMatrix(h_matA%data, h_matB%data, alpha_in, threshold_in)
+    CALL IncrementMatrix(h_matA%DATA, h_matB%DATA, alpha_in, threshold_in)
   END SUBROUTINE IncrementMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(matA,matB)
   SUBROUTINE DotMatrix_psr_wrp(ih_matA, ih_matB, product) &
-       & bind(c,name="DotMatrix_psr_wrp")
+       & BIND(c,name="DotMatrix_psr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(OUT) :: product
@@ -47,12 +47,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL DotMatrix(h_matA%data, h_matB%data, product)
+    CALL DotMatrix(h_matA%DATA, h_matB%DATA, product)
   END SUBROUTINE DotMatrix_psr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(matA,matB)
   SUBROUTINE DotMatrix_psc_wrp(ih_matA, ih_matB, product_real, product_imag) &
-       & bind(c,name="DotMatrix_psc_wrp")
+       & BIND(c,name="DotMatrix_psc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     REAL(NTREAL), INTENT(OUT) :: product_real
@@ -63,7 +63,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL DotMatrix(h_matA%data, h_matB%data, product)
+    CALL DotMatrix(h_matA%DATA, h_matB%DATA, product)
 
     product_real = REAL(product)
     product_imag = AIMAG(product)
@@ -71,7 +71,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Elementwise multiplication.
   SUBROUTINE MatrixPairwiseMultiply_ps_wrp(ih_matA, ih_matB, ih_matC) &
-       & bind(c,name="MatrixPairwiseMultiply_ps_wrp")
+       & BIND(c,name="MatrixPairwiseMultiply_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -83,13 +83,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matB = TRANSFER(ih_matB,h_matB)
     h_matC = TRANSFER(ih_matC,h_matC)
 
-    CALL PairwiseMultiplyMatrix(h_matA%data, h_matB%data, h_matC%data)
+    CALL PairwiseMultiplyMatrix(h_matA%DATA, h_matB%DATA, h_matC%DATA)
   END SUBROUTINE MatrixPairwiseMultiply_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   SUBROUTINE MatrixMultiply_ps_wrp(ih_matA, ih_matB, ih_matC, alpha_in, &
        & beta_in, threshold_in, ih_memory_pool_in) &
-       & bind(c,name="MatrixMultiply_ps_wrp")
+       & BIND(c,name="MatrixMultiply_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_matB(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matC(SIZE_wrp)
@@ -107,41 +107,41 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matC = TRANSFER(ih_matC,h_matC)
     h_memory_pool_in = TRANSFER(ih_memory_pool_in,h_memory_pool_in)
 
-    CALL MatrixMultiply(h_matA%data, h_matB%data, h_matC%data, &
-         & alpha_in, beta_in, threshold_in, h_memory_pool_in%data)
+    CALL MatrixMultiply(h_matA%DATA, h_matB%DATA, h_matC%DATA, &
+         & alpha_in, beta_in, threshold_in, h_memory_pool_in%DATA)
   END SUBROUTINE MatrixMultiply_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a distributed sparse matrix by a constant.
   SUBROUTINE ScaleMatrix_ps_wrp(ih_this, constant) &
-       & bind(c,name="ScaleMatrix_ps_wrp")
+       & BIND(c,name="ScaleMatrix_ps_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: constant
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL ScaleMatrix(h_this%data,constant)
+    CALL ScaleMatrix(h_this%DATA,constant)
   END SUBROUTINE ScaleMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the norm of a distributed sparse matrix along the rows.
-  FUNCTION MatrixNorm_ps_wrp(ih_this) bind(c,name="MatrixNorm_ps_wrp") &
+  FUNCTION MatrixNorm_ps_wrp(ih_this) BIND(c,name="MatrixNorm_ps_wrp") &
        & RESULT(norm_value)
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL) :: norm_value
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    norm_value = MatrixNorm(h_this%data)
+    norm_value = MatrixNorm(h_this%DATA)
   END FUNCTION MatrixNorm_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
   SUBROUTINE MatrixTrace_ps_wrp(ih_this, trace_value) &
-       & bind(c,name="MatrixTrace_ps_wrp")
+       & BIND(c,name="MatrixTrace_ps_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(OUT) :: trace_value
     TYPE(Matrix_ps_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL MatrixTrace(h_this%data, trace_value)
+    CALL MatrixTrace(h_this%DATA, trace_value)
   END SUBROUTINE MatrixTrace_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule_wrp

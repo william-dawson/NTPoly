@@ -1,5 +1,5 @@
-#include "PMatrixMemoryPool.h"
 #include "PSMatrix.h"
+#include "PMatrixMemoryPool.h"
 #include "Permutation.h"
 #include "ProcessGrid.h"
 #include "TripletList.h"
@@ -102,6 +102,13 @@ int Matrix_ps::GetLogicalDimension() const {
 int Matrix_ps::GetActualDimension() const {
   int temp;
   GetMatrixActualDimension_ps_wrp(ih_this, &temp);
+  return temp;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+long int Matrix_ps::GetSize() const {
+  long int temp;
+  GetMatrixSize_ps_wrp(ih_this, &temp);
   return temp;
 }
 

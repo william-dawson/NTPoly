@@ -48,6 +48,7 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
+            lint:         1
     runs-on:              ${{ matrix.os }}
     steps:
     - uses:               actions/checkout@v1
@@ -81,7 +82,6 @@ jobs:
       env:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
     - name:               lint
+      if:                 ${{ matrix.lint }}
       run:                |
-        cd UnitTests
-        bash lint.sh
-        cd ../
+        bash UnitTests/lint.sh

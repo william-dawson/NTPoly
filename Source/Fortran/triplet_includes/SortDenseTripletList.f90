@@ -14,9 +14,9 @@
 
   !! Unpack
   DO II = 1, list_length
-     row = input_list%data(II)%index_row
-     col = input_list%data(II)%index_column
-     value_buffer(row,col) = input_list%data(II)%point_value
+     row = input_list%DATA(II)%index_row
+     col = input_list%DATA(II)%index_column
+     value_buffer(row,col) = input_list%DATA(II)%point_value
      dirty_buffer(row,col) = 1
   END DO
 
@@ -25,9 +25,9 @@
   DO JJ = 1, matrix_columns
      DO II = 1, matrix_rows
         IF (dirty_buffer(II,JJ) .EQ. 1) THEN
-           sorted_list%data(ind)%index_row = II
-           sorted_list%data(ind)%index_column = JJ
-           sorted_list%data(ind)%point_value = value_buffer(II,JJ)
+           sorted_list%DATA(ind)%index_row = II
+           sorted_list%DATA(ind)%index_column = JJ
+           sorted_list%DATA(ind)%point_value = value_buffer(II,JJ)
            ind = ind + 1
         END IF
      END DO

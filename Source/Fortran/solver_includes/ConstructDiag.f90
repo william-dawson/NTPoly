@@ -11,7 +11,7 @@
      IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
         local_JJ = JJ - AMat%start_column + 1
         local_II = JJ - AMat%start_row + 1
-        diag(local_JJ) = dense_a%data(local_II, local_JJ)
+        diag(local_JJ) = dense_a%DATA(local_II, local_JJ)
         fill_counter = fill_counter + 1
      END IF
   END DO

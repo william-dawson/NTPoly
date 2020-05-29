@@ -11,7 +11,7 @@
         temporary%index_column = outer_counter
         DO inner_counter = 1, rows
            temporary%point_value = &
-                & dense_matrix%data(inner_counter,outer_counter)
+                & dense_matrix%DATA(inner_counter,outer_counter)
            IF (ABS(temporary%point_value) .GT. threshold_in) THEN
               temporary%index_row = inner_counter
               CALL AppendToTripletList(temporary_list,temporary)
@@ -24,9 +24,9 @@
         temporary%index_column = outer_counter
         DO inner_counter = 1, rows
            temporary%point_value = &
-                & dense_matrix%data(inner_counter,outer_counter)
+                & dense_matrix%DATA(inner_counter,outer_counter)
            temporary%index_row = inner_counter
-           temporary_list%data(inner_counter+rows*(outer_counter-1)) = &
+           temporary_list%DATA(inner_counter+rows*(outer_counter-1)) = &
                 & temporary
         END DO
      END DO

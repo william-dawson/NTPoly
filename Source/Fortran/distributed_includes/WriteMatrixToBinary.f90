@@ -55,7 +55,7 @@
      !! Write The Rest
      CALL MPI_File_set_view(mpi_file_handler,write_offset,triplet_mpi_type,&
           & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
-     CALL MPI_File_write(mpi_file_handler, triplet_list%data, &
+     CALL MPI_File_write(mpi_file_handler, triplet_list%DATA, &
           & triplet_list%CurrentSize, triplet_mpi_type, MPI_STATUS_IGNORE, &
           & ierr)
 

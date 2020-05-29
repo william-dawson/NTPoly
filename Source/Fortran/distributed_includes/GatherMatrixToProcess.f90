@@ -12,17 +12,17 @@
 
   !! Send this to the target
   ALLOCATE(slist(this%process_grid%slice_size))
-  CALL ConstructTripletList(slist(proc_id+1), tlist%CurrentSize)
-  DO II = 2, this%process_grid%slice_size
+  DO II = 1, this%process_grid%slice_size
      CALL ConstructTripletList(slist(II))
   END DO
-  slist(proc_id+1)%data(:list_size) = tlist%data(:list_size)
+  CALL ConstructTripletList(slist(within_slice_id+1), list_size)
+  slist(within_slice_id+1)%DATA(:list_size) = tlist%DATA(:list_size)
   CALL DestructTripletList(tlist)
   CALL RedistributeTripletLists(slist, this%process_grid%within_slice_comm, &
        & tlist)
 
   !! Create the local matrix
-  IF (this%process_grid%within_slice_rank .EQ. proc_id) THEN
+  IF (this%process_grid%within_slice_rank .EQ. within_slice_id) THEN
      CALL SortTripletList(tlist, mat_dim, mat_dim, sorted, .TRUE.)
      CALL ConstructMatrixFromTripletList(local_mat, sorted, &
           & mat_dim, mat_dim)

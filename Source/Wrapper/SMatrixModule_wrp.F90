@@ -52,7 +52,7 @@ MODULE SMatrixModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   SUBROUTINE ConstructMatrixFromFile_lsr_wrp(ih_this, file_name, name_size) &
-       & bind(c,name="ConstructMatrixFromFile_lsr_wrp")
+       & BIND(c,name="ConstructMatrixFromFile_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
@@ -65,15 +65,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(counter:counter) = file_name(counter)
     END DO
 
-    ALLOCATE(h_this%data)
-    h_this%data = Matrix_lsr(local_string)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = Matrix_lsr(local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromFile_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
   SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp(ih_this, &
        & ih_triplet_list, rows, columns) &
-       & bind(c,name="ConstructMatrixFromTripletList_lsr_wrp")
+       & BIND(c,name="ConstructMatrixFromTripletList_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: columns
@@ -83,40 +83,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r_wrp)  :: h_triplet_list
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    ALLOCATE(h_this%data)
-    h_this%data = Matrix_lsr(h_triplet_list%data, rows, columns)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = Matrix_lsr(h_triplet_list%DATA, rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix with zero values in it.
   SUBROUTINE ConstructZeroMatrix_lsr_wrp(ih_this, rows, columns) &
-       & bind(c,name="ConstructZeroMatrix_lsr_wrp")
+       & BIND(c,name="ConstructZeroMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: columns
     INTEGER(kind=c_int), INTENT(IN) :: rows
     !! Local Data
     TYPE(Matrix_lsr_wrp) :: h_this
 
-    ALLOCATE(h_this%data)
-    h_this%data = Matrix_lsr(rows, columns, .TRUE.)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = Matrix_lsr(rows, columns, .TRUE.)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructZeroMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
   SUBROUTINE DestructMatrix_lsr_wrp(ih_this) &
-       & bind(c,name="DestructMatrix_lsr_wrp")
+       & BIND(c,name="DestructMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrix(h_this%data)
-    DEALLOCATE(h_this%data)
+    CALL DestructMatrix(h_this%DATA)
+    DEALLOCATE(h_this%DATA)
     !ih_this = 0
   END SUBROUTINE DestructMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the copy a sparse matrix routine.
   SUBROUTINE CopyMatrix_lsr_wrp(ih_matA, ih_matB) &
-       & bind(c,name="CopyMatrix_lsr_wrp")
+       & BIND(c,name="CopyMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_matA
@@ -124,29 +124,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL CopyMatrix(h_matA%data,h_matB%data)
+    CALL CopyMatrix(h_matA%DATA,h_matB%DATA)
   END SUBROUTINE CopyMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
   SUBROUTINE GetMatrixRows_lsr_wrp(ih_this, rows) &
-       & bind(c,name="GetMatrixRows_lsr_wrp")
+       & BIND(c,name="GetMatrixRows_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: rows
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    rows = GetMatrixRows(h_this%data)
+    rows = GetMatrixRows(h_this%DATA)
   END SUBROUTINE GetMatrixRows_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
   SUBROUTINE GetMatrixColumns_lsr_wrp(ih_this, columns) &
-       & bind(c,name="GetMatrixColumns_lsr_wrp")
+       & BIND(c,name="GetMatrixColumns_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: columns
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    columns = GetMatrixColumns(h_this%data)
+    columns = GetMatrixColumns(h_this%DATA)
   END SUBROUTINE GetMatrixColumns_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a row from the matrix into the compressed vector representation.
@@ -154,16 +154,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] row_number the row to extract
   !! @param[out] ih_row_out the matrix representing that row
   SUBROUTINE ExtractMatrixRow_lsr_wrp(ih_this, row_number, ih_row_out) &
-       & bind(c,name="ExtractMatrixRow_lsr_wrp")
+       & BIND(c,name="ExtractMatrixRow_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: row_number
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_row_out(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
     TYPE(Matrix_lsr_wrp) :: h_row_out
 
-    ALLOCATE(h_row_out%data)
+    ALLOCATE(h_row_out%DATA)
     h_this = TRANSFER(ih_this,h_this)
-    CALL ExtractMatrixRow(h_this%data, row_number, h_row_out%data)
+    CALL ExtractMatrixRow(h_this%DATA, row_number, h_row_out%DATA)
 
     ih_row_out= TRANSFER(h_row_out,ih_row_out)
   END SUBROUTINE ExtractMatrixRow_lsr_wrp
@@ -173,23 +173,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] column_number the row to extract.
   !! @param[out] ih_column_out the matrix representing that column.
   SUBROUTINE ExtractMatrixColumn_lsr_wrp(ih_this, column_number, &
-       & ih_column_out) bind(c,name="ExtractMatrixColumn_lsr_wrp")
+       & ih_column_out) BIND(c,name="ExtractMatrixColumn_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: column_number
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_column_out(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
     TYPE(Matrix_lsr_wrp) :: h_column_out
 
-    ALLOCATE(h_column_out%data)
+    ALLOCATE(h_column_out%DATA)
     h_this = TRANSFER(ih_this,h_this)
-    CALL ExtractMatrixColumn(h_this%data, column_number, h_column_out%data)
+    CALL ExtractMatrixColumn(h_this%DATA, column_number, h_column_out%DATA)
 
     ih_column_out= TRANSFER(h_column_out, ih_column_out)
   END SUBROUTINE ExtractMatrixColumn_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
   SUBROUTINE TransposeMatrix_lsr_wrp(ih_matA, ih_matAT) &
-       & bind(c,name="TransposeMatrix_lsr_wrp")
+       & BIND(c,name="TransposeMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matAT(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_matA
@@ -197,12 +197,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matAT = TRANSFER(ih_matAT,h_matAT)
-    CALL TransposeMatrix(h_matA%data,h_matAT%data)
+    CALL TransposeMatrix(h_matA%DATA,h_matAT%DATA)
   END SUBROUTINE TransposeMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
   SUBROUTINE PrintMatrixF_lsr_wrp(ih_this, file_name, name_size) &
-       & bind(c,name="PrintMatrixF_lsr_wrp")
+       & BIND(c,name="PrintMatrixF_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
@@ -216,37 +216,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL PrintMatrix(h_this%data,local_string)
+    CALL PrintMatrix(h_this%DATA,local_string)
   END SUBROUTINE PrintMatrixF_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
-  SUBROUTINE PrintMatrix_lsr_wrp(ih_this) bind(c,name="PrintMatrix_lsr_wrp")
+  SUBROUTINE PrintMatrix_lsr_wrp(ih_this) BIND(c,name="PrintMatrix_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL PrintMatrix(h_this%data)
+    CALL PrintMatrix(h_this%DATA)
   END SUBROUTINE PrintMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the routine that constructs a triplet list from a matrix.
   SUBROUTINE MatrixToTripletList_lsr_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="MatrixToTripletList_lsr_wrp")
+       & BIND(c,name="MatrixToTripletList_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT)   :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_this
     TYPE(TripletList_r_wrp)  :: h_triplet_list
 
     h_this = TRANSFER(ih_this,h_this)
-    ALLOCATE(h_triplet_list%data)
+    ALLOCATE(h_triplet_list%DATA)
 
-    CALL MatrixToTripletList(h_this%data,h_triplet_list%data)
+    CALL MatrixToTripletList(h_this%DATA,h_triplet_list%DATA)
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix by reading in a matrix market file.
   SUBROUTINE ConstructMatrixFromFile_lsc_wrp(ih_this, file_name, name_size) &
-       & bind(c,name="ConstructMatrixFromFile_lsc_wrp")
+       & BIND(c,name="ConstructMatrixFromFile_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
@@ -259,15 +259,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(counter:counter) = file_name(counter)
     END DO
 
-    ALLOCATE(h_this%data)
-    h_this%data = Matrix_lsc(local_string)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = Matrix_lsc(local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromFile_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix from a \b SORTED triplet list.
   SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp(ih_this, &
        & ih_triplet_list, rows, columns) &
-       & bind(c,name="ConstructMatrixFromTripletList_lsc_wrp")
+       & BIND(c,name="ConstructMatrixFromTripletList_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_triplet_list(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: columns
@@ -277,40 +277,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c_wrp)  :: h_triplet_list
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
-    ALLOCATE(h_this%data)
-    h_this%data = Matrix_lsc(h_triplet_list%data, rows, columns)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = Matrix_lsc(h_triplet_list%DATA, rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a sparse matrix with zero values in it.
   SUBROUTINE ConstructZeroMatrix_lsc_wrp(ih_this, rows, columns) &
-       & bind(c,name="ConstructZeroMatrix_lsc_wrp")
+       & BIND(c,name="ConstructZeroMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: columns
     INTEGER(kind=c_int), INTENT(IN) :: rows
     !! Local Data
     TYPE(Matrix_lsc_wrp) :: h_this
 
-    ALLOCATE(h_this%data)
-    h_this%data = Matrix_lsc(rows, columns)
+    ALLOCATE(h_this%DATA)
+    h_this%DATA = Matrix_lsc(rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructZeroMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix
   SUBROUTINE DestructMatrix_lsc_wrp(ih_this) &
-       & bind(c,name="DestructMatrix_lsc_wrp")
+       & BIND(c,name="DestructMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructMatrix(h_this%data)
-    DEALLOCATE(h_this%data)
+    CALL DestructMatrix(h_this%DATA)
+    DEALLOCATE(h_this%DATA)
     !ih_this = 0
   END SUBROUTINE DestructMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the copy a sparse matrix routine.
   SUBROUTINE CopyMatrix_lsc_wrp(ih_matA, ih_matB) &
-       & bind(c,name="CopyMatrix_lsc_wrp")
+       & BIND(c,name="CopyMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matB(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_matA
@@ -318,29 +318,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA = TRANSFER(ih_matA,h_matA)
     h_matB = TRANSFER(ih_matB,h_matB)
-    CALL CopyMatrix(h_matA%data,h_matB%data)
+    CALL CopyMatrix(h_matA%DATA,h_matB%DATA)
   END SUBROUTINE CopyMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the row accessor.
   SUBROUTINE GetMatrixRows_lsc_wrp(ih_this, rows) &
-       & bind(c,name="GetMatrixRows_lsc_wrp")
+       & BIND(c,name="GetMatrixRows_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: rows
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    rows = GetMatrixRows(h_this%data)
+    rows = GetMatrixRows(h_this%DATA)
   END SUBROUTINE GetMatrixRows_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the column accessor.
   SUBROUTINE GetMatrixColumns_lsc_wrp(ih_this, columns) &
-       & bind(c,name="GetMatrixColumns_lsc_wrp")
+       & BIND(c,name="GetMatrixColumns_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT) :: columns
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    columns = GetMatrixColumns(h_this%data)
+    columns = GetMatrixColumns(h_this%DATA)
   END SUBROUTINE GetMatrixColumns_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a row from the matrix into the compressed vector representation.
@@ -348,16 +348,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] row_number the row to extract
   !! @param[out] ih_row_out the matrix representing that row
   SUBROUTINE ExtractMatrixRow_lsc_wrp(ih_this, row_number, ih_row_out) &
-       & bind(c,name="ExtractMatrixRow_lsc_wrp")
+       & BIND(c,name="ExtractMatrixRow_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: row_number
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_row_out(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_this
     TYPE(Matrix_lsc_wrp) :: h_row_out
 
-    ALLOCATE(h_row_out%data)
+    ALLOCATE(h_row_out%DATA)
     h_this = TRANSFER(ih_this,h_this)
-    CALL ExtractMatrixRow(h_this%data, row_number, h_row_out%data)
+    CALL ExtractMatrixRow(h_this%DATA, row_number, h_row_out%DATA)
 
     ih_row_out= TRANSFER(h_row_out,ih_row_out)
   END SUBROUTINE ExtractMatrixRow_lsc_wrp
@@ -367,23 +367,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! @param[in] column_number the row to extract.
   !! @param[out] ih_column_out the matrix representing that column.
   SUBROUTINE ExtractMatrixColumn_lsc_wrp(ih_this, column_number, &
-       & ih_column_out) bind(c,name="ExtractMatrixColumn_lsc_wrp")
+       & ih_column_out) BIND(c,name="ExtractMatrixColumn_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: column_number
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_column_out(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_this
     TYPE(Matrix_lsc_wrp) :: h_column_out
 
-    ALLOCATE(h_column_out%data)
+    ALLOCATE(h_column_out%DATA)
     h_this = TRANSFER(ih_this,h_this)
-    CALL ExtractMatrixColumn(h_this%data, column_number, h_column_out%data)
+    CALL ExtractMatrixColumn(h_this%DATA, column_number, h_column_out%DATA)
 
     ih_column_out= TRANSFER(h_column_out, ih_column_out)
   END SUBROUTINE ExtractMatrixColumn_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix transpose function.
   SUBROUTINE TransposeMatrix_lsc_wrp(ih_matA, ih_matAT) &
-       & bind(c,name="TransposeMatrix_lsc_wrp")
+       & BIND(c,name="TransposeMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_matA(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matAT(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_matA
@@ -391,22 +391,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_matA  = TRANSFER(ih_matA,h_matA)
     h_matAT = TRANSFER(ih_matAT,h_matAT)
-    CALL TransposeMatrix(h_matA%data,h_matAT%data)
+    CALL TransposeMatrix(h_matA%DATA,h_matAT%DATA)
   END SUBROUTINE TransposeMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the matrix conjugate function.
   SUBROUTINE ConjugateMatrix_lsc_wrp(ih_matA) &
-       & bind(c,name="ConjugateMatrix_lsc_wrp")
+       & BIND(c,name="ConjugateMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_matA
 
     h_matA  = TRANSFER(ih_matA,h_matA)
-    CALL ConjugateMatrix(h_matA%data)
+    CALL ConjugateMatrix(h_matA%DATA)
   END SUBROUTINE ConjugateMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints out a sparse matrix to file.
   SUBROUTINE PrintMatrixF_lsc_wrp(ih_this, file_name, name_size) &
-       & bind(c,name="PrintMatrixF_lsc_wrp")
+       & BIND(c,name="PrintMatrixF_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
@@ -420,30 +420,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL PrintMatrix(h_this%data,local_string)
+    CALL PrintMatrix(h_this%DATA,local_string)
   END SUBROUTINE PrintMatrixF_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Warp the routine that prints the sparse matrix to the console.
-  SUBROUTINE PrintMatrix_lsc_wrp(ih_this) bind(c,name="PrintMatrix_lsc_wrp")
+  SUBROUTINE PrintMatrix_lsc_wrp(ih_this) BIND(c,name="PrintMatrix_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL PrintMatrix(h_this%data)
+    CALL PrintMatrix(h_this%DATA)
   END SUBROUTINE PrintMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the routine that constructs a triplet list from a matrix.
   SUBROUTINE MatrixToTripletList_lsc_wrp(ih_this, ih_triplet_list) &
-       & bind(c,name="MatrixToTripletList_lsc_wrp")
+       & BIND(c,name="MatrixToTripletList_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(OUT)   :: ih_triplet_list(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_this
     TYPE(TripletList_c_wrp)  :: h_triplet_list
 
     h_this = TRANSFER(ih_this,h_this)
-    ALLOCATE(h_triplet_list%data)
+    ALLOCATE(h_triplet_list%DATA)
 
-    CALL MatrixToTripletList(h_this%data,h_triplet_list%data)
+    CALL MatrixToTripletList(h_this%DATA,h_triplet_list%DATA)
 
     ih_triplet_list = TRANSFER(ih_triplet_list,ih_triplet_list)
   END SUBROUTINE MatrixToTripletList_lsc_wrp

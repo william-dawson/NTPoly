@@ -29,15 +29,15 @@
   WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
   DO counter = 1,size_of_this
 #ifdef ISCOMPLEX
-     CALL WriteMMLine(tempstr, triplet_list%data(counter)%index_row, &
-          & triplet_list%data(counter)%index_column, &
-          & REAL(triplet_list%data(counter)%point_value), &
-          & AIMAG(triplet_list%data(counter)%point_value))
+     CALL WriteMMLine(tempstr, triplet_list%DATA(counter)%index_row, &
+          & triplet_list%DATA(counter)%index_column, &
+          & REAL(triplet_list%DATA(counter)%point_value), &
+          & AIMAG(triplet_list%DATA(counter)%point_value))
      WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
 #else
-     CALL WriteMMLine(tempstr, triplet_list%data(counter)%index_row, &
-          & triplet_list%data(counter)%index_column, &
-          & triplet_list%data(counter)%point_value)
+     CALL WriteMMLine(tempstr, triplet_list%DATA(counter)%index_row, &
+          & triplet_list%DATA(counter)%index_column, &
+          & triplet_list%DATA(counter)%point_value)
      WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
 #endif
   END DO

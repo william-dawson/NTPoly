@@ -15,7 +15,7 @@ MODULE LoadBalancerModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Apply a permutation to a matrix.
   SUBROUTINE PermuteMatrix_wrp(ih_mat_in, ih_mat_out, ih_permutation, &
-       & ih_memorypool) bind(c, name="PermuteMatrix_wrp")
+       & ih_memorypool) BIND(c, name="PermuteMatrix_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_mat_in(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat_out(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
@@ -30,13 +30,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_permutation = TRANSFER(ih_permutation,h_permutation)
     h_memorypool = TRANSFER(ih_memorypool, h_memorypool)
 
-    CALL PermuteMatrix(h_mat_in%data, h_mat_out%data, h_permutation%data, &
-         & h_memorypool%data)
+    CALL PermuteMatrix(h_mat_in%DATA, h_mat_out%DATA, h_permutation%DATA, &
+         & h_memorypool%DATA)
   END SUBROUTINE PermuteMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Undo a permutation applied to a matrix.
   SUBROUTINE UndoPermuteMatrix_wrp(ih_mat_in, ih_mat_out, ih_permutation, &
-       & ih_memorypool) bind(c, name="UndoPermuteMatrix_wrp")
+       & ih_memorypool) BIND(c, name="UndoPermuteMatrix_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_mat_in(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat_out(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_permutation(SIZE_wrp)
@@ -51,8 +51,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_permutation = TRANSFER(ih_permutation,h_permutation)
     h_memorypool = TRANSFER(ih_memorypool, h_memorypool)
 
-    CALL UndoPermuteMatrix(h_mat_in%data, h_mat_out%data, h_permutation%data, &
-         & h_memorypool%data)
+    CALL UndoPermuteMatrix(h_mat_in%DATA, h_mat_out%DATA, h_permutation%DATA, &
+         & h_memorypool%DATA)
   END SUBROUTINE UndoPermuteMatrix_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LoadBalancerModule_wrp

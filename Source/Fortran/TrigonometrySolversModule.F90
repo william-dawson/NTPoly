@@ -103,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", value="Taylor")
+       CALL WriteElement(key="Method", VALUE="Taylor")
        CALL WriteCitation("higham2003computing")
        CALL PrintParameters(solver_parameters)
     END IF
@@ -220,8 +220,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", value="Chebyshev")
-       CALL WriteCitation("serbin1980algorithm higham2003computing yau1993reducing")
+       CALL WriteElement(key="Method", VALUE="Chebyshev")
+       CALL WriteCitation("serbin1980algorithm higham2003computing&
+            & yau1993reducing")
        CALL PrintParameters(solver_parameters)
     END IF
 

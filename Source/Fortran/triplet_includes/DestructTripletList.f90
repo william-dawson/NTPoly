@@ -1,2 +1,2 @@
-  IF (ALLOCATED(this%data)) DEALLOCATE(this%data)
+  IF (ALLOCATED(this%DATA)) DEALLOCATE(this%DATA)
   this%CurrentSize = 0

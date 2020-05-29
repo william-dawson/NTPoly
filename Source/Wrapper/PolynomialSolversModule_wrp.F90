@@ -26,42 +26,42 @@ MODULE PolynomialSolversModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the empty polynomial constructor.
   SUBROUTINE ConstructPolynomial_wrp(ih_this, degree) &
-       & bind(c,name="ConstructPolynomial_wrp")
+       & BIND(c,name="ConstructPolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: degree
     TYPE(Polynomial_wrp) :: h_this
 
-    ALLOCATE(h_this%data)
-    CALL ConstructPolynomial(h_this%data,degree)
+    ALLOCATE(h_this%DATA)
+    CALL ConstructPolynomial(h_this%DATA,degree)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a polynomial object.
   SUBROUTINE DestructPolynomial_wrp(ih_this) &
-       & bind(c,name="DestructPolynomial_wrp")
+       & BIND(c,name="DestructPolynomial_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(Polynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL DestructPolynomial(h_this%data)
-    DEALLOCATE(h_this%data)
+    CALL DestructPolynomial(h_this%DATA)
+    DEALLOCATE(h_this%DATA)
   END SUBROUTINE DestructPolynomial_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set coefficient of a polynomial.
   SUBROUTINE SetCoefficient_wrp(ih_this, degree, coefficient) &
-       & bind(c,name="SetCoefficient_wrp")
+       & BIND(c,name="SetCoefficient_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: degree
     REAL(NTREAL), INTENT(IN) :: coefficient
     TYPE(Polynomial_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL SetCoefficient(h_this%data, degree, coefficient)
+    CALL SetCoefficient(h_this%DATA, degree, coefficient)
   END SUBROUTINE SetCoefficient_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Horner's Method.
   SUBROUTINE HornerCompute_wrp(ih_InputMat, ih_OutputMat, ih_polynomial, &
-       & ih_solver_parameters) bind(c,name="HornerCompute_wrp")
+       & ih_solver_parameters) BIND(c,name="HornerCompute_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_polynomial(SIZE_wrp)
@@ -76,14 +76,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL Compute(h_InputMat%data, h_OutputMat%data, &
-         & h_polynomial%data, h_solver_parameters%data)
+    CALL Compute(h_InputMat%DATA, h_OutputMat%DATA, &
+         & h_polynomial%DATA, h_solver_parameters%DATA)
   END SUBROUTINE HornerCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
   SUBROUTINE PatersonStockmeyerCompute_wrp(ih_InputMat, ih_OutputMat, &
        & ih_polynomial, ih_solver_parameters) &
-       & bind(c,name="PatersonStockmeyerCompute_wrp")
+       & BIND(c,name="PatersonStockmeyerCompute_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_OutputMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN)    :: ih_polynomial(SIZE_wrp)
@@ -98,8 +98,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_polynomial = TRANSFER(ih_polynomial, h_polynomial)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL FactorizedCompute(h_InputMat%data, h_OutputMat%data, &
-         & h_polynomial%data, h_solver_parameters%data)
+    CALL FactorizedCompute(h_InputMat%DATA, h_OutputMat%DATA, &
+         & h_polynomial%DATA, h_solver_parameters%DATA)
   END SUBROUTINE PatersonStockmeyerCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PolynomialSolversModule_wrp

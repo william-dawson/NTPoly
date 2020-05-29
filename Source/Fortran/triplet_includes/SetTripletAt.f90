@@ -1,1 +1,1 @@
-  this%data(index) = triplet_value
+  this%DATA(index) = triplet_value

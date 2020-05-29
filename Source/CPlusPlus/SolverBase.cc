@@ -1,5 +1,5 @@
-#include "PSMatrix.h"
 #include "SolverBase.h"
+#include "PSMatrix.h"
 #include "SolverParameters.h"
 
 ////////////////////////////////////////////////////////////////////////////////

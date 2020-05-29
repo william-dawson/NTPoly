@@ -427,6 +427,43 @@ class TestPSMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_snap(self):
+        '''Test the sparsity pattern setting routine.'''
+        from scipy.sparse import dok_matrix
+
+        for param in self.parameters:
+            matrix1 = param.create_matrix(self.complex)
+            matrix2 = param.create_matrix(self.complex)
+            self.write_matrix(matrix1, self.input_file1)
+            self.write_matrix(matrix2, self.input_file2)
+
+            # Convert to DOK format
+            matrix1 = dok_matrix(matrix1)
+            matrix2 = dok_matrix(matrix2)
+            self.CheckMat = dok_matrix(matrix1*0)
+
+            # Iterate over keys of mat2.
+            for idx in matrix2.keys():
+                if idx in matrix1:
+                    self.CheckMat[idx] = matrix1[idx]
+                else:
+                    self.CheckMat[idx] = 0
+
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix2 = nt.Matrix_ps(self.input_file2, False)
+
+            nt.MatrixConversion.SnapMatrixToSparsityPattern(ntmatrix1,
+                                                            ntmatrix2)
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
+            # We have to check that we have the same number of values.
+            nnz = ntmatrix1.GetSize()
+            if self.my_rank == 0:
+                self.assertEqual(len(matrix2.keys()), nnz)
+
 
 class TestPSMatrix_c(TestPSMatrix):
     '''Specialization for complex matrices'''

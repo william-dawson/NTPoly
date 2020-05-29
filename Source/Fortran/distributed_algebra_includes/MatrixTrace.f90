@@ -5,10 +5,10 @@
   trace_value = 0
   CALL MatrixToTripletList(LMAT, TLIST)
   DO counter = 1, TLIST%CurrentSize
-     IF (this%start_row + TLIST%data(counter)%index_row .EQ. &
-          & this%start_column + TLIST%data(counter)%index_column) THEN
+     IF (this%start_row + TLIST%DATA(counter)%index_row .EQ. &
+          & this%start_column + TLIST%DATA(counter)%index_column) THEN
         trace_value = trace_value + &
-             & REAL(TLIST%data(counter)%point_value, NTREAL)
+             & REAL(TLIST%DATA(counter)%point_value, NTREAL)
      END IF
   END DO
 
