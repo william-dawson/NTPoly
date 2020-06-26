@@ -1,0 +1,27 @@
+---
+layout: post
+title:  "Inclusion in the ELSI Project"
+date:   2020-06-26 11:00:00 +0900
+categories: blog update
+---
+
+As mentioned in a previous post, NTPoly has been included into the ELSI
+solver suite. Today, I am announcing the release of a paper describing this
+integration:
+
+> V. W.-z. Yu, C. Campos, W. Dawson, A. García, V. Havu, B. Hourahine, W. P. 
+> Huhn, M. Jacquelin, W. Jia, M. Keçeli, R. Laasner, Y. Li, L. Lin, J. Lu, 
+> J. Moussa, J. E. Roman, Á. Vázquez-Mayagoitia, C. Yang, and V. Blum, ELSI – 
+> An Open Infrastructure for Electronic Structure Solvers, Computer Physics 
+> Communications, in press (2020). [preprint]
+
+While significant emphasis has been put on making NTPoly easy to integrate
+into your code, there is real added value in using it through ELSI. First,
+when using ELSI you automatically will gain access to other solvers, making it
+easy to switch solver approaches based on what you want to achieve. Second,
+ELSI provides all kinds of helper routines for electronic structure
+calculations
+
+Thanks to ELSI project, you can now use NTPoly from two popular electronic
+structure programs: DFTB+ and Siesta. I hope you will try it out and send
+back your feedback.
