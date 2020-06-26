@@ -13,7 +13,7 @@ integration:
 > Huhn, M. Jacquelin, W. Jia, M. Keçeli, R. Laasner, Y. Li, L. Lin, J. Lu, 
 > J. Moussa, J. E. Roman, Á. Vázquez-Mayagoitia, C. Yang, and V. Blum, ELSI – 
 > An Open Infrastructure for Electronic Structure Solvers, Computer Physics 
-> Communications, in press (2020). [preprint]
+> Communications, in press (2020).
 
 While significant emphasis has been put on making NTPoly easy to integrate
 into your code, there is real added value in using it through ELSI. First,
