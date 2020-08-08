@@ -360,10 +360,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: N, LDA
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
     DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
-    DOUBLE PRECISION :: WORKTEMP
+    DOUBLE PRECISION :: WORKTEMP(1)
     INTEGER :: LWORK
     INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
-    INTEGER :: IWORKTEMP
+    INTEGER :: IWORKTEMP(1)
     INTEGER :: LIWORK
     INTEGER :: INFO
     INTEGER :: II
@@ -382,9 +382,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DSYEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
          & LIWORK, INFO)
     N = LDA
-    LWORK = INT(WORKTEMP)
+    LWORK = INT(WORKTEMP(1))
     ALLOCATE(WORK(LWORK))
-    LIWORK = INT(IWORKTEMP)
+    LIWORK = INT(IWORKTEMP(1))
     ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
@@ -729,9 +729,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: LIWORK
     INTEGER :: INFO
     !! Temp
-    COMPLEX*16 :: WORKTEMP
-    DOUBLE PRECISION :: RWORKTEMP
-    INTEGER :: IWORKTEMP
+    COMPLEX*16 :: WORKTEMP(1)
+    DOUBLE PRECISION :: RWORKTEMP(1)
+    INTEGER :: IWORKTEMP(1)
     INTEGER :: II
 
     MatV = Matrix_ldc(MatA%rows,MatA%columns)
@@ -748,11 +748,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ZHEEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, RWORKTEMP, &
          & LRWORK, IWORKTEMP, LIWORK, INFO)
     N = LDA
-    LWORK = INT(WORKTEMP)
+    LWORK = INT(WORKTEMP(1))
     ALLOCATE(WORK(LWORK))
-    LRWORK = INT(RWORKTEMP)
+    LRWORK = INT(RWORKTEMP(1))
     ALLOCATE(RWORK(LRWORK))
-    LIWORK = INT(IWORKTEMP)
+    LIWORK = INT(IWORKTEMP(1))
     ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
