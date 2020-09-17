@@ -13,8 +13,9 @@
   CHARACTER(len=:), ALLOCATABLE :: header_line2
   CHARACTER(len=:), ALLOCATABLE :: write_buffer
   !! Temporary Values
-  INTEGER :: counter
-  INTEGER :: offset_counter
+  INTEGER :: II
+  INTEGER, DIMENSION(:), ALLOCATABLE :: offset_lookup
+  INTEGER, DIMENSION(:), ALLOCATABLE :: line_lengths
   INTEGER :: NEW_LINE_LENGTH
   CHARACTER(len=MAX_LINE_LENGTH*2) :: temp_string1
   CHARACTER(len=MAX_LINE_LENGTH) :: temp_string2
@@ -50,52 +51,69 @@
 
   !! Local Data
   CALL MatrixToTripletList(merged_local_data, triplet_list)
+  ALLOCATE(offset_lookup(triplet_list%CurrentSize))
+  ALLOCATE(line_lengths(triplet_list%CurrentSize))
 
   !! Absolute Positions
   CALL ShiftTripletList(triplet_list, this%start_row - 1, &
        & this%start_column - 1)
 
   !! Figure out the length of the string for storing.
-  triplet_list_string_length = 0
-  DO counter = 1, triplet_list%CurrentSize
+  !$OMP PARALLEL &
+  !$OMP& PRIVATE(temp_string2, temp_string3)
+  !$OMP DO
+  DO II = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
-     CALL WriteMMLine(temp_string3, triplet_list%DATA(counter)%index_row, &
-          & triplet_list%DATA(counter)%index_column, &
-          & REAL(triplet_list%DATA(counter)%point_value), &
-          & AIMAG(triplet_list%DATA(counter)%point_value), &
+     CALL WriteMMLine(temp_string3, triplet_list%DATA(II)%index_row, &
+          & triplet_list%DATA(II)%index_column, &
+          & REAL(triplet_list%DATA(II)%point_value), &
+          & AIMAG(triplet_list%DATA(II)%point_value), &
           & add_newline_in=.TRUE.)
 #else
-     CALL WriteMMLine(temp_string3, triplet_list%DATA(counter)%index_row, &
-          & triplet_list%DATA(counter)%index_column, &
-          & triplet_list%DATA(counter)%point_value, add_newline_in=.TRUE.)
+     CALL WriteMMLine(temp_string3, triplet_list%DATA(II)%index_row, &
+          & triplet_list%DATA(II)%index_column, &
+          & triplet_list%DATA(II)%point_value, add_newline_in=.TRUE.)
 #endif
      WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
-     triplet_list_string_length = triplet_list_string_length + &
-          & LEN_TRIM(temp_string2)
-     triplet_list_string_length = triplet_list_string_length + NEW_LINE_LENGTH
+     line_lengths(II) = LEN_TRIM(temp_string2) + NEW_LINE_LENGTH
   END DO
+  !$OMP END DO
+  !$OMP END PARALLEL
+
+  !! Compute the offsets
+  offset_lookup = 0
+  IF (triplet_list%CurrentSize .GT. 0) THEN
+     offset_lookup(1) = 1
+     DO II = 2, triplet_list%CurrentSize
+        offset_lookup(II) = offset_lookup(II-1) + line_lengths(II-1)
+     END DO
+  END IF
 
   !! Write that string to the write buffer
-  ALLOCATE(CHARACTER(len=triplet_list_string_length+1) :: write_buffer)
-  offset_counter = 1
-  DO counter = 1, triplet_list%CurrentSize
+  triplet_list_string_length = SUM(line_lengths)
+  ALLOCATE(CHARACTER(LEN=triplet_list_string_length+1) :: write_buffer)
+
+  !$OMP PARALLEL PRIVATE(temp_length, temp_string2, temp_string3)
+  !$OMP DO
+  DO II = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
-     CALL WriteMMLine(temp_string3, triplet_list%DATA(counter)%index_row, &
-          & triplet_list%DATA(counter)%index_column, &
-          & REAL(triplet_list%DATA(counter)%point_value), &
-          & AIMAG(triplet_list%DATA(counter)%point_value), &
+     CALL WriteMMLine(temp_string3, triplet_list%DATA(II)%index_row, &
+          & triplet_list%DATA(II)%index_column, &
+          & REAL(triplet_list%DATA(II)%point_value), &
+          & AIMAG(triplet_list%DATA(II)%point_value), &
           & add_newline_in=.TRUE.)
 #else
-     CALL WriteMMLine(temp_string3, triplet_list%DATA(counter)%index_row, &
-          & triplet_list%DATA(counter)%index_column, &
-          & triplet_list%DATA(counter)%point_value, add_newline_in=.TRUE.)
+     CALL WriteMMLine(temp_string3, triplet_list%DATA(II)%index_row, &
+          & triplet_list%DATA(II)%index_column, &
+          & triplet_list%DATA(II)%point_value, add_newline_in=.TRUE.)
 #endif
      WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
-     temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
-     WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
+     temp_length = LEN_TRIM(temp_string2) + NEW_LINE_LENGTH
+     WRITE(write_buffer(offset_lookup(II):offset_lookup(II)+temp_length),*) &
           & temp_string2(1:temp_length)
-     offset_counter = offset_counter + temp_length
   END DO
+  !$OMP END DO
+  !$OMP END PARALLEL
 
   !! Figure out the offset sizes
   ALLOCATE(local_values_buffer(this%process_grid%slice_size))
@@ -104,8 +122,8 @@
        & this%process_grid%within_slice_comm,ierr)
   write_offset = 0
   write_offset = write_offset + header_size
-  DO counter = 1,this%process_grid%within_slice_rank
-     write_offset = write_offset + local_values_buffer(counter)
+  DO II = 1,this%process_grid%within_slice_rank
+     write_offset = write_offset + local_values_buffer(II)
   END DO
 
   !! Global Write
@@ -141,3 +159,7 @@
      CALL MPI_File_close(mpi_file_handler, ierr)
   END IF
   CALL MPI_Barrier(this%process_grid%global_comm, ierr)
+
+  !! Cleanup
+  DEALLOCATE(offset_lookup)
+  DEALLOCATE(line_lengths)
