@@ -4,7 +4,6 @@ MODULE TripletModule
   USE DataTypesModule, ONLY: NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
        & MPINTINTEGER
   USE NTMPIModule
-  USE, INTRINSIC :: ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -12,8 +11,8 @@ MODULE TripletModule
   !> As this is related to matrix multiplication, the referencing indices are
   !> rows and columns.
   TYPE, PUBLIC :: Triplet_r
-     INTEGER(kind=c_int) :: index_column !< column value.
-     INTEGER(kind=c_int) :: index_row    !< row value.
+     INTEGER :: index_column !< column value.
+     INTEGER :: index_row    !< row value.
      REAL(NTREAL)        :: point_value  !< actual value at those indices.
   END TYPE Triplet_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -21,8 +20,8 @@ MODULE TripletModule
   !> As this is related to matrix multiplication, the referencing indices are
   !> rows and columns.
   TYPE, PUBLIC :: Triplet_c
-     INTEGER(kind=c_int) :: index_column !< column value.
-     INTEGER(kind=c_int) :: index_row    !< row value.
+     INTEGER :: index_column !< column value.
+     INTEGER :: index_row    !< row value.
      COMPLEX(NTCOMPLEX)  :: point_value  !< actual value at those indices.
   END TYPE Triplet_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

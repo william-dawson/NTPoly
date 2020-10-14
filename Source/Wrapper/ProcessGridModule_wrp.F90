@@ -47,7 +47,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
     LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
     CALL ConstructProcessGrid(world_comm_, process_rows_, process_columns_, &
-         & process_slices_, be_verbose)
+         & process_slices_, LOGICAL(be_verbose))
   END SUBROUTINE ConstructGlobalProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
@@ -58,7 +58,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
     LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
     CALL ConstructProcessGrid(world_comm_, process_slices_in=process_slices_, &
-         & be_verbose_in=be_verbose)
+         & be_verbose_in=LOGICAL(be_verbose))
   END SUBROUTINE ConstructGlobalProcessGrid_onlyslice_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
@@ -66,7 +66,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & BIND(c,name="ConstructGlobalProcessGrid_default_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
-    CALL ConstructProcessGrid(world_comm_, be_verbose_in=be_verbose)
+    CALL ConstructProcessGrid(world_comm_, be_verbose_in=LOGICAL(be_verbose))
   END SUBROUTINE ConstructGlobalProcessGrid_default_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.

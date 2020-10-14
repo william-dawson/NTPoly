@@ -21,7 +21,6 @@ MODULE PSMatrixAlgebraModule
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY : TripletList_r, TripletList_c
   USE NTMPIModule
-  USE, INTRINSIC :: ISO_C_BINDING
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
