@@ -22,6 +22,8 @@ MODULE SolverParametersModule
      LOGICAL :: do_load_balancing
      !> The permutation used for load balancing.
      TYPE(Permutation_t) :: BalancePermutation
+     !> Whether to perform automatic calculation halting when possible.
+     LOGICAL :: parameterless_stop
   END TYPE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SolverParameters_t
@@ -33,6 +35,7 @@ MODULE SolverParametersModule
   PUBLIC :: SetParametersThreshold
   PUBLIC :: SetParametersBeVerbose
   PUBLIC :: SetParametersLoadBalance
+  PUBLIC :: SetParametersParameterlessStop
   PUBLIC :: PrintParameters
   PUBLIC :: DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -43,7 +46,8 @@ MODULE SolverParametersModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a data type which stores iterative solver parameters.
   PURE FUNCTION SolverParameters_init(converge_diff_in, threshold_in, &
-       & max_iterations_in, be_verbose_in, BalancePermutation_in) RESULT(this)
+       & max_iterations_in, be_verbose_in, BalancePermutation_in, &
+       & parameterless_stop_in) RESULT(this)
     !> Converge_diff_in the difference between iterations to consider
     !> a calculation converged.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: converge_diff_in
@@ -53,6 +57,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN), OPTIONAL :: max_iterations_in
     !> Whether to print during the calculation (default = False)
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
+    !> Whether to activate automatic stopping criteria.
+    LOGICAL, INTENT(IN), OPTIONAL :: parameterless_stop_in
     !> For load balancing
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
     TYPE(SolverParameters_t) :: this
@@ -83,6 +89,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        this%do_load_balancing = .TRUE.
        this%BalancePermutation = BalancePermutation_in
+    END IF
+    IF (.NOT. PRESENT(parameterless_stop_in)) THEN
+       this%parameterless_stop = .TRUE.
+    ELSE
+       this%parameterless_stop = parameterless_stop_in
     END IF
   END FUNCTION SolverParameters_init
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -137,6 +148,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%BalancePermutation = new_value
   END SUBROUTINE SetParametersLoadBalance
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the paramterless stopping criteria.
+  PURE SUBROUTINE SetParametersParameterlessStop(this,new_value)
+    !> The parameter object.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
+    LOGICAL, INTENT(IN) :: new_value
+
+    this%parameterless_stop = new_value
+  END SUBROUTINE SetParametersParameterlessStop
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the iterative solver parameter values.
   SUBROUTINE PrintParameters(this)
     !> The parameter object.
@@ -149,6 +170,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteElement(key="converge_diff", VALUE=this%converge_diff)
     CALL WriteElement(key="threshold", VALUE=this%threshold)
     CALL WriteElement(key="max_iterations", VALUE=this%max_iterations)
+    CALL WriteElement(key="parameterless_stop", VALUE=this%parameterless_stop)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
