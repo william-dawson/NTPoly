@@ -23,6 +23,9 @@ public:
   //! Whether to have a verbose calculation.
   //!\param new_value
   void SetVerbosity(bool new_value);
+  //! Whether to trigger the parameterless stopping criteria.
+  //!\param new_value
+  void SetParameterlessStop(bool new_value);
   //! Threshold for flushing small values.
   //!\param new_value
   void SetThreshold(double new_value);

@@ -5,7 +5,8 @@ MODULE SolverParametersModule_wrp
   USE SolverParametersModule, ONLY : SolverParameters_t, &
        & SetParametersConvergeDiff, SetParametersMaxIterations, &
        & SetParametersThreshold, SetParametersBeVerbose, &
-       & SetParametersLoadBalance, DestructSolverParameters
+       & SetParametersLoadBalance, SetParametersParameterlessStop, &
+       & DestructSolverParameters
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_bool, c_int
@@ -24,6 +25,7 @@ MODULE SolverParametersModule_wrp
   PUBLIC :: SetParametersMaxIterations_wrp
   PUBLIC :: SetParametersThreshold_wrp
   PUBLIC :: SetParametersBeVerbose_wrp
+  PUBLIC :: SetParametersParameterlessStop_wrp
   PUBLIC :: SetParametersLoadBalance_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the iterat solver parameters.
@@ -92,6 +94,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     CALL SetParametersBeVerbose(h_this%DATA,LOGICAL(new_value))
   END SUBROUTINE SetParametersBeVerbose_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the verbosity.
+  SUBROUTINE SetParametersParameterlessStop_wrp(ih_this,new_value) &
+       & BIND(c,name="SetParametersParameterlessStop_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    LOGICAL(kind=c_bool), INTENT(IN) :: new_value
+    TYPE(SolverParameters_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    CALL SetParametersParameterlessStop(h_this%DATA,LOGICAL(new_value))
+  END SUBROUTINE SetParametersParameterlessStop_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the load balancing permutation.
   SUBROUTINE SetParametersLoadBalance_wrp(ih_this,ih_new_value) &

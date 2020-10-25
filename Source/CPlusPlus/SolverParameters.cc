@@ -30,6 +30,11 @@ void SolverParameters::SetVerbosity(bool new_value) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void SolverParameters::SetParameterlessStop(bool new_value) {
+  SetParametersParameterlessStop_wrp(ih_this, &new_value);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void SolverParameters::SetThreshold(double new_value) {
   SetParametersThreshold_wrp(ih_this, &new_value);
 }
