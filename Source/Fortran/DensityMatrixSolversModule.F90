@@ -9,7 +9,7 @@ MODULE DensityMatrixSolversModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
-       & DotMatrix, MatrixTrace, ScaleMatrix
+       & DotMatrix, MatrixTrace, ScaleMatrix, MatrixNorm
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
@@ -57,13 +57,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: trace_value2
-    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_diff
     REAL(NTREAL) :: energy_value, energy_value2
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: outer_counter, inner_counter
+    INTEGER :: II, JJ
     INTEGER :: total_iterations
 
     !! Optional Parameters
@@ -135,10 +135,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
+    II = 1
+    energy_diff = solver_parameters%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
+    DO II = 1,solver_parameters%max_iterations
        !! Compute X_k2
        CALL MatrixMultiply(X_k,X_k,X_k2, &
             & threshold_in=solver_parameters%threshold, &
@@ -158,18 +158,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Sigma
        CALL MatrixTrace(TempMat, trace_value)
        CALL DotMatrix(TempMat,X_k,trace_value2)
-       sigma_array(outer_counter) = trace_value2/trace_value
+       sigma_array(II) = trace_value2/trace_value
 
-       IF (sigma_array(outer_counter) .GT. 0.5_NTREAL) THEN
+       IF (sigma_array(II) .GT. 0.5_NTREAL) THEN
           a1 = 0.0_NTREAL
-          a2 = 1.0_NTREAL+1.0_NTREAL/sigma_array(outer_counter)
-          a3 = -1.0_NTREAL/sigma_array(outer_counter)
+          a2 = 1.0_NTREAL+1.0_NTREAL/sigma_array(II)
+          a3 = -1.0_NTREAL/sigma_array(II)
        ELSE
-          a1 = (1.0_NTREAL-2.0_NTREAL*sigma_array(outer_counter)) &
-               & / (1.0_NTREAL-sigma_array(outer_counter))
-          a2 = (1.0_NTREAL+sigma_array(outer_counter)) &
-               & / (1.0_NTREAL-sigma_array(outer_counter))
-          a3 = -1.0_NTREAL/(1.0_NTREAL-sigma_array(outer_counter))
+          a1 = (1.0_NTREAL-2.0_NTREAL*sigma_array(II)) &
+               & / (1.0_NTREAL-sigma_array(II))
+          a2 = (1.0_NTREAL+sigma_array(II)) &
+               & / (1.0_NTREAL-sigma_array(II))
+          a3 = -1.0_NTREAL/(1.0_NTREAL-sigma_array(II))
        END IF
 
        !! Update X_k
@@ -185,24 +185,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        energy_value2 = energy_value
        CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       energy_diff = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=II)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
+          CALL WriteElement(key="Convergence", VALUE=energy_diff)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (energy_diff .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
     END DO
-    total_iterations = outer_counter-1
+    total_iterations = II-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -236,21 +236,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        interval_a = 0.0_NTREAL
        interval_b = 1.0_NTREAL
        midpoint = 0.0_NTREAL
-       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+       midpoints: DO II = 1,solver_parameters%max_iterations
           midpoint = (interval_b - interval_a)/2.0_NTREAL + interval_a
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
-          polynomial:DO inner_counter=1,total_iterations
-             IF (sigma_array(inner_counter) .GT. 0.5_NTREAL) THEN
-                zero_value = ((1.0_NTREAL+sigma_array(inner_counter)) &
+          polynomial:DO JJ=1,total_iterations
+             IF (sigma_array(JJ) .GT. 0.5_NTREAL) THEN
+                zero_value = ((1.0_NTREAL+sigma_array(JJ)) &
                      & *zero_value**2) - (zero_value**3)
-                zero_value = zero_value/sigma_array(inner_counter)
+                zero_value = zero_value/sigma_array(JJ)
              ELSE
                 zero_value = ((1.0_NTREAL - 2.0_NTREAL* &
-                     & sigma_array(inner_counter))*zero_value) &
-                     & + ((1.0_NTREAL+sigma_array(inner_counter))* &
+                     & sigma_array(JJ))*zero_value) &
+                     & + ((1.0_NTREAL+sigma_array(JJ))* &
                      & zero_value**2) - (zero_value**3)
-                zero_value = zero_value/(1.0_NTREAL-sigma_array(inner_counter))
+                zero_value = zero_value/(1.0_NTREAL-sigma_array(JJ))
              END IF
           END DO polynomial
           !! Change bracketing.
@@ -281,7 +281,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PM
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS2 method.
-  !> Based on the TRS2 algorithm presented in \cite niklasson2002.
+  !> Also know as the SP2 method. Based on the algorithm presented in
+  !> \cite niklasson2002.
   SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from
@@ -308,13 +309,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_diff
     REAL(NTREAL) :: energy_value, energy_value2
+    !! For the parameterless stopping criteria
+    INTEGER :: P1, P2
+    REAL(NTREAL) :: E1, E2, E3
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: outer_counter, inner_counter
+    INTEGER :: II, JJ
     INTEGER :: total_iterations
 
     !! Optional Parameters
@@ -371,16 +375,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
+    II = 1
+    energy_diff = solver_parameters%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
+    P1 = -1
+    P2 = -2
+    DO II = 1,solver_parameters%max_iterations
        !! Compute Sigma
        CALL MatrixTrace(X_k, trace_value)
        IF (nel*0.5_NTREAL - trace_value .LT. 0.0_NTREAL) THEN
-          sigma_array(outer_counter) = -1.0_NTREAL
+          sigma_array(II) = -1.0_NTREAL
        ELSE
-          sigma_array(outer_counter) = 1.0_NTREAL
+          sigma_array(II) = 1.0_NTREAL
        END IF
 
        !! Compute X_k2
@@ -389,7 +395,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & memory_pool_in=pool)
 
        !! Update X_k
-       IF (sigma_array(outer_counter) .GT. 0.0_NTREAL) THEN
+       CALL CopyMatrix(X_k, TempMat)
+       IF (sigma_array(II) .GT. 0.0_NTREAL) THEN
           CALL ScaleMatrix(X_k,2.0_NTREAL)
           CALL IncrementMatrix(X_k2,X_k, &
                & alpha_in=-1.0_NTREAL, &
@@ -402,24 +409,45 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        energy_value2 = energy_value
        CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       energy_diff = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=II)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
+          CALL WriteElement(key="Convergence", VALUE=energy_diff)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       !! Energy based convergence.
+       IF (energy_diff .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
+
+       !! Parameterless Based Convergence
+       IF (solver_parameters%parameterless_stop) THEN
+          P2 = P1
+          E3 = E2
+          E2 = E1
+          IF ((sigma_array(II) .GT. 0.0_NTREAL) .OR. (MOD(II, 2) .EQ. 0) .OR. &
+               (trace_value .EQ. nel*0.5)) THEN
+             P1 = 1
+          ELSE
+             P1 = 0
+          END IF
+          CALL IncrementMatrix(X_k2, TempMat, alpha_in=-1.0_NTREAL, &
+               & threshold_in=solver_parameters%threshold)
+          E1 = MatrixNorm(TempMat)
+          IF ((II .GT. 2) .AND. (P1 .NE. P2) .AND. &
+               (E1 .GT. 6.8872_NTREAL*E3**2) .AND. (E1 .LT. 0.1325_NTREAL)) THEN
+             EXIT
+          END IF
+       END IF
     END DO
-    total_iterations = outer_counter-1
+    total_iterations = II-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -452,12 +480,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        interval_a = 0.0_NTREAL
        interval_b = 1.0_NTREAL
        midpoint = 0.0_NTREAL
-       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+       midpoints: DO II = 1,solver_parameters%max_iterations
           midpoint = (interval_b - interval_a)/2.0_NTREAL + interval_a
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
-          polynomial:DO inner_counter=1,total_iterations
-             IF (sigma_array(inner_counter) .LT. 0.0_NTREAL) THEN
+          polynomial:DO JJ=1,total_iterations
+             IF (sigma_array(JJ) .LT. 0.0_NTREAL) THEN
                 zero_value = zero_value*zero_value
              ELSE
                 zero_value = 2.0_NTREAL*zero_value - zero_value*zero_value
@@ -517,14 +545,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
-    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_diff
     REAL(NTREAL) :: energy_value, energy_value2
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     REAL(NTREAL) :: tempfx,tempgx
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: outer_counter, inner_counter
+    INTEGER :: II, JJ
     INTEGER :: total_iterations
     REAL(NTREAL) :: trace_fx, trace_gx
 
@@ -584,10 +612,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
+    II = 1
+    energy_diff = solver_parameters%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
+    DO II = 1,solver_parameters%max_iterations
        !! Compute X_k2
        CALL MatrixMultiply(X_k, X_k, X_k2, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
@@ -610,17 +638,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute Sigma
-       sigma_array(outer_counter) = (nel*0.5_NTREAL-trace_fx)/trace_gx
+       sigma_array(II) = (nel*0.5_NTREAL-trace_fx)/trace_gx
 
        !! Update The Matrix
-       IF (sigma_array(outer_counter) .GT. sigma_max) THEN
+       IF (sigma_array(II) .GT. sigma_max) THEN
           CALL CopyMatrix(X_k, TempMat)
           CALL ScaleMatrix(TempMat, 2.0_NTREAL)
           CALL IncrementMatrix(X_k2, TempMat, alpha_in=-1.0_NTREAL)
-       ELSE IF (sigma_array(outer_counter) .LT. sigma_min) THEN
+       ELSE IF (sigma_array(II) .LT. sigma_min) THEN
           CALL CopyMatrix(X_k2, TempMat)
        ELSE
-          CALL ScaleMatrix(Gx_right,sigma_array(outer_counter))
+          CALL ScaleMatrix(Gx_right,sigma_array(II))
           CALL IncrementMatrix(Fx_right,Gx_right)
           CALL MatrixMultiply(X_k2, Gx_right, TempMat, &
                & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
@@ -633,24 +661,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        energy_value2 = energy_value
        CALL DotMatrix(X_k,WorkingHamiltonian,energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       energy_diff = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=II)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
+          CALL WriteElement(key="Convergence", VALUE=energy_diff)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (energy_diff .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
     END DO
-    total_iterations = outer_counter-1
+    total_iterations = II-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -685,14 +713,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        interval_a = 0.0_NTREAL
        interval_b = 1.0_NTREAL
        midpoint = 0.0_NTREAL
-       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+       midpoints: DO II = 1,solver_parameters%max_iterations
           midpoint = (interval_b - interval_a)/2.0_NTREAL + interval_a
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
-          polynomial:DO inner_counter=1,total_iterations
-             IF (sigma_array(inner_counter) .GT. sigma_max) THEN
+          polynomial:DO JJ=1,total_iterations
+             IF (sigma_array(JJ) .GT. sigma_max) THEN
                 zero_value = 2.0_NTREAL*zero_value - zero_value*zero_value
-             ELSE IF (sigma_array(inner_counter) .LT. sigma_min) THEN
+             ELSE IF (sigma_array(JJ) .LT. sigma_min) THEN
                 zero_value = zero_value*zero_value
              ELSE
                 tempfx = (zero_value*zero_value) * &
@@ -700,7 +728,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                      & 3.0_NTREAL*zero_value*zero_value)
                 tempgx = (zero_value*zero_value) * (1.0_NTREAL-zero_value) &
                      & * (1.0_NTREAL-zero_value)
-                zero_value = tempfx + sigma_array(inner_counter)*tempgx
+                zero_value = tempfx + sigma_array(JJ)*tempgx
              END IF
           END DO polynomial
           !! Change bracketing.
@@ -767,7 +795,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: outer_counter, inner_counter
+    INTEGER :: II, JJ
     INTEGER :: total_iterations
     INTEGER :: matrix_dimension
 
@@ -841,12 +869,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
+    II = 1
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     norm_value2 = norm_value
     energy_value = 0.0_NTREAL
 
-    DO outer_counter = 1,solver_parameters%max_iterations
+    DO II = 1,solver_parameters%max_iterations
        !! Compute the hole matrix DH
        CALL CopyMatrix(D1,DH)
        CALL IncrementMatrix(Identity,DH,alpha_in=-1.0_NTREAL)
@@ -864,8 +892,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & memory_pool_in=pool)
 
        !! Compute Sigma
-       CALL MatrixTrace(D2DH, sigma_array(outer_counter))
-       sigma_array(outer_counter) = sigma_array(outer_counter)/trace_value
+       CALL MatrixTrace(D2DH, sigma_array(II))
+       sigma_array(II) = sigma_array(II)/trace_value
 
        CALL CopyMatrix(D1,TempMat)
 
@@ -874,7 +902,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Compute D1 + 2*D2DH -2*Sigma*DDH
        CALL IncrementMatrix(DDH, D1, &
-            & alpha_in=-1.0_NTREAL*2.0_NTREAL*sigma_array(outer_counter))
+            & alpha_in=-1.0_NTREAL*2.0_NTREAL*sigma_array(II))
 
        !! Energy value based convergence
        energy_value2 = energy_value
@@ -883,7 +911,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=II)
           CALL EnterSubLog
           CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
@@ -894,10 +922,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           EXIT
        END IF
     END DO
-    total_iterations = outer_counter-1
+    total_iterations = II-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(D1)
     END IF
 
@@ -932,14 +960,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        interval_a = 0.0_NTREAL
        interval_b = 1.0_NTREAL
        midpoint = 0.0_NTREAL
-       midpoints: DO outer_counter = 1,solver_parameters%max_iterations
+       midpoints: DO II = 1,solver_parameters%max_iterations
           midpoint = (interval_b - interval_a)/2.0_NTREAL + interval_a
           zero_value = midpoint
           !! Compute polynomial function at the guess point.
-          polynomial:DO inner_counter=1,total_iterations
+          polynomial:DO JJ=1,total_iterations
              zero_value = zero_value + &
                   & 2.0_NTREAL*((zero_value**2)*(1.0_NTREAL-zero_value) &
-                  & - sigma_array(inner_counter)* &
+                  & - sigma_array(JJ)* &
                   & zero_value*(1.0_NTREAL-zero_value))
           END DO polynomial
           !! Change bracketing.
@@ -998,11 +1026,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: Beta, BetaBar, alpha
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_diff
     REAL(NTREAL) :: energy_value, energy_value2
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: outer_counter
+    INTEGER :: II
     INTEGER :: total_iterations
 
     !! Optional Parameters
@@ -1059,10 +1087,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
+    II = 1
+    energy_diff = solver_parameters%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
+    DO II = 1,solver_parameters%max_iterations
        !! Determine the path
        CALL MatrixTrace(X_k, trace_value)
        IF (trace_value .GT. 0.5*nel) THEN
@@ -1090,24 +1118,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        energy_value2 = energy_value
        CALL DotMatrix(X_k, WorkingHamiltonian, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       energy_diff = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Round", VALUE=II)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
+          CALL WriteElement(key="Convergence", VALUE=energy_diff)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (energy_diff .LE. solver_parameters%converge_diff) THEN
           EXIT
        END IF
     END DO
-    total_iterations = outer_counter-1
+    total_iterations = II-1
     IF (solver_parameters%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
