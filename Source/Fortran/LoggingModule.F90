@@ -7,15 +7,17 @@ MODULE LoggingModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTEGER :: CurrentLevel = 0
   LOGICAL :: IsActive = .FALSE.
+  INTEGER :: UNIT = 6
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ActivateLogger
   PUBLIC :: DeactivateLogger
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EnterSubLog
+  PUBLIC :: ExitSubLog
+  PUBLIC :: WriteCitation
+  PUBLIC :: WriteElement
   PUBLIC :: WriteHeader
   PUBLIC :: WriteListElement
-  PUBLIC :: WriteElement
-  PUBLIC :: WriteCitation
-  PUBLIC :: ExitSubLog
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE WriteListElement
      MODULE PROCEDURE WriteListElement_bool
@@ -57,8 +59,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (IsActive) THEN
        CALL WriteIndent
-       WRITE(*,'(A)',ADVANCE='no') header_value
-       WRITE(*,'(A1)') ":"
+       WRITE(UNIT,'(A)',ADVANCE='no') header_value
+       WRITE(UNIT,'(A1)') ":"
     END IF
   END SUBROUTINE WriteHeader
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -72,14 +74,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') key
        IF (VALUE) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": True"
+          WRITE(UNIT,'(A)',ADVANCE='no') ": True"
        ELSE
-          WRITE(*,'(A)',ADVANCE='no') ": False"
+          WRITE(UNIT,'(A)',ADVANCE='no') ": False"
        END IF
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteElement_bool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -93,11 +95,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') key
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(ES22.14)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') ": "
+       WRITE(UNIT,'(ES22.14)',ADVANCE='no') VALUE
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteElement_float
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -111,11 +113,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') key
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(I10)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') ": "
+       WRITE(UNIT,'(I10)',ADVANCE='no') VALUE
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteElement_int
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -129,11 +131,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') key
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(A)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') ": "
+       WRITE(UNIT,'(A)',ADVANCE='no') VALUE
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteElement_string
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -147,15 +149,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') "- "
-       WRITE(*,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') "- "
+       WRITE(UNIT,'(A)',ADVANCE='no') key
        IF (VALUE) THEN
-          WRITE(*,'(A)',ADVANCE='no') ": True"
+          WRITE(UNIT,'(A)',ADVANCE='no') ": True"
        ELSE
-          WRITE(*,'(A)',ADVANCE='no') ": False"
+          WRITE(UNIT,'(A)',ADVANCE='no') ": False"
        END IF
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteListElement_bool
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -169,12 +171,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') "- "
-       WRITE(*,'(A)',ADVANCE='no') key
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(ES22.14)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(A)',ADVANCE='no') "- "
+       WRITE(UNIT,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') ": "
+       WRITE(UNIT,'(ES22.14)',ADVANCE='no') VALUE
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteListElement_float
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -188,12 +190,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') "- "
-       WRITE(*,'(A)',ADVANCE='no') key
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(I10)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(A)',ADVANCE='no') "- "
+       WRITE(UNIT,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') ": "
+       WRITE(UNIT,'(I10)',ADVANCE='no') VALUE
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteListElement_int
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -207,12 +209,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(*,'(A)',ADVANCE='no') "- "
-       WRITE(*,'(A)',ADVANCE='no') key
-       WRITE(*,'(A)',ADVANCE='no') ": "
-       WRITE(*,'(A)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(A)',ADVANCE='no') "- "
+       WRITE(UNIT,'(A)',ADVANCE='no') key
+       WRITE(UNIT,'(A)',ADVANCE='no') ": "
+       WRITE(UNIT,'(A)',ADVANCE='no') VALUE
 
-       WRITE(*,*)
+       WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteListElement_string
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -224,19 +226,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (IsActive) THEN
        CALL WriteIndent
-       WRITE(*,'(A)') "Citations:"
+       WRITE(UNIT,'(A)') "Citations:"
        CALL EnterSubLog
 
        pos1 = 1
        pos2 = INDEX(citation_list(pos1:), ' ')
        DO WHILE(pos2 .NE. 0)
           CALL WriteIndent
-          WRITE(*,'(A)') citation_list(pos1:pos1+pos2-1)
+          WRITE(UNIT,'(A)') citation_list(pos1:pos1+pos2-1)
           pos1 = pos1 + pos2
           pos2 = INDEX(citation_list(pos1:), ' ')
        END DO
        CALL WriteIndent
-       WRITE(*,'(A)') citation_list(pos1:)
+       WRITE(UNIT,'(A)') citation_list(pos1:)
 
        CALL ExitSubLog
     END IF
@@ -247,7 +249,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: counter
 
     DO counter=1,CurrentLevel*2
-       WRITE(*,'(A1)',ADVANCE='NO') " "
+       WRITE(UNIT,'(A1)',ADVANCE='NO') " "
     END DO
   END SUBROUTINE WriteIndent
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
