@@ -33,13 +33,24 @@ MODULE LoggingModule
   END INTERFACE WriteElement
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger.
-  SUBROUTINE ActivateLogger
+  SUBROUTINE ActivateLogger(file_name_in)
+    !> An optional file name for writing to.
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: file_name_in
+
     IsActive = .TRUE.
+    IF (PRESENT(file_name_in)) THEN
+       UNIT = 14
+       OPEN(unit = UNIT, file = file_name_in)
+    END IF
   END SUBROUTINE ActivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deactivate the logger.
   SUBROUTINE DeactivateLogger
     IsActive = .FALSE.
+    IF (UNIT .NE. 6) THEN
+       CLOSE(UNIT)
+       UNIT = 6
+    END IF
   END SUBROUTINE DeactivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Call this subroutine when you enter into a section with verbose output

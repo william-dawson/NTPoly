@@ -9,6 +9,7 @@ set(Csrc
     InverseSolvers.cc
     LinearSolvers.cc
     LoadBalancer.cc
+    Logging.cc
     MatrixConversion.cc
     MatrixMapper.cc
     MatrixMemoryPool.cc
@@ -37,6 +38,7 @@ set(Chead
     InverseSolvers.h
     LinearSolvers.h
     LoadBalancer.h
+    Logging.h
     MatrixConversion.h
     MatrixMapper.h
     MatrixMemoryPool.h

@@ -7,7 +7,7 @@ import warnings
 from scipy.sparse import csr_matrix
 from scipy.io import mmread
 from mpi4py import MPI
-from helpers import result_file
+from helpers import result_file, log_file
 
 
 # MPI global communicator.
@@ -39,10 +39,14 @@ class TestSolvers(unittest.TestCase):
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
+        if nt.GetGlobalIsRoot():
+            nt.ActivateLoggerFile(log_file)
 
     @classmethod
     def tearDownClass(self):
         '''Cleanup this test'''
+        if nt.GetGlobalIsRoot():
+            nt.DeactivateLogger()
         nt.DestructGlobalProcessGrid()
 
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
@@ -85,6 +89,7 @@ class TestSolvers(unittest.TestCase):
         '''Compare two computed matrices.'''
         from helpers import THRESHOLD
         from scipy.sparse.linalg import norm
+        from yaml import load
         normval = 0
         relative_error = 0
         if (self.my_rank == 0):
@@ -93,6 +98,8 @@ class TestSolvers(unittest.TestCase):
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
+            with open(log_file) as ifile:
+                load(ifile)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 
