@@ -4,7 +4,7 @@ MODULE GeometryOptimizationModule
   USE DataTypesModule, ONLY : NTREAL
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteElement, WriteListElement, WriteCitation
+       & WriteElement, WriteListElement
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, &
@@ -59,7 +59,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Purification")
-       CALL WriteCitation("niklasson2010trace")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("niklasson2010trace")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -107,9 +110,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = MatrixNorm(WorkingDensity)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement(key="Trace", VALUE=trace_value)
           CALL ExitSubLog
        END IF
@@ -180,7 +182,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Lowdin")
-       CALL WriteCitation("exner2002comparison")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("exner2002comparison")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 

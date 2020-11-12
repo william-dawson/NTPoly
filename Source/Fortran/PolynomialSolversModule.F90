@@ -4,7 +4,7 @@ MODULE PolynomialSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-       & WriteCitation, WriteHeader
+       & WriteListElement, WriteHeader
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
@@ -206,7 +206,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Paterson Stockmeyer")
-       CALL WriteCitation("paterson1973number")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("paterson1973number")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
        CALL WriteElement(key="Degree", VALUE=degree-1)
     END IF
