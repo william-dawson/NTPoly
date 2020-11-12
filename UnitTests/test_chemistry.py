@@ -73,14 +73,19 @@ class TestChemistry:
     def setUpClass(self):
         '''Set up all of the tests.'''
         from os import environ
+        from helpers import log_file
         rows = int(environ['PROCESS_ROWS'])
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
+        if nt.GetGlobalIsRoot():
+            nt.ActivateLoggerFile(log_file)
 
     @classmethod
     def tearDownClass(self):
         '''Cleanup this test'''
+        if nt.GetGlobalIsRoot():
+            nt.DeactivateLogger()
         nt.DestructGlobalProcessGrid()
 
     def setUp(self):
@@ -106,9 +111,10 @@ class TestChemistry:
 
     def check_full(self):
         '''Compare two computed matrices.'''
-        from helpers import THRESHOLD, result_file
+        from helpers import THRESHOLD, result_file, log_file
         from scipy.sparse.linalg import norm
         from scipy.io import mmread
+        from yaml import load
 
         normval = 0
         if (self.my_rank == 0):
@@ -117,6 +123,8 @@ class TestChemistry:
             normval = abs(norm(self.CheckMat - ResultMat))
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
+        with open(log_file) as ifile:
+            load(ifile)
 
     def check_full_extrap(self):
         '''Compare two computed matrices.'''

@@ -8,6 +8,7 @@ set(Csrc
     InverseSolvers_c.h
     LinearSolvers_c.h
     LoadBalancer_c.h
+    Logging_c.h
     MatrixConversion_c.h
     MatrixMemoryPool_c.h
     PMatrixMemoryPool_c.h

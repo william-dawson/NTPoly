@@ -2,7 +2,7 @@
 !> A module to manage the process grid.
 MODULE ProcessGridModule
   USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError
-  USE LoggingModule, ONLY : ActivateLogger, EnterSubLog, ExitSubLog, &
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
   USE NTMPIModule
 #ifdef _OPENMP
@@ -103,9 +103,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & process_columns_, process_slices_)
 
     !! Report
-    IF (IsRoot(global_grid)) THEN
-       CALL ActivateLogger
-    END IF
     IF (be_verbose) THEN
        CALL WriteHeader("Process Grid")
        CALL EnterSubLog
@@ -547,16 +544,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SplitProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Check if the current process is the root process.
-  FUNCTION IsRoot(grid) RESULT(is_root)
+  FUNCTION IsRoot(grid_in) RESULT(is_root)
     !! Parameters
     !> The process grid.
-    TYPE(ProcessGrid_t), INTENT(IN) :: grid
+    TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: grid_in
     !> True if the current process is root.
     LOGICAL :: is_root
-    IF (grid%global_rank == 0) THEN
-       is_root = .TRUE.
+
+    IF (PRESENT(grid_in)) THEN
+       is_root = (grid_in%global_rank .EQ. 0)
     ELSE
-       is_root = .FALSE.
+       is_root = (global_grid%global_rank .EQ. 0)
     END IF
   END FUNCTION IsRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

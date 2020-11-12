@@ -1,9 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A wrapper for the process grid module.
 MODULE ProcessGridModule_wrp
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
-       & GetMySlice, GetMyColumn, GetMyRow, global_grid, ProcessGrid_t, &
-       & ConstructNewProcessGrid, CopyProcessGrid
+  USE ProcessGridModule
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_bool
   IMPLICIT NONE
@@ -20,6 +18,7 @@ MODULE ProcessGridModule_wrp
   PUBLIC :: GetGlobalMySlice_wrp
   PUBLIC :: GetGlobalMyColumn_wrp
   PUBLIC :: GetGlobalMyRow_wrp
+  PUBLIC :: GetGlobalIsRoot_wrp
   PUBLIC :: GetGlobalNumSlices_wrp
   PUBLIC :: GetGlobalNumColumns_wrp
   PUBLIC :: GetGlobalNumRows_wrp
@@ -90,6 +89,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int) :: return_val
     return_val = GetMyRow()
   END FUNCTION GetGlobalMyRow_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Get if the current process is root.
+  FUNCTION GetGlobalIsRoot_wrp() RESULT(return_val) &
+       & BIND(c,name="GetGlobalIsRoot_wrp")
+    LOGICAL(kind=c_bool) :: return_val
+    return_val = LOGICAL(IsRoot(),KIND=c_bool)
+  END FUNCTION GetGlobalIsRoot_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of process slices.
   FUNCTION GetGlobalNumSlices_wrp() RESULT(return_val) &
