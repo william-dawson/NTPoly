@@ -8,6 +8,7 @@ MODULE LoggingModule
   INTEGER :: CurrentLevel = 0
   LOGICAL :: IsActive = .FALSE.
   INTEGER :: UNIT = 6
+  LOGICAL :: file_open = .TRUE.
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ActivateLogger
   PUBLIC :: DeactivateLogger
@@ -32,16 +33,26 @@ MODULE LoggingModule
   END INTERFACE WriteElement
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger.
-  SUBROUTINE ActivateLogger(start_document_in, file_name_in)
+  SUBROUTINE ActivateLogger(start_document_in, file_name_in, unit_in)
     !> If this is a new document we can write the start document marker.
     LOGICAL, INTENT(IN), OPTIONAL :: start_document_in
     !> An optional file name for writing to.
     CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: file_name_in
+    !> An optional fortran i/o unit override.
+    INTEGER, INTENT(IN), OPTIONAL :: unit_in
 
     IsActive = .TRUE.
+
+    IF (PRESENT(unit_in)) THEN
+       UNIT = unit_in
+    END IF
+
     IF (PRESENT(file_name_in)) THEN
-       UNIT = 14
+       IF (.NOT. PRESENT(unit_in)) THEN
+          UNIT = 14
+       END IF
        OPEN(unit = UNIT, file = file_name_in)
+       file_open = .TRUE.
     END IF
 
     IF (PRESENT(start_document_in)) THEN
@@ -54,10 +65,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Deactivate the logger.
   SUBROUTINE DeactivateLogger
     IsActive = .FALSE.
-    IF (UNIT .NE. 6) THEN
+    IF (file_open) THEN
        CLOSE(UNIT)
-       UNIT = 6
     END IF
+    UNIT = 6
   END SUBROUTINE DeactivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Call this subroutine when you enter into a section with verbose output
