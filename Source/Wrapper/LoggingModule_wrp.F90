@@ -2,7 +2,7 @@
 !> A module for writing data to the log file.
 MODULE LoggingModule_wrp
   USE LoggingModule
-  USE ISO_C_BINDING, ONLY : c_char, c_int
+  USE ISO_C_BINDING, ONLY : c_char, c_int, c_bool
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -11,8 +11,9 @@ MODULE LoggingModule_wrp
   PUBLIC :: DeactivateLogger_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger and have it write to a file.
-  SUBROUTINE ActivateLoggerFile_wrp(file_name, name_size) &
+  SUBROUTINE ActivateLoggerFile_wrp(start_document, file_name, name_size) &
        & BIND(C,NAME="ActivateLoggerFile_wrp")
+    LOGICAL(KIND=C_BOOL) :: start_document
     CHARACTER(KIND=C_CHAR), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=C_INT), INTENT(IN) :: name_size
     !! Local Data
@@ -23,12 +24,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_string(II:II) = file_name(II)
     END DO
 
-    CALL ActivateLogger(local_string)
+    CALL ActivateLogger(LOGICAL(start_document), local_string)
   END SUBROUTINE ActivateLoggerFile_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger.
-  SUBROUTINE ActivateLogger_wrp() BIND(C,NAME="ActivateLogger_wrp")
-    CALL ActivateLogger()
+  SUBROUTINE ActivateLogger_wrp(start_document) &
+       & BIND(C,NAME="ActivateLogger_wrp")
+    LOGICAL(KIND=C_BOOL) :: start_document
+    CALL ActivateLogger(LOGICAL(start_document))
   END SUBROUTINE ActivateLogger_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger.

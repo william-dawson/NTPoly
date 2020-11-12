@@ -39,15 +39,34 @@ class TestSolvers(unittest.TestCase):
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
         nt.ConstructGlobalProcessGrid(rows, columns, slices)
-        if nt.GetGlobalIsRoot():
-            nt.ActivateLoggerFile(log_file)
 
     @classmethod
     def tearDownClass(self):
         '''Cleanup this test'''
+        nt.DestructGlobalProcessGrid()
+
+    def setUp(self):
+        '''Set up all of the tests.'''
+        from helpers import log_file
+        # Rank of the current process.
+        self.my_rank = comm.Get_rank()
+        # Parameters for iterative solvers.
+        self.isp = nt.SolverParameters()
+        # Parameters for fixed solvers.
+        self.fsp = nt.SolverParameters()
+        self.fsp.SetVerbosity(True)
+        self.isp.SetVerbosity(True)
+        if nt.GetGlobalIsRoot():
+            nt.ActivateLoggerFile(log_file, True)
+
+    def tearDown(self):
+        from yaml import load, dump
+        from sys import stdout
         if nt.GetGlobalIsRoot():
             nt.DeactivateLogger()
-        nt.DestructGlobalProcessGrid()
+            with open(log_file) as ifile:
+                data = load(ifile)
+            dump(data, stdout)
 
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''
@@ -74,22 +93,12 @@ class TestSolvers(unittest.TestCase):
             mmwrite(file_name, csr_matrix(mat))
         comm.barrier()
 
-    def setUp(self):
-        '''Set up all of the tests.'''
-        # Rank of the current process.
-        self.my_rank = comm.Get_rank()
-        # Parameters for iterative solvers.
-        self.isp = nt.SolverParameters()
-        # Parameters for fixed solvers.
-        self.fsp = nt.SolverParameters()
-        self.fsp.SetVerbosity(True)
-        self.isp.SetVerbosity(True)
-
     def check_result(self):
         '''Compare two computed matrices.'''
         from helpers import THRESHOLD
         from scipy.sparse.linalg import norm
-        from yaml import load
+        from yaml import load, dump
+        from sys import stdout
         normval = 0
         relative_error = 0
         if (self.my_rank == 0):
@@ -98,8 +107,6 @@ class TestSolvers(unittest.TestCase):
             relative_error = normval / norm(self.CheckMat)
             print("\nNorm:", normval)
             print("Relative_Error:", relative_error)
-            with open(log_file) as ifile:
-                load(ifile)
         global_error = comm.bcast(relative_error, root=0)
         self.assertLessEqual(global_error, THRESHOLD)
 

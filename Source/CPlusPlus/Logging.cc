@@ -7,13 +7,15 @@ extern "C" {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void ActivateLogger() { ActivateLogger_wrp(); }
+void ActivateLogger(bool start_document) {
+  ActivateLogger_wrp(&start_document);
+}
 
 ////////////////////////////////////////////////////////////////////////////////
-void ActivateLoggerFile(const string file_name) {
+void ActivateLoggerFile(const string file_name, bool start_document) {
   int string_length = file_name.length();
   string temp = file_name;
-  ActivateLoggerFile_wrp(&temp.c_str()[0], &string_length);
+  ActivateLoggerFile_wrp(&start_document, &temp.c_str()[0], &string_length);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -14,7 +14,6 @@ MODULE LoggingModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EnterSubLog
   PUBLIC :: ExitSubLog
-  PUBLIC :: WriteCitation
   PUBLIC :: WriteElement
   PUBLIC :: WriteHeader
   PUBLIC :: WriteListElement
@@ -33,7 +32,9 @@ MODULE LoggingModule
   END INTERFACE WriteElement
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Activate the logger.
-  SUBROUTINE ActivateLogger(file_name_in)
+  SUBROUTINE ActivateLogger(start_document_in, file_name_in)
+    !> If this is a new document we can write the start document marker.
+    LOGICAL, INTENT(IN), OPTIONAL :: start_document_in
     !> An optional file name for writing to.
     CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: file_name_in
 
@@ -41,6 +42,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(file_name_in)) THEN
        UNIT = 14
        OPEN(unit = UNIT, file = file_name_in)
+    END IF
+
+    IF (PRESENT(start_document_in)) THEN
+       IF (start_document_in) THEN
+          WRITE(UNIT, '(A3)') "---"
+       END IF
     END IF
   END SUBROUTINE ActivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -215,45 +222,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Some text to write.
     CHARACTER(LEN=*), INTENT(IN) :: key
     !> A text value to write.
-    CHARACTER(LEN=*), INTENT(IN) :: VALUE
+    CHARACTER(LEN=*), INTENT(IN), OPTIONAL :: VALUE
 
     IF (IsActive) THEN
        CALL WriteIndent
 
        WRITE(UNIT,'(A)',ADVANCE='no') "- "
        WRITE(UNIT,'(A)',ADVANCE='no') key
-       WRITE(UNIT,'(A)',ADVANCE='no') ": "
-       WRITE(UNIT,'(A)',ADVANCE='no') VALUE
+       IF (PRESENT(VALUE)) THEN
+          WRITE(UNIT,'(A)',ADVANCE='no') ": "
+          WRITE(UNIT,'(A)',ADVANCE='no') VALUE
+       END IF
 
        WRITE(UNIT,*)
     END IF
   END SUBROUTINE WriteListElement_string
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Write out a citation element.
-  SUBROUTINE WriteCitation(citation_list)
-    !> A list of citations, separated by a space.
-    CHARACTER(LEN=*), INTENT(IN) :: citation_list
-    INTEGER :: pos1, pos2
-
-    IF (IsActive) THEN
-       CALL WriteIndent
-       WRITE(UNIT,'(A)') "Citations:"
-       CALL EnterSubLog
-
-       pos1 = 1
-       pos2 = INDEX(citation_list(pos1:), ' ')
-       DO WHILE(pos2 .NE. 0)
-          CALL WriteIndent
-          WRITE(UNIT,'(A)') citation_list(pos1:pos1+pos2-1)
-          pos1 = pos1 + pos2
-          pos2 = INDEX(citation_list(pos1:), ' ')
-       END DO
-       CALL WriteIndent
-       WRITE(UNIT,'(A)') citation_list(pos1:)
-
-       CALL ExitSubLog
-    END IF
-  END SUBROUTINE WriteCitation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Writes out the indentation needed for this level
   SUBROUTINE WriteIndent
