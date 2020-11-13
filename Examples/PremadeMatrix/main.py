@@ -39,6 +39,8 @@ if __name__ == "__main__":
     # Setup the process grid.
     nt.ConstructGlobalProcessGrid(
         process_rows, process_columns, process_slices)
+    if nt.GetGlobalIsRoot():
+        nt.ActivateLogger()
 
     # Read in the matrices from file.
     Hamiltonian = nt.Matrix_ps(hamiltonian_file)
@@ -72,4 +74,8 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     Density.WriteToMatrixMarket(density_file_out)
+
+    # Cleanup
+    if nt.GetGlobalIsRoot():
+        nt.DeactivateLogger()
     nt.DestructGlobalProcessGrid()
