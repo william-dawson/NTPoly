@@ -115,7 +115,7 @@ class TestChemistry:
         self.mat_dim = 7
 
         if nt.GetGlobalIsRoot():
-            nt.ActivateLoggerFile(log_file, True)
+            nt.ActivateLogger(log_file, True)
 
     def check_full(self):
         '''Compare two computed matrices.'''
