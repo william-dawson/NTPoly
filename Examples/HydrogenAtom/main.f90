@@ -3,7 +3,10 @@
 PROGRAM HydrogenAtom
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
+  USE LoggingModule, ONLY : ActivateLogger, DeactivateLogger, WriteHeader, &
+       & WriteElement, EnterSubLog, ExitSubLog
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
+       & IsRoot
   USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, CopyMatrix, &
        & FillMatrixIdentity
@@ -76,6 +79,21 @@ PROGRAM HydrogenAtom
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
+  !! Write Out Parameters
+  IF (IsRoot()) THEN
+     CALL ActivateLogger
+  END IF
+  CALL WriteHeader("Command Line Parameters")
+  CALL EnterSubLog
+  CALL WriteElement(key="convergence_threshold", VALUE=convergence_threshold)
+  CALL WriteElement(key="grid_points", VALUE=grid_points)
+  CALL WriteElement(key="threshold", VALUE=threshold)
+  CALL WriteElement(key="process_rows", VALUE=process_rows)
+  CALL WriteElement(key="process_columns", VALUE=process_columns)
+  CALL WriteElement(key="process_slices", VALUE=process_slices)
+  CALL WriteElement(key="density_file_out", VALUE=density_file_out)
+  CALL ExitSubLog
+
   !! Set Up The Solver Parameters.
   solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
@@ -110,6 +128,9 @@ PROGRAM HydrogenAtom
   CALL WriteMatrixToMatrixMarket(Density,density_file_out)
 
   !! Cleanup
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

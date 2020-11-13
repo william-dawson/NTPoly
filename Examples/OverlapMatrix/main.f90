@@ -2,9 +2,11 @@
 !> An example that shows how to compute the overlap matrix.
 PROGRAM OverlapExample
   USE DataTypesModule, ONLY : NTREAL
+  USE LoggingModule, ONLY : ActivateLogger, DeactivateLogger, WriteElement, &
+       & WriteHeader, EnterSubLog, ExitSubLog
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
        & DestructPermutation
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, global_grid, &
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, global_grid, &
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & WriteMatrixToMatrixMarket, FillMatrixFromTripletList, DestructMatrix
@@ -70,6 +72,20 @@ PROGRAM OverlapExample
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
+  !! Print Out The Parameters
+  IF (IsRoot()) THEN
+     CALL ActivateLogger
+  END IF
+  CALL WriteHeader("Command Line Parameters")
+  CALL EnterSubLog
+  CALL WriteElement(key="basis_functions", VALUE=basis_functions)
+  CALL WriteElement(key="convergence_threshold", VALUE=convergence_threshold)
+  CALL WriteElement(key="threshold", VALUE=threshold)
+  CALL WriteElement(key="process_rows", VALUE=process_rows)
+  CALL WriteElement(key="process_columns", VALUE=process_columns)
+  CALL WriteElement(key="process_slices", VALUE=process_slices)
+  CALL ExitSubLog
+
   !! Timers
   CALL RegisterTimer("Construct Triplet List")
   CALL RegisterTimer("Fill")
@@ -128,6 +144,11 @@ PROGRAM OverlapExample
   CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
+
+  !! Cleanup
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

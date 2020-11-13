@@ -2,9 +2,11 @@
 !> An example which shows how to use the matrix mapping feature of NTPoly.
 PROGRAM MatrixMapsProgram
   USE DataTypesModule, ONLY : NTREAL
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, ActivateLogger, &
+       & DeactivateLogger, WriteElement, WriteHeader
   USE MatrixMapsModule, ONLY : MapMatrix_psr
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
+       & IsRoot
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & DestructMatrix, WriteMatrixToMatrixMarket
   USE MPI
@@ -43,6 +45,9 @@ PROGRAM MatrixMapsProgram
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_slices)
 
   !! Print out parameters.
+  IF (IsRoot()) THEN
+     CALL ActivateLogger
+  END IF
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="input_matrix", VALUE=input_matrix)
@@ -64,6 +69,9 @@ PROGRAM MatrixMapsProgram
   CALL DestructMatrix(OutMatrix)
 
   !! Cleanup
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

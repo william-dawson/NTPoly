@@ -3,7 +3,10 @@
 PROGRAM GraphTheory
   USE DataTypesModule, ONLY : NTREAL
   USE InverseSolversModule, ONLY : Invert
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
+  USE LoggingModule, ONLY : ActivateLogger, DeactivateLogger, WriteElement, &
+       & WriteHeader, EnterSubLog, ExitSubLog
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
+       & IsRoot
   USE PSMatrixModule, ONLY : Matrix_ps, WriteMatrixToMatrixMarket, &
        & ConstructEmptyMatrix, FillMatrixFromTripletList, DestructMatrix, &
        & CopyMatrix, FillMatrixIdentity
@@ -76,6 +79,23 @@ PROGRAM GraphTheory
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
+  !! Write Out Parameters
+  IF (IsRoot()) THEN
+     CALL ActivateLogger
+  END IF
+  CALL WriteHeader("Command Line Parameters")
+  CALL EnterSubLog
+  CALL WriteElement(key="number_of_nodes", VALUE=number_of_nodes)
+  CALL WriteElement(key="extra_connections", VALUE=extra_connections)
+  CALL WriteElement(key="threshold", VALUE=threshold)
+  CALL WriteElement(key="convergence_threshold", VALUE=convergence_threshold)
+  CALL WriteElement(key="attenuation", VALUE=attenuation)
+  CALL WriteElement(key="process_rows", VALUE=process_rows)
+  CALL WriteElement(key="process_columns", VALUE=process_columns)
+  CALL WriteElement(key="process_slices", VALUE=process_slices)
+  CALL WriteElement(key="output_file", VALUE=output_file)
+  CALL ExitSubLog
+
   !! Set Up The Solver Parameters.
   solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
@@ -96,6 +116,11 @@ PROGRAM GraphTheory
   !! Cleanup
   CALL DestructMatrix(NetworkMat)
   CALL DestructMatrix(ResultMat)
+
+  !! Cleanup
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
