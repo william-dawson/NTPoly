@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
   NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
                                      process_columns, process_slices, true);
   if (NTPoly::GetGlobalIsRoot()) {
-     NTPoly::ActivateLogger();
+    NTPoly::ActivateLogger();
   }
 
   // Read in the matrices from file.
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
 
   // Cleanup
   if (NTPoly::GetGlobalIsRoot()) {
-     NTPoly::DeactivateLogger();
+    NTPoly::DeactivateLogger();
   }
   NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
