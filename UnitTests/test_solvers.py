@@ -97,8 +97,6 @@ class TestSolvers(unittest.TestCase):
         '''Compare two computed matrices.'''
         from helpers import THRESHOLD
         from scipy.sparse.linalg import norm
-        from yaml import load, dump
-        from sys import stdout
         normval = 0
         relative_error = 0
         if (self.my_rank == 0):
