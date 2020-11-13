@@ -4,6 +4,8 @@
 #include <string>
 
 ////////////////////////////////////////////////////////////////////////////////
+namespace NTPoly {
+////////////////////////////////////////////////////////////////////////////////
 //! Activate the logger.
 void ActivateLogger(bool start_document = false);
 
@@ -17,4 +19,5 @@ void ActivateLoggerFile(const std::string file_name,
 //! Deactivate the logger.
 void DeactivateLogger();
 
+} // namespace NTPoly
 #endif

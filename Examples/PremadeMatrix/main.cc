@@ -7,6 +7,7 @@ using std::string;
 using std::stringstream;
 // NTPoly Headers
 #include "DensityMatrixSolvers.h"
+#include "Logging.h"
 #include "PSMatrix.h"
 #include "Permutation.h"
 #include "ProcessGrid.h"
@@ -61,6 +62,9 @@ int main(int argc, char *argv[]) {
   // Setup the process grid.
   NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
                                      process_columns, process_slices, true);
+  if (NTPoly::GetGlobalIsRoot()) {
+     NTPoly::ActivateLogger();
+  }
 
   // Read in the matrices from file.
   NTPoly::Matrix_ps Hamiltonian(hamiltonian_file);
@@ -94,6 +98,9 @@ int main(int argc, char *argv[]) {
   Density.WriteToMatrixMarket(density_file_out);
 
   // Cleanup
+  if (NTPoly::GetGlobalIsRoot()) {
+     NTPoly::DeactivateLogger();
+  }
   NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
   return 0;

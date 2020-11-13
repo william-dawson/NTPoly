@@ -42,7 +42,6 @@ PROGRAM ComplexMatrix
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
 
   !! Process The Input
-  !! Process the input parameters.
   DO counter=1,COMMAND_ARGUMENT_COUNT(),2
      CALL GET_COMMAND_ARGUMENT(counter,argument)
      CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
