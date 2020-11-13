@@ -3,7 +3,8 @@
 PROGRAM PremadeMatrixProgram
   USE DataTypesModule, ONLY : NTREAL
   USE DensityMatrixSolversModule, ONLY : TRS2
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
+  USE LoggingModule, ONLY : ActivateLogger, DeactivateLogger, EnterSubLog, &
+       & ExitSubLog, WriteElement, WriteHeader
   USE PermutationModule, ONLY : Permutation_t, ConstructRandomPermutation, &
        & DestructPermutation
   USE ProcessGridModule, ONLY : ConstructProcessGrid, IsRoot, &
@@ -72,6 +73,10 @@ PROGRAM PremadeMatrixProgram
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
+  !! Write Out Parameters
+  IF (IsRoot()) THEN
+     CALL ActivateLogger
+  END IF
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="hamiltonian", VALUE=hamiltonian_file)
@@ -119,6 +124,9 @@ PROGRAM PremadeMatrixProgram
   CALL DestructMatrix(Density)
 
   !! Cleanup
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 END PROGRAM PremadeMatrixProgram

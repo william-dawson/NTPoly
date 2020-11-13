@@ -5,14 +5,16 @@
 PROGRAM ComplexMatrix
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE ExponentialSolversModule, ONLY : ComputeExponential
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, WriteHeader
+  USE LoggingModule, ONLY : ActivateLogger, DeactivateLogger, EnterSubLog, &
+       & ExitSubLog, WriteElement, WriteHeader
   USE MatrixMarketModule, ONLY : MM_SYMMETRIC
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & DestructMatrix, TransposeMatrix, GetMatrixTripletList, &
        & FillMatrixFromTripletList, ConstructEmptyMatrix, ConjugateMatrix, &
        & PrintMatrix, CopyMatrix, WriteMatrixToMatrixMarket
-  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid
+  USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
+       & IsRoot
   USE SolverParametersModule, ONLY : SolverParameters_t
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList, &
        & GetTripletAt, TripletList_c, ConstructTripletList, &
@@ -64,6 +66,10 @@ PROGRAM ComplexMatrix
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
+  !! Write Out Parameters
+  IF (IsRoot()) THEN
+     CALL ActivateLogger
+  END IF
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="input_file", VALUE=input_file)
@@ -89,6 +95,11 @@ PROGRAM ComplexMatrix
   !! Cleanup
   CALL DestructMatrix(InMat)
   CALL DestructMatrix(GMat)
+
+  !! Cleanup
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 
