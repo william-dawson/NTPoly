@@ -57,7 +57,7 @@ class TestSolvers(unittest.TestCase):
         self.fsp.SetVerbosity(True)
         self.isp.SetVerbosity(True)
         if nt.GetGlobalIsRoot():
-            nt.ActivateLoggerFile(log_file, True)
+            nt.ActivateLogger(log_file, True)
 
     def tearDown(self):
         from yaml import load, dump
