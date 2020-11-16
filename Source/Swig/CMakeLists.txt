@@ -5,10 +5,6 @@ if(NOT DEFINED PYTHON_EXECUTABLE)
 endif()
 
 include(ConfigPython.cmake)
-if (APPLE)
-  get_py_lib()
-  message(STATUS "Using Python Library Path:" ${PYTHON_LIBRARIES})
-endif()
 get_py_include()
 message(STATUS "Using Python Include Path:" ${PYTHON_INCLUDE_PATH})
 
@@ -33,8 +29,11 @@ if(${CMAKE_VERSION} VERSION_LESS "3.8.0")
 else()
    swig_add_library(NTPolySwig LANGUAGE python SOURCES ${Swigsrc})
 endif()
+if (APPLE)
+   set(APPLE_SUPRESS "-flat_namespace -undefined suppress")
+endif()
 swig_link_libraries(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly
-                    ${PYTHON_LIBRARIES} ${TOOLCHAIN_LIBS})
+                    ${TOOLCHAIN_LIBS} ${APPLE_SUPRESS})
 set_target_properties(_NTPolySwig PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
   LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python
