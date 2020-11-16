@@ -47,7 +47,6 @@ class TestSolvers(unittest.TestCase):
 
     def setUp(self):
         '''Set up all of the tests.'''
-        from helpers import log_file
         # Rank of the current process.
         self.my_rank = comm.Get_rank()
         # Parameters for iterative solvers.
@@ -60,9 +59,8 @@ class TestSolvers(unittest.TestCase):
             nt.ActivateLogger(log_file, True)
 
     def tearDown(self):
-        from helpers import log_file
-        from yaml import load, dump
-        from sys import stdout
+        # from yaml import load, dump
+        # from sys import stdout
         if nt.GetGlobalIsRoot():
             nt.DeactivateLogger()
         comm.barrier()
