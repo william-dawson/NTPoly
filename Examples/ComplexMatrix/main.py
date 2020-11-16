@@ -77,6 +77,8 @@ if __name__ == "__main__":
     # Setup the process grid.
     nt.ConstructGlobalProcessGrid(
         process_rows, process_columns, process_slices)
+    if nt.GetGlobalIsRoot():
+        nt.ActivateLogger()
 
     # Construct The Hermitian Matrix
     InMat = nt.Matrix_ps(input_file)
@@ -92,4 +94,8 @@ if __name__ == "__main__":
 
     # Write To File
     OMat.WriteToMatrixMarket(exponential_file)
+
+    # Cleanup
+    if nt.GetGlobalIsRoot():
+        nt.DeactivateLogger()
     nt.DestructGlobalProcessGrid()

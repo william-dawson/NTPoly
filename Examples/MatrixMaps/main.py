@@ -37,6 +37,8 @@ if __name__ == "__main__":
 
     # Setup the process grid.
     nt.ConstructGlobalProcessGrid(process_slices)
+    if nt.GetGlobalIsRoot():
+        nt.ActivateLogger()
 
     # Read in the matrices from file.
     Input = nt.Matrix_ps(input_matrix)
@@ -48,4 +50,8 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     Output.WriteToMatrixMarket(output_matrix)
+
+    # Cleanup
+    if nt.GetGlobalIsRoot():
+        nt.DeactivateLogger()
     nt.DestructGlobalProcessGrid()

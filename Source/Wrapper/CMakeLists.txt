@@ -9,6 +9,7 @@ set(Wsrc
     InverseSolversModule_wrp.F90
     LinearSolversModule_wrp.F90
     LoadBalancerModule_wrp.F90
+    LoggingModule_wrp.F90
     MatrixConversionModule_wrp.F90
     MatrixMemoryPoolModule_wrp.F90
     PermutationModule_wrp.F90

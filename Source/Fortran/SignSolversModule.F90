@@ -5,7 +5,7 @@ MODULE SignSolversModule
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteListElement, WriteElement, WriteCitation
+       & WriteListElement, WriteElement
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, &
@@ -42,7 +42,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Sign Function Solver")
        CALL EnterSubLog
-       CALL WriteCitation("nicholas2008functions")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("nicholas2008functions")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -80,7 +83,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Polar Decomposition Solver")
        CALL EnterSubLog
-       CALL WriteCitation("nicholas2008functions")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("nicholas2008functions")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -160,10 +166,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     iterate: DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter-1)
-          CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
-          CALL ExitSubLog
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
        !! Update Scaling Factors

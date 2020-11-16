@@ -7,7 +7,7 @@ import warnings
 from scipy.sparse import csr_matrix
 from scipy.io import mmread
 from mpi4py import MPI
-from helpers import result_file
+from helpers import result_file, log_file
 
 
 # MPI global communicator.
@@ -45,6 +45,28 @@ class TestSolvers(unittest.TestCase):
         '''Cleanup this test'''
         nt.DestructGlobalProcessGrid()
 
+    def setUp(self):
+        '''Set up all of the tests.'''
+        # Rank of the current process.
+        self.my_rank = comm.Get_rank()
+        # Parameters for iterative solvers.
+        self.isp = nt.SolverParameters()
+        # Parameters for fixed solvers.
+        self.fsp = nt.SolverParameters()
+        self.fsp.SetVerbosity(True)
+        self.isp.SetVerbosity(True)
+        if nt.GetGlobalIsRoot():
+            nt.ActivateLogger(log_file, True)
+
+    def tearDown(self):
+        from yaml import load, dump
+        from sys import stdout
+        if nt.GetGlobalIsRoot():
+            nt.DeactivateLogger()
+            with open(log_file) as ifile:
+                data = load(ifile)
+            dump(data, stdout)
+
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''
         Create the test matrix with the following parameters.
@@ -69,17 +91,6 @@ class TestSolvers(unittest.TestCase):
         if self.my_rank == 0:
             mmwrite(file_name, csr_matrix(mat))
         comm.barrier()
-
-    def setUp(self):
-        '''Set up all of the tests.'''
-        # Rank of the current process.
-        self.my_rank = comm.Get_rank()
-        # Parameters for iterative solvers.
-        self.isp = nt.SolverParameters()
-        # Parameters for fixed solvers.
-        self.fsp = nt.SolverParameters()
-        self.fsp.SetVerbosity(True)
-        self.isp.SetVerbosity(True)
 
     def check_result(self):
         '''Compare two computed matrices.'''

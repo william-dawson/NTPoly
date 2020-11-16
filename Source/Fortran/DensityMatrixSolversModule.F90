@@ -5,7 +5,7 @@ MODULE DensityMatrixSolversModule
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
-       & WriteCitation, EnterSubLog, ExitSubLog
+       & EnterSubLog, ExitSubLog
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
@@ -77,7 +77,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="PM")
-       CALL WriteCitation("palser1998canonical")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("palser1998canonical")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -188,9 +191,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
@@ -328,7 +330,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="TRS2")
-       CALL WriteCitation("niklasson2002expansion")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("niklasson2002expansion")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -405,9 +410,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
@@ -539,7 +543,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="TRS4")
-       CALL WriteCitation("niklasson2002expansion")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("niklasson2002expansion")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -636,9 +643,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
@@ -782,7 +788,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="HPCP")
-       CALL WriteCitation("truflandier2016communication")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("truflandier2016communication")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -883,9 +892,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
@@ -1016,7 +1024,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Scale and Fold")
-       CALL WriteCitation("rubensson2011nonmonotonic")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("rubensson2011nonmonotonic")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -1093,9 +1104,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value2)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
           CALL WriteElement("Energy_Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF

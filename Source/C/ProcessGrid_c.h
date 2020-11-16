@@ -15,6 +15,7 @@ void CopyProcessGrid_wrp(const int *ih_old_grid, int *ih_new_grid);
 int GetGlobalMySlice_wrp();
 int GetGlobalMyColumn_wrp();
 int GetGlobalMyRow_wrp();
+bool GetGlobalIsRoot_wrp();
 int GetGlobalNumSlices_wrp();
 int GetGlobalNumColumns_wrp();
 int GetGlobalNumRows_wrp();

@@ -7,6 +7,7 @@ using std::string;
 #include <sstream>
 using std::stringstream;
 #include "ExponentialSolvers.h"
+#include "Logging.h"
 #include "PSMatrix.h"
 #include "ProcessGrid.h"
 #include "SolverParameters.h"
@@ -96,6 +97,9 @@ int main(int argc, char *argv[]) {
   // Setup the process grid.
   NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
                                      process_columns, process_slices, true);
+  if (NTPoly::GetGlobalIsRoot()) {
+    NTPoly::ActivateLogger();
+  }
 
   // Compute the Hermitian Matrix
   NTPoly::Matrix_ps InMat(input_file);
@@ -113,6 +117,9 @@ int main(int argc, char *argv[]) {
   OMat.WriteToMatrixMarket(exponential_file);
 
   // Cleanup
+  if (NTPoly::GetGlobalIsRoot()) {
+    NTPoly::DeactivateLogger();
+  }
   NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
   return 0;

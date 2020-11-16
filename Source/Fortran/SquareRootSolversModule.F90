@@ -5,7 +5,7 @@ MODULE SquareRootSolversModule
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
-       & WriteHeader, WriteElement, WriteCitation
+       & WriteHeader, WriteElement
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, &
@@ -144,7 +144,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Newton Schultz Inverse Square Root")
        CALL EnterSubLog
-       CALL WriteCitation("jansik2007linear")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("jansik2007linear")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -217,10 +220,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(SquareRootMat,SQRT(lambda))
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
-          CALL EnterSubLog
           CALL WriteElement(key="Convergence", VALUE=norm_value)
-          CALL ExitSubLog
        END IF
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN
@@ -289,7 +289,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Newton Schultz Inverse Square Root")
        CALL EnterSubLog
-       CALL WriteCitation("jansik2007linear")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("jansik2007linear")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -402,10 +405,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
 
        IF (solver_parameters%be_verbose) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter)
-          CALL EnterSubLog
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
-          CALL ExitSubLog
+          CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
        IF (norm_value .LE. solver_parameters%converge_diff) THEN

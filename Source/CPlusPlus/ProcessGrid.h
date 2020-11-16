@@ -99,6 +99,8 @@ int GetGlobalMySlice();
 int GetGlobalMyColumn();
 //! Get the row of the current process.
 int GetGlobalMyRow();
+//! Get the current process is root.
+bool GetGlobalIsRoot();
 //! Get the number of process slices.
 int GetGlobalNumSlices();
 //! Get the number of process columns.

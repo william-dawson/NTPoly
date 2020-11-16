@@ -12,6 +12,7 @@ using std::vector;
 #include <iostream>
 // NTPoly Headers
 #include "InverseSolvers.h"
+#include "Logging.h"
 #include "PSMatrix.h"
 #include "ProcessGrid.h"
 #include "SolverParameters.h"
@@ -67,6 +68,10 @@ int main(int argc, char *argv[]) {
   // Setup the process grid.
   NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
                                      process_columns, process_slices, true);
+  if (NTPoly::GetGlobalIsRoot()) {
+    NTPoly::ActivateLogger();
+  }
+
   // Set Up The Solver Parameters.
   NTPoly::SolverParameters solver_parameters;
   solver_parameters.SetConvergeDiff(convergence_threshold);
@@ -166,6 +171,9 @@ int main(int argc, char *argv[]) {
   ResultMat.WriteToMatrixMarket(output_file);
 
   // Cleanup
+  if (NTPoly::GetGlobalIsRoot()) {
+    NTPoly::DeactivateLogger();
+  }
   NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
   return 0;

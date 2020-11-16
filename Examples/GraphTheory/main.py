@@ -41,6 +41,8 @@ if __name__ == "__main__":
     # Setup the process grid.
     nt.ConstructGlobalProcessGrid(
         process_rows, process_columns, process_slices)
+    if nt.GetGlobalIsRoot():
+        nt.ActivateLogger()
 
     # Set Up The Solver Parameters.
     solver_parameters = nt.SolverParameters()
@@ -133,4 +135,8 @@ if __name__ == "__main__":
 
     # Print the density matrix to file.
     ResultMat.WriteToMatrixMarket(output_file)
+
+    # Cleanup
+    if nt.GetGlobalIsRoot():
+        nt.DeactivateLogger()
     nt.DestructGlobalProcessGrid()

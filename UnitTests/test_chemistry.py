@@ -83,11 +83,21 @@ class TestChemistry:
         '''Cleanup this test'''
         nt.DestructGlobalProcessGrid()
 
+    def tearDown(self):
+        from helpers import log_file
+        from yaml import load, dump
+        from sys import stdout
+        if nt.GetGlobalIsRoot():
+            nt.DeactivateLogger()
+            with open(log_file) as ifile:
+                data = load(ifile)
+            dump(data, stdout)
+
     def setUp(self):
         '''Set up an individual test.'''
         from os import environ
         from os.path import join
-        from helpers import scratch_dir
+        from helpers import scratch_dir, log_file
 
         self.my_rank = comm.Get_rank()
         self.solver_parameters = nt.SolverParameters()
@@ -103,6 +113,9 @@ class TestChemistry:
         self.overlap = join(scratch_dir, "rs.mtx")
         self.density = join(scratch_dir, "rd.mtx")
         self.mat_dim = 7
+
+        if nt.GetGlobalIsRoot():
+            nt.ActivateLogger(log_file, True)
 
     def check_full(self):
         '''Compare two computed matrices.'''

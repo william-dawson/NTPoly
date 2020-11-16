@@ -4,7 +4,7 @@ MODULE InverseSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteElement, WriteListElement, WriteCitation
+       & WriteElement, WriteListElement
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, IncrementMatrix, &
@@ -50,7 +50,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
-       CALL WriteCitation("palser1998canonical")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("palser1998canonical")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -88,10 +91,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter-1)
-          CALL EnterSubLog
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
-          CALL ExitSubLog
        END IF
 
        CALL MatrixMultiply(InverseMat,BalancedMat,Temp1, &
@@ -172,7 +172,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
-       CALL WriteCitation("palser1998canonical")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("palser1998canonical")
+       CALL ExitSubLog
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -210,10 +213,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = solver_parameters%converge_diff + 1.0_NTREAL
     DO outer_counter = 1,solver_parameters%max_iterations
        IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
-          CALL WriteListElement(key="Round", VALUE=outer_counter-1)
-          CALL EnterSubLog
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
-          CALL ExitSubLog
        END IF
 
        CALL MatrixMultiply(InverseMat,BalancedMat,Temp1, &

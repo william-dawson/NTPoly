@@ -6,6 +6,7 @@ using std::string;
 #include <sstream>
 using std::stringstream;
 // NTPoly Headers
+#include "Logging.h"
 #include "MatrixMapper.h"
 #include "PSMatrix.h"
 #include "ProcessGrid.h"
@@ -53,6 +54,9 @@ int main(int argc, char *argv[]) {
 
   // Setup the process grid.
   NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_slices, true);
+  if (NTPoly::GetGlobalIsRoot()) {
+    NTPoly::ActivateLogger();
+  }
 
   // Read in the matrices from file.
   NTPoly::Matrix_ps Input(input_file);
@@ -66,6 +70,9 @@ int main(int argc, char *argv[]) {
   Output.WriteToMatrixMarket(output_file);
 
   // Cleanup
+  if (NTPoly::GetGlobalIsRoot()) {
+    NTPoly::DeactivateLogger();
+  }
   NTPoly::DestructGlobalProcessGrid();
   MPI_Finalize();
   return 0;
