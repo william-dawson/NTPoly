@@ -144,7 +144,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        WRITE(UNIT,'(A)',ADVANCE='no') key
        WRITE(UNIT,'(A)',ADVANCE='no') ": "
-       WRITE(UNIT,'(I10)',ADVANCE='no') VALUE
+       WRITE(UNIT,'(I20)',ADVANCE='no') VALUE
 
        WRITE(UNIT,*)
     END IF
