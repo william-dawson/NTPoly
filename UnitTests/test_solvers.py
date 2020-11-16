@@ -64,6 +64,8 @@ class TestSolvers(unittest.TestCase):
         from sys import stdout
         if nt.GetGlobalIsRoot():
             nt.DeactivateLogger()
+        comm.barrier()
+        if nt.GetGlobalIsRoot():
             with open(log_file) as ifile:
                 data = load(ifile)
             dump(data, stdout)
