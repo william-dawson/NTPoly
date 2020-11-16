@@ -84,6 +84,7 @@ class TestChemistry:
         nt.DestructGlobalProcessGrid()
 
     def tearDown(self):
+        from helpers import log_file
         from yaml import load, dump
         from sys import stdout
         if nt.GetGlobalIsRoot():
