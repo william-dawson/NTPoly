@@ -66,10 +66,10 @@ class TestSolvers(unittest.TestCase):
         if nt.GetGlobalIsRoot():
             nt.DeactivateLogger()
         comm.barrier()
-        if nt.GetGlobalIsRoot():
-            with open(log_file) as ifile:
-                data = load(ifile)
-            dump(data, stdout)
+        # if nt.GetGlobalIsRoot():
+        #     with open(log_file) as ifile:
+        #         data = load(ifile)
+        #     dump(data, stdout)
 
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''
