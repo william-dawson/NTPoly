@@ -8,7 +8,8 @@ MODULE LoggingModule
   INTEGER :: CurrentLevel = 0
   LOGICAL :: IsActive = .FALSE.
   INTEGER :: UNIT = 6
-  LOGICAL :: file_open = .TRUE.
+  LOGICAL :: file_open = .FALSE.
+  INTEGER :: initial_offset = 0
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ActivateLogger
   PUBLIC :: DeactivateLogger
@@ -18,6 +19,8 @@ MODULE LoggingModule
   PUBLIC :: WriteElement
   PUBLIC :: WriteHeader
   PUBLIC :: WriteListElement
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: SetInitialOffset
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE WriteListElement
      MODULE PROCEDURE WriteListElement_bool
@@ -58,6 +61,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(start_document_in)) THEN
        IF (start_document_in) THEN
           WRITE(UNIT, '(A3)') "---"
+          initial_offset = 1
        END IF
     END IF
   END SUBROUTINE ActivateLogger
@@ -69,6 +73,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CLOSE(UNIT)
     END IF
     UNIT = 6
+    CurrentLevel = 0
   END SUBROUTINE DeactivateLogger
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Call this subroutine when you enter into a section with verbose output
@@ -80,6 +85,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ExitSubLog
     CurrentLevel = CurrentLevel - 1
   END SUBROUTINE ExitSubLog
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set a manual initial offset spacing.
+  SUBROUTINE SetInitialOffset(offset)
+    !> Number of spaces to offset
+    INTEGER, INTENT(IN) :: offset
+
+    initial_offset = offset
+  END SUBROUTINE SetInitialOffset
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a header to the log.
   SUBROUTINE WriteHeader(header_value)
@@ -251,9 +264,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Writes out the indentation needed for this level
   SUBROUTINE WriteIndent
-    INTEGER :: counter
+    INTEGER :: II
 
-    DO counter=1,CurrentLevel*2
+    DO II=1,initial_offset
+       WRITE(UNIT,'(A1)',ADVANCE='NO') " "
+    END DO
+    DO II=1,CurrentLevel*2
        WRITE(UNIT,'(A1)',ADVANCE='NO') " "
     END DO
   END SUBROUTINE WriteIndent
