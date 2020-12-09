@@ -1,0 +1,29 @@
+---
+layout: post
+title:  "NTPoly Application: Density-Functional Pertubation Theory"
+date:   2020-12-09 11:00:00 +0900
+categories: blog update
+---
+
+Recently, a very interesting 
+[paper](https://www.sciencedirect.com/science/article/pii/S0010465520302940?dgcid=rss_sd_all) 
+by Honghui Shang of the Chinese Academy
+of Sciences has appeared in Computer Physics Communications. This paper
+presents an efficient method for computing the response density matrix
+for density-functional pertubation theory. In order to demonstrate their
+method, they utilized the NTPoly library. 
+
+> Shang, Honghui, WanZhen Liang, Yunquan Zhang, and Jinlong Yang. "Efficient parallel linear scaling method to get the response density matrix in all-electron real-space density-functional perturbation theory." Computer Physics Communications 258 (2020): 107613.
+
+Density-Functional Perturbation Theory is a method to compute response
+properties of systems such as polarizability, vibrational frequencies, etc.
+The authors describe how Density Matrix Purification can be used as a
+replacement for the typical approach which requires the eigenvectors and
+eigenvalues of the Hamiltonian. They utilized the sparse-matrix sparse-matrix
+routine implemented in NTPoly via the 
+[ELSI](https://wordpress.elsi-interchange.org/) interface to implement
+this approach. The authors examined closely what parameters are needed to get 
+good accuracy without sacrificing too much performance. To test the performance 
+of their method, the authors deployed the code on the Tianhe-2 supercomputer
+and performed tests with up to 25,200 cores. Despite the fact that NTPoly has 
+never been tuned for such a machine, the code showed excellent scalability.
