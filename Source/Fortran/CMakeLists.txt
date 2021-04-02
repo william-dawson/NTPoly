@@ -1,6 +1,7 @@
 ################################################################################
 set(Fsrc
     ChebyshevSolversModule.F90
+    CholeskySolversModule.F90
     DataTypesModule.F90
     DensityMatrixSolversModule.F90
     DMatrixModule.F90
