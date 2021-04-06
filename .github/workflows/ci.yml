@@ -16,6 +16,9 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
+	    with:
+	      name: ubuntu-standard
+	      path: Build
           - name:         ubuntu-debug
             os:           ubuntu-latest
             testos:       LINUX
@@ -24,6 +27,9 @@ jobs:
             debug:        1
             noalligather: 0
             mpich:        0
+	    with:
+	      name: ubuntu-debug
+	      path: Build
           - name:         ubuntu-nogather
             os:           ubuntu-latest
             testos:       LINUX
@@ -32,6 +38,9 @@ jobs:
             debug:        0
             noalligather: 1
             mpich:        0
+	    with:
+	      name: ubuntu-nogather
+	      path: Build
           - name:         ubuntu-mpich
             os:           ubuntu-latest
             testos:       LINUX
@@ -40,6 +49,9 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        1
+	    with:
+	      name: ubuntu-mpich
+	      path: Build
           - name:         mac
             os:           macos-latest
             testos:       OSX
@@ -49,6 +61,9 @@ jobs:
             noalligather: 0
             mpich:        0
             lint:         1
+	    with:
+	      name: mac
+	      path: Build
     runs-on:              ${{ matrix.os }}
     steps:
     - uses:               actions/checkout@v1
