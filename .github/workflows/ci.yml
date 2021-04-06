@@ -84,7 +84,7 @@ jobs:
         NOALLIGATHER:     ${{ matrix.noalligather }}
     - name:               regression tests
       run:                |
-        bash UnitTests/run_test.sh
+        bash UnitTests/run_ci_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
     - name:               check examples
