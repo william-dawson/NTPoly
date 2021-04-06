@@ -12,12 +12,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   else
     sudo apt-get install openmpi-bin libopenmpi-dev
   fi
-fi
-
-conda activate
-conda env create -f environment.yml
-
-if [[ "$TESTOS" == "OSX" ]]; then
+elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
   brew link --overwrite gcc
   brew install open-mpi
@@ -26,7 +21,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install clang-format
   brew install emacs
   brew install ninja
-else
-  sudo apt-get install python-dev python-pip python-all-dev
-  sudo apt-get install python-setuptools python-wheel
 fi
+
+conda activate
+conda env create -f environment.yml
