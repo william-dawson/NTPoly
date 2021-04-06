@@ -1,5 +1,6 @@
 set -e
 
+conda deactivate
 source activate ntpoly-conda
 
 which python
