@@ -1,7 +1,7 @@
 
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get update
-  sudo apt-get install gfortran -f
+  sudo apt-get install --reinstall gfortran
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install gawk
   sudo apt-get install clang-format
