@@ -9,7 +9,7 @@ set(CMAKE_CXX_COMPILER mpicxx)
 set(TOOLCHAIN_LIBS "-lblas")
 
 # Release suggestions
-set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -fopenmp -lgomp")
+set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -fopenmp")
 set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
 
 # Debug suggestions
