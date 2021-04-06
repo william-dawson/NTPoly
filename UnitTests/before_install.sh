@@ -1,7 +1,6 @@
 
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get update
-  sudo apt-get install
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install gawk
   sudo apt-get install doxygen
@@ -32,7 +31,6 @@ if [[ "$TESTOS" == "OSX" ]]; then
   sudo pip3 install pyyaml --upgrade --no-cache-dir
   sudo pip3 install ford --upgrade --no-cache-dir
 else
-  # sudo ldconfig
   sudo apt-get install python-dev python-pip python-all-dev
   sudo apt-get install python-setuptools python-wheel
   sudo apt-get install swig

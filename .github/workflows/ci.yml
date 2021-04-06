@@ -61,7 +61,6 @@ jobs:
       run:                |
         cd Build
         bash ../UnitTests/run_cmake.sh
-        # make VERBOSE=1
         ninja -v
         cd ../
       env:
