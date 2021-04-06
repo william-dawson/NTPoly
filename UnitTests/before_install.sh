@@ -21,6 +21,7 @@ elif [[ "$TESTOS" == "OSX" ]]; then
   brew install clang-format
   brew install emacs
   brew install ninja
+  brew install bash
 fi
 
 conda activate
