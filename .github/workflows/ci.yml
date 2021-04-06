@@ -77,22 +77,14 @@ jobs:
         CONDA:            ${{ matrix.conda }}
     - name:               build ntpoly
       run:                |
-        conda activate ntpoly-conda || true
-        cd Build
-        bash ../UnitTests/run_cmake.sh
-        ninja -v
-        cd ../
+        bash UnitTests/run_cmake.sh
       env:
         TESTOS:           ${{ matrix.testos }}
         DEBUG:            ${{ matrix.debug }}
         NOALLIGATHER:     ${{ matrix.noalligather }}
     - name:               regression tests
       run:                |
-        conda activate ntpoly-conda || true
-        cd Build
-        export CTEST_OUTPUT_ON_FAILURE=1
-        eval "$MAKETEST"
-        cd ../
+        bash UnitTests/run_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
     - name:               check examples

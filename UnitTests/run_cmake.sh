@@ -1,3 +1,9 @@
+if [[ "CONDA" == "1" ]]; then
+   conda activate ntpoly-conda-env
+fi
+
+cd Build
+
 if [[ "$TESTOS" == "OSX" ]]; then
   cmake -G Ninja .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake \
     -DCMAKE_BUILD_TYPE=Release ;
@@ -13,3 +19,6 @@ else
           -DCMAKE_BUILD_TYPE=Release ;
   fi
 fi
+
+ninja -v
+cd ../
