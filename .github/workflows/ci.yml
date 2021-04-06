@@ -11,7 +11,7 @@ jobs:
           - name:         ubuntu-standard
             os:           ubuntu-latest
             testos:       LINUX
-            maketest:     "make test"
+            maketest:     "ctest"
             testexamples: 1
             debug:        0
             noalligather: 0
@@ -27,7 +27,7 @@ jobs:
           - name:         ubuntu-nogather
             os:           ubuntu-latest
             testos:       LINUX
-            maketest:     "make test"
+            maketest:     "ctest"
             testexamples: 1
             debug:        0
             noalligather: 1
