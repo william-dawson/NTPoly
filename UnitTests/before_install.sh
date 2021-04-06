@@ -6,7 +6,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gawk
   # sudo apt-get install clang-format
   sudo apt-get install emacs
-  sudo apt-get install --reinstall cmake
+  # sudo apt-get install --reinstall cmake
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
@@ -29,7 +29,7 @@ if [[ "$TESTOS" == "OSX" ]]; then
   sudo pip3 install flake8 --upgrade --no-cache-dir
   sudo pip3 install pyyaml --upgrade --no-cache-dir
 else
-  sudo ldconfig
+  # sudo ldconfig
   sudo apt-get install python-dev python-pip python-all-dev
   sudo apt-get install python-setuptools python-wheel
   sudo apt-get install swig
@@ -40,6 +40,7 @@ else
   sudo pip install pyyaml --upgrade
 fi
 
+echo $CC $FCC $CXX
 # test -n $CC  && unset CC
 # test -n $FCC  && unset FCC
 # test -n $CXX && unset CXX
