@@ -44,3 +44,5 @@ else
   sudo pip install ford --upgrade
 fi
 
+echo "HERE"
+mpicxx --version
