@@ -1,11 +1,12 @@
 
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get update
-  sudo apt-get install gfortran
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install gawk
+  sudo apt-get install doxygen
   sudo apt-get install clang-format
   sudo apt-get install emacs
+  sudo apt-get install ninja-build
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
@@ -14,7 +15,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
-  brew install gcc
+  brew reinstall gcc
   brew link --overwrite gcc
   brew install open-mpi
   brew install doxygen
@@ -22,13 +23,14 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install swig
   brew install clang-format
   brew install emacs
-  sudo pip2 install numpy --upgrade --no-cache-dir
-  sudo pip2 install scipy --upgrade --no-cache-dir
-  sudo pip2 install mpi4py --upgrade --no-cache-dir
-  sudo pip2 install flake8 --upgrade --no-cache-dir
-  sudo pip2 install pyyaml --upgrade --no-cache-dir
+  brew install ninja
+  sudo pip3 install numpy --upgrade --no-cache-dir
+  sudo pip3 install scipy --upgrade --no-cache-dir
+  sudo pip3 install mpi4py --upgrade --no-cache-dir
+  sudo pip3 install flake8 --upgrade --no-cache-dir
+  sudo pip3 install pyyaml --upgrade --no-cache-dir
+  sudo pip3 install ford --upgrade --no-cache-dir
 else
-  sudo ldconfig
   sudo apt-get install python-dev python-pip python-all-dev
   sudo apt-get install python-setuptools python-wheel
   sudo apt-get install swig
@@ -37,8 +39,5 @@ else
   sudo pip install mpi4py --upgrade
   sudo pip install flake8 --upgrade
   sudo pip install pyyaml --upgrade
+  sudo pip install ford --upgrade
 fi
-
-test -n $CC  && unset CC
-test -n $FCC  && unset FCC
-test -n $CXX && unset CXX

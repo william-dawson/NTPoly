@@ -5,13 +5,13 @@ jobs:
   build:
     strategy:
       matrix:
-        name:             [ubuntu-standard, ubuntu-debug, ubuntu-nogather,
-                           ubuntu-mpich, mac]
+        name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
+                           ubuntu-nogather]
         include:
           - name:         ubuntu-standard
             os:           ubuntu-latest
             testos:       LINUX
-            maketest:     "make test"
+            maketest:     "ctest"
             testexamples: 1
             debug:        0
             noalligather: 0
@@ -27,7 +27,7 @@ jobs:
           - name:         ubuntu-nogather
             os:           ubuntu-latest
             testos:       LINUX
-            maketest:     "make test"
+            maketest:     "ctest"
             testexamples: 1
             debug:        0
             noalligather: 1
@@ -61,7 +61,7 @@ jobs:
       run:                |
         cd Build
         bash ../UnitTests/run_cmake.sh
-        make
+        ninja -v
         cd ../
       env:
         TESTOS:           ${{ matrix.testos }}
@@ -86,3 +86,9 @@ jobs:
       if:                 ${{ matrix.lint }}
       run:                |
         bash UnitTests/lint.sh
+    - name: upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v1
+      with:
+        name: build
+        path: Build
