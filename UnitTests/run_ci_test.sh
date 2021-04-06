@@ -1,6 +1,7 @@
 set -e
 
 if [[ "$CONDA" == "1" ]]; then
+   source ~/.bashrc
    conda activate ntpoly-conda-env
 fi
 
