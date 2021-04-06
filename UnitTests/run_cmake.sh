@@ -1,6 +1,6 @@
 if [[ "$TESTOS" == "OSX" ]]; then
   cmake .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python2.cmake \
-    -DCMAKE_BUILD_TYPE=Release -DPythonInterp=python3 ;
+    -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=python3 ;
 else
   if  [ ! -z ${NOIALLGATHER+x} ]; then
     cmake .. \
