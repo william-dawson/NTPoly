@@ -82,11 +82,13 @@ jobs:
         TESTOS:           ${{ matrix.testos }}
         DEBUG:            ${{ matrix.debug }}
         NOALLIGATHER:     ${{ matrix.noalligather }}
+        CONDA:            ${{ matrix.conda }}
     - name:               regression tests
       run:                |
         bash UnitTests/run_ci_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
+        CONDA:            ${{ matrix.conda }}
     - name:               check examples
       run:                |
         cd UnitTests
