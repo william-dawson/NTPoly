@@ -49,6 +49,7 @@ jobs:
             noalligather: 0
             mpich:        0
             lint:         1
+    runs-on:              ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -77,6 +78,7 @@ jobs:
         MAKETEST:         ${{ matrix.maketest }}
     - name:               check examples
       run:                |
+        conda activate ntpoly-conda
         cd UnitTests
         bash -l check_examples.sh
         cd ../
