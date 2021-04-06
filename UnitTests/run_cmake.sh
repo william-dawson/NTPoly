@@ -1,9 +1,6 @@
 set -e
 
 if [[ "$CONDA" == "1" ]]; then
-   ls ~
-   echo $CONDA
-   source $CONDA/etc/profile.d/conda.sh
    conda activate ntpoly-conda-env
 fi
 
