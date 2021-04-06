@@ -1,6 +1,6 @@
 set -e
 
-source activate ntpoly-conda
+conda activate ntpoly-conda
 
 cd Build
 export CTEST_OUTPUT_ON_FAILURE=1
