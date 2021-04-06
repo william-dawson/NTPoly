@@ -1,7 +1,7 @@
 set -e
 
 if [[ "$CONDA" == "1" ]]; then
-   conda activate ntpoly-conda-env
+   conda activate ntpoly-conda
 fi
 
 cd Build
