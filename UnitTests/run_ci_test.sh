@@ -1,4 +1,4 @@
-if [[ "CONDA" == "1" ]]; then
+if [[ "$CONDA" == "1" ]]; then
    conda activate ntpoly-conda-env
 fi
 
