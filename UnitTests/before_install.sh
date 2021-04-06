@@ -6,6 +6,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install gawk
   sudo apt-get install clang-format
   sudo apt-get install emacs
+  sudo apt-get install --reinstall cmake
   if [[ "$MPICH" == "1" ]]; then
     sudo apt-get install mpich libmpich-dev
   else
