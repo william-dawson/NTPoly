@@ -1,5 +1,6 @@
 set -e
 
+conda env list
 conda deactivate
 conda activate ntpoly-conda
 
