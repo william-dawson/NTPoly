@@ -78,10 +78,7 @@ jobs:
         MAKETEST:         ${{ matrix.maketest }}
     - name:               check examples
       run:                |
-        conda activate ntpoly-conda
-        cd UnitTests
-        bash -l check_examples.sh
-        cd ../
+        bash -l UnitTests/check_examples.sh
       env:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
     - name:               lint

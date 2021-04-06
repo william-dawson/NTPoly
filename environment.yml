@@ -11,4 +11,5 @@ dependencies:
   - pip:
     - ford
     - mpi4py
+    - flake8
 prefix: /Users/wddawson/miniconda3/envs/ntpoly-conda

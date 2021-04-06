@@ -5,7 +5,7 @@ conda activate ntpoly-conda
 cd Build
 
 if [[ "$TESTOS" == "OSX" ]]; then
-  cmake -G Ninja .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake \
+  cmake -G Ninja .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-conda.cmake \
     -DCMAKE_BUILD_TYPE=Release ;
 else
   if  [ ! -z ${NOIALLGATHER+x} ]; then

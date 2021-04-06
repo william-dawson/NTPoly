@@ -1,5 +1,7 @@
 conda activate ntpoly-conda
 
+cd UnitTests
+
 if [ "$TESTEXAMPLES" == "0" ]; then
   echo "Skipping examples"
 else
@@ -19,3 +21,5 @@ else
   python test_build.py ../Examples/PremadeMatrix/ run-c++
   python test_build.py ../Examples/PremadeMatrix/ run-python
 fi
+
+cd ../
