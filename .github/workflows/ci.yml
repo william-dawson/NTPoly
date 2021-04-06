@@ -32,7 +32,7 @@ jobs:
           #   noalligather: 1
           #   mpich:        0
           - name:         ubuntu-mpich
-            os:           ubuntu-latest
+            os:           ubuntu-18.04
             testos:       LINUX
             maketest:     "ctest -R Regression211"
             testexamples: 0
