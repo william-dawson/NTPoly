@@ -2,6 +2,8 @@ set -e
 
 conda activate ntpoly-conda
 
+which python
+
 cd Build
 
 if [[ "$TESTOS" == "OSX" ]]; then
