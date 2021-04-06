@@ -56,9 +56,6 @@ jobs:
     steps:
     - uses:               actions/checkout@v1
     - uses:               conda-incubator/setup-miniconda@v2
-      with:
-        auto-activate-base: true
-        activate-environment: ""
     - name:               setup environment
       run:                bash -l UnitTests/before_install.sh
       env:
