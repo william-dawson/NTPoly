@@ -14,7 +14,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
 fi
 
 if [[ "$TESTOS" == "OSX" ]]; then
-  brew install gcc
+  brew reinstall gcc
   brew link --overwrite gcc
   brew install open-mpi
   brew install doxygen
