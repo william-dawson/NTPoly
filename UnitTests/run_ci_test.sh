@@ -1,7 +1,8 @@
 set -e
 
 if [[ "$CONDA" == "1" ]]; then
-   source ~/.bashrc
+   ls $CONDA_PKGS_DIR
+   source ~/miniconda3/etc/profile.d/conda.sh
    conda activate ntpoly-conda-env
 fi
 
