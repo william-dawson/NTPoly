@@ -66,6 +66,7 @@ jobs:
     runs-on:              ${{ matrix.os }}
     steps:
     - uses:               actions/checkout@v1
+    - uses:               s-weigand/setup-conda@v1
     - name:               setup environment
       run:                bash UnitTests/before_install.sh
       env:
