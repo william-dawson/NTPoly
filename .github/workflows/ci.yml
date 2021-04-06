@@ -32,7 +32,7 @@ jobs:
           #   noalligather: 1
           #   mpich:        0
           - name:         ubuntu-mpich
-            os:           ubuntu-18.04
+            os:           ubuntu-latest
             testos:       LINUX
             maketest:     "ctest -R Regression211"
             testexamples: 0
@@ -60,7 +60,8 @@ jobs:
       run:                |
         cd Build
         bash ../UnitTests/run_cmake.sh
-        make VERBOSE=1
+        # make VERBOSE=1
+        ninja -v
         cd ../
       env:
         TESTOS:           ${{ matrix.testos }}
