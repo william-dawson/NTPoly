@@ -67,9 +67,6 @@ jobs:
         TESTOS:           ${{ matrix.testos }}
         DEBUG:            ${{ matrix.debug }}
         NOALLIGATHER:     ${{ matrix.noalligather }}
-      with:
-        name: build
-        path: Build
     - name:               regression tests
       run:                |
         cd Build
@@ -89,3 +86,9 @@ jobs:
       if:                 ${{ matrix.lint }}
       run:                |
         bash UnitTests/lint.sh
+    - name: upload artifacts
+      if: always()
+      uses: actions/upload-artifact@v1
+      with:
+        name: build
+        path: Build
