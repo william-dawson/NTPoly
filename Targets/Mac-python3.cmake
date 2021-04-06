@@ -11,7 +11,7 @@ set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp")
 
 # Release Suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp")
-set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
+set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp -Wall")
 
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0")

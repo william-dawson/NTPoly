@@ -1,5 +1,6 @@
 ################################################################################
 set(Fsrc
+    AnalysisModule.F90
     ChebyshevSolversModule.F90
     CholeskySolversModule.F90
     DataTypesModule.F90

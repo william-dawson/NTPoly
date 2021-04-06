@@ -25,15 +25,6 @@ public:
   //!\param solver_parameters parameters for the solver
   static void CholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat,
                                     const SolverParameters &solver_parameters);
-  //! Compute The Cholesky Decomposition of a Symmetric Positive Semi-Definite
-  //! matrix.
-  //!\param AMat the matrix A, must be symmetric, positive definite.
-  //!\param LMat the matrix computed.
-  //!\param rank the target rank
-  //!\param solver_parameters parameters for the solver
-  static void
-  PivotedCholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat, int rank,
-                               const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

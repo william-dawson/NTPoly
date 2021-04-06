@@ -1,5 +1,6 @@
 ################################################################################
 set(Csrc
+    Analysis.cc
     ChebyshevSolvers.cc
     DensityMatrixSolvers.cc
     EigenBounds.cc
@@ -29,6 +30,7 @@ set(Csrc
 )
 
 set(Chead
+    Analysis.h
     ChebyshevSolvers.h
     DensityMatrixSolvers.h
     EigenBounds.h

@@ -765,7 +765,7 @@ class TestSolvers_r(TestSolvers):
         LLT = nt.Matrix_ps(self.mat_dim)
         memory_pool = nt.PMatrixMemoryPool(A)
 
-        nt.LinearSolvers.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
+        nt.Analysis.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
         LT.Transpose(L)
         LLT.Gemm(L, LT, memory_pool)
 
