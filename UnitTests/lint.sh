@@ -1,5 +1,7 @@
 set -e
 
+conda activate ntpoly-conda
+
 # Python
 flake8 UnitTests
 flake8 Examples

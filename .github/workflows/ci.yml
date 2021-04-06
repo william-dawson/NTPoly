@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
-                           ubuntu-nogather, ubuntu-conda]
+                           ubuntu-nogather]
         include:
           - name:         ubuntu-standard
             os:           ubuntu-latest
@@ -16,7 +16,6 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
-            conda:        0
           - name:         ubuntu-debug
             os:           ubuntu-latest
             testos:       LINUX
@@ -25,7 +24,6 @@ jobs:
             debug:        1
             noalligather: 0
             mpich:        0
-            conda:        0
           - name:         ubuntu-nogather
             os:           ubuntu-latest
             testos:       LINUX
@@ -34,7 +32,6 @@ jobs:
             debug:        0
             noalligather: 1
             mpich:        0
-            conda:        0
           - name:         ubuntu-mpich
             os:           ubuntu-latest
             testos:       LINUX
@@ -43,7 +40,6 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        1
-            conda:        0
           - name:         mac
             os:           macos-latest
             testos:       OSX
@@ -53,17 +49,6 @@ jobs:
             noalligather: 0
             mpich:        0
             lint:         1
-            conda:        0
-          - name:         ubuntu-conda
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest -R Regression111"
-            testexamples: 0
-            debug:        0
-            noalligather: 0
-            mpich:        0
-            conda:        1
-    runs-on:              ${{ matrix.os }}
     defaults:
       run:
         shell: bash -l {0}
@@ -74,11 +59,10 @@ jobs:
         auto-activate-base: true
         activate-environment: ""
     - name:               setup environment
-      run:                bash UnitTests/before_install.sh
+      run:                bash -l UnitTests/before_install.sh
       env:
         TESTOS:           ${{ matrix.testos }}
         MPICH:            ${{ matrix.mpich }}
-        CONDA:            ${{ matrix.conda }}
     - name:               build ntpoly
       run:                |
         bash -l UnitTests/run_cmake.sh
@@ -86,24 +70,22 @@ jobs:
         TESTOS:           ${{ matrix.testos }}
         DEBUG:            ${{ matrix.debug }}
         NOALLIGATHER:     ${{ matrix.noalligather }}
-        CONDA:            ${{ matrix.conda }}
     - name:               regression tests
       run:                |
         bash -l UnitTests/run_ci_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
-        CONDA:            ${{ matrix.conda }}
     - name:               check examples
       run:                |
         cd UnitTests
-        bash check_examples.sh
+        bash -l check_examples.sh
         cd ../
       env:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
     - name:               lint
       if:                 ${{ matrix.lint }}
       run:                |
-        bash UnitTests/lint.sh
+        bash -l UnitTests/lint.sh
     - name: upload artifacts
       if: always()
       uses: actions/upload-artifact@v1

@@ -1,3 +1,5 @@
+conda activate ntpoly-conda
+
 if [ "$TESTEXAMPLES" == "0" ]; then
   echo "Skipping examples"
 else

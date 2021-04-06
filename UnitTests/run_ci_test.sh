@@ -1,8 +1,6 @@
 set -e
 
-if [[ "$CONDA" == "1" ]]; then
-   conda activate ntpoly-conda
-fi
+conda activate ntpoly-conda
 
 cd Build
 export CTEST_OUTPUT_ON_FAILURE=1
