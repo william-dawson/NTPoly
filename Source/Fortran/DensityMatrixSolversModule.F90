@@ -161,7 +161,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Sigma
        CALL MatrixTrace(TempMat, trace_value)
        CALL DotMatrix(TempMat,X_k,trace_value2)
-       sigma_array(outer_counter) = trace_value2/trace_value
+       !! If we hit 0 exact convergence, avoid a division by zero.
+       IF (trace_value .LE. TINY(trace_value)) THEN
+          sigma_array(outer_counter) = 1.0_NTREAL
+       ELSE
+          sigma_array(outer_counter) = trace_value2/trace_value
+       END IF
 
        IF (sigma_array(outer_counter) .GT. 0.5_NTREAL) THEN
           a1 = 0.0_NTREAL
