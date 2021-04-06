@@ -15,6 +15,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
 fi
 
 if [[ "$CONDA" == "1" ]]; then
+  conda activate
   conda env create -f environment.yml
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
