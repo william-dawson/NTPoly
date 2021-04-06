@@ -81,7 +81,7 @@ jobs:
         CONDA:            ${{ matrix.conda }}
     - name:               build ntpoly
       run:                |
-        bash -l {0} UnitTests/run_cmake.sh
+        bash -l UnitTests/run_cmake.sh
       env:
         TESTOS:           ${{ matrix.testos }}
         DEBUG:            ${{ matrix.debug }}
@@ -89,7 +89,7 @@ jobs:
         CONDA:            ${{ matrix.conda }}
     - name:               regression tests
       run:                |
-        bash -l {0} UnitTests/run_ci_test.sh
+        bash -l UnitTests/run_ci_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
         CONDA:            ${{ matrix.conda }}
