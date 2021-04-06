@@ -14,7 +14,12 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   fi
 fi
 
-if [[ "$TESTOS" == "OSX" ]]; then
+if [[ "$CONDA" == "1" ]]; then
+  wget https://repo.anaconda.com/miniconda/Miniconda3-py39_4.9.2-Linux-x86_64.sh
+  bash Miniconda3-latest-Linux-x86_64.sh
+  conda env create -f environment.yml
+  conda activate ntpoly-conda
+elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
   brew link --overwrite gcc
   brew install open-mpi

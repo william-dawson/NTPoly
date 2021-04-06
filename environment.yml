@@ -1,0 +1,14 @@
+name: ntpoly-conda
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - scipy
+  - doxygen
+  - swig
+  - pyyaml
+  - pip
+  - pip:
+    - ford
+    - mpi4py
+prefix: /Users/wddawson/miniconda3/envs/ntpoly-conda
