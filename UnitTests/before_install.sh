@@ -43,6 +43,3 @@ else
   sudo pip install pyyaml --upgrade
   sudo pip install ford --upgrade
 fi
-
-echo "HERE"
-mpicxx --version

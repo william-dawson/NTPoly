@@ -5,32 +5,33 @@ jobs:
   build:
     strategy:
       matrix:
-        name:             [mac, ubuntu-mpich] #, ubuntu-standard, ubuntu-debug, ubuntu-nogather,
+        name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
+                           ubuntu-nogather]
         include:
-          # - name:         ubuntu-standard
-          #   os:           ubuntu-latest
-          #   testos:       LINUX
-          #   maketest:     "make test"
-          #   testexamples: 1
-          #   debug:        0
-          #   noalligather: 0
-          #   mpich:        0
-          # - name:         ubuntu-debug
-          #   os:           ubuntu-latest
-          #   testos:       LINUX
-          #   maketest:     "ctest -R Regression111"
-          #   testexamples: 1
-          #   debug:        1
-          #   noalligather: 0
-          #   mpich:        0
-          # - name:         ubuntu-nogather
-          #   os:           ubuntu-latest
-          #   testos:       LINUX
-          #   maketest:     "make test"
-          #   testexamples: 1
-          #   debug:        0
-          #   noalligather: 1
-          #   mpich:        0
+          - name:         ubuntu-standard
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "make test"
+            testexamples: 1
+            debug:        0
+            noalligather: 0
+            mpich:        0
+          - name:         ubuntu-debug
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "ctest -R Regression111"
+            testexamples: 1
+            debug:        1
+            noalligather: 0
+            mpich:        0
+          - name:         ubuntu-nogather
+            os:           ubuntu-latest
+            testos:       LINUX
+            maketest:     "make test"
+            testexamples: 1
+            debug:        0
+            noalligather: 1
+            mpich:        0
           - name:         ubuntu-mpich
             os:           ubuntu-latest
             testos:       LINUX
