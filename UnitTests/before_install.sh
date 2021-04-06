@@ -4,7 +4,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get install
   sudo apt-get install libblas-dev liblapack-dev
   sudo apt-get install gawk
-  sudo apt-get install clang-format
+  # sudo apt-get install clang-format
   sudo apt-get install emacs
   sudo apt-get install --reinstall cmake
   if [[ "$MPICH" == "1" ]]; then
@@ -40,6 +40,6 @@ else
   sudo pip install pyyaml --upgrade
 fi
 
-test -n $CC  && unset CC
-test -n $FCC  && unset FCC
-test -n $CXX && unset CXX
+# test -n $CC  && unset CC
+# test -n $FCC  && unset FCC
+# test -n $CXX && unset CXX
