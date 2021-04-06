@@ -1,4 +1,4 @@
-conda activate ntpoly-conda
+source activate ntpoly-conda
 
 cd UnitTests
 

@@ -5,7 +5,7 @@ set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_Fortran_COMPILER mpif90)
 set(CMAKE_CXX_COMPILER mpicxx)
 set(PYTHON_EXECUTABLE python)
-set(Python_FIND_STRATEGY VERSION)
+set(Python_FIND_STRATEGY LOCATION)
 
 # Library Files
 set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp")
