@@ -61,7 +61,7 @@ jobs:
       run:                |
         cd Build
         bash ../UnitTests/run_cmake.sh
-        make
+        make VERBOSE=1
         cd ../
       env:
         TESTOS:           ${{ matrix.testos }}
