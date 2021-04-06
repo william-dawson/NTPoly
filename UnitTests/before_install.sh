@@ -23,11 +23,11 @@ if [[ "$TESTOS" == "OSX" ]]; then
   brew install swig
   brew install clang-format
   brew install emacs
-  sudo pip2 install numpy --upgrade --no-cache-dir
-  sudo pip2 install scipy --upgrade --no-cache-dir
-  sudo pip2 install mpi4py --upgrade --no-cache-dir
-  sudo pip2 install flake8 --upgrade --no-cache-dir
-  sudo pip2 install pyyaml --upgrade --no-cache-dir
+  sudo pip install numpy --upgrade --no-cache-dir
+  sudo pip install scipy --upgrade --no-cache-dir
+  sudo pip install mpi4py --upgrade --no-cache-dir
+  sudo pip install flake8 --upgrade --no-cache-dir
+  sudo pip install pyyaml --upgrade --no-cache-dir
 else
   sudo ldconfig
   sudo apt-get install python-dev python-pip python-all-dev
