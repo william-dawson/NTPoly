@@ -1,5 +1,9 @@
 set -e
 
+if [[ "$TESTOS" == "LINUX" ]]; then
+   conda activate ntpoly-conda
+fi
+
 # Python
 flake8 UnitTests
 flake8 Examples
