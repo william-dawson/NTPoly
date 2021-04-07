@@ -1,6 +1,8 @@
 set -e
 
-conda activate ntpoly-conda
+if [[ "$TESTOS" == "LINUX" ]]; then
+   conda activate ntpoly-conda
+fi
 
 cd Build
 export CTEST_OUTPUT_ON_FAILURE=1

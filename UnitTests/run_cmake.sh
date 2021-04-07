@@ -1,8 +1,8 @@
 set -e
 
-conda activate ntpoly-conda
-
-which python
+if [[ "$TESTOS" == "LINUX" ]]; then
+   conda activate ntpoly-conda
+fi
 
 cd Build
 

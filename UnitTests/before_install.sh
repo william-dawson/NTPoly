@@ -1,3 +1,4 @@
+set -e
 
 if [[ "$TESTOS" == "LINUX" ]]; then
   sudo apt-get update
@@ -12,6 +13,8 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   else
     sudo apt-get install openmpi-bin libopenmpi-dev
   fi
+  conda activate
+  conda env create -f environment.yml
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
   brew link --overwrite gcc
@@ -29,6 +32,3 @@ elif [[ "$TESTOS" == "OSX" ]]; then
   sudo pip3 install pyyaml --upgrade --no-cache-dir
   sudo pip3 install ford --upgrade --no-cache-dir
 fi
-
-conda activate
-conda env create -f environment.yml

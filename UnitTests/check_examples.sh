@@ -1,4 +1,7 @@
-conda activate ntpoly-conda
+
+if [[ "$TESTOS" == "LINUX" ]]; then
+   conda activate ntpoly-conda
+fi
 
 cd UnitTests
 

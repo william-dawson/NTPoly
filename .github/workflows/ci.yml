@@ -50,9 +50,6 @@ jobs:
             mpich:        0
             lint:         1
     runs-on:              ${{ matrix.os }}
-    defaults:
-      run:
-        shell: bash -l {0}
     steps:
     - uses:               actions/checkout@v1
     - uses:               conda-incubator/setup-miniconda@v2
@@ -73,15 +70,19 @@ jobs:
         bash -l UnitTests/run_ci_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
+        TESTOS:           ${{ matrix.testos }}
     - name:               check examples
       run:                |
         bash -l UnitTests/check_examples.sh
       env:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
+        TESTOS:           ${{ matrix.testos }}
     - name:               lint
       if:                 ${{ matrix.lint }}
       run:                |
         bash -l UnitTests/lint.sh
+      env:
+        TESTOS:           ${{ matrix.testos }}
     - name: upload artifacts
       if: always()
       uses: actions/upload-artifact@v1

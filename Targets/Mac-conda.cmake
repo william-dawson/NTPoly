@@ -1,5 +1,6 @@
 ################################################################################
-# Target file for a Mac computer.
+# Target file for a Mac computer using anaconda. The important ingredient
+# is modifying the find strategy.
 set(CMAKE_SYSTEM_NAME Darwin)
 set(CMAKE_C_COMPILER mpicc)
 set(CMAKE_Fortran_COMPILER mpif90)
