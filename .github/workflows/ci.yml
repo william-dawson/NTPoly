@@ -52,40 +52,37 @@ jobs:
     runs-on:              ${{ matrix.os }}
     steps:
     - uses:               actions/checkout@v1
+    - uses:               conda-incubator/setup-miniconda@v2
     - name:               setup environment
-      run:                bash UnitTests/before_install.sh
+      run:                bash -l UnitTests/before_install.sh
       env:
         TESTOS:           ${{ matrix.testos }}
         MPICH:            ${{ matrix.mpich }}
     - name:               build ntpoly
       run:                |
-        cd Build
-        bash ../UnitTests/run_cmake.sh
-        ninja -v
-        cd ../
+        bash -l UnitTests/run_cmake.sh
       env:
         TESTOS:           ${{ matrix.testos }}
         DEBUG:            ${{ matrix.debug }}
         NOALLIGATHER:     ${{ matrix.noalligather }}
     - name:               regression tests
       run:                |
-        cd Build
-        export CTEST_OUTPUT_ON_FAILURE=1
-        eval "$MAKETEST"
-        cd ../
+        bash -l UnitTests/run_ci_test.sh
       env:
         MAKETEST:         ${{ matrix.maketest }}
+        TESTOS:           ${{ matrix.testos }}
     - name:               check examples
       run:                |
-        cd UnitTests
-        bash check_examples.sh
-        cd ../
+        bash -l UnitTests/check_examples.sh
       env:
         TESTEXAMPLES:     ${{ matrix.testexamples }}
+        TESTOS:           ${{ matrix.testos }}
     - name:               lint
       if:                 ${{ matrix.lint }}
       run:                |
-        bash UnitTests/lint.sh
+        bash -l UnitTests/lint.sh
+      env:
+        TESTOS:           ${{ matrix.testos }}
     - name: upload artifacts
       if: always()
       uses: actions/upload-artifact@v1
