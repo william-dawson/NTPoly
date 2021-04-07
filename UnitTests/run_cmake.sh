@@ -1,7 +1,5 @@
 set -e
 
-conda env list
-conda deactivate
 conda activate ntpoly-conda
 
 which python
@@ -9,7 +7,7 @@ which python
 cd Build
 
 if [[ "$TESTOS" == "OSX" ]]; then
-  cmake -G Ninja .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-conda.cmake \
+  cmake -G Ninja .. -DCMAKE_TOOLCHAIN_FILE=../Targets/Mac-python3.cmake \
     -DCMAKE_BUILD_TYPE=Release ;
 else
   if  [ ! -z ${NOIALLGATHER+x} ]; then

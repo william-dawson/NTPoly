@@ -22,6 +22,12 @@ elif [[ "$TESTOS" == "OSX" ]]; then
   brew install emacs
   brew install ninja
   brew install bash
+  sudo pip3 install numpy --upgrade --no-cache-dir
+  sudo pip3 install scipy --upgrade --no-cache-dir
+  sudo pip3 install mpi4py --upgrade --no-cache-dir
+  sudo pip3 install flake8 --upgrade --no-cache-dir
+  sudo pip3 install pyyaml --upgrade --no-cache-dir
+  sudo pip3 install ford --upgrade --no-cache-dir
 fi
 
 conda activate
