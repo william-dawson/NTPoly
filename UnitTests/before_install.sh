@@ -25,6 +25,7 @@ elif [[ "$TESTOS" == "OSX" ]]; then
   brew install emacs
   brew install ninja
   brew install bash
+  brew install swig
   sudo pip3 install numpy --upgrade --no-cache-dir
   sudo pip3 install scipy --upgrade --no-cache-dir
   sudo pip3 install mpi4py --upgrade --no-cache-dir
