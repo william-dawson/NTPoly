@@ -11,7 +11,8 @@ MODULE DensityMatrixSolversModule
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
        & DotMatrix, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
-       & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity
+       & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
+       & TransposeMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
   IMPLICIT NONE
@@ -48,6 +49,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: InverseSquareRoot_T
     TYPE(Matrix_ps) :: X_k, X_k2, X_k3, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
@@ -97,9 +99,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
+    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Load Balancing Step
@@ -224,13 +227,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(InverseSquareRoot_T)
     CALL DestructMatrix(X_k)
     CALL DestructMatrix(X_k2)
     CALL DestructMatrix(X_k3)
@@ -310,6 +314,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: InverseSquareRoot_T
     TYPE(Matrix_ps) :: X_k, X_k2, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
@@ -354,9 +359,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
+    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Load Balancing Step
@@ -443,13 +449,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(InverseSquareRoot_T)
     CALL DestructMatrix(X_k)
     CALL DestructMatrix(X_k2)
     CALL DestructMatrix(TempMat)
@@ -522,6 +529,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: InverseSquareRoot_T
     TYPE(Matrix_ps) :: X_k, X_k2, Fx_right, GX_right, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
@@ -569,9 +577,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
+    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Load Balancing Step
@@ -676,13 +685,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(InverseSquareRoot_T)
     CALL DestructMatrix(X_k)
     CALL DestructMatrix(X_k2)
     CALL DestructMatrix(Fx_right)
@@ -763,6 +773,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: TempMat
     TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: InverseSquareRoot_T
     TYPE(Matrix_ps) :: D1, DH, DDH, D2DH
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
@@ -816,9 +827,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
+    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Load Balancing Step
@@ -925,13 +937,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot,D1,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot_T, D1, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(InverseSquareRoot_T)
     CALL DestructMatrix(TempMat)
     CALL DestructMatrix(D1)
     CALL DestructMatrix(DH)
@@ -1006,6 +1019,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Matrices
     TYPE(Matrix_ps) :: WorkingHamiltonian
     TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: InverseSquareRoot_T
     TYPE(Matrix_ps) :: X_k, X_k2, TempMat
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
@@ -1046,9 +1060,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the working hamiltonian.
-    CALL MatrixMultiply(InverseSquareRoot,Hamiltonian,TempMat, &
+    CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
+    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,WorkingHamiltonian, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Load Balancing Step
@@ -1137,13 +1152,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot,X_k,TempMat, &
+    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat,InverseSquareRoot,Density, &
+    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
          & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(InverseSquareRoot_T)
     CALL DestructMatrix(X_k)
     CALL DestructMatrix(X_k2)
     CALL DestructMatrix(TempMat)

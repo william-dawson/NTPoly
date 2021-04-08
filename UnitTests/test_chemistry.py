@@ -357,6 +357,43 @@ class TestChemistry_r(TestChemistry, unittest.TestCase):
         self.check_full_extrap()
         comm.barrier()
 
+    def test_cholesky_basis(self):
+        """
+        Test that our solvers work even with a Cholesky basis.
+        """
+        from helpers import result_file
+        # Setup
+        self.create_matrices()
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        lmatrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+
+        # Invert the Overlap Matrix
+        nt.LinearSolvers.CholeskyDecomposition(overlap_matrix, lmatrix,
+                                               self.solver_parameters)
+        nt.InverseSolvers.Invert(lmatrix, inverse_sqrt_matrix,
+                                 self.solver_parameters)
+
+        for routine in [nt.DensityMatrixSolvers.PM,
+                        nt.DensityMatrixSolvers.TRS2,
+                        nt.DensityMatrixSolvers.TRS4,
+                        nt.DensityMatrixSolvers.HPCP,
+                        nt.DensityMatrixSolvers.ScaleAndFold]:
+            print("Solver: ", routine)
+            if routine == nt.DensityMatrixSolvers.ScaleAndFold:
+                cp, homo, lumo = self.compute_cp()
+                routine(fock_matrix, inverse_sqrt_matrix, self.nel,
+                        density_matrix, homo, lumo, self.solver_parameters)
+            else:
+                routine(fock_matrix, inverse_sqrt_matrix, self.nel,
+                        density_matrix, self.solver_parameters)
+            density_matrix.WriteToMatrixMarket(result_file)
+            comm.barrier()
+            self.check_full()
+            comm.barrier()
+
 
 class TestChemistry_c(TestChemistry, unittest.TestCase):
     '''Specialization for complex matrices.'''
