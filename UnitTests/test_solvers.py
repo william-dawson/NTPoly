@@ -749,14 +749,19 @@ class TestSolvers_r(TestSolvers):
         self.check_result()
 
     def test_pivotedcholesky(self):
-        from os import environ
         from scipy.sparse import csr_matrix
+        from scipy.linalg import eigh
+        from numpy import diag
         '''Test subroutine that computes the pivoted cholesky decomposition.'''
-        matrix1 = mmread(environ["CholTest"])
-        rank = 2
-        self.write_matrix(matrix1, self.input_file)
 
-        self.CheckMat = csr_matrix(matrix1)
+        rank = 8
+
+        # Starting Matrix - make it semidefinite
+        mat = self.create_matrix(SPD=True)
+        vals, vecs = eigh(mat.todense())
+        vals[rank:] = 0
+        self.CheckMat = csr_matrix(vecs.dot(diag(vals)).dot(vecs.T))
+        self.write_matrix(self.CheckMat, self.input_file)
 
         # Result Matrix
         A = nt.Matrix_ps(self.input_file, False)
@@ -765,6 +770,7 @@ class TestSolvers_r(TestSolvers):
         LLT = nt.Matrix_ps(self.mat_dim)
         memory_pool = nt.PMatrixMemoryPool(A)
 
+        # We compare after reconstructing the original matrix.
         nt.Analysis.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
         LT.Transpose(L)
         LLT.Gemm(L, LT, memory_pool)
