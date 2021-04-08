@@ -1,6 +1,6 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the linear solvers module for calling from other languages.
-MODULE LinearSolversModule_wrp
+MODULE AnalysisModule_wrp
   USE AnalysisModule, ONLY : PivotedCholeskyDecomposition
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
@@ -31,4 +31,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_solver_parameters%data)
   END SUBROUTINE PivotedCholeskyDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-END MODULE LinearSolversModule_wrp
+END MODULE AnalysisModule_wrp
