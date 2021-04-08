@@ -28,28 +28,28 @@ MODULE CholeskyModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE AppendToVector
      MODULE PROCEDURE AppendToVector_r
-  END INTERFACE
+  END INTERFACE AppendToVector
   INTERFACE BroadcastVector
      MODULE PROCEDURE BroadcastVector_r
-  END INTERFACE
+  END INTERFACE BroadcastVector
   INTERFACE ConstructDiag
      MODULE PROCEDURE ConstructDiag_r
-  END INTERFACE
+  END INTERFACE ConstructDiag
   INTERFACE DotAllHelper
      MODULE PROCEDURE DotAllHelper_r
-  END INTERFACE
+  END INTERFACE DotAllHelper
   INTERFACE DotAllPivoted
      MODULE PROCEDURE DotAllPivoted_r
-  END INTERFACE
+  END INTERFACE DotAllPivoted
   INTERFACE GatherMatrixColumn
      MODULE PROCEDURE GatherMatrixColumn_r
-  END INTERFACE
+  END INTERFACE GatherMatrixColumn
   INTERFACE GetPivot
      MODULE PROCEDURE GetPivot_r
-  END INTERFACE
+  END INTERFACE GetPivot
   INTERFACE UnpackCholesky
      MODULE PROCEDURE UnpackCholesky_r
-  END INTERFACE
+  END INTERFACE UnpackCholesky
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A helper routine to insert a value into a sparse vector.
   PURE SUBROUTINE AppendToVector_r(values_per, indices, values, insert_row, &
@@ -205,7 +205,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pivot vector.
   SUBROUTINE GetPivot_r(AMat, process_grid, start_index, pivot_vector, diag, &
-       & index, value, local_pivots, num_local_pivots)
+       & index, VALUE, local_pivots, num_local_pivots)
     !> The matrix we're working on.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
     !> The process grid to compute on.
@@ -219,7 +219,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The pivot index selected.
     INTEGER, INTENT(OUT) :: index
     !> The pivot value.
-    REAL(NTREAL), INTENT(OUT) :: value
+    REAL(NTREAL), INTENT(OUT) :: VALUE
     !> The local pivot values to modify.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: local_pivots
     !> Number of pivots stored locally.

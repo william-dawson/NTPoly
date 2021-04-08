@@ -217,7 +217,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", value="Cholesky Decomposition")
+       CALL WriteElement(key="Method", VALUE="Cholesky Decomposition")
        CALL PrintParameters(solver_parameters)
     END IF
 
@@ -256,7 +256,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & dot_values(1:1), LMat%process_grid%column_comm)
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              local_row = JJ - AMat%start_row + 1
-             Aval = dense_a%data(local_row, local_JJ)
+             Aval = dense_a%DATA(local_row, local_JJ)
              insert_value = SQRT(Aval - dot_values(1))
              inverse_factor = 1.0_NTREAL/insert_value
              !! Insert
@@ -285,7 +285,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           DO II = MAX(JJ + 1, AMat%start_column), AMat%end_column - 1
              local_II = II - AMat%start_column + 1
              local_row = JJ - AMat%start_row + 1
-             Aval = dense_a%data(local_row, local_II)
+             Aval = dense_a%DATA(local_row, local_II)
              insert_value = inverse_factor * (Aval - dot_values(local_II))
              IF (ABS(insert_value) .GT. solver_parameters%threshold) THEN
                 CALL AppendToVector(values_per_column_l(local_II), &

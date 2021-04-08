@@ -14,7 +14,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Cholesky Decomposition of a Symmetric Positive Semi-Definite
   !! matrix.
   SUBROUTINE PivotedCholeskyDecomposition_wrp(ih_AMat, ih_LMat, rank_in, &
-       & ih_solver_parameters) bind(c,name="PivotedCholeskyDecomposition_wrp")
+       & ih_solver_parameters) BIND(c,name="PivotedCholeskyDecomposition_wrp")
     INTEGER(kind=c_int), INTENT(in) :: ih_AMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(inout) :: ih_LMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
@@ -27,8 +27,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_LMat = TRANSFER(ih_LMat,h_LMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PivotedCholeskyDecomposition(h_AMat%data, h_LMat%data, rank_in, &
-         & h_solver_parameters%data)
+    CALL PivotedCholeskyDecomposition(h_AMat%DATA, h_LMat%DATA, rank_in, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE PivotedCholeskyDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE AnalysisModule_wrp

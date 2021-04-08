@@ -35,7 +35,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.
   SUBROUTINE CholeskyDecomposition_wrp(ih_AMat, ih_LMat, ih_solver_parameters) &
-       & bind(c,name="CholeskyDecomposition_wrp")
+       & BIND(c,name="CholeskyDecomposition_wrp")
     INTEGER(kind=c_int), INTENT(in) :: ih_AMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(inout) :: ih_LMat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(in) :: ih_solver_parameters(SIZE_wrp)
@@ -47,8 +47,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_LMat = TRANSFER(ih_LMat,h_LMat)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL CholeskyDecomposition(h_AMat%data, h_LMat%data, &
-         & h_solver_parameters%data)
+    CALL CholeskyDecomposition(h_AMat%DATA, h_LMat%DATA, &
+         & h_solver_parameters%DATA)
   END SUBROUTINE CholeskyDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LinearSolversModule_wrp

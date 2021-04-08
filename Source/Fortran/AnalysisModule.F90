@@ -76,8 +76,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", value="Pivoted Cholesky Decomposition")
-       CALL WriteElement(key="Target_Rank", value=rank_in)
+       CALL WriteElement(key="Method", VALUE="Pivoted Cholesky Decomposition")
+       CALL WriteElement(key="Target_Rank", VALUE=rank_in)
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("aquilante2006fast")
