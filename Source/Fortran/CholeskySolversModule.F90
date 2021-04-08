@@ -126,7 +126,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 2, process_grid%num_process_columns
        d_cols_per_proc(II) = d_cols_per_proc(II-1) + cols_per_proc(II-1)
     END DO
-    col_root_lookup(AMat%start_column:AMat%end_column - 1) = process_grid%row_rank
+    col_root_lookup(AMat%start_column:AMat%end_column - 1) =  &
+         & process_grid%row_rank
     CALL MPI_Allgatherv(MPI_IN_PLACE, AMat%local_columns, MPI_INTEGER, &
          & col_root_lookup, cols_per_proc, d_cols_per_proc, MPI_INTEGER, &
          & process_grid%row_comm, ierr)
