@@ -9,6 +9,7 @@
 %{
 #include "SolverBase.h"
 #include "Triplet.h"
+#include "Analysis.h"
 #include "ChebyshevSolvers.h"
 #include "DensityMatrixSolvers.h"
 #include "EigenBounds.h"
@@ -46,6 +47,7 @@ using namespace NTPoly;
 
 %include "SolverBase.h"
 %include "Triplet.h"
+%include "Analysis.h"
 %include "ChebyshevSolvers.h"
 %include "DensityMatrixSolvers.h"
 %include "EigenBounds.h"

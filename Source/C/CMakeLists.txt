@@ -1,4 +1,5 @@
 set(Csrc
+    Analysis_c.h
     ChebyshevSolvers_c.h
     DensityMatrixSolvers_c.h
     EigenBounds_c.h

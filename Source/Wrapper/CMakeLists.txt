@@ -1,5 +1,6 @@
 ################################################################################
 set(Wsrc
+    AnalysisModule_wrp.F90
     ChebyshevSolversModule_wrp.F90
     DensityMatrixSolversModule_wrp.F90
     EigenBoundsModule_wrp.F90

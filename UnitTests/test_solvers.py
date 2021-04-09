@@ -723,6 +723,64 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
 
+class TestSolvers_r(TestSolvers):
+    def test_cholesky(self):
+        from scipy.linalg import cholesky
+        from scipy.sparse import csr_matrix
+        '''Test subroutine that computes the cholesky decomposition.'''
+        # Starting Matrix
+        matrix1 = self.create_matrix(SPD=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = cholesky(matrix1.todense(), lower=True)
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+
+        cholesky_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.LinearSolvers.CholeskyDecomposition(input_matrix, cholesky_matrix,
+                                               self.fsp)
+
+        cholesky_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_pivotedcholesky(self):
+        from scipy.sparse import csr_matrix
+        from scipy.linalg import eigh
+        from numpy import diag
+        '''Test subroutine that computes the pivoted cholesky decomposition.'''
+
+        rank = 8
+
+        # Starting Matrix - make it semidefinite
+        mat = self.create_matrix(SPD=True)
+        vals, vecs = eigh(mat.todense())
+        vals[rank:] = 0
+        self.CheckMat = csr_matrix(vecs.dot(diag(vals)).dot(vecs.T))
+        self.write_matrix(self.CheckMat, self.input_file)
+
+        # Result Matrix
+        A = nt.Matrix_ps(self.input_file, False)
+        L = nt.Matrix_ps(self.mat_dim)
+        LT = nt.Matrix_ps(self.mat_dim)
+        LLT = nt.Matrix_ps(self.mat_dim)
+        memory_pool = nt.PMatrixMemoryPool(A)
+
+        # We compare after reconstructing the original matrix.
+        nt.Analysis.PivotedCholeskyDecomposition(A, L, rank, self.fsp)
+        LT.Transpose(L)
+        LLT.Gemm(L, LT, memory_pool)
+
+        LLT.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+
 class TestSolvers_c(TestSolvers):
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
         '''

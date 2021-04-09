@@ -18,6 +18,13 @@ public:
   static void CGSolver(const Matrix_ps &AMat, Matrix_ps &XMat,
                        const Matrix_ps &BMat,
                        const SolverParameters &solver_parameters);
+  //! Compute The Cholesky Decomposition of a Symmetric Positive Definite
+  //! matrix.
+  //!\param AMat the matrix A, must be symmetric, positive definite.
+  //!\param LMat the matrix computed.
+  //!\param solver_parameters parameters for the solver
+  static void CholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat,
+                                    const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif
