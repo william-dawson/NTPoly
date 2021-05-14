@@ -1,0 +1,159 @@
+---
+layout: post
+title:  "Using NTPoly with DFTB+"
+date:   2021-05-14 11:00:00 +0900
+categories: blog update
+---
+
+Thanks to the ELSI interface, it is now possible to access NTPoly from the
+DFTB+ software[1]. DFTB+ is software for performing density functional
+tight-binding calculations. The efficiency of DFTB+ makes it a great tool for
+exploratory calculations or studying very large systems. In this blog post, I
+want to go over the process of getting this setup and see what we can do.
+
+## Compile ELSI
+
+First, you'll need to download the source files for 
+[ELSI](https://wordpress.elsi-interchange.org/)
+and [DFTB+](https://dftbplus.org/) and unpack them. The first thing to compile
+is ELSI, for which `Install.md` contains all of the instructions. After setting
+up the pre-requisites, you can look at the toolchain files, and try to pick
+something for your system. I'm using a Mac, so I'll have to generate one of
+my own:
+```
+SET(CMAKE_Fortran_COMPILER "mpifort" CACHE STRING "MPI Fortran compiler")
+SET(CMAKE_C_COMPILER "mpicc" CACHE STRING "MPI C compiler")
+SET(CMAKE_CXX_COMPILER "mpicxx" CACHE STRING "MPI C++ compiler")
+
+SET(CMAKE_Fortran_FLAGS "-O3 -std=legacy -fopenmp" CACHE STRING "Fortran flags")
+SET(CMAKE_C_FLAGS "-O3 -std=c99" CACHE STRING "C flags")
+SET(CMAKE_CXX_FLAGS "-O3 -std=c++11" CACHE STRING "C++ flags")
+
+SET(LIBS "-lscalapack -llapack -lblas" CACHE STRING "External libraries")
+```
+This is for sure not an ideal configure file; when building on a real
+production machine, more care should be taken.
+
+## Compile DFTB+
+
+Next we have to compile DFTB+. This time it's `Install.rst` that has the
+details. In the build directory I used a command like:
+```
+CMAKE_PREFIX_PATH=../../elsi-2.7.1/build/ cmake .. -DWITH_ELSI=Yes \
+-DWITH_MPI=Yes -DSCALAPACK_LIBRARY="-L/usr/local/opt/scalapack/lib \
+-lscalapack" -DCMAKE_C_COMPILER=gcc-11 -DCMAKE_Fortran_COMPILER=gfortran
+```
+the key ingredients are specifying the ELSI path, turning on ELSI, and turning
+on MPI. Now, for some reason, the DFTB+ developers did not test ELSI using
+multiple threads, and have even gone so far as to halt the program if you
+try. But given that NTPoly was built from the start with openmp in mind
+let's disable that. Open the file `prog/dftb+/lib_dftbplus/initprogram.F90`,
+and change line 1808 to: `if (omp_get_max_threads() > 1 .AND. .FALSE.) then`.
+The other possibility woudl be to disable openmp support. After doing either of
+these steps, you can compile.
+
+## Test DFTB+
+
+To use DFTB+, you need "Slater-Koster" files, which contain parameters for a
+given set of elements. You can download these from the 
+[DFTB](https://dftb.org/parameters/download) website. We can download, for
+example, the 3ob files, and put them in a folder `param`. Then we can test
+out dftb+ on an example input/geometry.
+```
+Geometry = xyzFormat {
+  <<< "geom.xyz"
+}
+
+Hamiltonian = DFTB {
+  Scc = No
+  SlaterKosterFiles = Type2FileNames {
+    Prefix = "params/"
+    Separator = "-" 
+    Suffix = ".skf"
+  }
+  MaxAngularMomentum {
+    H = "s"
+    C = "p"
+    O = "p"
+    N = "p"
+  }
+}
+
+Parallel = {UseOmpThreads = Yes}
+```
+```
+24
+
+O          0.47000        2.56880        0.00060
+O         -3.12710       -0.44360       -0.00030
+N         -0.96860       -1.31250        0.00000
+N          2.21820        0.14120       -0.00030
+N         -1.34770        1.07970       -0.00010
+N          1.41190       -1.93720        0.00020
+C          0.85790        0.25920       -0.00080
+C          0.38970       -1.02640       -0.00040
+C          0.03070        1.42200       -0.00060
+C         -1.90610       -0.24950       -0.00040
+C          2.50320       -1.19980        0.00030
+C         -1.42760       -2.69600        0.00080
+C          3.19260        1.20610        0.00030
+C         -2.29690        2.18810        0.00070
+H          3.51630       -1.57870        0.00080
+H         -1.04510       -3.19730       -0.89370
+H         -2.51860       -2.75960        0.00110
+H         -1.04470       -3.19630        0.89570
+H          4.19920        0.78010        0.00020
+H          3.04680        1.80920       -0.89920
+H          3.04660        1.80830        0.90040
+H         -1.80870        3.16510       -0.00030
+H         -2.93220        2.10270        0.88810
+H         -2.93460        2.10210       -0.88490
+```
+And then run as `mpirun -np 1 dftb+ < dftb_in.hsd`. After verifying that
+this works, let's try activating NTPoly. Just add to the Hamiltonian section:
+`Solver = NTPoly {Truncation=1e-8}`. We can play with the truncation values
+to see that indeed it effects the final energy. By setting `Solver = Elpa{}`
+we can compare to a dense eigenvalue solver.
+
+| Threshold | Energy         |
+| --------- | -------------- |
+| ELPA      | -33.7876300688 |
+| 1e-10     | -33.7876300688 |
+| 1e-8      | -33.7876300687 |
+| 1e-6      | -33.7876302712 |
+| 1e-4      | -33.7876758010 |
+
+## Matrix Printing
+
+Let's do one last thing. Suppose that we want to extract the Hamiltonian's
+that DFTB+ is generating so that we can develop new methods. By strategically
+inserting some code into ELSI, we can do this without any trouble. Open up
+the file `src/elsi_ntpoly.f90 ` inside ELSI. On line 26 we can add
+`WriteMatrixToMatrixMarket` as an extra routine. Then just inside the main
+source code of `elsi_solve_ntpoly`, we will add:
+```
+call WriteMatrixToMatrixMarket(ham, "H.mtx")
+call WriteMatrixToMatrixMarket(ovlp, "S.mtx")
+```
+Recompile ELSI and DFTB+ (you might need to delete the executable to force
+relinking). The matrices will now appear if you run the code. If
+you swap out `NTPoly` for `ELPA` and run, you will get a file called `band.out`
+which contains the reference eigenvalues. We can write a small python script
+to verify that we can reproduce those values just by reading the file:
+```
+from scipy.io import mmread
+from scipy.linalg import eigh
+H = mmread("H.mtx").todense()
+S = mmread("S.mtx").todense()
+w, v = eigh(H, S)
+print([x*27.2114 for x in w])
+```
+
+## Conclusion
+In this post, I've gone over how to get DFTB+ and ELSI setup so that you can
+use NTPoly for tight-binding calculations. There are of course a whole range
+of follow up steps that would be required to do a full study. Fortunately,
+the [DFTB+ Documentation](https://dftbplus.org/documentation) is well written,
+and the code is rich in features, so there is a lot of fun to be had.
+
+[1] Hourahine, Ben, Bálint Aradi, Volker Blum, F. Bonafé, A. Buccheri, C. Camacho, C. Cevallos et al. "DFTB+, a software package for efficient approximate density functional theory based atomistic simulations." The Journal of chemical physics 152, no. 12 (2020): 124101.
