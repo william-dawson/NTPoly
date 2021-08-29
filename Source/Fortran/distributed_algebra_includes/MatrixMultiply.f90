@@ -232,6 +232,7 @@
            END SELECT
         END DO
      END DO
+     !$OMP taskwait
   END DO
   !$OMP END MASTER
   !$OMP END PARALLEL
