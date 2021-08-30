@@ -5,8 +5,8 @@ jobs:
   build:
     strategy:
       matrix:
-        name:             [ubuntu-standard, ubuntu-debug, ubuntu-nogather,
-                           ubuntu-mpich, mac]
+        name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
+                           ubuntu-nogather]
         include:
           - name:         ubuntu-standard
             os:           ubuntu-latest
