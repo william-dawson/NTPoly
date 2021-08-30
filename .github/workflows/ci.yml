@@ -5,7 +5,7 @@ jobs:
   build:
     strategy:
       matrix:
-        name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
+        name:             [mac, ubuntu-standard, ubuntu-debug,
                            ubuntu-nogather]
         include:
           - name:         ubuntu-standard
@@ -32,14 +32,14 @@ jobs:
             debug:        0
             noalligather: 1
             mpich:        0
-          - name:         ubuntu-mpich
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest -R Regression211"
-            testexamples: 0
-            debug:        0
-            noalligather: 0
-            mpich:        1
+          # - name:         ubuntu-mpich
+          #   os:           ubuntu-latest
+          #   testos:       LINUX
+          #   maketest:     "ctest -R Regression211"
+          #   testexamples: 0
+          #   debug:        0
+          #   noalligather: 0
+          #   mpich:        1
           - name:         mac
             os:           macos-latest
             testos:       OSX
