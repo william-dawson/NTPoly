@@ -1,6 +1,6 @@
 
 if [[ "$TESTOS" == "LINUX" ]]; then
-   # conda activate ntpoly-conda
+   conda activate ntpoly-conda
    :
 fi
 

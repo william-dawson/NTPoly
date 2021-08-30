@@ -14,8 +14,8 @@ if [[ "$TESTOS" == "LINUX" ]]; then
     sudo apt-get install openmpi-bin libopenmpi-dev
   fi
   conda activate
+  conda create --name ntpoly-conda
   conda install -c conda-forge pip
-  pip install mpi4py
   pip install --user mpi4py
   pip install --user scipy
   pip install --user pyyaml
