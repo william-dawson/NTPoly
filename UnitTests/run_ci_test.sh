@@ -2,6 +2,7 @@ set -e
 
 if [[ "$TESTOS" == "LINUX" ]]; then
    # conda activate ntpoly-conda
+   :
 fi
 
 cd Build
