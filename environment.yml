@@ -1,14 +1,14 @@
 name: ntpoly-conda
 channels:
-  - defaults
+  # - defaults
   - conda-forge
 dependencies:
   - scipy
-  - doxygen
-  - swig
+  # - doxygen
+  # - swig
   - pyyaml
   - pip
-  - pip:
-    - ford
-    - mpi4py
-    - flake8
+  # - pip:
+  #   - ford
+  #   - mpi4py
+  #   - flake8

@@ -14,11 +14,12 @@ if [[ "$TESTOS" == "LINUX" ]]; then
     sudo apt-get install openmpi-bin libopenmpi-dev
   fi
   conda activate
-  conda create --name ntpoly-conda
+  conda env create -f environment.yml
+  # conda create --name ntpoly-conda
   conda activate ntpoly-conda
-  conda install -c conda-forge scipy
-  conda install -c conda-forge pyyaml
-  conda install -c conda-forge pip
+  # conda install -c conda-forge scipy
+  # conda install -c conda-forge pyyaml
+  # conda install -c conda-forge pip
   pip install --user mpi4py
   pip install --user flake8
 elif [[ "$TESTOS" == "OSX" ]]; then
