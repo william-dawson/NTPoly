@@ -15,7 +15,6 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   fi
   conda activate
   conda env create -f environment.yml
-  conda activate ntpoly-conda
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
   brew link --overwrite gcc
