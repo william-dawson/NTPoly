@@ -7,38 +7,38 @@ jobs:
       matrix:
         name:             [mac]
         include:
-          - name:         ubuntu-standard
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest"
-            testexamples: 1
-            debug:        0
-            noalligather: 0
-            mpich:        0
-          - name:         ubuntu-debug
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest -R Regression111"
-            testexamples: 1
-            debug:        1
-            noalligather: 0
-            mpich:        0
-          - name:         ubuntu-nogather
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest"
-            testexamples: 1
-            debug:        0
-            noalligather: 1
-            mpich:        0
-          - name:         ubuntu-mpich
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest -R Regression211"
-            testexamples: 0
-            debug:        0
-            noalligather: 0
-            mpich:        1
+          # - name:         ubuntu-standard
+          #   os:           ubuntu-latest
+          #   testos:       LINUX
+          #   maketest:     "ctest"
+          #   testexamples: 1
+          #   debug:        0
+          #   noalligather: 0
+          #   mpich:        0
+          # - name:         ubuntu-debug
+          #   os:           ubuntu-latest
+          #   testos:       LINUX
+          #   maketest:     "ctest -R Regression111"
+          #   testexamples: 1
+          #   debug:        1
+          #   noalligather: 0
+          #   mpich:        0
+          # - name:         ubuntu-nogather
+          #   os:           ubuntu-latest
+          #   testos:       LINUX
+          #   maketest:     "ctest"
+          #   testexamples: 1
+          #   debug:        0
+          #   noalligather: 1
+          #   mpich:        0
+          # - name:         ubuntu-mpich
+          #   os:           ubuntu-latest
+          #   testos:       LINUX
+          #   maketest:     "ctest -R Regression211"
+          #   testexamples: 0
+          #   debug:        0
+          #   noalligather: 0
+          #   mpich:        1
           - name:         mac
             os:           macos-latest
             testos:       OSX
