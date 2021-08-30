@@ -13,11 +13,10 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   else
     sudo apt-get install openmpi-bin libopenmpi-dev
   fi
-  conda activate
-  conda env create -f environment.yml
-  conda activate ntpoly-conda
-  pip install --upgrade pip
-  pip install mpi4py==3.0.3 --no-binary :all:
+  pip install --user mpi4py
+  pip install --user scipy
+  pip install --user pyyaml
+  pip install --user flake8
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
   brew link --overwrite gcc
