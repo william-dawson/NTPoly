@@ -15,6 +15,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   fi
   conda activate
   conda create --name ntpoly-conda
+  conda activate ntpoly-conda
   conda install -c conda-forge scipy
   conda install -c conda-forge pyyaml
   conda install -c conda-forge pip
