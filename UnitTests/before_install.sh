@@ -16,6 +16,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   conda activate
   conda env create -f environment.yml
   conda activate ntpoly-conda
+  pip install --upgrade pip
   pip install mpi4py
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
