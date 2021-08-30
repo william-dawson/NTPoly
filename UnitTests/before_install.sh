@@ -20,7 +20,7 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   # conda install -c conda-forge scipy
   # conda install -c conda-forge pyyaml
   # conda install -c conda-forge pip
-  pip install --user mpi4py
+  # pip install --user mpi4py
   # pip install --user flake8
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
