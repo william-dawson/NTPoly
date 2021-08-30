@@ -15,10 +15,10 @@ if [[ "$TESTOS" == "LINUX" ]]; then
   fi
   conda activate
   conda create --name ntpoly-conda
+  conda install -c conda-forge scipy
+  conda install -c conda-forge pyyaml
   conda install -c conda-forge pip
   pip install --user mpi4py
-  pip install --user scipy
-  pip install --user pyyaml
   pip install --user flake8
 elif [[ "$TESTOS" == "OSX" ]]; then
   brew reinstall gcc
