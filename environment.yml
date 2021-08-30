@@ -11,5 +11,5 @@ dependencies:
   - pip
   - pip:
     - ford
-    - mpi4py
+    #- mpi4py
     - flake8
