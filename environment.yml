@@ -1,6 +1,5 @@
 name: ntpoly-conda
 channels:
-  - defaults
   - conda-forge
 dependencies:
   - scipy
@@ -12,4 +11,3 @@ dependencies:
     - ford
     - mpi4py
     - flake8
-prefix: /Users/wddawson/miniconda3/envs/ntpoly-conda
