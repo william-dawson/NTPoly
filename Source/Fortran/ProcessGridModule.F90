@@ -6,7 +6,7 @@ MODULE ProcessGridModule
        & WriteHeader, WriteListElement
   USE NTMPIModule
 #ifdef _OPENMP
-  USE omp_lib, ONLY : omp_get_num_threads
+  USE omp_lib, ONLY : omp_get_num_threads, omp_get_max_threads
 #endif
   IMPLICIT NONE
   PRIVATE
@@ -51,6 +51,8 @@ MODULE ProcessGridModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: blocked_within_slice_comm
      !> blocked communicator between slices.
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: blocked_between_slice_comm
+     !> The maximum number of openmp threads.
+     INTEGER :: omp_max_threads
   END TYPE ProcessGrid_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default process grid.
@@ -246,9 +248,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! threads.
 #if defined NOBLOCK
     grid%block_multiplier = 1
+    grid%omp_max_threads = 1
 #elif defined _OPENMP
     !$omp PARALLEL
     num_threads = omp_get_num_threads()
+    grid%omp_max_threads = omp_get_max_threads()
     !$omp end PARALLEL
     grid%block_multiplier = num_threads/&
          & (column_block_multiplier+row_block_multiplier)
@@ -357,6 +361,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     new_grid%block_multiplier = old_grid%block_multiplier
     new_grid%number_of_blocks_columns = old_grid%number_of_blocks_columns
     new_grid%number_of_blocks_rows = old_grid%number_of_blocks_rows
+    new_grid%omp_max_threads = old_grid%omp_max_threads
 
     !! Allocate Blocks
     ALLOCATE(new_grid%blocked_row_comm(old_grid%number_of_blocks_rows))
