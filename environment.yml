@@ -1,5 +1,6 @@
 name: ntpoly-conda
 channels:
+  - defaults
   - conda-forge
 dependencies:
   - scipy
