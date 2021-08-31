@@ -51,7 +51,7 @@ jobs:
             testexamples: 0
             debug:        0
             noalligather: 0
-            mpich:        1
+            mpich:        0
             threadoff:    1
           - name:         mac
             os:           macos-latest
