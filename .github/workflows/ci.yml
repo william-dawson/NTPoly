@@ -6,7 +6,7 @@ jobs:
     strategy:
       matrix:
         name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
-                           ubuntu-nogather, ubuntu-mpich-nt]
+                           ubuntu-nogather, mac-thread-cap]
         include:
           - name:         ubuntu-standard
             os:           ubuntu-latest
@@ -44,7 +44,7 @@ jobs:
             noalligather: 0
             mpich:        1
             threadoff:    0
-          - name:         ubuntu-mpich-nt
+          - name:         mac-thread-cap
             os:           macos-latest
             testos:       OSX
             maketest:     "ctest -R Regression111"

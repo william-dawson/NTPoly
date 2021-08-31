@@ -233,7 +233,7 @@
         END DO
      END DO
      !! Prevent deadlock in the case where the number of tasks is capped.
-     IF (matA%process_grid%omp_max_threads .EQ. 1 .AND. .FALSE.) THEN
+     IF (matA%process_grid%omp_max_threads .EQ. 1) THEN
         !$OMP taskwait
      END IF
   END DO
