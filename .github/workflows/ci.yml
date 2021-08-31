@@ -45,8 +45,8 @@ jobs:
             mpich:        1
             threadoff:    0
           - name:         ubuntu-mpich-nt
-            os:           ubuntu-latest
-            testos:       LINUX
+            os:           macos-latest
+            testos:       OSX
             maketest:     "ctest -R Regression111"
             testexamples: 0
             debug:        0
