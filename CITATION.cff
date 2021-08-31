@@ -25,6 +25,5 @@ preferred-citation:
   start: 154 # First page number
   end: 165 # Last page number
   title: "Massively parallel sparse matrix function calculations with NTPoly"
-  issue: 0010-4655
   volume: 225
   year: 2018
