@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Dawson"
+  given-names: "William"
+  orcid: "https://orcid.org/0000-0003-4480-8565"
+- family-names: "Nakajima"
+  given-names: "Takahito"
+title: "NTPoly"
+version: 2.6.0
+doi: 10.1016/j.cpc.2017.12.010
+date-released: 2017-12-11
+url: "https://github.com/william-dawson/NTPoly"
+preferred-citation:
+  type: article
+  authors:
+  - family-names: "Dawson"
+    given-names: "William"
+    orcid: "https://orcid.org/0000-0003-4480-8565"
+  - family-names: "Nakajima"
+    given-names: "Takahito"
+  doi: "10.1016/j.cpc.2017.12.010"
+  journal: "Computer Physics Communications"
+  month: 12
+  start: 154 # First page number
+  end: 165 # Last page number
+  title: "Massively parallel sparse matrix function calculations with NTPoly"
+  volume: 225
+  year: 2018
