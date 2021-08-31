@@ -85,6 +85,7 @@ jobs:
       env:
         MAKETEST:         ${{ matrix.maketest }}
         TESTOS:           ${{ matrix.testos }}
+        THREADOFF:        ${{ matrix.threadoff }}
     - name:               check examples
       run:                |
         bash -l UnitTests/check_examples.sh
