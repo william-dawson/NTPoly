@@ -4,6 +4,9 @@ if [[ "$TESTOS" == "LINUX" ]]; then
    conda activate ntpoly-conda
 fi
 
+echo "Thread Variable"
+echo $threadoff
+
 if [[ "$threadoff" == "1" ]]; then
    export OMP_NUM_THREADS=1
    echo "Setting threads to 1"
