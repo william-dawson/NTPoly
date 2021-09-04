@@ -10,7 +10,7 @@ Currently we have hosted here for your convenience. First, we have documentation
 for the current release version:
 
 * [2.7 Fortran Documentation](../doc/2.7/Fortran/index.html)
-* [2.7 C++ Documentation](../doc/2.7/CPlusPlus/index.html)
+* [2.7 C++ Documentation](../doc/2.7/CPP/index.html)
 
 For legacy purposes, we also maintain documentation of the final version 1.0
 series release:
