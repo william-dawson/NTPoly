@@ -10,7 +10,6 @@ The steps are:
 from os import mkdir, getcwd, chdir, system
 from os.path import join, basename
 from glob import glob
-from shutil import copy
 
 
 cmake_line = '''cmake .. -DFORTRAN_ONLY=Yes \
@@ -69,9 +68,9 @@ if __name__ == "__main__":
             ofile.write(source)
 
     # Create the special MPI switches
-    with open(join("ElsiBuild", "elsi_output", 
+    with open(join("ElsiBuild", "elsi_output",
                    "NTMPIModule.f90"), "w") as ofile:
         ofile.write(switch1)
-    with open(join("ElsiBuild", "elsi_output", 
+    with open(join("ElsiBuild", "elsi_output",
                    "NTMPIFH.f90"), "w") as ofile:
         ofile.write(switch2)
