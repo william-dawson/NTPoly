@@ -78,7 +78,8 @@ if __name__ == "__main__":
 
     # Might as well lint the result as well.
     finished_list = glob(join("ElsiBuild", "elsi_output", "*.f90"))
-    args = '''--eval="(f90-mode)" --eval="(f90-indent-subprogram)"''' + \
-           ''' -f save-buffer'''
+    args = '''--eval="(setq make-backup-files nil)" ''' + \
+           '''--eval="(f90-mode)" --eval="(f90-indent-subprogram)" ''' + \
+           '''-f save-buffer'''
     for f in finished_list:
         system("emacs -batch " + f + " " + args + " 2>/dev/null")
