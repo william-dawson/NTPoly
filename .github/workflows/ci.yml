@@ -27,7 +27,7 @@ jobs:
             noalligather: 0
             mpich:        0
             threadoff:    0
-            elsi:         1
+            elsi:         0
           - name:         ubuntu-nogather
             os:           ubuntu-latest
             testos:       LINUX
@@ -68,7 +68,7 @@ jobs:
             mpich:        0
             lint:         1
             threadoff:    0
-            elsi:         0
+            elsi:         1
     runs-on:              ${{ matrix.os }}
     steps:
     - uses:               actions/checkout@v1
@@ -107,7 +107,7 @@ jobs:
     - name:               elsi
       if:                 ${{ matrix.elsi }}
       run:
-        python UnitTests/generate_elsi.py
+        cmake --version ; python UnitTests/generate_elsi.py
     - name: upload artifacts
       if: always()
       uses: actions/upload-artifact@v1
