@@ -115,7 +115,7 @@ jobs:
         name: build
         path: Build
     - name: upload elsi
-      if: elsi
+      if:                 ${{ matrix.elsi }}
       uses: actions/upload-artifact@v1
       with:
         name: elsi
