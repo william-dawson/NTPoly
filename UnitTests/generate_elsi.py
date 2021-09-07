@@ -64,7 +64,7 @@ if __name__ == "__main__":
     for f in file_list:
         new_name = basename(f.replace(".F90", ""))
         with open(f) as ifile:
-            source = "".join([x for x in ifile if x[:3] != "# 1"])
+            source = "".join([x for x in ifile if x[0] != "#"])
         with open(join("ElsiBuild", "elsi_output", new_name), "w") as ofile:
             ofile.write(source)
 
