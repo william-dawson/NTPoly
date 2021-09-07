@@ -107,7 +107,7 @@ jobs:
     - name:               elsi
       if:                 ${{ matrix.elsi }}
       run:
-        cmake --version ; python UnitTests/generate_elsi.py
+        python UnitTests/generate_elsi.py
     - name: upload artifacts
       if: always()
       uses: actions/upload-artifact@v1

@@ -81,4 +81,4 @@ if __name__ == "__main__":
     args = '''--eval="(f90-mode)" --eval="(f90-indent-subprogram)"''' + \
            ''' -f save-buffer'''
     for f in finished_list:
-        system("emacs -batch " + f + " " + args)
+        system("emacs -batch " + f + " " + args + " 2>/dev/null")
