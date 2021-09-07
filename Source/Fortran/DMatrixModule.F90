@@ -115,7 +115,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Columns of the matrix.
     INTEGER, INTENT(IN) :: columns
 
-    INCLUDE "dense_includes/ConstructEmptyMatrix.f90"
+#include "dense_includes/ConstructEmptyMatrix.f90"
 
   END FUNCTION ConstructEmptyMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -128,7 +128,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Helper Variables
     TYPE(Triplet_r) :: temporary
 
-    INCLUDE "dense_includes/ConstructMatrixDFromS.f90"
+#include "dense_includes/ConstructMatrixDFromS.f90"
 
   END SUBROUTINE ConstructMatrixDFromS_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -145,7 +145,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r) :: temporary
     TYPE(TripletList_r) :: temporary_list
 
-    INCLUDE "dense_includes/ConstructMatrixSFromD.f90"
+#include "dense_includes/ConstructMatrixSFromD.f90"
 
   END SUBROUTINE ConstructMatrixSFromD_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -156,7 +156,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> matB = matA
     TYPE(Matrix_ldr), INTENT(INOUT) :: matB
 
-    INCLUDE "dense_includes/CopyMatrix.f90"
+#include "dense_includes/CopyMatrix.f90"
 
   END SUBROUTINE CopyMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -165,7 +165,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to delete.
     TYPE(Matrix_ldr), INTENT(INOUT) :: this
 
-    INCLUDE "dense_includes/DestructMatrix.f90"
+#include "dense_includes/DestructMatrix.f90"
 
   END SUBROUTINE DestructMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -180,7 +180,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     REAL(NTREAL) :: alpha
 
-    INCLUDE "dense_includes/IncrementMatrix.f90"
+#include "dense_includes/IncrementMatrix.f90"
 
   END SUBROUTINE IncrementMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -209,7 +209,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> matAT = matA^T.
     TYPE(Matrix_ldr), INTENT(INOUT) :: matAT
 
-    INCLUDE "dense_includes/TransposeMatrix.f90"
+#include "dense_includes/TransposeMatrix.f90"
 
   END SUBROUTINE TransposeMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -227,7 +227,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The composed matrix.
     TYPE(Matrix_ldr), INTENT(INOUT) :: out_matrix
 
-    INCLUDE "dense_includes/ComposeMatrix.f90"
+#include "dense_includes/ComposeMatrix.f90"
 
   END SUBROUTINE ComposeMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -247,7 +247,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Specifies the size of the columns.
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
 
-    INCLUDE "dense_includes/SplitMatrix.f90"
+#include "dense_includes/SplitMatrix.f90"
 
   END SUBROUTINE SplitMatrix_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -352,7 +352,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Columns of the matrix.
     INTEGER, INTENT(IN) :: columns
 
-    INCLUDE "dense_includes/ConstructEmptyMatrix.f90"
+#include "dense_includes/ConstructEmptyMatrix.f90"
 
   END FUNCTION ConstructEmptyMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -365,7 +365,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Helper Variables
     TYPE(Triplet_c) :: temporary
 
-    INCLUDE "dense_includes/ConstructMatrixDFromS.f90"
+#include "dense_includes/ConstructMatrixDFromS.f90"
 
   END SUBROUTINE ConstructMatrixDFromS_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -382,7 +382,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_c) :: temporary
     TYPE(TripletList_c) :: temporary_list
 
-    INCLUDE "dense_includes/ConstructMatrixSFromD.f90"
+#include "dense_includes/ConstructMatrixSFromD.f90"
 
   END SUBROUTINE ConstructMatrixSFromD_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -393,7 +393,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> matB = matA
     TYPE(Matrix_ldc), INTENT(INOUT) :: matB
 
-    INCLUDE "dense_includes/CopyMatrix.f90"
+#include "dense_includes/CopyMatrix.f90"
 
   END SUBROUTINE CopyMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -402,7 +402,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> This the matrix to delete.
     TYPE(Matrix_ldc), INTENT(INOUT) :: this
 
-    INCLUDE "dense_includes/DestructMatrix.f90"
+#include "dense_includes/DestructMatrix.f90"
 
   END SUBROUTINE DestructMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -417,7 +417,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary
     REAL(NTREAL) :: alpha
 
-    INCLUDE "dense_includes/IncrementMatrix.f90"
+#include "dense_includes/IncrementMatrix.f90"
 
   END SUBROUTINE IncrementMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -449,7 +449,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> matAT = matA^T.
     TYPE(Matrix_ldc), INTENT(INOUT) :: matAT
 
-    INCLUDE "dense_includes/TransposeMatrix.f90"
+#include "dense_includes/TransposeMatrix.f90"
 
   END SUBROUTINE TransposeMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -467,7 +467,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The composed matrix.
     TYPE(Matrix_ldc), INTENT(INOUT) :: out_matrix
 
-    INCLUDE "dense_includes/ComposeMatrix.f90"
+#include "dense_includes/ComposeMatrix.f90"
 
   END SUBROUTINE ComposeMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -487,7 +487,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Specifies the size of the columns.
     INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: block_size_column_in
 
-    INCLUDE "dense_includes/SplitMatrix.f90"
+#include "dense_includes/SplitMatrix.f90"
 
   END SUBROUTINE SplitMatrix_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -97,9 +97,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndComposeMatrixSizes_sendrecv.f90"
+#include "comm_includes/ReduceAndComposeMatrixSizes_sendrecv.f90"
 #else
-    INCLUDE "comm_includes/ReduceAndComposeMatrixSizes.f90"
+#include "comm_includes/ReduceAndComposeMatrixSizes.f90"
 #endif
   END SUBROUTINE ReduceAndComposeMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -115,9 +115,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndComposeMatrixSizes_sendrecv.f90"
+#include "comm_includes/ReduceAndComposeMatrixSizes_sendrecv.f90"
 #else
-    INCLUDE "comm_includes/ReduceAndComposeMatrixSizes.f90"
+#include "comm_includes/ReduceAndComposeMatrixSizes.f90"
 #endif
   END SUBROUTINE ReduceAndComposeMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -133,7 +133,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
+#include "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
             & II-1, 4, communicator, helper%data_send_request_list(II), &
@@ -146,7 +146,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
-    INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
+#include "comm_includes/ReduceAndComposeMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
@@ -171,7 +171,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The communicator to send along.
     INTEGER, INTENT(INOUT)              :: communicator
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
+#include "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
             & II-1, 4, communicator, helper%data_send_request_list(II), &
@@ -184,7 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
-    INCLUDE "comm_includes/ReduceAndComposeMatrixData.f90"
+#include "comm_includes/ReduceAndComposeMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, &
@@ -202,7 +202,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
+#include "comm_includes/ReduceAndComposeMatrixCleanup.f90"
 #ifdef NOIALLGATHER
     IF (ALLOCATED(helper%outer_send_request_list)) THEN
        DEALLOCATE(helper%outer_send_request_list)
@@ -236,7 +236,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 
-    INCLUDE "comm_includes/ReduceAndComposeMatrixCleanup.f90"
+#include "comm_includes/ReduceAndComposeMatrixCleanup.f90"
 #ifdef NOIALLGATHER
     IF (ALLOCATED(helper%outer_send_request_list)) THEN
        DEALLOCATE(helper%outer_send_request_list)
@@ -272,7 +272,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(ReduceHelper_t) :: helper
 
-    INCLUDE "comm_includes/ReduceAndComposeMatrix.f90"
+#include "comm_includes/ReduceAndComposeMatrix.f90"
 
   END SUBROUTINE ReduceAndComposeMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -288,7 +288,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(ReduceHelper_t) :: helper
 
-    INCLUDE "comm_includes/ReduceAndComposeMatrix.f90"
+#include "comm_includes/ReduceAndComposeMatrix.f90"
 
   END SUBROUTINE ReduceAndComposeMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -304,9 +304,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
+#include "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
 #else
-    INCLUDE "comm_includes/ReduceAndSumMatrixSizes.f90"
+#include "comm_includes/ReduceAndSumMatrixSizes.f90"
 #endif
   END SUBROUTINE ReduceAndSumMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -322,9 +322,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
+#include "comm_includes/ReduceAndSumMatrixSizes_sendrecv.f90"
 #else
-    INCLUDE "comm_includes/ReduceAndSumMatrixSizes.f90"
+#include "comm_includes/ReduceAndSumMatrixSizes.f90"
 #endif
   END SUBROUTINE ReduceAndSumMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -340,7 +340,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
+#include "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
             & II-1, 4, communicator, helper%data_send_request_list(II), &
@@ -353,7 +353,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
-    INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
+#include "comm_includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTREAL, communicator, helper%data_request, &
@@ -373,7 +373,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
-    INCLUDE "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
+#include "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
             & II-1, 4, communicator, helper%data_send_request_list(II), &
@@ -386,7 +386,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & helper%data_recv_request_list(II), grid_error)
     END DO
 #else
-    INCLUDE "comm_includes/ReduceAndSumMatrixData.f90"
+#include "comm_includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
          & helper%displacement, MPINTCOMPLEX, communicator, &
@@ -408,7 +408,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_lsr) :: temporary_matrix, sum_matrix
 
-    INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
+#include "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
     IF (ALLOCATED(helper%outer_send_request_list)) THEN
        DEALLOCATE(helper%outer_send_request_list)
@@ -445,7 +445,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_lsc) :: temporary_matrix, sum_matrix
 
-    INCLUDE "comm_includes/ReduceAndSumMatrixCleanup.f90"
+#include "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
     IF (ALLOCATED(helper%outer_send_request_list)) THEN
        DEALLOCATE(helper%outer_send_request_list)
@@ -482,7 +482,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(ReduceHelper_t) :: helper
 
-    INCLUDE "comm_includes/ReduceAndSumMatrix.f90"
+#include "comm_includes/ReduceAndSumMatrix.f90"
   END SUBROUTINE ReduceAndSumMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Reduce and sum the matrices in one step. If you use this method, you
@@ -499,7 +499,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(ReduceHelper_t) :: helper
 
-    INCLUDE "comm_includes/ReduceAndSumMatrix.f90"
+#include "comm_includes/ReduceAndSumMatrix.f90"
   END SUBROUTINE ReduceAndSumMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Test if a request for the size of the matrices is complete.

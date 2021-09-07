@@ -412,7 +412,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The dot product.
     REAL(NTREAL), INTENT(OUT) :: product
 
-    INCLUDE "distributed_algebra_includes/DotMatrix.f90"
+#include "distributed_algebra_includes/DotMatrix.f90"
   END SUBROUTINE DotMatrix_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> product = dot(Matrix A,Matrix B)
@@ -426,7 +426,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The dot product.
     COMPLEX(NTCOMPLEX), INTENT(OUT) :: product
 
-    INCLUDE "distributed_algebra_includes/DotMatrix.f90"
+#include "distributed_algebra_includes/DotMatrix.f90"
   END SUBROUTINE DotMatrix_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)

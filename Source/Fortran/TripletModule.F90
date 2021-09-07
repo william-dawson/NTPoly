@@ -60,7 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The value at that point.
     REAL(NTREAL), INTENT(IN)       :: point_value
 
-    INCLUDE "triplet_includes/SetTriplet.f90"
+#include "triplet_includes/SetTriplet.f90"
 
   END SUBROUTINE SetTriplet_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -75,7 +75,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The value at that point.
     COMPLEX(NTCOMPLEX), INTENT(IN) :: point_value
 
-    INCLUDE "triplet_includes/SetTriplet.f90"
+#include "triplet_includes/SetTriplet.f90"
 
   END SUBROUTINE SetTriplet_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -90,7 +90,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Actual stored value.
     REAL(NTREAL), INTENT(OUT)   :: point_value
 
-    INCLUDE "triplet_includes/GetTriplet.f90"
+#include "triplet_includes/GetTriplet.f90"
 
   END SUBROUTINE GetTripletValues_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -105,7 +105,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Actual stored value.
     COMPLEX(NTCOMPLEX), INTENT(OUT) :: point_value
 
-    INCLUDE "triplet_includes/GetTriplet.f90"
+#include "triplet_includes/GetTriplet.f90"
 
   END SUBROUTINE GetTripletValues_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -119,7 +119,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> A < B.
     LOGICAL :: islessthan
 
-    INCLUDE "triplet_includes/CompareTriplets.f90"
+#include "triplet_includes/CompareTriplets.f90"
 
   END FUNCTION CompareTriplets_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -133,7 +133,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> A < B.
     LOGICAL :: islessthan
 
-    INCLUDE "triplet_includes/CompareTriplets.f90"
+#include "triplet_includes/CompareTriplets.f90"
 
   END FUNCTION CompareTriplets_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

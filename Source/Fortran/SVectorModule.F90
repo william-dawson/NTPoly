@@ -51,7 +51,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL) :: working_value_a, working_value_b
 
-    INCLUDE "sparse_includes/AddSparseVectors.f90"
+#include "sparse_includes/AddSparseVectors.f90"
 
   END SUBROUTINE AddSparseVectors_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -82,7 +82,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     COMPLEX(NTCOMPLEX) :: working_value_a, working_value_b
 
-    INCLUDE "sparse_includes/AddSparseVectors.f90"
+#include "sparse_includes/AddSparseVectors.f90"
 
   END SUBROUTINE AddSparseVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -102,7 +102,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: working_value_a, working_value_b
 
-    INCLUDE "sparse_includes/DotSparseVectors.f90"
+#include "sparse_includes/DotSparseVectors.f90"
 
   END FUNCTION DotSparseVectors_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -122,7 +122,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     COMPLEX(NTCOMPLEX) :: working_value_a, working_value_b
 
-    INCLUDE "sparse_includes/DotSparseVectors.f90"
+#include "sparse_includes/DotSparseVectors.f90"
 
   END FUNCTION DotSparseVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -146,7 +146,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: working_value_a, working_value_b
 
-    INCLUDE "sparse_includes/PairwiseMultiplyVectors.f90"
+#include "sparse_includes/PairwiseMultiplyVectors.f90"
 
   END SUBROUTINE PairwiseMultiplyVectors_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -170,7 +170,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     COMPLEX(NTCOMPLEX) :: working_value_a, working_value_b
 
-    INCLUDE "sparse_includes/PairwiseMultiplyVectors.f90"
+#include "sparse_includes/PairwiseMultiplyVectors.f90"
 
   END SUBROUTINE PairwiseMultiplyVectors_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
