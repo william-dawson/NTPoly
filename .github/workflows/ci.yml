@@ -17,6 +17,7 @@ jobs:
             noalligather: 0
             mpich:        0
             threadoff:    0
+            elsi:         0
           - name:         ubuntu-debug
             os:           ubuntu-latest
             testos:       LINUX
@@ -26,6 +27,7 @@ jobs:
             noalligather: 0
             mpich:        0
             threadoff:    0
+            elsi:         0
           - name:         ubuntu-nogather
             os:           ubuntu-latest
             testos:       LINUX
@@ -35,6 +37,7 @@ jobs:
             noalligather: 1
             mpich:        0
             threadoff:    0
+            elsi:         0
           - name:         ubuntu-mpich
             os:           ubuntu-latest
             testos:       LINUX
@@ -44,6 +47,7 @@ jobs:
             noalligather: 0
             mpich:        1
             threadoff:    0
+            elsi:         0
           - name:         mac-thread-cap
             os:           macos-latest
             testos:       OSX
@@ -53,6 +57,7 @@ jobs:
             noalligather: 0
             mpich:        0
             threadoff:    1
+            elsi:         0
           - name:         mac
             os:           macos-latest
             testos:       OSX
@@ -63,6 +68,7 @@ jobs:
             mpich:        0
             lint:         1
             threadoff:    0
+            elsi:         1
     runs-on:              ${{ matrix.os }}
     steps:
     - uses:               actions/checkout@v1
@@ -98,9 +104,19 @@ jobs:
         bash -l UnitTests/lint.sh
       env:
         TESTOS:           ${{ matrix.testos }}
+    - name:               elsi
+      if:                 ${{ matrix.elsi }}
+      run:
+        python UnitTests/generate_elsi.py
     - name: upload artifacts
       if: always()
       uses: actions/upload-artifact@v1
       with:
         name: build
         path: Build
+    - name: upload elsi
+      if:                 ${{ matrix.elsi }}
+      uses: actions/upload-artifact@v1
+      with:
+        name: elsi
+        path: ElsiBuild/elsi_output

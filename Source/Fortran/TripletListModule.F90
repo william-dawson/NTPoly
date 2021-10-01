@@ -135,7 +135,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The length of the triplet list (default=0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
-    INCLUDE "triplet_includes/ConstructTripletList.f90"
+#include "triplet_includes/ConstructTripletList.f90"
 
   END FUNCTION ConstructTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -146,7 +146,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The length of the triplet list (default=0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
-    INCLUDE "triplet_includes/ConstructTripletList.f90"
+#include "triplet_includes/ConstructTripletList.f90"
 
   END FUNCTION ConstructTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -155,7 +155,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The triplet list to destruct.
     TYPE(TripletList_r), INTENT(INOUT) :: this
 
-    INCLUDE "triplet_includes/DestructTripletList.f90"
+#include "triplet_includes/DestructTripletList.f90"
 
   END SUBROUTINE DestructTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,7 +164,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The triplet list to destruct.
     TYPE(TripletList_c), INTENT(INOUT) :: this
 
-    INCLUDE "triplet_includes/DestructTripletList.f90"
+#include "triplet_includes/DestructTripletList.f90"
 
   END SUBROUTINE DestructTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -177,7 +177,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Triplet_r), DIMENSION(:), ALLOCATABLE :: temporary_data
 
-    INCLUDE "triplet_includes/ResizeTripletList.f90"
+#include "triplet_includes/ResizeTripletList.f90"
 
   END SUBROUTINE ResizeTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -190,7 +190,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Triplet_c), DIMENSION(:), ALLOCATABLE :: temporary_data
 
-    INCLUDE "triplet_includes/ResizeTripletList.f90"
+#include "triplet_includes/ResizeTripletList.f90"
 
   END SUBROUTINE ResizeTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -201,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The value to append.
     TYPE(Triplet_r), INTENT(IN)        :: triplet_value
 
-    INCLUDE "triplet_includes/AppendToTripletList.f90"
+#include "triplet_includes/AppendToTripletList.f90"
 
   END SUBROUTINE AppendToTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -212,7 +212,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The value to append.
     TYPE(Triplet_c), INTENT(IN)        :: triplet_value
 
-    INCLUDE "triplet_includes/AppendToTripletList.f90"
+#include "triplet_includes/AppendToTripletList.f90"
 
   END SUBROUTINE AppendToTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -225,7 +225,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The value of the triplet to set.
     TYPE(Triplet_r), INTENT(IN)        :: triplet_value
 
-    INCLUDE "triplet_includes/SetTripletAt.f90"
+#include "triplet_includes/SetTripletAt.f90"
   END SUBROUTINE SetTripletAt_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of a triplet at a particular index.
@@ -237,7 +237,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The value of the triplet to set.
     TYPE(Triplet_c), INTENT(IN)        :: triplet_value
 
-    INCLUDE "triplet_includes/SetTripletAt.f90"
+#include "triplet_includes/SetTripletAt.f90"
   END SUBROUTINE SetTripletAt_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
@@ -249,7 +249,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The extracted triplet value.
     TYPE(Triplet_r), INTENT(OUT)    :: triplet_value
 
-    INCLUDE "triplet_includes/GetTripletAt.f90"
+#include "triplet_includes/GetTripletAt.f90"
   END SUBROUTINE GetTripletAt_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the value of a triplet at a particular index.
@@ -261,7 +261,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The extracted triplet value.
     TYPE(Triplet_c), INTENT(OUT)    :: triplet_value
 
-    INCLUDE "triplet_includes/GetTripletAt.f90"
+#include "triplet_includes/GetTripletAt.f90"
   END SUBROUTINE GetTripletAt_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sorts a triplet list by index values.
@@ -315,7 +315,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of entries in the triplet list.
     INTEGER :: list_size
 
-    INCLUDE "triplet_includes/GetTripletListSize.f90"
+#include "triplet_includes/GetTripletListSize.f90"
 
   END FUNCTION GetTripletListSize_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -326,7 +326,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of entries in the triplet list.
     INTEGER :: list_size
 
-    INCLUDE "triplet_includes/GetTripletListSize.f90"
+#include "triplet_includes/GetTripletListSize.f90"
 
   END FUNCTION GetTripletListSize_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -386,7 +386,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     INTEGER :: counter
 
-    INCLUDE "triplet_includes/ShiftTripletList.f90"
+#include "triplet_includes/ShiftTripletList.f90"
 
   END SUBROUTINE ShiftTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -404,7 +404,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     INTEGER :: counter
 
-    INCLUDE "triplet_includes/ShiftTripletList.f90"
+#include "triplet_includes/ShiftTripletList.f90"
 
   END SUBROUTINE ShiftTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

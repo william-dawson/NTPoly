@@ -185,7 +185,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Whether to set the matrix to zero.
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
-    INCLUDE "sparse_includes/ConstructEmptyMatrix.f90"
+#include "sparse_includes/ConstructEmptyMatrix.f90"
   END FUNCTION ConstructEmptyMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a sparse matrix with a certain number of columns
@@ -201,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Whether to set the matrix to zero.
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
-    INCLUDE "sparse_includes/ConstructEmptyMatrix.f90"
+#include "sparse_includes/ConstructEmptyMatrix.f90"
   END FUNCTION ConstructEmptyMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for the construct from file function.
@@ -325,7 +325,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Number of matrix columns
     INTEGER, INTENT(IN) :: columns
 
-    INCLUDE "sparse_includes/ConstructMatrixFromTripletList.f90"
+#include "sparse_includes/ConstructMatrixFromTripletList.f90"
   END FUNCTION ConstructMatrixFromTripletList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
@@ -333,7 +333,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to free up.
     TYPE(Matrix_lsr), INTENT(INOUT) :: this
 
-    INCLUDE "sparse_includes/DestructMatrix.f90"
+#include "sparse_includes/DestructMatrix.f90"
   END SUBROUTINE DestructMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
@@ -341,7 +341,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to free up.
     TYPE(Matrix_lsc), INTENT(INOUT) :: this
 
-    INCLUDE "sparse_includes/DestructMatrix.f90"
+#include "sparse_includes/DestructMatrix.f90"
   END SUBROUTINE DestructMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a sparse matrix in a safe way.
@@ -351,7 +351,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> matB = matA
     TYPE(Matrix_lsr), INTENT(INOUT) :: matB
 
-    INCLUDE "sparse_includes/CopyMatrix.f90"
+#include "sparse_includes/CopyMatrix.f90"
   END SUBROUTINE CopyMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Copy a sparse matrix in a safe way.
@@ -361,7 +361,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> matB = matA
     TYPE(Matrix_lsc), INTENT(INOUT) :: matB
 
-    INCLUDE "sparse_includes/CopyMatrix.f90"
+#include "sparse_includes/CopyMatrix.f90"
   END SUBROUTINE CopyMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of rows of a matrix.
@@ -371,7 +371,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of rows.
     INTEGER :: rows
 
-    INCLUDE "sparse_includes/GetMatrixRows.f90"
+#include "sparse_includes/GetMatrixRows.f90"
   END FUNCTION GetMatrixRows_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of rows of a matrix.
@@ -381,7 +381,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of rows.
     INTEGER :: rows
 
-    INCLUDE "sparse_includes/GetMatrixRows.f90"
+#include "sparse_includes/GetMatrixRows.f90"
   END FUNCTION GetMatrixRows_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of columns of a matrix.
@@ -391,7 +391,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns.
     INTEGER :: columns
 
-    INCLUDE "sparse_includes/GetMatrixColumns.f90"
+#include "sparse_includes/GetMatrixColumns.f90"
   END FUNCTION GetMatrixColumns_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the number of columns of a matrix.
@@ -401,7 +401,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns.
     INTEGER :: columns
 
-    INCLUDE "sparse_includes/GetMatrixColumns.f90"
+#include "sparse_includes/GetMatrixColumns.f90"
   END FUNCTION GetMatrixColumns_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a row from the matrix.
@@ -415,7 +415,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: value_buffer
 
-    INCLUDE "sparse_includes/ExtractMatrixRow.f90"
+#include "sparse_includes/ExtractMatrixRow.f90"
   END SUBROUTINE ExtractMatrixRow_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a row from the matrix.
@@ -429,7 +429,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: value_buffer
 
-    INCLUDE "sparse_includes/ExtractMatrixRow.f90"
+#include "sparse_includes/ExtractMatrixRow.f90"
   END SUBROUTINE ExtractMatrixRow_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a column from the matrix.
@@ -441,7 +441,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The column representing that row.
     TYPE(Matrix_lsr), INTENT(INOUT) :: column_out
 
-    INCLUDE "sparse_includes/ExtractMatrixColumn.f90"
+#include "sparse_includes/ExtractMatrixColumn.f90"
   END SUBROUTINE ExtractMatrixColumn_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Extract a column from the matrix.
@@ -453,7 +453,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The column representing that row.
     TYPE(Matrix_lsc), INTENT(INOUT) :: column_out
 
-    INCLUDE "sparse_includes/ExtractMatrixColumn.f90"
+#include "sparse_includes/ExtractMatrixColumn.f90"
   END SUBROUTINE ExtractMatrixColumn_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix and return it in a separate matrix.
@@ -466,7 +466,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The input matrix transposed.
     TYPE(Matrix_lsr), INTENT(INOUT) :: matT
 
-    INCLUDE "sparse_includes/TransposeMatrix.f90"
+#include "sparse_includes/TransposeMatrix.f90"
   END SUBROUTINE TransposeMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transpose a sparse matrix and return it in a separate matrix.
@@ -479,7 +479,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The input matrix transposed.
     TYPE(Matrix_lsc), INTENT(INOUT) :: matT
 
-    INCLUDE "sparse_includes/TransposeMatrix.f90"
+#include "sparse_includes/TransposeMatrix.f90"
   END SUBROUTINE TransposeMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
@@ -500,7 +500,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr) :: Temp
     TYPE(Matrix_lsr), DIMENSION(block_rows,block_columns) :: mat_t
 
-    INCLUDE "sparse_includes/ComposeMatrix.f90"
+#include "sparse_includes/ComposeMatrix.f90"
   END SUBROUTINE ComposeMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big matrix from an array of matrices by putting them one next
@@ -521,7 +521,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc) :: Temp
     TYPE(Matrix_lsc), DIMENSION(block_rows,block_columns) :: mat_t
 
-    INCLUDE "sparse_includes/ComposeMatrix.f90"
+#include "sparse_includes/ComposeMatrix.f90"
   END SUBROUTINE ComposeMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
@@ -532,7 +532,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> out_matrix = [Matrix 1 | Matrix 2, ...].
     TYPE(Matrix_lsr), INTENT(INOUT) :: out_matrix
 
-    INCLUDE "sparse_includes/ComposeMatrixColumns.f90"
+#include "sparse_includes/ComposeMatrixColumns.f90"
   END SUBROUTINE ComposeMatrixColumns_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a big Matrix C = [Matrix 1 | Matrix 1, ...] where the columns of
@@ -543,7 +543,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> out_matrix = [Matrix 1 | Matrix 2, ...].
     TYPE(Matrix_lsc), INTENT(INOUT) :: out_matrix
 
-    INCLUDE "sparse_includes/ComposeMatrixColumns.f90"
+#include "sparse_includes/ComposeMatrixColumns.f90"
   END SUBROUTINE ComposeMatrixColumns_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
@@ -566,7 +566,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), DIMENSION(block_rows) :: row_split
     TYPE(Matrix_lsr) :: Temp
 
-    INCLUDE "sparse_includes/SplitMatrix.f90"
+#include "sparse_includes/SplitMatrix.f90"
   END SUBROUTINE SplitMatrix_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a sparse matrix into an array of sparse matrices.
@@ -589,7 +589,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), DIMENSION(block_rows) :: row_split
     TYPE(Matrix_lsc) :: Temp
 
-    INCLUDE "sparse_includes/SplitMatrix.f90"
+#include "sparse_includes/SplitMatrix.f90"
   END SUBROUTINE SplitMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a matrix into into small blocks based on the specified offsets.
@@ -604,7 +604,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> 1D array of blocks.
     TYPE(Matrix_lsr), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
 
-    INCLUDE "sparse_includes/SplitMatrixColumns.f90"
+#include "sparse_includes/SplitMatrixColumns.f90"
   END SUBROUTINE SplitMatrixColumns_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Split a matrix into into small blocks based on the specified offsets.
@@ -619,7 +619,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> 1D array of blocks.
     TYPE(Matrix_lsc), DIMENSION(num_blocks), INTENT(INOUT) :: split_list
 
-    INCLUDE "sparse_includes/SplitMatrixColumns.f90"
+#include "sparse_includes/SplitMatrixColumns.f90"
   END SUBROUTINE SplitMatrixColumns_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list from a matrix.
@@ -631,7 +631,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Triplet_r) :: temporary
 
-    INCLUDE "sparse_includes/MatrixToTripletList.f90"
+#include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list from a matrix.
@@ -643,7 +643,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Triplet_c) :: temporary
 
-    INCLUDE "sparse_includes/MatrixToTripletList.f90"
+#include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a sparse matrix to the console.

@@ -127,7 +127,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Estimated sparsity (optional).
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    INCLUDE "dense_includes/ConstructMatrixMemoryPool.f90"
+#include "dense_includes/ConstructMatrixMemoryPool.f90"
 
   END FUNCTION ConstructMatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -142,7 +142,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Estimated sparsity (optional).
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    INCLUDE "dense_includes/ConstructMatrixMemoryPool.f90"
+#include "dense_includes/ConstructMatrixMemoryPool.f90"
 
   END FUNCTION ConstructMatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -151,7 +151,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix being destructed.
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: this
 
-    INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
+#include "dense_includes/DestructMatrixMemoryPool.f90"
 
   END SUBROUTINE DestructMatrixMemoryPool_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -160,7 +160,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix being destructed.
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: this
 
-    INCLUDE "dense_includes/DestructMatrixMemoryPool.f90"
+#include "dense_includes/DestructMatrixMemoryPool.f90"
 
   END SUBROUTINE DestructMatrixMemoryPool_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -176,7 +176,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> true if the memory pool is valid.
     LOGICAL :: isvalid
 
-    INCLUDE "dense_includes/CheckMemoryPoolValidity.f90"
+#include "dense_includes/CheckMemoryPoolValidity.f90"
 
   END FUNCTION CheckMemoryPoolValidity_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -193,7 +193,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> true if the memory pool is valid.
     LOGICAL :: isvalid
 
-    INCLUDE "dense_includes/CheckMemoryPoolValidity.f90"
+#include "dense_includes/CheckMemoryPoolValidity.f90"
 
   END FUNCTION CheckMemoryPoolValidity_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -204,7 +204,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The sparsity value.
     REAL(NTREAL), INTENT(IN) :: sparsity
 
-    INCLUDE "dense_includes/SetPoolSparsity.f90"
+#include "dense_includes/SetPoolSparsity.f90"
 
   END SUBROUTINE SetPoolSparsity_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -215,7 +215,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The sparsity value.
     REAL(NTREAL), INTENT(IN) :: sparsity
 
-    INCLUDE "dense_includes/SetPoolSparsity.f90"
+#include "dense_includes/SetPoolSparsity.f90"
 
   END SUBROUTINE SetPoolSparsity_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
