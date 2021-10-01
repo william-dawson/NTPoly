@@ -27,6 +27,7 @@ MODULE PSMatrixModule_wrp
   PUBLIC :: FillMatrixFromTripletList_psc_wrp
   PUBLIC :: FillMatrixPermutation_ps_wrp
   PUBLIC :: FillMatrixIdentity_ps_wrp
+  PUBLIC :: FillMatrixDense_ps_wrp
   PUBLIC :: GetMatrixActualDimension_ps_wrp
   PUBLIC :: GetMatrixLogicalDimension_ps_wrp
   PUBLIC :: GetMatrixSize_ps_wrp
@@ -252,6 +253,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     CALL FillMatrixIdentity(h_this%DATA)
   END SUBROUTINE FillMatrixIdentity_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Fill in a dense matrix of all 1s.
+  SUBROUTINE FillMatrixDense_ps_wrp(ih_this) &
+       & BIND(c,NAME="FillMatrixDense_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    CALL FillMatrixDense(h_this%DATA)
+  END SUBROUTINE FillMatrixDense_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Fill in the values of a distributed matrix with a permutation matrix.
   SUBROUTINE FillMatrixPermutation_ps_wrp(ih_this, ih_permutation, &

@@ -28,6 +28,7 @@ void FillMatrixFromTripletList_psc_wrp(const int *ih_this,
 void FillMatrixPermutation_ps_wrp(int *ih_this, const int *ih_permutation,
                                   const bool *permuterows);
 void FillMatrixIdentity_ps_wrp(int *ih_this);
+void FillMatrixDense_ps_wrp(int *ih_this);
 void GetMatrixActualDimension_ps_wrp(const int *ih_this, int *size);
 void GetMatrixLogicalDimension_ps_wrp(const int *ih_this, int *size);
 void GetMatrixSize_ps_wrp(const int *ih_this, long int *size);
