@@ -941,7 +941,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillMatrixDense_ps(this)
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
-    
+
     IF (this%is_complex) THEN
        CALL FillMatrixDense_psc(this)
     ELSE
