@@ -62,6 +62,10 @@ public:
                                   bool permuterows = true);
   //! Fills this matrix as the identity matrix.
   void FillIdentity();
+  //! This routine will fill a dense matrix so that every element has a given
+  //! a value of 1. This is useful as a starting point for further filtering
+  //! or mapping operations.
+  void FillDense();
 
 public:
   //! get the actual dimension of the matrix.

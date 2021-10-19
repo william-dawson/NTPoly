@@ -427,6 +427,26 @@ class TestPSMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_filldense(self):
+        '''Test the routine that fills a dense matrix of 1s.'''
+        for param in self.parameters:
+            matrix = param.create_matrix(self.complex)
+            self.write_matrix(matrix, self.input_file1)
+
+            # Reference Imp
+            for i in range(0, param.rows):
+                for j in range(0, param.columns):
+                    matrix[i, j] = 1.0
+            self.CheckMat = matrix
+
+            # NTPoly
+            ntmatrix = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix.FillDense()
+            ntmatrix.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
+
     def test_snap(self):
         '''Test the sparsity pattern setting routine.'''
         from scipy.sparse import dok_matrix

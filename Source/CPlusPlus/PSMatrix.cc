@@ -92,6 +92,9 @@ void Matrix_ps::FillDistributedPermutation(const Permutation &lb,
 void Matrix_ps::FillIdentity() { FillMatrixIdentity_ps_wrp(ih_this); }
 
 //////////////////////////////////////////////////////////////////////////////
+void Matrix_ps::FillDense() { FillMatrixDense_ps_wrp(ih_this); }
+
+//////////////////////////////////////////////////////////////////////////////
 int Matrix_ps::GetLogicalDimension() const {
   int temp;
   GetMatrixLogicalDimension_ps_wrp(ih_this, &temp);
