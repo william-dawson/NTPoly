@@ -85,12 +85,12 @@ class TestChemistry:
 
     def tearDown(self):
         from helpers import log_file
-        from yaml import load, dump
+        from yaml import load, dump, SafeLoader
         from sys import stdout
         if nt.GetGlobalIsRoot():
             nt.DeactivateLogger()
             with open(log_file) as ifile:
-                data = load(ifile)
+                data = load(ifile, Loader=SafeLoader)
             dump(data, stdout)
 
     def setUp(self):
