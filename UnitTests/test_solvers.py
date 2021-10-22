@@ -59,12 +59,12 @@ class TestSolvers(unittest.TestCase):
             nt.ActivateLogger(log_file, True)
 
     def tearDown(self):
-        from yaml import load, dump
+        from yaml import load, dump, SafeLoader
         from sys import stdout
         if nt.GetGlobalIsRoot():
             nt.DeactivateLogger()
             with open(log_file) as ifile:
-                data = load(ifile)
+                data = load(ifile, Loader=SafeLoader)
             dump(data, stdout)
 
     def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
