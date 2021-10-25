@@ -49,3 +49,10 @@ install(EXPORT ntpolywrapper-export
         FILE NTPolyWrapperConfig.cmake
         NAMESPACE NTPoly::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPolyWrapper)
+
+
+################################################################################
+# pkg-config
+configure_file(NTPolyWrapper.pc.in NTPolyWrapper.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/Source/Wrapper/NTPolyWrapper.pc 
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

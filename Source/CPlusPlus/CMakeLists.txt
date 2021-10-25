@@ -85,3 +85,9 @@ install(EXPORT ntpolycpp-export
         FILE NTPolyCPPConfig.cmake
         NAMESPACE NTPoly::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPolyCPP)
+
+################################################################################
+# pkg-config
+configure_file(NTPolyCPP.pc.in NTPolyCPP.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/Source/CPlusPlus/NTPolyCPP.pc 
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

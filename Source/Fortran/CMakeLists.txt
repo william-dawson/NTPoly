@@ -61,3 +61,10 @@ install(TARGETS NTPoly
 # For Exporting
 install(EXPORT ntpoly-export FILE NTPolyConfig.cmake
         NAMESPACE NTPoly:: DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/NTPoly)
+
+################################################################################
+# pkg-config
+configure_file(NTPoly.pc.in NTPoly.pc @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/Source/Fortran/NTPoly.pc 
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
