@@ -1,0 +1,69 @@
+---
+layout: post
+title:  "Using NTPoly from Conda"
+date:   2021-10-31 11:00:00 +0900
+categories: blog update
+---
+Thanks to some recent, [excellent work by Sebastian Ehlert](https://github.com/william-dawson/NTPoly/discussions/175), 
+NTPoly is now available from [Conda](https://github.com/conda/conda). Conda
+is a cross platform package and environment manager. One of its strengths
+is that you can setup many virtual environments, ensuring that there are
+no issues with version clashes between packages. I use it extensively myself
+for python development, I really like that I can setup a fresh environment
+whenever I need.
+
+To use NTPoly from conda, create/activate an environment:
+```bash
+conda create --name ntpoly-from-conda
+conda activate ntpoly-from-conda  
+```
+Of course you can use a preexisting environment as well. Then you can install
+NTPoly:
+```bash
+conda install -c conda-forge ntpoly
+```
+The NTPoly package does not come with any compilers, so we will need to 
+install those too.
+```bash
+conda install -c conda-forge compilers 
+```
+
+To test it out, I recommend downloading the files in the [PremadeMatrix](https://github.com/william-dawson/NTPoly/tree/master/Examples/PremadeMatrix) 
+example that comes with NTPoly. We now will create a Makefile that is able
+to build those files using the NTPoly installed by conda.
+```
+ALL: fortran cxx
+CC=mpicxx
+FC=mpif90
+CXXFLAGS=-O3 -fopenmp
+FFLAGS=-O3 -fopenmp
+FLIBS=-lNTPoly
+CXXLIBS=-lNTPolyCPP -lNTPolyWrapper -lNTPoly
+TESTARGS= --process_rows 1 --process_columns 1 --process_slices 1 \
+          --hamiltonian Hamiltonian.mtx --overlap Overlap.mtx \
+          --number_of_electrons 10 --threshold 1e-6 \
+          --converge_overlap 1e-3 --converge_density 1e-5 \
+          --density Density.mtx
+
+fortran: main.f90
+        $(FC) $(FFLAGS) $< -o $@ $(FLIBS)
+cxx: main.cc
+        $(CC) $(CXXFLAGS) $< -o $@ $(CXXLIBS)
+
+test:
+        mpirun -np 1 ./fortran $(TESTARGS)
+        mpirun -np 1 ./cxx $(TESTARGS)
+
+clean:
+        rm fortran cxx
+```
+The code should now compile with no issue using the `make` command. CMake also
+works out of the box, you can download the [CMakeLinkage](https://github.com/william-dawson/NTPoly/tree/master/Examples/CMakeLinkage)
+example to start. Then the usual `mkdir build ; cd build ; cmake .. ; make`
+should work with no issues.
+
+There is one outstanding issue with this approach that appears if you try
+to use the C++ bindings. This is related to a bug on MPICH; you can see 
+the discussion on the [MPICH Feedstock](https://github.com/conda-forge/mpich-feedstock/issues/64).
+Hopefully this is resolved soon, but in the meantime the conda distribution of
+NTPoly is a great way to get started using the Fortran bindings.
