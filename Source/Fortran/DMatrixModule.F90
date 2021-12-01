@@ -96,7 +96,7 @@ MODULE DMatrixModule
   INTERFACE EigenDecomposition
      MODULE PROCEDURE EigenDecomposition_ldr
      MODULE PROCEDURE EigenDecomposition_ldc
-  END INTERFACE
+  END INTERFACE EigenDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the empty constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldr(this, rows, columns)
@@ -358,9 +358,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     MatV = Matrix_ldr(MatA%rows,MatA%columns)
-    MatV%data = MatA%data
+    MatV%DATA = MatA%DATA
 
-    N = SIZE(MatA%data,DIM=1)
+    N = SIZE(MatA%DATA,DIM=1)
     LDA = N
 
     !! Allocations
@@ -368,7 +368,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Determine the scratch space size
     LWORK = -1
-    CALL DSYEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
+    CALL DSYEVD(JOB, UPLO, N, MatA%DATA, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
          & LIWORK, INFO)
     N = LDA
     LWORK = INT(WORKTEMP(1))
@@ -377,15 +377,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
-    CALL DSYEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, IWORK, LIWORK, &
+    CALL DSYEVD(JOB, UPLO, N, MatV%DATA, LDA, W, WORK, LWORK, IWORK, LIWORK, &
          & INFO)
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
        MatW = Matrix_ldr(MatA%rows, MatA%columns)
-       MatW%data = 0
+       MatW%DATA = 0
        DO II = 1, N
-          MatW%data(II,II) = W(II)
+          MatW%DATA(II,II) = W(II)
        END DO
     END IF
 
@@ -662,9 +662,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     MatV = Matrix_ldc(MatA%rows,MatA%columns)
-    MatV%data = MatA%data
+    MatV%DATA = MatA%DATA
 
-    N = SIZE(MatA%data,DIM=1)
+    N = SIZE(MatA%DATA,DIM=1)
     LDA = N
 
     !! Allocations
@@ -672,7 +672,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Determine the scratch space size
     LWORK = -1
-    CALL ZHEEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, RWORKTEMP, &
+    CALL ZHEEVD(JOB, UPLO, N, MatA%DATA, LDA, W, WORKTEMP, LWORK, RWORKTEMP, &
          & LRWORK, IWORKTEMP, LIWORK, INFO)
     N = LDA
     LWORK = INT(WORKTEMP(1))
@@ -683,15 +683,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(IWORK(LIWORK))
 
     !! Run Lapack For Real
-    CALL ZHEEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, RWORK, LRWORK, &
+    CALL ZHEEVD(JOB, UPLO, N, MatV%DATA, LDA, W, WORK, LWORK, RWORK, LRWORK, &
          & IWORK, LIWORK, INFO)
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
        MatW = Matrix_ldc(MatA%rows, MatA%columns)
-       MatW%data = 0
+       MatW%DATA = 0
        DO II = 1, N
-          MatW%data(II,II) = W(II)
+          MatW%DATA(II,II) = W(II)
        END DO
     END IF
 

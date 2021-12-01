@@ -14,9 +14,22 @@ void SquareRootSolvers::SquareRoot(const Matrix_ps &Input, Matrix_ps &Output,
   SquareRoot_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
+void SquareRootSolvers::DenseSquareRoot(
+    const Matrix_ps &Input, Matrix_ps &Output,
+    const SolverParameters &solver_parameters) {
+  DenseSquareRoot_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
+}
+////////////////////////////////////////////////////////////////////////////////
 void SquareRootSolvers::InverseSquareRoot(
     const Matrix_ps &Input, Matrix_ps &Output,
     const SolverParameters &solver_parameters) {
   InverseSquareRoot_wrp(GetIH(Input), GetIH(Output), GetIH(solver_parameters));
+}
+////////////////////////////////////////////////////////////////////////////////
+void SquareRootSolvers::DenseInverseSquareRoot(
+    const Matrix_ps &Input, Matrix_ps &Output,
+    const SolverParameters &solver_parameters) {
+  DenseInverseSquareRoot_wrp(GetIH(Input), GetIH(Output),
+                             GetIH(solver_parameters));
 }
 } // namespace NTPoly

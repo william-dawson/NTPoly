@@ -3,20 +3,21 @@
 MODULE EigenSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, ConstructMatrixDFromS, &
-      & ConstructMatrixSFromD, DestructMatrix
+       & ConstructMatrixSFromD, DestructMatrix
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, WriteElement
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply
   USE PSMatrixModule, ONLY : Matrix_ps, GatherMatrixToProcess, &
-      & FillMatrixFromTripletList, ConstructEmptyMatrix, ConvertMatrixToReal, &
-      & DestructMatrix, CopyMatrix, GetMatrixTripletList, TransposeMatrix, PrintMatrix
+       & FillMatrixFromTripletList, ConstructEmptyMatrix, ConvertMatrixToReal, &
+       & DestructMatrix, CopyMatrix, GetMatrixTripletList, TransposeMatrix, &
+       & ConjugateMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList, &
-      & DestructMatrix
+       & DestructMatrix
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-      & ConstructTripletList, DestructTripletList
+       & ConstructTripletList, DestructTripletList
   USE MPI
   IMPLICIT NONE
   PRIVATE
@@ -56,12 +57,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Apply an arbitrary matrix function defined by a matrix map as a
   !! transformation of the eigenvalues.
-  SUBROUTINE DenseMatrixFunction(this, result, proc, &
+  SUBROUTINE DenseMatrixFunction(this, RESULT, proc, &
        & solver_parameters_in, eigenvalues_out)
     !> The matrix to apply the function to.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The transformed matrix
-    TYPE(Matrix_ps), INTENT(INOUT) :: result
+    TYPE(Matrix_ps), INTENT(INOUT) :: RESULT
     INTERFACE
        !> The procedure to apply to each eigenvalue.
        SUBROUTINE proc(index, val)
@@ -96,17 +97,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Convert to a triplet list, map the triplet list, fill.
     CALL GetMatrixTripletList(vals, tlist)
     DO II = 1, tlist%CurrentSize
-      CALL proc(tlist%DATA(II)%index_row, tlist%DATA(II)%point_value)
+       CALL proc(tlist%DATA(II)%index_row, tlist%DATA(II)%point_value)
     END DO
 
     !! Fill
-    CALL ConstructEmptyMatrix(result, this)
-    CALL FillMatrixFromTripletList(result, tlist, preduplicated_in=.TRUE.)
+    CALL ConstructEmptyMatrix(RESULT, this)
+    CALL FillMatrixFromTripletList(RESULT, tlist, preduplicated_in=.TRUE.)
 
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, result, temp, threshold_in=params%threshold)
+    CALL MatrixMultiply(vecs, RESULT, temp, threshold_in=params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
-    CALL MatrixMultiply(temp, vecsT, result, threshold_in=params%threshold)
+    CALL ConjugateMatrix(vecsT)
+    CALL MatrixMultiply(temp, vecsT, RESULT, threshold_in=params%threshold)
 
     !! Optional output eigenvalues.
     IF (PRESENT(eigenvalues_out)) THEN
@@ -133,11 +135,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Write info about the solver
     IF (solver_params%be_verbose) THEN
-      CALL WriteHeader("Eigen Solver")
-      CALL EnterSubLog
-      CALL WriteElement(key="Method", value="LAPACK")
-      CALL ExitSubLog
-      CALL PrintParameters(solver_params)
+       CALL WriteHeader("Eigen Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", VALUE="LAPACK")
+       CALL ExitSubLog
+       CALL PrintParameters(solver_params)
     END IF
 
     IF (this%is_complex) THEN

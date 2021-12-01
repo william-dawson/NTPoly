@@ -3,6 +3,7 @@
 MODULE TrigonometrySolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteListElement, WriteElement
@@ -19,7 +20,9 @@ MODULE TrigonometrySolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
   PUBLIC :: Sine
+  PUBLIC :: DenseSine
   PUBLIC :: Cosine
+  PUBLIC :: DenseCosine
   PUBLIC :: ScaleSquareTrigonometryTaylor
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the sine of a matrix.
@@ -53,6 +56,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(ShiftedMat)
   END SUBROUTINE Sine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the sine of a matrix. (dense version).
+  SUBROUTINE DenseSine(Mat, OutputMat, solver_parameters_in)
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    !> The sine of the input matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Sine Function Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(Mat, OutputMat, SineLambda, solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseSine
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the cosine of a matrix.
   SUBROUTINE Cosine(InputMat, OutputMat, solver_parameters_in)
     !> The matrix to compute.
@@ -68,6 +102,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleSquareTrigonometry(InputMat, OutputMat)
     END IF
   END SUBROUTINE Cosine
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the cosine of a matrix. (dense version).
+  SUBROUTINE DenseCosine(Mat, OutputMat, solver_parameters_in)
+    !> The matrix to compute.
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    !> The cosine of the input matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Cosine Function Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(Mat, OutputMat, CosineLambda, solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseCosine
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute trigonometric functions of a matrix using a taylor series.
   SUBROUTINE ScaleSquareTrigonometryTaylor(InputMat, OutputMat, &
@@ -343,5 +408,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ScaleSquareTrigonometry
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical sine function. 
+  SUBROUTINE SineLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = SIN(val)
+  END SUBROUTINE SineLambda
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical cosine function. 
+  SUBROUTINE CosineLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = COS(val)
+  END SUBROUTINE CosineLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TrigonometrySolversModule

@@ -3,6 +3,7 @@
 MODULE SquareRootSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteListElement, &
        & WriteHeader, WriteElement
@@ -19,7 +20,9 @@ MODULE SquareRootSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
   PUBLIC :: SquareRoot
+  PUBLIC :: DenseSquareRoot
   PUBLIC :: InverseSquareRoot
+  PUBLIC :: DenseInverseSquareRoot
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root of a matrix.
   SUBROUTINE SquareRoot(InputMat, OutputMat, solver_parameters_in, order_in)
@@ -52,11 +55,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE SquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Computes the matrix square root function (dense version).
+  SUBROUTINE DenseSquareRoot(Mat, OutputMat, solver_parameters_in)
+    !> The matrix to compute the square root of.
+    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    !> The computed matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Square Root Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(Mat, OutputMat, SquareRootLambda, &
+         & solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseSquareRoot
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
   SUBROUTINE InverseSquareRoot(InputMat, OutputMat, solver_parameters_in, &
        & order_in)
     !> The matrix to compute.
-    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    TYPE(Matrix_ps), INTENT(IN) :: InputMat
     !> The resulting matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     !> Parameters for the solver.
@@ -83,6 +118,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSolverParameters(solver_parameters)
 
   END SUBROUTINE InverseSquareRoot
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Computes the matrix inverse square root function (dense version).
+  SUBROUTINE DenseInverseSquareRoot(Mat, OutputMat, solver_parameters_in)
+    !> The matrix to compute the inverse square root of.
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    !> The computed matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Square Root Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(Mat, OutputMat, InverseSquareRootLambda, &
+         & solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseInverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine picks the appropriate solver method
   SUBROUTINE SquareRootSelector(InputMat, OutputMat, solver_parameters, &
@@ -447,5 +514,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrixMemoryPool(mpool)
   END SUBROUTINE NewtonSchultzISRTaylor
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical sine function. 
+  SUBROUTINE SquareRootLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = SQRT(val)
+  END SUBROUTINE SquareRootLambda
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical sine function. 
+  SUBROUTINE InverseSquareRootLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = 1.0/SQRT(val)
+  END SUBROUTINE InverseSquareRootLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SquareRootSolversModule

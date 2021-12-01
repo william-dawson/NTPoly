@@ -17,6 +17,12 @@ public:
   //!\param solver_parameters parameters for the solver
   static void ComputeSign(const Matrix_ps &Mat1, Matrix_ps &SignMat,
                           const SolverParameters &solver_parameters);
+  //! Compute the matrix sign function (dense version).
+  //!\param Mat1 input matrix.
+  //!\param SignMat = Sign(Mat1)
+  //!\param solver_parameters parameters for the solver
+  static void ComputeDenseSign(const Matrix_ps &Mat1, Matrix_ps &SignMat,
+                               const SolverParameters &solver_parameters);
   //! Computes the polar decomposition of a matrix Mat1 = U*H.
   //!\param Mat1 input matrix.
   //!\param Umat the unitary polar factor.

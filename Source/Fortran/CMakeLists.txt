@@ -50,7 +50,8 @@ if (NOT NOSWIG)
 endif()
 target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES} ${EigenExa_LIBRARIES}
                       ${OpenMP_Fortran_LIBRARIES} ${BLAS_LIBRARIES})
-target_include_directories(NTPoly PUBLIC ${EigenExa_INCLUDE_DIRS} ${MPI_Fortran_INCLUDE_PATH})
+target_include_directories(NTPoly PUBLIC ${EigenExa_INCLUDE_DIRS}
+                           ${MPI_Fortran_INCLUDE_PATH})
 
 include(GNUInstallDirs)
 install(TARGETS NTPoly

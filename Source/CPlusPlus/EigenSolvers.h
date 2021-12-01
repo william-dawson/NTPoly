@@ -16,7 +16,7 @@ public:
   //!\param eigenvectors the eigenvectors of a matrix.
   //!\param eigenvalues the eigenvalues of a matrix.
   //!\param solver_parameters parameters for computing.
-  static void EigenDecomposition(const Matrix_ps &matrix, 
+  static void EigenDecomposition(const Matrix_ps &matrix,
                                  Matrix_ps &eigenvectors,
                                  Matrix_ps &eigenvalues,
                                  const SolverParameters &solver_parameters);

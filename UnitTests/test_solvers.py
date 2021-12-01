@@ -29,7 +29,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 2
+    mat_dim = 31
 
     @classmethod
     def setUpClass(self):
@@ -222,6 +222,29 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_denseinversesquareroot(self):
+        '''Test routines to compute the inverse square root of matrices.'''
+        from scipy.linalg import funm
+        from numpy import sqrt
+        # Starting Matrix. Care taken to make sure eigenvalues are positive.
+        matrix1 = self.create_matrix(SPD=True, diag_dom=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: 1.0 / sqrt(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        overlap_matrix = nt.Matrix_ps(self.input_file, False)
+        inverse_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.SquareRootSolvers.DenseInverseSquareRoot(overlap_matrix,
+                                                    inverse_matrix,
+                                                    self.isp)
+        inverse_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
     def test_squareroot(self):
         '''Test routines to compute the square root of matrices.'''
         from scipy.linalg import funm
@@ -241,6 +264,28 @@ class TestSolvers(unittest.TestCase):
         permutation.SetRandomPermutation()
         self.isp.SetLoadBalance(permutation)
         nt.SquareRootSolvers.SquareRoot(input_matrix, root_matrix, self.isp)
+        root_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_densesquareroot(self):
+        '''Test routines to compute the square root of matrices.'''
+        from scipy.linalg import funm
+        from numpy import sqrt
+        # Starting Matrix. Care taken to make sure eigenvalues are positive.
+        matrix1 = self.create_matrix(SPD=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: sqrt(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        root_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.SquareRootSolvers.DenseSquareRoot(input_matrix, root_matrix,
+                                             self.isp)
         root_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -329,6 +374,27 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_densesignfunction(self):
+        '''Test routines to compute the matrix sign function.'''
+        from scipy.linalg import funm
+        from numpy import sign
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: sign(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        sign_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.SignSolvers.ComputeDenseSign(input_matrix, sign_matrix, self.isp)
+        sign_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
     def test_exponentialfunction(self):
         '''Test routines to compute the matrix exponential.'''
         from scipy.linalg import funm
@@ -349,6 +415,29 @@ class TestSolvers(unittest.TestCase):
         self.fsp.SetLoadBalance(permutation)
         nt.ExponentialSolvers.ComputeExponential(input_matrix, exp_matrix,
                                                  self.fsp)
+        exp_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_denseexponential(self):
+        '''Test routines to compute the matrix exponential.'''
+        from scipy.linalg import funm
+        from numpy import exp
+        # Starting Matrix
+        matrix1 = 8 * self.create_matrix(scaled=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: exp(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        exp_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.ExponentialSolvers.ComputeDenseExponential(input_matrix,
+                                                      exp_matrix,
+                                                      self.fsp)
         exp_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -406,6 +495,28 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_denselogarithm(self):
+        '''Test routines to compute the matrix logarithm.'''
+        from scipy.linalg import funm
+        from numpy import log
+        # Starting Matrix. Care taken to make sure eigenvalues are positive.
+        matrix1 = self.create_matrix(scaled=True, diag_dom=True)
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: log(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        log_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.ExponentialSolvers.ComputeDenseLogarithm(input_matrix, log_matrix,
+                                                    self.fsp)
+        log_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
     def test_exponentialround(self):
         '''
         Test routines to compute the matrix exponential using a round
@@ -454,6 +565,27 @@ class TestSolvers(unittest.TestCase):
 
         self.check_result()
 
+    def test_densesinfunction(self):
+        '''Test routines to compute the matrix sine.'''
+        from scipy.linalg import funm
+        from numpy import sin
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: sin(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        sin_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.TrigonometrySolvers.DenseSine(input_matrix, sin_matrix, self.fsp)
+        sin_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
     def test_cosfunction(self):
         '''Test routines to compute the matrix cosine.'''
         from scipy.linalg import funm
@@ -473,6 +605,27 @@ class TestSolvers(unittest.TestCase):
         permutation.SetRandomPermutation()
         self.fsp.SetLoadBalance(permutation)
         nt.TrigonometrySolvers.Cosine(input_matrix, cos_matrix, self.fsp)
+        cos_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_densecosfunction(self):
+        '''Test routines to compute the matrix cosine.'''
+        from scipy.linalg import funm
+        from numpy import cos
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        dense_check = funm(matrix1.todense(), lambda x: cos(x))
+        self.CheckMat = csr_matrix(dense_check)
+
+        # Result Matrix
+        input_matrix = nt.Matrix_ps(self.input_file, False)
+        cos_matrix = nt.Matrix_ps(self.mat_dim)
+        nt.TrigonometrySolvers.DenseCosine(input_matrix, cos_matrix, self.fsp)
         cos_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
 
@@ -760,7 +913,7 @@ class TestSolvers(unittest.TestCase):
         vec_matrix = nt.Matrix_ps(self.mat_dim)
         val_matrix = nt.Matrix_ps(self.mat_dim)
 
-        nt.EigenSolvers.EigenDecomposition(matrix, vec_matrix, val_matrix, 
+        nt.EigenSolvers.EigenDecomposition(matrix, vec_matrix, val_matrix,
                                            self.isp)
 
         # Check the eigenvalues
@@ -769,7 +922,7 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.check_result()
 
-        # To check the eigenvectors, we read them in, compute the 
+        # To check the eigenvectors, we read them in, compute the
         # eigenvectors, and compare. This avoids degeneracy issues.
         vec_matrix.WriteToMatrixMarket(result_file)
         read_vec = mmread(result_file)

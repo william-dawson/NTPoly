@@ -3,6 +3,7 @@
 MODULE SignSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteListElement, WriteElement
@@ -19,6 +20,7 @@ MODULE SignSolversModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SignFunction
+  PUBLIC :: DenseSignFunction
   PUBLIC :: PolarDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix sign function.
@@ -58,6 +60,37 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE SignFunction
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Computes the matrix sign function (dense version).
+  SUBROUTINE DenseSignFunction(Mat, OutputMat, solver_parameters_in)
+    !> The matrix to compute the sign of.
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    !> The sign of the input matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Sign Function Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(Mat, OutputMat, SignLambda, solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseSignFunction
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the polar decomposition of a matrix Mat = U*H.
   SUBROUTINE PolarDecomposition(Mat, Umat, Hmat, solver_parameters_in)
@@ -217,5 +250,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE CoreComputation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical sign function. 
+  SUBROUTINE SignLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    IF (val < 0.0_NTREAL) THEN
+       val = -1.0_NTREAL
+    ELSE
+       val = 1.0_NTREAL
+    END IF
+  END SUBROUTINE SignLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SignSolversModule

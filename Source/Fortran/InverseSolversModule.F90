@@ -165,7 +165,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_parameters%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
-       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Apply

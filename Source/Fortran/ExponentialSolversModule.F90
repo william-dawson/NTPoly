@@ -6,6 +6,7 @@ MODULE ExponentialSolversModule
        & SetCoefficient
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LinearSolversModule, ONLY : CGSolver
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
@@ -27,8 +28,10 @@ MODULE ExponentialSolversModule
   PUBLIC :: ComputeExponential
   PUBLIC :: ComputeExponentialPade
   PUBLIC :: ComputeExponentialTaylor
+  PUBLIC :: ComputeDenseExponential
   PUBLIC :: ComputeLogarithm
   PUBLIC :: ComputeLogarithmTaylor
+  PUBLIC :: ComputeDenseLogarithm
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix.
   SUBROUTINE ComputeExponential(InputMat, OutputMat, solver_parameters_in)
@@ -110,8 +113,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SetCoefficient(polynomial,16,-1.629151584468762e-16_NTREAL)
 
     CALL Compute(ScaledMat,OutputMat,polynomial,sub_solver_parameters)
-    !CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
-    !     & sub_solver_parameters)
 
     !! Undo the scaling by squaring at the end.
     !! Load Balancing Step
@@ -293,7 +294,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: sigma_counter
     INTEGER :: counter
 
-    !! Handle The Optional Parameters
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
@@ -367,6 +367,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeExponentialTaylor
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ComputeDenseExponential(InputMat, OutputMat, solver_parameters_in)
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Solver Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Exponential Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(InputMat, OutputMat, ExponentialLambda, &
+         & solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+  END SUBROUTINE ComputeDenseExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
   SUBROUTINE ComputeLogarithm(InputMat, OutputMat, solver_parameters_in)
@@ -600,5 +632,57 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ComputeLogarithmTaylor
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ComputeDenseLogarithm(InputMat, OutputMat, solver_parameters_in)
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Solver Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Logarithm Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(InputMat, OutputMat, LogarithmLambda, &
+         & solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+  END SUBROUTINE ComputeDenseLogarithm
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical exponential for mapping. 
+  SUBROUTINE ExponentialLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = EXP(val)
+  END SUBROUTINE ExponentialLambda
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical logarithm for mapping. 
+  SUBROUTINE LogarithmLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = LOG(val)
+  END SUBROUTINE LogarithmLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ExponentialSolversModule

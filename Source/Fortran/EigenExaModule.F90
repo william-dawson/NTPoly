@@ -66,31 +66,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
     TYPE(SolverParameters_t) :: solver_parameters
-    
+
     !! Process Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-      solver_parameters = solver_parameters_in
+       solver_parameters = solver_parameters_in
     ELSE
-      solver_parameters = SolverParameters_t()
+       solver_parameters = SolverParameters_t()
     END IF
 
     !! Write info about the solver
     IF (solver_parameters%be_verbose) THEN
-      CALL WriteHeader("Eigen Solver")
-      CALL EnterSubLog
-      CALL WriteElement(key="Method", value="EigenExa")
-      CALL WriteHeader("Citations")
-      CALL EnterSubLog
-      CALL WriteListElement("imamura2011development")
-      CALL ExitSubLog
-      CALL PrintParameters(solver_parameters)
+       CALL WriteHeader("Eigen Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", VALUE="EigenExa")
+       CALL WriteHeader("Citations")
+       CALL EnterSubLog
+       CALL WriteListElement("imamura2011development")
+       CALL ExitSubLog
+       CALL PrintParameters(solver_parameters)
     END IF
 
     !! Select Based on Type
     IF (A%is_complex) THEN
-        CALL EigenExa_c(A, eigenvectors, eigenvalues, solver_parameters)
+       CALL EigenExa_c(A, eigenvectors, eigenvalues, solver_parameters)
     ELSE
-        CALL EigenExa_r(A, eigenvectors, eigenvalues, solver_parameters)
+       CALL EigenExa_r(A, eigenvectors, eigenvalues, solver_parameters)
     END IF
 
     !! Cleanup
@@ -114,12 +114,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: AD
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: VD
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: WD
- 
+
 #include "eigenexa_includes/EigenExa_s.f90"
 
   END SUBROUTINE EigenExa_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> Compute the eigenvectors of a matrix using EigenExa (complex).
+  !> Compute the eigenvectors of a matrix using EigenExa (complex).
   SUBROUTINE EigenExa_c(A, eigenvectors, eigenvalues, solver_parameters)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: A
