@@ -251,18 +251,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE CoreComputation
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Prototypical sign function. 
-  SUBROUTINE SignLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  !> Prototypical sign function for mapping. 
+  FUNCTION SignLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
     IF (val < 0.0_NTREAL) THEN
-       val = -1.0_NTREAL
+       outval = -1.0_NTREAL
     ELSE
-       val = 1.0_NTREAL
+       outval = 1.0_NTREAL
     END IF
-  END SUBROUTINE SignLambda
+  END FUNCTION SignLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SignSolversModule

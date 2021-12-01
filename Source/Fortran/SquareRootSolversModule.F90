@@ -515,24 +515,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(mpool)
   END SUBROUTINE NewtonSchultzISRTaylor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Prototypical sine function. 
-  SUBROUTINE SquareRootLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  !> Prototypical square root function. 
+  FUNCTION SquareRootLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = SQRT(val)
-  END SUBROUTINE SquareRootLambda
+    outval = SQRT(val)
+  END FUNCTION SquareRootLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Prototypical sine function. 
-  SUBROUTINE InverseSquareRootLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  !> Prototypical inverse square root function. 
+  FUNCTION InverseSquareRootLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = 1.0/SQRT(val)
-  END SUBROUTINE InverseSquareRootLambda
+    outval = 1.0/SQRT(val)
+  END FUNCTION InverseSquareRootLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SquareRootSolversModule

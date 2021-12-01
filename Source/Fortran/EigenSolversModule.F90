@@ -57,26 +57,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Apply an arbitrary matrix function defined by a matrix map as a
   !! transformation of the eigenvalues.
-  SUBROUTINE DenseMatrixFunction(this, RESULT, proc, &
-       & solver_parameters_in, eigenvalues_out)
+  SUBROUTINE DenseMatrixFunction(this, ResultMat, func, solver_parameters_in)
     !> The matrix to apply the function to.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The transformed matrix
-    TYPE(Matrix_ps), INTENT(INOUT) :: RESULT
+    TYPE(Matrix_ps), INTENT(INOUT) :: ResultMat
     INTERFACE
        !> The procedure to apply to each eigenvalue.
-       SUBROUTINE proc(index, val)
+       FUNCTION func(val) RESULT(outval)
          USE DataTypesModule, ONLY : NTREAL
-         !> The index of the eigenvalue
-         INTEGER, INTENT(IN) :: index
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT) :: val
-       END SUBROUTINE proc
+         REAL(KIND=NTREAL), INTENT(IN) :: val
+         !> The transformed value.
+         REAL(KIND=NTREAL) :: outval
+       END FUNCTION func
     END INTERFACE
     !> Parameters for computing
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
-    !> Optionally, you can get the eigenvalue matrix.
-    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvalues_out
     !! For Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
     !! Local Variables
@@ -97,23 +94,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Convert to a triplet list, map the triplet list, fill.
     CALL GetMatrixTripletList(vals, tlist)
     DO II = 1, tlist%CurrentSize
-       CALL proc(tlist%DATA(II)%index_row, tlist%DATA(II)%point_value)
+       tlist%DATA(II)%point_value = func(tlist%DATA(II)%point_value)
     END DO
 
     !! Fill
-    CALL ConstructEmptyMatrix(RESULT, this)
-    CALL FillMatrixFromTripletList(RESULT, tlist, preduplicated_in=.TRUE.)
+    CALL ConstructEmptyMatrix(ResultMat, this)
+    CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in=.TRUE.)
 
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, RESULT, temp, threshold_in=params%threshold)
+    CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in=params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
     CALL ConjugateMatrix(vecsT)
-    CALL MatrixMultiply(temp, vecsT, RESULT, threshold_in=params%threshold)
-
-    !! Optional output eigenvalues.
-    IF (PRESENT(eigenvalues_out)) THEN
-       CALL CopyMatrix(vals, eigenvalues_out)
-    END IF
+    CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in=params%threshold)
 
     !! Cleanup
     CALL DestructMatrix(vecs)

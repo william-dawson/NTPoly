@@ -409,24 +409,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ScaleSquareTrigonometry
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Prototypical sine function. 
-  SUBROUTINE SineLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  !> Prototypical sine function for mapping. 
+  FUNCTION SineLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = SIN(val)
-  END SUBROUTINE SineLambda
+    outval = SIN(val)
+  END FUNCTION SineLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical cosine function. 
-  SUBROUTINE CosineLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  FUNCTION CosineLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = COS(val)
-  END SUBROUTINE CosineLambda
+    outval = COS(val)
+  END FUNCTION CosineLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TrigonometrySolversModule

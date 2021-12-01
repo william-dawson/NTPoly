@@ -297,13 +297,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PseudoInverse
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical inversion for mapping. 
-  SUBROUTINE InvertLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  FUNCTION InvertLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = 1.0 / val
-  END SUBROUTINE InvertLambda
+    outval = 1.0 / val
+  END FUNCTION InvertLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE InverseSolversModule

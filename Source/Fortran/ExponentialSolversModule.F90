@@ -391,7 +391,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Apply
-    CALL DenseMatrixFunction(InputMat, OutputMat, ExponentialLambda, &
+    CALL DenseMatrixFunction(InputMat, OutputMat, ExpLambda, &
          & solver_parameters)
 
     IF (solver_parameters%be_verbose) THEN
@@ -656,7 +656,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Apply
-    CALL DenseMatrixFunction(InputMat, OutputMat, LogarithmLambda, &
+    CALL DenseMatrixFunction(InputMat, OutputMat, LogLambda, &
          & solver_parameters)
 
     IF (solver_parameters%be_verbose) THEN
@@ -666,23 +666,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeDenseLogarithm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical exponential for mapping. 
-  SUBROUTINE ExponentialLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  FUNCTION ExpLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = EXP(val)
-  END SUBROUTINE ExponentialLambda
+    outval = EXP(val)
+  END FUNCTION ExpLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Prototypical logarithm for mapping. 
-  SUBROUTINE LogarithmLambda(index, val)
-    !> The index of the eigenvalue
-    INTEGER, INTENT(IN) :: index
-    !> The actual value of an element.
-    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+  !> Prototypical exponential for mapping. 
+  FUNCTION LogLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
 
-    val = LOG(val)
-  END SUBROUTINE LogarithmLambda
+    outval = LOG(val)
+  END FUNCTION LogLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ExponentialSolversModule
