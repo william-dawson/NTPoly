@@ -41,6 +41,7 @@ MODULE DMatrixModule
   PUBLIC :: IncrementMatrix
   PUBLIC :: MultiplyMatrix
   PUBLIC :: TransposeMatrix
+  PUBLIC :: EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE Matrix_ldr
      MODULE PROCEDURE ConstructEmptyMatrix_ldr
@@ -92,6 +93,10 @@ MODULE DMatrixModule
      MODULE PROCEDURE TransposeMatrix_ldr
      MODULE PROCEDURE TransposeMatrix_ldc
   END INTERFACE TransposeMatrix
+  INTERFACE EigenDecomposition
+     MODULE PROCEDURE EigenDecomposition_ldr
+     MODULE PROCEDURE EigenDecomposition_ldc
+  END INTERFACE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the empty constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldr(this, rows, columns)
@@ -329,6 +334,66 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & LDB, BETA, MatC%DATA, LDC)
 
   END SUBROUTINE MultiplyMatrix_ldr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the eigenvectors of a dense matrix.
+  !> Wraps a standard dense linear algebra routine.
+  SUBROUTINE EigenDecomposition_ldr(MatA, MatV, MatW)
+    !> MatA the matrix to decompose.
+    TYPE(Matrix_ldr), INTENT(IN) :: MatA
+    !> The eigenvectors.
+    TYPE(Matrix_ldr), INTENT(INOUT) :: MatV
+    !> The eigenvalues.
+    TYPE(Matrix_ldr), INTENT(INOUT), OPTIONAL :: MatW
+    !! Local variables
+    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
+    INTEGER :: N, LDA
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
+    DOUBLE PRECISION, DIMENSION(1) :: WORKTEMP
+    INTEGER :: LWORK
+    INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
+    INTEGER, DIMENSION(1) :: IWORKTEMP
+    INTEGER :: LIWORK
+    INTEGER :: INFO
+    INTEGER :: II
+
+    MatV = Matrix_ldr(MatA%rows,MatA%columns)
+    MatV%data = MatA%data
+
+    N = SIZE(MatA%data,DIM=1)
+    LDA = N
+
+    !! Allocations
+    ALLOCATE(W(N))
+
+    !! Determine the scratch space size
+    LWORK = -1
+    CALL DSYEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, IWORKTEMP, &
+         & LIWORK, INFO)
+    N = LDA
+    LWORK = INT(WORKTEMP(1))
+    ALLOCATE(WORK(LWORK))
+    LIWORK = INT(IWORKTEMP(1))
+    ALLOCATE(IWORK(LIWORK))
+
+    !! Run Lapack For Real
+    CALL DSYEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, IWORK, LIWORK, &
+         & INFO)
+
+    !! Extract Eigenvalues
+    IF (PRESENT(MatW)) THEN
+       MatW = Matrix_ldr(MatA%rows, MatA%columns)
+       MatW%data = 0
+       DO II = 1, N
+          MatW%data(II,II) = W(II)
+       END DO
+    END IF
+
+    !! Cleanup
+    DEALLOCATE(W)
+    DEALLOCATE(Work)
+
+  END SUBROUTINE EigenDecomposition_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine style wrapper for the constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSup_ldc(this, rows, columns)
@@ -569,5 +634,72 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & LDB, BETA, MatC%DATA, LDC)
 
   END SUBROUTINE MultiplyMatrix_ldc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the eigenvectors of a dense matrix.
+  !> Wraps a standard dense linear algebra routine.
+  SUBROUTINE EigenDecomposition_ldc(MatA, MatV, MatW)
+    !> The matrix to decompose.
+    TYPE(Matrix_ldc), INTENT(IN) :: MatA
+    !> The eigenvectors.
+    TYPE(Matrix_ldc), INTENT(INOUT) :: MatV
+    !> The eigenvalues.
+    TYPE(Matrix_ldc), INTENT(INOUT), OPTIONAL :: MatW
+    !! Standard parameters
+    CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
+    INTEGER :: N, LDA
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
+    COMPLEX*16, DIMENSION(:), ALLOCATABLE :: WORK
+    INTEGER :: LWORK
+    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RWORK
+    INTEGER :: LRWORK
+    INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
+    INTEGER :: LIWORK
+    INTEGER :: INFO
+    !! Temp
+    COMPLEX*16, DIMENSION(1) :: WORKTEMP
+    DOUBLE PRECISION, DIMENSION(1) :: RWORKTEMP
+    INTEGER, DIMENSION(1) :: IWORKTEMP
+    INTEGER :: II
+
+    MatV = Matrix_ldc(MatA%rows,MatA%columns)
+    MatV%data = MatA%data
+
+    N = SIZE(MatA%data,DIM=1)
+    LDA = N
+
+    !! Allocations
+    ALLOCATE(W(N))
+
+    !! Determine the scratch space size
+    LWORK = -1
+    CALL ZHEEVD(JOB, UPLO, N, MatA%data, LDA, W, WORKTEMP, LWORK, RWORKTEMP, &
+         & LRWORK, IWORKTEMP, LIWORK, INFO)
+    N = LDA
+    LWORK = INT(WORKTEMP(1))
+    ALLOCATE(WORK(LWORK))
+    LRWORK = INT(RWORKTEMP(1))
+    ALLOCATE(RWORK(LRWORK))
+    LIWORK = INT(IWORKTEMP(1))
+    ALLOCATE(IWORK(LIWORK))
+
+    !! Run Lapack For Real
+    CALL ZHEEVD(JOB, UPLO, N, MatV%data, LDA, W, WORK, LWORK, RWORK, LRWORK, &
+         & IWORK, LIWORK, INFO)
+
+    !! Extract Eigenvalues
+    IF (PRESENT(MatW)) THEN
+       MatW = Matrix_ldc(MatA%rows, MatA%columns)
+       MatW%data = 0
+       DO II = 1, N
+          MatW%data(II,II) = W(II)
+       END DO
+    END IF
+
+    !! Cleanup
+    DEALLOCATE(W)
+    DEALLOCATE(Work)
+    DEALLOCATE(RWork)
+
+  END SUBROUTINE EigenDecomposition_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DMatrixModule

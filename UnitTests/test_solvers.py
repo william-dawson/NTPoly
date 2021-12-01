@@ -29,7 +29,7 @@ class TestSolvers(unittest.TestCase):
     # Rank of the current process.
     my_rank = 0
     # Dimension of the matrices to test.
-    mat_dim = 31
+    mat_dim = 2
 
     @classmethod
     def setUpClass(self):
@@ -144,6 +144,28 @@ class TestSolvers(unittest.TestCase):
         self.isp.SetLoadBalance(permutation)
 
         nt.InverseSolvers.Invert(overlap_matrix, inverse_matrix, self.isp)
+
+        inverse_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        self.check_result()
+
+    def test_denseinvert(self):
+        '''Test routines to invert matrices.'''
+        from scipy.sparse.linalg import inv
+        from scipy.sparse import csc_matrix
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        self.CheckMat = inv(csc_matrix(matrix1))
+
+        # Result Matrix
+        overlap_matrix = nt.Matrix_ps(self.input_file, False)
+        inverse_matrix = nt.Matrix_ps(self.mat_dim)
+
+        nt.InverseSolvers.DenseInvert(overlap_matrix, inverse_matrix, self.isp)
 
         inverse_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -720,6 +742,42 @@ class TestSolvers(unittest.TestCase):
         self.CheckMat = csr_matrix(dense_check_u)
         u_matrix.WriteToMatrixMarket(result_file)
 
+        self.check_result()
+
+    def test_eigendecomposition(self):
+        '''Test routines to compute eigendecomposition of matrices.'''
+        from scipy.linalg import eigh
+        from scipy.sparse import csc_matrix, diags
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+
+        # Result Matrix
+        matrix = nt.Matrix_ps(self.input_file, False)
+        vec_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+
+        nt.EigenSolvers.EigenDecomposition(matrix, vec_matrix, val_matrix, 
+                                           self.isp)
+
+        # Check the eigenvalues
+        val_matrix.WriteToMatrixMarket(result_file)
+        self.CheckMat = csc_matrix(diags(vals))
+        comm.barrier()
+        self.check_result()
+
+        # To check the eigenvectors, we read them in, compute the 
+        # eigenvectors, and compare. This avoids degeneracy issues.
+        vec_matrix.WriteToMatrixMarket(result_file)
+        read_vec = mmread(result_file)
+        vals2 = (read_vec.H.dot(matrix1).dot(read_vec)).diagonal()
+        vals2mat = csc_matrix(diags(vals2))
+        self.write_matrix(vals2mat, result_file)
+
+        comm.barrier()
         self.check_result()
 
 

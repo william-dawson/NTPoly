@@ -4,6 +4,7 @@ set(Wsrc
     ChebyshevSolversModule_wrp.F90
     DensityMatrixSolversModule_wrp.F90
     EigenBoundsModule_wrp.F90
+    EigenSolversModule_wrp.F90
     ExponentialSolversModule_wrp.F90
     GeometryOptimizationModule_wrp.F90
     HermiteSolversModule_wrp.F90

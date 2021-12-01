@@ -2,6 +2,7 @@
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
   USE DataTypesModule, ONLY : NTREAL
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteElement, WriteListElement
@@ -18,6 +19,7 @@ MODULE InverseSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! Solvers
   PUBLIC :: Invert
+  PUBLIC :: DenseInvert
   PUBLIC :: PseudoInverse
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
@@ -142,6 +144,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the inverse of a matrix using the eigendecomposition.
+  SUBROUTINE DenseInvert(Mat, InverseMat, solver_parameters_in)
+    !> The matrix to compute the pseudo inverse of.
+    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    !> The pseudoinverse of the input matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: solver_parameters
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       solver_parameters = solver_parameters_in
+    ELSE
+       solver_parameters = SolverParameters_t()
+    END IF
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL WriteHeader("Inverse Solver")
+       CALL EnterSubLog
+       CALL PrintParameters(solver_parameters)
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(Mat, InverseMat, InvertLambda, solver_parameters)
+
+    IF (solver_parameters%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseInvert
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
   !> An implementation of the method of Hotelling \cite palser1998canonical.
   SUBROUTINE PseudoInverse(Mat, InverseMat, solver_parameters_in)
@@ -262,5 +296,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE PseudoInverse
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical inversion for mapping. 
+  SUBROUTINE InvertLambda(index, val)
+    !> The index of the eigenvalue
+    INTEGER, INTENT(IN) :: index
+    !> The actual value of an element.
+    REAL(KIND=NTREAL), INTENT(INOUT) :: val
+
+    val = 1.0 / val
+  END SUBROUTINE InvertLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE InverseSolversModule
