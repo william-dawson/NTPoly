@@ -1,20 +1,24 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
-  USE DataTypesModule, ONLY : NTREAL
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE EigenSolversModule, ONLY : EigenDecomposition
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
        & EnterSubLog, ExitSubLog
+  USE NTMPIModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
        & DotMatrix, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
-       & TransposeMatrix
+       & TransposeMatrix, FillMatrixFromTripletList, ConjugateMatrix, &
+       & GetMatrixTripletList
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
+  USE TripletListModule, ONLY : TripletList_r, DestructTripletList
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -23,7 +27,7 @@ MODULE DensityMatrixSolversModule
   PUBLIC :: TRS2
   PUBLIC :: TRS4
   PUBLIC :: HPCP
-  ! PUBLIC :: DenseDensity
+  PUBLIC :: DenseDensity
   PUBLIC :: ScaleAndFold
   PUBLIC :: EnergyDensityMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1171,9 +1175,134 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    !! Cleanup
     CALL DestructSolverParameters(solver_parameters)
   END SUBROUTINE ScaleAndFold
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix using a dense routine.
+  SUBROUTINE DenseDensity(Hamiltonian, InverseSquareRoot, nel, Density, &
+       & energy_value_out, chemical_potential_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from.
+    TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
+    !> The number of electrons.
+    INTEGER, INTENT(IN) :: nel
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Density
+    !> The energy of the system (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> The chemical potential (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: chemical_potential_out
+    !> Parameters for the solver (optional).
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: params
+    !! Local Variables
+    TYPE(Matrix_ps) :: InverseSquareRoot_T, WorkingHamiltonian
+    TYPE(Matrix_ps) :: WorkingDensity
+    TYPE(Matrix_ps) :: vecs, vecsT, vals, temp
+    TYPE(MatrixMemoryPool_p) :: pool
+    TYPE(TripletList_r) :: tlist
+    REAL(NTREAL) :: chemical_potential, energy_value
+    REAL(NTREAL) :: homo, lumo
+    INTEGER :: ii
+    INTEGER :: ierr
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       params = solver_parameters_in
+    ELSE
+       params = SolverParameters_t()
+    END IF
+
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key="Method", VALUE="Dense")
+       CALL PrintParameters(params)
+    END IF
+
+    !! Compute the working hamiltonian.
+    CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
+    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, temp, &
+         & threshold_in=params%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(temp, InverseSquareRoot_T, WorkingHamiltonian, &
+         & threshold_in=params%threshold, memory_pool_in=pool)
+
+    !! Perform the eigendecomposition
+    CALL EigenDecomposition(WorkingHamiltonian, vecs, vals, params)
+
+    !! Convert to a triplet list, map, and get homo/lumo.
+    CALL GetMatrixTripletList(vals, tlist)
+    homo = 0.0_NTREAL
+    lumo = 0.0_NTREAL
+    energy_value = 0.0_NTREAL
+    DO II = 1, tlist%CurrentSize
+       !! HOMO/LUMO
+       IF (tlist%DATA(II)%index_column .EQ. INT(nel/2)) THEN
+          homo = tlist%DATA(II)%point_value
+       ELSE IF (tlist%DATA(II)%index_column .EQ. INT(nel/2) + 1) THEN
+          lumo = tlist%DATA(II)%point_value
+       END IF
+       !! Mapping
+       IF (tlist%DATA(II)%index_column .LE. INT(nel/2)) THEN
+          energy_value = energy_value + tlist%DATA(II)%point_value
+          tlist%DATA(II)%point_value = 1.0_NTREAL
+       ELSE
+          tlist%DATA(II)%point_value = 0.0_NTREAL
+       ENDIF
+    END DO
+
+    !! Compute MU
+    CALL MPI_ALLREDUCE(MPI_IN_PLACE, homo, 1, MPINTREAL, MPI_SUM, &
+         & Hamiltonian%process_grid%within_slice_comm, ierr)
+    CALL MPI_ALLREDUCE(MPI_IN_PLACE, lumo, 1, MPINTREAL, MPI_SUM, &
+         & Hamiltonian%process_grid%within_slice_comm, ierr)
+    CALL MPI_ALLREDUCE(MPI_IN_PLACE, energy_value, 1, MPINTREAL, MPI_SUM, &
+         & Hamiltonian%process_grid%within_slice_comm, ierr)
+    chemical_potential = homo + 0.5_NTREAL * (lumo - homo)
+
+    !! Fill
+    CALL ConstructEmptyMatrix(vals, Hamiltonian)
+    CALL FillMatrixFromTripletList(vals, tlist, preduplicated_in=.TRUE.)
+
+    !! Multiply Back Together
+    CALL MatrixMultiply(vecs, vals, temp, threshold_in=params%threshold)
+    CALL TransposeMatrix(vecs, vecsT)
+    CALL ConjugateMatrix(vecsT)
+    CALL MatrixMultiply(temp, vecsT, WorkingDensity, &
+         & threshold_in=params%threshold)
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL MatrixMultiply(InverseSquareRoot_T, WorkingDensity, temp, &
+         & threshold_in=params%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(temp, InverseSquareRoot, Density, &
+         & threshold_in=params%threshold, memory_pool_in=pool)
+
+    !! Optional out variables.
+    IF (PRESENT(energy_value_out)) THEN
+       energy_value_out = 2.0_NTREAL * energy_value
+    END IF
+    IF (PRESENT(chemical_potential_out)) THEN
+       chemical_potential_out = chemical_potential
+    END IF
+
+    !! Cleanup
+    CALL DestructMatrix(WorkingHamiltonian)
+    CALL DestructMatrix(InverseSquareRoot_T)
+    CALL DestructMatrix(vecs)
+    CALL DestructMatrix(vecst)
+    CALL DestructMatrix(vals)
+    CALL DestructMatrix(temp)
+    CALL DestructTripletList(tlist)
+    CALL DestructMatrixMemoryPool(pool)
+
+    IF (params%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    CALL DestructSolverParameters(params)
+  END SUBROUTINE DenseDensity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the energy-weighted density matrix.
   SUBROUTINE EnergyDensityMatrix(Hamiltonian, Density, EnergyDensity, &

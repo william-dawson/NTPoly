@@ -159,6 +159,23 @@ class TestChemistry:
         cp = eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo]) / 2.0
         return cp, eig_vals[homo], eig_vals[lumo]
 
+    def check_energy(self, energy):
+        '''Compute the chemical potential, homo, lumo'''
+        from scipy.io import mmread
+        from helpers import THRESHOLD
+        from scipy.linalg import eigh
+
+        fock_matrix = mmread(self.hamiltonian)
+        overlap_matrix = mmread(self.overlap)
+
+        eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
+                        eigvals_only=True)
+        homo = int(self.nel / 2) - 1
+        lumo = homo + 1
+        computed = 2*sum(eig_vals[:lumo])
+
+        self.assertLessEqual(abs(energy - computed), THRESHOLD)
+
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
         cp, homo, lumo = self.compute_cp()
@@ -196,6 +213,7 @@ class TestChemistry:
         self.check_full()
         if cpcheck:
             self.check_cp(chemical_potential)
+        self.check_energy(energy_value)
         comm.barrier()
 
     def test_scaleandfold(self):
@@ -244,6 +262,10 @@ class TestChemistry:
     def test_HPCP(self):
         '''Test routines to compute the density matrix with HPCP.'''
         self.basic_solver(nt.DensityMatrixSolvers.HPCP)
+
+    def test_densedensity(self):
+        '''Test routines to compute the density matrix with Dense Method.'''
+        self.basic_solver(nt.DensityMatrixSolvers.DenseDensity)
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''

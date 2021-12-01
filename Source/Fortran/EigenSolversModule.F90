@@ -109,6 +109,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructMatrix(vecs)
+    CALL DestructMatrix(temp)
     CALL DestructMatrix(vals)
     CALL DestructTripletList(tlist)
 
