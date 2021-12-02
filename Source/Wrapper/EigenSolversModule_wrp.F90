@@ -1,9 +1,10 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the eigensolvers module for calling from other languages.
 MODULE EigenSolversModule_wrp
-  USE EigenSolversModule, ONLY : EigenDecomposition, SingularValueDecomposition
+  USE EigenSolversModule, ONLY : EigenDecomposition
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE PSMAtrixModule, ONLY : PrintMatrix
+  USE SingularValueSolversModule, ONLY : SingularValueDecomposition
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : C_INT

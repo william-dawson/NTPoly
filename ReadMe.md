@@ -21,6 +21,7 @@ Installing NTPoly requires the following software:
 * An MPI Installation (MPI-3 Standard+).
 * CMake (Version 3.2+).
 * BLAS: for multiplying dense matrices, if they emerge in the calculation.
+* LAPACK: for dense solvers.
 
 The following optional software can greatly enhance the NTPoly experience:
 
@@ -32,6 +33,7 @@ The following optional software can greatly enhance the NTPoly experience:
 * MPI4PY: for testing.
 * SciPy: for testing.
 * NumPy: for testing.
+* EigenExa: for dense, parallel calculations.
 
 NTPoly uses CMake as a build system. First, take a look in the Targets
 directory. You'll find a list of `.cmake` files which have example
@@ -132,6 +134,7 @@ The following features and methods have been implemented in NTPoly:
 * Other
     * Matrix Inverse/Moore-Penrose Pseudo Inverse
     * Sign Function/Polar Decomposition
+    * Interface to Dense Eigen/Singular Value Decomposition
     * Load Balancing Matrices
     * File I/O
 
