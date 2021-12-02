@@ -24,115 +24,115 @@ MODULE InverseSolversModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix.
   !> An implementation of the method of Hotelling \cite palser1998canonical.
-  SUBROUTINE Invert(Mat, InverseMat, solver_parameters_in)
+  SUBROUTINE Invert(InputMat, OutputMat, solver_parameters_in)
     !> The matrix to invert.
-    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> The inverse of that matrix.
-    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
     !! Local Variables
     REAL(NTREAL) :: sigma
     TYPE(Matrix_ps) :: Temp1,Temp2,Identity
     TYPE(Matrix_ps) :: BalancedMat
     !! Temporary Variables
-    INTEGER :: outer_counter
+    INTEGER :: II
     REAL(NTREAL) :: norm_value
     TYPE(MatrixMemoryPool_p) :: pool
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("palser1998canonical")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(InverseMat, Mat)
-    CALL ConstructEmptyMatrix(Temp1, Mat)
-    CALL ConstructEmptyMatrix(Temp2, Mat)
-    CALL ConstructEmptyMatrix(Identity, Mat)
-    CALL ConstructEmptyMatrix(BalancedMat, Mat)
+    CALL ConstructEmptyMatrix(OutputMat, InputMat)
+    CALL ConstructEmptyMatrix(Temp1, InputMat)
+    CALL ConstructEmptyMatrix(Temp2, InputMat)
+    CALL ConstructEmptyMatrix(Identity, InputMat)
+    CALL ConstructEmptyMatrix(BalancedMat, InputMat)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
-       CALL PermuteMatrix(Mat, BalancedMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in=pool)
+       CALL PermuteMatrix(InputMat, BalancedMat, &
+            & params%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyMatrix(Mat,BalancedMat)
+       CALL CopyMatrix(InputMat, BalancedMat)
     END IF
 
     !! Compute Sigma
-    CALL MatrixSigma(BalancedMat,sigma)
+    CALL MatrixSigma(BalancedMat, sigma)
 
     !! Create Inverse Guess
-    CALL CopyMatrix(BalancedMat,InverseMat)
-    CALL ScaleMatrix(InverseMat,sigma)
+    CALL CopyMatrix(BalancedMat, OutputMat)
+    CALL ScaleMatrix(OutputMat, sigma)
 
     !! Iterate
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+    II = 1
+    norm_value = params%converge_diff + 1.0_NTREAL
+    DO II = 1, params%max_iterations
+       IF (params%be_verbose .AND. II .GT. 1) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
-       CALL MatrixMultiply(InverseMat,BalancedMat,Temp1, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(OutputMat, BalancedMat, Temp1, &
+            & threshold_in=params%threshold, memory_pool_in=pool)
 
        !! Check if Converged
-       CALL CopyMatrix(Identity,Temp2)
-       CALL IncrementMatrix(Temp1,Temp2,-1.0_NTREAL)
+       CALL CopyMatrix(Identity, Temp2)
+       CALL IncrementMatrix(Temp1, Temp2,-1.0_NTREAL)
        norm_value = MatrixNorm(Temp2)
 
        CALL DestructMatrix(Temp2)
-       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=-1.0_NTREAL, &
-            & threshold_in=solver_parameters%threshold,memory_pool_in=pool)
+       CALL MatrixMultiply(Temp1, OutputMat, Temp2, alpha_in=-1.0_NTREAL, &
+            & threshold_in=params%threshold, memory_pool_in=pool)
 
        !! Save a copy of the last inverse matrix
-       CALL CopyMatrix(InverseMat,Temp1)
+       CALL CopyMatrix(OutputMat, Temp1)
 
-       CALL ScaleMatrix(InverseMat,2.0_NTREAL)
+       CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
 
-       CALL IncrementMatrix(Temp2,InverseMat, &
-            & threshold_in=solver_parameters%threshold)
+       CALL IncrementMatrix(Temp2, OutputMat, &
+            & threshold_in=params%threshold)
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (norm_value .LE. params%converge_diff) THEN
           EXIT
        END IF
     END DO
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter-1)
-       CALL PrintMatrixInformation(InverseMat)
+       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
-       CALL UndoPermuteMatrix(InverseMat,InverseMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+    IF (params%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(OutputMat, OutputMat, &
+            & params%BalancePermutation, memorypool_in=pool)
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
@@ -141,150 +141,152 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Temp2)
     CALL DestructMatrix(BalancedMat)
     CALL DestructMatrixMemoryPool(pool)
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(params)
   END SUBROUTINE Invert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse of a matrix using the eigendecomposition.
-  SUBROUTINE DenseInvert(Mat, InverseMat, solver_parameters_in)
+  SUBROUTINE DenseInvert(InputMat, OutputMat, solver_parameters_in)
     !> The matrix to compute the pseudo inverse of.
-    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> The pseudoinverse of the input matrix.
-    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
     END IF
 
     !! Apply
-    CALL DenseMatrixFunction(Mat, InverseMat, InvertLambda, solver_parameters)
+    CALL DenseMatrixFunction(InputMat, OutputMat, InvertLambda, params)
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(params)
   END SUBROUTINE DenseInvert
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pseudoinverse of a matrix.
   !> An implementation of the method of Hotelling \cite palser1998canonical.
-  SUBROUTINE PseudoInverse(Mat, InverseMat, solver_parameters_in)
+  SUBROUTINE PseudoInverse(InputMat, OutputMat, solver_parameters_in)
     !> The matrix to compute the pseudo inverse of.
-    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> The pseudoinverse of the input matrix.
-    TYPE(Matrix_ps), INTENT(INOUT) :: InverseMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
     !! Local Variables
     REAL(NTREAL) :: sigma
     TYPE(Matrix_ps) :: Temp1,Temp2,Identity
     TYPE(Matrix_ps) :: BalancedMat
     !! Temporary Variables
-    INTEGER :: outer_counter
+    INTEGER :: II
     REAL(NTREAL) :: norm_value
     TYPE(MatrixMemoryPool_p) :: pool
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
        CALL EnterSubLog
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("palser1998canonical")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(InverseMat, Mat)
-    CALL ConstructEmptyMatrix(Temp1, Mat)
-    CALL ConstructEmptyMatrix(Temp2, Mat)
-    CALL ConstructEmptyMatrix(Identity, Mat)
-    CALL ConstructEmptyMatrix(BalancedMat, Mat)
+    CALL ConstructEmptyMatrix(OutputMat, InputMat)
+    CALL ConstructEmptyMatrix(Temp1, InputMat)
+    CALL ConstructEmptyMatrix(Temp2, InputMat)
+    CALL ConstructEmptyMatrix(Identity, InputMat)
+    CALL ConstructEmptyMatrix(BalancedMat, InputMat)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
-       CALL PermuteMatrix(Mat, BalancedMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in=pool)
+       CALL PermuteMatrix(InputMat, BalancedMat, &
+            & params%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyMatrix(Mat,BalancedMat)
+       CALL CopyMatrix(InputMat, BalancedMat)
     END IF
 
     !! Compute Sigma
-    CALL MatrixSigma(BalancedMat,sigma)
+    CALL MatrixSigma(BalancedMat, sigma)
 
     !! Create Inverse Guess
-    CALL CopyMatrix(BalancedMat,InverseMat)
-    CALL ScaleMatrix(InverseMat,sigma)
+    CALL CopyMatrix(BalancedMat, OutputMat)
+    CALL ScaleMatrix(OutputMat, sigma)
 
     !! Iterate
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+    II = 1
+    norm_value = params%converge_diff + 1.0_NTREAL
+    DO II = 1,params%max_iterations
+       IF (params%be_verbose .AND. II .GT. 1) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
-       CALL MatrixMultiply(InverseMat,BalancedMat,Temp1, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL MatrixMultiply(Temp1,InverseMat,Temp2,alpha_in=-1.0_NTREAL, &
-            & threshold_in=solver_parameters%threshold,memory_pool_in=pool)
+       CALL MatrixMultiply(OutputMat, BalancedMat, Temp1, &
+            & threshold_in=params%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(Temp1, OutputMat, Temp2,alpha_in=-1.0_NTREAL, &
+            & threshold_in=params%threshold,memory_pool_in=pool)
 
        !! Save a copy of the last inverse matrix
-       CALL CopyMatrix(InverseMat,Temp1)
+       CALL CopyMatrix(OutputMat, Temp1)
 
-       CALL ScaleMatrix(InverseMat,2.0_NTREAL)
-       CALL IncrementMatrix(Temp2,InverseMat, &
-            & threshold_in=solver_parameters%threshold)
+       CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
+       CALL IncrementMatrix(Temp2, OutputMat, &
+            & threshold_in=params%threshold)
 
        !! Check if Converged
-       CALL IncrementMatrix(InverseMat,Temp1,-1.0_NTREAL)
+       CALL IncrementMatrix(OutputMat, Temp1, -1.0_NTREAL)
        norm_value = MatrixNorm(Temp1)
 
        !! Sometimes the first few values don't change so much, so that's why
        !! I added the outer counter check
-       IF (norm_value .LE. solver_parameters%converge_diff .AND. &
-            & outer_counter .GT. 3) THEN
+       IF (norm_value .LE. params%converge_diff .AND. II .GT. 3) THEN
           EXIT
        END IF
     END DO
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter-1)
-       CALL PrintMatrixInformation(InverseMat)
+       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
-       CALL UndoPermuteMatrix(InverseMat,InverseMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+    IF (params%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(OutputMat, OutputMat, &
+            & params%BalancePermutation, memorypool_in=pool)
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
@@ -293,7 +295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Temp2)
     CALL DestructMatrix(BalancedMat)
     CALL DestructMatrixMemoryPool(pool)
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(params)
   END SUBROUTINE PseudoInverse
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical inversion for mapping. 

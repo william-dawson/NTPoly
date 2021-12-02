@@ -10,7 +10,8 @@ MODULE EigenBoundsModule
        & IncrementMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList
-  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters
+  USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
+       & DestructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, DestructTripletList
   USE TripletModule, ONLY : Triplet_r
@@ -23,7 +24,7 @@ MODULE EigenBoundsModule
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the minimum and maximum eigenvalue of a matrix.
   !> Uses the Gershgorin theorem.
-  SUBROUTINE GershgorinBounds(this,min_value,max_value)
+  SUBROUTINE GershgorinBounds(this, min_value, max_value)
     !> The matrix to compute the min/max of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> A lower bound on the eigenspectrum.
@@ -54,7 +55,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute a bounds on the maximum eigenvalue of a matrix.
   !> Uses The Power Method.
-  SUBROUTINE PowerBounds(this,max_value,solver_parameters_in)
+  SUBROUTINE PowerBounds(this, max_value, solver_parameters_in)
     !> The matrix to compute the min/max of.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> An upper bound on the eigenspectrum.
@@ -62,28 +63,28 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The parameters for this calculation.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: param
     !! Local Data
     TYPE(Matrix_ps) :: vector, vector2, TempMat
     REAL(NTREAL) :: scale_value
     REAL(NTREAL) :: norm_value
     TYPE(TripletList_r) :: temp_list
     TYPE(Triplet_r) :: temp_triplet
-    INTEGER :: outer_counter
+    INTEGER :: II
     TYPE(MatrixMemoryPool_p) :: pool
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       param = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
-       solver_parameters%max_iterations = 10
+       param = SolverParameters_t()
+       param%max_iterations = 10
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL WriteHeader("Power Bounds Solver")
        CALL EnterSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(param)
     END IF
 
     !! Diagonal matrices serve as vectors.
@@ -101,47 +102,47 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixFromTripletList(vector,temp_list)
 
     !! Iterate
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+    II = 1
+    norm_value = param%converge_diff + 1.0_NTREAL
+    DO II = 1, param%max_iterations
+       IF (param%be_verbose .AND. II .GT. 1) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
        !! x = Ax
-       CALL MatrixMultiply(this,vector,vector2, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(this, vector, vector2, &
+            & threshold_in=param%threshold, memory_pool_in=pool)
        !! x = x/||x||
        scale_value = 1.0/MatrixNorm(vector2)
-       CALL ScaleMatrix(vector2,scale_value)
+       CALL ScaleMatrix(vector2, scale_value)
 
        !! Check if Converged
-       CALL IncrementMatrix(vector2,vector,-1.0_NTREAL)
+       CALL IncrementMatrix(vector2, vector, -1.0_NTREAL)
        norm_value = MatrixNorm(vector)
 
-       CALL CopyMatrix(vector2,vector)
+       CALL CopyMatrix(vector2, vector)
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (norm_value .LE. param%converge_diff) THEN
           EXIT
        END IF
     END DO
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",VALUE=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", VALUE=II - 1)
     END IF
 
     !! Compute The Largest Eigenvalue
     CALL DotMatrix(vector, vector, scale_value)
-    CALL MatrixMultiply(this,vector,vector2, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(this, vector, vector2, &
+         & threshold_in=param%threshold, memory_pool_in=pool)
     CALL DotMatrix(vector, vector2, max_value)
     max_value = max_value / scale_value
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL WriteElement(key="Max_Eigen_Value",VALUE=max_value)
        CALL ExitSubLog
     END IF
@@ -151,6 +152,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(vector2)
     CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(param)
   END SUBROUTINE PowerBounds
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule

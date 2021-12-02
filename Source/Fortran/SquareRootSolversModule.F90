@@ -35,24 +35,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Order of polynomial for calculation (default 5).
     INTEGER, INTENT(IN), OPTIONAL :: order_in
     !! Local Variables
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
     IF (PRESENT(order_in)) THEN
-       CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .FALSE.,&
+       CALL SquareRootSelector(InputMat, OutputMat, params, .FALSE.,&
             & order_in)
     ELSE
-       CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .FALSE.)
+       CALL SquareRootSelector(InputMat, OutputMat, params, .FALSE.)
     END IF
 
     !! Cleanup
-    CALL DestructSolverParameters(solver_parameters)
-
+    CALL DestructSolverParameters(params)
   END SUBROUTINE SquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix square root function (dense version).
@@ -64,27 +63,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Square Root Solver")
        CALL EnterSubLog
     END IF
 
     !! Apply
     CALL DenseMatrixFunction(Mat, OutputMat, SquareRootLambda, &
-         & solver_parameters)
+         & params)
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(params)
   END SUBROUTINE DenseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the inverse square root of a matrix.
@@ -99,23 +101,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Order of polynomial for calculation (default 5).
     INTEGER, INTENT(IN), OPTIONAL :: order_in
     !! Local Variables
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
     IF (PRESENT(order_in)) THEN
-       CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .TRUE., &
-            & order_in)
+       CALL SquareRootSelector(InputMat, OutputMat, params, .TRUE., order_in)
     ELSE
-       CALL SquareRootSelector(InputMat, OutputMat, solver_parameters, .TRUE.)
+       CALL SquareRootSelector(InputMat, OutputMat, params, .TRUE.)
     END IF
 
     !! Cleanup
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(params)
 
   END SUBROUTINE InverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -128,38 +129,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Parameters for the solver
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Square Root Solver")
        CALL EnterSubLog
     END IF
 
     !! Apply
-    CALL DenseMatrixFunction(Mat, OutputMat, InverseSquareRootLambda, &
-         & solver_parameters)
+    CALL DenseMatrixFunction(Mat, OutputMat, InverseSquareRootLambda, params)
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(params)
   END SUBROUTINE DenseInverseSquareRoot
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This routine picks the appropriate solver method
-  SUBROUTINE SquareRootSelector(InputMat, OutputMat, solver_parameters, &
+  SUBROUTINE SquareRootSelector(InputMat, OutputMat, params, &
        & compute_inverse, order_in)
     !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN)  :: InputMat
     !> The Matrix computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     !> Parameters about how to solve.
-    TYPE(SolverParameters_t),INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t),INTENT(IN) :: params
     !> True if we are computing the inverse square root.
     LOGICAL, INTENT(IN) :: compute_inverse
     !> The polynomial degree to use (optional, default=5)
@@ -175,10 +178,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     SELECT CASE(order)
     CASE(2)
-       CALL NewtonSchultzISROrder2(InputMat, OutputMat, solver_parameters, &
+       CALL NewtonSchultzISROrder2(InputMat, OutputMat, params, &
             & compute_inverse)
     CASE DEFAULT
-       CALL NewtonSchultzISRTaylor(InputMat, OutputMat, solver_parameters, &
+       CALL NewtonSchultzISRTaylor(InputMat, OutputMat, params, &
             & order, compute_inverse)
     END SELECT
 
@@ -186,14 +189,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root or inverse square root of a matrix.
   !> Based on the Newton-Schultz algorithm presented in: \cite jansik2007linear
-  SUBROUTINE NewtonSchultzISROrder2(Mat, OutMat, solver_parameters, &
-       & compute_inverse)
+  SUBROUTINE NewtonSchultzISROrder2(InMat, OutMat, params, compute_inverse)
     !> The matrix to compute
-    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    TYPE(Matrix_ps), INTENT(IN)  :: InMat
     !> Mat^-1/2 or Mat^1/2.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver
-    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: params
     !> Whether to compute the inverse square root.
     LOGICAL, INTENT(IN) :: compute_inverse
     !! Local Variables
@@ -204,99 +206,99 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: max_between
-    INTEGER :: outer_counter
+    INTEGER :: II
     REAL(NTREAL) :: norm_value
     TYPE(MatrixMemoryPool_p) :: mpool
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Newton Schultz Inverse Square Root")
        CALL EnterSubLog
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("jansik2007linear")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(X_k, Mat)
-    CALL ConstructEmptyMatrix(SquareRootMat, Mat)
-    CALL ConstructEmptyMatrix(InverseSquareRootMat, Mat)
-    CALL ConstructEmptyMatrix(T_k, Mat)
-    CALL ConstructEmptyMatrix(Temp, Mat)
-    CALL ConstructEmptyMatrix(Identity, Mat)
+    CALL ConstructEmptyMatrix(X_k, InMat)
+    CALL ConstructEmptyMatrix(SquareRootMat, InMat)
+    CALL ConstructEmptyMatrix(InverseSquareRootMat, InMat)
+    CALL ConstructEmptyMatrix(T_k, InMat)
+    CALL ConstructEmptyMatrix(Temp, InMat)
+    CALL ConstructEmptyMatrix(Identity, InMat)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the lambda scaling value.
-    CALL GershgorinBounds(Mat,e_min,e_max)
-    max_between = MAX(ABS(e_min),ABS(e_max))
+    CALL GershgorinBounds(InMat, e_min, e_max)
+    max_between = MAX(ABS(e_min), ABS(e_max))
     lambda = 1.0/max_between
 
     !! Initialize
     CALL FillMatrixIdentity(InverseSquareRootMat)
-    CALL CopyMatrix(Mat,SquareRootMat)
+    CALL CopyMatrix(InMat,SquareRootMat)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(SquareRootMat, SquareRootMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in=mpool)
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in=mpool)
        CALL PermuteMatrix(InverseSquareRootMat, InverseSquareRootMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in=mpool)
     END IF
 
     !! Iterate.
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
+    II = 1
+    norm_value = params%converge_diff + 1.0_NTREAL
+    DO II = 1,params%max_iterations
        !! Compute X_k
-       CALL MatrixMultiply(SquareRootMat,InverseSquareRootMat,X_k, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=mpool)
-       CALL GershgorinBounds(X_k,e_min,e_max)
-       max_between = MAX(ABS(e_min),ABS(e_max))
+       CALL MatrixMultiply(SquareRootMat, InverseSquareRootMat, X_k, &
+            & threshold_in=params%threshold, memory_pool_in=mpool)
+       CALL GershgorinBounds(X_k, e_min, e_max)
+       max_between = MAX(ABS(e_min), ABS(e_max))
        lambda = 1.0/max_between
 
-       CALL ScaleMatrix(X_k,lambda)
+       CALL ScaleMatrix(X_k, lambda)
 
        !! Check if Converged
-       CALL CopyMatrix(Identity,Temp)
-       CALL IncrementMatrix(X_k,Temp,REAL(-1.0,NTREAL))
+       CALL CopyMatrix(Identity, Temp)
+       CALL IncrementMatrix(X_k, Temp, REAL(-1.0,NTREAL))
        norm_value = MatrixNorm(Temp)
 
        !! Compute T_k
-       CALL CopyMatrix(Identity,T_k)
-       CALL ScaleMatrix(T_k,REAL(3.0,NTREAL))
-       CALL IncrementMatrix(X_k,T_k,REAL(-1.0,NTREAL))
-       CALL ScaleMatrix(T_k,REAL(0.5,NTREAL))
+       CALL CopyMatrix(Identity, T_k)
+       CALL ScaleMatrix(T_k, REAL(3.0,NTREAL))
+       CALL IncrementMatrix(X_k, T_k, REAL(-1.0,NTREAL))
+       CALL ScaleMatrix(T_k, REAL(0.5,NTREAL))
 
        !! Compute Z_k+1
-       CALL CopyMatrix(InverseSquareRootMat,Temp)
-       CALL MatrixMultiply(Temp,T_k,InverseSquareRootMat, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=mpool)
-       CALL ScaleMatrix(InverseSquareRootMat,SQRT(lambda))
+       CALL CopyMatrix(InverseSquareRootMat, Temp)
+       CALL MatrixMultiply(Temp, T_k, InverseSquareRootMat, &
+            & threshold_in=params%threshold, memory_pool_in=mpool)
+       CALL ScaleMatrix(InverseSquareRootMat, SQRT(lambda))
 
        !! Compute Y_k+1
        CALL CopyMatrix(SquareRootMat, Temp)
-       CALL MatrixMultiply(T_k,Temp,SquareRootMat, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=mpool)
-       CALL ScaleMatrix(SquareRootMat,SQRT(lambda))
+       CALL MatrixMultiply(T_k, Temp, SquareRootMat, &
+            & threshold_in=params%threshold, memory_pool_in=mpool)
+       CALL ScaleMatrix(SquareRootMat, SQRT(lambda))
 
-       IF (solver_parameters%be_verbose) THEN
+       IF (params%be_verbose) THEN
           CALL WriteElement(key="Convergence", VALUE=norm_value)
        END IF
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (norm_value .LE. params%converge_diff) THEN
           EXIT
        END IF
     END DO
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 
@@ -307,13 +309,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutMat, OutMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in=mpool)
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
@@ -327,14 +329,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the square root or inverse square root of a matrix.
   !> Based on the Newton-Schultz algorithm with higher order polynomials.
-  SUBROUTINE NewtonSchultzISRTaylor(Mat, OutMat, solver_parameters, &
+  SUBROUTINE NewtonSchultzISRTaylor(InMat, OutMat, params, &
        & taylor_order, compute_inverse)
     !> Matrix to Compute
-    TYPE(Matrix_ps), INTENT(IN)  :: Mat
+    TYPE(Matrix_ps), INTENT(IN) :: InMat
     !> Mat^-1/2 or Mat^1/2.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver.
-    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: params
     !> Order of polynomial to use.
     INTEGER, INTENT(IN) :: taylor_order
     !> Whether to compute the inverse square root or not.
@@ -349,75 +351,75 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Temporary Variables
     REAL(NTREAL) :: e_min,e_max
     REAL(NTREAL) :: max_between
-    INTEGER :: outer_counter
+    INTEGER :: II
     REAL(NTREAL) :: norm_value
     TYPE(MatrixMemoryPool_p) :: mpool
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Newton Schultz Inverse Square Root")
        CALL EnterSubLog
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("jansik2007linear")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(X_k, Mat)
-    CALL ConstructEmptyMatrix(SquareRootMat, Mat)
-    CALL ConstructEmptyMatrix(InverseSquareRootMat, Mat)
-    CALL ConstructEmptyMatrix(Temp, Mat)
+    CALL ConstructEmptyMatrix(X_k, InMat)
+    CALL ConstructEmptyMatrix(SquareRootMat, InMat)
+    CALL ConstructEmptyMatrix(InverseSquareRootMat, InMat)
+    CALL ConstructEmptyMatrix(Temp, InMat)
     IF (taylor_order == 5) THEN
-       CALL ConstructEmptyMatrix(Temp2, Mat)
+       CALL ConstructEmptyMatrix(Temp2, InMat)
     END IF
-    CALL ConstructEmptyMatrix(Identity, Mat)
+    CALL ConstructEmptyMatrix(Identity, InMat)
     CALL FillMatrixIdentity(Identity)
 
     !! Compute the lambda scaling value.
-    CALL GershgorinBounds(Mat,e_min,e_max)
-    max_between = MAX(ABS(e_min),ABS(e_max))
+    CALL GershgorinBounds(InMat, e_min, e_max)
+    max_between = MAX(ABS(e_min), ABS(e_max))
     lambda = 1.0_NTREAL/max_between
 
     !! Initialize
     CALL FillMatrixIdentity(InverseSquareRootMat)
-    CALL CopyMatrix(Mat,SquareRootMat)
-    CALL ScaleMatrix(SquareRootMat,lambda)
+    CALL CopyMatrix(InMat, SquareRootMat)
+    CALL ScaleMatrix(SquareRootMat, lambda)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
-       CALL PermuteMatrix(SquareRootMat,SquareRootMat, &
-            & solver_parameters%BalancePermutation,memorypool_in=mpool)
-       CALL PermuteMatrix(Identity,Identity, &
-            & solver_parameters%BalancePermutation,memorypool_in=mpool)
-       CALL PermuteMatrix(InverseSquareRootMat,InverseSquareRootMat, &
-            & solver_parameters%BalancePermutation,memorypool_in=mpool)
+    IF (params%do_load_balancing) THEN
+       CALL PermuteMatrix(SquareRootMat, SquareRootMat, &
+            & params%BalancePermutation, memorypool_in=mpool)
+       CALL PermuteMatrix(Identity, Identity, &
+            & params%BalancePermutation, memorypool_in=mpool)
+       CALL PermuteMatrix(InverseSquareRootMat, InverseSquareRootMat, &
+            & params%BalancePermutation, memorypool_in=mpool)
     END IF
 
     !! Iterate.
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
-    DO outer_counter = 1,solver_parameters%max_iterations
+    II = 1
+    norm_value = params%converge_diff + 1.0_NTREAL
+    DO II = 1, params%max_iterations
        !! Compute X_k = Z_k * Y_k - I
-       CALL MatrixMultiply(InverseSquareRootMat,SquareRootMat,X_k, &
-            & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
+       CALL MatrixMultiply(InverseSquareRootMat, SquareRootMat, X_k, &
+            & threshold_in=params%threshold, memory_pool_in=mpool)
        CALL IncrementMatrix(Identity,X_k,-1.0_NTREAL)
        norm_value = MatrixNorm(X_k)
 
        SELECT CASE(taylor_order)
        CASE(3)
           !! Compute X_k^2
-          CALL MatrixMultiply(X_k,X_k,Temp, &
-               & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
+          CALL MatrixMultiply(X_k, X_k, Temp, &
+               & threshold_in=params%threshold, memory_pool_in=mpool)
 
           !! X_k = I - 1/2 X_k + 3/8 X_k^2 + ...
-          CALL ScaleMatrix(X_k,-0.5_NTREAL)
-          CALL IncrementMatrix(Identity,X_k)
-          CALL IncrementMatrix(Temp,X_k,0.375_NTREAL)
+          CALL ScaleMatrix(X_k, -0.5_NTREAL)
+          CALL IncrementMatrix(Identity, X_k)
+          CALL IncrementMatrix(Temp,X_k, 0.375_NTREAL)
        CASE(5)
           !! Compute p(x) = x^4 + A*x^3 + B*x^2 + C*x + D
           !! Scale to make coefficient of x^4 equal to 1
@@ -439,68 +441,68 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           d = dd-b*c
 
           !! Compute Temp = z = x * (x+a)
-          CALL MatrixMultiply(X_k,X_k,Temp, &
-               & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
-          CALL IncrementMatrix(X_k,Temp,a)
+          CALL MatrixMultiply(X_k, X_k, Temp, &
+               & threshold_in=params%threshold, memory_pool_in=mpool)
+          CALL IncrementMatrix(X_k, Temp, a)
 
           !! Compute Temp2 = z + x + b
-          CALL CopyMatrix(Identity,Temp2)
-          CALL ScaleMatrix(Temp2,b)
-          CALL IncrementMatrix(X_k,Temp2)
-          CALL IncrementMatrix(Temp,Temp2)
+          CALL CopyMatrix(Identity, Temp2)
+          CALL ScaleMatrix(Temp2, b)
+          CALL IncrementMatrix(X_k, Temp2)
+          CALL IncrementMatrix(Temp, Temp2)
 
           !! Compute Temp = z + c
-          CALL IncrementMatrix(Identity,Temp,c)
+          CALL IncrementMatrix(Identity, Temp, c)
 
           !! Compute X_k = (z+x+b) * (z+c) + d = Temp2 * Temp + d
-          CALL MatrixMultiply(Temp2,Temp,X_k, &
-               & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
+          CALL MatrixMultiply(Temp2, Temp, X_k, &
+               & threshold_in=params%threshold, memory_pool_in=mpool)
           CALL IncrementMatrix(Identity,X_k,d)
 
           !! Scale back to the target coefficients
-          CALL ScaleMatrix(X_k,35.0_NTREAL/128.0_NTREAL)
+          CALL ScaleMatrix(X_k, 35.0_NTREAL/128.0_NTREAL)
        END SELECT
 
        !! Compute Z_k+1 = Z_k * X_k
-       CALL CopyMatrix(InverseSquareRootMat,Temp)
-       CALL MatrixMultiply(X_k,Temp,InverseSquareRootMat, &
-            & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
+       CALL CopyMatrix(InverseSquareRootMat, Temp)
+       CALL MatrixMultiply(X_k, Temp, InverseSquareRootMat, &
+            & threshold_in=params%threshold,memory_pool_in=mpool)
 
        !! Compute Y_k+1 = X_k * Y_k
-       CALL CopyMatrix(SquareRootMat,Temp)
-       CALL MatrixMultiply(Temp,X_k,SquareRootMat, &
-            & threshold_in=solver_parameters%threshold,memory_pool_in=mpool)
+       CALL CopyMatrix(SquareRootMat, Temp)
+       CALL MatrixMultiply(Temp, X_k, SquareRootMat, &
+            & threshold_in=params%threshold,memory_pool_in=mpool)
 
-       IF (solver_parameters%be_verbose) THEN
+       IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (norm_value .LE. params%converge_diff) THEN
           EXIT
        END IF
     END DO
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=outer_counter)
+       CALL WriteElement(key="Total_Iterations", VALUE=II)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 
     IF (compute_inverse) THEN
-       CALL ScaleMatrix(InverseSquareRootMat,SQRT(lambda))
-       CALL CopyMatrix(InverseSquareRootMat,OutMat)
+       CALL ScaleMatrix(InverseSquareRootMat, SQRT(lambda))
+       CALL CopyMatrix(InverseSquareRootMat, OutMat)
     ELSE
-       CALL ScaleMatrix(SquareRootMat,1.0_NTREAL/SQRT(lambda))
-       CALL CopyMatrix(SquareRootMat,OutMat)
+       CALL ScaleMatrix(SquareRootMat, 1.0_NTREAL/SQRT(lambda))
+       CALL CopyMatrix(SquareRootMat, OutMat)
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
-       CALL UndoPermuteMatrix(OutMat,OutMat, &
-            & solver_parameters%BalancePermutation,memorypool_in=mpool)
+    IF (params%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(OutMat, OutMat, &
+            & params%BalancePermutation,memorypool_in=mpool)
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
