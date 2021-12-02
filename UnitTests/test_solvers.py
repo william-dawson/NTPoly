@@ -923,10 +923,50 @@ class TestSolvers(unittest.TestCase):
         self.check_result()
 
         # To check the eigenvectors, we read them in, compute the
-        # eigenvectors, and compare. This avoids degeneracy issues.
+        # full matrix, and compare. This avoids degeneracy issues.
         vec_matrix.WriteToMatrixMarket(result_file)
         read_vec = mmread(result_file)
         vals2 = (read_vec.H.dot(matrix1).dot(read_vec)).diagonal()
+        vals2mat = csc_matrix(diags(vals2))
+        self.write_matrix(vals2mat, result_file)
+
+        comm.barrier()
+        self.check_result()
+
+    def test_svd(self):
+        '''Test routines to compute the SVD of matrices.'''
+        from scipy.linalg import svd
+        from scipy.sparse import csc_matrix, diags
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+
+        # Check Matrix
+        u, s, vh = svd(matrix1.todense())
+
+        # Result Matrix
+        matrix = nt.Matrix_ps(self.input_file, False)
+        left_matrix = nt.Matrix_ps(self.mat_dim)
+        right_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+
+        nt.EigenSolvers.SingularValueDecomposition(matrix, left_matrix,
+                                                   right_matrix, val_matrix,
+                                                   self.isp)
+
+        # Check the singular values.
+        val_matrix.WriteToMatrixMarket(result_file)
+        self.CheckMat = csc_matrix(diags(sorted(s)))
+        comm.barrier()
+        self.check_result()
+
+        # To check the singularvectors, we read them in, compute the
+        # full matrix, and compare. This avoids degeneracy issues.
+        left_matrix.WriteToMatrixMarket(result_file)
+        read_left = mmread(result_file)
+        right_matrix.WriteToMatrixMarket(result_file)
+        read_right = mmread(result_file)
+        vals2 = (read_left.H.dot(matrix1).dot(read_right)).diagonal()
         vals2mat = csc_matrix(diags(vals2))
         self.write_matrix(vals2mat, result_file)
 
