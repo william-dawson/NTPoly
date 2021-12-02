@@ -922,6 +922,7 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.check_result()
 
+        # Check the eigenvectors
         reconstructed = nt.Matrix_ps(self.mat_dim)
         temp = nt.Matrix_ps(self.mat_dim)
         vec_matrix_t = nt.Matrix_ps(self.mat_dim)
@@ -936,45 +937,47 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.check_result()
 
-    # def test_svd(self):
-    #     '''Test routines to compute the SVD of matrices.'''
-    #     from scipy.linalg import svd
-    #     from scipy.sparse import csc_matrix, diags
-    #     # Starting Matrix
-    #     matrix1 = self.create_matrix()
-    #     self.write_matrix(matrix1, self.input_file)
+    def test_svd(self):
+        '''Test routines to compute the SVD of matrices.'''
+        from scipy.linalg import svd
+        from scipy.sparse import csc_matrix, diags
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
 
-    #     # Check Matrix
-    #     u, s, vh = svd(matrix1.todense())
+        # Check Matrix
+        u, s, vh = svd(matrix1.todense())
 
-    #     # Result Matrix
-    #     matrix = nt.Matrix_ps(self.input_file, False)
-    #     left_matrix = nt.Matrix_ps(self.mat_dim)
-    #     right_matrix = nt.Matrix_ps(self.mat_dim)
-    #     val_matrix = nt.Matrix_ps(self.mat_dim)
+        # Result Matrix
+        matrix = nt.Matrix_ps(self.input_file, False)
+        left_matrix = nt.Matrix_ps(self.mat_dim)
+        right_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
 
-    #     nt.EigenSolvers.SingularValueDecomposition(matrix, left_matrix,
-    #                                                right_matrix, val_matrix,
-    #                                                self.isp)
+        nt.EigenSolvers.SingularValueDecomposition(matrix, left_matrix,
+                                                   right_matrix, val_matrix,
+                                                   self.isp)
 
-    #     # Check the singular values.
-    #     val_matrix.WriteToMatrixMarket(result_file)
-    #     self.CheckMat = csc_matrix(diags(sorted(s)))
-    #     comm.barrier()
-    #     self.check_result()
+        # Check the singular values.
+        val_matrix.WriteToMatrixMarket(result_file)
+        self.CheckMat = csc_matrix(diags(sorted(s)))
+        comm.barrier()
+        self.check_result()
 
-    #     # To check the singularvectors, we read them in, compute the
-    #     # full matrix, and compare. This avoids degeneracy issues.
-    #     left_matrix.WriteToMatrixMarket(result_file)
-    #     read_left = mmread(result_file)
-    #     right_matrix.WriteToMatrixMarket(result_file)
-    #     read_right = mmread(result_file)
-    #     vals2 = (read_left.H.dot(matrix1).dot(read_right)).diagonal()
-    #     vals2mat = csc_matrix(diags(vals2))
-    #     self.write_matrix(vals2mat, result_file)
+        # Check the singular vectors.
+        reconstructed = nt.Matrix_ps(self.mat_dim)
+        temp = nt.Matrix_ps(self.mat_dim)
+        right_matrix_t = nt.Matrix_ps(self.mat_dim)
+        right_matrix_t.Transpose(right_matrix)
+        right_matrix_t.Conjugate()
+        memory_pool = nt.PMatrixMemoryPool(matrix)
+        temp.Gemm(left_matrix, val_matrix, memory_pool)
+        reconstructed.Gemm(temp, right_matrix_t, memory_pool)
+        reconstructed.WriteToMatrixMarket(result_file)
 
-    #     comm.barrier()
-    #     self.check_result()
+        self.CheckMat = matrix1
+        comm.barrier()
+        self.check_result()
 
 
 class TestSolvers_r(TestSolvers):
