@@ -922,16 +922,19 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.check_result()
 
-    #     # To check the eigenvectors, we read them in, compute the
-    #     # full matrix, and compare. This avoids degeneracy issues.
-    #     vec_matrix.WriteToMatrixMarket(result_file)
-    #     read_vec = mmread(result_file)
-    #     vals2 = (read_vec.H.dot(matrix1).dot(read_vec)).diagonal()
-    #     vals2mat = csc_matrix(diags(vals2))
-    #     self.write_matrix(vals2mat, result_file)
+        reconstructed = nt.Matrix_ps(self.mat_dim)
+        temp = nt.Matrix_ps(self.mat_dim)
+        vec_matrix_t = nt.Matrix_ps(self.mat_dim)
+        memory_pool = nt.PMatrixMemoryPool(matrix)
+        temp.Gemm(vec_matrix, val_matrix, memory_pool)
+        vec_matrix_t.Transpose(vec_matrix)
+        vec_matrix_t.Conjugate()
+        reconstructed.Gemm(temp, vec_matrix_t, memory_pool)
+        reconstructed.WriteToMatrixMarket(result_file)
 
-    #     comm.barrier()
-    #     self.check_result()
+        self.CheckMat = matrix1
+        comm.barrier()
+        self.check_result()
 
     # def test_svd(self):
     #     '''Test routines to compute the SVD of matrices.'''
