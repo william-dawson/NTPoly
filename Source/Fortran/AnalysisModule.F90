@@ -20,7 +20,6 @@ MODULE AnalysisModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: PivotedCholeskyDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Pivoted Cholesky Decomposition of a Hermitian Semi-Definite
   !> matrix. This is one way to generate localized orbitals.
   SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
