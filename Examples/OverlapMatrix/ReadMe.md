@@ -61,7 +61,7 @@ Build with:
 ```
 mpif90 main.f90 -o example \
   -I../../Build/include \
-  -L../../Build/lib -lNTPoly -fopenmp -lblas
+  -L../../Build/lib -lNTPoly -fopenmp -llapack -lblas
 
 ```
 
