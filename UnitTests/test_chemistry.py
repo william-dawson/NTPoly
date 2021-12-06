@@ -185,7 +185,7 @@ class TestChemistry:
         else:
             self.assertTrue(False)
 
-    def basic_solver(self, SRoutine, cpcheck=True):
+    def basic_solver(self, SRoutine, cpcheck=True, temp=None):
         '''Test various kinds of density matrix solvers.'''
         from helpers import result_file
 
@@ -202,10 +202,21 @@ class TestChemistry:
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        energy_value, chemical_potential = SRoutine(fock_matrix,
-                                                    inverse_sqrt_matrix,
-                                                    self.nel, density_matrix,
-                                                    self.solver_parameters)
+        if temp is None:
+            energy_value, chemical_potential = SRoutine(fock_matrix,
+                                                        inverse_sqrt_matrix,
+                                                        self.nel,
+                                                        density_matrix,
+                                                        self.solver_parameters)
+        else:
+            inv_temp = 1/(temp * 3.166811563*10**(-6))
+            print("::: Temperature", temp, inv_temp)
+            energy_value, chemical_potential = SRoutine(fock_matrix,
+                                                        inverse_sqrt_matrix,
+                                                        self.nel,
+                                                        density_matrix,
+                                                        inv_temp,
+                                                        self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -266,6 +277,10 @@ class TestChemistry:
     def test_densedensity(self):
         '''Test routines to compute the density matrix with Dense Method.'''
         self.basic_solver(nt.DensityMatrixSolvers.DenseDensity)
+
+    def test_foe_low(self):
+        '''Test the fermi operator expansion at a low temperature.'''
+        self.basic_solver(nt.FermiOperator.ComputeDenseFOE, temp=50)
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''

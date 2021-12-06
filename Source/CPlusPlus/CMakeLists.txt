@@ -6,6 +6,7 @@ set(Csrc
     EigenBounds.cc
     EigenSolvers.cc
     ExponentialSolvers.cc
+    FermiOperator.cc
     GeometryOptimization.cc
     HermiteSolvers.cc
     InverseSolvers.cc
@@ -37,6 +38,7 @@ set(Chead
     EigenBounds.h
     EigenSolvers.h
     ExponentialSolvers.h
+    FermiOperator.h
     GeometryOptimization.h
     HermiteSolvers.h
     InverseSolvers.h

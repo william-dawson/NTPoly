@@ -19,7 +19,7 @@ MODULE EigenSolversModule
        & DestructMatrix
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & ConstructTripletList, DestructTripletList
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

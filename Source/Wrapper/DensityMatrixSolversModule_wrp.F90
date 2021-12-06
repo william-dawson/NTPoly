@@ -174,8 +174,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL DenseDensity(h_Hamiltonian%DATA, h_InverseSquareRoot%DATA, INT(nel), &
-         & h_Density%DATA, energy_value_out, chemical_potential_out, &
-         & h_solver_parameters%DATA)
+         & h_Density%DATA, energy_value_out=energy_value_out, &
+         & chemical_potential_out=chemical_potential_out, &
+         & solver_parameters_in=h_solver_parameters%DATA)
   END SUBROUTINE DenseDensity_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the energy-weighted density matrix.

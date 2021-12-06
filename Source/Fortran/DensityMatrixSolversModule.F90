@@ -3,7 +3,7 @@
 MODULE DensityMatrixSolversModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
-  USE EigenSolversModule, ONLY : EigenDecomposition
+  USE FermiOperatorModule, ONLY : ComputeDenseFOE
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteListElement, WriteHeader, &
        & EnterSubLog, ExitSubLog
@@ -14,11 +14,9 @@ MODULE DensityMatrixSolversModule
        & DotMatrix, MatrixTrace, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
-       & TransposeMatrix, FillMatrixFromTripletList, ConjugateMatrix, &
-       & GetMatrixTripletList
+       & TransposeMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
-  USE TripletListModule, ONLY : TripletList_r, DestructTripletList
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1181,16 +1179,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
-    !! Local Variables
-    TYPE(Matrix_ps) :: ISQT, WH
-    TYPE(Matrix_ps) :: WD
-    TYPE(Matrix_ps) :: vecs, vecsT, vals, Temp
-    TYPE(MatrixMemoryPool_p) :: pool
-    TYPE(TripletList_r) :: tlist
     REAL(NTREAL) :: chemical_potential, energy_value
-    REAL(NTREAL) :: homo, lumo
-    INTEGER :: II
-    INTEGER :: ierr
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -1199,93 +1188,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        params = SolverParameters_t()
     END IF
 
-    IF (params%be_verbose) THEN
-       CALL WriteHeader("Density Matrix Solver")
-       CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Dense")
-       CALL PrintParameters(params)
-    END IF
-
-    !! Compute the working hamiltonian.
-    CALL TransposeMatrix(ISQ, ISQT)
-    CALL MatrixMultiply(ISQ, H, Temp, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(Temp, ISQT, WH, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-
-    !! Perform the eigendecomposition
-    CALL EigenDecomposition(WH, vecs, vals, params)
-
-    !! Convert to a triplet list, map, and get homo/lumo + energy.
-    CALL GetMatrixTripletList(vals, tlist)
-    homo = 0.0_NTREAL
-    lumo = 0.0_NTREAL
-    energy_value = 0.0_NTREAL
-    DO II = 1, tlist%CurrentSize
-       !! HOMO/LUMO
-       IF (tlist%DATA(II)%index_column .EQ. INT(nel/2)) THEN
-          homo = tlist%DATA(II)%point_value
-       ELSE IF (tlist%DATA(II)%index_column .EQ. INT(nel/2) + 1) THEN
-          lumo = tlist%DATA(II)%point_value
-       END IF
-       !! Mapping
-       IF (tlist%DATA(II)%index_column .LE. INT(nel/2)) THEN
-          energy_value = energy_value + tlist%DATA(II)%point_value
-          tlist%DATA(II)%point_value = 1.0_NTREAL
-       ELSE
-          tlist%DATA(II)%point_value = 0.0_NTREAL
-       ENDIF
-    END DO
-
-    !! Compute MU
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, homo, 1, MPINTREAL, MPI_SUM, &
-         & H%process_grid%within_slice_comm, ierr)
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, lumo, 1, MPINTREAL, MPI_SUM, &
-         & H%process_grid%within_slice_comm, ierr)
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, energy_value, 1, MPINTREAL, MPI_SUM, &
-         & H%process_grid%within_slice_comm, ierr)
-    chemical_potential = homo + 0.5_NTREAL * (lumo - homo)
-
-    !! Fill
-    CALL ConstructEmptyMatrix(vals, H)
-    CALL FillMatrixFromTripletList(vals, tlist, preduplicated_in=.TRUE.)
-
-    !! Multiply Back Together
-    CALL MatrixMultiply(vecs, vals, temp, threshold_in=params%threshold)
-    CALL TransposeMatrix(vecs, vecsT)
-    CALL ConjugateMatrix(vecsT)
-    CALL MatrixMultiply(temp, vecsT, WD, &
-         & threshold_in=params%threshold)
-
-    !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(ISQT, WD, Temp, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(Temp, ISQ, K, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
+    !! Call the unified routine.
+    CALL ComputeDenseFOE(H, ISQ, nel, K, energy_value_out=energy_value, &
+         & chemical_potential_out=chemical_potential, &
+         & solver_parameters_in=params)
 
     !! Optional out variables.
     IF (PRESENT(energy_value_out)) THEN
-       energy_value_out = 2.0_NTREAL * energy_value
+       energy_value_out = energy_value
     END IF
     IF (PRESENT(chemical_potential_out)) THEN
        chemical_potential_out = chemical_potential
     END IF
 
     !! Cleanup
-    CALL DestructMatrix(WH)
-    CALL DestructMatrix(WD)
-    CALL DestructMatrix(ISQT)
-    CALL DestructMatrix(vecs)
-    CALL DestructMatrix(vecst)
-    CALL DestructMatrix(vals)
-    CALL DestructMatrix(temp)
-    CALL DestructTripletList(tlist)
-    CALL DestructMatrixMemoryPool(pool)
-
-    IF (params%be_verbose) THEN
-       CALL ExitSubLog
-    END IF
-
     CALL DestructSolverParameters(params)
   END SUBROUTINE DenseDensity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

@@ -15,7 +15,7 @@ MODULE EigenExaModule
        & AppendToTripletList, GetTripletAt, ConstructTripletList, &
        & DestructTripletList, RedistributeTripletLists
   USE eigen_libs_mod
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

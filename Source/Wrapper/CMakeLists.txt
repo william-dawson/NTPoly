@@ -6,6 +6,7 @@ set(Wsrc
     EigenBoundsModule_wrp.F90
     EigenSolversModule_wrp.F90
     ExponentialSolversModule_wrp.F90
+    FermiOperatorModule_wrp.F90
     GeometryOptimizationModule_wrp.F90
     HermiteSolversModule_wrp.F90
     InverseSolversModule_wrp.F90
