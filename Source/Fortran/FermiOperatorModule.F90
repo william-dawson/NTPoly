@@ -123,7 +123,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ELSE
           sval = tlist%DATA(II)%point_value - chemical_potential
           occ = 1.0 / (1 + EXP(inv_temp * sval))
-          WRITE(*,*) II, occ
           energy_value = energy_value + occ * tlist%DATA(II)%point_value
           tlist%DATA(II)%point_value = occ
        END IF
