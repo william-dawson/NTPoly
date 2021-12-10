@@ -4,10 +4,6 @@
 # - EigenExa_LIBRARIES - the linker line for EigenExa.
 # - EigenExa_INCLUDE_DIRS - the path to EigenExa.
 
-# Defaults
-set (EigenExa_LIBRARIES "")
-set (EigenExa_INCLUDE_DIRS "")
-
 # First we search for the libraries
 find_library(EigenExa_LIBRARIES EigenExa)
 find_path(EigenExa_INCLUDE_DIRS "eigen_libs_mod.mod")
