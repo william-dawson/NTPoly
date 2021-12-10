@@ -115,7 +115,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:,:), ALLOCATABLE :: VD
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: WD
 
-#include "eigenexa_includes/EigenExa_s.f90"
+#include "eigenexa_includes/EigenExa_s.F90"
 
   END SUBROUTINE EigenExa_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -137,7 +137,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: WD
 
 #define ISCOMPLEX
-#include "eigenexa_includes/EigenExa_s.f90"
+#include "eigenexa_includes/EigenExa_s.F90"
 #undef ISCOMPLEX
 
   END SUBROUTINE EigenExa_c
