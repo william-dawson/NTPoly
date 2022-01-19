@@ -128,7 +128,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
        elapsed = elapsed_times(timer_position)
-       CALL MPI_Allreduce(elapsed, max_time, 1, MPI_DOUBLE ,MPI_MAX, &
+       CALL MPI_Allreduce(elapsed, max_time, 1, MPI_DOUBLE_PRECISION ,MPI_MAX, &
             & global_grid%global_comm, ierr)
        CALL WriteElement(key=timer_list(timer_position), &
             & VALUE=max_time)
