@@ -12,7 +12,7 @@ MODULE CholeskyModule
   USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
        & DestructTripletList
   USE TripletModule, ONLY : Triplet_r
-  USE MPI
+  USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
