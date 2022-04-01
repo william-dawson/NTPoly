@@ -51,8 +51,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p) :: pool
     TYPE(TripletList_r) :: tlist
     REAL(NTREAL) :: chemical_potential, energy_value
-    REAL(NTREAL) :: homo, lumo
-    REAL(NTREAL) :: sval, occ
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: eigs, occ
+    REAL(NTREAL) :: sval, sv, occ_temp
+    REAL(NTREAL) :: left, right, homo, lumo
+    INTEGER :: num_eigs
     INTEGER :: II
     INTEGER :: ierr
 
@@ -91,27 +93,45 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Perform the eigendecomposition
     CALL EigenDecomposition(WH, vecs, vals, params)
 
-    !! Convert to a triplet list and get homo/lumo + energy.
+    !! Gather the eigenvalues on to every process
     CALL GetMatrixTripletList(vals, tlist)
-    homo = 0.0_NTREAL
-    lumo = 0.0_NTREAL
-    energy_value = 0.0_NTREAL
+    num_eigs = H%actual_matrix_dimension
+    ALLOCATE(eigs(num_eigs))
+    eigs = 0
     DO II = 1, tlist%CurrentSize
-       IF (tlist%DATA(II)%index_column .EQ. INT(nel/2)) THEN
-          homo = tlist%DATA(II)%point_value
-       ELSE IF (tlist%DATA(II)%index_column .EQ. INT(nel/2) + 1) THEN
-          lumo = tlist%DATA(II)%point_value
-       END IF
+       eigs(tlist%DATA(II)%index_column) = tlist%DATA(II)%point_value
     END DO
+    CALL MPI_ALLREDUCE(MPI_IN_PLACE, eigs, num_eigs, MPINTREAL, &
+         & MPI_SUM, H%process_grid%within_slice_comm, ierr)
 
-    !! Compute MU
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, homo, 1, MPINTREAL, MPI_SUM, &
-         & H%process_grid%within_slice_comm, ierr)
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, lumo, 1, MPINTREAL, MPI_SUM, &
-         & H%process_grid%within_slice_comm, ierr)
-    chemical_potential = homo + 0.5_NTREAL * (lumo - homo)
+    !! Compute MU By Bisection
+    IF (do_smearing) THEN
+       ALLOCATE(occ(num_eigs))
+       left = MINVAL(eigs)
+       right = MAXVAL(eigs)
+       DO WHILE (.TRUE.) 
+          chemical_potential = left + (right - left)/2 
+          DO II = 1, num_eigs
+             sval = eigs(II) - chemical_potential
+             occ(II) = 1.0_NTREAL - ERF(inv_temp * sval)
+          END DO
+          sv = SUM(occ)
+          IF (ABS(nel - sv) .LT. 1E-8_NTREAL) THEN
+             EXIT
+          ELSE IF (SV > nel) THEN
+             right = chemical_potential
+          ELSE
+             left = chemical_potential
+          END IF
+       END DO
+    ELSE
+       homo = eigs(CEILING(nel/2.0))
+       lumo = eigs(CEILING(nel/2.0) + 1)
+       chemical_potential = homo + 0.5_NTREAL * (lumo - homo)
+    END IF
 
     !! Map
+    energy_value = 0.0_NTREAL
     DO II = 1, tlist%CurrentSize
        IF (.NOT. do_smearing) THEN
           IF (tlist%DATA(II)%index_column .LE. INT(nel/2)) THEN
@@ -122,9 +142,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ENDIF
        ELSE
           sval = tlist%DATA(II)%point_value - chemical_potential
-          occ = 1.0 / (1 + EXP(inv_temp * sval))
-          energy_value = energy_value + occ * tlist%DATA(II)%point_value
-          tlist%DATA(II)%point_value = occ
+          occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+          energy_value = energy_value + occ_temp * tlist%DATA(II)%point_value
+          tlist%DATA(II)%point_value = occ_temp
        END IF
     END DO
     CALL MPI_ALLREDUCE(MPI_IN_PLACE, energy_value, 1, MPINTREAL, MPI_SUM, &
@@ -165,6 +185,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(temp)
     CALL DestructTripletList(tlist)
     CALL DestructMatrixMemoryPool(pool)
+    IF (ALLOCATED(occ)) THEN
+       DEALLOCATE(occ)
+    END IF
+    IF (ALLOCATED(eigs)) THEN
+       DEALLOCATE(eigs)
+    END IF
 
     IF (params%be_verbose) THEN
        CALL ExitSubLog
