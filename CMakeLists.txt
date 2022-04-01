@@ -21,6 +21,8 @@ find_package(SWIG 3.0)
 find_package(EigenExa)
 if (EigenExa_FOUND)
   add_definitions("-DEIGENEXA")
+  set(EigenSolver_LIBRARIES ${EigenExa_LIBRARIES})
+  set(EigenSolver_INCLUDE_DIRS EigenExa_INCLUDE_DIRS)
 endif()
 
 ################################################################################

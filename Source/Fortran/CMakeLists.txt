@@ -50,10 +50,10 @@ add_library(NTPoly ${Fsrc})
 if (NOT NOSWIG)
   set_target_properties(NTPoly PROPERTIES POSITION_INDEPENDENT_CODE True)
 endif()
-target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES} ${EigenExa_LIBRARIES}
+target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES} ${EigenSolver_LIBRARIES}
                       ${OpenMP_Fortran_LIBRARIES} ${LAPACK_LIBRARIES} 
                       ${BLAS_LIBRARIES})
-target_include_directories(NTPoly PUBLIC ${EigenExa_INCLUDE_DIRS}
+target_include_directories(NTPoly PUBLIC ${EigenSolver_INCLUDE_DIRS}
                            ${MPI_Fortran_INCLUDE_PATH})
 
 include(GNUInstallDirs)
