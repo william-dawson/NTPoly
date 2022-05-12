@@ -23,6 +23,5 @@ else
 fi
 
 ninja -v
-ninja package
 ninja package_source
 cd ../
