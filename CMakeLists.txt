@@ -88,3 +88,13 @@ subdirs(Source)
 if (NOT NOSWIG)
   subdirs(UnitTests)
 endif()
+
+################################################################################
+## CMake Packaging
+include(CPACK)
+set(CPACK_PACKAGE_VENDOR "RIKEN R-CCS")
+set(CPACK_SOURCE_GENERATOR "TGZ")
+set(CPACK_SOURCE_IGNORE_FILES /.git /Build)
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENCE")
+set(CPACK_RESOURCE_FILE_README "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.md")
+
