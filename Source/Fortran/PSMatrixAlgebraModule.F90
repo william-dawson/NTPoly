@@ -33,6 +33,7 @@ MODULE PSMatrixAlgebraModule
   PUBLIC :: IncrementMatrix
   PUBLIC :: ScaleMatrix
   PUBLIC :: MatrixTrace
+  PUBLIC :: SimilarityTransform
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixSigma
      MODULE PROCEDURE MatrixSigma_ps
@@ -556,5 +557,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef TLIST
     END IF
   END SUBROUTINE MatrixTrace_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Transform a matrix B = P * A * P^-1
+  SUBROUTINE SimilarityTransform(A, P, PInv, result, pool, threshold_in)
+    !> The matrix to transform
+    TYPE(Matrix_ps), INTENT(IN) :: A
+    !> The left matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: P
+    !> The right matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: PInv
+    !> The computed matrix P * A * P^-1
+    TYPE(Matrix_ps), INTENT(INOUT) :: result
+    !> A matrix memory pool.
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    !> The threshold for removing small elements.
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
+    !! Local variables
+    TYPE(Matrix_ps) :: TempMat
+    REAL(NTREAL) :: threshold
+
+    !! Optional Parameters
+    IF (.NOT. PRESENT(threshold_in)) THEN
+       threshold = 0.0_NTREAL
+    ELSE
+       threshold = threshold_in
+    END IF
+
+    !! Compute
+    CALL MatrixMultiply(P, A, TempMat, &
+         & threshold_in=threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(TempMat, PInv, result, &
+         & threshold_in=threshold, memory_pool_in=pool)
+
+    !! Cleanup
+    CALL DestructMatrix(TempMat)
+  END SUBROUTINE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule
