@@ -15,8 +15,7 @@ void Analysis::PivotedCholeskyDecomposition(
                                    GetIH(solver_parameters));
 }
 void Analysis::ReduceDimension(const Matrix_ps &AMat, int dim, Matrix_ps &RMat,
-    const SolverParameters &solver_parameters) {
-  ReduceDimension_wrp(GetIH(AMat), &dim, GetIH(RMat),
-                            GetIH(solver_parameters));
+                               const SolverParameters &solver_parameters) {
+  ReduceDimension_wrp(GetIH(AMat), &dim, GetIH(RMat), GetIH(solver_parameters));
 }
 } // namespace NTPoly

@@ -812,7 +812,6 @@ class TestSolvers_r(TestSolvers):
         w2, _ = eigh(ResultMat.todense())
 
         # Comparison
-        normval = 0
         relative_error = 0
         if (self.my_rank == 0):
             relative_error = norm(w[:dim] - w2)

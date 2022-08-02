@@ -25,9 +25,8 @@ public:
   //!\param dim  The number of eigenvalues ot keep.
   //!\param RMat a dimxdim matrix with the same first n eigenvalues as A.
   //!\param solver_parameters parameters for the solver
-  static void
-  ReduceDimension(const Matrix_ps &AMat, int dim, Matrix_ps &RMat,
-                  const SolverParameters &solver_parameters);
+  static void ReduceDimension(const Matrix_ps &AMat, int dim, Matrix_ps &RMat,
+                              const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif
