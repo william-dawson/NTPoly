@@ -23,6 +23,6 @@
   CALL MPI_Allreduce(MPI_IN_PLACE, diag_count, 1, MPINTINTEGER, &
        & MPI_SUM, this%process_grid%within_slice_comm, ierr)
   IF (.NOT. is_identity .OR. &
-       & .NOT. (diag_count .EQ. this%logical_matrix_dimension)) THEN
+       & .NOT. (diag_count .EQ. this%actual_matrix_dimension)) THEN
      is_identity = .FALSE.
   END IF

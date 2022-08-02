@@ -1818,7 +1818,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "distributed_includes/IsIdentity.f90"
   END FUNCTION IsIdentity_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Determine if this is the identity matrix (real implementation).
+  !> Determine if this is the identity matrix (complex implementation).
   FUNCTION IsIdentity_psc(this) RESULT(is_identity)
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(IN) :: this

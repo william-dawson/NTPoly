@@ -161,6 +161,9 @@ void Matrix_ps::GetMatrixSlice(Matrix_ps &submatrix, int start_row, int end_row,
                      &start_column, &end_column);
 }
 
+//////////////////////////////////////////////////////////////////////////////
+bool Matrix_ps::IsIdentity() const { return IsIdentity_ps_wrp(ih_this); }
+
 ////////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::Transpose(const Matrix_ps &matA) {
   TransposeMatrix_ps_wrp(matA.ih_this, ih_this);

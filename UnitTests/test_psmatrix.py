@@ -447,6 +447,39 @@ class TestPSMatrix(unittest.TestCase):
 
             self.check_result()
 
+    def test_isidentity(self):
+        from scipy.sparse import identity
+
+        '''Test the routine which checks if this is the identity matrix'''
+        for param in self.parameters:
+            # Check the case that it is not the identity
+            matrix = param.create_matrix(self.complex)
+            self.write_matrix(matrix, self.input_file1)
+            ntmatrix = nt.Matrix_ps(self.input_file1, False)
+            self.assertEqual(ntmatrix.IsIdentity(), False)
+
+            # Check with the identity matrix
+            matrix = identity(matrix.shape[0])
+            self.write_matrix(matrix, self.input_file1)
+            ntmatrix = nt.Matrix_ps(self.input_file1, False)
+            self.assertEqual(ntmatrix.IsIdentity(), True)
+
+            # Check with a modified - scaled
+            matrix = identity(matrix.shape[0])
+            matrix *= 2
+            self.write_matrix(matrix, self.input_file1)
+            ntmatrix = nt.Matrix_ps(self.input_file1, False)
+            self.assertEqual(ntmatrix.IsIdentity(), False)
+
+            # Check with a modified - missing
+            matrix = identity(matrix.shape[0])
+            matrix.setdiag(0, 0)
+            self.write_matrix(matrix, self.input_file1)
+            ntmatrix = nt.Matrix_ps(self.input_file1, False)
+            self.assertEqual(ntmatrix.IsIdentity(), False)
+
+        pass
+
     def test_snap(self):
         '''Test the sparsity pattern setting routine.'''
         from scipy.sparse import dok_matrix
