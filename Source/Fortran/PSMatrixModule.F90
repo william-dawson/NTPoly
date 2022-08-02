@@ -88,6 +88,7 @@ MODULE PSMatrixModule
   PUBLIC :: CommSplitMatrix
   PUBLIC :: ResizeMatrix
   PUBLIC :: GatherMatrixToProcess
+  PUBLIC :: IsIdentity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrix_ps
@@ -1788,5 +1789,46 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include "distributed_includes/GatherMatrixToAll.f90"
   END SUBROUTINE GatherMatrixToProcess_psc_all
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Determine if this is the identity matrix.
+  FUNCTION IsIdentity(this) RESULT(is_identity)
+    !> The matrix being filled.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> Result stored here.
+    LOGICAL :: is_identity
+
+    IF (this%is_complex) THEN
+       is_identity = IsIdentity_psc(this)
+    ELSE
+       is_identity = IsIdentity_psr(this)
+    END IF
+
+  END FUNCTION IsIdentity
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Determine if this is the identity matrix (real implementation).
+  FUNCTION IsIdentity_psr(this) RESULT(is_identity)
+    !> The matrix being filled.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> Result stored here.
+    LOGICAL :: is_identity
+    !! Local Data
+    TYPE(TripletList_r) :: tlist
+    TYPE(Triplet_r) :: trip
+
+#include "distributed_includes/IsIdentity.f90"
+  END FUNCTION IsIdentity_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Determine if this is the identity matrix (real implementation).
+  FUNCTION IsIdentity_psc(this) RESULT(is_identity)
+    !> The matrix being filled.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> Result stored here.
+    LOGICAL :: is_identity
+    !! Local Data
+    TYPE(TripletList_c) :: tlist
+    TYPE(Triplet_c) :: trip
+
+#include "distributed_includes/IsIdentity.f90"
+  END FUNCTION IsIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule
