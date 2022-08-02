@@ -559,7 +559,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixTrace_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transform a matrix B = P * A * P^-1
-  SUBROUTINE SimilarityTransform(A, P, PInv, result, pool, threshold_in)
+  SUBROUTINE SimilarityTransform(A, P, PInv, ResMat, pool, threshold_in)
     !> The matrix to transform
     TYPE(Matrix_ps), INTENT(IN) :: A
     !> The left matrix.
@@ -567,7 +567,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The right matrix.
     TYPE(Matrix_ps), INTENT(IN) :: PInv
     !> The computed matrix P * A * P^-1
-    TYPE(Matrix_ps), INTENT(INOUT) :: result
+    TYPE(Matrix_ps), INTENT(INOUT) :: ResMat
     !> A matrix memory pool.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !> The threshold for removing small elements.
@@ -586,11 +586,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute
     CALL MatrixMultiply(P, A, TempMat, &
          & threshold_in=threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, PInv, result, &
+    CALL MatrixMultiply(TempMat, PInv, ResMat, &
          & threshold_in=threshold, memory_pool_in=pool)
 
     !! Cleanup
     CALL DestructMatrix(TempMat)
-  END SUBROUTINE
+  END SUBROUTINE SimilarityTransform
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule
