@@ -226,10 +226,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -447,10 +445,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -682,10 +678,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -933,11 +927,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, D1, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-
+    CALL SimilarityTransform(D1, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
     CALL DestructMatrix(InverseSquareRoot_T)
@@ -1147,10 +1138,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
