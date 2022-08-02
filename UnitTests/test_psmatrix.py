@@ -478,8 +478,6 @@ class TestPSMatrix(unittest.TestCase):
             ntmatrix = nt.Matrix_ps(self.input_file1, False)
             self.assertEqual(ntmatrix.IsIdentity(), False)
 
-        pass
-
     def test_snap(self):
         '''Test the sparsity pattern setting routine.'''
         from scipy.sparse import dok_matrix
