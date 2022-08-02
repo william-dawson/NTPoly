@@ -219,60 +219,60 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> When we want to only compute the first n eigenvalues of a matrix, this
   !> routine will project out the higher eigenvalues.
   SUBROUTINE ReduceDimension(this, dim, ReducedMat, solver_parameters_in)
-   !> The starting matrix.
-   TYPE(Matrix_ps), INTENT(INOUT) :: this
-   !> The number of eigenvalues ot keep.
-   INTEGER, INTENT(IN) :: dim
-   !> a dimxdim matrix with the same first n eigenvalues as the first.
-   TYPE(Matrix_ps), INTENT(INOUT) :: ReducedMat
-   !> The solver parameters.
-   TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
-   !! Local Variables - matrices
-   TYPE(Matrix_ps) :: Identity
-   TYPE(Matrix_ps) :: PMat
-   TYPE(Matrix_ps) :: PVec, PVecT
-   TYPE(Matrix_ps) :: TempMat
-   TYPE(Matrix_ps) :: VAV
-   !! Special parameters
-   TYPE(SolverParameters_t) :: params
+    !> The starting matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The number of eigenvalues ot keep.
+    INTEGER, INTENT(IN) :: dim
+    !> a dimxdim matrix with the same first n eigenvalues as the first.
+    TYPE(Matrix_ps), INTENT(INOUT) :: ReducedMat
+    !> The solver parameters.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Local Variables - matrices
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: PMat
+    TYPE(Matrix_ps) :: PVec, PVecT
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: VAV
+    !! Special parameters
+    TYPE(SolverParameters_t) :: params
 
-   !! Optional Parameters
-   IF (PRESENT(solver_parameters_in)) THEN
-      params = solver_parameters_in
-   ELSE
-      params = SolverParameters_t()
-   END IF
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       params = solver_parameters_in
+    ELSE
+       params = SolverParameters_t()
+    END IF
 
-   !! Identity matrix passed instead of ISQ
-   CALL ConstructEmptyMatrix(Identity, this)
-   CALL FillMatrixIdentity(Identity)
+    !! Identity matrix passed instead of ISQ
+    CALL ConstructEmptyMatrix(Identity, this)
+    CALL FillMatrixIdentity(Identity)
 
-   !! Purify
-   CALL HPCP(this, Identity, dim*2, PMat, &
-        & solver_parameters_in=params)
+    !! Purify
+    CALL HPCP(this, Identity, dim*2, PMat, &
+         & solver_parameters_in=params)
 
-   !! Compute Eigenvectors of the Density Matrix
-   CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
-        & solver_parameters_in=params)
+    !! Compute Eigenvectors of the Density Matrix
+    CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
+         & solver_parameters_in=params)
 
-   !! Rotate to the divided subspace
-   CALL MatrixMultiply(this, PVec, TempMat, threshold_in=params%threshold)
-   CALL TransposeMatrix(PVec, PVecT)
-   IF (PVecT%is_complex) THEN
-      CALL ConjugateMatrix(PVecT)
-   END IF
-   CALL MatrixMultiply(PVecT, TempMat, VAV, threshold_in=params%threshold)
+    !! Rotate to the divided subspace
+    CALL MatrixMultiply(this, PVec, TempMat, threshold_in=params%threshold)
+    CALL TransposeMatrix(PVec, PVecT)
+    IF (PVecT%is_complex) THEN
+       CALL ConjugateMatrix(PVecT)
+    END IF
+    CALL MatrixMultiply(PVecT, TempMat, VAV, threshold_in=params%threshold)
 
-   !! Extract
-   CALL GetMatrixSlice(VAV, ReducedMat, 1, dim, 1, dim)
+    !! Extract
+    CALL GetMatrixSlice(VAV, ReducedMat, 1, dim, 1, dim)
 
-   CALL DestructMatrix(Identity)
-   CALL DestructMatrix(PMat)
-   CALL DestructMatrix(PVec)
-   CALL DestructMatrix(PVecT)
-   CALL DestructMatrix(TempMat)
-   CALL DestructMatrix(VAV)
-   CALL DestructSolverParameters(params)
- END SUBROUTINE ReduceDimension
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(PMat)
+    CALL DestructMatrix(PVec)
+    CALL DestructMatrix(PVecT)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(VAV)
+    CALL DestructSolverParameters(params)
+  END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE AnalysisModule

@@ -35,7 +35,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> When we want to only compute the first n eigenvalues of a matrix, this
   !> routine will project out the higher eigenvalues.
   SUBROUTINE ReduceDimension_wrp(ih_this, dim, ih_reduced, &
-             & ih_solver_parameters) BIND(c,name="ReduceDimension_wrp")
+       & ih_solver_parameters) BIND(c,name="ReduceDimension_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: dim
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_reduced(SIZE_wrp)
@@ -49,7 +49,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL ReduceDimension(h_this%DATA, dim, h_reduced%DATA, &
-          & h_solver_parameters%DATA)
-END SUBROUTINE ReduceDimension_wrp
+         & h_solver_parameters%DATA)
+  END SUBROUTINE ReduceDimension_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE AnalysisModule_wrp
