@@ -67,11 +67,14 @@ class TestSolvers(unittest.TestCase):
                 data = load(ifile, Loader=SafeLoader)
             dump(data, stdout)
 
-    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
+    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None,
+                      add_gap=False):
         '''
         Create the test matrix with the following parameters.
         '''
-        from scipy.sparse import rand, identity
+        from scipy.sparse import rand, identity, csr_matrix
+        from scipy.linalg import eigh
+        from numpy import diag
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
         mat = mat + mat.T
         if SPD:
@@ -83,6 +86,12 @@ class TestSolvers(unittest.TestCase):
             mat = (1.0 / self.mat_dim) * mat
         if rank:
             mat = mat[rank:].dot(mat[rank:].T)
+        if add_gap:
+            w, v = eigh(mat.todense())
+            gap = (w[-1] - w[0]) / 2.0
+            w[int(self.mat_dim/2):] += gap
+            mat = v.T.dot(diag(w).dot(v))
+            mat = csr_matrix(mat)
 
         return csr_matrix(mat)
 
@@ -1037,13 +1046,45 @@ class TestSolvers_r(TestSolvers):
 
         self.check_result()
 
+    def test_reducedimension(self):
+        '''Test routines to reduced the matrix dimension matrices.'''
+        from scipy.linalg import eigh, norm
+        from helpers import THRESHOLD
+
+        # Starting Matrix
+        matrix1 = self.create_matrix(add_gap=True)
+        self.write_matrix(matrix1, self.input_file)
+        dim = int(self.mat_dim/2)
+
+        # Check Value
+        w, _ = eigh(matrix1.todense())
+
+        # Result Matrix
+        inmat = nt.Matrix_ps(self.input_file, False)
+        outmat = nt.Matrix_ps(dim)
+        nt.Analysis.ReduceDimension(inmat, dim, outmat, self.isp)
+        outmat.WriteToMatrixMarket(result_file)
+        comm.barrier()
+        ResultMat = mmread(result_file)
+        w2, _ = eigh(ResultMat.todense())
+
+        # Comparison
+        relative_error = 0
+        if (self.my_rank == 0):
+            relative_error = norm(w[:dim] - w2)
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, THRESHOLD)
+
 
 class TestSolvers_c(TestSolvers):
-    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None):
+    def create_matrix(self, SPD=None, scaled=None, diag_dom=None, rank=None,
+                      add_gap=False):
         '''
         Create the test matrix with the following parameters.
         '''
-        from scipy.sparse import rand, identity
+        from scipy.sparse import rand, identity, csr_matrix
+        from scipy.linalg import eigh
+        from numpy import diag
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
         mat += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
         mat = mat + mat.H
@@ -1056,6 +1097,12 @@ class TestSolvers_c(TestSolvers):
             mat = (1.0 / self.mat_dim) * mat
         if rank:
             mat = mat[rank:].dot(mat[rank:].H)
+        if add_gap:
+            w, v = eigh(mat.todense())
+            gap = (w[-1] - w[0]) / 2.0
+            w[int(self.mat_dim/2):] += gap
+            mat = v.conj().T.dot(diag(w).dot(v))
+            mat = csr_matrix(mat)
 
         return csr_matrix(mat)
 
