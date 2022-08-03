@@ -11,7 +11,7 @@ MODULE DensityMatrixSolversModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
-       & DotMatrix, MatrixTrace, ScaleMatrix
+       & DotMatrix, MatrixTrace, ScaleMatrix, SimilarityTransform
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
        & TransposeMatrix
@@ -103,10 +103,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
-    CALL MatrixMultiply(ISQ, H, Temp, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(Temp, ISQT, WH, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
+         & param=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -225,10 +223,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(ISQT, X_k, Temp, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(Temp, ISQ, K, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
+         & param=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -357,10 +353,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
-    CALL MatrixMultiply(ISQ, H, Temp, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(Temp, ISQT, WH, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
+         & param=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -444,10 +438,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(ISQT, X_k, Temp, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(Temp, ISQ, K, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
+         & param=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -572,10 +564,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
-    CALL MatrixMultiply(ISQ, H, TempMat, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQT, WH, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
+         & param=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -679,10 +669,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(ISQT, X_k, TempMat, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQ, K, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
+         & param=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -821,10 +809,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
-    CALL MatrixMultiply(ISQ, H, TempMat, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQT, WH, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
+         & param=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -929,10 +915,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(ISQT, D1, TempMat, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQ, K, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(D1, ISQT, ISQ, K, pool, &
+         & param=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -1051,10 +1035,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
-    CALL MatrixMultiply(ISQ, H, TempMat, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQT, WH, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
+         & param=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -1139,10 +1121,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(ISQT, X_k, TempMat, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQ, K, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
+         & param=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -1217,10 +1197,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Handling Optional Parameters
     REAL(NTREAL) :: threshold
-    !! Local Matrices
-    TYPE(Matrix_ps) :: TempMat
-    !! Temporary Variables
-    TYPE(MatrixMemoryPool_p) :: pool
 
     !! Optional Parameters
     IF (PRESENT(threshold_in)) THEN
@@ -1229,19 +1205,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        threshold = 0.0_NTREAL
     END IF
 
-    !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(ED, H)
-    CALL ConstructEmptyMatrix(TempMat, H)
-
     !! EDM = DM * H * DM
-    CALL MatrixMultiply(D, H, TempMat, &
-         & threshold_in=threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, D, ED, &
-         & threshold_in=threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(H, D, D, ED, threshold_in=threshold)
 
-    !! Cleanup
-    CALL DestructMatrix(TempMat)
-    CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE EnergyDensityMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DensityMatrixSolversModule
