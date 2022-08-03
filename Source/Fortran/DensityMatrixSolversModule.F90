@@ -9,7 +9,7 @@ MODULE DensityMatrixSolversModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
-       & DotMatrix, MatrixTrace, ScaleMatrix
+       & DotMatrix, MatrixTrace, ScaleMatrix, SimilarityTransform
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
        & TransposeMatrix
@@ -100,10 +100,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
-    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(Hamiltonian, InverseSquareRoot, &
+         & InverseSquareRoot_T, WorkingHamiltonian, pool, &
+         & threshold_in=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -227,10 +226,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -360,10 +357,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
-    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(Hamiltonian, InverseSquareRoot, &
+         & InverseSquareRoot_T, WorkingHamiltonian, pool, &
+         & threshold_in=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -449,10 +445,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -578,10 +572,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
-    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(Hamiltonian, InverseSquareRoot, &
+         & InverseSquareRoot_T, WorkingHamiltonian, pool, &
+         & threshold_in=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -685,10 +678,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -828,10 +819,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
-    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(Hamiltonian, InverseSquareRoot, &
+         & InverseSquareRoot_T, WorkingHamiltonian, pool, &
+         & threshold_in=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -937,11 +927,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, D1, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-
+    CALL SimilarityTransform(D1, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
     CALL DestructMatrix(InverseSquareRoot_T)
@@ -1061,10 +1048,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(InverseSquareRoot, InverseSquareRoot_T)
-    CALL MatrixMultiply(InverseSquareRoot, Hamiltonian, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot_T, WorkingHamiltonian, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(Hamiltonian, InverseSquareRoot, &
+         & InverseSquareRoot_T, WorkingHamiltonian, pool, &
+         & threshold_in=solver_parameters%threshold)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -1152,10 +1138,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
-    CALL MatrixMultiply(InverseSquareRoot_T, X_k, TempMat, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, InverseSquareRoot, Density, &
-         & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(X_k, InverseSquareRoot_T, InverseSquareRoot, &
+         & Density, pool, threshold_in=solver_parameters%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WorkingHamiltonian)
@@ -1199,18 +1183,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        threshold = 0.0_NTREAL
     END IF
 
-    !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(EnergyDensity, Hamiltonian)
-    CALL ConstructEmptyMatrix(TempMat, Hamiltonian)
-
     !! EDM = DM * H * DM
-    CALL MatrixMultiply(Density, Hamiltonian, TempMat, &
-         & threshold_in=threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, Density, EnergyDensity, &
-         & threshold_in=threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(Hamiltonian, Density, &
+         & Density, EnergyDensity, pool, threshold_in=threshold)
 
     !! Cleanup
-    CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE EnergyDensityMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

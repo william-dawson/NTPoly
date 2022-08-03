@@ -61,5 +61,6 @@ void MatrixMultiply_ps_wrp(const int *ih_matA, const int *ih_matB, int *ih_matC,
 void ScaleMatrix_ps_wrp(int *ih_this, const double *constant);
 double MatrixNorm_ps_wrp(const int *ih_this);
 void MatrixTrace_ps_wrp(const int *ih_this, double *trace_val);
+int IsIdentity_ps_wrp(const int *ih_this);
 
 #endif
