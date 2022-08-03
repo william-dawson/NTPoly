@@ -3,16 +3,16 @@
 MODULE PSMatrixAlgebraModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX
   USE GemmTasksModule
-  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
-       & CheckMemoryPoolValidity, DestructMatrixMemoryPool
-  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
-       & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
-       & MergeMatrixLocalBlocks
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
        & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
        & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & CheckMemoryPoolValidity, DestructMatrixMemoryPool
+  USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
+       & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
+       & MergeMatrixLocalBlocks, IsIdentity
   USE SMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixGrandSum, &
        & PairwiseMultiplyMatrix, IncrementMatrix, ScaleMatrix, &
        & MatrixColumnNorm
@@ -559,6 +559,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixTrace_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transform a matrix B = P * A * P^-1
+  !! This routine will check if P is the identity matrix, and if so
+  !! just return A.
   SUBROUTINE SimilarityTransform(A, P, PInv, ResMat, pool, threshold_in)
     !> The matrix to transform
     TYPE(Matrix_ps), INTENT(IN) :: A
@@ -583,11 +585,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        threshold = threshold_in
     END IF
 
-    !! Compute
-    CALL MatrixMultiply(P, A, TempMat, &
-         & threshold_in=threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, PInv, ResMat, &
-         & threshold_in=threshold, memory_pool_in=pool)
+    !! Check if P is the identity matrix, if so we can exit early.
+    IF (IsIdentity(P)) THEN
+       CALL CopyMatrix(A, ResMat)
+    ELSE
+       !! Compute
+       CALL MatrixMultiply(P, A, TempMat, &
+            & threshold_in=threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(TempMat, PInv, ResMat, &
+            & threshold_in=threshold, memory_pool_in=pool)
+    END IF
 
     !! Cleanup
     CALL DestructMatrix(TempMat)
