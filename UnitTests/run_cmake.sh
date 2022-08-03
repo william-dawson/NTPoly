@@ -23,5 +23,4 @@ else
 fi
 
 sudo ninja package
-sudo ninja package_source
 cd ../
