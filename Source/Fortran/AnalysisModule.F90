@@ -10,7 +10,7 @@ MODULE AnalysisModule
        & ConstructMatrixDFromS
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader, WriteListElement
-  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, SimilarityTransform
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & TransposeMatrix, DestructMatrix, ConjugateMatrix, CopyMatrix, &
        & FillMatrixIdentity, PrintMatrixInformation, MergeMatrixLocalBlocks, &
@@ -254,14 +254,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute Eigenvectors of the Density Matrix
     CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
          & solver_parameters_in=params)
-
-    !! Rotate to the divided subspace
-    CALL MatrixMultiply(this, PVec, TempMat, threshold_in=params%threshold)
     CALL TransposeMatrix(PVec, PVecT)
     IF (PVecT%is_complex) THEN
        CALL ConjugateMatrix(PVecT)
     END IF
-    CALL MatrixMultiply(PVecT, TempMat, VAV, threshold_in=params%threshold)
+
+    !! Rotate to the divided subspace
+    CALL SimilarityTransform(this, PVecT, PVec, VAV, &
+         & threshold_in=params%threshold)
 
     !! Extract
     CALL GetMatrixSlice(VAV, ReducedMat, 1, dim, 1, dim)
