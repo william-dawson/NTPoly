@@ -104,7 +104,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -224,7 +224,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -354,7 +354,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -439,7 +439,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -565,7 +565,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -670,7 +670,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -810,7 +810,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -916,7 +916,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL SimilarityTransform(D1, ISQT, ISQ, K, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -1036,7 +1036,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Load Balancing Step
     IF (param%do_load_balancing) THEN
@@ -1122,7 +1122,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
-         & param=solver_parameters%threshold)
+         & threshold_in=param%threshold)
 
     !! Cleanup
     CALL DestructMatrix(WH)
