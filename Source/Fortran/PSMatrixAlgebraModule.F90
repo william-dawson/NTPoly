@@ -561,7 +561,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transform a matrix B = P * A * P^-1
   !! This routine will check if P is the identity matrix, and if so
   !! just return A.
-  SUBROUTINE SimilarityTransform(A, P, PInv, ResMat, pool, threshold_in)
+  SUBROUTINE SimilarityTransform(A, P, PInv, ResMat, pool_in, threshold_in)
     !> The matrix to transform
     TYPE(Matrix_ps), INTENT(IN) :: A
     !> The left matrix.
@@ -571,10 +571,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The computed matrix P * A * P^-1
     TYPE(Matrix_ps), INTENT(INOUT) :: ResMat
     !> A matrix memory pool.
-    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT), OPTIONAL :: pool_in
     !> The threshold for removing small elements.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Local variables
+    TYPE(MatrixMemoryPool_p) :: pool
     TYPE(Matrix_ps) :: TempMat
     REAL(NTREAL) :: threshold
 
@@ -584,16 +585,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        threshold = threshold_in
     END IF
+    IF (.NOT. PRESENT(pool_in)) THEN
+       pool = MatrixMemoryPool_p(A)
+    END IF
 
     !! Check if P is the identity matrix, if so we can exit early.
     IF (IsIdentity(P)) THEN
        CALL CopyMatrix(A, ResMat)
     ELSE
        !! Compute
-       CALL MatrixMultiply(P, A, TempMat, &
-            & threshold_in=threshold, memory_pool_in=pool)
-       CALL MatrixMultiply(TempMat, PInv, ResMat, &
-            & threshold_in=threshold, memory_pool_in=pool)
+       IF (PRESENT(pool_in)) THEN
+          CALL MatrixMultiply(P, A, TempMat, &
+               & threshold_in=threshold, memory_pool_in=pool_in)
+          CALL MatrixMultiply(TempMat, PInv, ResMat, &
+               & threshold_in=threshold, memory_pool_in=pool_in)
+       ELSE
+          CALL MatrixMultiply(P, A, TempMat, &
+               & threshold_in=threshold, memory_pool_in=pool)
+          CALL MatrixMultiply(TempMat, PInv, ResMat, &
+               & threshold_in=threshold, memory_pool_in=pool)
+       END IF
     END IF
 
     !! Cleanup

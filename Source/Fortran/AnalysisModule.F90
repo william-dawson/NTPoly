@@ -5,13 +5,16 @@ MODULE AnalysisModule
        & BroadcastVector, ConstructDiag, DotAllHelper, DotAllPivoted, &
        & GatherMatrixColumn, GetPivot, UnpackCholesky
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DensityMatrixSolversModule, ONLY : HPCP
   USE DMatrixModule, ONLY : Matrix_ldr, DestructMatrix, &
        & ConstructMatrixDFromS
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader, WriteListElement
+  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, SimilarityTransform
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & TransposeMatrix, DestructMatrix, ConjugateMatrix, CopyMatrix, &
-       & FillMatrixIdentity, PrintMatrixInformation, MergeMatrixLocalBlocks
+       & FillMatrixIdentity, PrintMatrixInformation, MergeMatrixLocalBlocks, &
+       & GetMatrixSlice
   USE SMatrixModule, ONLY : Matrix_lsr
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
@@ -19,8 +22,8 @@ MODULE AnalysisModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: PivotedCholeskyDecomposition
+  PUBLIC :: ReduceDimension
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Pivoted Cholesky Decomposition of a Hermitian Semi-Definite
   !> matrix. This is one way to generate localized orbitals.
   SUBROUTINE PivotedCholeskyDecomposition(AMat, LMat, rank_in, &
@@ -212,5 +215,64 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(sparse_a)
     CALL DestructMatrix(acol)
   END SUBROUTINE PivotedCholeskyDecomposition
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> When we want to only compute the first n eigenvalues of a matrix, this
+  !> routine will project out the higher eigenvalues.
+  SUBROUTINE ReduceDimension(this, dim, ReducedMat, solver_parameters_in)
+    !> The starting matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> The number of eigenvalues ot keep.
+    INTEGER, INTENT(IN) :: dim
+    !> a dimxdim matrix with the same first n eigenvalues as the first.
+    TYPE(Matrix_ps), INTENT(INOUT) :: ReducedMat
+    !> The solver parameters.
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Local Variables - matrices
+    TYPE(Matrix_ps) :: Identity
+    TYPE(Matrix_ps) :: PMat
+    TYPE(Matrix_ps) :: PVec, PVecT
+    TYPE(Matrix_ps) :: TempMat
+    TYPE(Matrix_ps) :: VAV
+    !! Special parameters
+    TYPE(SolverParameters_t) :: params
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       params = solver_parameters_in
+    ELSE
+       params = SolverParameters_t()
+    END IF
+
+    !! Identity matrix passed instead of ISQ
+    CALL ConstructEmptyMatrix(Identity, this)
+    CALL FillMatrixIdentity(Identity)
+
+    !! Purify
+    CALL HPCP(this, Identity, dim*2, PMat, &
+         & solver_parameters_in=params)
+
+    !! Compute Eigenvectors of the Density Matrix
+    CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
+         & solver_parameters_in=params)
+    CALL TransposeMatrix(PVec, PVecT)
+    IF (PVecT%is_complex) THEN
+       CALL ConjugateMatrix(PVecT)
+    END IF
+
+    !! Rotate to the divided subspace
+    CALL SimilarityTransform(this, PVecT, PVec, VAV, &
+         & threshold_in=params%threshold)
+
+    !! Extract
+    CALL GetMatrixSlice(VAV, ReducedMat, 1, dim, 1, dim)
+
+    CALL DestructMatrix(Identity)
+    CALL DestructMatrix(PMat)
+    CALL DestructMatrix(PVec)
+    CALL DestructMatrix(PVecT)
+    CALL DestructMatrix(TempMat)
+    CALL DestructMatrix(VAV)
+    CALL DestructSolverParameters(params)
+  END SUBROUTINE ReduceDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE AnalysisModule
