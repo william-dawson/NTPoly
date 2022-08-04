@@ -28,14 +28,14 @@ MODULE DensityMatrixSolversModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
   !> Based on the PM algorithm presented in \cite palser1998canonical
-  SUBROUTINE PM(Hamiltonian, InverseSquareRoot, nel, Density, &
+  SUBROUTINE PM(Hamiltonian, InverseSquareRoot, trace, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons)
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     !> The energy of the system (optional).
@@ -123,15 +123,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     lambda = trace_value/X_k%actual_matrix_dimension
 
     !! Compute alpha
-    alpha1 = nel*0.5_NTREAL/(e_max-lambda)
-    alpha2 = (X_k%actual_matrix_dimension-nel*0.5_NTREAL)/(lambda-e_min)
+    alpha1 = trace/(e_max-lambda)
+    alpha2 = (X_k%actual_matrix_dimension-trace)/(lambda-e_min)
     alpha = MIN(alpha1,alpha2)
 
     factor = -alpha/X_k%actual_matrix_dimension
 
     CALL ScaleMatrix(X_k,factor)
 
-    factor = (alpha*lambda+nel*0.5_NTREAL)/X_k%actual_matrix_dimension
+    factor = (alpha*lambda+trace)/X_k%actual_matrix_dimension
 
     CALL IncrementMatrix(Identity,X_k,alpha_in=factor)
 
@@ -275,7 +275,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO midpoints
        !! Undo scaling.
        chemical_potential_out = lambda - &
-            & (Hamiltonian%actual_matrix_dimension*midpoint - nel*0.5_NTREAL) &
+            & (Hamiltonian%actual_matrix_dimension*midpoint - trace) &
             & /alpha
     END IF
 
@@ -290,14 +290,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS2 method.
   !> Based on the TRS2 algorithm presented in \cite niklasson2002.
-  SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, nel, Density, &
+  SUBROUTINE TRS2(Hamiltonian, InverseSquareRoot, trace, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons)
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     !> The energy of the system (optional).
@@ -389,7 +389,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO outer_counter = 1,solver_parameters%max_iterations
        !! Compute Sigma
        CALL MatrixTrace(X_k, trace_value)
-       IF (nel*0.5_NTREAL - trace_value .LT. 0.0_NTREAL) THEN
+       IF (trace - trace_value .LT. 0.0_NTREAL) THEN
           sigma_array(outer_counter) = -1.0_NTREAL
        ELSE
           sigma_array(outer_counter) = 1.0_NTREAL
@@ -500,14 +500,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS4 method.
   !> Based on the TRS4 algorithm presented in \cite niklasson2002
-  SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, nel, Density, &
+  SUBROUTINE TRS4(Hamiltonian, InverseSquareRoot, trace, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN)  :: Hamiltonian
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons)
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     !> The energy of the system (optional).
@@ -624,7 +624,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute Sigma
-       sigma_array(outer_counter) = (nel*0.5_NTREAL-trace_fx)/trace_gx
+       sigma_array(outer_counter) = (trace - trace_fx)/trace_gx
 
        !! Update The Matrix
        IF (sigma_array(outer_counter) .GT. sigma_max) THEN
@@ -742,14 +742,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the HPCP method.
   !> Based on the algorithm presented in \cite truflandier2016communication.
-  SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, nel, Density, &
+  SUBROUTINE HPCP(Hamiltonian, InverseSquareRoot, trace, Density, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons)
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     !> The energy of the system (optional).
@@ -835,7 +835,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL GershgorinBounds(WorkingHamiltonian,e_min,e_max)
     CALL MatrixTrace(WorkingHamiltonian, mu)
     mu = mu/matrix_dimension
-    sigma_bar = (matrix_dimension - 0.5_NTREAL*nel)/matrix_dimension
+    sigma_bar = (matrix_dimension - trace)/matrix_dimension
     sigma = 1.0_NTREAL - sigma_bar
     beta = sigma/(e_max - mu)
     beta_bar = sigma_bar/(mu - e_min)
@@ -983,14 +983,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Note that for this method, you must provide the value of the homo and
   !> lumo gap. It is not necessary for these to be accurate, but give a
   !> conservative value.
-  SUBROUTINE ScaleAndFold(Hamiltonian, InverseSquareRoot, nel, Density, &
+  SUBROUTINE ScaleAndFold(Hamiltonian, InverseSquareRoot, trace, Density, &
        & homo, lumo, energy_value_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from
     TYPE(Matrix_ps), INTENT(IN) :: Hamiltonian
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: InverseSquareRoot
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons)
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: Density
     !> The energy of the system (optional).
@@ -1082,7 +1082,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO outer_counter = 1,solver_parameters%max_iterations
        !! Determine the path
        CALL MatrixTrace(X_k, trace_value)
-       IF (trace_value .GT. 0.5*nel) THEN
+       IF (trace_value .GT. trace) THEN
           alpha = 2.0/(2.0 - Beta)
           CALL ScaleMatrix(X_k, alpha)
           CALL IncrementMatrix(Identity, X_k, alpha_in=(1.0_NTREAL-alpha))

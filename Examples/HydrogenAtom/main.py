@@ -117,7 +117,7 @@ if __name__ == "__main__":
     # Call the solver routine.
     Density = nt.Matrix_ps(grid_points)
     energy_value, chemical_potential = \
-        nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 2,
+        nt.DensityMatrixSolvers.TRS2(Hamiltonian, Identity, 1.0,
                                      Density,
                                      solver_parameters)
 

@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   int process_rows, process_columns, process_slices;
   double threshold;
   double converge_overlap, converge_density;
-  int number_of_electrons;
+  double number_of_electrons;
 
   // Setup MPI
   int provided;

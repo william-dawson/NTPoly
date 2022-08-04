@@ -11,9 +11,10 @@ extern "C" {
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 void GeometryOptimization::PurificationExtrapolate(
-    const Matrix_ps &PreviousDensity, const Matrix_ps &Overlap, int nel,
-    Matrix_ps &NewDensity, const SolverParameters &solver_parameters) {
-  PurificationExtrapolate_wrp(GetIH(PreviousDensity), GetIH(Overlap), &nel,
+    const Matrix_ps &PreviousDensity, const Matrix_ps &Overlap,
+    const double trace, Matrix_ps &NewDensity,
+    const SolverParameters &solver_parameters) {
+  PurificationExtrapolate_wrp(GetIH(PreviousDensity), GetIH(Overlap), &trace,
                               GetIH(NewDensity), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////

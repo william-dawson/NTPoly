@@ -14,13 +14,13 @@ public:
   //! Based on the PM algorithm presented in \cite palser1998canonical
   //!\param Hamiltonian the matrix to compute the corresponding density from.
   //!\param InverseSquareRoot of the overlap matrix.
-  //!\param nel the number of electrons.
+  //!\param trace of the density matrix (usually the number of electrons).
   //!\param Density the density matrix computed by this routine.
   //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void PM(const Matrix_ps &Hamiltonian,
-                 const Matrix_ps &InverseSquareRoot, int nel,
+                 const Matrix_ps &InverseSquareRoot, double trace,
                  Matrix_ps &Density, double &energy_value_out,
                  double &chemical_potential_out,
                  const SolverParameters &solver_parameters);
@@ -28,13 +28,13 @@ public:
   //! Based on the TRS2 algorithm presented in: \cite niklasson2002.
   //!\param Hamiltonian the matrix to compute the corresponding density from.
   //!\param InverseSquareRoot of the overlap matrix.
-  //!\param nel the number of electrons.
+  //!\param trace of the density matrix (usually the number of electrons).
   //!\param Density the density matrix computed by this routine.
   //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void TRS2(const Matrix_ps &Hamiltonian,
-                   const Matrix_ps &InverseSquareRoot, int nel,
+                   const Matrix_ps &InverseSquareRoot, double trace,
                    Matrix_ps &Density, double &energy_value_out,
                    double &chemical_potential_out,
                    const SolverParameters &solver_parameters);
@@ -42,13 +42,13 @@ public:
   //! Based on the TRS4 algorithm presented in: \cite niklasson2002 .
   //!\param Hamiltonian the matrix to compute the corresponding density from.
   //!\param InverseSquareRoot of the overlap matrix.
-  //!\param nel the number of electrons.
+  //!\param trace of the density matrix (usually the number of electrons).
   //!\param Density the density matrix computed by this routine.
   //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void TRS4(const Matrix_ps &Hamiltonian,
-                   const Matrix_ps &InverseSquareRoot, int nel,
+                   const Matrix_ps &InverseSquareRoot, double trace,
                    Matrix_ps &Density, double &energy_value_out,
                    double &chemical_potential_out,
                    const SolverParameters &solver_parameters);
@@ -56,13 +56,13 @@ public:
   //! Based on the algorithm presented in: \cite truflandier2016communication
   //!\param Hamiltonian the matrix to compute the corresponding density from.
   //!\param InverseSquareRoot of the overlap matrix.
-  //!\param nel the number of electrons.
+  //!\param trace of the density matrix (usually the number of electrons).
   //!\param Density the density matrix computed by this routine.
   //!\param energy_value_out the energy of the system (optional).
   //!\param chemical_potential_out the chemical potential calculated.
   //!\param solver_parameters parameters for the solver
   static void HPCP(const Matrix_ps &Hamiltonian,
-                   const Matrix_ps &InverseSquareRoot, int nel,
+                   const Matrix_ps &InverseSquareRoot, double trace,
                    Matrix_ps &Density, double &energy_value_out,
                    double &chemical_potential_out,
                    const SolverParameters &solver_parameters);
@@ -73,14 +73,14 @@ public:
   //! conservative value.
   //!\param Hamiltonian the matrix to compute the corresponding density from.
   //!\param InverseSquareRoot of the overlap matrix.
-  //!\param nel the number of electrons.
+  //!\param trace of the density matrix (usually the number of electrons).
   //!\param Density the density matrix computed by this routine.
   //!\param homo A conservative estimate of the highest occupied eigenvalue.
   //!\param lumo A conservative estimate of the lowest unoccupied eigenvalue.
   //!\param energy_value_out the energy of the system (optional).
   //!\param solver_parameters parameters for the solver
   static void ScaleAndFold(const Matrix_ps &Hamiltonian,
-                           const Matrix_ps &InverseSquareRoot, int nel,
+                           const Matrix_ps &InverseSquareRoot, double trace,
                            Matrix_ps &Density, double homo, double lumo,
                            double &energy_value_out,
                            const SolverParameters &solver_parameters);
