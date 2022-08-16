@@ -248,7 +248,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Purify
-    CALL HPCP(this, Identity, dim*2, PMat, &
+    CALL HPCP(this, Identity, REAL(dim, KIND=NTREAL), PMat, &
          & solver_parameters_in=params)
 
     !! Compute Eigenvectors of the Density Matrix

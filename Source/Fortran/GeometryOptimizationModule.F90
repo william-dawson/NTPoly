@@ -8,7 +8,8 @@ MODULE GeometryOptimizationModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, &
-       & IncrementMatrix, ScaleMatrix, DotMatrix
+       & IncrementMatrix, ScaleMatrix, DotMatrix, SimilarityTransform, &
+       & MatrixTrace
   USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix, ConstructEmptyMatrix, &
        & PrintMatrixInformation, CopyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
@@ -23,14 +24,14 @@ MODULE GeometryOptimizationModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
   !> Based on the purification algorithm in \cite niklasson2010trace .
-  SUBROUTINE PurificationExtrapolate(PreviousDensity, Overlap, nel, NewDensity,&
-       & solver_parameters_in)
+  SUBROUTINE PurificationExtrapolate(PreviousDensity, Overlap, trace, &
+       & NewDensity, solver_parameters_in)
     !> Previous density to extrapolate from.
     TYPE(Matrix_ps), INTENT(IN) :: PreviousDensity
     !> The overlap matrix of the new geometry.
     TYPE(Matrix_ps), INTENT(IN) :: Overlap
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons).
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The extrapolated density.
     TYPE(Matrix_ps), INTENT(INOUT) :: NewDensity
     !> Parameters for the solver
@@ -88,6 +89,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
+
     II = 1
     DO II = 1, params%max_iterations
        !! Xn+1 = Xn S1 Xn
@@ -100,7 +102,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DotMatrix(WorkingDensity, WorkingOverlap, trace_value)
 
        !! Xn+1 = 2 Xn - Xn S1 Xn
-       IF (nel * 0.5_NTREAL .GT. trace_value) THEN
+       IF (trace .GT. trace_value) THEN
           CALL ScaleMatrix(NewDensity, -1.0_NTREAL)
           CALL IncrementMatrix(WorkingDensity, NewDensity, 2.0_NTREAL)
        END IF
@@ -192,14 +194,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SquareRoot(OldOverlap, SQRMat, params)
     CALL InverseSquareRoot(NewOverlap, ISQMat, params)
 
-    CALL MatrixMultiply(SQRMat, PreviousDensity, TempMat, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, SQRMat, NewDensity, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(ISQMat, NewDensity, TempMat, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL MatrixMultiply(TempMat, ISQMat, NewDensity, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
+    CALL SimilarityTransform(PreviousDensity, SQRMat, SQRMat, TempMat, &
+         & pool_in=pool, threshold_in=params%threshold)
+    CALL SimilarityTransform(TempMat, ISQMat, ISQMat, NewDensity, &
+         & pool_in=pool, threshold_in=params%threshold)
 
     IF (params%be_verbose) THEN
        CALL ExitSubLog

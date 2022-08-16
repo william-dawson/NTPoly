@@ -121,7 +121,7 @@ PROGRAM HydrogenAtom
   CALL FillMatrixIdentity(Identity)
 
   !! Call the solver routine.
-  CALL TRS2(Hamiltonian, Identity, 2, Density, &
+  CALL TRS2(Hamiltonian, Identity, 1.0_NTREAL, Density, &
        & solver_parameters_in=solver_parameters)
 
   !! Print the density matrix to file.

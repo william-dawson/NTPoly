@@ -16,11 +16,11 @@ MODULE GeometryOptimizationModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.
   SUBROUTINE PurificationExtrapolate_wrp(ih_PreviousDensity, ih_Overlap, &
-       & nel, ih_NewDensity, ih_solver_parameters) &
+       & trace, ih_NewDensity, ih_solver_parameters) &
        & BIND(c,name="PurificationExtrapolate_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_PreviousDensity(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_Overlap(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: nel
+    REAL(NTREAL), INTENT(IN) :: trace
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_NewDensity(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_PreviousDensity
@@ -33,8 +33,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_NewDensity = TRANSFER(ih_NewDensity,h_NewDensity)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL PurificationExtrapolate(h_PreviousDensity%DATA, h_Overlap%DATA, nel, &
-         & h_NewDensity%DATA, h_solver_parameters%DATA)
+    CALL PurificationExtrapolate(h_PreviousDensity%DATA, h_Overlap%DATA, &
+         & trace, h_NewDensity%DATA, h_solver_parameters%DATA)
   END SUBROUTINE PurificationExtrapolate_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Create a new guess at the Density Matrix after updating the geometry.

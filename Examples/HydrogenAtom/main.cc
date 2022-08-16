@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
   string density_file_out;
   int process_rows, process_columns, process_slices;
   double threshold, convergence_threshold;
-  int number_of_electrons;
+  double number_of_electrons;
   int grid_points;
 
   // Setup MPI
@@ -161,8 +161,9 @@ int main(int argc, char *argv[]) {
   // Call the solver routine.
   NTPoly::Matrix_ps Density(grid_points);
   double chemical_potential, energy;
-  NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, Identity, 2, Density, energy,
-                                     chemical_potential, solver_parameters);
+  NTPoly::DensityMatrixSolvers::TRS2(Hamiltonian, Identity, 1.0, Density,
+                                     energy, chemical_potential,
+                                     solver_parameters);
 
   // Print the density matrix to file.
   Density.WriteToMatrixMarket(density_file_out);

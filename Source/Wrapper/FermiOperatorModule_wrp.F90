@@ -13,12 +13,12 @@ MODULE FermiOperatorModule_wrp
   PUBLIC :: ComputeDenseFOE_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
-  SUBROUTINE ComputeDenseFOE_wrp(ih_Hamiltonian, ih_InverseSquareRoot, nel, &
+  SUBROUTINE ComputeDenseFOE_wrp(ih_Hamiltonian, ih_InverseSquareRoot, trace, &
        & ih_Density, inv_temp_in, energy_value_out, chemical_potential_out, &
        & ih_solver_parameters) BIND(c,name="ComputeDenseFOE_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_Hamiltonian(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_InverseSquareRoot(SIZE_wrp)
-    INTEGER(kind=c_int), INTENT(IN) :: nel
+    REAL(NTREAL), INTENT(IN) :: trace
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_Density(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: inv_temp_in
     REAL(NTREAL), INTENT(OUT) :: energy_value_out
@@ -35,7 +35,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
     CALL ComputeDenseFOE(h_Hamiltonian%DATA, h_InverseSquareRoot%DATA, &
-         & INT(nel), h_Density%DATA, inv_temp_in=inv_temp_in, &
+         & trace, h_Density%DATA, inv_temp_in=inv_temp_in, &
          & energy_value_out=energy_value_out, &
          & chemical_potential_out=chemical_potential_out, &
          & solver_parameters_in=h_solver_parameters%DATA)

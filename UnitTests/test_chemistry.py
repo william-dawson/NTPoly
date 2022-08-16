@@ -43,15 +43,15 @@ class TestChemistry:
         # Add a gap
         w, v = eigh(wfock)
         gap = (w[-1] - w[0]) / 2.0
-        w[int(self.nel/2):] += gap
+        w[int(self.nel):] += gap
         if self.is_complex:
             wfock = v.conj().T.dot(diag(w).dot(v))
         else:
             wfock = v.T.dot(diag(w).dot(v))
 
         # Compute the density
-        w[:int(self.nel / 2)] = 2.0
-        w[int(self.nel / 2):] = 0.0
+        w[:int(self.nel)] = 2.0
+        w[int(self.nel):] = 0.0
         if self.is_complex:
             density = isq.dot(v.dot(diag(w).dot(v.conj().T))).dot(isq)
         else:
@@ -107,7 +107,7 @@ class TestChemistry:
         self.geomo2 = environ["GEOMO2"]
         self.geomd2 = environ["GEOMD2"]
         self.realio = environ["REALIO"]
-        self.nel = 10
+        self.nel = 5.0
 
         self.hamiltonian = join(scratch_dir, "rf.mtx")
         self.overlap = join(scratch_dir, "rs.mtx")
@@ -154,7 +154,7 @@ class TestChemistry:
         overlap_matrix = mmread(self.overlap)
         eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
                         eigvals_only=True)
-        homo = int(self.nel / 2) - 1
+        homo = int(self.nel) - 1
         lumo = homo + 1
         cp = eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo]) / 2.0
         return cp, eig_vals[homo], eig_vals[lumo]
@@ -164,15 +164,20 @@ class TestChemistry:
         from scipy.io import mmread
         from helpers import THRESHOLD
         from scipy.linalg import eigh
+        from numpy import floor, ceil
 
         fock_matrix = mmread(self.hamiltonian)
         overlap_matrix = mmread(self.overlap)
 
         eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
                         eigvals_only=True)
-        homo = int(self.nel / 2) - 1
-        lumo = homo + 1
-        computed = 2*sum(eig_vals[:lumo])
+
+        computed = 0
+        for i, v in enumerate(eig_vals):
+            if i < floor(self.nel):
+                computed += 2.0*v
+            elif ceil(self.nel) == i:
+                computed += 2.0*(ceil(self.nel) - self.nel) * v
 
         self.assertLessEqual(abs(energy - computed), THRESHOLD)
 
@@ -210,7 +215,7 @@ class TestChemistry:
                                                         self.solver_parameters)
         else:
             inv_temp = 1/(temp * 3.166811563*10**(-6))
-            print("::: Temperature", temp, inv_temp)
+            print("::: Temperature", temp, inv_temp, self.nel)
             energy_value, chemical_potential = SRoutine(fock_matrix,
                                                         inverse_sqrt_matrix,
                                                         self.nel,

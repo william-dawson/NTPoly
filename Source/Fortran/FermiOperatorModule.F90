@@ -22,14 +22,14 @@ MODULE FermiOperatorModule
   PUBLIC :: ComputeDenseFOE
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix using a dense routine.
-  SUBROUTINE ComputeDenseFOE(H, ISQ, nel, K, inv_temp_in, &
+  SUBROUTINE ComputeDenseFOE(H, ISQ, trace, K, inv_temp_in, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from.
     TYPE(Matrix_ps), INTENT(IN) :: H
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: ISQ
-    !> The number of electrons.
-    INTEGER, INTENT(IN) :: nel
+    !> The trace of the density matrix (usually the number of electrons)
+    REAL(NTREAL), INTENT(IN) :: trace
     !> The density matrix computed by this routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: K
     !> The inverse temperature for smearing (optional).
@@ -55,7 +55,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: sval, sv, occ_temp
     REAL(NTREAL) :: left, right, homo, lumo
     INTEGER :: num_eigs
-    INTEGER :: II
+    INTEGER :: II, JJ
     INTEGER :: ierr
 
     !! Optional Parameters
@@ -109,40 +109,57 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ALLOCATE(occ(num_eigs))
        left = MINVAL(eigs)
        right = MAXVAL(eigs)
-       DO WHILE (.TRUE.) 
+       DO JJ = 1, 10*params%max_iterations 
           chemical_potential = left + (right - left)/2 
           DO II = 1, num_eigs
              sval = eigs(II) - chemical_potential
-             occ(II) = 1.0_NTREAL - ERF(inv_temp * sval)
+             occ(II) = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
           END DO
           sv = SUM(occ)
-          IF (ABS(nel - sv) .LT. 1E-8_NTREAL) THEN
+          IF (ABS(trace - sv) .LT. 1E-8_NTREAL) THEN
              EXIT
-          ELSE IF (SV > nel) THEN
+          ELSE IF (SV > trace) THEN
              right = chemical_potential
           ELSE
              left = chemical_potential
           END IF
        END DO
     ELSE
-       homo = eigs(CEILING(nel/2.0))
-       lumo = eigs(CEILING(nel/2.0) + 1)
-       chemical_potential = homo + 0.5_NTREAL * (lumo - homo)
+       JJ = 1
+       homo = eigs(FLOOR(trace))
+       lumo = eigs(FLOOR(trace) + 1)
+       occ_temp = FLOOR(TRACE) + 1 - trace
+       chemical_potential = homo + occ_temp * 0.5_NTREAL * (lumo - homo)
+    END IF
+
+    !! Write out result of chemical potential search
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Chemical Potential Search")
+       CALL EnterSubLog
+       CALL WriteElement(key="Potential", VALUE=chemical_potential)
+       CALL WriteElement(key="Iterations", VALUE=JJ)
+       CALL ExitSubLog
     END IF
 
     !! Map
     energy_value = 0.0_NTREAL
     DO II = 1, tlist%CurrentSize
        IF (.NOT. do_smearing) THEN
-          IF (tlist%DATA(II)%index_column .LE. INT(nel/2)) THEN
+          IF (tlist%DATA(II)%index_column .LE. FLOOR(trace)) THEN
              energy_value = energy_value + tlist%DATA(II)%point_value
              tlist%DATA(II)%point_value = 1.0_NTREAL
+          ELSE IF (tlist%DATA(II)%index_column .EQ. CEILING(trace)) THEN
+             occ_temp = CEILING(trace) - trace
+             energy_value = energy_value + &
+                & occ_temp * tlist%DATA(II)%point_value
+             tlist%DATA(II)%point_value = occ_temp
           ELSE
              tlist%DATA(II)%point_value = 0.0_NTREAL
           ENDIF
        ELSE
           sval = tlist%DATA(II)%point_value - chemical_potential
           occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+          WRITE(*, *) II, tlist%DATA(II)%point_value, occ_temp
           energy_value = energy_value + occ_temp * tlist%DATA(II)%point_value
           tlist%DATA(II)%point_value = occ_temp
        END IF

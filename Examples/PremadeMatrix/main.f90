@@ -22,7 +22,7 @@ PROGRAM PremadeMatrixProgram
   INTEGER :: process_rows, process_columns, process_slices
   REAL(NTREAL) :: threshold
   REAL(NTREAL) :: converge_overlap, converge_density
-  INTEGER :: number_of_electrons
+  REAL(NTREAL) :: number_of_electrons
   TYPE(SolverParameters_t) :: solver_parameters
   TYPE(Permutation_t) :: permutation
   !! Matrices

@@ -22,5 +22,5 @@ else
   fi
 fi
 
-ninja -v
+sudo ninja package
 cd ../
