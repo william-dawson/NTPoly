@@ -16,9 +16,9 @@ void FermiOperator::ComputeDenseFOE(const Matrix_ps &Hamiltonian,
                                     double &energy_value_out,
                                     double &chemical_potential_out,
                                     const SolverParameters &solver_parameters) {
-  ComputeDenseFOE_wrp(GetIH(Hamiltonian), GetIH(Overlap), &trace, GetIH(Density),
-                      &inv_temp, &energy_value_out, &chemical_potential_out,
-                      GetIH(solver_parameters));
+  ComputeDenseFOE_wrp(GetIH(Hamiltonian), GetIH(Overlap), &trace,
+                      GetIH(Density), &inv_temp, &energy_value_out,
+                      &chemical_potential_out, GetIH(solver_parameters));
 }
 
 } // namespace NTPoly

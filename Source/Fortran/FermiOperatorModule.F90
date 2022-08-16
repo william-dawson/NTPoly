@@ -151,7 +151,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ELSE IF (tlist%DATA(II)%index_column .EQ. CEILING(trace)) THEN
              occ_temp = CEILING(trace) - trace
              energy_value = energy_value + &
-                & occ_temp * tlist%DATA(II)%point_value
+                  & occ_temp * tlist%DATA(II)%point_value
              tlist%DATA(II)%point_value = occ_temp
           ELSE
              tlist%DATA(II)%point_value = 0.0_NTREAL
@@ -159,7 +159,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ELSE
           sval = tlist%DATA(II)%point_value - chemical_potential
           occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
-          WRITE(*, *) II, tlist%DATA(II)%point_value, occ_temp
           energy_value = energy_value + occ_temp * tlist%DATA(II)%point_value
           tlist%DATA(II)%point_value = occ_temp
        END IF
