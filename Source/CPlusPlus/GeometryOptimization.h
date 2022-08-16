@@ -14,12 +14,14 @@ public:
   //! Based on the purification algorithm in \cite niklasson2010trace .
   //!\param PreviousDensity to extrapolate from.
   //!\param Overlap the overlap matrix of the new geometry.
-  //!\param nel the number of electrons.
+  //!\param trace of the density matrix (usually the number of electrons).
   //!\param NewDensity the extrapolated density.
   //!\param solver_parameters parameters for the solver
-  static void PurificationExtrapolate(
-      const Matrix_ps &PreviousDensity, const Matrix_ps &Overlap, int nel,
-      Matrix_ps &NewDensity, const SolverParameters &solver_parameters);
+  static void
+  PurificationExtrapolate(const Matrix_ps &PreviousDensity,
+                          const Matrix_ps &Overlap, const double trace,
+                          Matrix_ps &NewDensity,
+                          const SolverParameters &solver_parameters);
   //! Create a new guess at the Density Matrix after updating the geometry.
   //! Based on the lowdin algorithm in \cite exner2002comparison .
   //!\param PreviousDensity to extrapolate from.

@@ -2,7 +2,7 @@
 #define GEOMETRYOPTIMIZATIONSOLVERS_ch
 
 void PurificationExtrapolate_wrp(const int *ih_PreviousDensity,
-                                 const int *Overlap, const int *nel,
+                                 const int *Overlap, const double *trace,
                                  int *ih_NewDensity,
                                  const int *ih_solver_parameters);
 void LowdinExtrapolate_wrp(const int *ih_PreviousDensity, const int *OldOverlap,
