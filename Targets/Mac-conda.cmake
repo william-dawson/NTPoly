@@ -10,7 +10,7 @@ set(Python_FIND_STRATEGY LOCATION)
 
 # Library Files
 set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp \
-    -L/usr/local/Cellar/scalapack/2.1.0_3/lib/ -lscalapack")
+    -L/usr/local/Cellar/scalapack/2.2.0/lib/ -lscalapack")
 
 # Release Suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp")
@@ -19,4 +19,4 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp -Wall")
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0")
 set(F_TOOLCHAINFLAGS_DEBUG
-  "-fcheck=all -O0 -fexternal-blas -cpp -Wall -DPURE=")
+  "-fcheck=all -O0 -fexternal-blas -g -cpp -Wall -DPURE=")

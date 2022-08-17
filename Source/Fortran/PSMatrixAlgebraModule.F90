@@ -608,6 +608,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Cleanup
+    IF (.NOT. PRESENT(pool_in)) THEN
+       CALL DestructMatrixMemoryPool(pool)
+    END IF
     CALL DestructMatrix(TempMat)
   END SUBROUTINE SimilarityTransform
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
