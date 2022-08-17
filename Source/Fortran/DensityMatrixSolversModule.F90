@@ -1171,8 +1171,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
     !! Handling Optional Parameters
     REAL(NTREAL) :: threshold
-    !! Local Matrices
-    TYPE(Matrix_ps) :: TempMat
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
 

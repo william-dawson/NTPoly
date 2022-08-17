@@ -18,4 +18,4 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp -Wall")
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0")
 set(F_TOOLCHAINFLAGS_DEBUG
-  "-fcheck=all -O0 -fexternal-blas -cpp -Wall -DPURE=")
+  "-fcheck=all -O0 -fexternal-blas -g -cpp -Wall -DPURE=")
