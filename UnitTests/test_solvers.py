@@ -922,8 +922,8 @@ class TestSolvers(unittest.TestCase):
         vec_matrix = nt.Matrix_ps(self.mat_dim)
         val_matrix = nt.Matrix_ps(self.mat_dim)
 
-        nt.EigenSolvers.EigenDecomposition(matrix, vec_matrix, val_matrix,
-                                           self.isp)
+        nt.EigenSolvers.EigenDecomposition(matrix, val_matrix, self.mat_dim,
+                                           vec_matrix, self.isp)
 
         # Check the eigenvalues
         val_matrix.WriteToMatrixMarket(result_file)
@@ -943,6 +943,49 @@ class TestSolvers(unittest.TestCase):
         reconstructed.WriteToMatrixMarket(result_file)
 
         self.CheckMat = matrix1
+        comm.barrier()
+        self.check_result()
+
+    def test_eigendecomposition_partial(self):
+        '''Test routines to compute partial eigendecomposition of matrices.'''
+        from scipy.linalg import eigh
+        from scipy.sparse import csc_matrix, diags
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+        nvals = int(self.mat_dim/2)
+
+        # Check Matrix
+        vals, vecs = eigh(matrix1.todense())
+
+        # Result Matrix
+        matrix = nt.Matrix_ps(self.input_file, False)
+        vec_matrix = nt.Matrix_ps(self.mat_dim)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+
+        nt.EigenSolvers.EigenDecomposition(matrix, val_matrix, nvals,
+                                           vec_matrix, self.isp)
+
+        # Check the eigenvalues
+        val_matrix.WriteToMatrixMarket(result_file)
+        vals[nvals:] = 0
+        print(vals)
+        self.CheckMat = csc_matrix(diags(vals))
+        comm.barrier()
+        self.check_result()
+
+        # Check the eigenvectors
+        reconstructed = nt.Matrix_ps(self.mat_dim)
+        temp = nt.Matrix_ps(self.mat_dim)
+        vec_matrix_t = nt.Matrix_ps(self.mat_dim)
+        memory_pool = nt.PMatrixMemoryPool(matrix)
+        temp.Gemm(vec_matrix, val_matrix, memory_pool)
+        vec_matrix_t.Transpose(vec_matrix)
+        vec_matrix_t.Conjugate()
+        reconstructed.Gemm(temp, vec_matrix_t, memory_pool)
+        reconstructed.WriteToMatrixMarket(result_file)
+
+        self.CheckMat = csc_matrix((vecs*vals).dot(vecs.T))
         comm.barrier()
         self.check_result()
 

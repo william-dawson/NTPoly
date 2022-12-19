@@ -14,11 +14,13 @@ MODULE EigenSolversModule_wrp
   PUBLIC :: EigenDecomposition_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigendecomposition of a matrix.
-  SUBROUTINE EigenDecomposition_wrp(ih_this, ih_eigenvectors, ih_eigenvalues, &
-       & ih_solver_parameters) BIND(c,name="EigenDecomposition_wrp")
+  SUBROUTINE EigenDecomposition_wrp(ih_this, ih_eigenvalues, nvals, &
+       & ih_eigenvectors, ih_solver_parameters) &
+       & BIND(c,name="EigenDecomposition_wrp")
     INTEGER(KIND=C_INT), INTENT(IN) :: ih_this(SIZE_wrp)
-    INTEGER(KIND=C_INT), INTENT(IN) :: ih_eigenvectors(SIZE_wrp)
     INTEGER(KIND=C_INT), INTENT(IN) :: ih_eigenvalues(SIZE_wrp)
+    INTEGER(KIND=C_INT), INTENT(IN) :: nvals
+    INTEGER(KIND=C_INT), INTENT(IN) :: ih_eigenvectors(SIZE_wrp)
     INTEGER(KIND=C_INT), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_this
     TYPE(Matrix_ps_wrp) :: h_eigenvectors
@@ -30,8 +32,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_eigenvalues = TRANSFER(ih_eigenvalues,h_eigenvalues)
     h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
 
-    CALL EigenDecomposition(h_this%DATA, h_eigenvectors%DATA, &
-         & h_eigenvalues%DATA, h_solver_parameters%DATA)
+    CALL EigenDecomposition(h_this%DATA, h_eigenvalues%DATA, nvals_in=nvals, &
+         & eigenvectors_in=h_eigenvectors%DATA, &
+         & solver_parameters_in=h_solver_parameters%DATA)
 
   END SUBROUTINE EigenDecomposition_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
