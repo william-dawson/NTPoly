@@ -16,6 +16,13 @@ void EigenSolvers::EigenDecomposition(
                          GetIH(eigenvectors), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
+void EigenSolvers::EigenValues(const Matrix_ps &matrix, Matrix_ps &eigenvalues,
+                               int nvals,
+                               const SolverParameters &solver_parameters) {
+  EigenDecomposition_novec_wrp(GetIH(matrix), GetIH(eigenvalues), &nvals,
+                               GetIH(solver_parameters));
+}
+////////////////////////////////////////////////////////////////////////////////
 void EigenSolvers::SingularValueDecomposition(
     const Matrix_ps &matrix, Matrix_ps &leftvectors, Matrix_ps &rightvectors,
     Matrix_ps &singularvalues, const SolverParameters &solver_parameters) {

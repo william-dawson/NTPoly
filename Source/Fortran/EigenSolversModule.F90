@@ -51,9 +51,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        params = SolverParameters_t()
     END IF
     IF (PRESENT(nvals_in)) THEN
-        nvals = nvals_in
+       nvals = nvals_in
     ELSE
-        nvals = this%actual_matrix_dimension
+       nvals = this%actual_matrix_dimension
     END IF
 
 #if EIGENEXA

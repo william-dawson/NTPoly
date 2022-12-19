@@ -988,6 +988,31 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.check_result()
 
+    def test_eigendecomposition_novecs(self):
+        '''Test routines to compute eigenvalues (only) of matrices.'''
+        from scipy.linalg import eigh
+        from scipy.sparse import csc_matrix, diags
+        # Starting Matrix
+        matrix1 = self.create_matrix()
+        self.write_matrix(matrix1, self.input_file)
+        nvals = int(self.mat_dim/2)
+
+        # Check Matrix
+        vals, _ = eigh(matrix1.todense())
+
+        # Result Matrix
+        matrix = nt.Matrix_ps(self.input_file, False)
+        val_matrix = nt.Matrix_ps(self.mat_dim)
+
+        nt.EigenSolvers.EigenValues(matrix, val_matrix, nvals, self.isp)
+
+        # Check the eigenvalues
+        val_matrix.WriteToMatrixMarket(result_file)
+        vals[nvals:] = 0
+        self.CheckMat = csc_matrix(diags(vals))
+        comm.barrier()
+        self.check_result()
+
     def test_svd(self):
         '''Test routines to compute the SVD of matrices.'''
         from scipy.linalg import svd

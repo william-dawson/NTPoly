@@ -21,6 +21,14 @@ public:
                                  Matrix_ps &eigenvalues, int nvals,
                                  Matrix_ps &eigenvectors,
                                  const SolverParameters &solver_parameters);
+  //! Compute the eigenvalues of a matrix.
+  //! Uses a dense routine.
+  //!\param matrix the matrix to decompose.
+  //!\param eigenvalues the eigenvalues of a matrix.
+  //!\param nvals the number of values to compute.
+  //!\param solver_parameters parameters for computing.
+  static void EigenValues(const Matrix_ps &matrix, Matrix_ps &eigenvalues,
+                          int nvals, const SolverParameters &solver_parameters);
   //! Compute the singular value decomposition of a matrix.
   //! Uses a dense routine.
   //!\param matrix the matrix to decompose.
