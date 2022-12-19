@@ -6,7 +6,7 @@
   AD = 0
   ALLOCATE(VD(exa%local_rows, exa%local_cols))
   VD = 0
-  ALLOCATE(WD(exa%nvals))
+  ALLOCATE(WD(exa%mat_dim))
   WD = 0
 
   !! Convert to EigenExa

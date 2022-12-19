@@ -2,6 +2,6 @@
   INTEGER :: N, LDA, LDZ
 
   !! Setup EigenExa Parameters
-  N = exa%nvals
+  N = exa%mat_dim
   LDA = exa%local_rows
   LDZ = exa%local_rows

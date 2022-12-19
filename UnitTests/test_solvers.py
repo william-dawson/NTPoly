@@ -969,7 +969,6 @@ class TestSolvers(unittest.TestCase):
         # Check the eigenvalues
         val_matrix.WriteToMatrixMarket(result_file)
         vals[nvals:] = 0
-        print(vals)
         self.CheckMat = csc_matrix(diags(vals))
         comm.barrier()
         self.check_result()

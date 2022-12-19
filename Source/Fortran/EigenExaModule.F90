@@ -303,12 +303,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     !! Copy To Triplet List
-    wsize = MAX(CEILING((1.0*exa%nvals)/exa%num_procs), 1)
+    wsize = MAX(CEILING((1.0*exa%mat_dim)/exa%num_procs), 1)
     wstart = wsize*exa%global_rank + 1
-    wend = MIN(wsize*(exa%global_rank+1), exa%nvals)
+    wend = MIN(wsize*(exa%global_rank+1), exa%mat_dim)
 
     CALL ConstructTripletList(triplet_w)
     DO II = wstart, wend
+       IF (II .GT. exa%nvals) THEN
+          EXIT
+       END IF
        CALL SetTriplet(trip, II, II, WD(II))
        CALL AppendToTripletList(triplet_w, trip)
     END DO
@@ -335,7 +338,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_sx(N, N, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_sx(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
 
   END SUBROUTINE Compute_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -353,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_h(N, N, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_h(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
 
   END SUBROUTINE Compute_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
