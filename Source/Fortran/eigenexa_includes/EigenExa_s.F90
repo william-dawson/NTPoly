@@ -1,5 +1,5 @@
   !! Allocate Eigen Exa
-  CALL InitializeEigenExa(A, exa)
+  CALL InitializeEigenExa(A, nvals, PRESENT(eigenvectors_in), exa)
 
   !! Allocate Memory
   ALLOCATE(AD(exa%local_rows, exa%local_cols))
@@ -30,12 +30,14 @@
   !! Convert Back
   CALL StartTimer("EigenToNT")
 
-  CALL ConstructEmptyMatrix(eigenvectors, A)
+  IF (PRESENT(eigenvectors_in)) THEN
+     CALL ConstructEmptyMatrix(eigenvectors_in, A)
 #ifdef ISCOMPLEX
-  CALL EigenToNT_c(VD, eigenvectors, solver_parameters, exa)
+     CALL EigenToNT_c(VD, eigenvectors_in, params, exa)
 #else
-  CALL EigenToNT_r(VD, eigenvectors, solver_parameters, exa)
+     CALL EigenToNT_r(VD, eigenvectors_in, params, exa)
 #endif
+  END IF
 
   CALL ConstructEmptyMatrix(eigenvalues, A)
   CALL ExtractEigenvalues(WD, eigenvalues, exa)
@@ -49,7 +51,9 @@
   CALL CleanUp_r(AD, VD, WD)
 #endif
 
-  IF (solver_parameters%be_verbose) THEN
-     CALL PrintMatrixInformation(eigenvectors)
+  IF (params%be_verbose) THEN
+     IF (PRESENT(eigenvectors_in)) THEN
+        CALL PrintMatrixInformation(eigenvectors_in)
+     END IF
      CALL ExitSubLog
   END IF

@@ -10,10 +10,17 @@ extern "C" {
 namespace NTPoly {
 ////////////////////////////////////////////////////////////////////////////////
 void EigenSolvers::EigenDecomposition(
-    const Matrix_ps &matrix, Matrix_ps &eigenvectors, Matrix_ps &eigenvalues,
-    const SolverParameters &solver_parameters) {
-  EigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvectors), GetIH(eigenvalues),
-                         GetIH(solver_parameters));
+    const Matrix_ps &matrix, Matrix_ps &eigenvalues, int nvals,
+    Matrix_ps &eigenvectors, const SolverParameters &solver_parameters) {
+  EigenDecomposition_wrp(GetIH(matrix), GetIH(eigenvalues), &nvals,
+                         GetIH(eigenvectors), GetIH(solver_parameters));
+}
+////////////////////////////////////////////////////////////////////////////////
+void EigenSolvers::EigenValues(const Matrix_ps &matrix, Matrix_ps &eigenvalues,
+                               int nvals,
+                               const SolverParameters &solver_parameters) {
+  EigenDecomposition_novec_wrp(GetIH(matrix), GetIH(eigenvalues), &nvals,
+                               GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
 void EigenSolvers::SingularValueDecomposition(

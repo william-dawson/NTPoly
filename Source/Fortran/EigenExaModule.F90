@@ -52,62 +52,80 @@ MODULE EigenExaModule
      CHARACTER :: MODE
      !> For block cyclic indexing.
      INTEGER :: offset
+     !> Number of values to compute.
+     INTEGER :: nvals
   END TYPE ExaHelper_t
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa.
-  SUBROUTINE EigenExa_s(A, eigenvectors, eigenvalues, solver_parameters_in)
+  SUBROUTINE EigenExa_s(A, eigenvalues, nvals, &
+       & eigenvectors_in, solver_parameters_in)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: A
-    !> The eigenvectors computed.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> The number of eigenvalues to compute.
+    INTEGER, INTENT(IN) :: nvals
+    !> The eigenvectors computed.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
     !> The parameters for this solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     !! Process Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
     !! Write info about the solver
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="EigenExa")
+       CALL WriteElement(key="NVALS", VALUE=nvals)
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("imamura2011development")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
     !! Select Based on Type
     IF (A%is_complex) THEN
-       CALL EigenExa_c(A, eigenvectors, eigenvalues, solver_parameters)
+       IF (PRESENT(eigenvectors_in)) THEN
+          CALL EigenExa_c(A, eigenvalues, nvals, params, &
+               & eigenvectors_in)
+       ELSE
+          CALL EigenExa_c(A, eigenvalues, nvals, params)
+       END IF
     ELSE
-       CALL EigenExa_r(A, eigenvectors, eigenvalues, solver_parameters)
+       IF (PRESENT(eigenvectors_in)) THEN
+          CALL EigenExa_r(A, eigenvalues, nvals, params, &
+               & eigenvectors_in)
+       ELSE
+          CALL EigenExa_r(A, eigenvalues, nvals, params)
+       END IF
     END IF
 
     !! Cleanup
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(params)
 
   END SUBROUTINE EigenExa_s
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa (real).
-  SUBROUTINE EigenExa_r(A, eigenvectors, eigenvalues, solver_parameters)
+  SUBROUTINE EigenExa_r(A, eigenvalues, nvals, params, eigenvectors_in)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: A
-    !> The eigenvectors computed.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> The number of eigenvalues to compute.
+    INTEGER, INTENT(IN) :: nvals
     !> The parameters for this solver.
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: params
+    !> The eigenvectors computed.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
     !! Helper
     TYPE(ExaHelper_t) :: exa
     !! Dense Matrices
@@ -120,15 +138,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE EigenExa_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigenvectors of a matrix using EigenExa (complex).
-  SUBROUTINE EigenExa_c(A, eigenvectors, eigenvalues, solver_parameters)
+  SUBROUTINE EigenExa_c(A, eigenvalues, nvals, params, eigenvectors_in)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: A
-    !> The eigenvectors computed.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> The number of eigenvalues to compute.
+    INTEGER, INTENT(IN) :: nvals
     !> The parameters for this solver.
-    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: params
+    !> The eigenvectors computed.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
     !! Helper
     TYPE(ExaHelper_t) :: exa
     !! Dense Matrices
@@ -143,15 +163,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE EigenExa_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the eigen exa data structures.
-  SUBROUTINE InitializeEigenExa(A, exa)
+  SUBROUTINE InitializeEigenExa(A, nvals, eigenvectors, exa)
     !> The matrix we're working on.
     TYPE(Matrix_ps), INTENT(IN) :: A
+    !> Number of eigenvalues to compute.
+    INTEGER, INTENT(IN) :: nvals
+    !> Whether to compute eigenvectors.
+    LOGICAL, INTENT(IN) :: eigenvectors
     !> Stores info about the calculation.
     TYPE(ExaHelper_t), INTENT(INOUT) :: exa
     !! Local Variables
     INTEGER :: ICTXT, INFO
     INTEGER, DIMENSION(9) :: DESCA
     INTEGER :: ierr
+
+    !! Number of values to compute.
+    exa%nvals = nvals
 
     !! Setup the MPI Communicator
     CALL MPI_Comm_dup(A%process_grid%global_comm, exa%comm, ierr)
@@ -169,7 +196,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Default blocking parameters
     exa%MB = 128
     exa%M = 48
-    exa%MODE = 'A'
+    IF (eigenvectors) THEN
+       exa%MODE = 'A'
+    ELSE
+       exa%MODE = 'N'
+    END IF
 
     !! Blacs gives us the blocking info.
     ICTXT = eigen_get_blacs_context()
@@ -219,13 +250,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the dense eigenvector matrix stored block-cyclicly back to
   !> a distributed sparse matrix (real).
-  SUBROUTINE EigenToNT_r(VD, V, solver_parameters, exa)
+  SUBROUTINE EigenToNT_r(VD, V, params, exa)
     !> The dense eigenvector matrix.
     REAL(NTREAL), DIMENSION(:,:), INTENT(IN) :: VD
     !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: V
     !> Parameters for thresholding small values.
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
     !> Info about the calculation.
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
@@ -239,13 +270,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Converts the dense eigenvector matrix stored block-cyclicly back to
   !> a distributed sparse matrix (complex).
-  SUBROUTINE EigenToNT_c(VD, V, solver_parameters, exa)
+  SUBROUTINE EigenToNT_c(VD, V, params, exa)
     !> The dense eigenvector matrix.
     COMPLEX(NTCOMPLEX), DIMENSION(:,:), INTENT(IN) :: VD
     !> The distributed sparse matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: V
     !> Parameters for thresholding small values.
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
     !> Info about the calculation.
     TYPE(ExaHelper_t) :: exa
     !! Local Variables
@@ -278,6 +309,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL ConstructTripletList(triplet_w)
     DO II = wstart, wend
+       IF (II .GT. exa%nvals) THEN
+          EXIT
+       END IF
        CALL SetTriplet(trip, II, II, WD(II))
        CALL AppendToTripletList(triplet_w, trip)
     END DO
@@ -304,7 +338,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_sx(N, N, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_sx(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
 
   END SUBROUTINE Compute_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -322,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_h(N, N, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_h(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
 
   END SUBROUTINE Compute_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

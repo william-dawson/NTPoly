@@ -28,18 +28,21 @@ MODULE EigenSolversModule
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigendecomposition of a matrix.
   !! Uses a dense routine.
-  SUBROUTINE EigenDecomposition(this, eigenvectors, eigenvalues, &
+  SUBROUTINE EigenDecomposition(this, eigenvalues, eigenvectors_in, nvals_in, &
        & solver_parameters_in)
     !> The matrix to decompose.
     TYPE(Matrix_ps), INTENT(IN) :: this
-    !> The eigenvectors of a matrix.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> Diagonal matrix of eigenvalues.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> The eigenvectors of a matrix.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
+    !> The number of desired eigenvalues.
+    INTEGER, INTENT(IN), OPTIONAL :: nvals_in
     !> Parameters for computing
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! For Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
+    INTEGER :: nvals
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -47,11 +50,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        params = SolverParameters_t()
     END IF
+    IF (PRESENT(nvals_in)) THEN
+       nvals = nvals_in
+    ELSE
+       nvals = this%actual_matrix_dimension
+    END IF
 
 #if EIGENEXA
-    CALL EigenExa_s(this, eigenvectors, eigenvalues, params)
+    IF (PRESENT(eigenvectors_in)) THEN
+       CALL EigenExa_s(this, eigenvalues, nvals, eigenvectors_in, &
+            & solver_parameters_in=params)
+    ELSE
+       CALL EigenExa_s(this, eigenvalues, nvals, &
+            & solver_parameters_in=params)
+    END IF
 #else
-    CALL EigenSerial(this, eigenvectors, eigenvalues, params)
+    IF (PRESENT(eigenvectors_in)) THEN
+       CALL EigenSerial(this, eigenvalues, nvals, params, eigenvectors_in)
+    ELSE
+       CALL EigenSerial(this, eigenvalues, nvals, params)
+    END IF
 #endif
 
     !! Cleanup
@@ -92,7 +110,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Perform the eigendecomposition
-    CALL EigenDecomposition(this, vecs, vals, params)
+    CALL EigenDecomposition(this, vals, solver_parameters_in=params, &
+         & eigenvectors_in=vecs)
 
     !! Convert to a triplet list, map the triplet list, fill.
     CALL GetMatrixTripletList(vals, tlist)
@@ -120,45 +139,62 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DenseMatrixFunction
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
-  SUBROUTINE EigenSerial(this, eigenvectors, eigenvalues, solver_params)
+  SUBROUTINE EigenSerial(this, eigenvalues, nvals, solver_params, &
+       & eigenvectors_in)
     !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN) :: this
-    !> The eigenvectors of the matrix.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> The number of vals to compute.
+    INTEGER, INTENT(IN) :: nvals
     !> The solve parameters.
     TYPE(SolverParameters_t), INTENT(IN) :: solver_params
+    !> The eigenvectors of the matrix.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
 
     !! Write info about the solver
     IF (solver_params%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="LAPACK")
+       CALL WriteElement(key="NVALS", VALUE=nvals)
        CALL ExitSubLog
        CALL PrintParameters(solver_params)
     END IF
 
     IF (this%is_complex) THEN
-       CALL EigenSerial_c(this, eigenvectors, eigenvalues, &
-            & solver_params%threshold)
+       IF (PRESENT(eigenvectors_in)) THEN
+          CALL EigenSerial_c(this, eigenvalues, nvals, &
+               & solver_params%threshold, eigenvectors_in)
+       ELSE
+          CALL EigenSerial_c(this, eigenvalues, nvals, &
+               & solver_params%threshold)
+       END IF
     ELSE
-       CALL EigenSerial_r(this, eigenvectors, eigenvalues, &
-            & solver_params%threshold)
+       IF (PRESENT(eigenvectors_in)) THEN
+          CALL EigenSerial_r(this, eigenvalues, nvals, &
+               & solver_params%threshold, eigenvectors_in)
+       ELSE
+          CALL EigenSerial_r(this, eigenvalues, nvals, &
+               & solver_params%threshold)
+       END IF
     END IF
   END SUBROUTINE EigenSerial
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve (REAL).
-  SUBROUTINE EigenSerial_r(this, eigenvectors, eigenvalues, threshold)
+  SUBROUTINE EigenSerial_r(this, eigenvalues, nvals, threshold, &
+       & eigenvectors_in)
     USE DMatrixModule, ONLY : EigenDecomposition
     !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN) :: this
-    !> Matrix eigenvectors.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> Number of values to compute.
+    INTEGER, INTENT(IN) :: nvals
     !> Threshold
     REAL(NTREAL), INTENT(IN) :: threshold
+    !> Matrix eigenvectors.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
     !! Local variables
     TYPE(Matrix_lsr) :: local_s, V_s, W_s
     TYPE(Matrix_ldr) :: local_d, V, W
@@ -169,16 +205,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE EigenSerial_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve (COMPLEX).
-  SUBROUTINE EigenSerial_c(this, eigenvectors, eigenvalues, threshold)
+  SUBROUTINE EigenSerial_c(this, eigenvalues, nvals, threshold, &
+       & eigenvectors_in)
     USE DMatrixModule, ONLY : EigenDecomposition
     !> The matrix to compute.
     TYPE(Matrix_ps), INTENT(IN) :: this
-    !> Matrix eigenvectors.
-    TYPE(Matrix_ps), INTENT(INOUT) :: eigenvectors
     !> The eigenvalues of the matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: eigenvalues
+    !> Number of values to compute.
+    INTEGER, INTENT(IN) :: nvals
     !> Threshold
     REAL(NTREAL), INTENT(IN) :: threshold
+    !> Matrix eigenvectors.
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: eigenvectors_in
     !! Local variables
     TYPE(Matrix_lsc) :: local_s, V_s, W_s
     TYPE(Matrix_ldc) :: local_d, V, W

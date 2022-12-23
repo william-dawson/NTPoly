@@ -49,8 +49,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL PolarDecomposition(this, UMat, HMat, params)
 
     !! Compute the eigen decomposition of the hermitian matrix
-    CALL EigenDecomposition(HMat, right_vectors, singularvalues, &
-         & solver_parameters_in=params)
+    CALL EigenDecomposition(HMat, singularvalues, &
+         & eigenvectors_in=right_vectors, solver_parameters_in=params)
 
     !! Compute the left singular vectors
     CALL MatrixMultiply(UMat, right_vectors, left_vectors, &

@@ -5,7 +5,7 @@ MODULE AnalysisModule
        & BroadcastVector, ConstructDiag, DotAllHelper, DotAllPivoted, &
        & GatherMatrixColumn, GetPivot, UnpackCholesky
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
-  USE DensityMatrixSolversModule, ONLY : HPCP
+  USE DensityMatrixSolversModule, ONLY : TRS4
   USE DMatrixModule, ONLY : Matrix_ldr, DestructMatrix, &
        & ConstructMatrixDFromS
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -248,7 +248,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Purify
-    CALL HPCP(this, Identity, REAL(dim, KIND=NTREAL), PMat, &
+    CALL TRS4(this, Identity, REAL(dim, KIND=NTREAL), PMat, &
          & solver_parameters_in=params)
 
     !! Compute Eigenvectors of the Density Matrix

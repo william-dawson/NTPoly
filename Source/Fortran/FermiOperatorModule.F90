@@ -91,7 +91,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in=params%threshold, memory_pool_in=pool)
 
     !! Perform the eigendecomposition
-    CALL EigenDecomposition(WH, vecs, vals, params)
+    CALL EigenDecomposition(WH, vals, &
+         & eigenvectors_in=vecs, solver_parameters_in=params)
 
     !! Gather the eigenvalues on to every process
     CALL GetMatrixTripletList(vals, tlist)
