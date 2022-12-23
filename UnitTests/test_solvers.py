@@ -984,7 +984,7 @@ class TestSolvers(unittest.TestCase):
         reconstructed.Gemm(temp, vec_matrix_t, memory_pool)
         reconstructed.WriteToMatrixMarket(result_file)
 
-        self.CheckMat = csc_matrix((vecs*vals).dot(vecs.T))
+        self.CheckMat = csc_matrix((vecs*vals).dot(vecs.conj().T))
         comm.barrier()
         self.check_result()
 
