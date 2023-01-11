@@ -2,7 +2,7 @@
 !> A Module For Performing Distributed Sparse Matrix Operations.
 MODULE PSMatrixModule
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX, MPINTCOMPLEX, &
-       & MPINTINTEGER, NTLONG
+       & MPINTINTEGER, NTLONG, MPINTLONG
   USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError, &
        & CheckMPIError
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -361,7 +361,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r) :: temp_triplet_r
     TYPE(TripletList_c) :: triplet_list_c
     TYPE(Triplet_c) :: temp_triplet_c
-    INTEGER :: matrix_rows, matrix_columns, total_values
+    INTEGER :: matrix_rows, matrix_columns
+    INTEGER(NTLONG) :: total_values
     !! Length Variables
     INTEGER :: header_length
     INTEGER(KIND=MPI_OFFSET_KIND) :: total_file_size
@@ -427,7 +428,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & process_grid_in%global_comm, ierr)
        CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, process_grid_in%RootID, &
             & process_grid_in%global_comm, ierr)
-       CALL MPI_Bcast(total_values, 1, MPINTINTEGER, process_grid_in%RootID, &
+       CALL MPI_Bcast(total_values, 1, MPINTLONG, process_grid_in%RootID, &
             & process_grid_in%global_comm, ierr)
        CALL MPI_Bcast(header_length, 1, MPINTINTEGER, process_grid_in%RootID, &
             & process_grid_in%global_comm, ierr)
