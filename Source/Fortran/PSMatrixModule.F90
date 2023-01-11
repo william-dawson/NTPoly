@@ -445,8 +445,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Global read
        CALL MPI_File_open(this%process_grid%global_comm, file_name, &
-            & MPI_MODE_RDONLY, MPI_INFO_NULL,mpi_file_handler,ierr)
-       CALL MPI_File_get_size(mpi_file_handler,total_file_size,ierr)
+            & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler,ierr)
+       CALL MPI_File_get_size(mpi_file_handler, total_file_size,ierr)
 
        !! Compute Offsets And Data Size
        local_data_size = (total_file_size - bytes_per_character*header_length)/&
@@ -579,12 +579,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! File Handles
     INTEGER :: mpi_file_handler
     !! Reading The File
-    INTEGER :: matrix_rows, matrix_columns, total_values, complex_flag
-    INTEGER, DIMENSION(4) :: matrix_information
+    INTEGER :: matrix_rows, matrix_columns, complex_flag
+    INTEGER(NTLONG) :: total_values
+    INTEGER, DIMENSION(3) :: matrix_information
     INTEGER :: local_triplets
     INTEGER(KIND=MPI_OFFSET_KIND) :: local_offset
     INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
-    INTEGER :: bytes_per_int, bytes_per_data
+    INTEGER :: bytes_per_int, bytes_per_data, bytes_per_long
     !! Temporary variables
     INTEGER :: message_status(MPI_STATUS_SIZE)
     INTEGER :: ierr
@@ -601,15 +602,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        error_occured = CheckMPIError(err, TRIM(file_name)//" doesn't exist", &
             & ierr, .TRUE.)
 
+       !! General Sizes
+       CALL MPI_Type_extent(MPINTINTEGER, bytes_per_int, ierr)
+       CALL MPI_Type_extent(MPINTLONG, bytes_per_long, ierr)
+
        !! Get The Matrix Parameters
        IF (IsRoot(process_grid_in)) THEN
           local_offset = 0
           CALL MPI_File_read_at(mpi_file_handler, local_offset, &
-               & matrix_information, 4, MPINTINTEGER, message_status, ierr)
+               & matrix_information, 3, MPINTINTEGER, message_status, ierr)
           matrix_rows = matrix_information(1)
           matrix_columns = matrix_information(2)
-          total_values = matrix_information(3)
-          complex_flag = matrix_information(4)
+          complex_flag = matrix_information(3)
+          
+          local_offset = 3 * bytes_per_int
+          CALL MPI_File_read_at(mpi_file_handler, local_offset, &
+               & total_values, 1, MPINTLONG, message_status, ierr)
        END IF
 
        !! Broadcast Parameters
@@ -617,9 +625,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & process_grid_in%global_comm, ierr)
        CALL MPI_Bcast(matrix_columns, 1, MPINTINTEGER, process_grid_in%RootID, &
             & process_grid_in%global_comm, ierr)
-       CALL MPI_Bcast(total_values, 1, MPINTINTEGER ,process_grid_in%RootID, &
+       CALL MPI_Bcast(total_values, 1, MPINTLONG, process_grid_in%RootID, &
             & process_grid_in%global_comm, ierr)
-       CALL MPI_Bcast(complex_flag, 1, MPINTINTEGER ,process_grid_in%RootID, &
+       CALL MPI_Bcast(complex_flag, 1, MPINTINTEGER, process_grid_in%RootID, &
             & process_grid_in%global_comm, ierr)
 
        !! Build Local Storage
@@ -631,29 +639,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & is_complex_in=.FALSE.)
        END IF
 
-       CALL MPI_Type_extent(MPINTINTEGER,bytes_per_int,ierr)
+       !! Sizes specific to the type
        IF (this%is_complex) THEN
-          CALL MPI_Type_extent(MPINTCOMPLEX,bytes_per_data,ierr)
+          CALL MPI_Type_extent(MPINTCOMPLEX, bytes_per_data, ierr)
           triplet_mpi_type = GetMPITripletType_c()
        ELSE
-          CALL MPI_Type_extent(MPINTREAL,bytes_per_data,ierr)
+          CALL MPI_Type_extent(MPINTREAL, bytes_per_data, ierr)
           triplet_mpi_type = GetMPITripletType_r()
        END IF
 
        !! Compute Offset
        local_triplets = total_values/this%process_grid%total_processors
        local_offset = local_triplets * (this%process_grid%global_rank)
-       header_size = 4 * bytes_per_int
+       header_size = 3 * bytes_per_int + bytes_per_long
        IF (this%process_grid%global_rank .EQ. &
             & this%process_grid%total_processors - 1) THEN
           local_triplets = INT(total_values) - INT(local_offset)
        END IF
-       local_offset = local_offset*(bytes_per_int*2+bytes_per_data) + &
+       local_offset = local_offset*(bytes_per_int*2 + bytes_per_data) + &
             & header_size
 
        !! Do The Actual Reading
-       CALL MPI_File_set_view(mpi_file_handler,local_offset,triplet_mpi_type,&
-            & triplet_mpi_type,"native",MPI_INFO_NULL,ierr)
+       CALL MPI_File_set_view(mpi_file_handler, local_offset, &
+            & triplet_mpi_type, triplet_mpi_type, "native", MPI_INFO_NULL, &
+            & ierr)
        IF (this%is_complex) THEN
           CALL ConstructTripletList(triplet_list_c, local_triplets)
           CALL MPI_File_read_all(mpi_file_handler, triplet_list_c%DATA, &
