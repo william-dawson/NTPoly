@@ -41,6 +41,7 @@ if __name__ == "__main__":
         process_rows, process_columns, process_slices)
     if nt.GetGlobalIsRoot():
         nt.ActivateLogger()
+    nt.WriteGridInfo()
 
     # Read in the matrices from file.
     Hamiltonian = nt.Matrix_ps(hamiltonian_file)

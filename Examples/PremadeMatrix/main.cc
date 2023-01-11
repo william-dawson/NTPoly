@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
   if (NTPoly::GetGlobalIsRoot()) {
     NTPoly::ActivateLogger();
   }
+  NTPoly::WriteGridInfo();
 
   // Read in the matrices from file.
   NTPoly::Matrix_ps Hamiltonian(hamiltonian_file);
