@@ -614,7 +614,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           matrix_rows = matrix_information(1)
           matrix_columns = matrix_information(2)
           complex_flag = matrix_information(3)
-          
+
           local_offset = 3 * bytes_per_int
           CALL MPI_File_read_at(mpi_file_handler, local_offset, &
                & total_values, 1, MPINTLONG, message_status, ierr)
