@@ -656,26 +656,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out some basic information about this process grid to the log.
   RECURSIVE SUBROUTINE WriteProcessGridInfo(this)
-     !> The grid to print about. If not specified, global information printed.
-     TYPE(ProcessGrid_t), OPTIONAL, INTENT(IN) :: this
+    !> The grid to print about. If not specified, global information printed.
+    TYPE(ProcessGrid_t), OPTIONAL, INTENT(IN) :: this
 
-     IF (PRESENT(this)) THEN
-        CALL WriteHeader("Process Grid")
-        CALL EnterSubLog
-        CALL WriteListElement("Process Rows", &
-             & VALUE=this%num_process_rows)
-        CALL WriteListElement(key = "Process Columns", &
-             & VALUE=this%num_process_columns)
-        CALL WriteListElement(key = "Process Slices", &
-             & VALUE=this%num_process_slices)
-        CALL WriteListElement(key = "Column Blocks", &
-             & VALUE=this%number_of_blocks_columns)
-        CALL WriteListElement(key = "Row Blocks", &
-             & VALUE=this%number_of_blocks_rows)
-        CALL ExitSubLog
+    IF (PRESENT(this)) THEN
+       CALL WriteHeader("Process Grid")
+       CALL EnterSubLog
+       CALL WriteListElement("Process Rows", &
+            & VALUE=this%num_process_rows)
+       CALL WriteListElement(key = "Process Columns", &
+            & VALUE=this%num_process_columns)
+       CALL WriteListElement(key = "Process Slices", &
+            & VALUE=this%num_process_slices)
+       CALL WriteListElement(key = "Column Blocks", &
+            & VALUE=this%number_of_blocks_columns)
+       CALL WriteListElement(key = "Row Blocks", &
+            & VALUE=this%number_of_blocks_rows)
+       CALL ExitSubLog
     ELSE
-        CALL WriteProcessGridInfo(global_grid)
+       CALL WriteProcessGridInfo(global_grid)
     END IF
-  END SUBROUTINE
+  END SUBROUTINE WriteProcessGridInfo
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ProcessGridModule
