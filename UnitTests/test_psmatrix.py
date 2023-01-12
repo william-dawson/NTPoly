@@ -85,6 +85,7 @@ class TestPSMatrix(unittest.TestCase):
     def setUp(self):
         '''Set up specific tests.'''
         from os import environ
+        from helpers import log_file
         mat_size = 33
         self.process_rows = int(environ['PROCESS_ROWS'])
         self.process_columns = int(environ['PROCESS_COLUMNS'])
@@ -102,8 +103,22 @@ class TestPSMatrix(unittest.TestCase):
         self.parameters.append(TestParameters(mat_size, mat_size, 1.0))
         self.parameters.append(TestParameters(mat_size, mat_size, 0.2))
 
+        if nt.GetGlobalIsRoot():
+            nt.ActivateLogger(log_file, True)
+
     def tearDown(self):
         '''Cleanup this test.'''
+        from helpers import log_file
+        from yaml import load, dump, SafeLoader
+        from sys import stdout
+
+        # Check the yaml output
+        if nt.GetGlobalIsRoot():
+            nt.DeactivateLogger()
+            with open(log_file) as ifile:
+                data = load(ifile, Loader=SafeLoader)
+            dump(data, stdout)
+
         del self.grid
 
     def check_result(self):
@@ -147,6 +162,13 @@ class TestPSMatrix(unittest.TestCase):
             new_grid.GetNumSlices()
         self.assertEqual(total_procs, new_total_procs)
         del new_grid
+
+    def test_grid_print(self):
+        '''
+        Test the grid info printer.
+        '''
+        new_grid = nt.ProcessGrid()
+        new_grid.WriteInfo()
 
     def test_read(self):
         '''Test our ability to read and write matrices.'''
