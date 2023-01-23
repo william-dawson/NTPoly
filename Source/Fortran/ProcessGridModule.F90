@@ -68,6 +68,7 @@ MODULE ProcessGridModule
   PUBLIC :: GetMySlice
   PUBLIC :: GetMyRow
   PUBLIC :: GetMyColumn
+  PUBLIC :: WriteProcessGridInfo
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructProcessGrid
      MODULE PROCEDURE ConstructProcessGrid_full
@@ -103,24 +104,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL ConstructNewProcessGrid(global_grid, world_comm_, process_rows_, &
          & process_columns_, process_slices_)
-
-    !! Report
-    IF (be_verbose) THEN
-       CALL WriteHeader("Process Grid")
-       CALL EnterSubLog
-       CALL WriteListElement("Process Rows", &
-            & VALUE=global_grid%num_process_rows)
-       CALL WriteListElement(key = "Process Columns", &
-            & VALUE=global_grid%num_process_columns)
-       CALL WriteListElement(key = "Process Slices", &
-            & VALUE=global_grid%num_process_slices)
-       CALL WriteListElement(key = "Column Blocks", &
-            & VALUE=global_grid%number_of_blocks_columns)
-       CALL WriteListElement(key = "Row Blocks", &
-            & VALUE=global_grid%number_of_blocks_rows)
-       CALL ExitSubLog
-    END IF
-
   END SUBROUTINE ConstructProcessGrid_full
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup a process grid specifying only the slices
@@ -670,5 +653,29 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. FOUND) slices = 1
 
   END SUBROUTINE ComputeNumSlices
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out some basic information about this process grid to the log.
+  RECURSIVE SUBROUTINE WriteProcessGridInfo(this)
+    !> The grid to print about. If not specified, global information printed.
+    TYPE(ProcessGrid_t), OPTIONAL, INTENT(IN) :: this
+
+    IF (PRESENT(this)) THEN
+       CALL WriteHeader("Process Grid")
+       CALL EnterSubLog
+       CALL WriteListElement("Process Rows", &
+            & VALUE=this%num_process_rows)
+       CALL WriteListElement(key = "Process Columns", &
+            & VALUE=this%num_process_columns)
+       CALL WriteListElement(key = "Process Slices", &
+            & VALUE=this%num_process_slices)
+       CALL WriteListElement(key = "Column Blocks", &
+            & VALUE=this%number_of_blocks_columns)
+       CALL WriteListElement(key = "Row Blocks", &
+            & VALUE=this%number_of_blocks_rows)
+       CALL ExitSubLog
+    ELSE
+       CALL WriteProcessGridInfo(global_grid)
+    END IF
+  END SUBROUTINE WriteProcessGridInfo
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ProcessGridModule
