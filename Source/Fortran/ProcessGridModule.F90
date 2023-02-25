@@ -68,6 +68,7 @@ MODULE ProcessGridModule
   PUBLIC :: GetMySlice
   PUBLIC :: GetMyRow
   PUBLIC :: GetMyColumn
+  PUBLIC :: ComputeGridSize
   PUBLIC :: WriteProcessGridInfo
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructProcessGrid
