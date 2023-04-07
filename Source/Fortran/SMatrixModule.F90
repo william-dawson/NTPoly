@@ -52,16 +52,6 @@ MODULE SMatrixModule
   PUBLIC :: PrintMatrix
   PUBLIC :: MatrixToTripletList
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE Matrix_lsr
-     MODULE PROCEDURE ConstructEmptyMatrix_lsr
-     MODULE PROCEDURE ConstructMatrixFromFile_lsr
-     MODULE PROCEDURE ConstructMatrixFromTripletList_lsr
-  END INTERFACE Matrix_lsr
-  INTERFACE Matrix_lsc
-     MODULE PROCEDURE ConstructEmptyMatrix_lsc
-     MODULE PROCEDURE ConstructMatrixFromFile_lsc
-     MODULE PROCEDURE ConstructMatrixFromTripletList_lsc
-  END INTERFACE Matrix_lsc
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrixSub_lsr
      MODULE PROCEDURE ConstructEmptyMatrixSub_lsc
@@ -166,61 +156,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ConstructEmptyMatrixSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Create a sparse matrix with a certain number of columns
-  !> and rows. Will allocate storage for the outer values, nothing else unless
-  !> you set zero_in to true.
-  PURE FUNCTION ConstructEmptyMatrix_lsr(rows, columns, zero_in) RESULT(this)
-    !> The matrix to construct.
-    TYPE(Matrix_lsr) :: this
-    !> The number of matrix columns.
-    INTEGER, INTENT(IN) :: columns
-    !> The number of matrix rows.
-    INTEGER, INTENT(IN) :: rows
-    !> Whether to set the matrix to zero.
-    LOGICAL, INTENT(IN), OPTIONAL :: zero_in
-
-#include "sparse_includes/ConstructEmptyMatrix.f90"
-  END FUNCTION ConstructEmptyMatrix_lsr
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Create a sparse matrix with a certain number of columns
-  !> and rows. Will allocate storage for the outer values, nothing else unless
-  !> you set zero_in to true.
-  PURE FUNCTION ConstructEmptyMatrix_lsc(rows, columns, zero_in) RESULT(this)
-    !> The matrix to construct.
-    TYPE(Matrix_lsc) :: this
-    !> The number of matrix columns.
-    INTEGER, INTENT(IN) :: columns
-    !> The number of matrix rows.
-    INTEGER, INTENT(IN) :: rows
-    !> Whether to set the matrix to zero.
-    LOGICAL, INTENT(IN), OPTIONAL :: zero_in
-
-#include "sparse_includes/ConstructEmptyMatrix.f90"
-  END FUNCTION ConstructEmptyMatrix_lsc
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for the construct from file function.
   SUBROUTINE ConstructMatrixFromFileSub_lsr(this, file_name)
     !> The matrix being constructed.
     TYPE(Matrix_lsr), INTENT(INOUT) :: this
-    !> Name of the file.
-    CHARACTER(len=*), INTENT(IN) :: file_name
-
-    this = ConstructMatrixFromFile_lsr(file_name)
-  END SUBROUTINE ConstructMatrixFromFileSub_lsr
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  SUBROUTINE ConstructMatrixFromFileSub_lsc(this, file_name)
-    !> The matrix being constructed.
-    TYPE(Matrix_lsc), INTENT(INOUT) :: this
-    !> Name of the file.
-    CHARACTER(len=*), INTENT(IN) :: file_name
-
-    this = ConstructMatrixFromFile_lsc(file_name)
-  END SUBROUTINE ConstructMatrixFromFileSub_lsc
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Create a sparse matrix by reading in a matrix market file.
-  FUNCTION ConstructMatrixFromFile_lsr(file_name) RESULT(this)
-    !> The matrix being constructed.
-    TYPE(Matrix_lsr) :: this
     !> Name of the file.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! About the matrix market file.
@@ -231,12 +170,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Triplet_r) :: temporary
 
 #include "sparse_includes/ConstructMatrixFromFile.f90"
-  END FUNCTION ConstructMatrixFromFile_lsr
+  END SUBROUTINE ConstructMatrixFromFileSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Create a sparse matrix by reading in a matrix market file.
-  FUNCTION ConstructMatrixFromFile_lsc(file_name) RESULT(this)
+  SUBROUTINE ConstructMatrixFromFileSub_lsc(this, file_name)
     !> The matrix being constructed.
-    TYPE(Matrix_lsc) :: this
+    TYPE(Matrix_lsc), INTENT(INOUT) :: this
     !> Name of the file.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! About the matrix market file.
@@ -251,7 +189,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "sparse_includes/ConstructMatrixFromFile.f90"
 #undef ISCOMPLEX
 
-  END FUNCTION ConstructMatrixFromFile_lsc
+  END SUBROUTINE ConstructMatrixFromFileSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the triplet list based constructor.
   PURE SUBROUTINE ConstructMatrixFromTripletListSub_lsr(this, triplet_list, &
@@ -265,7 +203,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Number of matrix columns
     INTEGER, INTENT(IN) :: columns
 
-    this = ConstructMatrixFromTripletList_lsr(triplet_list, rows, columns)
+#define ISCOMPLEX
+#include "sparse_includes/ConstructMatrixFromTripletList.f90"
+#undef ISCOMPLEX
 
   END SUBROUTINE ConstructMatrixFromTripletListSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -281,46 +221,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Number of matrix columns
     INTEGER, INTENT(IN) :: columns
 
-    this = ConstructMatrixFromTripletList_lsc(triplet_list, rows, columns)
+#include "sparse_includes/ConstructMatrixFromTripletList.f90"
 
   END SUBROUTINE ConstructMatrixFromTripletListSub_lsc
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct a sparse matrix from a \b SORTED triplet list.
-  !> The triplet list must be sorted to efficiently fill in the matrix. This
-  !> constructor assumes \b you have already sorted the triplet list.
-  PURE FUNCTION ConstructMatrixFromTripletList_lsr(triplet_list,rows,columns) &
-       & RESULT(this)
-    !> The matrix being constructed
-    TYPE(Matrix_lsr) :: this
-    !> A list of triplet values. They must be sorted.
-    TYPE(TripletList_r), INTENT(IN) :: triplet_list
-    !> Number of matrix rows
-    INTEGER, INTENT(IN) :: rows
-    !> Number of matrix columns
-    INTEGER, INTENT(IN) :: columns
-
-#define ISCOMPLEX
-#include "sparse_includes/ConstructMatrixFromTripletList.f90"
-#undef ISCOMPLEX
-
-  END FUNCTION ConstructMatrixFromTripletList_lsr
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct a sparse matrix from a \b SORTED triplet list.
-  !> The triplet list must be sorted to efficiently fill in the matrix. This
-  !> constructor assumes \b you have already sorted the triplet list.
-  PURE FUNCTION ConstructMatrixFromTripletList_lsc(triplet_list,rows,columns) &
-       & RESULT(this)
-    !> The matrix being constructed
-    TYPE(Matrix_lsc) :: this
-    !> A list of triplet values. They must be sorted.
-    TYPE(TripletList_c), INTENT(IN) :: triplet_list
-    !> Number of matrix rows
-    INTEGER, INTENT(IN) :: rows
-    !> Number of matrix columns
-    INTEGER, INTENT(IN) :: columns
-
-#include "sparse_includes/ConstructMatrixFromTripletList.f90"
-  END FUNCTION ConstructMatrixFromTripletList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
   PURE SUBROUTINE DestructMatrix_lsr(this)

@@ -9,7 +9,8 @@ MODULE PSMatrixAlgebraModule
        & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
-       & CheckMemoryPoolValidity, DestructMatrixMemoryPool
+       & CheckMemoryPoolValidity, DestructMatrixMemoryPool, &
+       & ConstructMatrixMemoryPool
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
        & MergeMatrixLocalBlocks, IsIdentity
@@ -140,19 +141,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (matA%is_complex) THEN
           IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matA)) THEN
              CALL DestructMatrixMemoryPool(memory_pool_in)
-             memory_pool_in = MatrixMemoryPool_p(matA)
+             CALL ConstructMatrixMemoryPool(memory_pool_in, matA)
           END IF
        ELSE
           IF (.NOT. CheckMemoryPoolValidity(memory_pool_in, matB)) THEN
              CALL DestructMatrixMemoryPool(memory_pool_in)
-             memory_pool_in = MatrixMemoryPool_p(matB)
+             CALL ConstructMatrixMemoryPool(memory_pool_in, matB)
           END IF
        END IF
     ELSE
        IF (matA%is_complex) THEN
-          memory_pool = MatrixMemoryPool_p(matA)
+          CALL ConstructMatrixMemoryPool(memory_pool, matA)
        ELSE
-          memory_pool = MatrixMemoryPool_p(matB)
+          CALL ConstructMatrixMemoryPool(memory_pool, matB)
        END IF
     END IF
 
@@ -586,7 +587,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        threshold = threshold_in
     END IF
     IF (.NOT. PRESENT(pool_in)) THEN
-       pool = MatrixMemoryPool_p(A)
+       CALL ConstructMatrixMemoryPool(pool, A)
     END IF
 
     !! Check if P is the identity matrix, if so we can exit early.

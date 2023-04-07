@@ -5,7 +5,7 @@ MODULE TripletListModule_wrp
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, ResizeTripletList, &
        & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList, &
-       & GetTripletListSize
+       & GetTripletListSize, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int
@@ -43,14 +43,14 @@ MODULE TripletListModule_wrp
   PUBLIC :: GetTripletListSize_c_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the triplet list constructor.
-  PURE SUBROUTINE ConstructTripletList_r_wrp(ih_this, size) &
+  SUBROUTINE ConstructTripletList_r_wrp(ih_this, size) &
        & BIND(c,name="ConstructTripletList_r_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: size
     TYPE(TripletList_r_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = TripletList_r(size)
+    CALL ConstructTripletList(h_this%DATA, size)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructTripletList_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -165,14 +165,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetTripletListSize_r_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the triplet list constructor.
-  PURE SUBROUTINE ConstructTripletList_c_wrp(ih_this, size) &
+  SUBROUTINE ConstructTripletList_c_wrp(ih_this, size) &
        & BIND(c,name="ConstructTripletList_c_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: size
     TYPE(TripletList_c_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = TripletList_c(size)
+    CALL ConstructTripletList(h_this%DATA, size)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructTripletList_c_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

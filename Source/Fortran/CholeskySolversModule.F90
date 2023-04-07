@@ -10,7 +10,7 @@ MODULE CholeskyModule
        & DestructMatrix
   USE SVectorModule, ONLY : DotSparseVectors
   USE TripletListModule, ONLY : TripletList_r, AppendToTripletList, &
-       & DestructTripletList
+       & DestructTripletList, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r
   USE NTMPIModule
   IMPLICIT NONE

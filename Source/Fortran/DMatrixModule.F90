@@ -43,12 +43,6 @@ MODULE DMatrixModule
   PUBLIC :: TransposeMatrix
   PUBLIC :: EigenDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE Matrix_ldr
-     MODULE PROCEDURE ConstructEmptyMatrix_ldr
-  END INTERFACE Matrix_ldr
-  INTERFACE Matrix_ldc
-     MODULE PROCEDURE ConstructEmptyMatrix_ldc
-  END INTERFACE Matrix_ldc
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrixSup_ldr
      MODULE PROCEDURE ConstructEmptyMatrixSup_ldc
@@ -108,21 +102,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: columns
 
     CALL DestructMatrix(this)
-    this = ConstructEmptyMatrix_ldr(rows, columns)
-  END SUBROUTINE ConstructEmptyMatrixSup_ldr
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct an empty dense matrix with a set number of rows and columns
-  PURE FUNCTION ConstructEmptyMatrix_ldr(rows, columns) RESULT(this)
-    !> The matrix to construct.
-    TYPE(Matrix_ldr) :: this
-    !> Rows of the matrix
-    INTEGER, INTENT(IN) :: rows
-    !> Columns of the matrix.
-    INTEGER, INTENT(IN) :: columns
-
 #include "dense_includes/ConstructEmptyMatrix.f90"
-
-  END FUNCTION ConstructEmptyMatrix_ldr
+  END SUBROUTINE ConstructEmptyMatrixSup_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   PURE SUBROUTINE ConstructMatrixDFromS_ldr(sparse_matrix, dense_matrix)
@@ -357,7 +338,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: INFO
     INTEGER :: II
 
-    MatV = Matrix_ldr(MatA%rows,MatA%columns)
+    CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
     MatV%DATA = MatA%DATA
 
     N = SIZE(MatA%DATA,DIM=1)
@@ -382,7 +363,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       MatW = Matrix_ldr(MatA%rows, MatA%columns)
+       CALL ConstructEmptyMatrix(MatW, MatA%rows, MatA%columns)
        MatW%DATA = 0
        DO II = 1, N
           MatW%DATA(II,II) = W(II)
@@ -405,21 +386,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: columns
 
     CALL DestructMatrix(this)
-    this = ConstructEmptyMatrix_ldc(rows, columns)
-  END SUBROUTINE ConstructEmptyMatrixSup_ldc
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct an empty dense matrix with a set number of rows and columns
-  PURE FUNCTION ConstructEmptyMatrix_ldc(rows, columns) RESULT(this)
-    !> The matrix to construct.
-    TYPE(Matrix_ldc) :: this
-    !> Rows of the matrix
-    INTEGER, INTENT(IN) :: rows
-    !> Columns of the matrix.
-    INTEGER, INTENT(IN) :: columns
-
 #include "dense_includes/ConstructEmptyMatrix.f90"
-
-  END FUNCTION ConstructEmptyMatrix_ldc
+  END SUBROUTINE ConstructEmptyMatrixSup_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A function that converts a sparse matrix to a dense matrix.
   PURE SUBROUTINE ConstructMatrixDFromS_ldc(sparse_matrix, dense_matrix)
@@ -661,7 +629,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, DIMENSION(1) :: IWORKTEMP
     INTEGER :: II
 
-    MatV = Matrix_ldc(MatA%rows,MatA%columns)
+    CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
     MatV%DATA = MatA%DATA
 
     N = SIZE(MatA%DATA,DIM=1)
@@ -688,7 +656,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Extract Eigenvalues
     IF (PRESENT(MatW)) THEN
-       MatW = Matrix_ldc(MatA%rows, MatA%columns)
+       CALL ConstructEmptyMatrix(MatW, MatA%rows, MatA%columns)
        MatW%DATA = 0
        DO II = 1, N
           MatW%DATA(II,II) = W(II)

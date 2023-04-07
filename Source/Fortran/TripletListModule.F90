@@ -41,12 +41,6 @@ MODULE TripletListModule
   PUBLIC :: ShiftTripletList
   PUBLIC :: ConvertTripletListType
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE TripletList_r
-     MODULE PROCEDURE ConstructTripletList_r
-  END INTERFACE TripletList_r
-  INTERFACE TripletList_c
-     MODULE PROCEDURE ConstructTripletList_c
-  END INTERFACE TripletList_c
   INTERFACE ConstructTripletList
      MODULE PROCEDURE ConstructTripletListSup_r
      MODULE PROCEDURE ConstructTripletListSup_c
@@ -121,28 +115,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "triplet_includes/ConstructTripletList.f90"
 
   END SUBROUTINE ConstructTripletListSup_c
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct a triplet list.
-  PURE FUNCTION ConstructTripletList_r(size_in) RESULT(this)
-    !> The triplet list to construct.
-    TYPE(TripletList_r) :: this
-    !> The length of the triplet list (default=0).
-    INTEGER, INTENT(IN), OPTIONAL :: size_in
-
-#include "triplet_includes/ConstructTripletList.f90"
-
-  END FUNCTION ConstructTripletList_r
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Construct a triplet list.
-  PURE FUNCTION ConstructTripletList_c(size_in) RESULT(this)
-    !> The triplet list to construct.
-    TYPE(TripletList_c) :: this
-    !> The length of the triplet list (default=0).
-    INTEGER, INTENT(IN), OPTIONAL :: size_in
-
-#include "triplet_includes/ConstructTripletList.f90"
-
-  END FUNCTION ConstructTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destructs a triplet list.
   PURE SUBROUTINE DestructTripletList_r(this)
