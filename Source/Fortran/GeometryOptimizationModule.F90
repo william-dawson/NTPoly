@@ -208,6 +208,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(ISQMat)
     CALL DestructMatrix(TempMat)
     CALL DestructSolverParameters(params)
+    CALL DestructMatrixMemoryPool(pool)
 
   END SUBROUTINE LowdinExtrapolate
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

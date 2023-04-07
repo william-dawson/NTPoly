@@ -32,7 +32,8 @@ endif()
 if (APPLE)
    set(APPLE_SUPRESS "-flat_namespace -undefined suppress")
 endif()
-swig_link_libraries(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly
+swig_link_libraries(NTPolySwig NTPolyCPP NTPolyWrapper NTPoly 
+                    ${EigenSolver_LIBRARIES}
                     ${TOOLCHAIN_LIBS} ${APPLE_SUPRESS})
 set_target_properties(_NTPolySwig PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python

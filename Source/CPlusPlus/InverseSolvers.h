@@ -17,6 +17,12 @@ public:
   //!\param solver_parameters parameters for the solver
   static void Invert(const Matrix_ps &Overlap, Matrix_ps &InverseMat,
                      const SolverParameters &solver_parameters);
+  //! Compute the inverse of a matrix (dense version).
+  //!\param Overlap the matrix to invert.
+  //!\param InverseMat = Overlap^-1.
+  //!\param solver_parameters parameters for the solver
+  static void DenseInvert(const Matrix_ps &Overlap, Matrix_ps &InverseMat,
+                          const SolverParameters &solver_parameters);
   //! Compute the pseudoinverse of a matrix.
   //! An implementation of Hotelling's method, with a different convergence
   //! criteria.

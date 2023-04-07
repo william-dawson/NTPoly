@@ -159,6 +159,28 @@ class TestChemistry:
         cp = eig_vals[homo] + (eig_vals[lumo] - eig_vals[homo]) / 2.0
         return cp, eig_vals[homo], eig_vals[lumo]
 
+    def check_energy(self, energy):
+        '''Compute the chemical potential, homo, lumo'''
+        from scipy.io import mmread
+        from helpers import THRESHOLD
+        from scipy.linalg import eigh
+        from numpy import floor, ceil
+
+        fock_matrix = mmread(self.hamiltonian)
+        overlap_matrix = mmread(self.overlap)
+
+        eig_vals = eigh(a=fock_matrix.todense(), b=overlap_matrix.todense(),
+                        eigvals_only=True)
+
+        computed = 0
+        for i, v in enumerate(eig_vals):
+            if i < floor(self.nel):
+                computed += 2.0*v
+            elif ceil(self.nel) == i:
+                computed += 2.0*(ceil(self.nel) - self.nel) * v
+
+        self.assertLessEqual(abs(energy - computed), THRESHOLD)
+
     def check_cp(self, computed):
         '''Compare two computed chemical potentials.'''
         cp, homo, lumo = self.compute_cp()
@@ -168,7 +190,7 @@ class TestChemistry:
         else:
             self.assertTrue(False)
 
-    def basic_solver(self, SRoutine, cpcheck=True):
+    def basic_solver(self, SRoutine, cpcheck=True, temp=None):
         '''Test various kinds of density matrix solvers.'''
         from helpers import result_file
 
@@ -185,10 +207,21 @@ class TestChemistry:
         nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
                                                inverse_sqrt_matrix,
                                                self.solver_parameters)
-        energy_value, chemical_potential = SRoutine(fock_matrix,
-                                                    inverse_sqrt_matrix,
-                                                    self.nel, density_matrix,
-                                                    self.solver_parameters)
+        if temp is None:
+            energy_value, chemical_potential = SRoutine(fock_matrix,
+                                                        inverse_sqrt_matrix,
+                                                        self.nel,
+                                                        density_matrix,
+                                                        self.solver_parameters)
+        else:
+            inv_temp = 1/(temp * 3.166811563*10**(-6))
+            print("::: Temperature", temp, inv_temp, self.nel)
+            energy_value, chemical_potential = SRoutine(fock_matrix,
+                                                        inverse_sqrt_matrix,
+                                                        self.nel,
+                                                        density_matrix,
+                                                        inv_temp,
+                                                        self.solver_parameters)
 
         density_matrix.WriteToMatrixMarket(result_file)
         comm.barrier()
@@ -196,6 +229,7 @@ class TestChemistry:
         self.check_full()
         if cpcheck:
             self.check_cp(chemical_potential)
+        self.check_energy(energy_value)
         comm.barrier()
 
     def test_scaleandfold(self):
@@ -244,6 +278,14 @@ class TestChemistry:
     def test_HPCP(self):
         '''Test routines to compute the density matrix with HPCP.'''
         self.basic_solver(nt.DensityMatrixSolvers.HPCP)
+
+    def test_densedensity(self):
+        '''Test routines to compute the density matrix with Dense Method.'''
+        self.basic_solver(nt.DensityMatrixSolvers.DenseDensity)
+
+    def test_foe_low(self):
+        '''Test the fermi operator expansion at a low temperature.'''
+        self.basic_solver(nt.FermiOperator.ComputeDenseFOE, temp=50)
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''

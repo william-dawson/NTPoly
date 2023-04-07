@@ -9,7 +9,8 @@ set(PYTHON_EXECUTABLE python)
 set(Python_FIND_STRATEGY LOCATION)
 
 # Library Files
-set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp")
+set(TOOLCHAIN_LIBS "-framework Accelerate -lgomp \
+    -L/usr/local/Cellar/scalapack/2.2.0/lib/ -lscalapack")
 
 # Release Suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE "-O3 -openmp")

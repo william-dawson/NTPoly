@@ -3,6 +3,7 @@
 MODULE SignSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
        & WriteListElement, WriteElement
@@ -19,50 +20,82 @@ MODULE SignSolversModule
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SignFunction
+  PUBLIC :: DenseSignFunction
   PUBLIC :: PolarDecomposition
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the matrix sign function.
-  SUBROUTINE SignFunction(Mat, SignMat, solver_parameters_in)
+  SUBROUTINE SignFunction(InMat, OutMat, solver_parameters_in)
     !> The input matrix.
-    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    TYPE(Matrix_ps), INTENT(IN) :: InMat
     !> The sign of Mat.
-    TYPE(Matrix_ps), INTENT(INOUT) :: SignMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Sign Function Solver")
        CALL EnterSubLog
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("nicholas2008functions")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
-    CALL CoreComputation(Mat, SignMat, solver_parameters, .FALSE.)
+    CALL CoreComputation(InMat, OutMat, params, .FALSE.)
 
     !! Cleanup
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(params)
   END SUBROUTINE SignFunction
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Computes the matrix sign function (dense version).
+  SUBROUTINE DenseSignFunction(InMat, OutputMat, solver_parameters_in)
+    !> The matrix to compute the sign of.
+    TYPE(Matrix_ps), INTENT(IN)  :: InMat
+    !> The sign of the input matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: params
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       params = solver_parameters_in
+    ELSE
+       params = SolverParameters_t()
+    END IF
+
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Sign Function Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(InMat, OutputMat, SignLambda, params)
+
+    IF (params%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+  END SUBROUTINE DenseSignFunction
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Computes the polar decomposition of a matrix Mat = U*H.
-  SUBROUTINE PolarDecomposition(Mat, Umat, Hmat, solver_parameters_in)
+  SUBROUTINE PolarDecomposition(InMat, Umat, Hmat, solver_parameters_in)
     !> The input matrix.
-    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    TYPE(Matrix_ps), INTENT(IN) :: InMat
     !> The unitary polar factor.
     TYPE(Matrix_ps), INTENT(INOUT) :: Umat
     !> The hermitian matrix factor.
@@ -70,55 +103,55 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: params
     TYPE(Matrix_ps) :: UmatT
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       params = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       params = SolverParameters_t()
     END IF
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Polar Decomposition Solver")
        CALL EnterSubLog
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("nicholas2008functions")
        CALL ExitSubLog
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(params)
     END IF
 
-    CALL CoreComputation(Mat, Umat, solver_parameters, .TRUE.)
+    CALL CoreComputation(InMat, Umat, params, .TRUE.)
 
     IF (PRESENT(Hmat)) THEN
        CALL TransposeMatrix(Umat, UmatT)
        IF (UmatT%is_complex) THEN
           CALL ConjugateMatrix(UmatT)
        END IF
-       CALL MatrixMultiply(UmatT, Mat, Hmat, &
-            & threshold_in=solver_parameters%threshold)
+       CALL MatrixMultiply(UmatT, InMat, Hmat, &
+            & threshold_in=params%threshold)
        CALL DestructMatrix(UmatT)
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
 
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(params)
   END SUBROUTINE PolarDecomposition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This is the implementation routine for both the sign function and
   !> polar decomposition.
-  SUBROUTINE CoreComputation(Mat, OutMat, solver_parameters, needs_transpose)
+  SUBROUTINE CoreComputation(InMat, OutMat, params, needs_transpose)
     !> The matrix to compute.
-    TYPE(Matrix_ps), INTENT(IN) :: Mat
+    TYPE(Matrix_ps), INTENT(IN) :: InMat
     !> Output of the routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver.
-    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: params
     !> Whether we need to perform transposes in this routine (for polar).
     LOGICAL, INTENT(IN) :: needs_transpose
     !! Local Matrices
@@ -133,39 +166,39 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: alpha_k
     REAL(NTREAL) :: xk
     REAL(NTREAL) :: norm_value
-    INTEGER :: outer_counter
+    INTEGER :: II
 
     !! Construct All The Necessary Matrices
-    CALL ConstructEmptyMatrix(Identity, Mat)
-    CALL ConstructEmptyMatrix(Temp1, Mat)
-    CALL ConstructEmptyMatrix(Temp2, Mat)
+    CALL ConstructEmptyMatrix(Identity, InMat)
+    CALL ConstructEmptyMatrix(Temp1, InMat)
+    CALL ConstructEmptyMatrix(Temp2, InMat)
     CALL FillMatrixIdentity(Identity)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (params%do_load_balancing) THEN
        !! Permute Matrices
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
-       CALL PermuteMatrix(Mat, OutMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in=pool)
+       CALL PermuteMatrix(InMat, OutMat, &
+            & params%BalancePermutation, memorypool_in=pool)
     ELSE
-       CALL CopyMatrix(Mat,OutMat)
+       CALL CopyMatrix(InMat, OutMat)
     END IF
 
     !! Initialize
-    CALL GershgorinBounds(Mat,e_min,e_max)
+    CALL GershgorinBounds(InMat, e_min, e_max)
     xk = ABS(e_min/e_max)
-    CALL ScaleMatrix(OutMat,1.0_NTREAL/ABS(e_max))
+    CALL ScaleMatrix(OutMat, 1.0_NTREAL/ABS(e_max))
 
     !! Iterate.
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
-    outer_counter = 1
-    norm_value = solver_parameters%converge_diff + 1.0_NTREAL
-    iterate: DO outer_counter = 1,solver_parameters%max_iterations
-       IF (solver_parameters%be_verbose .AND. outer_counter .GT. 1) THEN
+    II = 1
+    norm_value = params%converge_diff + 1.0_NTREAL
+    iterate: DO II = 1, params%max_iterations
+       IF (params%be_verbose .AND. II .GT. 1) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
        END IF
 
@@ -180,35 +213,35 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
           CALL MatrixMultiply(OutMatT, OutMat, Temp1, &
                & alpha_in=-1.0_NTREAL*alpha_k**2, &
-               & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+               & threshold_in=params%threshold, memory_pool_in=pool)
        ELSE
           CALL MatrixMultiply(OutMat, OutMat, Temp1, &
                & alpha_in=-1.0_NTREAL*alpha_k**2, &
-               & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+               & threshold_in=params%threshold, memory_pool_in=pool)
        END IF
-       CALL IncrementMatrix(Identity,Temp1,alpha_in=3.0_NTREAL)
+       CALL IncrementMatrix(Identity, Temp1, alpha_in=3.0_NTREAL)
 
        CALL MatrixMultiply(OutMat, Temp1, Temp2, alpha_in=0.5_NTREAL*alpha_k, &
-            & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
+            & threshold_in=params%threshold, memory_pool_in=pool)
 
        CALL IncrementMatrix(Temp2, OutMat, alpha_in=-1.0_NTREAL)
        norm_value = MatrixNorm(OutMat)
-       CALL CopyMatrix(Temp2,OutMat)
+       CALL CopyMatrix(Temp2, OutMat)
 
-       IF (norm_value .LE. solver_parameters%converge_diff) THEN
+       IF (norm_value .LE. params%converge_diff) THEN
           EXIT
        END IF
     END DO iterate
-    IF (solver_parameters%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations",VALUE=outer_counter-1)
+       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
        CALL PrintMatrixInformation(OutMat)
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutMat,OutMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in=pool)
     END IF
 
     CALL DestructMatrix(Temp1)
@@ -217,5 +250,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrixMemoryPool(pool)
   END SUBROUTINE CoreComputation
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical sign function for mapping. 
+  FUNCTION SignLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
+
+    IF (val < 0.0_NTREAL) THEN
+       outval = -1.0_NTREAL
+    ELSE
+       outval = 1.0_NTREAL
+    END IF
+  END FUNCTION SignLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SignSolversModule

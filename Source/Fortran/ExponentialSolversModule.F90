@@ -6,6 +6,7 @@ MODULE ExponentialSolversModule
        & SetCoefficient
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
+  USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LinearSolversModule, ONLY : CGSolver
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
@@ -27,8 +28,10 @@ MODULE ExponentialSolversModule
   PUBLIC :: ComputeExponential
   PUBLIC :: ComputeExponentialPade
   PUBLIC :: ComputeExponentialTaylor
+  PUBLIC :: ComputeDenseExponential
   PUBLIC :: ComputeLogarithm
   PUBLIC :: ComputeLogarithmTaylor
+  PUBLIC :: ComputeDenseLogarithm
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix.
   SUBROUTINE ComputeExponential(InputMat, OutputMat, solver_parameters_in)
@@ -75,7 +78,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(OutputMat, InputMat)
 
     !! Scale the matrix
-    CALL PowerBounds(InputMat,spectral_radius,psub_solver_parameters)
+    CALL PowerBounds(InputMat, spectral_radius, psub_solver_parameters)
     sigma_val = 1.0
     sigma_counter = 1
     DO WHILE (spectral_radius/sigma_val .GT. 1.0)
@@ -83,7 +86,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
+    CALL ScaleMatrix(ScaledMat, 1.0/sigma_val)
     sub_solver_parameters%threshold = sub_solver_parameters%threshold/sigma_val
 
     IF (solver_parameters%be_verbose) THEN
@@ -92,26 +95,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Expand Chebyshev Series
     CALL ConstructPolynomial(polynomial,16)
-    CALL SetCoefficient(polynomial,1,1.266065877752007e+00_NTREAL)
-    CALL SetCoefficient(polynomial,2,1.130318207984970e+00_NTREAL)
-    CALL SetCoefficient(polynomial,3,2.714953395340771e-01_NTREAL)
-    CALL SetCoefficient(polynomial,4,4.433684984866504e-02_NTREAL)
-    CALL SetCoefficient(polynomial,5,5.474240442092110e-03_NTREAL)
-    CALL SetCoefficient(polynomial,6,5.429263119148932e-04_NTREAL)
-    CALL SetCoefficient(polynomial,7,4.497732295351912e-05_NTREAL)
-    CALL SetCoefficient(polynomial,8,3.198436462630565e-06_NTREAL)
-    CALL SetCoefficient(polynomial,9,1.992124801999838e-07_NTREAL)
-    CALL SetCoefficient(polynomial,10,1.103677287249654e-08_NTREAL)
-    CALL SetCoefficient(polynomial,11,5.505891628277851e-10_NTREAL)
-    CALL SetCoefficient(polynomial,12,2.498021534339559e-11_NTREAL)
-    CALL SetCoefficient(polynomial,13,1.038827668772902e-12_NTREAL)
-    CALL SetCoefficient(polynomial,14,4.032447357431817e-14_NTREAL)
-    CALL SetCoefficient(polynomial,15,2.127980007794583e-15_NTREAL)
-    CALL SetCoefficient(polynomial,16,-1.629151584468762e-16_NTREAL)
+    CALL SetCoefficient(polynomial, 1, 1.266065877752007e+00_NTREAL)
+    CALL SetCoefficient(polynomial, 2, 1.130318207984970e+00_NTREAL)
+    CALL SetCoefficient(polynomial, 3, 2.714953395340771e-01_NTREAL)
+    CALL SetCoefficient(polynomial, 4, 4.433684984866504e-02_NTREAL)
+    CALL SetCoefficient(polynomial, 5, 5.474240442092110e-03_NTREAL)
+    CALL SetCoefficient(polynomial, 6, 5.429263119148932e-04_NTREAL)
+    CALL SetCoefficient(polynomial, 7, 4.497732295351912e-05_NTREAL)
+    CALL SetCoefficient(polynomial, 8, 3.198436462630565e-06_NTREAL)
+    CALL SetCoefficient(polynomial, 9, 1.992124801999838e-07_NTREAL)
+    CALL SetCoefficient(polynomial, 10, 1.103677287249654e-08_NTREAL)
+    CALL SetCoefficient(polynomial, 11, 5.505891628277851e-10_NTREAL)
+    CALL SetCoefficient(polynomial, 12, 2.498021534339559e-11_NTREAL)
+    CALL SetCoefficient(polynomial, 13, 1.038827668772902e-12_NTREAL)
+    CALL SetCoefficient(polynomial, 14, 4.032447357431817e-14_NTREAL)
+    CALL SetCoefficient(polynomial, 15, 2.127980007794583e-15_NTREAL)
+    CALL SetCoefficient(polynomial, 16, -1.629151584468762e-16_NTREAL)
 
-    CALL Compute(ScaledMat,OutputMat,polynomial,sub_solver_parameters)
-    !CALL FactorizedChebyshevCompute(ScaledMat,OutputMat,polynomial, &
-    !     & sub_solver_parameters)
+    CALL Compute(ScaledMat, OutputMat, polynomial, sub_solver_parameters)
 
     !! Undo the scaling by squaring at the end.
     !! Load Balancing Step
@@ -121,7 +122,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     DO counter=1,sigma_counter-1
-       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
+       CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL CopyMatrix(TempMat,OutputMat)
     END DO
@@ -143,6 +144,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(ScaledMat)
     CALL DestructMatrix(TempMat)
     CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(psub_solver_parameters)
+    CALL DestructSolverParameters(sub_solver_parameters)
   END SUBROUTINE ComputeExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a pade approximation.
@@ -169,7 +172,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: spectral_radius
     REAL(NTREAL) :: sigma_val
     INTEGER :: sigma_counter
-    INTEGER :: counter
+    INTEGER :: II
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -241,8 +244,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CGSolver(LeftMat, OutputMat, RightMat, sub_solver_parameters)
 
     !! Undo the scaling by squaring at the end.
-    DO counter=1,sigma_counter-1
-       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
+    DO II = 1, sigma_counter - 1
+       CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL CopyMatrix(TempMat,OutputMat)
     END DO
@@ -266,6 +269,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(RightMat)
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(sub_solver_parameters)
   END SUBROUTINE ComputeExponentialPade
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the exponential of a matrix using a taylor series expansion.
@@ -291,9 +295,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: sigma_val
     REAL(NTREAL) :: taylor_denom
     INTEGER :: sigma_counter
-    INTEGER :: counter
+    INTEGER :: II
 
-    !! Handle The Optional Parameters
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
        solver_parameters = solver_parameters_in
@@ -311,7 +314,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute The Scaling Factor
-    CALL PowerBounds(InputMat,spectral_radius,psub_solver_parameters)
+    CALL PowerBounds(InputMat, spectral_radius, psub_solver_parameters)
 
     !! Figure out how much to scale the matrix.
     sigma_val = 1.0
@@ -322,7 +325,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
+    CALL ScaleMatrix(ScaledMat, 1.0/sigma_val)
 
     CALL ConstructEmptyMatrix(OutputMat, InputMat)
     CALL FillMatrixIdentity(OutputMat)
@@ -338,16 +341,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Expand Taylor Series
     taylor_denom = 1.0
     CALL CopyMatrix(OutputMat, Ak)
-    DO counter=1,10
-       taylor_denom = taylor_denom * counter
-       CALL MatrixMultiply(Ak,ScaledMat,TempMat, &
+    DO II = 1, 10
+       taylor_denom = taylor_denom * II
+       CALL MatrixMultiply(Ak, ScaledMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrix(TempMat,Ak)
-       CALL IncrementMatrix(Ak,OutputMat)
+       CALL CopyMatrix(TempMat, Ak)
+       CALL IncrementMatrix(Ak, OutputMat)
     END DO
 
-    DO counter=1,sigma_counter-1
-       CALL MatrixMultiply(OutputMat,OutputMat,TempMat, &
+    DO II = 1, sigma_counter-1
+       CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
        CALL CopyMatrix(TempMat,OutputMat)
     END DO
@@ -366,7 +369,42 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(psub_solver_parameters)
   END SUBROUTINE ComputeExponentialTaylor
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ComputeDenseExponential(InputMat, OutputMat, solver_parameters_in)
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Solver Parameters
+    TYPE(SolverParameters_t) :: param
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       param = solver_parameters_in
+    ELSE
+       param = SolverParameters_t()
+    END IF
+
+    IF (param%be_verbose) THEN
+       CALL WriteHeader("Exponential Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(InputMat, OutputMat, ExpLambda, param)
+
+    IF (param%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(param)
+
+  END SUBROUTINE ComputeDenseExponential
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix.
   SUBROUTINE ComputeLogarithm(InputMat, OutputMat, solver_parameters_in)
@@ -421,7 +459,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute The Scaling Factor
     sigma_val = 1
     sigma_counter = 1
-    CALL PowerBounds(InputMat,spectral_radius,p_sub_solver_parameters)
+    CALL PowerBounds(InputMat, spectral_radius, p_sub_solver_parameters)
     DO WHILE (spectral_radius .GT. SQRT(2.0))
        spectral_radius = SQRT(spectral_radius)
        sigma_val = sigma_val * 2
@@ -435,43 +473,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_solver_parameters)
 
     !! Shift Scaled Matrix
-    CALL IncrementMatrix(IdentityMat,ScaledMat, &
+    CALL IncrementMatrix(IdentityMat, ScaledMat, &
          & alpha_in=REAL(-1.0,NTREAL))
 
     !! Expand Chebyshev Series
-    CALL ConstructPolynomial(polynomial,32)
-    CALL SetCoefficient(polynomial,1,-0.485101351704_NTREAL)
-    CALL SetCoefficient(polynomial,2,1.58828112379_NTREAL)
-    CALL SetCoefficient(polynomial,3,-0.600947731795_NTREAL)
-    CALL SetCoefficient(polynomial,4,0.287304748177_NTREAL)
-    CALL SetCoefficient(polynomial,5,-0.145496447103_NTREAL)
-    CALL SetCoefficient(polynomial,6,0.0734013668818_NTREAL)
-    CALL SetCoefficient(polynomial,7,-0.0356277942958_NTREAL)
-    CALL SetCoefficient(polynomial,8,0.0161605505166_NTREAL)
-    CALL SetCoefficient(polynomial,9,-0.0066133591188_NTREAL)
-    CALL SetCoefficient(polynomial,10,0.00229833505456_NTREAL)
-    CALL SetCoefficient(polynomial,11,-0.000577804103964_NTREAL)
-    CALL SetCoefficient(polynomial,12,2.2849332964e-05_NTREAL)
-    CALL SetCoefficient(polynomial,13,8.37426826403e-05_NTREAL)
-    CALL SetCoefficient(polynomial,14,-6.10822859027e-05_NTREAL)
-    CALL SetCoefficient(polynomial,15,2.58132364523e-05_NTREAL)
-    CALL SetCoefficient(polynomial,16,-5.87577322647e-06_NTREAL)
-    CALL SetCoefficient(polynomial,17,-8.56711062722e-07_NTREAL)
-    CALL SetCoefficient(polynomial,18,1.52066488969e-06_NTREAL)
-    CALL SetCoefficient(polynomial,19,-7.12760496253e-07_NTREAL)
-    CALL SetCoefficient(polynomial,20,1.23102245249e-07_NTREAL)
-    CALL SetCoefficient(polynomial,21,6.03168259043e-08_NTREAL)
-    CALL SetCoefficient(polynomial,22,-5.1865499826e-08_NTREAL)
-    CALL SetCoefficient(polynomial,23,1.43185107512e-08_NTREAL)
-    CALL SetCoefficient(polynomial,24,2.58449717089e-09_NTREAL)
-    CALL SetCoefficient(polynomial,25,-3.73189861771e-09_NTREAL)
-    CALL SetCoefficient(polynomial,26,1.18469334815e-09_NTREAL)
-    CALL SetCoefficient(polynomial,27,1.51569931066e-10_NTREAL)
-    CALL SetCoefficient(polynomial,28,-2.89595999673e-10_NTREAL)
-    CALL SetCoefficient(polynomial,29,1.26720668874e-10_NTREAL)
-    CALL SetCoefficient(polynomial,30,-3.00079067694e-11_NTREAL)
-    CALL SetCoefficient(polynomial,31,3.91175568865e-12_NTREAL)
-    CALL SetCoefficient(polynomial,32,-2.21155654398e-13_NTREAL)
+    CALL ConstructPolynomial(polynomial, 32)
+    CALL SetCoefficient(polynomial, 1, -0.485101351704_NTREAL)
+    CALL SetCoefficient(polynomial, 2, 1.58828112379_NTREAL)
+    CALL SetCoefficient(polynomial, 3, -0.600947731795_NTREAL)
+    CALL SetCoefficient(polynomial, 4, 0.287304748177_NTREAL)
+    CALL SetCoefficient(polynomial, 5, -0.145496447103_NTREAL)
+    CALL SetCoefficient(polynomial, 6, 0.0734013668818_NTREAL)
+    CALL SetCoefficient(polynomial, 7, -0.0356277942958_NTREAL)
+    CALL SetCoefficient(polynomial, 8, 0.0161605505166_NTREAL)
+    CALL SetCoefficient(polynomial, 9, -0.0066133591188_NTREAL)
+    CALL SetCoefficient(polynomial, 10, 0.00229833505456_NTREAL)
+    CALL SetCoefficient(polynomial, 11, -0.000577804103964_NTREAL)
+    CALL SetCoefficient(polynomial, 12, 2.2849332964e-05_NTREAL)
+    CALL SetCoefficient(polynomial, 13, 8.37426826403e-05_NTREAL)
+    CALL SetCoefficient(polynomial, 14, -6.10822859027e-05_NTREAL)
+    CALL SetCoefficient(polynomial, 15, 2.58132364523e-05_NTREAL)
+    CALL SetCoefficient(polynomial, 16, -5.87577322647e-06_NTREAL)
+    CALL SetCoefficient(polynomial, 17, -8.56711062722e-07_NTREAL)
+    CALL SetCoefficient(polynomial, 18, 1.52066488969e-06_NTREAL)
+    CALL SetCoefficient(polynomial, 19, -7.12760496253e-07_NTREAL)
+    CALL SetCoefficient(polynomial, 20, 1.23102245249e-07_NTREAL)
+    CALL SetCoefficient(polynomial, 21, 6.03168259043e-08_NTREAL)
+    CALL SetCoefficient(polynomial, 22, -5.1865499826e-08_NTREAL)
+    CALL SetCoefficient(polynomial, 23, 1.43185107512e-08_NTREAL)
+    CALL SetCoefficient(polynomial, 24, 2.58449717089e-09_NTREAL)
+    CALL SetCoefficient(polynomial, 25, -3.73189861771e-09_NTREAL)
+    CALL SetCoefficient(polynomial, 26, 1.18469334815e-09_NTREAL)
+    CALL SetCoefficient(polynomial, 27, 1.51569931066e-10_NTREAL)
+    CALL SetCoefficient(polynomial, 28, -2.89595999673e-10_NTREAL)
+    CALL SetCoefficient(polynomial, 29, 1.26720668874e-10_NTREAL)
+    CALL SetCoefficient(polynomial, 30, -3.00079067694e-11_NTREAL)
+    CALL SetCoefficient(polynomial, 31, 3.91175568865e-12_NTREAL)
+    CALL SetCoefficient(polynomial, 32, -2.21155654398e-13_NTREAL)
 
     CALL FactorizedCompute(ScaledMat, OutputMat, polynomial, &
          & f_sub_solver_parameters)
@@ -489,6 +527,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(IdentityMat)
     CALL DestructMatrix(TempMat)
     CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(i_sub_solver_parameters)
+    CALL DestructSolverParameters(f_sub_solver_parameters)
+    CALL DestructSolverParameters(p_sub_solver_parameters)
   END SUBROUTINE ComputeLogarithm
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the logarithm of a matrix using a taylor series expansion.
@@ -513,7 +554,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: sigma_val
     REAL(NTREAL) :: taylor_denom
     INTEGER :: sigma_counter
-    INTEGER :: counter
+    INTEGER :: II
 
     !! Handle The Optional Parameters
     !! Optional Parameters
@@ -553,9 +594,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Setup Matrices
-    CALL IncrementMatrix(IdentityMat,ScaledMat, &
+    CALL IncrementMatrix(IdentityMat, ScaledMat, &
          & alpha_in=REAL(-1.0,NTREAL))
-    CALL CopyMatrix(IdentityMat,Ak)
+    CALL CopyMatrix(IdentityMat, Ak)
 
     !! Load Balancing Step
     IF (solver_parameters%do_load_balancing) THEN
@@ -567,21 +608,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Expand taylor series.
     CALL CopyMatrix(ScaledMat,OutputMat)
-    DO counter=2,10
-       IF (MOD(counter,2) .EQ. 0) THEN
-          taylor_denom = -1 * counter
+    DO II = 2, 10
+       IF (MOD(II,2) .EQ. 0) THEN
+          taylor_denom = -1 * II
        ELSE
-          taylor_denom = counter
+          taylor_denom = II
        END IF
-       CALL MatrixMultiply(Ak,ScaledMat,TempMat, &
+       CALL MatrixMultiply(Ak, ScaledMat, TempMat, &
             & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-       CALL CopyMatrix(TempMat,Ak)
+       CALL CopyMatrix(TempMat, Ak)
        CALL IncrementMatrix(Ak, OutputMat, &
             & alpha_in=1.0/taylor_denom)
     END DO
 
     !! Undo scaling.
-    CALL ScaleMatrix(OutputMat,REAL(2**sigma_counter,NTREAL))
+    CALL ScaleMatrix(OutputMat, REAL(2**sigma_counter,NTREAL))
 
     !! Undo load balancing.
     IF (solver_parameters%do_load_balancing) THEN
@@ -599,6 +640,57 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Ak)
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(sub_solver_parameters)
   END SUBROUTINE ComputeLogarithmTaylor
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE ComputeDenseLogarithm(InputMat, OutputMat, solver_parameters_in)
+    !> The input matrix
+    TYPE(Matrix_ps), INTENT(IN)  :: InputMat
+    !> OutputMat = exp(InputMat)
+    TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
+    !> Parameters for the solver
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Solver Parameters
+    TYPE(SolverParameters_t) :: params
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       params = solver_parameters_in
+    ELSE
+       params = SolverParameters_t()
+    END IF
+
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Logarithm Solver")
+       CALL EnterSubLog
+    END IF
+
+    !! Apply
+    CALL DenseMatrixFunction(InputMat, OutputMat, LogLambda, params)
+
+    IF (params%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    !! Cleanup
+    CALL DestructSolverParameters(params)
+
+  END SUBROUTINE ComputeDenseLogarithm
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical exponential for mapping. 
+  FUNCTION ExpLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
+
+    outval = EXP(val)
+  END FUNCTION ExpLambda
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Prototypical exponential for mapping. 
+  FUNCTION LogLambda(val) RESULT(outval)
+    REAL(KIND=NTREAL), INTENT(IN) :: val
+    REAL(KIND=NTREAL) :: outval
+
+    outval = LOG(val)
+  END FUNCTION LogLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE ExponentialSolversModule

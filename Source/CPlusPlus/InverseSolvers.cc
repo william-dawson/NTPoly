@@ -14,6 +14,12 @@ void InverseSolvers::Invert(const Matrix_ps &Overlap, Matrix_ps &InverseMat,
   Invert_wrp(GetIH(Overlap), GetIH(InverseMat), GetIH(solver_parameters));
 }
 ////////////////////////////////////////////////////////////////////////////////
+void InverseSolvers::DenseInvert(const Matrix_ps &Overlap,
+                                 Matrix_ps &InverseMat,
+                                 const SolverParameters &solver_parameters) {
+  DenseInvert_wrp(GetIH(Overlap), GetIH(InverseMat), GetIH(solver_parameters));
+}
+////////////////////////////////////////////////////////////////////////////////
 void InverseSolvers::PseudoInverse(const Matrix_ps &Overlap,
                                    Matrix_ps &InverseMat,
                                    const SolverParameters &solver_parameters) {

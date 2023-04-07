@@ -90,7 +90,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: param
     !! Local Matrices
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: BalancedInput
@@ -104,19 +104,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       param = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       param = SolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Standard")
        CALL WriteElement(key="Degree", VALUE=degree-1)
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(param)
     END IF
 
     !! Initial values for matrices
@@ -125,57 +125,56 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopyMatrix(InputMat,BalancedInput)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (param%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & param%BalancePermutation, memorypool_in=pool)
        CALL PermuteMatrix(BalancedInput, BalancedInput, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & param%BalancePermutation, memorypool_in=pool)
     END IF
 
     !! First Term
-    CALL CopyMatrix(Identity,Tkminus2)
+    CALL CopyMatrix(Identity, Tkminus2)
     IF (degree == 1) THEN
-       CALL CopyMatrix(Tkminus2,OutputMat)
-       CALL ScaleMatrix(OutputMat,poly%coefficients(1))
+       CALL CopyMatrix(Tkminus2, OutputMat)
+       CALL ScaleMatrix(OutputMat, poly%coefficients(1))
     ELSE
-       CALL CopyMatrix(BalancedInput,Tkminus1)
-       CALL CopyMatrix(Tkminus2,OutputMat)
-       CALL ScaleMatrix(OutputMat,poly%coefficients(1))
-       CALL IncrementMatrix(Tkminus1,OutputMat, &
+       CALL CopyMatrix(BalancedInput, Tkminus1)
+       CALL CopyMatrix(Tkminus2, OutputMat)
+       CALL ScaleMatrix(OutputMat, poly%coefficients(1))
+       CALL IncrementMatrix(Tkminus1, OutputMat, &
             & alpha_in=poly%coefficients(2))
        IF (degree > 2) THEN
           CALL MatrixMultiply(BalancedInput, Tkminus1, Tk, &
-               & alpha_in=REAL(2.0,NTREAL), &
-               & threshold_in=solver_parameters%threshold, memory_pool_in=pool)
-          CALL IncrementMatrix(Tkminus2,Tk,REAL(-1.0,NTREAL))
+               & alpha_in=REAL(2.0, NTREAL), &
+               & threshold_in=param%threshold, memory_pool_in=pool)
+          CALL IncrementMatrix(Tkminus2, Tk, REAL(-1.0,NTREAL))
           CALL IncrementMatrix(Tk, OutputMat, &
                & alpha_in=poly%coefficients(3))
           DO counter = 4, degree
-             CALL CopyMatrix(Tkminus1,Tkminus2)
-             CALL CopyMatrix(Tk,Tkminus1)
+             CALL CopyMatrix(Tkminus1, Tkminus2)
+             CALL CopyMatrix(Tk, Tkminus1)
              CALL MatrixMultiply(BalancedInput, Tkminus1, Tk, &
                   & alpha_in=REAL(2.0,NTREAL), &
-                  & threshold_in=solver_parameters%threshold, &
+                  & threshold_in=param%threshold, &
                   & memory_pool_in=pool)
-             CALL IncrementMatrix(Tkminus2,Tk, &
-                  & REAL(-1.0,NTREAL))
+             CALL IncrementMatrix(Tkminus2, Tk, REAL(-1.0,NTREAL))
              CALL IncrementMatrix(Tk, OutputMat, &
                   & alpha_in=poly%coefficients(counter))
           END DO
        END IF
     END IF
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (param%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & param%BalancePermutation, memorypool_in=pool)
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL ExitSubLog
     END IF
     CALL DestructMatrix(Identity)
@@ -184,7 +183,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Tkminus2)
     CALL DestructMatrix(BalancedInput)
     CALL DestructMatrixMemoryPool(pool)
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(param)
   END SUBROUTINE Compute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute The Chebyshev Polynomial of the matrix.
@@ -202,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Solver Parameters
-    TYPE(SolverParameters_t) :: solver_parameters
+    TYPE(SolverParameters_t) :: param
     !! Local Matrices
     TYPE(Matrix_ps) :: Identity
     TYPE(Matrix_ps) :: BalancedInput
@@ -215,32 +214,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       solver_parameters = solver_parameters_in
+       param = solver_parameters_in
     ELSE
-       solver_parameters = SolverParameters_t()
+       param = SolverParameters_t()
     END IF
 
     degree = SIZE(poly%coefficients)
 
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL WriteHeader("Chebyshev Solver")
        CALL EnterSubLog
        CALL WriteElement(key="Method", VALUE="Recursive")
        CALL WriteElement(key="Degree", VALUE=degree-1)
-       CALL PrintParameters(solver_parameters)
+       CALL PrintParameters(param)
     END IF
 
     !! Initial values for matrices
     CALL ConstructEmptyMatrix(Identity, InputMat)
     CALL FillMatrixIdentity(Identity)
-    CALL CopyMatrix(InputMat,BalancedInput)
+    CALL CopyMatrix(InputMat, BalancedInput)
 
     !! Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (param%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & param%BalancePermutation, memorypool_in=pool)
        CALL PermuteMatrix(BalancedInput, BalancedInput, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & param%BalancePermutation, memorypool_in=pool)
     END IF
 
     !! Construct The X Powers Array
@@ -256,31 +255,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (degree .EQ. 1) THEN
        CALL CopyMatrix(T_Powers(1), OutputMat)
     ELSE
-       CALL CopyMatrix(BalancedInput,T_Powers(2))
+       CALL CopyMatrix(BalancedInput, T_Powers(2))
        DO counter=3,log2degree
           CALL MatrixMultiply(T_Powers(counter-1), T_Powers(counter-1), &
-               & T_Powers(counter), threshold_in=solver_parameters%threshold, &
+               & T_Powers(counter), threshold_in=param%threshold, &
                & alpha_in=REAL(2.0,NTREAL), memory_pool_in=pool)
           CALL IncrementMatrix(Identity, T_Powers(counter), &
                & alpha_in=REAL(-1.0,NTREAL))
        END DO
 
        !! Call Recursive
-       CALL ComputeRecursive(T_Powers, poly, OutputMat, &
-            &  pool, 1, solver_parameters)
+       CALL ComputeRecursive(T_Powers, poly, OutputMat, pool, 1, param)
     END IF
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step
-    IF (solver_parameters%do_load_balancing) THEN
+    IF (param%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & solver_parameters%BalancePermutation, memorypool_in=pool)
+            & param%BalancePermutation, memorypool_in=pool)
     END IF
 
     !! Cleanup
-    IF (solver_parameters%be_verbose) THEN
+    IF (param%be_verbose) THEN
        CALL ExitSubLog
     END IF
     DO counter=1,log2degree
@@ -290,12 +288,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(Identity)
     CALL DestructMatrix(BalancedInput)
     CALL DestructMatrixMemoryPool(pool)
-    CALL DestructSolverParameters(solver_parameters)
+    CALL DestructSolverParameters(param)
   END SUBROUTINE FactorizedCompute_cheby
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The workhorse routine for the factorized chebyshev computation function.
   RECURSIVE SUBROUTINE ComputeRecursive(T_Powers, poly, OutputMat, pool, &
-       & depth, solver_parameters)
+       & depth, param)
     !> The precomputed Chebyshev polynomials.
     TYPE(Matrix_ps), DIMENSION(:), INTENT(IN) :: T_Powers
     !> Polynomial coefficients.
@@ -305,7 +303,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The depth of recursion.
     INTEGER, INTENT(in) :: depth
     !> Parameters for the solver.
-    TYPE(SolverParameters_t), INTENT(IN) :: solver_parameters
+    TYPE(SolverParameters_t), INTENT(IN) :: param
     !> The memory pool.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !! Local Data
@@ -343,19 +341,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Left recursion
        CALL ComputeRecursive(T_Powers, left_poly, LeftMat, pool, depth+1, &
-            & solver_parameters)
+            & param)
 
        !! Right recursion
        full_midpoint = SIZE(T_Powers) - depth + 1
        CALL ComputeRecursive(T_Powers, right_poly, RightMat, pool, depth+1, &
-            & solver_parameters)
+            & param)
 
        !! Sum Together
        CALL MatrixMultiply(T_Powers(full_midpoint), RightMat, &
-            & OutputMat, threshold_in=solver_parameters%threshold, &
+            & OutputMat, threshold_in=param%threshold, &
             & alpha_in=REAL(2.0,NTREAL), memory_pool_in=pool)
 
-       CALL IncrementMatrix(LeftMat,OutputMat)
+       CALL IncrementMatrix(LeftMat, OutputMat)
        CALL IncrementMatrix(T_Powers(full_midpoint), &
             & OutputMat, alpha_in=-1.0*right_poly%coefficients(1))
 

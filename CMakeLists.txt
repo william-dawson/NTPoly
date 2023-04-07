@@ -7,6 +7,7 @@ enable_language(Fortran)
 
 ################################################################################
 ## Packages
+set(CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake)
 if (NOT CMAKE_TOOLCHAIN_FILE)
   message(WARNING "Building without a toolchain file. "
           "If this does not work, please see the example toolchain files in "
@@ -14,8 +15,15 @@ if (NOT CMAKE_TOOLCHAIN_FILE)
           "system.")
   find_package(MPI REQUIRED)
   find_package(BLAS)
+  find_package(LAPACK)
 endif()
 find_package(SWIG 3.0)
+find_package(EigenExa)
+if (EigenExa_FOUND)
+  add_definitions("-DEIGENEXA")
+  set(EigenSolver_LIBRARIES ${EigenExa_LIBRARIES})
+  set(EigenSolver_INCLUDE_DIRS ${EigenExa_INCLUDE_DIRS})
+endif()
 
 ################################################################################
 ## Options
