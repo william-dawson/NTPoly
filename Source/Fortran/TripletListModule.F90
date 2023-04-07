@@ -107,11 +107,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The length of the triplet list (default=0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
-    IF (PRESENT(size_in)) THEN
-       this = ConstructTripletList_r(size_in)
-    ELSE
-       this = ConstructTripletList_r()
-    END IF
+#include "triplet_includes/ConstructTripletList.f90"
+
   END SUBROUTINE ConstructTripletListSup_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for constructing a triplet list.
@@ -121,11 +118,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The length of the triplet list (default=0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
-    IF (PRESENT(size_in)) THEN
-       this = ConstructTripletList_c(size_in)
-    ELSE
-       this = ConstructTripletList_c()
-    END IF
+#include "triplet_includes/ConstructTripletList.f90"
+
   END SUBROUTINE ConstructTripletListSup_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a triplet list.

@@ -7,7 +7,8 @@
      size = 0
   END IF
 
-  IF (ALLOCATED(this%DATA)) DEALLOCATE(this%DATA)
+  CALL DestructTripletList(this)
+
   this%CurrentSize = size
 
   ALLOCATE(this%DATA(size))

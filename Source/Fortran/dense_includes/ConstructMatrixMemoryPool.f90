@@ -2,6 +2,8 @@
   INTEGER :: alloc_stat
   INTEGER :: num_buckets
 
+  CALL DestructMatrixMemoryPool(this)
+
   this%columns = columns
   this%rows = rows
 

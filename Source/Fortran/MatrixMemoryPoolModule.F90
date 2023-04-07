@@ -91,11 +91,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Estimated sparsity (optional).
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    IF (PRESENT(sparsity_in)) THEN
-       this = MatrixMemoryPool_lr(columns, rows, sparsity_in)
-    ELSE
-       this = MatrixMemoryPool_lr(columns, rows)
-    END IF
+#include "dense_includes/ConstructMatrixMemoryPool.f90"
+
   END SUBROUTINE ConstructMatrixMemoryPoolSub_lr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for the constructor.
@@ -109,11 +106,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Estimated sparsity (optional).
     REAL(NTREAL), INTENT(IN), OPTIONAL :: sparsity_in
 
-    IF (PRESENT(sparsity_in)) THEN
-       this = MatrixMemoryPool_lc(columns, rows, sparsity_in)
-    ELSE
-       this = MatrixMemoryPool_lc(columns, rows)
-    END IF
+#include "dense_includes/ConstructMatrixMemoryPool.f90"
+
   END SUBROUTINE ConstructMatrixMemoryPoolSub_lc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct Matrix Memory Pool object.

@@ -145,11 +145,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Whether to set the matrix to zero.
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
-    IF (PRESENT(zero_in)) THEN
-       this = ConstructEmptyMatrix_lsr(rows, columns, zero_in)
-    ELSE
-       this = ConstructEmptyMatrix_lsr(rows, columns)
-    ENDIF
+    CALL DestructMatrix(this)
+#include "sparse_includes/ConstructEmptyMatrix.f90"
 
   END SUBROUTINE ConstructEmptyMatrixSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -164,11 +161,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Whether to set the matrix to zero.
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
-    IF (PRESENT(zero_in)) THEN
-       this = ConstructEmptyMatrix_lsc(rows, columns, zero_in)
-    ELSE
-       this = ConstructEmptyMatrix_lsc(rows, columns)
-    ENDIF
+    CALL DestructMatrix(this)
+#include "sparse_includes/ConstructEmptyMatrix.f90"
 
   END SUBROUTINE ConstructEmptyMatrixSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
