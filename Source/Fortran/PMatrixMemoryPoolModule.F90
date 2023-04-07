@@ -22,7 +22,7 @@ MODULE PMatrixMemoryPoolModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructMatrixMemoryPool
      MODULE PROCEDURE ConstructMatrixMemoryPool_p
-  END INTERFACE
+  END INTERFACE ConstructMatrixMemoryPool
   INTERFACE DestructMatrixMemoryPool
      MODULE PROCEDURE DestructMatrixMemoryPool_p
   END INTERFACE DestructMatrixMemoryPool

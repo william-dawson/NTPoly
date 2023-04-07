@@ -84,7 +84,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     ALLOCATE(h_this%DATA)
-    CALL ConstructMatrixFromTripletList(h_this%data, h_triplet_list%DATA, &
+    CALL ConstructMatrixFromTripletList(h_this%DATA, h_triplet_list%DATA, &
          & rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp
