@@ -1,3 +1,5 @@
+  CALL DestructMatrix(this)
+
   this%rows = rows
   this%columns = columns
   ALLOCATE(this%outer_index(this%columns+1))

@@ -135,7 +135,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Whether to set the matrix to zero.
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
-    CALL DestructMatrix(this)
 #include "sparse_includes/ConstructEmptyMatrix.f90"
 
   END SUBROUTINE ConstructEmptyMatrixSub_lsr
@@ -151,7 +150,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Whether to set the matrix to zero.
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
-    CALL DestructMatrix(this)
 #include "sparse_includes/ConstructEmptyMatrix.f90"
 
   END SUBROUTINE ConstructEmptyMatrixSub_lsc

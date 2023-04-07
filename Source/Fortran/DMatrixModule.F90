@@ -101,7 +101,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Columns of the matrix
     INTEGER, INTENT(IN) :: columns
 
-    CALL DestructMatrix(this)
 #include "dense_includes/ConstructEmptyMatrix.f90"
   END SUBROUTINE ConstructEmptyMatrixSup_ldr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -385,7 +384,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns o the matrix.
     INTEGER, INTENT(IN) :: columns
 
-    CALL DestructMatrix(this)
 #include "dense_includes/ConstructEmptyMatrix.f90"
   END SUBROUTINE ConstructEmptyMatrixSup_ldc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
