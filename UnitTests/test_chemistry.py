@@ -287,6 +287,50 @@ class TestChemistry:
         '''Test the fermi operator expansion at a low temperature.'''
         self.basic_solver(nt.FermiOperator.ComputeDenseFOE, temp=50)
 
+    def test_mcweeny_step(self):
+        from scipy.io import mmread
+        from helpers import result_file, THRESHOLD
+        from scipy.sparse.linalg import norm
+
+        # Reference Solution
+        dmat = mmread(self.density)
+        smat = mmread(self.overlap)
+        result = 3 * dmat.dot(dmat) - 2 * dmat.dot(dmat).dot(dmat)
+        result_s = 3 * dmat.dot(smat).dot(dmat) - \
+                   2 * dmat.dot(smat).dot(dmat).dot(smat).dot(dmat)
+
+        # NTPoly
+        d_matrix = nt.Matrix_ps(self.density)
+        dout_matrix = nt.Matrix_ps(d_matrix.GetActualDimension())
+        nt.DensityMatrixSolvers.McWeenyStep(d_matrix, dout_matrix)
+        dout_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        # Compare
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            normval = abs(norm(result - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
+        comm.barrier()
+
+        # Overlap Version
+        s_matrix = nt.Matrix_ps(self.overlap)
+        nt.DensityMatrixSolvers.McWeenyStep(d_matrix, s_matrix, dout_matrix)
+        dout_matrix.WriteToMatrixMarket(result_file)
+        comm.barrier()
+
+        # Compare
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            normval = abs(norm(result_s - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
+        comm.barrier()
+
+
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''
         from helpers import THRESHOLD, result_file
