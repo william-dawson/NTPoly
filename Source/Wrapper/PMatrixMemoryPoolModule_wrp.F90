@@ -2,8 +2,7 @@
 !> A module for wrapping the distributed sparse matrix memory pool.
 MODULE PMatrixMemoryPoolModule_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
-  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
-       & DestructMatrixMemoryPool, ConstructMatrixMemoryPool
+  USE PMatrixMemoryPoolModule
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE

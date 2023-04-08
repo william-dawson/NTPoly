@@ -1,8 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the Hermite Solvers Module
 MODULE HermiteSolversModule_wrp
-  USE HermiteSolversModule, ONLY : HermitePolynomial_t, ConstructPolynomial, &
-       & DestructPolynomial, SetCoefficient, Compute
+  USE HermiteSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp

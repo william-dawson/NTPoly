@@ -3,7 +3,7 @@
 MODULE TrigonometrySolversModule_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
-  USE TrigonometrySolversModule, ONLY : Sine, Cosine, DenseSine, DenseCosine
+  USE TrigonometrySolversModule
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int, c_bool
   IMPLICIT NONE

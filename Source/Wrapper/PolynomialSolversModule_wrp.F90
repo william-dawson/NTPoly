@@ -2,8 +2,7 @@
 !> Wraps the polynomial solvers module for calling from other languages.
 MODULE PolynomialSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE PolynomialSolversModule, ONLY : Polynomial_t, ConstructPolynomial, &
-       & DestructPolynomial, SetCoefficient, Compute, FactorizedCompute
+  USE PolynomialSolversModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp

@@ -2,8 +2,7 @@
 !> Wraps the geometry optimization module for calling from other languages.
 MODULE GeometryOptimizationModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE GeometryOptimizationModule, ONLY : PurificationExtrapolate, &
-       & LowdinExtrapolate
+  USE GeometryOptimizationModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp

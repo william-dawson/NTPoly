@@ -2,10 +2,7 @@
 !> A module for wrapping the triplet list data type.
 MODULE TripletListModule_wrp
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & AppendToTripletList, ResizeTripletList, &
-       & DestructTripletList, SetTripletAt, GetTripletAt, SortTripletList, &
-       & GetTripletListSize, ConstructTripletList
+  USE TripletListModule
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE WrapperModule, ONLY : SIZE_wrp
   USE iso_c_binding, ONLY : c_int

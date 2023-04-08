@@ -1,9 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the permutation module for calling from other languages.
 MODULE PermutationModule_wrp
-  USE PermutationModule, ONLY : Permutation_t, ConstructDefaultPermutation, &
-       & ConstructReversePermutation, ConstructRandomPermutation, &
-       & DestructPermutation
+  USE PermutationModule
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE

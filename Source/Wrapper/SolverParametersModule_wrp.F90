@@ -2,10 +2,7 @@
 !> A wrapper for the iterative solver parameters.
 MODULE SolverParametersModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE SolverParametersModule, ONLY : SolverParameters_t, &
-       & SetParametersConvergeDiff, SetParametersMaxIterations, &
-       & SetParametersThreshold, SetParametersBeVerbose, &
-       & SetParametersLoadBalance, DestructSolverParameters
+  USE SolverParametersModule
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_bool, c_int

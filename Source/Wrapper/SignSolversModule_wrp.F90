@@ -2,8 +2,7 @@
 !> Wraps the sign solvers module for calling from other languages.
 MODULE SignSolversModule_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
-  USE SignSolversModule, ONLY : SignFunction, DenseSignFunction, &
-       & PolarDecomposition
+  USE SignSolversModule
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
