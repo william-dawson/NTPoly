@@ -3,8 +3,7 @@
 MODULE SquareRootSolversModule_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
-  USE SquareRootSolversModule, ONLY : SquareRoot, InverseSquareRoot, &
-       & DenseSquareRoot, DenseInverseSquareRoot
+  USE SquareRootSolversModule
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_bool
   IMPLICIT NONE

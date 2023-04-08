@@ -4,8 +4,7 @@ MODULE SMatrixAlgebraModule_wrp
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
   USE MatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_lr_wrp, &
        & MatrixMemoryPool_lc_wrp
-  USE SMatrixAlgebraModule, ONLY : ScaleMatrix, IncrementMatrix, &
-       & MatrixMultiply, DotMatrix, PairwiseMultiplyMatrix
+  USE SMatrixAlgebraModule
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc
   USE SMatrixModule_wrp, ONLY: Matrix_lsr_wrp, Matrix_lsc_wrp
   USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp

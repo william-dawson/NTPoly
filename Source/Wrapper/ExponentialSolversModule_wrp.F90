@@ -1,9 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the exponential solvers module for calling from other languages.
 MODULE ExponentialSolversModule_wrp
-  USE ExponentialSolversModule, ONLY : ComputeExponential, &
-       & ComputeExponentialPade, ComputeDenseExponential, &
-       & ComputeLogarithm, ComputeDenseLogarithm
+  USE ExponentialSolversModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp

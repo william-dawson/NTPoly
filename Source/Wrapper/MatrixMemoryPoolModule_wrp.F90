@@ -1,9 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for wrapping the matrix memory pool data type.
 MODULE MatrixMemoryPoolModule_wrp
-  USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, &
-       & MatrixMemoryPool_lc, DestructMatrixMemoryPool, &
-       & ConstructMatrixMemoryPool
+  USE MatrixMemoryPoolModule
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE

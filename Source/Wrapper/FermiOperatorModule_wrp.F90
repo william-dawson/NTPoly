@@ -2,7 +2,7 @@
 !> Wraps the density matrix solvers module for calling from other languages.
 MODULE FermiOperatorModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE FermiOperatorModule, ONLY : ComputeDenseFOE
+  USE FermiOperatorModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp

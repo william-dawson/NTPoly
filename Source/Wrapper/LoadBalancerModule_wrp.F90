@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the load balancer module for calling from other languages.
 MODULE LoadBalancerModule_wrp
-  USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
+  USE LoadBalancerModule
   USE PermutationModule_wrp, ONLY : Permutation_wrp
   USE PMatrixMemoryPoolModule_wrp, ONLY : MatrixMemoryPool_p_wrp
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp

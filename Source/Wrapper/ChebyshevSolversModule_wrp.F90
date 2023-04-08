@@ -1,9 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the Chebyshev Solvers Module
 MODULE ChebyshevSolversModule_wrp
-  USE ChebyshevSolversModule, ONLY : ChebyshevPolynomial_t, &
-       & ConstructPolynomial, DestructPolynomial, SetCoefficient, Compute, &
-       & FactorizedCompute
+  USE ChebyshevSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp

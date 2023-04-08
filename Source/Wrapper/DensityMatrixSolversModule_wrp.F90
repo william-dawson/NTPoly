@@ -2,8 +2,7 @@
 !> Wraps the density matrix solvers module for calling from other languages.
 MODULE DensityMatrixSolversModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE DensityMatrixSolversModule, ONLY : TRS2, TRS4, HPCP, PM, ScaleAndFold, &
-       & EnergyDensityMatrix, DenseDensity
+  USE DensityMatrixSolversModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp

@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the eigensolvers module for calling from other languages.
 MODULE EigenSolversModule_wrp
-  USE EigenSolversModule, ONLY : EigenDecomposition
+  USE EigenSolversModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE PSMAtrixModule, ONLY : PrintMatrix
   USE SingularValueSolversModule, ONLY : SingularValueDecomposition

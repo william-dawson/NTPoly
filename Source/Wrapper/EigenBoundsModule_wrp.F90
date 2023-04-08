@@ -2,7 +2,7 @@
 !> Wraps the eigenbounds module for calling from other languages.
 MODULE EigenBoundsModule_wrp
   USE DataTypesModule, ONLY : NTREAL
-  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
+  USE EigenBoundsModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE SolverParametersModule_wrp, ONLY : SolverParameters_wrp
   USE WrapperModule, ONLY : SIZE_wrp
