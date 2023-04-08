@@ -297,7 +297,7 @@ class TestChemistry:
         smat = mmread(self.overlap)
         result = 3 * dmat.dot(dmat) - 2 * dmat.dot(dmat).dot(dmat)
         result_s = 3 * dmat.dot(smat).dot(dmat) - \
-                   2 * dmat.dot(smat).dot(dmat).dot(smat).dot(dmat)
+            2 * dmat.dot(smat).dot(dmat).dot(smat).dot(dmat)
 
         # NTPoly
         d_matrix = nt.Matrix_ps(self.density)
@@ -329,7 +329,6 @@ class TestChemistry:
         global_norm = comm.bcast(normval, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
         comm.barrier()
-
 
     def test_energy_density(self):
         '''Test the routines to compute the weighted-energy density matrix.'''
