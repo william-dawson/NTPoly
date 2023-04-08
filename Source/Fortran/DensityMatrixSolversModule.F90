@@ -28,6 +28,7 @@ MODULE DensityMatrixSolversModule
   PUBLIC :: DenseDensity
   PUBLIC :: ScaleAndFold
   PUBLIC :: EnergyDensityMatrix
+  PUBLIC :: McWeenyStep
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the PM method.
   !> Based on the PM algorithm presented in \cite palser1998canonical
@@ -1207,5 +1208,49 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SimilarityTransform(H, D, D, ED, threshold_in=threshold)
 
   END SUBROUTINE EnergyDensityMatrix
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Take one McWeeny Step DOut = 3*DSD - 2*DSDSD
+  SUBROUTINE McWeenyStep(D, DOut, S_in, threshold_in)
+    !> The density matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: D
+    !> The resulting purified matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: DOut
+    !> The overlap matrix (optional)
+    TYPE(Matrix_ps), INTENT(IN), OPTIONAL :: S_in
+    !> Threshold for flushing small values (default = 0).
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
+    !! Handling Optional Parameters
+    REAL(NTREAL) :: threshold
+    !! Local Variables
+    TYPE(Matrix_ps) :: DS, DSD
+    TYPE(MatrixMemoryPool_p) :: pool
+
+    !! Optional Parameters
+    IF (PRESENT(threshold_in)) THEN
+       threshold = threshold_in
+    ELSE
+       threshold = 0.0_NTREAL
+    END IF
+
+    !! Form the matrix DS
+    IF (PRESENT(S_in)) THEN
+       CALL MatrixMultiply(D, S_in, DS, &
+            & threshold_in=threshold, memory_pool_in=pool)
+    ELSE
+       CALL CopyMatrix(D, DS)
+    END IF
+
+    !! Compute
+    CALL MatrixMultiply(DS, D, DSD, & 
+         & threshold_in=threshold, memory_pool_in=pool)
+    CALL MatrixMultiply(DS, DSD, DOut, alpha_in=-2.0_NTREAL, &
+         & threshold_in=threshold, memory_pool_in=pool)
+    CALL IncrementMatrix(DSD, DOut, alpha_in=3.0_NTREAL)
+
+    !! Cleanup
+    CALL DestructMatrix(DS)
+    CALL DestructMatrix(DSD)
+    CALL DestructMatrixMemoryPool(pool)
+  END SUBROUTINE McWeenyStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DensityMatrixSolversModule

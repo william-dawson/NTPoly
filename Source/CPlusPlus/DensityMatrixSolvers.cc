@@ -80,4 +80,16 @@ void DensityMatrixSolvers::EnergyDensityMatrix(const Matrix_ps &Hamiltonian,
                           GetIH(EnergyDensity), &threshold);
 }
 
+////////////////////////////////////////////////////////////////////////////////
+void DensityMatrixSolvers::McWeenyStep(const Matrix_ps &D, Matrix_ps &DOut,
+                                       double threshold) {
+  McWeenyStep_wrp(GetIH(D), GetIH(DOut), &threshold);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void DensityMatrixSolvers::McWeenyStep(const Matrix_ps &D, const Matrix_ps &S,
+                                       Matrix_ps &DOut, double threshold) {
+  McWeenyStepS_wrp(GetIH(D), GetIH(DOut), GetIH(S), &threshold);
+}
+
 } // namespace NTPoly

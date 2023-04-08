@@ -33,4 +33,7 @@ void DenseDensity_wrp(const int *ih_Hamiltonian,
                       const int *ih_solver_parameters);
 void EnergyDensityMatrix_wrp(const int *ih_Hamiltonian, const int *ih_Density,
                              int *ih_EnergyDensity, const double *threshold);
+void McWeenyStep_wrp(const int *ih_D, int *ih_DOut, const double *threshold);
+void McWeenyStepS_wrp(const int *ih_D, int *ih_DOut, const int *ih_S,
+                      const double *threshold);
 #endif

@@ -106,6 +106,19 @@ public:
                                   const Matrix_ps &Density,
                                   Matrix_ps &EnergyDensity,
                                   double threshold = 0.0);
+  //! Take one McWeeny Step DOut = 3*DD - 2*DDD
+  //!\param D the density matrix.
+  //!\param DOut a more purified matrix.
+  //!\param threshold for flushing small values to zero.
+  static void McWeenyStep(const Matrix_ps &D, Matrix_ps &DOut,
+                          double threshold = 0.0);
+  //! Take one McWeeny Step DOut = 3*DSD - 2*DSDSD
+  //!\param D the density matrix.
+  //!\param S the overlap matrix.
+  //!\param DOut a more purified matrix.
+  //!\param threshold for flushing small values to zero.
+  static void McWeenyStep(const Matrix_ps &D, const Matrix_ps &S,
+                          Matrix_ps &DOut, double threshold = 0.0);
 };
 } // namespace NTPoly
 #endif
