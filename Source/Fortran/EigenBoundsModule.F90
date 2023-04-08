@@ -13,7 +13,7 @@ MODULE EigenBoundsModule
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & AppendToTripletList, DestructTripletList
+       & AppendToTripletList, DestructTripletList, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r
   USE NTMPIModule
   IMPLICIT NONE
@@ -92,7 +92,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(vector2, this)
 
     !! Guess Vector
-    temp_list = TripletList_r()
+    CALL ConstructTripletList(temp_list)
     IF (this%process_grid%global_rank .EQ. 0) THEN
        temp_triplet%index_row = 1
        temp_triplet%index_column = 1

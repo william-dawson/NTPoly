@@ -6,7 +6,7 @@
 
   local_columns = LMat%local_columns
 
-  local_triplets = TripletList_r()
+  CALL ConstructTripletList(local_triplets)
   IF (LMat%process_grid%my_slice .EQ. 0) THEN
      DO JJ = 1, local_columns
         !! note transpose

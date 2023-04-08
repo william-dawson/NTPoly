@@ -2,7 +2,8 @@
 !> A module for wrapping the matrix memory pool data type.
 MODULE MatrixMemoryPoolModule_wrp
   USE MatrixMemoryPoolModule, ONLY : MatrixMemoryPool_lr, &
-       & MatrixMemoryPool_lc, DestructMatrixMemoryPool
+       & MatrixMemoryPool_lc, DestructMatrixMemoryPool, &
+       & ConstructMatrixMemoryPool
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int
   IMPLICIT NONE
@@ -33,7 +34,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lr_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = MatrixMemoryPool_lr(columns,rows)
+    CALL ConstructMatrixMemoryPool(h_this%DATA, columns, rows)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_lr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -58,7 +59,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_lc_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = MatrixMemoryPool_lc(columns,rows)
+    CALL ConstructMatrixMemoryPool(h_this%DATA, columns, rows)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixMemoryPool_lc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

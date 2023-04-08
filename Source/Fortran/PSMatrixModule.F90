@@ -233,13 +233,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (this%is_complex) THEN
        ALLOCATE(this%local_data_c(this%process_grid%number_of_blocks_rows, &
             & this%process_grid%number_of_blocks_columns))
-       zeromatrix_c = Matrix_lsc(this%local_rows, this%local_columns)
+       CALL ConstructEmptyMatrix(zeromatrix_c, this%local_rows, &
+            & this%local_columns)
        CALL SplitMatrixToLocalBlocks(this, zeromatrix_c)
        CALL DestructMatrix(zeromatrix_c)
     ELSE
        ALLOCATE(this%local_data_r(this%process_grid%number_of_blocks_rows, &
             & this%process_grid%number_of_blocks_columns))
-       zeromatrix_r = Matrix_lsr(this%local_rows, this%local_columns)
+       CALL ConstructEmptyMatrix(zeromatrix_r, this%local_rows, &
+            & this%local_columns)
        CALL SplitMatrixToLocalBlocks(this, zeromatrix_r)
        CALL DestructMatrix(zeromatrix_r)
     END IF

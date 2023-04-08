@@ -66,7 +66,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = Matrix_lsr(local_string)
+    CALL ConstructMatrixFromFile(h_this%DATA, local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromFile_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -84,7 +84,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     ALLOCATE(h_this%DATA)
-    h_this%DATA = Matrix_lsr(h_triplet_list%DATA, rows, columns)
+    CALL ConstructMatrixFromTripletList(h_this%DATA, h_triplet_list%DATA, &
+         & rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -98,7 +99,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = Matrix_lsr(rows, columns, .TRUE.)
+    CALL ConstructEmptyMatrix(h_this%DATA, rows, columns, .TRUE.)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructZeroMatrix_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -260,7 +261,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = Matrix_lsc(local_string)
+    CALL ConstructMatrixFromFile(h_this%DATA, local_string)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromFile_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -278,7 +279,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     h_triplet_list = TRANSFER(ih_triplet_list,h_triplet_list)
     ALLOCATE(h_this%DATA)
-    h_this%DATA = Matrix_lsc(h_triplet_list%DATA, rows, columns)
+    CALL ConstructMatrixFromTripletList(h_this%DATA, h_triplet_list%DATA, &
+         & rows, columns)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructMatrixFromTripletList_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -292,7 +294,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = Matrix_lsc(rows, columns)
+    CALL ConstructEmptyMatrix(h_this%DATA, rows, columns, .TRUE.)
     ih_this = TRANSFER(h_this,ih_this)
   END SUBROUTINE ConstructZeroMatrix_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

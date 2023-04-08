@@ -2,6 +2,8 @@
   INTEGER :: outer_array_ptr
   INTEGER :: values_counter
 
+  CALL DestructMatrix(this)
+
   this%rows = rows
   this%columns = columns
 
