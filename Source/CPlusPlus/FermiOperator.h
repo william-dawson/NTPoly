@@ -25,6 +25,19 @@ public:
                               double &energy_value_out,
                               double &chemical_potential_out,
                               const SolverParameters &solver_parameters);
+  //! Compute the density matrix using wave operator minimization.
+  //!\param Hamiltonian the matrix to compute the corresponding density from.
+  //!\param InverseSquareRoot of the overlap matrix.
+  //!\param Density the density matrix computed by this routine.
+  //!\param chemical_potential the chemical potential calculated.
+  //!\param inv_temp the inverse temperature.
+  //!\param energy_value_out the energy of the system.
+  //!\param solver_parameters parameters for the solver
+  static void WOM_GC(const Matrix_ps &Hamiltonian,
+                     const Matrix_ps &InverseSquareRoot,
+                     Matrix_ps &Density, double chemical_potential,
+                     double inv_temp, double &energy_value_out,
+                     const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

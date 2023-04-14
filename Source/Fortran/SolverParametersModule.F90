@@ -22,6 +22,8 @@ MODULE SolverParametersModule
      LOGICAL :: do_load_balancing
      !> The permutation used for load balancing.
      TYPE(Permutation_t) :: BalancePermutation
+     !> Thresholds for step size searches.
+     REAL(NTREAL) :: step_thresh
   END TYPE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE SolverParameters_t
@@ -33,6 +35,7 @@ MODULE SolverParametersModule
   PUBLIC :: SetParametersThreshold
   PUBLIC :: SetParametersBeVerbose
   PUBLIC :: SetParametersLoadBalance
+  PUBLIC :: SetParametersStepThreshold
   PUBLIC :: PrintParameters
   PUBLIC :: DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -43,7 +46,8 @@ MODULE SolverParametersModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a data type which stores iterative solver parameters.
   PURE FUNCTION SolverParameters_init(converge_diff_in, threshold_in, &
-       & max_iterations_in, be_verbose_in, BalancePermutation_in) RESULT(this)
+       & max_iterations_in, be_verbose_in, BalancePermutation_in, &
+       & step_thresh_in) RESULT(this)
     !> Converge_diff_in the difference between iterations to consider
     !> a calculation converged.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: converge_diff_in
@@ -55,6 +59,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
     !> For load balancing
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
+    !> The threshold for step size searches.
+    REAL(NTREAL), INTENT(IN), OPTIONAL :: step_thresh_in
+    !! Local variables
     TYPE(SolverParameters_t) :: this
 
     !! Optional Parameters
@@ -83,6 +90,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        this%do_load_balancing = .TRUE.
        this%BalancePermutation = BalancePermutation_in
+    END IF
+    IF (.NOT. PRESENT(step_thresh_in)) THEN
+       this%step_thresh = 1E-2_NTREAL
+    ELSE
+       this%step_thresh = step_thresh_in
     END IF
   END FUNCTION SolverParameters_init
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -137,6 +149,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     this%BalancePermutation = new_value
   END SUBROUTINE SetParametersLoadBalance
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the step threshold.
+  PURE SUBROUTINE SetParametersStepThreshold(this,new_value)
+    !> The parameter object.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
+    REAL(NTREAL), INTENT(IN) :: new_value
+
+    this%step_thresh = new_value
+  END SUBROUTINE SetParametersStepThreshold
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the iterative solver parameter values.
   SUBROUTINE PrintParameters(this)
     !> The parameter object.
@@ -149,6 +171,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL WriteElement(key="converge_diff", VALUE=this%converge_diff)
     CALL WriteElement(key="threshold", VALUE=this%threshold)
     CALL WriteElement(key="max_iterations", VALUE=this%max_iterations)
+    CALL WriteElement(key="step_thresh", VALUE=this%step_thresh)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

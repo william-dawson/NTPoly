@@ -29,6 +29,9 @@ public:
   //! Load balance settings.
   //!\param new_value
   void SetLoadBalance(const Permutation &new_value);
+  //! Thresholds for step size searches.
+  //!\param new_value
+  void SetStepThreshold(double new_value);
   ~SolverParameters();
 
 private:

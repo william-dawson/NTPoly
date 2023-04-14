@@ -287,6 +287,66 @@ class TestChemistry:
         '''Test the fermi operator expansion at a low temperature.'''
         self.basic_solver(nt.FermiOperator.ComputeDenseFOE, temp=50)
 
+    def test_wom_gc(self):
+        '''Test the wom_gc solver.'''
+        from helpers import result_file, THRESHOLD
+        from scipy.io import mmread
+        from scipy.linalg import eigh, funm
+        from numpy.linalg import norm
+        from numpy import exp, diag, sqrt, trace, matrix
+
+        SRoutine = nt.FermiOperator.WOM_GC
+        beta = 105
+
+        self.create_matrices()
+        fock_matrix = nt.Matrix_ps(self.hamiltonian)
+        overlap_matrix = nt.Matrix_ps(self.overlap)
+        inverse_sqrt_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+        density_matrix = nt.Matrix_ps(fock_matrix.GetActualDimension())
+
+        permutation = nt.Permutation(fock_matrix.GetLogicalDimension())
+        permutation.SetRandomPermutation()
+        self.solver_parameters.SetLoadBalance(permutation)
+        self.solver_parameters.SetStepThreshold(1e-5)
+
+        # Reference Solution
+        F = mmread(self.hamiltonian).todense()
+        S = mmread(self.overlap).todense()
+        ISQ = funm(S, lambda x: 1/sqrt(x))
+        FOrth = ISQ.dot(F).dot(ISQ)
+
+        w, v = eigh(FOrth)
+        mu = w[int(self.nel)-1] + 0.5*(w[int(self.nel)] - w[int(self.nel)-1])
+        we = [1.0/(1 + exp(beta*(x - mu))) for x in w]
+
+        if self.is_complex:
+            DOrth = v @ diag(we) @ matrix(v).H
+        else:
+            DOrth = v @ diag(we) @ v.T
+        D = ISQ.dot(DOrth).dot(ISQ)
+        check_energy = trace(FOrth.dot(DOrth))
+
+        # Solve with NTPoly
+        nt.SquareRootSolvers.InverseSquareRoot(overlap_matrix,
+                                               inverse_sqrt_matrix,
+                                               self.solver_parameters)
+        energy_value = SRoutine(fock_matrix, inverse_sqrt_matrix,
+                                density_matrix, mu, beta,
+                                self.solver_parameters)
+
+        density_matrix.WriteToMatrixMarket(result_file)
+
+        normval = 0
+        if (self.my_rank == 0):
+            ResultMat = mmread(result_file)
+            self.CheckMat = D
+            normval = abs(norm(self.CheckMat - ResultMat))
+        global_norm = comm.bcast(normval, root=0)
+        global_en = comm.bcast(check_energy - energy_value, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
+        self.assertLessEqual(global_en, THRESHOLD)
+
+
     def test_mcweeny_step(self):
         from scipy.io import mmread
         from helpers import result_file, THRESHOLD
