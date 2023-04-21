@@ -11,7 +11,8 @@ PROGRAM PremadeMatrixProgram
        & DestructProcessGrid, WriteProcessGridInfo
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructMatrixFromMatrixMarket, &
        & WriteMatrixToMatrixMarket, DestructMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SolverParametersModule, ONLY : SolverParameters_t, &
+       & ConstructSolverParameters, DestructSolverParameters
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE MPI
   IMPLICIT NONE
@@ -32,7 +33,7 @@ PROGRAM PremadeMatrixProgram
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
-  INTEGER :: counter
+  INTEGER :: II
   INTEGER :: provided, ierr
   INTEGER :: rank
   REAL(NTREAL) :: chemical_potential
@@ -42,9 +43,9 @@ PROGRAM PremadeMatrixProgram
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
-     CALL GET_COMMAND_ARGUMENT(counter,argument)
-     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
+  DO II = 1, COMMAND_ARGUMENT_COUNT(), 2
+     CALL GET_COMMAND_ARGUMENT(II, argument)
+     CALL GET_COMMAND_ARGUMENT(II+1, argument_value)
      SELECT CASE(argument)
      CASE('--hamiltonian')
         hamiltonian_file = argument_value
@@ -93,13 +94,13 @@ PROGRAM PremadeMatrixProgram
   CALL WriteProcessGridInfo
 
   !! Read in the matrices from file.
-  CALL ConstructMatrixFromMatrixMarket(Hamiltonian,hamiltonian_file)
-  CALL ConstructMatrixFromMatrixMarket(Overlap,overlap_file)
+  CALL ConstructMatrixFromMatrixMarket(Hamiltonian, hamiltonian_file)
+  CALL ConstructMatrixFromMatrixMarket(Overlap, overlap_file)
 
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
        & Hamiltonian%logical_matrix_dimension)
-  solver_parameters = SolverParameters_t(&
+  CALL ConstructSolverParameters(solver_parameters, &
        & converge_diff_in=converge_overlap, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 
@@ -107,17 +108,18 @@ PROGRAM PremadeMatrixProgram
   CALL InverseSquareRoot(Overlap, ISQOverlap, solver_parameters)
 
   !! Change the solver variable for computing the density matrix.
-  solver_parameters%converge_diff=converge_density
+  solver_parameters%converge_diff = converge_density
 
   !! Compute the density matrix.
   CALL TRS2(Hamiltonian, ISQOverlap, number_of_electrons, &
-       & Density, solver_parameters_in=solver_parameters, &
-       & chemical_potential_out=chemical_potential)
+       & Density, solver_parameters_in = solver_parameters, &
+       & chemical_potential_out = chemical_potential)
 
   !! Print the density matrix to file.
-  CALL WriteMatrixToMatrixMarket(Density,density_file_out)
+  CALL WriteMatrixToMatrixMarket(Density, density_file_out)
 
   !! Cleanup
+  CALL DestructSolverParameters(solver_parameters)
   CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)

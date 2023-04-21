@@ -197,7 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement("Energy_Value", VALUE=energy_value)
+          CALL WriteElement("Energy Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -208,7 +208,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     total_iterations = II-1
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II)
+       CALL WriteElement(key="Total Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -412,7 +412,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement("Energy_Value", VALUE=energy_value)
+          CALL WriteElement("Energy Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -423,7 +423,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     total_iterations = II - 1
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II)
+       CALL WriteElement(key="Total Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -643,7 +643,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement("Energy_Value", VALUE=energy_value)
+          CALL WriteElement("Energy Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -654,7 +654,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     total_iterations = II - 1
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II)
+       CALL WriteElement(key="Total Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -889,7 +889,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement("Energy_Value", VALUE=energy_value)
+          CALL WriteElement("Energy Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -900,7 +900,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     total_iterations = II - 1
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II)
+       CALL WriteElement(key="Total Iterations", VALUE=II)
        CALL PrintMatrixInformation(D1)
     END IF
 
@@ -1096,7 +1096,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
           CALL EnterSubLog
-          CALL WriteElement("Energy_Value", VALUE=energy_value)
+          CALL WriteElement("Energy Value", VALUE=energy_value)
           CALL ExitSubLog
        END IF
 
@@ -1106,7 +1106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II)
+       CALL WriteElement(key="Total Iterations", VALUE=II)
        CALL PrintMatrixInformation(X_k)
     END IF
 

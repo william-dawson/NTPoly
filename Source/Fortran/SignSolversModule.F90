@@ -235,7 +235,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO iterate
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key="Total Iterations", VALUE=II-1)
        CALL PrintMatrixInformation(OutMat)
     END IF
 

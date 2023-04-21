@@ -39,7 +39,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_max
     !! Counters/Temporary
-    INTEGER :: counter
+    INTEGER :: II
     INTEGER :: local_column
     INTEGER :: ierr
 
@@ -98,9 +98,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_triplet%index_row = 1
        temp_triplet%index_column = 1
        temp_triplet%point_value = 1.0_NTREAL
-       CALL AppendToTripletList(temp_list,temp_triplet)
+       CALL AppendToTripletList(temp_list, temp_triplet)
     END IF
-    CALL FillMatrixFromTripletList(vector,temp_list)
+    CALL FillMatrixFromTripletList(vector, temp_list)
 
     !! Iterate
     IF (param%be_verbose) THEN
@@ -133,7 +133,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (param%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II - 1)
+       CALL WriteElement(key="Total Iterations", VALUE=II - 1)
     END IF
 
     !! Compute The Largest Eigenvalue
@@ -144,7 +144,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     max_value = max_value / scale_value
 
     IF (param%be_verbose) THEN
-       CALL WriteElement(key="Max_Eigen_Value",VALUE=max_value)
+       CALL WriteElement(key="Max Eigen Value",VALUE=max_value)
        CALL ExitSubLog
     END IF
 

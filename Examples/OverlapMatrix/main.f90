@@ -10,7 +10,8 @@ PROGRAM OverlapExample
        & DestructProcessGrid
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & WriteMatrixToMatrixMarket, FillMatrixFromTripletList, DestructMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SolverParametersModule, ONLY : SolverParameters_t, &
+       & ConstructSolverParameters, DestructSolverParameters
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TimerModule, ONLY : RegisterTimer, StartTimer, StopTimer, PrintAllTimers
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
@@ -41,7 +42,7 @@ PROGRAM OverlapExample
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
   INTEGER :: column_counter, row_counter
-  INTEGER :: counter
+  INTEGER :: ARGII
   REAL(ntreal) :: integral_value
 
   !! Setup MPI
@@ -49,9 +50,9 @@ PROGRAM OverlapExample
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
-     CALL GET_COMMAND_ARGUMENT(counter,argument)
-     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
+  DO ARGII = 1, COMMAND_ARGUMENT_COUNT(), 2
+     CALL GET_COMMAND_ARGUMENT(ARGII, argument)
+     CALL GET_COMMAND_ARGUMENT(ARGII + 1, argument_value)
      SELECT CASE(argument)
      CASE('--basis_functions')
         READ(argument_value,*) basis_functions
@@ -126,7 +127,7 @@ PROGRAM OverlapExample
   !! Set Up The Solver Parameters.
   CALL ConstructRandomPermutation(permutation, &
        & Overlap%logical_matrix_dimension)
-  solver_parameters = SolverParameters_t(&
+  CALL ConstructSolverParameters(solver_parameters, &
        & converge_diff_in=convergence_threshold, threshold_in=threshold, &
        & BalancePermutation_in=permutation, be_verbose_in=.TRUE.)
 
@@ -144,6 +145,7 @@ PROGRAM OverlapExample
   CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
   CALL DestructMatrix(ISQOverlap)
+  CALL DestructSolverParameters(solver_parameters)
 
   !! Cleanup
   IF (IsRoot()) THEN

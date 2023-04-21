@@ -11,7 +11,8 @@ PROGRAM GraphTheory
        & ConstructEmptyMatrix, FillMatrixFromTripletList, DestructMatrix, &
        & CopyMatrix, FillMatrixIdentity
   USE PSMatrixAlgebraModule, ONLY: IncrementMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SolverParametersModule, ONLY : SolverParameters_t, &
+       & ConstructSolverParameters, DestructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & SetTripletAt, AppendToTripletList
   USE TripletModule, ONLY : Triplet_r
@@ -42,7 +43,7 @@ PROGRAM GraphTheory
   !! Temporary Values
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
-  INTEGER :: counter
+  INTEGER :: II
 
   !! Setup MPI
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
@@ -50,9 +51,9 @@ PROGRAM GraphTheory
   CALL MPI_Comm_size(MPI_COMM_WORLD, total_processors, ierr)
 
   !! Process the input parameters.
-  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
-     CALL GET_COMMAND_ARGUMENT(counter,argument)
-     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
+  DO II = 1, COMMAND_ARGUMENT_COUNT(), 2
+     CALL GET_COMMAND_ARGUMENT(II, argument)
+     CALL GET_COMMAND_ARGUMENT(II + 1, argument_value)
      SELECT CASE(argument)
      CASE('--output_file')
         output_file = argument_value
@@ -97,7 +98,7 @@ PROGRAM GraphTheory
   CALL ExitSubLog
 
   !! Set Up The Solver Parameters.
-  solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
+  CALL ConstructSolverParameters(solver_parameters, be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   CALL DivideUpWork
@@ -121,6 +122,7 @@ PROGRAM GraphTheory
   IF (IsRoot()) THEN
      CALL DeactivateLogger
   END IF
+  CALL DestructSolverParameters(solver_parameters)
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

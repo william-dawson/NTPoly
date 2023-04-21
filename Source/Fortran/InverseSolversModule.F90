@@ -102,7 +102,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Check if Converged
        CALL CopyMatrix(Identity, Temp2)
-       CALL IncrementMatrix(Temp1, Temp2,-1.0_NTREAL)
+       CALL IncrementMatrix(Temp1, Temp2, -1.0_NTREAL)
        norm_value = MatrixNorm(Temp2)
 
        CALL DestructMatrix(Temp2)
@@ -123,7 +123,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key="Total Iterations", VALUE=II-1)
        CALL PrintMatrixInformation(OutputMat)
     END IF
 
@@ -277,7 +277,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key="Total Iterations", VALUE=II-1)
        CALL PrintMatrixInformation(OutputMat)
     END IF
 

@@ -137,22 +137,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleMatrix(OutputMat, poly%coefficients(1))
     IF (degree .GT. 1) THEN
        CALL CopyMatrix(BalancedInput, Hk)
-       CALL ScaleMatrix(Hk, REAL(2.0,KIND=NTREAL))
+       CALL ScaleMatrix(Hk, 2.0_NTREAL)
        CALL IncrementMatrix(Hk, OutputMat, &
             & alpha_in=poly%coefficients(2))
        IF (degree .GT. 2) THEN
           CALL CopyMatrix(Hkminus1, Hkprime)
-          CALL ScaleMatrix(Hkprime, REAL(2.0,NTREAL))
+          CALL ScaleMatrix(Hkprime, 2.0_NTREAL)
           DO II = 3, degree
              CALL MatrixMultiply(BalancedInput, Hk, Hkplus1, &
-                  & alpha_in=REAL(2.0,NTREAL), &
+                  & alpha_in=2.0_NTREAL, &
                   & threshold_in=params%threshold, &
                   & memory_pool_in=pool)
              CALL IncrementMatrix(Hkprime, Hkplus1, &
-                  & alpha_in=REAL(-1.0,NTREAL))
+                  & alpha_in=-1.0_NTREAL)
              CALL CopyMatrix(Hk, Hkprime)
              CALL ScaleMatrix(Hkprime, &
-                  & REAL(2*(II-1),KIND=NTREAL))
+                  & REAL(2*(II-1), KIND=NTREAL))
              CALL CopyMatrix(Hk, Hkminus1)
              CALL CopyMatrix(Hkplus1, Hk)
              CALL IncrementMatrix(Hk, OutputMat, &

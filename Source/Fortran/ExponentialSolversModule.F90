@@ -9,8 +9,7 @@ MODULE ExponentialSolversModule
   USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LinearSolversModule, ONLY : CGSolver
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
-       & WriteElement
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, WriteElement
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixNorm, ScaleMatrix, &
        & IncrementMatrix
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
@@ -121,7 +120,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & params%BalancePermutation, memorypool_in=pool)
     END IF
 
-    DO counter=1,sigma_counter-1
+    DO counter = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
             & threshold_in=params%threshold, memory_pool_in=pool)
        CALL CopyMatrix(TempMat,OutputMat)
@@ -204,7 +203,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
     IF (params%be_verbose) THEN
        CALL WriteElement(key="Sigma", VALUE=sigma_val)
-       CALL WriteElement(key="Scaling_Steps", VALUE=sigma_counter)
+       CALL WriteElement(key="Scaling Steps", VALUE=sigma_counter)
     END IF
 
     !! Sub Solver Parameters
@@ -348,7 +347,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(Ak, OutputMat)
     END DO
 
-    DO II = 1, sigma_counter-1
+    DO II = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
             & threshold_in=params%threshold, memory_pool_in=pool)
        CALL CopyMatrix(TempMat,OutputMat)
@@ -471,8 +470,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_params)
 
     !! Shift Scaled Matrix
-    CALL IncrementMatrix(IdentityMat, ScaledMat, &
-         & alpha_in=REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(IdentityMat, ScaledMat, alpha_in=-1.0_NTREAL)
 
     !! Expand Chebyshev Series
     CALL ConstructPolynomial(polynomial, 32)
@@ -512,8 +510,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FactorizedCompute(ScaledMat, OutputMat, polynomial, f_sub_params)
 
     !! Scale Back
-    CALL ScaleMatrix(OutputMat, &
-         & REAL(2**(sigma_counter-1),NTREAL))
+    CALL ScaleMatrix(OutputMat, REAL(2**(sigma_counter-1),NTREAL))
 
     !! Cleanup
     IF (params%be_verbose) THEN
@@ -589,7 +586,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Setup Matrices
-    CALL IncrementMatrix(IdentityMat, ScaledMat, alpha_in=REAL(-1.0,NTREAL))
+    CALL IncrementMatrix(IdentityMat, ScaledMat, alpha_in=-1.0_NTREAL)
     CALL CopyMatrix(IdentityMat, Ak)
 
     !! Load Balancing Step

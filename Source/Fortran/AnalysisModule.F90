@@ -135,7 +135,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL GetPivot(AMat, LMat%process_grid, JJ, pivot_vector, diag, pi_j, &
             & insert_value, local_pivots, num_local_pivots)
 
-       !! l[pi[j],j] = sqrt(d[pi[j]])
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
           local_pi_j = pi_j - AMat%start_column + 1
           insert_value = SQRT(insert_value)

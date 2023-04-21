@@ -128,7 +128,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II)
+       CALL WriteElement(key="Total Iterations", VALUE=II)
        CALL PrintMatrixInformation(NewDensity)
     END IF
 

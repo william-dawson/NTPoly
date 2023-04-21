@@ -101,7 +101,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p) :: pool
     !! Local Variables
     INTEGER :: degree
-    INTEGER :: counter
+    INTEGER :: II
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -148,19 +148,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL MatrixMultiply(BalancedInput, Tkminus1, Tk, &
                & alpha_in=REAL(2.0, NTREAL), &
                & threshold_in=params%threshold, memory_pool_in=pool)
-          CALL IncrementMatrix(Tkminus2, Tk, REAL(-1.0,NTREAL))
+          CALL IncrementMatrix(Tkminus2, Tk, alpha_in=-1.0_NTREAL)
           CALL IncrementMatrix(Tk, OutputMat, &
                & alpha_in=poly%coefficients(3))
-          DO counter = 4, degree
+          DO II = 4, degree
              CALL CopyMatrix(Tkminus1, Tkminus2)
              CALL CopyMatrix(Tk, Tkminus1)
              CALL MatrixMultiply(BalancedInput, Tkminus1, Tk, &
                   & alpha_in=REAL(2.0,NTREAL), &
                   & threshold_in=params%threshold, &
                   & memory_pool_in=pool)
-             CALL IncrementMatrix(Tkminus2, Tk, REAL(-1.0,NTREAL))
+             CALL IncrementMatrix(Tkminus2, Tk, alpha_in=-1.0_NTREAL)
              CALL IncrementMatrix(Tk, OutputMat, &
-                  & alpha_in=poly%coefficients(counter))
+                  & alpha_in=poly%coefficients(II))
           END DO
        END IF
     END IF
@@ -211,7 +211,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     INTEGER :: degree
     INTEGER :: log2degree
-    INTEGER :: counter
+    INTEGER :: II
 
     !! Handle The Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -257,14 +257,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(T_Powers(1), OutputMat)
     ELSE
        CALL CopyMatrix(BalancedInput, T_Powers(2))
-       DO counter=3,log2degree
-          CALL MatrixMultiply(T_Powers(counter-1), T_Powers(counter-1), &
-               & T_Powers(counter), threshold_in=params%threshold, &
-               & alpha_in=REAL(2.0,NTREAL), memory_pool_in=pool)
-          CALL IncrementMatrix(Identity, T_Powers(counter), &
-               & alpha_in=REAL(-1.0,NTREAL))
+       DO II=3, log2degree
+          CALL MatrixMultiply(T_Powers(II-1), T_Powers(II-1), &
+               & T_Powers(II), threshold_in=params%threshold, &
+               & alpha_in=2.0_NTREAL, memory_pool_in=pool)
+          CALL IncrementMatrix(Identity, T_Powers(II), alpha_in=-1.0_NTREAL)
        END DO
-
        !! Call Recursive
        CALL ComputeRecursive(T_Powers, poly, OutputMat, pool, 1, params)
     END IF
@@ -282,8 +280,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL ExitSubLog
     END IF
-    DO counter=1,log2degree
-       CALL DestructMatrix(T_Powers(counter))
+    DO II = 1, log2degree
+       CALL DestructMatrix(T_Powers(II))
     END DO
     DEALLOCATE(T_Powers)
     CALL DestructMatrix(Identity)

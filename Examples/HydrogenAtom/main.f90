@@ -11,7 +11,8 @@ PROGRAM HydrogenAtom
        & ConstructEmptyMatrix, FillMatrixFromTripletList, CopyMatrix, &
        & FillMatrixIdentity
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SolverParametersModule, ONLY : SolverParameters_t, &
+       & ConstructSolverParameters, DestructSolverParameters
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & AppendToTripletList
@@ -95,7 +96,7 @@ PROGRAM HydrogenAtom
   CALL ExitSubLog
 
   !! Set Up The Solver Parameters.
-  solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
+  CALL ConstructSolverParameters(solver_parameters, be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   !! Divide The Work Amongst Processors.
@@ -131,6 +132,7 @@ PROGRAM HydrogenAtom
   IF (IsRoot()) THEN
      CALL DeactivateLogger
   END IF
+  CALL DestructSolverParameters(solver_parameters)
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

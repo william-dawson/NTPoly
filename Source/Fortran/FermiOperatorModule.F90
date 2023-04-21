@@ -77,7 +77,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        IF (do_smearing) THEN
           CALL WriteElement(key="Method", VALUE="Dense FOE")
-          CALL WriteElement(key="InverseTemperature", VALUE=inv_temp)
+          CALL WriteElement(key="Inverse Temperature", VALUE=inv_temp)
        ELSE
           CALL WriteElement(key="Method", VALUE="Dense Step Function")
        END IF
