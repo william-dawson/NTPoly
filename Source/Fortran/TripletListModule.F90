@@ -350,7 +350,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The column offset to shift by.
     INTEGER, INTENT(IN) :: column_shift
     !! Local Variables
-    INTEGER :: counter
+    INTEGER :: II
 
 #include "triplet_includes/ShiftTripletList.f90"
 
@@ -368,7 +368,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The column offset to shift by.
     INTEGER, INTENT(IN) :: column_shift
     !! Local Variables
-    INTEGER :: counter
+    INTEGER :: II
 
 #include "triplet_includes/ShiftTripletList.f90"
 
@@ -421,14 +421,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: pattern_type
     !! Local variables
     TYPE(Triplet_r) :: temporary, temporary_transpose
-    INTEGER :: counter
+    INTEGER :: II
     INTEGER :: initial_size
 
     initial_size = triplet_list%CurrentSize
     SELECT CASE(pattern_type)
     CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, temporary)
           IF (temporary%index_column .NE. temporary%index_row) THEN
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
@@ -437,8 +437,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END DO
     CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, temporary)
           IF (temporary%index_column .NE. temporary%index_row) THEN
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
@@ -458,14 +458,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: pattern_type
     !! Local variables
     TYPE(Triplet_c) :: temporary, temporary_transpose
-    INTEGER :: counter
+    INTEGER :: II
     INTEGER :: initial_size
 
     initial_size = triplet_list%CurrentSize
     SELECT CASE(pattern_type)
     CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, temporary)
           IF (temporary%index_column .NE. temporary%index_row) THEN
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
@@ -474,8 +474,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END DO
     CASE(MM_HERMITIAN)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, temporary)
           IF (temporary%index_column .NE. temporary%index_row) THEN
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
@@ -484,8 +484,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END DO
     CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, temporary)
           IF (temporary%index_column .NE. temporary%index_row) THEN
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row

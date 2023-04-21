@@ -323,7 +323,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: total_iterations
 
     !! Optional Parameters
-   IF (PRESENT(solver_parameters_in)) THEN
+    IF (PRESENT(solver_parameters_in)) THEN
        CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
        CALL ConstructSolverParameters(params)

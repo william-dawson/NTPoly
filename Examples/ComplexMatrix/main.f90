@@ -86,7 +86,7 @@ PROGRAM ComplexMatrix
   CALL ScaleMatrix(GMat, 0.5_NTREAL)
 
   !! Compute The Exponential
-  solver_parameters = SolverParameters_t(threshold_in=threshold)
+  CALL ConstructSolverParameters(solver_parameters, threshold_in=threshold)
   CALL ComputeExponential(GMat, ExMat, solver_parameters)
 
   !! Write To File
@@ -97,6 +97,7 @@ PROGRAM ComplexMatrix
   CALL DestructMatrix(GMat)
 
   !! Cleanup
+  CALL DestructSolverParameters(solver_parameters)
   IF (IsRoot()) THEN
      CALL DeactivateLogger
   END IF

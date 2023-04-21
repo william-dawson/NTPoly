@@ -69,7 +69,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetGenericError
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE SetCustomError(this, error_code, error_description, &
-      & immediate_cleanup_in)
+       & immediate_cleanup_in)
     TYPE(Error_t), INTENT(INOUT)  :: this
     INTEGER, INTENT(IN)           :: error_code
     CHARACTER(len=*), INTENT(IN)  :: error_description

@@ -74,10 +74,12 @@ PROGRAM PremadeMatrixProgram
   CALL ConstructProcessGrid(MPI_COMM_WORLD, process_rows, process_columns, &
        & process_slices)
 
-  !! Write Out Parameters
+  !! Only Activate the Logger on Root
   IF (IsRoot()) THEN
      CALL ActivateLogger
   END IF
+
+  !! Write Out Parameters
   CALL WriteHeader("Command Line Parameters")
   CALL EnterSubLog
   CALL WriteElement(key="hamiltonian", VALUE=hamiltonian_file)
@@ -118,7 +120,10 @@ PROGRAM PremadeMatrixProgram
   !! Print the density matrix to file.
   CALL WriteMatrixToMatrixMarket(Density, density_file_out)
 
-  !! Cleanup
+  !! Cleanup Derived Types
+  IF (IsRoot()) THEN
+     CALL DeactivateLogger
+  END IF
   CALL DestructSolverParameters(solver_parameters)
   CALL DestructPermutation(permutation)
   CALL DestructMatrix(Overlap)
@@ -126,10 +131,7 @@ PROGRAM PremadeMatrixProgram
   CALL DestructMatrix(Hamiltonian)
   CALL DestructMatrix(Density)
 
-  !! Cleanup
-  IF (IsRoot()) THEN
-     CALL DeactivateLogger
-  END IF
+  !! Cleanup MPI
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 END PROGRAM PremadeMatrixProgram

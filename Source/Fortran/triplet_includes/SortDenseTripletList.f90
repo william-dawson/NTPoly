@@ -5,8 +5,8 @@
   INTEGER :: II, JJ
 
   !! Setup Memory
-  ALLOCATE(value_buffer(matrix_rows,matrix_columns))
-  ALLOCATE(dirty_buffer(matrix_rows,matrix_columns))
+  ALLOCATE(value_buffer(matrix_rows, matrix_columns))
+  ALLOCATE(dirty_buffer(matrix_rows, matrix_columns))
   value_buffer = 0
   dirty_buffer = 0
   list_length = input_list%CurrentSize
@@ -27,7 +27,7 @@
         IF (dirty_buffer(II,JJ) .EQ. 1) THEN
            sorted_list%DATA(ind)%index_row = II
            sorted_list%DATA(ind)%index_column = JJ
-           sorted_list%DATA(ind)%point_value = value_buffer(II,JJ)
+           sorted_list%DATA(ind)%point_value = value_buffer(II, JJ)
            ind = ind + 1
         END IF
      END DO
