@@ -66,7 +66,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: param
     !! Local Data
-    TYPE(Matrix_ps) :: vector, vector2, TempMat
+    TYPE(Matrix_ps) :: vector, vector2
     REAL(NTREAL) :: scale_value
     REAL(NTREAL) :: norm_value
     TYPE(TripletList_r) :: temp_list
@@ -151,7 +151,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     CALL DestructMatrix(vector)
     CALL DestructMatrix(vector2)
-    CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(param)
   END SUBROUTINE PowerBounds
