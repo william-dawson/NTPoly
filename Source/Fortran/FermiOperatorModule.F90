@@ -15,7 +15,8 @@ MODULE FermiOperatorModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE SolverParametersModule, ONLY : SolverParameters_t, &
-       & PrintParameters, DestructSolverParameters
+       & PrintParameters, DestructSolverParameters, CopySolverParameters, &
+       & ConstructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList
   USE NTMPIModule
   IMPLICIT NONE
@@ -63,9 +64,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
     IF (PRESENT(inv_temp_in)) THEN
        inv_temp = inv_temp_in
@@ -79,7 +80,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
        IF (do_smearing) THEN
           CALL WriteElement(key="Method", VALUE="Dense FOE")
-          CALL WriteElement(key="InverseTemperature", VALUE=inv_temp)
+          CALL WriteElement(key="Inverse Temperature", VALUE=inv_temp)
        ELSE
           CALL WriteElement(key="Method", VALUE="Dense Step Function")
        END IF
@@ -250,9 +251,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     !! Print out details
@@ -302,14 +303,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO WHILE(B_I .LT. inv_temp)
        !! First order step
        step = min(step, inv_temp - B_I)
-       CALL GC_STEP(W, IMat, X, pool, params%threshold, K0)
+       CALL ComputeGCStep(W, IMat, X, pool, params%threshold, K0)
        II = II + 1
        CALL CopyMatrix(K0, RK1)
        CALL ScaleMatrix(RK1, step)
        CALL IncrementMatrix(W, RK1, threshold_in=params%threshold)
 
        !! Second Order Step
-       CALL GC_STEP(RK1, IMat, X, pool, params%threshold, K1)
+       CALL ComputeGCStep(RK1, IMat, X, pool, params%threshold, K1)
        II = II + 1
        CALL CopyMatrix(W, RK2)
        CALL IncrementMatrix(K0, RK2, alpha_in=step*0.5_NTREAL, &
@@ -331,7 +332,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ScaleMatrix(RK1, step)
           CALL IncrementMatrix(W, RK1, threshold_in=params%threshold)
           !! Update Second Order
-          CALL GC_STEP(RK1, IMat, X, pool, params%threshold, K1)
+          CALL ComputeGCStep(RK1, IMat, X, pool, params%threshold, K1)
           II = II + 1
           CALL CopyMatrix(W, RK2)
           CALL IncrementMatrix(K0, RK2, alpha_in=step*0.5_NTREAL, &
@@ -389,6 +390,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
     CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(params)
     CALL DestructMatrix(ISQT)
     CALL DestructMatrix(WH)
     CALL DestructMatrix(IMat)
@@ -404,7 +406,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WOM_GC
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take one step for the WOM_GC algorithm. 
-  SUBROUTINE GC_STEP(W, I, X, pool, threshold, Out)
+  SUBROUTINE ComputeGCStep(W, I, X, pool, threshold, Out)
     !> The working wave operator.
     TYPE(Matrix_ps), INTENT(IN) :: W
     !> The identity matrix.
@@ -435,6 +437,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(W2)
     CALL DestructMatrix(Temp)
     CALL DestructMatrix(Temp2)
-  END SUBROUTINE
+  END SUBROUTINE ComputeGCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE FermiOperatorModule

@@ -8,7 +8,8 @@ MODULE EigenExaModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & FillMatrixFromTripletList, GetMatrixTripletList, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, Triplet_c, SetTriplet
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
@@ -74,9 +75,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Process Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     !! Write info about the solver

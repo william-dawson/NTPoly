@@ -37,7 +37,7 @@
   !! Copy
   DO JJ = 1, block_columns
      DO II = 1, block_rows
-        CALL ConstructEmptyMatrix(split_array(II,JJ), block_size_column(JJ), &
+        CALL ConstructEmptyMatrix(split_array(II, JJ), block_size_column(JJ), &
              & block_size_row(II))
         split_array(II,JJ)%DATA = &
              & this%DATA(row_offsets(II):row_offsets(II+1)-1, &

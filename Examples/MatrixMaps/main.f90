@@ -19,7 +19,7 @@ PROGRAM MatrixMapsProgram
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
-  INTEGER :: counter
+  INTEGER :: II
   INTEGER :: provided, ierr
   INTEGER :: rank
 
@@ -28,9 +28,9 @@ PROGRAM MatrixMapsProgram
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank, ierr)
 
   !! Process the input parameters.
-  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
-     CALL GET_COMMAND_ARGUMENT(counter,argument)
-     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
+  DO II = 1, COMMAND_ARGUMENT_COUNT(), 2
+     CALL GET_COMMAND_ARGUMENT(II, argument)
+     CALL GET_COMMAND_ARGUMENT(II+1, argument_value)
      SELECT CASE(argument)
      CASE('--input_matrix')
         input_matrix = argument_value

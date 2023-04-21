@@ -31,8 +31,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_wrp) :: h_this
 
     ALLOCATE(h_this%DATA)
-    h_this%DATA = SolverParameters_t()
-    ih_this = TRANSFER(h_this,ih_this)
+    CALL ConstructSolverParameters(h_this%DATA)
+    ih_this = TRANSFER(h_this, ih_this)
   END SUBROUTINE ConstructSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct a iterative solver parameter type.
@@ -41,10 +41,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     TYPE(SolverParameters_wrp) :: h_this
 
-    h_this = TRANSFER(ih_this,h_this)
+    h_this = TRANSFER(ih_this, h_this)
     CALL DestructSolverParameters(h_this%DATA)
     DEALLOCATE(h_this%DATA)
-    !ih_this = 0
   END SUBROUTINE DestructSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the convergence difference.
@@ -54,8 +53,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: new_value
     TYPE(SolverParameters_wrp) :: h_this
 
-    h_this = TRANSFER(ih_this,h_this)
-    CALL SetParametersConvergeDiff(h_this%DATA,new_value)
+    h_this = TRANSFER(ih_this, h_this)
+    CALL SetParametersConvergeDiff(h_this%DATA, new_value)
   END SUBROUTINE SetParametersConvergeDiff_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the max iterations.
@@ -65,8 +64,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(kind=c_int), INTENT(IN) :: new_value
     TYPE(SolverParameters_wrp) :: h_this
 
-    h_this = TRANSFER(ih_this,h_this)
-    CALL SetParametersMaxIterations(h_this%DATA,new_value)
+    h_this = TRANSFER(ih_this, h_this)
+    CALL SetParametersMaxIterations(h_this%DATA, new_value)
   END SUBROUTINE SetParametersMaxIterations_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the threshold.
@@ -76,8 +75,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: new_value
     TYPE(SolverParameters_wrp) :: h_this
 
-    h_this = TRANSFER(ih_this,h_this)
-    CALL SetParametersThreshold(h_this%DATA,new_value)
+    h_this = TRANSFER(ih_this, h_this)
+    CALL SetParametersThreshold(h_this%DATA, new_value)
   END SUBROUTINE SetParametersThreshold_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the verbosity.
@@ -87,8 +86,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL(kind=c_bool), INTENT(IN) :: new_value
     TYPE(SolverParameters_wrp) :: h_this
 
-    h_this = TRANSFER(ih_this,h_this)
-    CALL SetParametersBeVerbose(h_this%DATA,LOGICAL(new_value))
+    h_this = TRANSFER(ih_this, h_this)
+    CALL SetParametersBeVerbose(h_this%DATA, LOGICAL(new_value))
   END SUBROUTINE SetParametersBeVerbose_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the load balancing permutation.
@@ -99,9 +98,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_wrp) :: h_this
     TYPE(Permutation_wrp) :: h_new_value
 
-    h_this = TRANSFER(ih_this,h_this)
-    h_new_value = TRANSFER(ih_new_value,h_new_value)
-    CALL SetParametersLoadBalance(h_this%DATA,h_new_value%DATA)
+    h_this = TRANSFER(ih_this, h_this)
+    h_new_value = TRANSFER(ih_new_value, h_new_value)
+    CALL SetParametersLoadBalance(h_this%DATA, h_new_value%DATA)
   END SUBROUTINE SetParametersLoadBalance_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the step threshold.

@@ -1,16 +1,17 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to do timings.
 MODULE TimerModule
+  USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
   USE ProcessGridModule, ONLY : global_grid
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
-  LOGICAL :: is_initialized = .FALSE.
-  CHARACTER(len=20), DIMENSION(:), ALLOCATABLE :: timer_list
-  DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: start_times
-  DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: elapsed_times
+  INTEGER, PARAMETER :: name_len = 50
+  CHARACTER(LEN=name_len), DIMENSION(:), ALLOCATABLE, SAVE :: timer_list
+  REAL(NTREAL), DIMENSION(:), ALLOCATABLE, SAVE :: start_times
+  REAL(NTREAL), DIMENSION(:), ALLOCATABLE, SAVE:: elapsed_times
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: RegisterTimer
   PUBLIC :: StartTimer
@@ -24,11 +25,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Name of the timer.
     CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
-    CHARACTER(len=20), DIMENSION(:), ALLOCATABLE :: temp_timer_list
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: temp_start_times
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: temp_elapsed_times
+    CHARACTER(LEN=name_len), DIMENSION(:), ALLOCATABLE :: temp_timer_list
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: temp_start_times
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: temp_elapsed_times
 
-    IF (is_initialized) THEN
+    IF (ALLOCATED(timer_list)) THEN
        ALLOCATE(temp_timer_list(SIZE(timer_list)+1))
        ALLOCATE(temp_start_times(SIZE(start_times)+1))
        ALLOCATE(temp_elapsed_times(SIZE(elapsed_times)+1))
@@ -46,7 +47,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ALLOCATE(elapsed_times(1))
        timer_list(1) = timer_name
        elapsed_times(1) = 0
-       is_initialized = .TRUE.
     END IF
   END SUBROUTINE RegisterTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -56,7 +56,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
     INTEGER :: timer_position
-    DOUBLE PRECISION :: temp_time
+    REAL(NTREAL) :: temp_time
 
     temp_time = MPI_WTIME()
     timer_position = GetTimerPosition(timer_name)
@@ -71,8 +71,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CHARACTER(len=*), INTENT(IN) :: timer_name
     !! Local Data
     INTEGER :: timer_position
-    DOUBLE PRECISION :: temp_elapsed_time
-    DOUBLE PRECISION :: temp_start_time
+    REAL(NTREAL):: temp_elapsed_time
+    REAL(NTREAL) :: temp_start_time
 
     timer_position = GetTimerPosition(timer_name)
     IF (timer_position > 0) THEN
@@ -118,10 +118,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> processes.
   SUBROUTINE PrintAllTimersDistributed()
     !! Local Data
-    INTEGER          :: timer_position
-    DOUBLE PRECISION :: elapsed
-    DOUBLE PRECISION :: max_time
-    INTEGER          :: ierr
+    INTEGER      :: timer_position
+    REAL(NTREAL) :: elapsed
+    REAL(NTREAL) :: max_time
+    INTEGER      :: ierr
 
     CALL WriteHeader("Timers")
     CALL EnterSubLog
@@ -151,7 +151,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     not_found = .TRUE.
 
-    IF (is_initialized) THEN
+    IF (ALLOCATED(timer_list)) THEN
        DO counter=1, SIZE(timer_list)
           IF (timer_name .EQ. timer_list(counter)) THEN
              not_found = .FALSE.

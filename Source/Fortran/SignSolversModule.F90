@@ -15,7 +15,8 @@ MODULE SignSolversModule
        & FillMatrixIdentity, PrintMatrixInformation, TransposeMatrix, &
        & ConjugateMatrix, ConstructEmptyMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -36,9 +37,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
@@ -74,9 +75,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
@@ -108,9 +109,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
@@ -234,7 +235,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO iterate
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key="Total Iterations", VALUE=II-1)
        CALL PrintMatrixInformation(OutMat)
     END IF
 

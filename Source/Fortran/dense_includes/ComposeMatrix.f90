@@ -9,8 +9,8 @@
   column_offsets(1) = 1
   out_columns = 0
   DO JJ = 1, block_columns
-     column_offsets(JJ+1) = column_offsets(JJ) + mat_array(1,JJ)%columns
-     out_columns = out_columns + mat_array(1,JJ)%columns
+     column_offsets(JJ+1) = column_offsets(JJ) + mat_array(1, JJ)%columns
+     out_columns = out_columns + mat_array(1, JJ)%columns
   END DO
   row_offsets(1) = 1
   out_rows = 0

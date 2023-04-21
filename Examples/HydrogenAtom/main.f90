@@ -11,7 +11,8 @@ PROGRAM HydrogenAtom
        & ConstructEmptyMatrix, FillMatrixFromTripletList, CopyMatrix, &
        & FillMatrixIdentity
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix
-  USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SolverParametersModule, ONLY : SolverParameters_t, &
+       & ConstructSolverParameters, DestructSolverParameters
   USE SquareRootSolversModule, ONLY : InverseSquareRoot
   USE TripletListModule, ONLY : TripletList_r, ConstructTripletList, &
        & AppendToTripletList
@@ -46,7 +47,7 @@ PROGRAM HydrogenAtom
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
-  INTEGER :: counter
+  INTEGER :: II
 
   !! Setup MPI
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
@@ -54,9 +55,9 @@ PROGRAM HydrogenAtom
   CALL MPI_Comm_size(MPI_COMM_WORLD, total_processors, ierr)
 
   !! Process the input parameters.
-  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
-     CALL GET_COMMAND_ARGUMENT(counter,argument)
-     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
+  DO II = 1, COMMAND_ARGUMENT_COUNT(), 2
+     CALL GET_COMMAND_ARGUMENT(II, argument)
+     CALL GET_COMMAND_ARGUMENT(II+1, argument_value)
      SELECT CASE(argument)
      CASE('--convergence_threshold')
         READ(argument_value,*) convergence_threshold
@@ -95,7 +96,7 @@ PROGRAM HydrogenAtom
   CALL ExitSubLog
 
   !! Set Up The Solver Parameters.
-  solver_parameters = SolverParameters_t( be_verbose_in=.TRUE., &
+  CALL ConstructSolverParameters(solver_parameters, be_verbose_in=.TRUE., &
        & converge_diff_in=convergence_threshold, threshold_in=threshold)
 
   !! Divide The Work Amongst Processors.
@@ -131,6 +132,7 @@ PROGRAM HydrogenAtom
   IF (IsRoot()) THEN
      CALL DeactivateLogger
   END IF
+  CALL DestructSolverParameters(solver_parameters)
   CALL DestructProcessGrid
   CALL MPI_Finalize(ierr)
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -142,8 +144,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        local_grid_points = grid_points - rank*local_grid_points
     END IF
     ALLOCATE(local_rows(local_grid_points))
-    fillrow: DO counter=1,local_grid_points
-       local_rows(counter) = start_row + (counter-1)
+    fillrow: DO II = 1, local_grid_points
+       local_rows(II) = start_row + (II-1)
     END DO fillrow
   END SUBROUTINE DivideUpWork
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -156,23 +158,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill in the x_values
     local_x_start = x_start + (start_row-1) * grid_spacing
-    fill: DO counter=1,local_grid_points
-       x_values(counter) = local_x_start + (counter-1)*grid_spacing
+    fill: DO II = 1, local_grid_points
+       x_values(II) = local_x_start + (II-1)*grid_spacing
     END DO fill
   END SUBROUTINE ConstructLinearSpace
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillKineticEnergy()
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
-    INTEGER :: counter
+    INTEGER :: II
     TYPE(Triplet_r) :: temp_value
 
     CALL ConstructTripletList(triplet_list)
 
     !! Fill The Triplet List.
-    fill: DO counter = 1, local_grid_points
+    fill: DO II = 1, local_grid_points
        !! Stencil point 1.
-       temp_value%index_row = start_row + counter - 1
+       temp_value%index_row = start_row + II - 1
        IF (temp_value%index_row .GT. 2) THEN
           temp_value%index_column = temp_value%index_row - 2
           temp_value%point_value  = (-0.5)*(-1.0/(12.0*grid_spacing**2))
@@ -207,14 +209,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillPotentialEnergy()
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
-    INTEGER :: counter
+    INTEGER :: II
     TYPE(Triplet_r) :: temp_value
 
     CALL ConstructTripletList(triplet_list)
-    fill: DO counter = 1, local_grid_points
-       temp_value%index_row = start_row + counter - 1
-       temp_value%index_column = start_row + counter - 1
-       temp_value%point_value = -1.0/ABS(x_values(counter))
+    fill: DO II = 1, local_grid_points
+       temp_value%index_row = start_row + II - 1
+       temp_value%index_column = start_row + II - 1
+       temp_value%point_value = -1.0/ABS(x_values(II))
        CALL AppendToTripletList(triplet_list, temp_value)
     END DO fill
     CALL FillMatrixFromTripletList(PotentialEnergy, triplet_list)

@@ -19,7 +19,8 @@ MODULE LinearSolversModule
        & FillMatrixIdentity, PrintMatrixInformation, MergeMatrixLocalBlocks
   USE SMatrixModule, ONLY : Matrix_lsr
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   USE NTMPIMODULE
   IMPLICIT NONE
   PRIVATE
@@ -54,9 +55,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     !! Print out parameters
@@ -124,7 +125,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(RMatT, RMat, TempMat, &
             & threshold_in=params%threshold, memory_pool_in=pool)
        CALL MatrixTrace(TempMat, top)
-       CALL TransposeMatrix(PMat,PMatT)
+       CALL TransposeMatrix(PMat, PMatT)
        IF (PMatT%is_complex) THEN
           CALL ConjugateMatrix(PMatT)
        END IF
@@ -139,7 +140,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(QMat, RMat, alpha_in=-1.0_NTREAL*step_size)
 
        !! Update PMat
-       CALL TransposeMatrix(RMat,RMatT)
+       CALL TransposeMatrix(RMat, RMatT)
        IF (RMatT%is_complex) THEN
           CALL ConjugateMatrix(RMatT)
        END IF
@@ -153,13 +154,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key="Total Iterations", VALUE=II-1)
        CALL PrintMatrixInformation(XMat)
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
-       CALL UndoPermuteMatrix(XMat,XMat, &
+       CALL UndoPermuteMatrix(XMat, XMat, &
             & params%BalancePermutation, memorypool_in=pool)
     END IF
 
@@ -208,9 +209,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     !! Print out parameters
@@ -274,8 +275,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Broadcast column JJ, and Inverse Factor
        CALL BroadcastVector(recv_num_values, recv_index, recv_values, &
             & col_root, LMat%process_grid%row_comm)
-       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, MPI_SUM, &
-            & LMat%process_grid%within_slice_comm, ierr)
+       CALL MPI_Allreduce(MPI_IN_PLACE, inverse_factor, 1, MPINTREAL, &
+            & MPI_SUM, LMat%process_grid%within_slice_comm, ierr)
 
        !! Loop over other columns
        CALL DotAllHelper(recv_num_values, recv_index, recv_values, &
