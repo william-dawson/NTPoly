@@ -65,7 +65,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: trace_value2
     REAL(NTREAL) :: norm_value
-    REAL(NTREAL) :: energy_value, energy_value2
+    REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
@@ -189,10 +189,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & alpha_in=a3, threshold_in=params%threshold)
 
        !! Energy value based convergence
-       energy_value2 = energy_value
+       energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
@@ -308,13 +308,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: WH
     TYPE(Matrix_ps) :: IMat
     TYPE(Matrix_ps) :: ISQT
-    TYPE(Matrix_ps) :: X_k, X_k2, Temp
+    TYPE(Matrix_ps) :: X_k, X_k2
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: norm_value
-    REAL(NTREAL) :: energy_value, energy_value2
+    REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
@@ -347,7 +347,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(WH, H)
     CALL ConstructEmptyMatrix(X_k, H)
     CALL ConstructEmptyMatrix(X_k2, H)
-    CALL ConstructEmptyMatrix(Temp, H)
     CALL ConstructEmptyMatrix(IMat, H)
     CALL FillMatrixIdentity(IMat)
 
@@ -404,10 +403,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Energy value based convergence
-       energy_value2 = energy_value
+       energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
@@ -446,7 +445,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(ISQT)
     CALL DestructMatrix(X_k)
     CALL DestructMatrix(X_k2)
-    CALL DestructMatrix(Temp)
     CALL DestructMatrix(IMat)
     CALL DestructMatrixMemoryPool(pool)
 
@@ -521,10 +519,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: norm_value
-    REAL(NTREAL) :: energy_value, energy_value2
+    REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
-    REAL(NTREAL) :: tempfx,tempgx
+    REAL(NTREAL) :: tempfx, tempgx
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II, JJ
@@ -635,10 +633,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(TempMat, X_k)
 
        !! Energy value based convergence
-       energy_value2 = energy_value
+       energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
@@ -764,8 +762,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: mu
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value, norm_value2
-    REAL(NTREAL) :: energy_value, energy_value2
+    REAL(NTREAL) :: norm_value
+    REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
     !! Temporary Variables
@@ -849,7 +847,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     II = 1
     norm_value = params%converge_diff + 1.0_NTREAL
-    norm_value2 = norm_value
     energy_value = 0.0_NTREAL
     DO II = 1, params%max_iterations
        !! Compute the hole matrix DH
@@ -881,10 +878,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & alpha_in=-1.0_NTREAL*2.0_NTREAL*sigma_array(II))
 
        !! Energy value based convergence
-       energy_value2 = energy_value
+       energy_value_old = energy_value
        CALL DotMatrix(D1, WH, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
@@ -1001,7 +998,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: Beta, BetaBar, alpha
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: norm_value
-    REAL(NTREAL) :: energy_value, energy_value2
+    REAL(NTREAL) :: energy_value, energy_value_old
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II
@@ -1088,10 +1085,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Energy value based convergence
-       energy_value2 = energy_value
+       energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value2)
+       norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
           CALL WriteListElement(key="Convergence", VALUE=norm_value)
