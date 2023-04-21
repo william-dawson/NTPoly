@@ -4,7 +4,8 @@ MODULE SolverParametersModule
   USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
-  USE PermutationModule, ONLY : Permutation_t, DestructPermutation
+  USE PermutationModule, ONLY : Permutation_t, CopyPermutation, &
+       & DestructPermutation
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -23,11 +24,9 @@ MODULE SolverParametersModule
      !> The permutation used for load balancing.
      TYPE(Permutation_t) :: BalancePermutation
   END TYPE SolverParameters_t
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  INTERFACE SolverParameters_t
-     MODULE PROCEDURE SolverParameters_init
-  END INTERFACE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PUBLIC :: ConstructSolverParameters
+  PUBLIC :: CopySolverParameters
   PUBLIC :: SetParametersConvergeDiff
   PUBLIC :: SetParametersMaxIterations
   PUBLIC :: SetParametersThreshold
@@ -42,8 +41,10 @@ MODULE SolverParametersModule
   INTEGER, PARAMETER, PUBLIC :: MAX_ITERATIONS_CONST = 1000
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a data type which stores iterative solver parameters.
-  PURE FUNCTION SolverParameters_init(converge_diff_in, threshold_in, &
-       & max_iterations_in, be_verbose_in, BalancePermutation_in) RESULT(this)
+  SUBROUTINE ConstructSolverParameters(this, converge_diff_in, threshold_in, &
+       & max_iterations_in, be_verbose_in, BalancePermutation_in)
+    !> The parameters to construct.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Converge_diff_in the difference between iterations to consider
     !> a calculation converged.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: converge_diff_in
@@ -55,7 +56,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
     !> For load balancing
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
-    TYPE(SolverParameters_t) :: this
+
+    CALL DestructSolverParameters(this)
 
     !! Optional Parameters
     IF (.NOT. PRESENT(converge_diff_in)) THEN
@@ -82,9 +84,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        this%do_load_balancing = .FALSE.
     ELSE
        this%do_load_balancing = .TRUE.
-       this%BalancePermutation = BalancePermutation_in
+       CALL CopyPermutation(BalancePermutation_in, this%BalancePermutation)
     END IF
-  END FUNCTION SolverParameters_init
+  END SUBROUTINE ConstructSolverParameters
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopySolverParameters(paramA, paramB)
+    !> Parameters to copy
+    TYPE(SolverParameters_t), INTENT(IN) :: paramA
+    !> paramB = paramA
+    TYPE(SolverParameters_t), INTENT(INOUT) :: paramB
+
+    CALL DestructSolverParameters(paramB)
+    paramB = paramA
+  END SUBROUTINE CopySolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the convergence difference.
   PURE SUBROUTINE SetParametersConvergeDiff(this,new_value)
@@ -144,11 +156,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Solver Parameters")
     CALL EnterSubLog
-    CALL WriteElement(key="be_verbose", VALUE=this%be_verbose)
-    CALL WriteElement(key="do_load_balancing", VALUE=this%do_load_balancing)
-    CALL WriteElement(key="converge_diff", VALUE=this%converge_diff)
-    CALL WriteElement(key="threshold", VALUE=this%threshold)
-    CALL WriteElement(key="max_iterations", VALUE=this%max_iterations)
+    CALL WriteElement(key="Verbosity", VALUE=this%be_verbose)
+    CALL WriteElement(key="Load Balancing", VALUE=this%do_load_balancing)
+    CALL WriteElement(key="Convergence Difference", VALUE=this%converge_diff)
+    CALL WriteElement(key="Threshold", VALUE=this%threshold)
+    CALL WriteElement(key="Maximum Iterations", VALUE=this%max_iterations)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

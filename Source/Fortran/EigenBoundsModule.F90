@@ -11,7 +11,8 @@ MODULE EigenBoundsModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, DestructTripletList, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r
@@ -75,9 +76,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       param = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, param)
     ELSE
-       param = SolverParameters_t()
+       CALL ConstructSolverParameters(param)
        param%max_iterations = 10
     END IF
 

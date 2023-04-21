@@ -13,7 +13,8 @@ MODULE FermiOperatorModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE SolverParametersModule, ONLY : SolverParameters_t, &
-       & PrintParameters, DestructSolverParameters
+       & PrintParameters, DestructSolverParameters, CopySolverParameters, &
+       & ConstructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList
   USE NTMPIModule
   IMPLICIT NONE
@@ -60,9 +61,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
     IF (PRESENT(inv_temp_in)) THEN
        inv_temp = inv_temp_in
