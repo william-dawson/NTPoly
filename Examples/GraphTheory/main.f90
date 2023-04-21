@@ -134,8 +134,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        number_of_local_nodes = number_of_nodes - rank*number_of_local_nodes
     END IF
     ALLOCATE(local_nodes(number_of_local_nodes))
-    fillrow: DO counter=1,number_of_local_nodes
-       local_nodes(counter) = starting_node + (counter-1)
+    fillrow: DO II = 1, number_of_local_nodes
+       local_nodes(II) = starting_node + (II-1)
     END DO fillrow
     ending_node = local_nodes(number_of_local_nodes)
   END SUBROUTINE DivideUpWork
@@ -144,7 +144,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: triplet_list
     TYPE(Triplet_r) :: temp_triplet
     INTEGER :: num_of_edges
-    INTEGER :: counter
+    INTEGER :: II
     INTEGER, DIMENSION(:), ALLOCATABLE :: extra_scratch
     REAL :: temporary
     INTEGER :: extra_source_node, extra_destination_node
@@ -152,31 +152,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructTripletList(triplet_list)
 
     !! First add the connection between each node and itself.
-    fill_diagonal: DO counter=1, number_of_local_nodes
-       temp_triplet%index_row = local_nodes(counter)
-       temp_triplet%index_column = local_nodes(counter)
+    fill_diagonal: DO II = 1, number_of_local_nodes
+       temp_triplet%index_row = local_nodes(II)
+       temp_triplet%index_column = local_nodes(II)
        temp_triplet%point_value = 1
        CALL AppendToTripletList(triplet_list,temp_triplet)
     END DO fill_diagonal
 
     !! Now connections between nearest neighbors.
-    fill_neighbor: DO counter=1, number_of_local_nodes
-       temp_triplet%index_row = local_nodes(counter)
+    fill_neighbor: DO II = 1, number_of_local_nodes
+       temp_triplet%index_row = local_nodes(II)
        temp_triplet%point_value = 0.1
-       IF (local_nodes(counter) .EQ. 1) THEN
+       IF (local_nodes(II) .EQ. 1) THEN
           !! Right value
-          temp_triplet%index_column = local_nodes(counter) + 1
+          temp_triplet%index_column = local_nodes(II) + 1
           CALL AppendToTripletList(triplet_list,temp_triplet)
-       ELSE IF (local_nodes(counter) .EQ. number_of_nodes) THEN
+       ELSE IF (local_nodes(II) .EQ. number_of_nodes) THEN
           !! Left value
-          temp_triplet%index_column = local_nodes(counter) - 1
+          temp_triplet%index_column = local_nodes(II) - 1
           CALL AppendToTripletList(triplet_list,temp_triplet)
        ELSE
           !! Left value
-          temp_triplet%index_column = local_nodes(counter) - 1
+          temp_triplet%index_column = local_nodes(II) - 1
           CALL AppendToTripletList(triplet_list,temp_triplet)
           !! Right value
-          temp_triplet%index_column = local_nodes(counter) + 1
+          temp_triplet%index_column = local_nodes(II) + 1
           CALL AppendToTripletList(triplet_list,temp_triplet)
        END IF
     END DO fill_neighbor
@@ -184,8 +184,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Finally the random extra connections.
     ALLOCATE(extra_scratch(number_of_nodes))
     extra_scratch = 0
-    counter = 1
-    DO WHILE(counter .LE. extra_connections)
+    II = 1
+    DO WHILE(II .LE. extra_connections)
        CALL RANDOM_NUMBER(temporary)
        extra_source_node = CEILING(temporary*number_of_nodes)
        CALL RANDOM_NUMBER(temporary)
@@ -197,7 +197,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & extra_source_node .NE. extra_destination_node .AND. &
             & extra_source_node .NE. extra_destination_node - 1 .AND. &
             & extra_source_node .NE. extra_destination_node + 1) THEN
-          counter = counter + 1
+          II = II + 1
           extra_scratch(extra_source_node) = 1
           extra_scratch(extra_destination_node) = 1
 
