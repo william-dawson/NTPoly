@@ -5,13 +5,13 @@ MODULE FermiOperatorModule
   USE EigenSolversModule, ONLY : EigenDecomposition
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteHeader, &
-       & EnterSubLog, ExitSubLog
+       & EnterSubLog, ExitSubLog, WriteListElement
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, SimilarityTransform, &
        & IncrementMatrix, MatrixNorm, ScaleMatrix, DotMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & FillMatrixFromTripletList, GetMatrixTripletList, &
        & TransposeMatrix, ConjugateMatrix, DestructMatrix, &
-       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix
+       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix, GetMatrixSize
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE SolverParametersModule, ONLY : SolverParameters_t, &
@@ -117,7 +117,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           chemical_potential = left + (right - left)/2 
           DO II = 1, num_eigs
              sval = eigs(II) - chemical_potential
-             occ(II) = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+             ! occ(II) = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+             occ(II) = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
           END DO
           sv = SUM(occ)
           IF (ABS(trace - sv) .LT. 1E-8_NTREAL) THEN
@@ -162,7 +163,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ENDIF
        ELSE
           sval = tlist%DATA(II)%point_value - chemical_potential
-          occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+          ! occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+          occ_temp = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
           energy_value = energy_value + occ_temp * tlist%DATA(II)%point_value
           tlist%DATA(II)%point_value = occ_temp
        END IF
@@ -244,7 +246,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp, W, X, KOrth
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II
-    REAL(NTREAL) :: step, B_I, err
+    REAL(NTREAL) :: step, B_I, err, sparsity
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -301,12 +303,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! First order step
        step = min(step, inv_temp - B_I)
        CALL GC_STEP(W, IMat, X, pool, params%threshold, K0)
+       II = II + 1
        CALL CopyMatrix(K0, RK1)
        CALL ScaleMatrix(RK1, step)
        CALL IncrementMatrix(W, RK1, threshold_in=params%threshold)
 
        !! Second Order Step
        CALL GC_STEP(RK1, IMat, X, pool, params%threshold, K1)
+       II = II + 1
        CALL CopyMatrix(W, RK2)
        CALL IncrementMatrix(K0, RK2, alpha_in=step*0.5_NTREAL, &
             & threshold_in=params%threshold)
@@ -328,6 +332,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL IncrementMatrix(W, RK1, threshold_in=params%threshold)
           !! Update Second Order
           CALL GC_STEP(RK1, IMat, X, pool, params%threshold, K1)
+          II = II + 1
           CALL CopyMatrix(W, RK2)
           CALL IncrementMatrix(K0, RK2, alpha_in=step*0.5_NTREAL, &
                & threshold_in=params%threshold)
@@ -343,8 +348,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Update
        CALL CopyMatrix(RK2, W)
        B_I = B_I + step
-       II = II + 1
        step = step * (params%step_thresh / err)**(0.5)
+       sparsity = REAL(GetMatrixSize(W),KIND=NTREAL) / &
+            & (REAL(W%actual_matrix_dimension,KIND=NTREAL)**2)
+
+       IF (params%be_verbose) THEN
+          CALL WriteListElement(key="GC Steps", VALUE=II)
+          CALL EnterSubLog
+          CALL WriteElement("Beta", VALUE=B_I)
+          CALL WriteElement("Sparsity", VALUE=sparsity)
+          CALL ExitSubLog
+       END IF
     END DO
 
     !! Form the density
