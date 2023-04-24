@@ -11,8 +11,6 @@
      prepartitioned = prepartitioned_in
   END IF
 
-  CALL StartTimer("FillFromTriplet")
-
   IF (prepartitioned) THEN
      !! Shift and sort the local entries.
      shifted = triplet_list
@@ -49,5 +47,3 @@
 
   CALL DestructMatrix(local_matrix)
   CALL DestructTripletList(sorted_triplet_list)
-
-  CALL StopTimer("FillFromTriplet")

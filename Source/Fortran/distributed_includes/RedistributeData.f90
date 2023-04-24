@@ -8,8 +8,6 @@
   INTEGER :: process_id
   INTEGER :: counter
 
-  CALL StartTimer("Redistribute")
-
   !! First we need to figure out where our local elements go
   ALLOCATE(row_lookup(SIZE(index_lookup)))
   ALLOCATE(column_lookup(SIZE(index_lookup)))
@@ -53,10 +51,8 @@
           & reverse_index_lookup(gathered_list%DATA(counter)%index_column) - &
           & this%start_column + 1
   END DO
-  CALL StartTimer("SortTripletList")
   CALL SortTripletList(gathered_list, this%local_columns, this%local_rows, &
        & sorted_triplet_list)
-  CALL StopTimer("SortTripletList")
 
   !! Cleanup
   DO counter = 1, this%process_grid%slice_size
@@ -67,4 +63,3 @@
   DEALLOCATE(location_list_within_slice)
   CALL DestructTripletList(gathered_list)
 
-  CALL StopTimer("Redistribute")

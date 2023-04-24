@@ -18,7 +18,6 @@ MODULE PSMatrixModule
        & PrintMatrix, TransposeMatrix, ConjugateMatrix, SplitMatrix, &
        & ComposeMatrix, ConvertMatrixType, MatrixToTripletList, &
        & ConstructMatrixFromTripletList, ConstructEmptyMatrix
-  USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, Triplet_c, GetMPITripletType_r, &
        & GetMPITripletType_c
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
@@ -392,7 +391,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructError(err)
        !! Setup Involves Just The Root Opening And Reading Parameter Data
-       CALL StartTimer("MPI Read Text")
        CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
        IF (IsRoot(process_grid_in)) THEN
           header_length = 0
@@ -545,7 +543,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Cleanup
        CALL MPI_File_close(mpi_file_handler,ierr)
-       CALL StopTimer("MPI Read Text")
        CALL MPI_Barrier(this%process_grid%global_comm,ierr)
 
        !! Redistribute The Matrix
@@ -598,7 +595,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructMatrixFromBinary(this, file_name, global_grid)
     ELSE
        CALL ConstructError(err)
-       CALL StartTimer("MPI Read Binary")
        CALL MPI_File_open(process_grid_in%global_comm, file_name, &
             & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
        error_occured = CheckMPIError(err, TRIM(file_name)//" doesn't exist", &
@@ -675,7 +671,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                & local_triplets, triplet_mpi_type, message_status, ierr)
        END IF
        CALL MPI_File_close(mpi_file_handler,ierr)
-       CALL StopTimer("MPI Read Binary")
 
        IF (this%is_complex) THEN
           CALL FillMatrixFromTripletList(this,triplet_list_c)

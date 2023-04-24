@@ -19,7 +19,6 @@ MODULE PSMatrixAlgebraModule
        & MatrixColumnNorm
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix,&
        & TransposeMatrix, ComposeMatrixColumns, MatrixToTripletList
-  USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletListModule, ONLY : TripletList_r, TripletList_c
   USE NTMPIModule
   IMPLICIT NONE

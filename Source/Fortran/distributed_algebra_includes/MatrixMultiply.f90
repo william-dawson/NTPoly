@@ -1,5 +1,3 @@
-  CALL StartTimer("GEMM")
-
   !! The threshold needs to be smaller if we are doing a sliced version
   !! because you might flush a value that would be kept in the summed version.
   IF (matA%process_grid%num_process_slices .GT. 1) THEN
@@ -295,5 +293,3 @@
      END DO
   END DO
   DEALLOCATE(SliceContribution)
-
-  CALL StopTimer("GEMM")
