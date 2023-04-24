@@ -123,7 +123,7 @@ MODULE PSMatrixModule
      MODULE PROCEDURE FillMatrixPermutation_ps
   END INTERFACE FillMatrixPermutation
   INTERFACE FillMatrixDense
-     MODULE PROCEDURE FillMatrixDense_psc
+     MODULE PROCEDURE FillMatrixDense_ps
   END INTERFACE FillMatrixDense
   INTERFACE GetMatrixActualDimension
      MODULE PROCEDURE GetMatrixActualDimension_ps
