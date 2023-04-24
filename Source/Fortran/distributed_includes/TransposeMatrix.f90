@@ -16,8 +16,7 @@
   END DO
 
   CALL DestructMatrix(TransMat)
-  CALL ConstructEmptyMatrix(TransMat, AMat%actual_matrix_dimension, &
-       & AMat%process_grid, AMat%is_complex)
+  CALL ConstructEmptyMatrix(TransMat, AMat)
   CALL FillMatrixFromTripletList(TransMat,new_list)
   CALL DestructTripletList(new_list)
   CALL DestructTripletList(triplet_list)

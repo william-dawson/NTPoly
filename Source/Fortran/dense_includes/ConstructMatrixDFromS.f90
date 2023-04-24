@@ -10,7 +10,7 @@
   dense_matrix%DATA = 0
   total_counter = 1
   DO outer_counter = 1, sparse_matrix%columns
-     elements_per_inner = sparse_matrix%outer_index(outer_counter+1) - &
+     elements_per_inner = sparse_matrix%outer_index(outer_counter + 1) - &
           & sparse_matrix%outer_index(outer_counter)
      temporary%index_column = outer_counter
      DO inner_counter = 1, elements_per_inner

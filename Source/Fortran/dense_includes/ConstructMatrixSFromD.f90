@@ -26,7 +26,7 @@
            temporary%point_value = &
                 & dense_matrix%DATA(inner_counter, outer_counter)
            temporary%index_row = inner_counter
-           temporary_list%DATA(inner_counter+rows*(outer_counter-1)) = &
+           temporary_list%DATA(inner_counter + rows * (outer_counter - 1)) = &
                 & temporary
         END DO
      END DO

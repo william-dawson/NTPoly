@@ -11,9 +11,9 @@
   IF (PRESENT(block_size_row_in)) THEN
      block_size_row = block_size_row_in
   ELSE
-     divisor_row = this%rows/block_rows
+     divisor_row = this%rows / block_rows
      block_size_row = divisor_row
-     block_size_row(block_rows) = this%rows - divisor_row*(block_rows-1)
+     block_size_row(block_rows) = this%rows - divisor_row * (block_rows - 1)
   END IF
   IF (PRESENT(block_size_column_in)) THEN
      block_size_column = block_size_column_in
@@ -21,7 +21,7 @@
      divisor_column = this%columns/block_columns
      block_size_column = divisor_column
      block_size_column(block_columns) = this%columns - &
-          & divisor_column*(block_columns-1)
+          & divisor_column * (block_columns - 1)
   END IF
 
   !! Copy the block offsets
@@ -40,7 +40,7 @@
         CALL ConstructEmptyMatrix(split_array(II, JJ), block_size_column(JJ), &
              & block_size_row(II))
         split_array(II,JJ)%DATA = &
-             & this%DATA(row_offsets(II):row_offsets(II+1)-1, &
-             & column_offsets(JJ):column_offsets(JJ+1)-1)
+             & this%DATA(row_offsets(II):row_offsets(II + 1) - 1, &
+             & column_offsets(JJ):column_offsets(JJ + 1) - 1)
      END DO
   END DO

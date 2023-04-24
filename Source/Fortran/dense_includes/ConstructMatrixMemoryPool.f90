@@ -10,7 +10,7 @@
   IF (.NOT. PRESENT(sparsity_in)) THEN
      this%hash_size = 1
   ELSE
-     this%hash_size = INT(1.0/sparsity_in)
+     this%hash_size = INT(1.0 / sparsity_in)
      IF (this%hash_size > columns) this%hash_size = columns
   END IF
 
