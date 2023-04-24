@@ -386,14 +386,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
     !> 2d array of matrices to compose.
-    TYPE(Matrix_lsr), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
-         & mat_array
+    TYPE(Matrix_lsr), DIMENSION(:, :), INTENT(IN) :: mat_array
     !> The composed matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: out_matrix
     !! Local Data
     TYPE(Matrix_lsr), DIMENSION(block_columns) :: merged_columns
     TYPE(Matrix_lsr) :: Temp
-    TYPE(Matrix_lsr), DIMENSION(block_rows,block_columns) :: mat_t
+    TYPE(Matrix_lsr), DIMENSION(block_rows, block_columns) :: mat_t
 
 #include "sparse_includes/ComposeMatrix.f90"
   END SUBROUTINE ComposeMatrix_lsr
@@ -407,14 +406,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
     !> 2d array of matrices to compose.
-    TYPE(Matrix_lsc), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
-         & mat_array
+    TYPE(Matrix_lsc), DIMENSION(:, :), INTENT(IN) :: mat_array
     !> The composed matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: out_matrix
     !! Local Data
     TYPE(Matrix_lsc), DIMENSION(block_columns) :: merged_columns
     TYPE(Matrix_lsc) :: Temp
-    TYPE(Matrix_lsc), DIMENSION(block_rows,block_columns) :: mat_t
+    TYPE(Matrix_lsc), DIMENSION(block_rows, block_columns) :: mat_t
 
 #include "sparse_includes/ComposeMatrix.f90"
   END SUBROUTINE ComposeMatrix_lsc
