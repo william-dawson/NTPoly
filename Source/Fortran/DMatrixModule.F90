@@ -5,10 +5,7 @@
 !! performance.
 MODULE DMatrixModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, &
-       & ConstructMatrixFromTripletList
-  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & AppendToTripletList, ConstructTripletList, DestructTripletList
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
@@ -111,7 +108,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Output. Must be preallocated.
     TYPE(Matrix_ldr), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
-    TYPE(Triplet_r) :: temporary
+    TYPE(Triplet_r) :: temp
 
 #include "dense_includes/ConstructMatrixDFromS.f90"
 
@@ -126,9 +123,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(INOUT) :: sparse_matrix
     !> Value for pruning values to zero.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
-    !! Local Variables
-    TYPE(Triplet_r) :: temporary
-    TYPE(TripletList_r) :: temporary_list
 
 #include "dense_includes/ConstructMatrixSFromD.f90"
 
@@ -394,7 +388,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Dense matrix output. Must be preallocated.
     TYPE(Matrix_ldc), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
-    TYPE(Triplet_c) :: temporary
+    TYPE(Triplet_c) :: temp
 
 #include "dense_includes/ConstructMatrixDFromS.f90"
 
@@ -409,9 +403,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(INOUT) :: sparse_matrix
     !> Value for pruning values to zero.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
-    !! Local Variables
-    TYPE(Triplet_c) :: temporary
-    TYPE(TripletList_c) :: temporary_list
 
 #include "dense_includes/ConstructMatrixSFromD.f90"
 
