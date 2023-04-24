@@ -5,7 +5,7 @@ MODULE PSMatrixAlgebraModule
   USE GemmTasksModule
   USE MatrixReduceModule, ONLY : ReduceHelper_t, ReduceAndComposeMatrixSizes, &
        & ReduceAndComposeMatrixData, ReduceAndComposeMatrixCleanup, &
-       & ReduceANdSumMatrixSizes, ReduceAndSumMatrixData, &
+       & ReduceAndSumMatrixSizes, ReduceAndSumMatrixData, &
        & ReduceAndSumMatrixCleanup, TestReduceSizeRequest, &
        & TestReduceInnerRequest, TestReduceDataRequest
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
@@ -156,32 +156,39 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END IF
 
-
     !! Perform Upcasting
     IF (matB%is_complex .AND. .NOT. matA%is_complex) THEN
        CALL ConvertMatrixToComplex(matA, matAConverted)
        IF (PRESENT(memory_pool_in)) THEN
-          CALL MatrixMultiply_ps_imp(matAConverted, matB, matC, alpha, beta, &
+          CALL MatrixMultiply_psc(matAConverted, matB, matC, alpha, beta, &
                & threshold, memory_pool_in)
        ELSE
-          CALL MatrixMultiply_ps_imp(matAConverted, matB, matC, alpha, beta, &
+          CALL MatrixMultiply_psc(matAConverted, matB, matC, alpha, beta, &
                & threshold, memory_pool)
        END IF
     ELSE IF (matA%is_complex .AND. .NOT. matB%is_complex) THEN
        CALL ConvertMatrixToComplex(matB, matBConverted)
        IF (PRESENT(memory_pool_in)) THEN
-          CALL MatrixMultiply_ps_imp(matA, matBConverted, matC, alpha, beta, &
+          CALL MatrixMultiply_psc(matA, matBConverted, matC, alpha, beta, &
                & threshold, memory_pool_in)
        ELSE
-          CALL MatrixMultiply_ps_imp(matA, matBConverted, matC, alpha, beta, &
+          CALL MatrixMultiply_psc(matA, matBConverted, matC, alpha, beta, &
+               & threshold, memory_pool)
+       END IF
+    ELSE IF (matA%is_complex .AND. matB%is_complex) THEN
+       IF (PRESENT(memory_pool_in)) THEN
+          CALL MatrixMultiply_psc(matA, matB, matC, alpha, beta, &
+               & threshold, memory_pool_in)
+       ELSE
+          CALL MatrixMultiply_psc(matA, matB, matC, alpha, beta, &
                & threshold, memory_pool)
        END IF
     ELSE
        IF (PRESENT(memory_pool_in)) THEN
-          CALL MatrixMultiply_ps_imp(matA, matB, matC, alpha, beta, &
+          CALL MatrixMultiply_psr(matA, matB, matC, alpha, beta, &
                & threshold, memory_pool_in)
        ELSE
-          CALL MatrixMultiply_ps_imp(matA, matB, matC, alpha, beta, &
+          CALL MatrixMultiply_psr(matA, matB, matC, alpha, beta, &
                & threshold, memory_pool)
        END IF
     END IF
@@ -194,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The actual implementation of matrix multiply is here. Takes the
   !> same parameters as the standard multiply, but nothing is optional.
-  SUBROUTINE MatrixMultiply_ps_imp(matA, matB ,matC, alpha, beta, &
+  SUBROUTINE MatrixMultiply_psr(matA, matB, matC, alpha, beta, &
        & threshold, memory_pool)
     !! Parameters
     TYPE(Matrix_ps), INTENT(IN)    :: matA
@@ -204,90 +211,51 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: beta
     REAL(NTREAL), INTENT(IN) :: threshold
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: memory_pool
-    TYPE(Matrix_ps) :: matAB
     !! Temporary Matrices
-    TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks_r
-    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: LocalRowContribution_r
-    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: GatheredRowContribution_r
-    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: GatheredRowContributionT_r
-    TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: TransposedBBlocks_r
-    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: LocalColumnContribution_r
-    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution_r
-    TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: SliceContribution_r
-    TYPE(Matrix_lsc), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks_c
-    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: LocalRowContribution_c
-    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: GatheredRowContribution_c
-    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: GatheredRowContributionT_c
-    TYPE(Matrix_lsc), DIMENSION(:,:), ALLOCATABLE :: TransposedBBlocks_c
-    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: LocalColumnContribution_c
-    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution_c
-    TYPE(Matrix_lsc), DIMENSION(:,:), ALLOCATABLE :: SliceContribution_c
-    !! Communication Helpers
-    TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: row_helper
-    TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: column_helper
-    TYPE(ReduceHelper_t), DIMENSION(:,:), ALLOCATABLE :: slice_helper
-    !! For Iterating Over Local Blocks
-    INTEGER :: II, II2
-    INTEGER :: JJ, JJ2
-    INTEGER :: duplicate_start_column, duplicate_offset_column
-    INTEGER :: duplicate_start_row, duplicate_offset_row
-    REAL(NTREAL) :: working_threshold
-    !! Scheduling the A work
-    INTEGER, DIMENSION(:), ALLOCATABLE :: ATasks
-    INTEGER :: ATasks_completed
-    !! Scheduling the B work
-    INTEGER, DIMENSION(:), ALLOCATABLE :: BTasks
-    INTEGER :: BTasks_completed
-    !! Scheduling the AB work
-    INTEGER, DIMENSION(:,:), ALLOCATABLE :: ABTasks
-    INTEGER :: ABTasks_completed
+    TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks
+    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: LocalRowContribution
+    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: GatheredRowContribution
+    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: GatheredRowContributionT
+    TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: TransposedBBlocks
+    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: LocalColumnContribution
+    TYPE(Matrix_lsr), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution
+    TYPE(Matrix_lsr), DIMENSION(:,:), ALLOCATABLE :: SliceContribution
 
-    IF (matA%is_complex) THEN
-#define AdjacentABlocks AdjacentABlocks_c
-#define LocalRowContribution LocalRowContribution_c
-#define GatheredRowContribution GatheredRowContribution_c
-#define GatheredRowContributionT GatheredRowContributionT_c
-#define TransposedBBlocks TransposedBBlocks_c
-#define LocalColumnContribution LocalColumnContribution_c
-#define GatheredColumnContribution GatheredColumnContribution_c
-#define SliceContribution SliceContribution_c
-#define LMAT local_data_c
-#define MPGRID memory_pool%grid_c
-#include "distributed_algebra_includes/MatrixMultiply.f90"
-#undef AdjacentABlocks
-#undef LocalRowContribution
-#undef GatheredRowContribution
-#undef GatheredRowContributionT
-#undef TransposedBBlocks
-#undef LocalColumnContribution
-#undef GatheredColumnContribution
-#undef SliceContribution
-#undef LMAT
-#undef MPGRID
-    ELSE
-#define AdjacentABlocks AdjacentABlocks_r
-#define LocalRowContribution LocalRowContribution_r
-#define GatheredRowContribution GatheredRowContribution_r
-#define GatheredRowContributionT GatheredRowContributionT_r
-#define TransposedBBlocks TransposedBBlocks_r
-#define LocalColumnContribution LocalColumnContribution_r
-#define GatheredColumnContribution GatheredColumnContribution_r
-#define SliceContribution SliceContribution_r
 #define LMAT local_data_r
 #define MPGRID memory_pool%grid_r
 #include "distributed_algebra_includes/MatrixMultiply.f90"
-#undef AdjacentABlocks
-#undef LocalRowContribution
-#undef GatheredRowContribution
-#undef GatheredRowContributionT
-#undef TransposedBBlocks
-#undef LocalColumnContribution
-#undef GatheredColumnContribution
-#undef SliceContribution
 #undef LMAT
 #undef MPGRID
-    END IF
-  END SUBROUTINE MatrixMultiply_ps_imp
+  END SUBROUTINE MatrixMultiply_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> The actual implementation of matrix multiply is here. Takes the
+  !> same parameters as the standard multiply, but nothing is optional.
+  SUBROUTINE MatrixMultiply_psc(matA, matB, matC, alpha, beta, &
+       & threshold, memory_pool)
+    !! Parameters
+    TYPE(Matrix_ps), INTENT(IN)    :: matA
+    TYPE(Matrix_ps), INTENT(IN)    :: matB
+    TYPE(Matrix_ps), INTENT(INOUT) :: matC
+    REAL(NTREAL), INTENT(IN) :: alpha
+    REAL(NTREAL), INTENT(IN) :: beta
+    REAL(NTREAL), INTENT(IN) :: threshold
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: memory_pool
+    !! Temporary Matrices
+    TYPE(Matrix_lsc), DIMENSION(:,:), ALLOCATABLE :: AdjacentABlocks
+    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: LocalRowContribution
+    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: GatheredRowContribution
+    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: GatheredRowContributionT
+    TYPE(Matrix_lsc), DIMENSION(:,:), ALLOCATABLE :: TransposedBBlocks
+    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: LocalColumnContribution
+    TYPE(Matrix_lsc), DIMENSION(:), ALLOCATABLE :: GatheredColumnContribution
+    TYPE(Matrix_lsc), DIMENSION(:,:), ALLOCATABLE :: SliceContribution
+
+#define LMAT local_data_c
+#define MPGRID memory_pool%grid_c
+#include "distributed_algebra_includes/MatrixMultiply.f90"
+#undef LMAT
+#undef MPGRID
+  END SUBROUTINE MatrixMultiply_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Sum up the elements in a matrix into a single value.
   SUBROUTINE MatrixGrandSum_psr(this, sum)

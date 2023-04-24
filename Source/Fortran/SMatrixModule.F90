@@ -136,7 +136,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
 #include "sparse_includes/ConstructEmptyMatrix.f90"
-
   END SUBROUTINE ConstructEmptyMatrixSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine type wrapper for the constructor.
@@ -151,7 +150,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
 #include "sparse_includes/ConstructEmptyMatrix.f90"
-
   END SUBROUTINE ConstructEmptyMatrixSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for the construct from file function.
@@ -186,7 +184,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define ISCOMPLEX
 #include "sparse_includes/ConstructMatrixFromFile.f90"
 #undef ISCOMPLEX
-
   END SUBROUTINE ConstructMatrixFromFileSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the triplet list based constructor.
@@ -204,7 +201,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define ISCOMPLEX
 #include "sparse_includes/ConstructMatrixFromTripletList.f90"
 #undef ISCOMPLEX
-
   END SUBROUTINE ConstructMatrixFromTripletListSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the triplet list based constructor.
@@ -220,7 +216,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: columns
 
 #include "sparse_includes/ConstructMatrixFromTripletList.f90"
-
   END SUBROUTINE ConstructMatrixFromTripletListSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
