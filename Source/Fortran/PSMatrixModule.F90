@@ -685,7 +685,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Save a distributed sparse matrix to a binary file.
   !> Faster than text, so this is good for check pointing.
-  SUBROUTINE WriteMatrixToBinary_ps(this,file_name)
+  SUBROUTINE WriteMatrixToBinary_ps(this, file_name)
     !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The name of the file to write to.
@@ -736,7 +736,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write a distributed sparse matrix to a matrix market file.
   !> Read \cite boisvert1996matrix for the details.
-  SUBROUTINE WriteMatrixToMatrixMarket_ps(this,file_name)
+  SUBROUTINE WriteMatrixToMatrixMarket_ps(this, file_name)
     !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The name of the file to write to.
@@ -750,7 +750,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToMatrixMarket_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write to matrix market implementation for real data.
-  SUBROUTINE WriteMatrixToMatrixMarket_psr(this,file_name)
+  SUBROUTINE WriteMatrixToMatrixMarket_psr(this, file_name)
     !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The name of the file to write to.
@@ -764,7 +764,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE WriteMatrixToMatrixMarket_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write to matrix market implementation for complex data.
-  SUBROUTINE WriteMatrixToMatrixMarket_psc(this,file_name)
+  SUBROUTINE WriteMatrixToMatrixMarket_psc(this, file_name)
     !> The Matrix to write.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The name of the file to write to.
@@ -787,9 +787,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillMatrixFromTripletList_psr(this, triplet_list, &
        & preduplicated_in, prepartitioned_in)
     !> The matrix to fill.
-    TYPE(Matrix_ps) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The triplet list of values.
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r), INTENT(IN) :: triplet_list
     !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !> If all lists only contain local matrix elements set this to true.
@@ -823,9 +823,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE FillMatrixFromTripletList_psc(this, triplet_list, &
        & preduplicated_in, prepartitioned_in)
     !> The matrix to fill.
-    TYPE(Matrix_ps) :: this
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> The triplet list of values.
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c), INTENT(IN) :: triplet_list
     !> If lists are preduplicated across slices set this to true.
     LOGICAL, INTENT(IN), OPTIONAL :: preduplicated_in
     !> If all lists only contain local matrix elements set this to true.
@@ -1031,13 +1031,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The list to fill.
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
     !> The starting row for data to store on this process.
-    INTEGER :: start_row
+    INTEGER, INTENT(IN) :: start_row
     !> The ending row for data to store on this process.
-    INTEGER :: end_row
+    INTEGER, INTENT(IN) :: end_row
     !> The starting col for data to store on this process
-    INTEGER :: start_column
+    INTEGER, INTENT(IN) :: start_column
     !> The ending col for data to store on this process
-    INTEGER :: end_column
+    INTEGER, INTENT(IN) :: end_column
     !! Local Data
     TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsr) :: merged_local_data
@@ -1090,13 +1090,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The list to fill.
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
     !> The starting row for data to store on this process.
-    INTEGER :: start_row
+    INTEGER, INTENT(IN) :: start_row
     !> The ending row for data to store on this process.
-    INTEGER :: end_row
+    INTEGER, INTENT(IN) :: end_row
     !> The starting col for data to store on this process
-    INTEGER :: start_column
+    INTEGER, INTENT(IN) :: start_column
     !> The ending col for data to store on this process
-    INTEGER :: end_column
+    INTEGER, INTENT(IN) :: end_column
     !! Local Data
     TYPE(Matrix_ps) :: working_matrix
     TYPE(Matrix_lsc) :: merged_local_data
@@ -1148,13 +1148,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The slice to fill.
     TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
     !> The starting row to include in this matrix.
-    INTEGER :: start_row
+    INTEGER, INTENT(IN) :: start_row
     !> The ending row to include in this matrix.
-    INTEGER :: end_row
+    INTEGER, INTENT(IN) :: end_row
     !> The starting column to include in this matrix.
-    INTEGER :: start_column
+    INTEGER, INTENT(IN) :: start_column
     !> The last column to include in this matrix.
-    INTEGER :: end_column
+    INTEGER, INTENT(IN) :: end_column
 
     !! Get a triplet list with the values
     IF (this%is_complex) THEN
@@ -1175,13 +1175,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The slice to fill.
     TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
     !> The starting row to include in this matrix.
-    INTEGER :: start_row
+    INTEGER, INTENT(IN) :: start_row
     !> The ending row to include in this matrix.
-    INTEGER :: end_row
+    INTEGER, INTENT(IN) :: end_row
     !> The starting column to include in this matrix.
-    INTEGER :: start_column
+    INTEGER, INTENT(IN) :: start_column
     !> The last column to include in this matrix.
-    INTEGER :: end_column
+    INTEGER, INTENT(IN) :: end_column
 
 #define TLISTTYPE TripletList_r
 #define TTYPE Triplet_r
@@ -1199,13 +1199,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The slice to fill.
     TYPE(Matrix_ps), INTENT(INOUT) :: submatrix
     !> The starting row to include in this matrix.
-    INTEGER :: start_row
+    INTEGER, INTENT(IN) :: start_row
     !> The ending row to include in this matrix.
-    INTEGER :: end_row
+    INTEGER, INTENT(IN) :: end_row
     !> The starting column to include in this matrix.
-    INTEGER :: start_column
+    INTEGER, INTENT(IN) :: start_column
     !> The last column to include in this matrix.
-    INTEGER :: end_column
+    INTEGER, INTENT(IN) :: end_column
 
 #define TLISTTYPE TripletList_c
 #define TTYPE Triplet_c
@@ -1283,7 +1283,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print matrix implementation (real).
   SUBROUTINE PrintMatrix_psr(this, file_name_in)
     !> The matrix to print.
-    TYPE(Matrix_ps) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Temporary Variables
@@ -1295,7 +1295,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print matrix implementation (complex).
   SUBROUTINE PrintMatrix_psc(this, file_name_in)
     !> The matrix to print.
-    TYPE(Matrix_ps) :: this
+    TYPE(Matrix_ps), INTENT(IN) :: this
     !> Optionally, you can pass a file to print to instead of the console.
     CHARACTER(len=*), OPTIONAL, INTENT(IN) :: file_name_in
     !! Temporary Variables
@@ -1420,7 +1420,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to transpose.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
     !> TransMat = A^T .
-    TYPE(Matrix_ps), INTENT(OUT) :: TransMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: TransMat
 
     IF (AMat%is_complex) THEN
        CALL TransposeMatrix_psc(AMat, TransMat)
@@ -1435,7 +1435,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to transpose.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
     !> TransMat = A^T .
-    TYPE(Matrix_ps), INTENT(OUT) :: TransMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: TransMat
     !! Local Variables
     TYPE(TripletList_r) :: triplet_list
     TYPE(TripletList_r) :: new_list
@@ -1450,7 +1450,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to transpose.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
     !> TransMat = A^T .
-    TYPE(Matrix_ps), INTENT(OUT) :: TransMat
+    TYPE(Matrix_ps), INTENT(INOUT) :: TransMat
     !! Local Variables
     TYPE(TripletList_c) :: triplet_list
     TYPE(TripletList_c) :: new_list
@@ -1535,8 +1535,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This will redistribute the data so that the local data are entries in
   !> the rows and columns list. The order of the row list and column list matter
   !> because local data is filled in the same order.
-  SUBROUTINE RedistributeData_psr(this,index_lookup,reverse_index_lookup,&
-       & initial_triplet_list,sorted_triplet_list)
+  SUBROUTINE RedistributeData_psr(this, index_lookup, reverse_index_lookup,&
+       & initial_triplet_list, sorted_triplet_list)
     !> The matrix to redistribute
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> Lookup describing how data is distributed.
@@ -1561,8 +1561,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This will redistribute the data so that the local data are entries in
   !> the rows and columns list. The order of the row list and column list matter
   !> because local data is filled in the same order.
-  SUBROUTINE RedistributeData_psc(this,index_lookup,reverse_index_lookup,&
-       & initial_triplet_list,sorted_triplet_list)
+  SUBROUTINE RedistributeData_psc(this, index_lookup, reverse_index_lookup,&
+       & initial_triplet_list, sorted_triplet_list)
     !> The matrix to redistribute
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !> Lookup describing how data is distributed.
