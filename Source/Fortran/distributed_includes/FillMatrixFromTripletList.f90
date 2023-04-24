@@ -13,7 +13,7 @@
 
   IF (prepartitioned) THEN
      !! Shift and sort the local entries.
-     shifted = triplet_list
+     CALL CopyTripletList(triplet_list, shifted)
      CALL ShiftTripletList(shifted, 1 - this%start_row, 1 - this%start_column)
      CALL SortTripletList(shifted, this%local_columns, &
           & this%local_rows, sorted_triplet_list)

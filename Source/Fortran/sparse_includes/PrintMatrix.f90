@@ -13,7 +13,7 @@
   END IF
 
   !! Print
-  CALL MatrixToTripletList(this,triplet_list)
+  CALL MatrixToTripletList(this, triplet_list)
 
   size_of_this = this%outer_index(this%columns+1)
 
