@@ -1,16 +1,17 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to do timings.
 MODULE TimerModule
+  USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
   USE ProcessGridModule, ONLY : global_grid
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
-  LOGICAL :: is_initialized = .FALSE.
-  CHARACTER(len=20), DIMENSION(:), ALLOCATABLE :: timer_list
-  DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: start_times
-  DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: elapsed_times
+  INTEGER, PARAMETER :: name_len = 50
+  CHARACTER(LEN = name_len), DIMENSION(:), ALLOCATABLE, SAVE :: timer_list
+  REAL(NTREAL), DIMENSION(:), ALLOCATABLE, SAVE :: start_times
+  REAL(NTREAL), DIMENSION(:), ALLOCATABLE, SAVE:: elapsed_times
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: RegisterTimer
   PUBLIC :: StartTimer
@@ -22,13 +23,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Register a timer with the timer module.  Call this before using that timer.
   SUBROUTINE RegisterTimer(timer_name)
     !> Name of the timer.
-    CHARACTER(len=*), INTENT(IN) :: timer_name
+    CHARACTER(LEN = *), INTENT(IN) :: timer_name
     !! Local Data
-    CHARACTER(len=20), DIMENSION(:), ALLOCATABLE :: temp_timer_list
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: temp_start_times
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: temp_elapsed_times
+    CHARACTER(LEN = name_len), DIMENSION(:), ALLOCATABLE :: temp_timer_list
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: temp_start_times
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: temp_elapsed_times
 
-    IF (is_initialized) THEN
+    IF (ALLOCATED(timer_list)) THEN
        ALLOCATE(temp_timer_list(SIZE(timer_list)+1))
        ALLOCATE(temp_start_times(SIZE(start_times)+1))
        ALLOCATE(temp_elapsed_times(SIZE(elapsed_times)+1))
@@ -46,39 +47,38 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        ALLOCATE(elapsed_times(1))
        timer_list(1) = timer_name
        elapsed_times(1) = 0
-       is_initialized = .TRUE.
     END IF
   END SUBROUTINE RegisterTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Start the clock running for a given timer.
   SUBROUTINE StartTimer(timer_name)
     !> Name of the timer. Must be registered.
-    CHARACTER(len=*), INTENT(IN) :: timer_name
+    CHARACTER(LEN = *), INTENT(IN) :: timer_name
     !! Local Data
-    INTEGER :: timer_position
-    DOUBLE PRECISION :: temp_time
+    INTEGER :: II
+    REAL(NTREAL) :: temp_time
 
     temp_time = MPI_WTIME()
-    timer_position = GetTimerPosition(timer_name)
-    IF (timer_position > 0) THEN
-       start_times(timer_position) = temp_time
+    II = GetTimerPosition(timer_name)
+    IF (II .GT. 0) THEN
+       start_times(II) = temp_time
     END IF
   END SUBROUTINE StartTimer
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Stop the clock for a given timer.
   SUBROUTINE StopTimer(timer_name)
     !> Name of the timer. Must be registered.
-    CHARACTER(len=*), INTENT(IN) :: timer_name
+    CHARACTER(LEN = *), INTENT(IN) :: timer_name
     !! Local Data
-    INTEGER :: timer_position
-    DOUBLE PRECISION :: temp_elapsed_time
-    DOUBLE PRECISION :: temp_start_time
+    INTEGER :: II
+    REAL(NTREAL):: temp_elapsed_time
+    REAL(NTREAL) :: temp_start_time
 
-    timer_position = GetTimerPosition(timer_name)
-    IF (timer_position > 0) THEN
+    II = GetTimerPosition(timer_name)
+    IF (II .GT. 0) THEN
        temp_elapsed_time = MPI_WTIME()
-       temp_start_time = start_times(timer_position)
-       elapsed_times(timer_position) = elapsed_times(timer_position) + &
+       temp_start_time = start_times(II)
+       elapsed_times(II) = elapsed_times(II) + &
             & temp_elapsed_time - temp_start_time
     END IF
   END SUBROUTINE StopTimer
@@ -86,16 +86,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the elapsed time for a given timer.
   SUBROUTINE PrintTimer(timer_name)
     !> Name of the timer. Must be registered.
-    CHARACTER(len=*), INTENT(IN) :: timer_name
+    CHARACTER(LEN = *), INTENT(IN) :: timer_name
     !! Local Data
-    INTEGER :: timer_position
+    INTEGER :: II
 
-    timer_position = GetTimerPosition(timer_name)
+    II = GetTimerPosition(timer_name)
     CALL WriteHeader("Timers")
     CALL EnterSubLog
-    IF (timer_position > 0) THEN
-       CALL WriteElement(key=timer_name, &
-            & VALUE=elapsed_times(timer_position))
+    IF (II > 0) THEN
+       CALL WriteElement(key = timer_name, VALUE = elapsed_times(II))
     END IF
     CALL ExitSubLog
   END SUBROUTINE PrintTimer
@@ -103,13 +102,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the elapsed time for each timer on this process.
   SUBROUTINE PrintAllTimers()
     !! Local Data
-    INTEGER :: timer_position
+    INTEGER :: II
 
     CALL WriteHeader("Timers")
     CALL EnterSubLog
-    DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
-       CALL WriteElement(key=timer_list(timer_position), &
-            & VALUE=elapsed_times(timer_position))
+    DO II = LBOUND(timer_list, dim = 1), UBOUND(timer_list, dim = 1)
+       CALL WriteElement(key = timer_list(II), VALUE = elapsed_times(II))
     END DO
     CALL ExitSubLog
   END SUBROUTINE PrintAllTimers
@@ -118,20 +116,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> processes.
   SUBROUTINE PrintAllTimersDistributed()
     !! Local Data
-    INTEGER          :: timer_position
-    DOUBLE PRECISION :: elapsed
-    DOUBLE PRECISION :: max_time
-    INTEGER          :: ierr
+    INTEGER      :: II
+    REAL(NTREAL) :: elapsed
+    REAL(NTREAL) :: max_time
+    INTEGER      :: ierr
 
     CALL WriteHeader("Timers")
     CALL EnterSubLog
 
-    DO timer_position = LBOUND(timer_list,dim=1), UBOUND(timer_list,dim=1)
-       elapsed = elapsed_times(timer_position)
+    DO II = LBOUND(timer_list, dim = 1), UBOUND(timer_list, dim = 1)
+       elapsed = elapsed_times(II)
        CALL MPI_Allreduce(elapsed, max_time, 1, MPI_DOUBLE_PRECISION ,MPI_MAX, &
             & global_grid%global_comm, ierr)
-       CALL WriteElement(key=timer_list(timer_position), &
-            & VALUE=max_time)
+       CALL WriteElement(key = timer_list(II), VALUE = max_time)
     END DO
 
     CALL ExitSubLog
@@ -142,18 +139,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   FUNCTION GetTimerPosition(timer_name) RESULT(timer_position)
     !! Parameters
     !> Name of the timer.
-    CHARACTER(len=*), INTENT(IN) :: timer_name
+    CHARACTER(LEN = *), INTENT(IN) :: timer_name
     !> The position of the timer. 0 means the timer has not been registered.
     INTEGER :: timer_position
     !! Local Data
-    INTEGER :: counter
+    INTEGER :: II
     LOGICAL :: not_found
 
     not_found = .TRUE.
 
-    IF (is_initialized) THEN
-       DO counter=1, SIZE(timer_list)
-          IF (timer_name .EQ. timer_list(counter)) THEN
+    IF (ALLOCATED(timer_list)) THEN
+       DO II = 1, SIZE(timer_list)
+          IF (timer_name .EQ. timer_list(II)) THEN
              not_found = .FALSE.
              EXIT
           END IF
@@ -163,7 +160,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (not_found) THEN
        timer_position = 0
     ELSE
-       timer_position = counter
+       timer_position = II
     END IF
   END FUNCTION GetTimerPosition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

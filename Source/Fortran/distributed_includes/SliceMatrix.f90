@@ -24,8 +24,8 @@
 
   new_dim = MAX(end_row - start_row + 1, end_column - start_column + 1)
   CALL ConstructEmptyMatrix(submatrix, new_dim, &
-       & process_grid_in=this%process_grid, is_complex_in=this%is_complex)
-  CALL FillMatrixFromTripletList(submatrix, slist, preduplicated_in=.TRUE.)
+       & process_grid_in = this%process_grid, is_complex_in = this%is_complex)
+  CALL FillMatrixFromTripletList(submatrix, slist, preduplicated_in = .TRUE.)
 
   !! Cleanup
   CALL DestructTripletList(tlist)

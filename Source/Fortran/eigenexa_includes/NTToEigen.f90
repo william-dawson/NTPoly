@@ -17,13 +17,11 @@
      !! Determine where that triplet will reside
      iowner = eigen_owner_node(trip%index_row, exa%proc_rows, exa%rowid)
      jowner = eigen_owner_node(trip%index_column, exa%proc_cols, exa%colid)
-     ijowner = (jowner-1)*exa%proc_rows + iowner
+     ijowner = (jowner - 1) * exa%proc_rows + iowner
 
      !! New indices
-     ilookup = eigen_translate_g2l(trip%index_row, exa%proc_rows, &
-          & exa%rowid)
-     jlookup = eigen_translate_g2l(trip%index_column, exa%proc_cols, &
-          & exa%colid)
+     ilookup = eigen_translate_g2l(trip%index_row, exa%proc_rows, exa%rowid)
+     jlookup = eigen_translate_g2l(trip%index_column, exa%proc_cols, exa%colid)
      CALL SetTriplet(shifted_trip, jlookup, ilookup, trip%point_value)
 
      CALL AppendToTripletList(send_list(ijowner), shifted_trip)

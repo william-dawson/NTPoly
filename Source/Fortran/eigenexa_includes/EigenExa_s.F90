@@ -10,26 +10,20 @@
   WD = 0
 
   !! Convert to EigenExa
-  CALL StartTimer("NTToEigen")
 #ifdef ISCOMPLEX
   CALL NTToEigen_c(A, AD, exa)
 #else
   CALL NTToEigen_r(A, AD, exa)
 #endif
-  CALL StopTimer("NTToEigen")
 
   !! Calculate
-  CALL StartTimer("EigenExaCompute")
 #ifdef ISCOMPLEX
   CALL Compute_c(AD, VD, WD, exa)
 #else
   CALL Compute_r(AD, VD, WD, exa)
 #endif
-  CALL StopTimer("EigenExaCompute")
 
   !! Convert Back
-  CALL StartTimer("EigenToNT")
-
   IF (PRESENT(eigenvectors_in)) THEN
      CALL ConstructEmptyMatrix(eigenvectors_in, A)
 #ifdef ISCOMPLEX
@@ -41,8 +35,6 @@
 
   CALL ConstructEmptyMatrix(eigenvalues, A)
   CALL ExtractEigenvalues(WD, eigenvalues, exa)
-
-  CALL StopTimer("EigenToNT")
 
   !! Cleanup
 #ifdef ISCOMPLEX

@@ -136,7 +136,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
 #include "sparse_includes/ConstructEmptyMatrix.f90"
-
   END SUBROUTINE ConstructEmptyMatrixSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine type wrapper for the constructor.
@@ -151,7 +150,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: zero_in
 
 #include "sparse_includes/ConstructEmptyMatrix.f90"
-
   END SUBROUTINE ConstructEmptyMatrixSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for the construct from file function.
@@ -163,9 +161,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
-    TYPE(TripletList_r) :: sorted_triplet_list
-    TYPE(Triplet_r) :: temporary
+    TYPE(TripletList_r) :: tlist
+    TYPE(TripletList_r) :: sorted_tlist
+    TYPE(Triplet_r) :: temp
 
 #include "sparse_includes/ConstructMatrixFromFile.f90"
   END SUBROUTINE ConstructMatrixFromFileSub_lsr
@@ -178,15 +176,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
-    TYPE(TripletList_c) :: sorted_triplet_list
-    TYPE(Triplet_c) :: temporary
+    TYPE(TripletList_c) :: tlist
+    TYPE(TripletList_c) :: sorted_tlist
+    TYPE(Triplet_c) :: temp
     REAL(NTREAL) :: real_val, comp_val
 
 #define ISCOMPLEX
 #include "sparse_includes/ConstructMatrixFromFile.f90"
 #undef ISCOMPLEX
-
   END SUBROUTINE ConstructMatrixFromFileSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the triplet list based constructor.
@@ -204,7 +201,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #define ISCOMPLEX
 #include "sparse_includes/ConstructMatrixFromTripletList.f90"
 #undef ISCOMPLEX
-
   END SUBROUTINE ConstructMatrixFromTripletListSub_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine wrapper for the triplet list based constructor.
@@ -220,7 +216,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: columns
 
 #include "sparse_includes/ConstructMatrixFromTripletList.f90"
-
   END SUBROUTINE ConstructMatrixFromTripletListSub_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Explicitly destruct a sparse matrix.
@@ -386,14 +381,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
     !> 2d array of matrices to compose.
-    TYPE(Matrix_lsr), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
-         & mat_array
+    TYPE(Matrix_lsr), DIMENSION(:, :), INTENT(IN) :: mat_array
     !> The composed matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: out_matrix
     !! Local Data
     TYPE(Matrix_lsr), DIMENSION(block_columns) :: merged_columns
     TYPE(Matrix_lsr) :: Temp
-    TYPE(Matrix_lsr), DIMENSION(block_rows,block_columns) :: mat_t
+    TYPE(Matrix_lsr), DIMENSION(block_rows, block_columns) :: mat_t
 
 #include "sparse_includes/ComposeMatrix.f90"
   END SUBROUTINE ComposeMatrix_lsr
@@ -407,14 +401,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The number of columns of the array of blocks.
     INTEGER, INTENT(IN) :: block_columns
     !> 2d array of matrices to compose.
-    TYPE(Matrix_lsc), DIMENSION(block_rows,block_columns), INTENT(IN) :: &
-         & mat_array
+    TYPE(Matrix_lsc), DIMENSION(:, :), INTENT(IN) :: mat_array
     !> The composed matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: out_matrix
     !! Local Data
     TYPE(Matrix_lsc), DIMENSION(block_columns) :: merged_columns
     TYPE(Matrix_lsc) :: Temp
-    TYPE(Matrix_lsc), DIMENSION(block_rows,block_columns) :: mat_t
+    TYPE(Matrix_lsc), DIMENSION(block_rows, block_columns) :: mat_t
 
 #include "sparse_includes/ComposeMatrix.f90"
   END SUBROUTINE ComposeMatrix_lsc
@@ -523,8 +516,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(IN) :: this
     !> The triplet list we created.
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
-    !! Local Variables
-    TYPE(Triplet_r) :: temporary
 
 #include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsr
@@ -535,8 +526,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(IN) :: this
     !> The triplet list we created.
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
-    !! Local Variables
-    TYPE(Triplet_c) :: temporary
 
 #include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsc

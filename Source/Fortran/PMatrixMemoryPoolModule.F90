@@ -53,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Distributed Matrix Memory Pool object to destroy.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: this
     !! Local Data
-    INTEGER :: row_counter, column_counter
+    INTEGER :: II, JJ
 
 #define grid grid_r
 #include "distributed_pool_includes/DestructMatrixMemoryPool.f90"

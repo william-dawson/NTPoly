@@ -30,17 +30,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(PermuteRows, mat)
     CALL ConstructEmptyMatrix(PermuteColumns, mat)
     CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
-         & permute_rows_in=.TRUE.)
+         & permute_rows_in = .TRUE.)
     CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
-         & permute_rows_in=.FALSE.)
+         & permute_rows_in = .FALSE.)
     CALL ConstructEmptyMatrix(Temp, mat)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
        CALL MatrixMultiply(PermuteRows, mat, Temp, &
-            & memory_pool_in=memorypool_in)
+            & memory_pool_in = memorypool_in)
        CALL MatrixMultiply(Temp, PermuteColumns, mat_out, &
-            & memory_pool_in=memorypool_in)
+            & memory_pool_in = memorypool_in)
     ELSE
        CALL MatrixMultiply(PermuteRows, mat, Temp)
        CALL MatrixMultiply(Temp, PermuteColumns, mat_out)
@@ -69,17 +69,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(PermuteRows, mat)
     CALL ConstructEmptyMatrix(PermuteColumns, mat)
     CALL FillMatrixPermutation(PermuteRows, permutation%index_lookup, &
-         & permute_rows_in=.TRUE.)
+         & permute_rows_in = .TRUE.)
     CALL FillMatrixPermutation(PermuteColumns, permutation%index_lookup, &
-         & permute_rows_in=.FALSE.)
+         & permute_rows_in = .FALSE.)
     CALL ConstructEmptyMatrix(Temp, mat)
 
     !! Permute Matrices.
     IF (PRESENT(memorypool_in)) THEN
        CALL MatrixMultiply(PermuteColumns, mat, Temp, &
-            & memory_pool_in=memorypool_in)
+            & memory_pool_in = memorypool_in)
        CALL MatrixMultiply(Temp, PermuteRows, mat_out, &
-            & memory_pool_in=memorypool_in)
+            & memory_pool_in = memorypool_in)
     ELSE
        CALL MatrixMultiply(PermuteColumns, mat, Temp)
        CALL MatrixMultiply(Temp, PermuteRows, mat_out)

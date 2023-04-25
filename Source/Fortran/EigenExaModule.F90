@@ -8,8 +8,8 @@ MODULE EigenExaModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & FillMatrixFromTripletList, GetMatrixTripletList, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
-  USE TimerModule, ONLY : StartTimer, StopTimer
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   USE TripletModule, ONLY : Triplet_r, Triplet_c, SetTriplet
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, GetTripletAt, ConstructTripletList, &
@@ -74,17 +74,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Process Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     !! Write info about the solver
     IF (params%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="EigenExa")
-       CALL WriteElement(key="NVALS", VALUE=nvals)
+       CALL WriteElement(key = "Method", VALUE = "EigenExa")
+       CALL WriteElement(key = "NVALS", VALUE = nvals)
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("imamura2011development")
@@ -338,7 +338,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_sx(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_sx(N, exa%nvals, A, LDA, W, V, LDZ, mode = exa%MODE)
 
   END SUBROUTINE Compute_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -356,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_h(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_h(N, exa%nvals, A, LDA, W, V, LDZ, mode = exa%MODE)
 
   END SUBROUTINE Compute_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

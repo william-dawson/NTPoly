@@ -13,7 +13,8 @@ MODULE InverseSolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, FillMatrixIdentity, PrintMatrixInformation
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, CopySolverParameters, &
+       & ConstructSolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -44,9 +45,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
@@ -70,9 +71,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(InputMat, BalancedMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     ELSE
        CALL CopyMatrix(InputMat, BalancedMat)
     END IF
@@ -93,20 +94,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = params%converge_diff + 1.0_NTREAL
     DO II = 1, params%max_iterations
        IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        CALL MatrixMultiply(OutputMat, BalancedMat, Temp1, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
 
        !! Check if Converged
        CALL CopyMatrix(Identity, Temp2)
-       CALL IncrementMatrix(Temp1, Temp2,-1.0_NTREAL)
+       CALL IncrementMatrix(Temp1, Temp2, -1.0_NTREAL)
        norm_value = MatrixNorm(Temp2)
 
        CALL DestructMatrix(Temp2)
-       CALL MatrixMultiply(Temp1, OutputMat, Temp2, alpha_in=-1.0_NTREAL, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(Temp1, OutputMat, Temp2, alpha_in = -1.0_NTREAL, &
+            & threshold_in = params%threshold, memory_pool_in = pool)
 
        !! Save a copy of the last inverse matrix
        CALL CopyMatrix(OutputMat, Temp1)
@@ -114,7 +115,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
 
        CALL IncrementMatrix(Temp2, OutputMat, &
-            & threshold_in=params%threshold)
+            & threshold_in = params%threshold)
 
        IF (norm_value .LE. params%converge_diff) THEN
           EXIT
@@ -122,14 +123,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key = "Total Iterations", VALUE = II-1)
        CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     IF (params%be_verbose) THEN
@@ -157,9 +158,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
@@ -200,9 +201,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
@@ -226,9 +227,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(InputMat, BalancedMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     ELSE
        CALL CopyMatrix(InputMat, BalancedMat)
     END IF
@@ -249,20 +250,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = params%converge_diff + 1.0_NTREAL
     DO II = 1,params%max_iterations
        IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        CALL MatrixMultiply(OutputMat, BalancedMat, Temp1, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
-       CALL MatrixMultiply(Temp1, OutputMat, Temp2,alpha_in=-1.0_NTREAL, &
-            & threshold_in=params%threshold,memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
+       CALL MatrixMultiply(Temp1, OutputMat, Temp2, alpha_in = -1.0_NTREAL, &
+            & threshold_in = params%threshold, memory_pool_in = pool)
 
        !! Save a copy of the last inverse matrix
        CALL CopyMatrix(OutputMat, Temp1)
 
        CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
        CALL IncrementMatrix(Temp2, OutputMat, &
-            & threshold_in=params%threshold)
+            & threshold_in = params%threshold)
 
        !! Check if Converged
        CALL IncrementMatrix(OutputMat, Temp1, -1.0_NTREAL)
@@ -276,14 +277,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II-1)
+       CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
        CALL PrintMatrixInformation(OutputMat)
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     IF (params%be_verbose) THEN
@@ -300,8 +301,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical inversion for mapping. 
   FUNCTION InvertLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = 1.0 / val
   END FUNCTION InvertLambda

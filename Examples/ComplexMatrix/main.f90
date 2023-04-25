@@ -15,7 +15,8 @@ PROGRAM ComplexMatrix
        & PrintMatrix, CopyMatrix, WriteMatrixToMatrixMarket
   USE ProcessGridModule, ONLY : ConstructProcessGrid, DestructProcessGrid, &
        & IsRoot
-  USE SolverParametersModule, ONLY : SolverParameters_t
+  USE SolverParametersModule, ONLY : SolverParameters_t, &
+       & ConstructSolverParameters, DestructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, DestructTripletList, &
        & GetTripletAt, TripletList_c, ConstructTripletList, &
        & AppendToTripletList, SymmetrizeTripletList
@@ -35,16 +36,16 @@ PROGRAM ComplexMatrix
   !! Temporary Variables
   CHARACTER(len=80) :: argument
   CHARACTER(len=80) :: argument_value
-  INTEGER :: counter
+  INTEGER :: II
   INTEGER :: provided, ierr
 
   !! Setup MPI
   CALL MPI_Init_thread(MPI_THREAD_SERIALIZED, provided, ierr)
 
   !! Process The Input
-  DO counter=1,COMMAND_ARGUMENT_COUNT(),2
-     CALL GET_COMMAND_ARGUMENT(counter,argument)
-     CALL GET_COMMAND_ARGUMENT(counter+1,argument_value)
+  DO II = 1, COMMAND_ARGUMENT_COUNT(), 2
+     CALL GET_COMMAND_ARGUMENT(II, argument)
+     CALL GET_COMMAND_ARGUMENT(II + 1, argument_value)
      SELECT CASE(argument)
      CASE('--input_file')
         input_file = argument_value
@@ -85,7 +86,7 @@ PROGRAM ComplexMatrix
   CALL ScaleMatrix(GMat, 0.5_NTREAL)
 
   !! Compute The Exponential
-  solver_parameters = SolverParameters_t(threshold_in=threshold)
+  CALL ConstructSolverParameters(solver_parameters, threshold_in=threshold)
   CALL ComputeExponential(GMat, ExMat, solver_parameters)
 
   !! Write To File
@@ -96,6 +97,7 @@ PROGRAM ComplexMatrix
   CALL DestructMatrix(GMat)
 
   !! Cleanup
+  CALL DestructSolverParameters(solver_parameters)
   IF (IsRoot()) THEN
      CALL DeactivateLogger
   END IF

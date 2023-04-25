@@ -14,7 +14,8 @@ MODULE EigenSolversModule
        & DestructMatrix, CopyMatrix, GetMatrixTripletList, TransposeMatrix, &
        & ConjugateMatrix
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList, &
        & DestructMatrix
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
@@ -46,9 +47,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
     IF (PRESENT(nvals_in)) THEN
        nvals = nvals_in
@@ -59,10 +60,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if EIGENEXA
     IF (PRESENT(eigenvectors_in)) THEN
        CALL EigenExa_s(this, eigenvalues, nvals, eigenvectors_in, &
-            & solver_parameters_in=params)
+            & solver_parameters_in = params)
     ELSE
        CALL EigenExa_s(this, eigenvalues, nvals, &
-            & solver_parameters_in=params)
+            & solver_parameters_in = params)
     END IF
 #else
     IF (PRESENT(eigenvectors_in)) THEN
@@ -88,9 +89,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        FUNCTION func(val) RESULT(outval)
          USE DataTypesModule, ONLY : NTREAL
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(IN) :: val
+         REAL(KIND = NTREAL), INTENT(IN) :: val
          !> The transformed value.
-         REAL(KIND=NTREAL) :: outval
+         REAL(KIND = NTREAL) :: outval
        END FUNCTION func
     END INTERFACE
     !> Parameters for computing
@@ -104,14 +105,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     !! Perform the eigendecomposition
-    CALL EigenDecomposition(this, vals, solver_parameters_in=params, &
-         & eigenvectors_in=vecs)
+    CALL EigenDecomposition(this, vals, solver_parameters_in = params, &
+         & eigenvectors_in = vecs)
 
     !! Convert to a triplet list, map the triplet list, fill.
     CALL GetMatrixTripletList(vals, tlist)
@@ -121,13 +122,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill
     CALL ConstructEmptyMatrix(ResultMat, this)
-    CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in=.TRUE.)
+    CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in = .TRUE.)
 
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in=params%threshold)
+    CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in = params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
     CALL ConjugateMatrix(vecsT)
-    CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in=params%threshold)
+    CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in = params%threshold)
 
     !! Cleanup
     CALL DestructMatrix(vecs)
@@ -156,8 +157,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_params%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="LAPACK")
-       CALL WriteElement(key="NVALS", VALUE=nvals)
+       CALL WriteElement(key = "Method", VALUE = "LAPACK")
+       CALL WriteElement(key = "NVALS", VALUE = nvals)
        CALL ExitSubLog
        CALL PrintParameters(solver_params)
     END IF

@@ -29,6 +29,7 @@ MODULE TripletListModule
   PUBLIC :: TripletList_r
   PUBLIC :: TripletList_c
   PUBLIC :: ConstructTripletList
+  PUBLIC :: CopyTripletList
   PUBLIC :: DestructTripletList
   PUBLIC :: ResizeTripletList
   PUBLIC :: AppendToTripletList
@@ -45,6 +46,10 @@ MODULE TripletListModule
      MODULE PROCEDURE ConstructTripletListSup_r
      MODULE PROCEDURE ConstructTripletListSup_c
   END INTERFACE ConstructTripletList
+  INTERFACE CopyTripletList
+     MODULE PROCEDURE CopyTripletList_r
+     MODULE PROCEDURE CopyTripletList_c
+  END INTERFACE CopyTripletList
   INTERFACE DestructTripletList
      MODULE PROCEDURE DestructTripletList_r
      MODULE PROCEDURE DestructTripletList_c
@@ -98,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)
     !> The triplet list to construct.
     TYPE(TripletList_r), INTENT(INOUT) :: this
-    !> The length of the triplet list (default=0).
+    !> The length of the triplet list (default = 0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
 #include "triplet_includes/ConstructTripletList.f90"
@@ -109,7 +114,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructTripletListSup_c(this, size_in)
     !> The triplet list to construct.
     TYPE(TripletList_c), INTENT(INOUT) :: this
-    !> The length of the triplet list (default=0).
+    !> The length of the triplet list (default = 0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
 #include "triplet_includes/ConstructTripletList.f90"
@@ -133,6 +138,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "triplet_includes/DestructTripletList.f90"
 
   END SUBROUTINE DestructTripletList_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopyTripletList_r(tripA, tripB)
+    !> The triplet list to copy.
+    TYPE(TripletList_r), INTENT(IN) :: tripA
+    !> tripB = tripA
+    TYPE(TripletList_r), INTENT(INOUT) :: tripB
+
+#include "triplet_includes/CopyTripletList.f90"
+  END SUBROUTINE CopyTripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopyTripletList_c(tripA, tripB)
+    !> The triplet list to copy.
+    TYPE(TripletList_c), INTENT(IN) :: tripA
+    !> tripB = tripA
+    TYPE(TripletList_c), INTENT(INOUT) :: tripB
+
+#include "triplet_includes/CopyTripletList.f90"
+  END SUBROUTINE CopyTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   PURE SUBROUTINE ResizeTripletList_r(this, size)
@@ -246,7 +269,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> False if you do not need the final bubble sort.
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
-    TYPE(Triplet_r) :: temporary
+    TYPE(Triplet_r) :: trip
 
 #include "triplet_includes/SortTripletList.f90"
 
@@ -268,7 +291,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> False if you do not need the final bubble sort.
     LOGICAL, OPTIONAL, INTENT(IN) :: bubble_in
     !! Local Data
-    TYPE(Triplet_c) :: temporary
+    TYPE(Triplet_c) :: trip
 
 #include "triplet_includes/SortTripletList.f90"
 
@@ -350,7 +373,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The column offset to shift by.
     INTEGER, INTENT(IN) :: column_shift
     !! Local Variables
-    INTEGER :: counter
+    INTEGER :: II
 
 #include "triplet_includes/ShiftTripletList.f90"
 
@@ -368,7 +391,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The column offset to shift by.
     INTEGER, INTENT(IN) :: column_shift
     !! Local Variables
-    INTEGER :: counter
+    INTEGER :: II
 
 #include "triplet_includes/ShiftTripletList.f90"
 
@@ -420,30 +443,30 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Type of symmetry.
     INTEGER, INTENT(IN) :: pattern_type
     !! Local variables
-    TYPE(Triplet_r) :: temporary, temporary_transpose
-    INTEGER :: counter
+    TYPE(Triplet_r) :: trip, trip_t
+    INTEGER :: II
     INTEGER :: initial_size
 
     initial_size = triplet_list%CurrentSize
     SELECT CASE(pattern_type)
     CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, trip)
+          IF (trip%index_column .NE. trip%index_row) THEN
+             trip_t%index_row = trip%index_column
+             trip_t%index_column = trip%index_row
+             trip_t%point_value = trip%point_value
+             CALL AppendToTripletList(triplet_list, trip_t)
           END IF
        END DO
     CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, trip)
+          IF (trip%index_column .NE. trip%index_row) THEN
+             trip_t%index_row = trip%index_column
+             trip_t%index_column = trip%index_row
+             trip_t%point_value = -1.0 * trip%point_value
+             CALL AppendToTripletList(triplet_list, trip_t)
           END IF
        END DO
     END SELECT
@@ -457,40 +480,40 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Type of symmetry.
     INTEGER, INTENT(IN) :: pattern_type
     !! Local variables
-    TYPE(Triplet_c) :: temporary, temporary_transpose
-    INTEGER :: counter
+    TYPE(Triplet_c) :: trip, trip_t
+    INTEGER :: II
     INTEGER :: initial_size
 
     initial_size = triplet_list%CurrentSize
     SELECT CASE(pattern_type)
     CASE(MM_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, trip)
+          IF (trip%index_column .NE. trip%index_row) THEN
+             trip_t%index_row = trip%index_column
+             trip_t%index_column = trip%index_row
+             trip_t%point_value = trip%point_value
+             CALL AppendToTripletList(triplet_list, trip_t)
           END IF
        END DO
     CASE(MM_HERMITIAN)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = CONJG(temporary%point_value)
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, trip)
+          IF (trip%index_column .NE. trip%index_row) THEN
+             trip_t%index_row = trip%index_column
+             trip_t%index_column = trip%index_row
+             trip_t%point_value = CONJG(trip%point_value)
+             CALL AppendToTripletList(triplet_list, trip_t)
           END IF
        END DO
     CASE(MM_SKEW_SYMMETRIC)
-       DO counter = 1, initial_size
-          CALL GetTripletAt(triplet_list,counter,temporary)
-          IF (temporary%index_column .NE. temporary%index_row) THEN
-             temporary_transpose%index_row = temporary%index_column
-             temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+       DO II = 1, initial_size
+          CALL GetTripletAt(triplet_list, II, trip)
+          IF (trip%index_column .NE. trip%index_row) THEN
+             trip_t%index_row = trip%index_column
+             trip_t%index_column = trip%index_row
+             trip_t%point_value = -1.0*trip%point_value
+             CALL AppendToTripletList(triplet_list, trip_t)
           END IF
        END DO
     END SELECT

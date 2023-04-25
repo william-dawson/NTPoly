@@ -5,10 +5,7 @@
 !! performance.
 MODULE DMatrixModule
   USE DataTypesModule, ONLY : NTREAL, NTCOMPLEX
-  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, &
-       & ConstructMatrixFromTripletList
-  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & AppendToTripletList, ConstructTripletList, DestructTripletList
+  USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, ConstructEmptyMatrix
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE
@@ -111,7 +108,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Output. Must be preallocated.
     TYPE(Matrix_ldr), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
-    TYPE(Triplet_r) :: temporary
+    TYPE(Triplet_r) :: temp
 
 #include "dense_includes/ConstructMatrixDFromS.f90"
 
@@ -126,9 +123,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(INOUT) :: sparse_matrix
     !> Value for pruning values to zero.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
-    !! Local Variables
-    TYPE(Triplet_r) :: temporary
-    TYPE(TripletList_r) :: temporary_list
 
 #include "dense_includes/ConstructMatrixSFromD.f90"
 
@@ -182,7 +176,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = 0
     DO II =1, this%rows
        DO JJ = 1,  this%columns
-          norm = norm + this%DATA(II,JJ)**2
+          norm = norm + this%DATA(II, JJ)**2
        END DO
     END DO
   END FUNCTION MatrixNorm_ldr
@@ -340,7 +334,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
     MatV%DATA = MatA%DATA
 
-    N = SIZE(MatA%DATA,DIM=1)
+    N = SIZE(MatA%DATA, DIM = 1)
     LDA = N
 
     !! Allocations
@@ -365,7 +359,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructEmptyMatrix(MatW, MatA%rows, MatA%columns)
        MatW%DATA = 0
        DO II = 1, N
-          MatW%DATA(II,II) = W(II)
+          MatW%DATA(II, II) = W(II)
        END DO
     END IF
 
@@ -394,7 +388,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Dense matrix output. Must be preallocated.
     TYPE(Matrix_ldc), INTENT(INOUT) :: dense_matrix
     !! Helper Variables
-    TYPE(Triplet_c) :: temporary
+    TYPE(Triplet_c) :: temp
 
 #include "dense_includes/ConstructMatrixDFromS.f90"
 
@@ -409,9 +403,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(INOUT) :: sparse_matrix
     !> Value for pruning values to zero.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: threshold_in
-    !! Local Variables
-    TYPE(Triplet_c) :: temporary
-    TYPE(TripletList_c) :: temporary_list
 
 #include "dense_includes/ConstructMatrixSFromD.f90"
 
@@ -466,9 +457,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = 0
     DO II =1, this%rows
        DO JJ = 1,  this%columns
-          val = this%DATA(II,JJ)
+          val = this%DATA(II, JJ)
           conjval = CONJG(val)
-          norm = norm + REAL(val*conjval,KIND=NTREAL)
+          norm = norm + REAL(val*conjval, KIND = NTREAL)
        END DO
     END DO
   END FUNCTION MatrixNorm_ldc
@@ -630,7 +621,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
     MatV%DATA = MatA%DATA
 
-    N = SIZE(MatA%DATA,DIM=1)
+    N = SIZE(MatA%DATA, DIM = 1)
     LDA = N
 
     !! Allocations
@@ -657,7 +648,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructEmptyMatrix(MatW, MatA%rows, MatA%columns)
        MatW%DATA = 0
        DO II = 1, N
-          MatW%DATA(II,II) = W(II)
+          MatW%DATA(II, II) = W(II)
        END DO
     END IF
 

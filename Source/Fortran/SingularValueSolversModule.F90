@@ -7,7 +7,8 @@ MODULE SingularValueSolversModule
   USE PSMatrixModule, ONLY : Matrix_ps, DestructMatrix
   USE SignSolversModule, ONLY : PolarDecomposition
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -33,15 +34,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       params = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       params = SolverParameters_t()
+       CALL ConstructSolverParameters(params)
     END IF
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Singular Value Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Polar")
+       CALL WriteElement(key = "Method", VALUE="Polar")
        CALL PrintParameters(params)
     END IF
 
@@ -50,11 +51,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Compute the eigen decomposition of the hermitian matrix
     CALL EigenDecomposition(HMat, singularvalues, &
-         & eigenvectors_in=right_vectors, solver_parameters_in=params)
+         & eigenvectors_in = right_vectors, solver_parameters_in = params)
 
     !! Compute the left singular vectors
     CALL MatrixMultiply(UMat, right_vectors, left_vectors, &
-         & threshold_in=params%threshold)
+         & threshold_in = params%threshold)
 
     !! Cleanup
     IF (params%be_verbose) THEN

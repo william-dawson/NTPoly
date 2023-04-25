@@ -11,7 +11,8 @@ MODULE EigenBoundsModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, GetMatrixTripletList, FillMatrixFromTripletList
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
-       & DestructSolverParameters
+       & DestructSolverParameters, ConstructSolverParameters, &
+       & CopySolverParameters
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, DestructTripletList, ConstructTripletList
   USE TripletModule, ONLY : Triplet_r
@@ -32,24 +33,24 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> An uppder bound on the eigenspectrum.
     REAL(NTREAL), INTENT(OUT) :: max_value
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list_r
-    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(TripletList_r) :: tlist_r
+    TYPE(TripletList_c) :: tlist_c
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_max
     !! Counters/Temporary
-    INTEGER :: counter
+    INTEGER :: II
     INTEGER :: local_column
     INTEGER :: ierr
 
     IF (this%is_complex) THEN
-#define triplet_list triplet_list_c
+#define tlist tlist_c
 #include "solver_includes/GershgorinBounds.f90"
-#undef triplet_list
+#undef tlist
     ELSE
-#define triplet_list triplet_list_r
+#define tlist tlist_r
 #include "solver_includes/GershgorinBounds.f90"
-#undef triplet_list
+#undef tlist
     END IF
   END SUBROUTINE GershgorinBounds
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -65,7 +66,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: param
     !! Local Data
-    TYPE(Matrix_ps) :: vector, vector2, TempMat
+    TYPE(Matrix_ps) :: vector, vector2
     REAL(NTREAL) :: scale_value
     REAL(NTREAL) :: norm_value
     TYPE(TripletList_r) :: temp_list
@@ -75,9 +76,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       param = solver_parameters_in
+       CALL CopySolverParameters(solver_parameters_in, param)
     ELSE
-       param = SolverParameters_t()
+       CALL ConstructSolverParameters(param)
        param%max_iterations = 10
     END IF
 
@@ -97,9 +98,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        temp_triplet%index_row = 1
        temp_triplet%index_column = 1
        temp_triplet%point_value = 1.0_NTREAL
-       CALL AppendToTripletList(temp_list,temp_triplet)
+       CALL AppendToTripletList(temp_list, temp_triplet)
     END IF
-    CALL FillMatrixFromTripletList(vector,temp_list)
+    CALL FillMatrixFromTripletList(vector, temp_list)
 
     !! Iterate
     IF (param%be_verbose) THEN
@@ -110,18 +111,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = param%converge_diff + 1.0_NTREAL
     DO II = 1, param%max_iterations
        IF (param%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        !! x = Ax
        CALL MatrixMultiply(this, vector, vector2, &
-            & threshold_in=param%threshold, memory_pool_in=pool)
+            & threshold_in = param%threshold, memory_pool_in = pool)
        !! x = x/||x||
-       scale_value = 1.0/MatrixNorm(vector2)
+       scale_value = 1.0 / MatrixNorm(vector2)
        CALL ScaleMatrix(vector2, scale_value)
 
        !! Check if Converged
-       CALL IncrementMatrix(vector2, vector, -1.0_NTREAL)
+       CALL IncrementMatrix(vector2, vector, alpha_in = -1.0_NTREAL)
        norm_value = MatrixNorm(vector)
 
        CALL CopyMatrix(vector2, vector)
@@ -132,25 +133,24 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (param%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total_Iterations", VALUE=II - 1)
+       CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
     END IF
 
     !! Compute The Largest Eigenvalue
     CALL DotMatrix(vector, vector, scale_value)
     CALL MatrixMultiply(this, vector, vector2, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+         & threshold_in = param%threshold, memory_pool_in = pool)
     CALL DotMatrix(vector, vector2, max_value)
     max_value = max_value / scale_value
 
     IF (param%be_verbose) THEN
-       CALL WriteElement(key="Max_Eigen_Value",VALUE=max_value)
+       CALL WriteElement(key = "Max Eigen Value", VALUE = max_value)
        CALL ExitSubLog
     END IF
 
     !! Cleanup
     CALL DestructMatrix(vector)
     CALL DestructMatrix(vector2)
-    CALL DestructMatrix(TempMat)
     CALL DestructMatrixMemoryPool(pool)
     CALL DestructSolverParameters(param)
   END SUBROUTINE PowerBounds

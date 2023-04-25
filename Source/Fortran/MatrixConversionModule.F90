@@ -46,7 +46,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Here we add in the zero values that were missing from the original
     !! matrix. The secret here is that if you use a negative threshold, we
     !! never filter a value.
-    CALL IncrementMatrix(pattern_0s, mat, threshold_in=-1.0_NTREAL)
+    CALL IncrementMatrix(pattern_0s, mat, threshold_in = -1.0_NTREAL)
 
     !! Next, we zero out values outside of the sparsity pattern.
     CALL CopyMatrix(mat, filtered)

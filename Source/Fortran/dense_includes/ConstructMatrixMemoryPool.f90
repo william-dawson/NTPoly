@@ -10,19 +10,19 @@
   IF (.NOT. PRESENT(sparsity_in)) THEN
      this%hash_size = 1
   ELSE
-     this%hash_size = INT(1.0/sparsity_in)
+     this%hash_size = INT(1.0 / sparsity_in)
      IF (this%hash_size > columns) this%hash_size = columns
   END IF
 
   num_buckets = columns/this%hash_size + 1
 
   !! Allocate
-  ALLOCATE(this%pruned_list(columns*rows), stat=alloc_stat)
-  ALLOCATE(this%value_array(columns,rows), stat=alloc_stat)
-  ALLOCATE(this%dirty_array(columns,rows), stat=alloc_stat)
+  ALLOCATE(this%pruned_list(columns * rows), stat = alloc_stat)
+  ALLOCATE(this%value_array(columns, rows), stat = alloc_stat)
+  ALLOCATE(this%dirty_array(columns, rows), stat = alloc_stat)
 
-  ALLOCATE(this%hash_index(columns,rows))
-  ALLOCATE(this%inserted_per_bucket(columns,rows))
+  ALLOCATE(this%hash_index(columns, rows))
+  ALLOCATE(this%inserted_per_bucket(columns, rows))
 
   this%value_array = 0
   this%hash_index = 0

@@ -1,2 +1,2 @@
-  CALL MatrixColumnNorm(this,column)
+  CALL MatrixColumnNorm(this, column)
   norm = MAXVAL(column)

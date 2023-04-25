@@ -1,5 +1,5 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!> A (under development) module to do handle error passing.
+!> A module to do handle error passing.
 MODULE ErrorModule
   USE NTMPIModule
   IMPLICIT NONE
@@ -7,6 +7,7 @@ MODULE ErrorModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructError
   PUBLIC :: SetGenericError
+  PUBLIC :: SetCustomError
   PUBLIC :: CheckMPIError
   PUBLIC :: CheckAllocError
   PUBLIC :: ErrorOccurred
@@ -19,13 +20,19 @@ MODULE ErrorModule
      !> Flag for whether or not an error has occurred.
      LOGICAL :: error_set
      !> Detailed description of the error.
-     CHARACTER(len=1000) :: error_description
-     !> Store an error caused by a failed MPI call.
+     CHARACTER(LEN = 1000) :: error_description
+     !> Store a failed MPI call error.
      INTEGER :: mpi_error
-     LOGICAL :: mpi_error_set !< flag for whether mpi error occurred.
-     !> Store an error caused by a bad allocation call.
+     !> Flag for whether mpi error occurred.
+     LOGICAL :: mpi_error_set
+     !> Store a bad allocation call error.
      INTEGER :: alloc_error
-     LOGICAL :: alloc_error_set !< flag for whether alloc error occurred.
+     !> Flag for whether alloc error occurred.
+     LOGICAL :: alloc_error_set
+     !> Store a custom error.
+     INTEGER :: custom_error
+     !> Flag for whether a custom error occurred.
+     LOGICAL :: custom_error_set
   END TYPE Error_t
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Default constructor for an error type.
@@ -43,18 +50,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.
-    CHARACTER(len=*), INTENT(in)  :: error_description
+    CHARACTER(LEN = *), INTENT(in)  :: error_description
     !> If true, the cleanup error handler is called.
     LOGICAL, INTENT(in), OPTIONAL :: immediate_cleanup_in
     !! Local Data
     LOGICAL :: immediate_cleanup
 
     !! Process Optional Arguments
-    IF (.NOT. PRESENT(immediate_cleanup_in)) THEN
-       immediate_cleanup = .FALSE.
-    ELSE
-       immediate_cleanup = immediate_cleanup_in
-    END IF
+    immediate_cleanup = .FALSE.
+    IF (PRESENT(immediate_cleanup_in)) immediate_cleanup = immediate_cleanup_in
 
     !! Set Flags and Variables
     this%error_description = error_description
@@ -65,13 +69,35 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
   END SUBROUTINE SetGenericError
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE SetCustomError(this, error_code, error_description, &
+       & immediate_cleanup_in)
+    TYPE(Error_t), INTENT(INOUT)  :: this
+    INTEGER, INTENT(IN)           :: error_code
+    CHARACTER(LEN = *), INTENT(IN)  :: error_description
+    LOGICAL, INTENT(IN), OPTIONAL :: immediate_cleanup_in
+    !! Local Data
+    LOGICAL :: immediate_cleanup
+
+    immediate_cleanup = .FALSE.
+    IF (PRESENT(immediate_cleanup_in)) immediate_cleanup = immediate_cleanup_in
+
+    this%error_description = error_description
+    this%error_set = .TRUE.
+    this%custom_error = error_code
+    this%custom_error_set = .TRUE.
+
+    IF (immediate_cleanup) THEN
+       CALL Cleanup(this)
+    END IF
+  END SUBROUTINE SetCustomError
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Routine to call to check if an MPI error has occurred.
   FUNCTION CheckMPIError(this, error_description, mpi_error, &
        & immediate_cleanup_in) RESULT(error_occurred)
     !> The error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.
-    CHARACTER(len=*), INTENT(in)  :: error_description
+    CHARACTER(LEN = *), INTENT(in)  :: error_description
     !> The error variable produced by mpi.
     INTEGER, INTENT(in)           :: mpi_error
     !> If true, the cleanup error handler is called.
@@ -82,17 +108,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: immediate_cleanup
 
     !! Process Optional Arguments
-    IF (.NOT. PRESENT(immediate_cleanup_in)) THEN
-       immediate_cleanup = .FALSE.
-    ELSE
-       immediate_cleanup = immediate_cleanup_in
-    END IF
+    immediate_cleanup = .FALSE.
+    IF (PRESENT(immediate_cleanup_in)) immediate_cleanup = immediate_cleanup_in
 
     !! Check Error
     IF (.NOT. mpi_error .EQ. MPI_SUCCESS) THEN
        this%mpi_error_set = .TRUE.
        this%mpi_error = mpi_error
-       CALL SetGenericError(this,error_description)
+       CALL SetGenericError(this, error_description, immediate_cleanup)
     END IF
     error_occurred = ErrorOccurred(this)
   END FUNCTION CheckMPIError
@@ -103,7 +126,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> This the error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.
-    CHARACTER(len=*), INTENT(in)  :: error_description
+    CHARACTER(LEN = *), INTENT(in)  :: error_description
     !> The error variable produced by alloc.
     INTEGER, INTENT(in)           :: alloc_error
     !> If true, the cleanup error handler is called.
@@ -114,17 +137,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: immediate_cleanup
 
     !! Process Optional Arguments
-    IF (.NOT. PRESENT(immediate_cleanup_in)) THEN
-       immediate_cleanup = .FALSE.
-    ELSE
-       immediate_cleanup = immediate_cleanup_in
-    END IF
+    IF (PRESENT(immediate_cleanup_in)) immediate_cleanup = immediate_cleanup_in
 
     !! Check Error
     IF (.NOT. alloc_error .EQ. 0) THEN
        this%alloc_error_set = .TRUE.
        this%alloc_error = alloc_error
-       CALL SetGenericError(this,error_description)
+       CALL SetGenericError(this, error_description, immediate_cleanup)
     END IF
     error_occurred = ErrorOccurred(this)
   END FUNCTION CheckAllocError
@@ -140,36 +159,33 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION ErrorOccurred
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out that an error has occurred.
-  RECURSIVE SUBROUTINE PrintError(this)
+  SUBROUTINE PrintError(this)
     !> The error to print out.
     TYPE(Error_t), INTENT(in) :: this
     !! Local Data
-    CHARACTER(len=80) :: error_string
+    CHARACTER(LEN = 80) :: error_string
     INTEGER :: error_string_len
     INTEGER :: error_string_error
-    TYPE(Error_t) :: temp_error
 
     !! Print Out Information About The Error
     IF (ErrorOccurred(this)) THEN
-       WRITE(*,'(A)') "#An error has occurred."
+       WRITE(*,'(A)') "# An error has occurred."
        IF (this%alloc_error_set) THEN
-          WRITE(*,'(A)') "#Of type: alloc error."
+          WRITE(*,'(A)') "# Of type: alloc error."
           WRITE(*,'(I3)') this%alloc_error
        ELSE IF (this%mpi_error_set) THEN
-          WRITE(*,'(A)') "#Of type: mpi error."
-          CALL MPI_Error_String(this%mpi_error,error_string,error_string_len, &
-               & error_string_error)
+          WRITE(*,'(A)') "# Of type: mpi error."
+          CALL MPI_Error_String(this%mpi_error, error_string, &
+               & error_string_len, error_string_error)
           WRITE(*,'(A)') TRIM(error_string)
        ELSE
-          WRITE(*,'(A)') "#Of type: generic error."
+          WRITE(*,'(A)') "# Of type: generic error."
        END IF
-       WRITE(*,'(A)') "#Details:"
+       WRITE(*,'(A)') "# Details:"
        WRITE(*,'(A)',ADVANCE='no') "#"
        WRITE(*,'(A)') TRIM(this%error_description)
     ELSE
-       CALL SetGenericError(temp_error, &
-            & "No Error Occurred, but PrintError Called")
-       CALL PrintError(temp_error)
+       WRITE(*,'(A)') "# No Error Occured, but PrintError was Called"
     END IF
   END SUBROUTINE PrintError
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -182,9 +198,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL PrintError(this)
     IF (this%mpi_error_set) THEN
-       CALL MPI_Abort(MPI_COMM_WORLD,this%mpi_error,abort_error)
+       CALL MPI_Abort(MPI_COMM_WORLD, this%mpi_error, abort_error)
     ELSE
-       CALL MPI_Abort(MPI_COMM_WORLD,MPI_ERR_UNKNOWN,abort_error)
+       CALL MPI_Abort(MPI_COMM_WORLD, MPI_ERR_UNKNOWN, abort_error)
     END IF
   END SUBROUTINE Cleanup
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
