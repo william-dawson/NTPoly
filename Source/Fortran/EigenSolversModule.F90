@@ -60,10 +60,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #if EIGENEXA
     IF (PRESENT(eigenvectors_in)) THEN
        CALL EigenExa_s(this, eigenvalues, nvals, eigenvectors_in, &
-            & solver_parameters_in=params)
+            & solver_parameters_in = params)
     ELSE
        CALL EigenExa_s(this, eigenvalues, nvals, &
-            & solver_parameters_in=params)
+            & solver_parameters_in = params)
     END IF
 #else
     IF (PRESENT(eigenvectors_in)) THEN
@@ -89,9 +89,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        FUNCTION func(val) RESULT(outval)
          USE DataTypesModule, ONLY : NTREAL
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(IN) :: val
+         REAL(KIND = NTREAL), INTENT(IN) :: val
          !> The transformed value.
-         REAL(KIND=NTREAL) :: outval
+         REAL(KIND = NTREAL) :: outval
        END FUNCTION func
     END INTERFACE
     !> Parameters for computing

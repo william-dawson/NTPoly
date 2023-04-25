@@ -212,7 +212,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteListElement("paterson1973number")
        CALL ExitSubLog
        CALL PrintParameters(params)
-       CALL WriteElement(key="Degree", VALUE = degree - 1)
+       CALL WriteElement(key = "Degree", VALUE = degree - 1)
     END IF
 
     ALLOCATE(x_powers(s_value + 1))
@@ -247,7 +247,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, s_value - 1
        c_index = s_value*k_value + II
        CALL IncrementMatrix(x_powers(II + 1), Bk, &
-            & alpha_in=poly%coefficients(c_index + 1))
+            & alpha_in = poly%coefficients(c_index + 1))
     END DO
     CALL IncrementMatrix(Bk,OutputMat)
 
@@ -258,7 +258,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        DO II = 1, s_value - 1
           c_index = s_value * k_value + II
           CALL IncrementMatrix(x_powers(II + 1), Bk, &
-               & alpha_in=poly%coefficients(c_index + 1))
+               & alpha_in = poly%coefficients(c_index + 1))
        END DO
        CALL MatrixMultiply(Xs, OutputMat, Temp)
        CALL CopyMatrix(Temp, OutputMat)

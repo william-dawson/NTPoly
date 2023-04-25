@@ -82,7 +82,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: II
     INTEGER :: random_integer
-    REAL(KIND=NTREAL) :: rand_temp
+    REAL(KIND = NTREAL) :: rand_temp
     INTEGER :: swap_space
     INTEGER :: ierr
 
@@ -129,7 +129,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     INTEGER :: II
     INTEGER :: random_integer
-    REAL(KIND=NTREAL) :: rand_temp
+    REAL(KIND = NTREAL) :: rand_temp
     INTEGER :: swap_space
     INTEGER :: ierr
 

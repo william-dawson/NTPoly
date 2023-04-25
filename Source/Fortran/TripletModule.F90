@@ -147,7 +147,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_triplet_type
     !! Local Data
     INTEGER, DIMENSION(3) :: triplet_sub_types
-    INTEGER(KIND=MPI_ADDRESS_KIND), DIMENSION(3) :: triplet_displacement
+    INTEGER(KIND = MPI_ADDRESS_KIND), DIMENSION(3) :: triplet_displacement
     INTEGER, DIMENSION(3) :: triplet_block_length
     INTEGER :: bytes_per_int, bytes_per_double
     INTEGER :: ierr
@@ -173,7 +173,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: mpi_triplet_type
     !! Local Data
     INTEGER, DIMENSION(3) :: triplet_sub_types
-    INTEGER(KIND=MPI_ADDRESS_KIND), DIMENSION(3) :: triplet_displacement
+    INTEGER(KIND = MPI_ADDRESS_KIND), DIMENSION(3) :: triplet_displacement
     INTEGER, DIMENSION(3) :: triplet_block_length
     INTEGER :: bytes_per_int, bytes_per_double
     TYPE(Error_t) :: error_check
@@ -217,7 +217,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     cout_triplet%index_row = rin_triplet%index_row
     cout_triplet%index_column = rin_triplet%index_column
     cout_triplet%point_value = CMPLX(rin_triplet%point_value, 0.0_NTREAL, &
-         & KIND=NTCOMPLEX)
+         & KIND = NTCOMPLEX)
   END SUBROUTINE ConvertTripletToComplex
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletModule

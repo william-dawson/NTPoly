@@ -301,8 +301,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical inversion for mapping. 
   FUNCTION InvertLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = 1.0 / val
   END FUNCTION InvertLambda

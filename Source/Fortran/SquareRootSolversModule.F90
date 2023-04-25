@@ -170,7 +170,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t),INTENT(IN) :: params
     !> True if we are computing the inverse square root.
     LOGICAL, INTENT(IN) :: compute_inverse
-    !> The polynomial degree to use (optional, default=5)
+    !> The polynomial degree to use (optional, default = 5)
     INTEGER, INTENT(IN), OPTIONAL :: order_in
     !! Local Variables
     INTEGER :: order
@@ -296,7 +296,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(SquareRootMat, SQRT(lambda))
 
        IF (params%be_verbose) THEN
-          CALL WriteElement(key="Convergence", VALUE = norm_value)
+          CALL WriteElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        IF (norm_value .LE. params%converge_diff) THEN
@@ -474,7 +474,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute Z_k+1 = Z_k * X_k
        CALL CopyMatrix(InverseSquareRootMat, Temp)
        CALL MatrixMultiply(X_k, Temp, InverseSquareRootMat, &
-            & threshold_in = params%threshold,memory_pool_in=mpool)
+            & threshold_in = params%threshold, memory_pool_in = mpool)
 
        !! Compute Y_k+1 = X_k * Y_k
        CALL CopyMatrix(SquareRootMat, Temp)
@@ -527,16 +527,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical square root function. 
   FUNCTION SquareRootLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = SQRT(val)
   END FUNCTION SquareRootLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical inverse square root function. 
   FUNCTION InverseSquareRootLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = 1.0 / SQRT(val)
   END FUNCTION InverseSquareRootLambda

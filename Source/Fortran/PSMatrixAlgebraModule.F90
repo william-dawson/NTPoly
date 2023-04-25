@@ -405,9 +405,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps), INTENT(IN)  :: matA
     !> Matrix B.
     TYPE(Matrix_ps), INTENT(INOUT)  :: matB
-    !> Multiplier (default= 1.0).
+    !> Multiplier (default = 1.0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
-    !> For flushing values to zero (default=0).
+    !> For flushing values to zero (default = 0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Data
     TYPE(Matrix_ps) :: converted_matrix

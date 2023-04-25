@@ -10,7 +10,7 @@
        & num_slices_in = inmat%process_grid%num_process_slices, &
        & my_slice_in = inmat%process_grid%my_slice)
 #endif
-  CALL FillMatrixFromTripletList(outmat, outlist, preduplicated_in=.FALSE.)
+  CALL FillMatrixFromTripletList(outmat, outlist, preduplicated_in = .FALSE.)
 
   !! Cleanup
   CALL DestructTripletList(inlist)

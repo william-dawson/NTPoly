@@ -103,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)
     !> The triplet list to construct.
     TYPE(TripletList_r), INTENT(INOUT) :: this
-    !> The length of the triplet list (default=0).
+    !> The length of the triplet list (default = 0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
 #include "triplet_includes/ConstructTripletList.f90"
@@ -114,7 +114,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PURE SUBROUTINE ConstructTripletListSup_c(this, size_in)
     !> The triplet list to construct.
     TYPE(TripletList_c), INTENT(INOUT) :: this
-    !> The length of the triplet list (default=0).
+    !> The length of the triplet list (default = 0).
     INTEGER, INTENT(IN), OPTIONAL :: size_in
 
 #include "triplet_includes/ConstructTripletList.f90"

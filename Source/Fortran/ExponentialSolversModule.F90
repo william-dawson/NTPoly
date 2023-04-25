@@ -183,7 +183,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Pade")
+       CALL WriteElement(key = "Method", VALUE = "Pade")
        CALL PrintParameters(params)
     END IF
 
@@ -307,7 +307,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Taylor")
+       CALL WriteElement(key = "Method", VALUE = "Taylor")
        CALL PrintParameters(params)
     END IF
 
@@ -437,7 +437,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL CopySolverParameters(params, i_sub_params)
     CALL CopySolverParameters(params, p_sub_params)
     CALL CopySolverParameters(params, f_sub_params)
-    p_sub_params%max_iterations=16
+    p_sub_params%max_iterations = 16
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
@@ -463,7 +463,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
     IF (params%be_verbose) THEN
-       CALL WriteElement(key="Sigma", VALUE=sigma_val)
+       CALL WriteElement(key = "Sigma", VALUE = sigma_val)
     END IF
     f_sub_params%threshold = &
          & f_sub_params%threshold / REAL(2**(sigma_counter - 1), NTREAL)
@@ -586,7 +586,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(IdentityMat)
 
     !! Setup Matrices
-    CALL IncrementMatrix(IdentityMat, ScaledMat, alpha_in=-1.0_NTREAL)
+    CALL IncrementMatrix(IdentityMat, ScaledMat, &
+         & alpha_in = -1.0_NTREAL)
     CALL CopyMatrix(IdentityMat, Ak)
 
     !! Load Balancing Step
@@ -609,7 +610,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat, Ak)
        CALL IncrementMatrix(Ak, OutputMat, &
-            & alpha_in=1.0 / taylor_denom)
+            & alpha_in = 1.0 / taylor_denom)
     END DO
 
     !! Undo scaling.
@@ -670,16 +671,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical exponential for mapping. 
   FUNCTION ExpLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = EXP(val)
   END FUNCTION ExpLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical exponential for mapping. 
   FUNCTION LogLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = LOG(val)
   END FUNCTION LogLambda

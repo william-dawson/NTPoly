@@ -64,7 +64,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="CG")
+       CALL WriteElement(key = "Method", VALUE = "CG")
        CALL PrintParameters(params)
     END IF
 
@@ -108,7 +108,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = params%converge_diff + 1.0_NTREAL
     DO II = 1, params%max_iterations
        IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
        IF (norm_value .LE. params%converge_diff) THEN
           EXIT
@@ -231,7 +231,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Root Lookups
     ALLOCATE(col_root_lookup(AMat%logical_matrix_dimension))
     CALL ConstructRankLookup(AMat, LMat%process_grid, &
-         & col_root_lookup=col_root_lookup)
+         & col_root_lookup = col_root_lookup)
 
     !! Allocate space for L
     ALLOCATE(values_per_column_l(sparse_a%columns))

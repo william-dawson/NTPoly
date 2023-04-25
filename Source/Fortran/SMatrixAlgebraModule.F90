@@ -113,9 +113,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(IN)  :: matA
     !> Matrix B.
     TYPE(Matrix_lsr), INTENT(INOUT) :: matB
-    !> Multiplier (default=1.0).
+    !> Multiplier (default = 1.0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
-    !> For flushing values to zero (default=0).
+    !> For flushing values to zero (default = 0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Variables
     TYPE(Matrix_lsr) :: matC
@@ -130,9 +130,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(IN)  :: matA
     !> Matrix B.
     TYPE(Matrix_lsc), INTENT(INOUT) :: matB
-    !> Multiplier (default=1.0).
+    !> Multiplier (default = 1.0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
-    !> For flushing values to zero (default=0).
+    !> For flushing values to zero (default = 0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Variables
     TYPE(Matrix_lsc) :: matC

@@ -106,7 +106,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
-         & threshold_in=params%threshold)
+         & threshold_in = params%threshold)
 
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
@@ -330,7 +330,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="TRS2")
+       CALL WriteElement(key = "Method", VALUE = "TRS2")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("niklasson2002expansion")
@@ -356,9 +356,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(WH, WH, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(IMat, IMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Compute the lambda scaling value.
@@ -624,7 +624,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ScaleMatrix(Gx_right, sigma_array(II))
           CALL IncrementMatrix(Fx_right, Gx_right)
           CALL MatrixMultiply(X_k2, Gx_right, TempMat, &
-               & threshold_in=params%threshold, memory_pool_in=pool)
+               & threshold_in = params%threshold, memory_pool_in = pool)
        END IF
 
        CALL IncrementMatrix(TempMat, X_k, alpha_in = -1.0_NTREAL)
@@ -637,9 +637,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
-          CALL WriteElement("Energy Value", VALUE=energy_value)
+          CALL WriteElement(key = "Energy Value", VALUE = energy_value)
           CALL ExitSubLog
        END IF
 
@@ -650,7 +650,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     total_iterations = II - 1
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II)
+       CALL WriteElement(key = "Total Iterations", VALUE = II)
        CALL PrintMatrixInformation(X_k)
     END IF
 
@@ -780,7 +780,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="HPCP")
+       CALL WriteElement(key = "Method", VALUE = "HPCP")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("truflandier2016communication")
@@ -811,9 +811,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(WH, WH, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(IMat, IMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Compute the initial matrix.

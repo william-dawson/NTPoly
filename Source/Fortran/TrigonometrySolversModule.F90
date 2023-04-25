@@ -244,7 +244,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
@@ -347,7 +347,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in = params%threshold, memory_pool_in = pool)
     CALL IncrementMatrix(IdentityMat, T2, alpha_in = -1.0_NTREAL)
     CALL MatrixMultiply(T2, T2, T4, alpha_in = 2.0_NTREAL, &
-         & threshold_in = params%threshold, memory_pool_in=pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
     CALL IncrementMatrix(IdentityMat, T4, alpha_in = -1.0_NTREAL)
     CALL MatrixMultiply(T4, T2, T6, alpha_in = 2.0_NTREAL, &
          & threshold_in = params%threshold, memory_pool_in = pool)
@@ -412,16 +412,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical sine function for mapping. 
   FUNCTION SineLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = SIN(val)
   END FUNCTION SineLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical cosine function. 
   FUNCTION CosineLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = COS(val)
   END FUNCTION CosineLambda

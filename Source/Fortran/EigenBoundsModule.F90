@@ -133,7 +133,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (param%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II - 1)
+       CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
     END IF
 
     !! Compute The Largest Eigenvalue
@@ -144,7 +144,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     max_value = max_value / scale_value
 
     IF (param%be_verbose) THEN
-       CALL WriteElement(key = "Max Eigen Value",VALUE = max_value)
+       CALL WriteElement(key = "Max Eigen Value", VALUE = max_value)
        CALL ExitSubLog
     END IF
 

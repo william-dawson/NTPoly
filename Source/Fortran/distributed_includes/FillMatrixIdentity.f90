@@ -19,7 +19,7 @@
   tlist%CurrentSize = KK
 
   !! Finish constructing
-  CALL FillMatrixFromTripletList(this, tlist, prepartitioned_in=.TRUE.)
+  CALL FillMatrixFromTripletList(this, tlist, prepartitioned_in = .TRUE.)
 
   !! Cleanup
   CALL DestructTripletList(tlist)

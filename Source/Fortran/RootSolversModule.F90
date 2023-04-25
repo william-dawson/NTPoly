@@ -275,7 +275,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(IntermediateMat, 1.0_NTREAL/target_root)
 
        CALL MatrixMultiply(OutputMat, IntermediateMat, Temp, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(Temp, OutputMat)
 
        CALL CopyMatrix(IntermediateMat, IntermediateMatP)

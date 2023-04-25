@@ -255,7 +255,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(T_Powers(1), OutputMat)
     ELSE
        CALL CopyMatrix(BalancedInput, T_Powers(2))
-       DO II=3, log2degree
+       DO II = 3, log2degree
           CALL MatrixMultiply(T_Powers(II - 1), T_Powers(II - 1), &
                & T_Powers(II), threshold_in = params%threshold, &
                & alpha_in = 2.0_NTREAL, memory_pool_in = pool)
@@ -321,7 +321,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL CopyMatrix(T_Powers(1), OutputMat)
        CALL ScaleMatrix(OutputMat, poly%coefficients(1))
        CALL IncrementMatrix(T_Powers(2), OutputMat, &
-            & alpha_in=poly%coefficients(2))
+            & alpha_in = poly%coefficients(2))
     ELSE
        !! Adjust the coefficients.
        coefficient_midpoint = SIZE(poly%coefficients) / 2

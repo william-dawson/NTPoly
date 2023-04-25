@@ -367,14 +367,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_COMM_DUP(old_grid%blocked_column_comm(JJ), &
             & new_grid%blocked_column_comm(JJ), ierr)
     END DO
-    DO JJ=1,new_grid%number_of_blocks_columns
-       DO II=1,new_grid%number_of_blocks_rows
+    DO JJ = 1, new_grid%number_of_blocks_columns
+       DO II = 1,new_grid%number_of_blocks_rows
           CALL MPI_COMM_DUP(old_grid%blocked_within_slice_comm(II, JJ), &
                & new_grid%blocked_within_slice_comm(II, JJ), ierr)
        END DO
     END DO
-    DO JJ=1,new_grid%number_of_blocks_columns
-       DO II=1,new_grid%number_of_blocks_rows
+    DO JJ = 1, new_grid%number_of_blocks_columns
+       DO II = 1, new_grid%number_of_blocks_rows
           CALL MPI_COMM_DUP(old_grid%blocked_between_slice_comm(II, JJ), &
                & new_grid%blocked_between_slice_comm(II, JJ), ierr)
        END DO
@@ -425,8 +425,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (ALLOCATED(grid_in%blocked_within_slice_comm)) THEN
-          DO JJ=1,grid_in%number_of_blocks_columns
-             DO II=1,grid_in%number_of_blocks_rows
+          DO JJ = 1, grid_in%number_of_blocks_columns
+             DO II = 1, grid_in%number_of_blocks_rows
                 CALL MPI_COMM_FREE(grid_in%blocked_within_slice_comm(II, JJ), &
                      & ierr)
              END DO
@@ -435,8 +435,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (ALLOCATED(grid_in%blocked_between_slice_comm)) THEN
-          DO JJ=1,grid_in%number_of_blocks_columns
-             DO II=1,grid_in%number_of_blocks_rows
+          DO JJ = 1, grid_in%number_of_blocks_columns
+             DO II = 1, grid_in%number_of_blocks_rows
                 CALL MPI_COMM_FREE(grid_in%blocked_between_slice_comm(II, JJ), &
                      & ierr)
              END DO
@@ -611,7 +611,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     columns = 1
     slice_size = total_processors / set_slices
     size_search = FLOOR(SQRT(REAL(slice_size)))
-    DO II=size_search, 1, -1
+    DO II = size_search, 1, -1
        IF (MOD(slice_size, II) .EQ. 0) THEN
           rows = II
           columns = slice_size / II

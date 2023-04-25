@@ -146,7 +146,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           DO II = 3, degree
              CALL MatrixMultiply(BalancedInput, Hk, Hkplus1, &
                   & alpha_in = 2.0_NTREAL, threshold_in = params%threshold, &
-                  & memory_pool_in=pool)
+                  & memory_pool_in = pool)
              CALL IncrementMatrix(Hkprime, Hkplus1, &
                   & alpha_in = -1.0_NTREAL)
              CALL CopyMatrix(Hk, Hkprime)

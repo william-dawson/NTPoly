@@ -50,7 +50,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT), OPTIONAL :: val
+         REAL(KIND = NTREAL), INTENT(INOUT), OPTIONAL :: val
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
@@ -76,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
+         COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
@@ -103,7 +103,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT), OPTIONAL :: val
+         REAL(KIND = NTREAL), INTENT(INOUT), OPTIONAL :: val
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
@@ -134,7 +134,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
+         COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
@@ -165,15 +165,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT), OPTIONAL :: val
+         REAL(KIND = NTREAL), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
-         REAL(KIND=NTREAL), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
+         REAL(KIND = NTREAL), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
     END INTERFACE
     !> Any supplementary data you need to pass the map can packed here.
-    REAL(KIND=NTREAL), DIMENSION(:), INTENT(IN) :: supp_in
+    REAL(KIND = NTREAL), DIMENSION(:), INTENT(IN) :: supp_in
     !! Local Variables
     TYPE(TripletList_r) :: inlist, outlist
 
@@ -198,15 +198,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
+         COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
-         COMPLEX(KIND=NTCOMPLEX), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
+         COMPLEX(KIND = NTCOMPLEX), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
     END INTERFACE
     !> Any supplementary data you need to pass the map can packed here.
-    COMPLEX(KIND=NTCOMPLEX), DIMENSION(:), INTENT(IN) :: supp_in
+    COMPLEX(KIND = NTCOMPLEX), DIMENSION(:), INTENT(IN) :: supp_in
     !! Local Variables
     TYPE(TripletList_c) :: inlist, outlist
 
@@ -231,7 +231,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT), OPTIONAL :: val
+         REAL(KIND = NTREAL), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
          INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
@@ -264,7 +264,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
+         COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
          INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
@@ -298,15 +298,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT), OPTIONAL :: val
+         REAL(KIND = NTREAL), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
-         REAL(KIND=NTREAL), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
+         REAL(KIND = NTREAL), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
     END INTERFACE
     !> Any supplementary data you need to pass the map can packed here.
-    REAL(KIND=NTREAL), DIMENSION(:), INTENT(IN) :: supp_in
+    REAL(KIND = NTREAL), DIMENSION(:), INTENT(IN) :: supp_in
     !> How many process slices to do this mapping on (default is 1)
     INTEGER, INTENT(IN), OPTIONAL :: num_slices_in
     !> What process slice this process should compute (default is 0).
@@ -336,15 +336,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
+         COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
-         COMPLEX(KIND=NTCOMPLEX), DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
+         COMPLEX(KIND = NTCOMPLEX), DIMENSION(:), &
+             & INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
     END INTERFACE
     !> Any supplementary data you need to pass the map can packed here.
-    COMPLEX(KIND=NTCOMPLEX), DIMENSION(:), INTENT(IN) :: supp_in
+    COMPLEX(KIND = NTCOMPLEX), DIMENSION(:), INTENT(IN) :: supp_in
     !> How many process slices to do this mapping on (default is 1)
     INTEGER, INTENT(IN), OPTIONAL :: num_slices_in
     !> What process slice this process should compute (default is 0).
@@ -374,7 +375,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         REAL(KIND=NTREAL), INTENT(INOUT), OPTIONAL :: val
+         REAL(KIND = NTREAL), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
          INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
@@ -412,7 +413,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          !> The column value of an element.
          INTEGER, INTENT(INOUT), OPTIONAL :: column
          !> The actual value of an element.
-         COMPLEX(KIND=NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
+         COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
          INTEGER, DIMENSION(:), INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.

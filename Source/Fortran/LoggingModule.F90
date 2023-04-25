@@ -276,10 +276,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE WriteIndent
     INTEGER :: II
 
-    DO II=1,initial_offset
+    DO II = 1, initial_offset
        WRITE(UNIT, '(A1)', ADVANCE = 'NO') " "
     END DO
-    DO II=1,CurrentLevel*2
+    DO II = 1, CurrentLevel * 2
        WRITE(UNIT, '(A1)', ADVANCE = 'NO') " "
     END DO
   END SUBROUTINE WriteIndent

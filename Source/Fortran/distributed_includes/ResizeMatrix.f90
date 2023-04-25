@@ -15,7 +15,7 @@
 
   !! Rebuild.
   CALL ConstructEmptyMatrix(this, new_size)
-  CALL FillMatrixFromTripletList(this, pruned, preduplicated_in=.TRUE.)
+  CALL FillMatrixFromTripletList(this, pruned, preduplicated_in = .TRUE.)
 
   !! Cleanup
   CALL DestructTripletList(tlist)

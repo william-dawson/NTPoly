@@ -350,7 +350,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Grid to distribute the matrix on.
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !> The name of the file to read.
-    CHARACTER(len=*), INTENT(IN) :: file_name
+    CHARACTER(LEN = *), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
     INTEGER :: local_file_handler
@@ -366,15 +366,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(NTLONG) :: total_values
     !! Length Variables
     INTEGER :: header_length
-    INTEGER(KIND=MPI_OFFSET_KIND) :: total_file_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_offset
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_data_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_data_size_plus_buffer
+    INTEGER(KIND = MPI_OFFSET_KIND) :: total_file_size
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_offset
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_data_size
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_data_size_plus_buffer
     INTEGER :: current_line_length
     !! Input Buffers
-    CHARACTER(len=MAX_LINE_LENGTH) :: input_buffer
-    CHARACTER(len=:), ALLOCATABLE :: mpi_input_buffer
-    CHARACTER(len=MAX_LINE_LENGTH) :: temp_substring
+    CHARACTER(LEN = MAX_LINE_LENGTH) :: input_buffer
+    CHARACTER(LEN = :), ALLOCATABLE :: mpi_input_buffer
+    CHARACTER(LEN = MAX_LINE_LENGTH) :: temp_substring
     !! Temporary Variables
     REAL(NTREAL) :: realval, cval
     INTEGER :: bytes_per_character
@@ -395,9 +395,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (IsRoot(process_grid_in)) THEN
           header_length = 0
           local_file_handler = 16
-          OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
+          OPEN(local_file_handler, file = file_name, iostat = ierr, &
+               & status = "old")
           IF (ierr .NE. 0) THEN
-             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", &
+             CALL SetGenericError(err, TRIM(file_name) // " doesn't exist", &
                   & .TRUE.)
           END IF
           !! Parse the header.
@@ -478,7 +479,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! A buffer to read the data into.
-       ALLOCATE(CHARACTER(LEN=local_data_size_plus_buffer) :: mpi_input_buffer)
+       ALLOCATE(CHARACTER(LEN = local_data_size_plus_buffer) :: &
+            & mpi_input_buffer)
 
        !! Do Actual Reading
        CALL MPI_File_read_at_all(mpi_file_handler, local_offset, &
@@ -583,8 +585,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(NTLONG) :: total_values
     INTEGER, DIMENSION(3) :: matrix_information
     INTEGER :: local_triplets
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_offset
-    INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_offset
+    INTEGER(KIND = MPI_OFFSET_KIND) :: header_size
     INTEGER :: bytes_per_int, bytes_per_data, bytes_per_long
     !! Temporary variables
     INTEGER :: message_status(MPI_STATUS_SIZE)
@@ -1245,8 +1247,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: sparsity
 
     CALL GetMatrixLoadBalance(this, min_size, max_size)
-    sparsity = REAL(GetMatrixSize(this), KIND=NTREAL) / &
-         & (REAL(this%actual_matrix_dimension, KIND=NTREAL)**2)
+    sparsity = REAL(GetMatrixSize(this), KIND = NTREAL) / &
+         & (REAL(this%actual_matrix_dimension, KIND = NTREAL)**2)
 
     CALL WriteHeader("Load_Balance")
     CALL EnterSubLog
@@ -1376,7 +1378,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Allreduce(local_size, temp_size, 1, MPINTREAL, MPI_SUM, &
          & this%process_grid%within_slice_comm, ierr)
 
-    total_size = INT(temp_size, kind=NTLONG)
+    total_size = INT(temp_size, KIND = NTLONG)
 
   END FUNCTION GetMatrixSize_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
