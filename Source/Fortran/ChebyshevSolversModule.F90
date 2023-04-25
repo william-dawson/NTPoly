@@ -146,7 +146,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (degree .GT. 2) THEN
           CALL MatrixMultiply(BalancedInput, Tkminus1, Tk, &
                & alpha_in = 2.0_NTREAL, threshold_in = params%threshold, &
-               & memory_pool_in=pool)
+               & memory_pool_in = pool)
           CALL IncrementMatrix(Tkminus2, Tk, alpha_in = -1.0_NTREAL)
           CALL IncrementMatrix(Tk, OutputMat, &
                & alpha_in = poly%coefficients(3))
@@ -155,8 +155,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL CopyMatrix(Tk, Tkminus1)
              CALL MatrixMultiply(BalancedInput, Tkminus1, Tk, &
                   & alpha_in = 2.0_NTREAL, threshold_in = params%threshold, &
-                  & memory_pool_in=pool)
-             CALL IncrementMatrix(Tkminus2, Tk, alpha_in=-1.0_NTREAL)
+                  & memory_pool_in = pool)
+             CALL IncrementMatrix(Tkminus2, Tk, alpha_in = -1.0_NTREAL)
              CALL IncrementMatrix(Tk, OutputMat, &
                   & alpha_in = poly%coefficients(II))
           END DO

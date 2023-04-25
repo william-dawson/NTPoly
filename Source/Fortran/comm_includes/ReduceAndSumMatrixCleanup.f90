@@ -19,10 +19,10 @@
           & helper%displacement(II) + 1: &
           & helper%displacement(II) + helper%values_per_process(II))
      acc_matrix%outer_index = gathered_matrix%outer_index(&
-          & (matrix%columns + 1)*(II - 1) + 1:(matrix%columns + 1)*(II))
+          & (matrix%columns + 1) * (II - 1) + 1:(matrix%columns + 1) * II)
      IF (II .EQ. helper%comm_size) THEN
         CALL IncrementMatrix(acc_matrix, sum_matrix, &
-             & threshold_in=threshold)
+             & threshold_in = threshold)
      ELSE
         CALL IncrementMatrix(acc_matrix, sum_matrix,&
              & threshold_in = 0.0_NTREAL)

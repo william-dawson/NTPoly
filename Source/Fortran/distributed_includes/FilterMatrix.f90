@@ -7,9 +7,9 @@
   CALL ConstructTripletList(new_list)
 
   DO II = 1, tlist%CurrentSize
-     CALL GetTripletAt(tlist, II, temporary)
-     IF (ABS(temporary%point_value) .GT. threshold) THEN
-        CALL AppendToTripletList(new_list, temporary)
+     CALL GetTripletAt(tlist, II, trip)
+     IF (ABS(trip%point_value) .GT. threshold) THEN
+        CALL AppendToTripletList(new_list, trip)
      END IF
   END DO
 

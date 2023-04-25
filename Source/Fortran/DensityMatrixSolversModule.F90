@@ -254,7 +254,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
                      & sigma_array(JJ))*zero_value) &
                      & + ((1.0_NTREAL + sigma_array(JJ))* &
                      & zero_value**2) - (zero_value**3)
-                zero_value = zero_value/(1.0_NTREAL - sigma_array(JJ))
+                zero_value = zero_value / (1.0_NTREAL - sigma_array(JJ))
              END IF
           END DO polynomial
           !! Change bracketing.
@@ -822,7 +822,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     mu = mu/matrix_dimension
     sigma_bar = (matrix_dimension - trace) / matrix_dimension
     sigma = 1.0_NTREAL - sigma_bar
-    beta = sigma/(e_max - mu)
+    beta = sigma / (e_max - mu)
     beta_bar = sigma_bar / (mu - e_min)
     beta_1 = sigma
     beta_2 = MIN(beta, beta_bar)
@@ -1064,7 +1064,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Determine the path
        CALL MatrixTrace(X_k, trace_value)
        IF (trace_value .GT. trace) THEN
-          alpha = 2.0/(2.0 - Beta)
+          alpha = 2.0 / (2.0 - Beta)
           CALL ScaleMatrix(X_k, alpha)
           CALL IncrementMatrix(IMat, X_k, alpha_in=(1.0_NTREAL-alpha))
           CALL MatrixMultiply(X_k, X_k, X_k2, &
@@ -1073,7 +1073,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           Beta = (alpha * Beta + 1 - alpha)**2
           BetaBar = (alpha * BetaBar + 1 - alpha)**2
        ELSE
-          alpha = 2.0/(1.0 + BetaBar)
+          alpha = 2.0 / (1.0 + BetaBar)
           CALL MatrixMultiply(X_k, X_k, X_k2, &
                & threshold_in = params%threshold, memory_pool_in = pool)
           CALL ScaleMatrix(X_k, 2*alpha)

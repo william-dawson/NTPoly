@@ -4,7 +4,7 @@
   INTEGER, DIMENSION(:), ALLOCATABLE :: location_list_within_slice
   !! Temporary Values
   INTEGER :: row_size, column_size
-  INTEGER :: temp_row, temp_column
+  INTEGER :: row, col
   INTEGER :: process_id
   INTEGER :: II
 
@@ -13,19 +13,18 @@
   ALLOCATE(column_lookup(SIZE(index_lookup)))
   row_size = SIZE(index_lookup) / this%process_grid%num_process_rows
   DO II = LBOUND(index_lookup, 1), UBOUND(index_lookup, 1)
-     row_lookup(index_lookup(II)) = (II - 1)/row_size
+     row_lookup(index_lookup(II)) = (II - 1) / row_size
   END DO
   column_size = SIZE(index_lookup) / this%process_grid%num_process_columns
   DO II = LBOUND(index_lookup, 1), UBOUND(index_lookup, 1)
-     column_lookup(index_lookup(II)) = (II - 1)/column_size
+     column_lookup(index_lookup(II)) = (II - 1) / column_size
   END DO
   ALLOCATE(location_list_within_slice(initial_triplet_list%CurrentSize))
   DO II = 1, initial_triplet_list%CurrentSize
-     temp_row = row_lookup(initial_triplet_list%DATA(II)%index_row)
-     temp_column = &
-          & column_lookup(initial_triplet_list%DATA(II)%index_column)
+     row = row_lookup(initial_triplet_list%DATA(II)%index_row)
+     col = column_lookup(initial_triplet_list%DATA(II)%index_column)
      location_list_within_slice(II) = &
-          & temp_column+temp_row*this%process_grid%num_process_columns
+          & col + row * this%process_grid%num_process_columns
   END DO
 
   !! Build A Send Buffer

@@ -57,9 +57,9 @@
            DO II = 2, sorted_list%CurrentSize
               IF (CompareTriplets(sorted_list%DATA(II - 1), &
                    & sorted_list%DATA(II))) THEN
-                 temporary = sorted_list%DATA(II)
+                 trip = sorted_list%DATA(II)
                  sorted_list%DATA(II) = sorted_list%DATA(II - 1)
-                 sorted_list%DATA(II - 1) = temporary
+                 sorted_list%DATA(II - 1) = trip
                  swap_occured = .TRUE.
               END IF
            END DO

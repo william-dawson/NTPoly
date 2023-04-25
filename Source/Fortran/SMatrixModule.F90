@@ -516,8 +516,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(IN) :: this
     !> The triplet list we created.
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
-    !! Local Variables
-    TYPE(Triplet_r) :: temporary
 
 #include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsr
@@ -528,8 +526,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(IN) :: this
     !> The triplet list we created.
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
-    !! Local Variables
-    TYPE(Triplet_c) :: temporary
 
 #include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsc

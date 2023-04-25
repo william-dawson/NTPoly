@@ -1329,7 +1329,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(TripletList_r) :: tlist
     TYPE(TripletList_r) :: new_list
-    TYPE(Triplet_r) :: temporary
+    TYPE(Triplet_r) :: trip
 
 #include "distributed_includes/FilterMatrix.f90"
   END SUBROUTINE FilterMatrix_psr
@@ -1343,7 +1343,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(TripletList_c) :: tlist
     TYPE(TripletList_c) :: new_list
-    TYPE(Triplet_c) :: temporary
+    TYPE(Triplet_c) :: trip
 
 #include "distributed_includes/FilterMatrix.f90"
   END SUBROUTINE FilterMatrix_psc
@@ -1440,7 +1440,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(TripletList_r) :: tlist
     TYPE(TripletList_r) :: new_list
-    TYPE(Triplet_r) :: temporary, temporary_t
+    TYPE(Triplet_r) :: trip, trip_t
 
 #include "distributed_includes/TransposeMatrix.f90"
 
@@ -1455,7 +1455,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(TripletList_c) :: tlist
     TYPE(TripletList_c) :: new_list
-    TYPE(Triplet_c) :: temporary, temporary_t
+    TYPE(Triplet_c) :: trip, trip_t
 
 #include "distributed_includes/TransposeMatrix.f90"
 

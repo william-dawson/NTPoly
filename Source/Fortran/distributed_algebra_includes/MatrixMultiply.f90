@@ -23,7 +23,7 @@
   !! The threshold needs to be smaller if we are doing a sliced version
   !! because you might flush a value that would be kept in the summed version.
   IF (matA%process_grid%num_process_slices .GT. 1) THEN
-     working_threshold = threshold/(matA%process_grid%num_process_slices*1000)
+     working_threshold = threshold / (matA%process_grid%num_process_slices*1000)
   ELSE
      working_threshold = threshold
   END IF
@@ -89,7 +89,7 @@
   DO WHILE (ATasks_completed .LT. SIZE(ATasks) .OR. &
        & BTasks_completed .LT. SIZE(BTasks) .OR. &
        & ABTasks_completed .LT. SIZE(ABTasks))
-     DO II=1, matAB%process_grid%number_of_blocks_rows
+     DO II = 1, matAB%process_grid%number_of_blocks_rows
         SELECT CASE (ATasks(II))
         CASE(LocalGatherA)
            ATasks(II) = TaskRunningA
@@ -99,7 +99,8 @@
                 & matAB%process_grid%number_of_blocks_columns / &
                 & matAB%process_grid%num_process_slices
               CALL CopyMatrix(matA%LMAT(II, &
-                   & duplicate_start_column+duplicate_offset_column*(JJ2-1)),&
+                   & duplicate_start_column + &
+                   & duplicate_offset_column * (JJ2 - 1)),&
                    & AdjacentABlocks(II, JJ2))
            END DO
            !! Then Do A Local Gather
@@ -143,7 +144,7 @@
         END SELECT
      END DO
      !! B Tasks
-     DO JJ=1,matAB%process_grid%number_of_blocks_columns
+     DO JJ = 1 , matAB%process_grid%number_of_blocks_columns
         SELECT CASE (BTasks(JJ))
         CASE(LocalGatherB)
            BTasks(JJ) = TaskRunningB
@@ -204,13 +205,13 @@
               END IF
            CASE (GemmAB)
               ABTasks(II, JJ) = TaskRunningAB
-              !$OMP TASK DEFAULT(shared), FIRSTPRIVATE(II,JJ)
+              !$OMP TASK DEFAULT(shared), FIRSTPRIVATE(II, JJ)
               CALL MatrixMultiply(GatheredRowContributionT(II), &
                    & GatheredColumnContribution(JJ), &
                    & SliceContribution(II, JJ), &
-                   & IsATransposed_in=.TRUE., IsBTransposed_in=.TRUE., &
-                   & alpha_in=alpha, threshold_in=working_threshold, &
-                   & blocked_memory_pool_in=MPGRID(II, JJ))
+                   & IsATransposed_in = .TRUE., IsBTransposed_in = .TRUE., &
+                   & alpha_in = alpha, threshold_in = working_threshold, &
+                   & blocked_memory_pool_in = MPGRID(II, JJ))
               !! We can exit early if there is only one process slice
               IF (matAB%process_grid%num_process_slices .EQ. 1) THEN
                  ABTasks(II,JJ) = CleanupAB
@@ -291,7 +292,7 @@
   DEALLOCATE(GatheredRowContribution)
   !! Deallocate Buffers From B
   DO JJ = 1, matAB%process_grid%number_of_blocks_columns
-     DO II2 = 1, matAB%process_grid%number_of_blocks_rows/&
+     DO II2 = 1, matAB%process_grid%number_of_blocks_rows / &
           & matAB%process_grid%num_process_slices
         CALL DestructMatrix(TransposedBBlocks(II2, JJ))
      END DO

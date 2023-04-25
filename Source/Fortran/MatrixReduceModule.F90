@@ -87,7 +87,7 @@ MODULE MatrixReduceModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
   SUBROUTINE ReduceAndComposeMatrixSizes_lsr(matrix, comm, gathered_matrix, &
-    & helper)
+       & helper)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
     !> The communicator to send along.
@@ -105,7 +105,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
   SUBROUTINE ReduceAndComposeMatrixSizes_lsc(matrix, comm, gathered_matrix, &
-    & helper)
+       & helper)
     !! The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
     !! The communicator to send along.
@@ -124,7 +124,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align one matrix
   !> next to another.
   SUBROUTINE ReduceAndComposeMatrixData_lsr(matrix, comm, gathered_matrix, &
-    & helper)
+       & helper)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
     !> The communicator to send along.
@@ -155,7 +155,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second function to call, will gather the data and align one matrix
   !> next to another.
   SUBROUTINE ReduceAndComposeMatrixData_lsc(matrix, comm, gathered_matrix, &
-    & helper)
+       & helper)
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
     !> The communicator to send along.
