@@ -339,7 +339,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          COMPLEX(KIND = NTCOMPLEX), INTENT(INOUT), OPTIONAL :: val
          !> Any supplementary data you need to pass the map can packed here.
          COMPLEX(KIND = NTCOMPLEX), DIMENSION(:), &
-             & INTENT(IN), OPTIONAL :: supp_in
+              & INTENT(IN), OPTIONAL :: supp_in
          !> Set this to false to filter an element.
          LOGICAL :: valid
        END FUNCTION proc
