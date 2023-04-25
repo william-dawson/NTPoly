@@ -69,7 +69,7 @@
        & MPIDATATYPE, comm, mpi_error)
 
   !! Unpack Into The Output Triplet List
-  CALL ConstructTripletList(local_data_out, size_in=SUM(recv_per_process))
+  CALL ConstructTripletList(local_data_out, size_in = SUM(recv_per_process))
   DO II = 1, SUM(recv_per_process)
      local_data_out%DATA(II)%index_column = recv_buffer_col(II)
      local_data_out%DATA(II)%index_row = recv_buffer_row(II)

@@ -104,7 +104,7 @@
 
   !! Convert receive buffer to triplet list
   CALL ConstructTripletList(triplet_list, SUM(recv_per_proc))
-  DO II=1, SUM(recv_per_proc)
+  DO II = 1, SUM(recv_per_proc)
      triplet_list%DATA(II)%index_row = recv_buffer_row(II)
      triplet_list%DATA(II)%index_column = recv_buffer_col(II)
      triplet_list%DATA(II)%point_value = recv_buffer_val(II)

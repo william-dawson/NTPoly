@@ -6,7 +6,7 @@
   CALL ConstructTripletList(tlist, this%local_rows)
   KK = 0
   IF (rows) THEN
-     DO II=this%start_row,this%end_row-1
+     DO II = this%start_row, this%end_row - 1
         IF (permutation_vector(II) .GE. this%start_column .AND. &
              & permutation_vector(II) .LT. this%end_column) THEN
            KK = KK + 1
@@ -16,7 +16,7 @@
         END IF
      END DO
   ELSE
-     DO II=this%start_column,this%end_column-1
+     DO II = this%start_column, this%end_column -1
         IF (permutation_vector(II) .GE. this%start_row .AND. &
              & permutation_vector(II) .LT. this%end_row) THEN
            KK = KK + 1

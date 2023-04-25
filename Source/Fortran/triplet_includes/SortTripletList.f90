@@ -23,9 +23,9 @@
   ELSE
      !! Data Allocation
      CALL ConstructTripletList(sorted_list, list_length)
-     ALLOCATE(values_per_row(matrix_columns), stat=alloc_stat)
-     ALLOCATE(offset_array(matrix_columns), stat=alloc_stat)
-     ALLOCATE(inserted_per_row(matrix_columns), stat=alloc_stat)
+     ALLOCATE(values_per_row(matrix_columns), stat = alloc_stat)
+     ALLOCATE(offset_array(matrix_columns), stat = alloc_stat)
+     ALLOCATE(inserted_per_row(matrix_columns), stat = alloc_stat)
 
      !! Initial one dimensional sort
      values_per_row = 0
@@ -37,7 +37,7 @@
              & values_per_row(input_list%DATA(II)%index_column) + 1
      END DO
      offset_array(1) = 1
-     DO II = 2, UBOUND(offset_array, dim=1)
+     DO II = 2, UBOUND(offset_array, dim = 1)
         offset_array(II) = offset_array(II - 1) + &
              & values_per_row(II - 1)
      END DO

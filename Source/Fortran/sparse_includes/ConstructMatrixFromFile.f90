@@ -1,12 +1,12 @@
   !! Local Data
   INTEGER :: rows, columns, total_values
-  CHARACTER(len=81) :: input_buffer
+  CHARACTER(LEN = 81) :: input_buffer
   INTEGER, PARAMETER :: file_handler = 16
   LOGICAL :: found_comment_line
   LOGICAL :: error_occured
   INTEGER :: II
 
-  OPEN(file_handler, file=file_name, status='old')
+  OPEN(file_handler, file = file_name, status='old')
 
   !! Parse the header.
   READ(file_handler,fmt='(A)') input_buffer
@@ -30,7 +30,7 @@
   DO II = 1, total_values
 #ifdef ISCOMPLEX
      READ(file_handler,*) temp%index_row, temp%index_column, real_val, comp_val
-     temp%point_value = CMPLX(real_val, comp_val, KIND=NTCOMPLEX)
+     temp%point_value = CMPLX(real_val, comp_val, KIND = NTCOMPLEX)
 #else
      READ(file_handler,*) temp%index_row, temp%index_column, temp%point_value
 #endif

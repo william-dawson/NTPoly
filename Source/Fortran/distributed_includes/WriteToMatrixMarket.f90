@@ -4,20 +4,20 @@
   INTEGER, DIMENSION(:), ALLOCATABLE :: local_values_buffer
   !! Local Data
   INTEGER :: triplet_list_string_length
-  INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
-  INTEGER(KIND=MPI_OFFSET_KIND) :: write_offset
-  INTEGER(KIND=MPI_OFFSET_KIND) :: header_offset
-  INTEGER(KIND=MPI_OFFSET_KIND), PARAMETER :: zero_size = 0
+  INTEGER(KIND = MPI_OFFSET_KIND) :: header_size
+  INTEGER(KIND = MPI_OFFSET_KIND) :: write_offset
+  INTEGER(KIND = MPI_OFFSET_KIND) :: header_offset
+  INTEGER(KIND = MPI_OFFSET_KIND), PARAMETER :: zero_size = 0
   !! Strings
-  CHARACTER(len=:), ALLOCATABLE :: header_line1
-  CHARACTER(len=:), ALLOCATABLE :: header_line2
-  CHARACTER(len=:), ALLOCATABLE :: write_buffer
+  CHARACTER(LEN = :), ALLOCATABLE :: header_line1
+  CHARACTER(LEN = :), ALLOCATABLE :: header_line2
+  CHARACTER(LEN = :), ALLOCATABLE :: write_buffer
   !! Temporary Values
   INTEGER :: II, OFF_JJ
   INTEGER :: NEW_LINE_LENGTH
-  CHARACTER(len=MAX_LINE_LENGTH*2) :: temp_string1
-  CHARACTER(len=MAX_LINE_LENGTH) :: temp_string2
-  CHARACTER(len=MAX_LINE_LENGTH) :: temp_string3
+  CHARACTER(LEN = MAX_LINE_LENGTH*2) :: temp_string1
+  CHARACTER(LEN = MAX_LINE_LENGTH) :: temp_string2
+  CHARACTER(LEN = MAX_LINE_LENGTH) :: temp_string3
   INTEGER :: temp_length
   INTEGER :: bytes_per_character
   INTEGER :: ierr
@@ -37,13 +37,13 @@
   WRITE(temp_string1, '(A)') "%%MatrixMarket matrix coordinate real general" &
        & // new_LINE('A') // "%" // new_LINE('A')
 #endif
-  ALLOCATE(CHARACTER(len=LEN_TRIM(temp_string1)) :: header_line1)
+  ALLOCATE(CHARACTER(LEN = LEN_TRIM(temp_string1)) :: header_line1)
   header_line1 = TRIM(temp_string1)
 
   CALL WriteMMSize(temp_string2, this%actual_matrix_dimension, &
        & this%actual_matrix_dimension, GetMatrixSize(this))
   ALLOCATE(CHARACTER(&
-       & len=LEN_TRIM(temp_string2) + NEW_LINE_LENGTH + 1) :: header_line2)
+       & LEN = LEN_TRIM(temp_string2) + NEW_LINE_LENGTH + 1) :: header_line2)
   WRITE(header_line2,*) TRIM(temp_string2) // new_LINE('A')
 
   header_size = LEN(header_line1) + LEN(header_line2)
@@ -75,7 +75,7 @@
   END DO
 
   !! Write that string to the write buffer
-  ALLOCATE(CHARACTER(len=triplet_list_string_length + 1) :: write_buffer)
+  ALLOCATE(CHARACTER(LEN = triplet_list_string_length + 1) :: write_buffer)
   OFF_JJ = 1
   DO II = 1, tlist%CurrentSize
 #ifdef ISCOMPLEX

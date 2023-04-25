@@ -1,14 +1,14 @@
   !! Local Data
   INTEGER, DIMENSION(:), ALLOCATABLE :: local_values_buffer
   INTEGER :: mpi_file_handler
-  INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
-  INTEGER(KIND=MPI_OFFSET_KIND) :: write_offset
+  INTEGER(KIND = MPI_OFFSET_KIND) :: header_size
+  INTEGER(KIND = MPI_OFFSET_KIND) :: write_offset
   !! Temporary Variables
   INTEGER :: bytes_per_int, bytes_per_long, bytes_per_entry
   INTEGER, DIMENSION(3) :: header_buffer
-  INTEGER(KIND=NTLONG) :: total_values
+  INTEGER(KIND = NTLONG) :: total_values
   INTEGER :: message_status(MPI_STATUS_SIZE)
-  INTEGER(KIND=MPI_OFFSET_KIND) :: zero_offset = 0
+  INTEGER(KIND = MPI_OFFSET_KIND) :: zero_offset = 0
   INTEGER :: II
   INTEGER :: ierr
 

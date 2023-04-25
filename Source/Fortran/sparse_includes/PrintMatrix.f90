@@ -1,7 +1,7 @@
   !! Local Data
   INTEGER :: file_handler
   INTEGER :: size_of_this
-  CHARACTER(LEN=MAX_LINE_LENGTH) :: tempstr
+  CHARACTER(LEN = MAX_LINE_LENGTH) :: tempstr
   INTEGER :: II
 
   !! Process Optional Parameters
@@ -25,7 +25,7 @@
 
   WRITE(file_handler,'(A)') "%"
   CALL WriteMMSize(tempstr, this%rows, this%columns, &
-       & INT(size_of_this, KIND=NTLONG))
+       & INT(size_of_this, KIND = NTLONG))
   WRITE(file_handler,'(A)') ADJUSTL(TRIM(tempstr))
   DO II = 1, size_of_this
 #ifdef ISCOMPLEX

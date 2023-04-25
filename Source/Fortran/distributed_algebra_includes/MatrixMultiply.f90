@@ -95,7 +95,7 @@
            ATasks(II) = TaskRunningA
            !$OMP TASK DEFAULT(SHARED), PRIVATE(JJ2), FIRSTPRIVATE(II)
            !! First Align The Data We Are Working With
-           DO JJ2=1, &
+           DO JJ2 = 1, &
                 & matAB%process_grid%number_of_blocks_columns / &
                 & matAB%process_grid%num_process_slices
               CALL CopyMatrix(matA%LMAT(II, &
@@ -150,7 +150,7 @@
            BTasks(JJ) = TaskRunningB
            !$OMP TASK DEFAULT(SHARED), PRIVATE(II2), FIRSTPRIVATE(JJ)
            !! First Transpose The Data We Are Working With
-           DO II2=1, matAB%process_grid%number_of_blocks_rows / &
+           DO II2 = 1, matAB%process_grid%number_of_blocks_rows / &
                 & matAB%process_grid%num_process_slices
               CALL TransposeMatrix(matB%LMAT(duplicate_start_row + &
                    & duplicate_offset_row * (II2 - 1), JJ), &
