@@ -30,7 +30,7 @@
   write_offset = write_offset + header_size
   DO counter = 1,this%process_grid%within_slice_rank
      write_offset = write_offset + &
-          & local_values_buffer(counter)*(bytes_per_entry)
+          & local_values_buffer(counter) * bytes_per_entry
   END DO
 
   !! Write The File

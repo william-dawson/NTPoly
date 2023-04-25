@@ -7,9 +7,9 @@
 
   !! Filter if necessary
   IF (nvals+1 .LE. V%rows) THEN
-     V%DATA(:, nvals+1:) = 0
-     W%DATA(nvals+1:, :) = 0
-     W%DATA(:, nvals+1:) = 0
+     V%DATA(:, nvals + 1:) = 0
+     W%DATA(nvals + 1:, :) = 0
+     W%DATA(:, nvals + 1:) = 0
   END IF
 
   !! Convert results to triplet lists

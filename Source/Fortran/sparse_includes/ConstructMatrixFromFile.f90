@@ -7,7 +7,7 @@
   LOGICAL :: error_occured
   file_handler = 16
 
-  OPEN(file_handler,file=file_name,status='old')
+  OPEN(file_handler, file=file_name, status='old')
 
   !! Parse the header.
   READ(file_handler,fmt='(A)') input_buffer

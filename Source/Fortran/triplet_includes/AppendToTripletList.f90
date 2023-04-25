@@ -10,7 +10,7 @@
      ELSE
         new_size = INT(SIZE(this%DATA)*1.5)
      END IF
-     CALL ResizeTripletList(this,new_size)
+     CALL ResizeTripletList(this, new_size)
   END IF
 
   !! Append

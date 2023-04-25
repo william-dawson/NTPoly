@@ -1,6 +1,6 @@
   !! Local Data
-  INTEGER, DIMENSION(block_rows+1) :: row_offsets
-  INTEGER, DIMENSION(block_columns+1) :: column_offsets
+  INTEGER, DIMENSION(block_rows + 1) :: row_offsets
+  INTEGER, DIMENSION(block_columns + 1) :: column_offsets
   INTEGER :: out_rows, out_columns
   INTEGER :: II, JJ
 

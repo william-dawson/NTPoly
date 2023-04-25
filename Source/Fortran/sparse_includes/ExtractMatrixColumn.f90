@@ -15,6 +15,6 @@
   column_out%outer_index(1) = 0
   column_out%outer_index(2) = number_of_values
   DO counter=1, number_of_values
-     column_out%inner_index(counter) = this%inner_index(start_index+counter)
-     column_out%values(counter) = this%values(start_index+counter)
+     column_out%inner_index(counter) = this%inner_index(start_index + counter)
+     column_out%values(counter) = this%values(start_index + counter)
   END DO

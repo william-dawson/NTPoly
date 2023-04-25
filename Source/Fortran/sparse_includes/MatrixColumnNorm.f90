@@ -7,7 +7,7 @@
 
   !! Iterate Over Local Data
   DO outer_counter = 1, this%columns
-     elements_per_inner = this%outer_index(outer_counter+1) - &
+     elements_per_inner = this%outer_index(outer_counter + 1) - &
           & this%outer_index(outer_counter)
      DO inner_counter = 1, elements_per_inner
         temp_value = this%values(this%outer_index(outer_counter)+ &

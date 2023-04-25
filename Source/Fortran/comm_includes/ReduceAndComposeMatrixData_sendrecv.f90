@@ -22,8 +22,8 @@
   ALLOCATE(helper%displacement(helper%comm_size))
   helper%displacement(1) = 0
   DO II = 2, SIZE(helper%displacement)
-     helper%displacement(II) = helper%displacement(II-1) + &
-          & helper%values_per_process(II-1)
+     helper%displacement(II) = helper%displacement(II - 1) + &
+          & helper%values_per_process(II - 1)
   END DO
 
   !! Build Storage

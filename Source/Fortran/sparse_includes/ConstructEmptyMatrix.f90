@@ -2,7 +2,7 @@
 
   this%rows = rows
   this%columns = columns
-  ALLOCATE(this%outer_index(this%columns+1))
+  ALLOCATE(this%outer_index(this%columns + 1))
   this%outer_index = 0
 
   IF (PRESENT(zero_in)) THEN

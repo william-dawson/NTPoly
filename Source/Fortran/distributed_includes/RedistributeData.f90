@@ -11,13 +11,13 @@
   !! First we need to figure out where our local elements go
   ALLOCATE(row_lookup(SIZE(index_lookup)))
   ALLOCATE(column_lookup(SIZE(index_lookup)))
-  row_size = SIZE(index_lookup)/this%process_grid%num_process_rows
-  DO counter = LBOUND(index_lookup,1), UBOUND(index_lookup,1)
-     row_lookup(index_lookup(counter)) = (counter-1)/(row_size)
+  row_size = SIZE(index_lookup) / this%process_grid%num_process_rows
+  DO counter = LBOUND(index_lookup, 1), UBOUND(index_lookup, 1)
+     row_lookup(index_lookup(counter)) = (counter - 1)/row_size
   END DO
-  column_size = SIZE(index_lookup)/this%process_grid%num_process_columns
-  DO counter = LBOUND(index_lookup,1), UBOUND(index_lookup,1)
-     column_lookup(index_lookup(counter)) = (counter-1)/(column_size)
+  column_size = SIZE(index_lookup) / this%process_grid%num_process_columns
+  DO counter = LBOUND(index_lookup, 1), UBOUND(index_lookup, 1)
+     column_lookup(index_lookup(counter)) = (counter - 1)/column_size
   END DO
   ALLOCATE(location_list_within_slice(initial_triplet_list%CurrentSize))
   DO counter = 1, initial_triplet_list%CurrentSize
@@ -35,7 +35,7 @@
   DO counter = 1, initial_triplet_list%CurrentSize
      process_id = location_list_within_slice(counter)
      CALL GetTripletAt(initial_triplet_list, counter, temp_triplet)
-     CALL AppendToTripletList(send_triplet_lists(process_id+1), temp_triplet)
+     CALL AppendToTripletList(send_triplet_lists(process_id + 1), temp_triplet)
   END DO
 
   !! Actual Send

@@ -63,11 +63,11 @@
           & triplet_list%DATA(counter)%index_column, &
           & REAL(triplet_list%DATA(counter)%point_value), &
           & AIMAG(triplet_list%DATA(counter)%point_value), &
-          & add_newline_in=.TRUE.)
+          & add_newline_in = .TRUE.)
 #else
      CALL WriteMMLine(temp_string3, triplet_list%DATA(counter)%index_row, &
           & triplet_list%DATA(counter)%index_column, &
-          & triplet_list%DATA(counter)%point_value, add_newline_in=.TRUE.)
+          & triplet_list%DATA(counter)%point_value, add_newline_in = .TRUE.)
 #endif
      WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
      triplet_list_string_length = triplet_list_string_length + &
@@ -76,7 +76,7 @@
   END DO
 
   !! Write that string to the write buffer
-  ALLOCATE(CHARACTER(len=triplet_list_string_length+1) :: write_buffer)
+  ALLOCATE(CHARACTER(len=triplet_list_string_length + 1) :: write_buffer)
   offset_counter = 1
   DO counter = 1, triplet_list%CurrentSize
 #ifdef ISCOMPLEX
@@ -91,8 +91,8 @@
           & triplet_list%DATA(counter)%point_value, add_newline_in=.TRUE.)
 #endif
      WRITE(temp_string2, '(A)') ADJUSTL(temp_string3)
-     temp_length = LEN_TRIM(temp_string2)+NEW_LINE_LENGTH
-     WRITE(write_buffer(offset_counter:offset_counter+temp_length),*) &
+     temp_length = LEN_TRIM(temp_string2) + NEW_LINE_LENGTH
+     WRITE(write_buffer(offset_counter:offset_counter + temp_length),*) &
           & temp_string2(1:temp_length)
      offset_counter = offset_counter + temp_length
   END DO

@@ -8,7 +8,7 @@
   this%columns = columns
 
   !! Allocate
-  ALLOCATE(this%outer_index(this%columns+1))
+  ALLOCATE(this%outer_index(this%columns + 1))
   this%outer_index = 0
   ALLOCATE(this%inner_index(triplet_list%CurrentSize))
   ALLOCATE(this%values(triplet_list%CurrentSize))
@@ -31,6 +31,6 @@
   END DO
 
   !! Fill In The Rest Of The Outer Values
-  DO outer_array_ptr = outer_array_ptr+2, this%columns+1
-     this%outer_index(outer_array_ptr) = this%outer_index(outer_array_ptr-1)
+  DO outer_array_ptr = outer_array_ptr + 2, this%columns + 1
+     this%outer_index(outer_array_ptr) = this%outer_index(outer_array_ptr - 1)
   END DO

@@ -18,7 +18,7 @@
 
   list_length = input_list%CurrentSize
 
-  IF (bubble .AND. list_length .GT. matrix_rows*matrix_columns*0.1) THEN
+  IF (bubble .AND. list_length .GT. matrix_rows*matrix_columns * 0.1) THEN
      CALL SortDenseTripletList(input_list, matrix_columns, matrix_rows, &
           & sorted_list)
   ELSE
@@ -38,9 +38,9 @@
              & values_per_row(input_list%DATA(counter)%index_column) + 1
      END DO
      offset_array(1) = 1
-     DO counter = 2, UBOUND(offset_array,dim=1)
-        offset_array(counter) = offset_array(counter-1) + &
-             & values_per_row(counter-1)
+     DO counter = 2, UBOUND(offset_array, dim=1)
+        offset_array(counter) = offset_array(counter - 1) + &
+             & values_per_row(counter - 1)
      END DO
      DO counter = 1, input_list%CurrentSize
         idx = input_list%DATA(counter)%index_column
@@ -56,11 +56,11 @@
         DO WHILE (swap_occured .EQV. .TRUE.)
            swap_occured = .FALSE.
            DO counter = 2, sorted_list%CurrentSize
-              IF (CompareTriplets(sorted_list%DATA(counter-1), &
+              IF (CompareTriplets(sorted_list%DATA(counter - 1), &
                    & sorted_list%DATA(counter))) THEN
                  temporary = sorted_list%DATA(counter)
-                 sorted_list%DATA(counter) = sorted_list%DATA(counter-1)
-                 sorted_list%DATA(counter-1) = temporary
+                 sorted_list%DATA(counter) = sorted_list%DATA(counter - 1)
+                 sorted_list%DATA(counter - 1) = temporary
                  swap_occured = .TRUE.
               END IF
            END DO

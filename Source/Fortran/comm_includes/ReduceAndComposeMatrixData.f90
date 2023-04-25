@@ -15,8 +15,8 @@
   ALLOCATE(helper%displacement(helper%comm_size))
   helper%displacement(1) = 0
   DO II = 2, SIZE(helper%displacement)
-     helper%displacement(II) = helper%displacement(II-1) + &
-          & helper%values_per_process(II-1)
+     helper%displacement(II) = helper%displacement(II - 1) + &
+          & helper%values_per_process(II - 1)
   END DO
 
   !! Build Storage
@@ -25,7 +25,7 @@
   ALLOCATE(gathered_matrix%inner_index(total_values))
 
   !! MPI Calls
-  CALL MPI_IAllGatherv(matrix%inner_index,SIZE(matrix%values),MPINTINTEGER, &
+  CALL MPI_IAllGatherv(matrix%inner_index,SIZE(matrix%values), MPINTINTEGER, &
        & gathered_matrix%inner_index, helper%values_per_process, &
        & helper%displacement, MPINTINTEGER, communicator, &
        & helper%inner_request, grid_error)

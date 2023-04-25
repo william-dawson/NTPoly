@@ -13,8 +13,8 @@
         temp%index_row = JJ + LMat%start_column - 1
         DO II = 1, values_per_column(JJ)
            !! note transpose
-           temp%index_column = INDEX(II,JJ) + LMat%start_row - 1
-           temp%point_value = values(II,JJ)
+           temp%index_column = INDEX(II, JJ) + LMat%start_row - 1
+           temp%point_value = values(II, JJ)
            CALL AppendToTripletList(local_triplets, temp)
         END DO
      END DO

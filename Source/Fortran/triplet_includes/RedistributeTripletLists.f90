@@ -26,8 +26,8 @@
   END DO
   send_offsets(1) = 0
   DO counter = 2, num_processes
-     send_offsets(counter) = send_offsets(counter-1) + &
-          & send_per_process(counter-1)
+     send_offsets(counter) = send_offsets(counter - 1) + &
+          & send_per_process(counter - 1)
   END DO
 
   !! Figure Out How Much Data Gets Received
@@ -35,8 +35,8 @@
        & MPINTINTEGER, comm, mpi_error)
   recv_offsets(1) = 0
   DO counter = 2, num_processes
-     recv_offsets(counter) = recv_offsets(counter-1) + &
-          & recv_per_process(counter-1)
+     recv_offsets(counter) = recv_offsets(counter - 1) + &
+          & recv_per_process(counter - 1)
   END DO
 
   !! Allocate And Fill Send Buffers

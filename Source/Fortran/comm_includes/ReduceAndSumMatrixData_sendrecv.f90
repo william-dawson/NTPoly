@@ -14,7 +14,7 @@
   !! Compute values per process
   ALLOCATE(helper%values_per_process(helper%comm_size))
   DO II = 1, helper%comm_size
-     idx = (matrix%columns+1)*II
+     idx = (matrix%columns + 1) * II
      helper%values_per_process(II) = gathered_matrix%outer_index(idx)
   END DO
 
@@ -22,8 +22,8 @@
   ALLOCATE(helper%displacement(helper%comm_size))
   helper%displacement(1) = 0
   DO II = 2, SIZE(helper%displacement)
-     helper%displacement(II) = helper%displacement(II-1) + &
-          & helper%values_per_process(II-1)
+     helper%displacement(II) = helper%displacement(II - 1) + &
+          & helper%values_per_process(II - 1)
   END DO
 
   !! Build Storage
@@ -35,12 +35,12 @@
   DO II = 1, helper%comm_size
      !! Send/Recv inner index
      CALL MPI_ISend(matrix%inner_index, SIZE(matrix%inner_index), &
-          & MPINTINTEGER, II-1, 2, communicator, &
+          & MPINTINTEGER, II - 1, 2, communicator, &
           & helper%inner_send_request_list(II), grid_error)
-     istart = helper%displacement(II)+1
+     istart = helper%displacement(II) + 1
      isize = helper%values_per_process(II)
      iend = istart + isize - 1
      CALL MPI_Irecv(gathered_matrix%inner_index(istart:iend), isize, &
-          & MPINTINTEGER, II-1, 2, communicator, &
+          & MPINTINTEGER, II - 1, 2, communicator, &
           & helper%inner_recv_request_list(II), grid_error)
   END DO

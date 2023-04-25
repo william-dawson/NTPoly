@@ -6,18 +6,19 @@
 
   pruned_counter = 1
   DO row_counter_c = 1, mat_c_rows
-     DO column_counter_c = 1, (mat_c_columns-1)/memorypool%hash_size+1
+     DO column_counter_c = 1, (mat_c_columns - 1) / memorypool%hash_size + 1
         !! Sort the elements in a hash
         temp_values_per_hash = memorypool%inserted_per_bucket(&
              & column_counter_c,row_counter_c)
         memorypool%inserted_per_bucket(column_counter_c,row_counter_c) = 0
         !! Copy them
-        DO hash_counter=1,temp_values_per_hash
+        DO hash_counter = 1, temp_values_per_hash
            working_column = memorypool%hash_index(hash_counter+ &
-                & (column_counter_c-1)*memorypool%hash_size, row_counter_c)
-           working_value = memorypool%value_array(working_column,row_counter_c)
-           memorypool%value_array(working_column,row_counter_c) = 0
-           memorypool%dirty_array(working_column,row_counter_c) = .FALSE.
+                & (column_counter_c - 1)*memorypool%hash_size, row_counter_c)
+           working_value = &
+                & memorypool%value_array(working_column, row_counter_c)
+           memorypool%value_array(working_column, row_counter_c) = 0
+           memorypool%dirty_array(working_column, row_counter_c) = .FALSE.
            IF (ABS(alpha*working_value) .GT. threshold) THEN
               memorypool%pruned_list(pruned_counter)%point_value = &
                    & alpha*working_value

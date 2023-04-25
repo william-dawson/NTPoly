@@ -43,9 +43,9 @@
               CALL ConstructTripletList(send_list(counter))
            END DO
         END IF
-        CALL ConstructTripletList(send_list(between_grid_rank+1), &
+        CALL ConstructTripletList(send_list(between_grid_rank + 1), &
              & full_list%CurrentSize)
-        send_list(between_grid_rank+1)%DATA(:fsize) = full_list%DATA(:fsize)
+        send_list(between_grid_rank + 1)%DATA(:fsize) = full_list%DATA(:fsize)
         CALL RedistributeTripletLists(send_list, between_grid_comm, new_list)
      END IF
 
