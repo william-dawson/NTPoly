@@ -181,7 +181,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsr) :: matC
 
-    CALL PairwiseMultiplyMatrix(matA,matB,matC)
+    CALL PairwiseMultiplyMatrix(matA, matB, matC)
 
     CALL MatrixGrandSum(matC, product)
     CALL DestructMatrix(matC)
@@ -462,7 +462,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Memory pool to multiply into.
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: memorypool
     !! Temp Variables
-    REAL(NTREAL) :: temp_value_a, temp_value_b, temp_value_c
+    REAL(NTREAL) :: val_a, val_b, val_c
 
 #include "sparse_includes/MultiplyBlock.f90"
   END SUBROUTINE MultiplyBlock_lsr
@@ -476,7 +476,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Memory pool to multiply into.
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: memorypool
     !! Temp Variables
-    COMPLEX(NTCOMPLEX) :: temp_value_a, temp_value_b, temp_value_c
+    COMPLEX(NTCOMPLEX) :: val_a, val_b, val_c
 
 #include "sparse_includes/MultiplyBlock.f90"
   END SUBROUTINE MultiplyBlock_lsc

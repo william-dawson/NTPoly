@@ -76,7 +76,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: column_sigma_contribution
     !! Counters/Temporary
-    INTEGER :: inner_counter, outer_counter
+    INTEGER :: II, JJ
     TYPE(Matrix_lsr) :: merged_local_data_r
     TYPE(Matrix_lsc) :: merged_local_data_c
     INTEGER :: ierr
@@ -502,7 +502,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: triplet_list_r
     TYPE(TripletList_c) :: triplet_list_c
     !! Counters/Temporary
-    INTEGER :: counter
+    INTEGER :: II
     TYPE(Matrix_lsr) :: merged_local_data_r
     TYPE(Matrix_lsc) :: merged_local_data_c
     INTEGER :: ierr
@@ -564,14 +564,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Compute
        IF (PRESENT(pool_in)) THEN
           CALL MatrixMultiply(P, A, TempMat, &
-               & threshold_in=threshold, memory_pool_in=pool_in)
+               & threshold_in = threshold, memory_pool_in = pool_in)
           CALL MatrixMultiply(TempMat, PInv, ResMat, &
-               & threshold_in=threshold, memory_pool_in=pool_in)
+               & threshold_in = threshold, memory_pool_in = pool_in)
        ELSE
           CALL MatrixMultiply(P, A, TempMat, &
-               & threshold_in=threshold, memory_pool_in=pool)
+               & threshold_in = threshold, memory_pool_in = pool)
           CALL MatrixMultiply(TempMat, PInv, ResMat, &
-               & threshold_in=threshold, memory_pool_in=pool)
+               & threshold_in = threshold, memory_pool_in = pool)
        END IF
     END IF
 

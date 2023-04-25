@@ -1,7 +1,7 @@
   !! Local Data
   INTEGER :: II, JJ, KK
 
-  CALL ConstructTripletList(triplet_list, this%local_rows * this%local_columns)
+  CALL ConstructTripletList(tlist, this%local_rows * this%local_columns)
 
   KK = 0
   !! Find local identity values
@@ -10,16 +10,16 @@
         IF (II .LE. this%actual_matrix_dimension .AND. &
              & JJ .LE. this%actual_matrix_dimension) THEN
            KK = KK + 1
-           triplet_list%DATA(KK)%index_column = II
-           triplet_list%DATA(KK)%index_row = JJ
-           triplet_list%DATA(KK)%point_value = 1.0
+           tlist%DATA(KK)%index_column = II
+           tlist%DATA(KK)%index_row = JJ
+           tlist%DATA(KK)%point_value = 1.0
         END IF
      END DO
   END DO
-  triplet_list%CurrentSize = KK
+  tlist%CurrentSize = KK
 
   !! Finish constructing
-  CALL FillMatrixFromTripletList(this, triplet_list, prepartitioned_in=.TRUE.)
+  CALL FillMatrixFromTripletList(this, tlist, prepartitioned_in = .TRUE.)
 
   !! Cleanup
-  CALL DestructTripletList(triplet_list)
+  CALL DestructTripletList(tlist)

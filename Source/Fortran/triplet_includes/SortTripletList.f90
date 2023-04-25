@@ -5,8 +5,7 @@
   INTEGER, DIMENSION(:), ALLOCATABLE :: offset_array
   INTEGER, DIMENSION(:), ALLOCATABLE :: inserted_per_row
   !! Counters and temporary variables
-  INTEGER :: counter
-  INTEGER :: idx
+  INTEGER :: II, idx
   INTEGER :: alloc_stat
   INTEGER :: list_length
 
@@ -33,19 +32,19 @@
      inserted_per_row = 0
 
      !! Do a first pass bucket sort
-     DO counter = 1, input_list%CurrentSize
-        values_per_row(input_list%DATA(counter)%index_column) = &
-             & values_per_row(input_list%DATA(counter)%index_column) + 1
+     DO II = 1, input_list%CurrentSize
+        values_per_row(input_list%DATA(II)%index_column) = &
+             & values_per_row(input_list%DATA(II)%index_column) + 1
      END DO
      offset_array(1) = 1
-     DO counter = 2, UBOUND(offset_array, dim=1)
-        offset_array(counter) = offset_array(counter - 1) + &
-             & values_per_row(counter - 1)
+     DO II = 2, UBOUND(offset_array, dim=1)
+        offset_array(II) = offset_array(II - 1) + &
+             & values_per_row(II - 1)
      END DO
-     DO counter = 1, input_list%CurrentSize
-        idx = input_list%DATA(counter)%index_column
-        sorted_list%DATA(offset_array(idx)+inserted_per_row(idx))=&
-             & input_list%DATA(counter)
+     DO II = 1, input_list%CurrentSize
+        idx = input_list%DATA(II)%index_column
+        sorted_list%DATA(offset_array(idx) + inserted_per_row(idx)) = &
+             & input_list%DATA(II)
         inserted_per_row(idx) = inserted_per_row(idx) + 1
      END DO
 
@@ -55,12 +54,12 @@
      IF (bubble) THEN
         DO WHILE (swap_occured .EQV. .TRUE.)
            swap_occured = .FALSE.
-           DO counter = 2, sorted_list%CurrentSize
-              IF (CompareTriplets(sorted_list%DATA(counter - 1), &
-                   & sorted_list%DATA(counter))) THEN
-                 temporary = sorted_list%DATA(counter)
-                 sorted_list%DATA(counter) = sorted_list%DATA(counter - 1)
-                 sorted_list%DATA(counter - 1) = temporary
+           DO II = 2, sorted_list%CurrentSize
+              IF (CompareTriplets(sorted_list%DATA(II - 1), &
+                   & sorted_list%DATA(II))) THEN
+                 temporary = sorted_list%DATA(II)
+                 sorted_list%DATA(II) = sorted_list%DATA(II - 1)
+                 sorted_list%DATA(II - 1) = temporary
                  swap_occured = .TRUE.
               END IF
            END DO

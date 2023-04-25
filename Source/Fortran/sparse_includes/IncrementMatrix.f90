@@ -1,7 +1,7 @@
   !! Counter Variables
-  INTEGER :: outer_counter
+  INTEGER :: II
   INTEGER :: inner_a, inner_b
-  INTEGER :: total_counter_a, total_counter_b, total_counter_c
+  INTEGER :: total_a, total_b, total_c
   !! Temporary Variables
   INTEGER :: indices_added_into_c
   REAL(NTREAL) :: alpha
@@ -34,27 +34,24 @@
   END IF
 
   !! Perform loops
-  total_counter_a = 1
-  total_counter_b = 1
-  total_counter_c = 1
-  DO outer_counter = 1, matA%columns
+  total_a = 1
+  total_b = 1
+  total_c = 1
+  DO II = 1, matA%columns
      !! Inner counters
-     inner_a = matA%outer_index(outer_counter + 1) - &
-          & matA%outer_index(outer_counter)
-     inner_b = matB%outer_index(outer_counter+1) - &
-          & matB%outer_index(outer_counter)
+     inner_a = matA%outer_index(II + 1) - matA%outer_index(II)
+     inner_b = matB%outer_index(II+1) - matB%outer_index(II)
      CALL AddSparseVectors(&
-          matA%inner_index(total_counter_a:total_counter_a + inner_a - 1),&
-          matA%values(total_counter_a:total_counter_a + inner_a - 1),&
-          matB%inner_index(total_counter_b:total_counter_b + inner_b - 1),&
-          matB%values(total_counter_b:total_counter_b + inner_b - 1),&
-          matC%inner_index(total_counter_c:),matC%values(total_counter_c:),&
+          matA%inner_index(total_a:total_a + inner_a - 1), &
+          matA%values(total_a:total_a + inner_a - 1), &
+          matB%inner_index(total_b:total_b + inner_b - 1), &
+          matB%values(total_b:total_b + inner_b - 1), &
+          matC%inner_index(total_c:), matC%values(total_c:), &
           indices_added_into_c, alpha, threshold)
-     matC%outer_index(outer_counter+1) = matC%outer_index(outer_counter)+&
-          & indices_added_into_c
-     total_counter_a = total_counter_a + inner_a
-     total_counter_b = total_counter_b + inner_b
-     total_counter_c = total_counter_c + indices_added_into_c
+     matC%outer_index(II + 1) = matC%outer_index(II) + indices_added_into_c
+     total_a = total_a + inner_a
+     total_b = total_b + inner_b
+     total_c = total_c + indices_added_into_c
   END DO
 
   !! Cleanup

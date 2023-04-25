@@ -111,8 +111,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Perform the eigendecomposition
-    CALL EigenDecomposition(this, vals, solver_parameters_in=params, &
-         & eigenvectors_in=vecs)
+    CALL EigenDecomposition(this, vals, solver_parameters_in = params, &
+         & eigenvectors_in = vecs)
 
     !! Convert to a triplet list, map the triplet list, fill.
     CALL GetMatrixTripletList(vals, tlist)
@@ -122,13 +122,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill
     CALL ConstructEmptyMatrix(ResultMat, this)
-    CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in=.TRUE.)
+    CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in = .TRUE.)
 
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in=params%threshold)
+    CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in = params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
     CALL ConjugateMatrix(vecsT)
-    CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in=params%threshold)
+    CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in = params%threshold)
 
     !! Cleanup
     CALL DestructMatrix(vecs)
@@ -157,8 +157,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (solver_params%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="LAPACK")
-       CALL WriteElement(key="NVALS", VALUE=nvals)
+       CALL WriteElement(key = "Method", VALUE = "LAPACK")
+       CALL WriteElement(key = "NVALS", VALUE = nvals)
        CALL ExitSubLog
        CALL PrintParameters(solver_params)
     END IF

@@ -5,7 +5,7 @@
   INTEGER :: between_grid_rank
   !! For Data Redistribution
   INTEGER :: fsize
-  INTEGER :: counter
+  INTEGER :: II
   INTEGER :: ierr
 
   IF (this%process_grid%total_processors .EQ. 1) THEN
@@ -32,15 +32,15 @@
            CALL ConstructTripletList(send_list(1))
            CALL ConstructTripletList(send_list(2), full_list%CurrentSize)
            send_list(2)%DATA(:fsize) = full_list%DATA(:fsize)
-           DO counter = 3, between_grid_size
-              CALL ConstructTripletList(send_list(counter))
+           DO II = 3, between_grid_size
+              CALL ConstructTripletList(send_list(II))
            END DO
         ELSE
            !! The larger process grid only needs to send to process 1
            CALL ConstructTripletList(send_list(1), full_list%CurrentSize)
            send_list(1)%DATA(:fsize) = full_list%DATA(:fsize)
-           DO counter = 2, between_grid_size
-              CALL ConstructTripletList(send_list(counter))
+           DO II = 2, between_grid_size
+              CALL ConstructTripletList(send_list(II))
            END DO
         END IF
         CALL ConstructTripletList(send_list(between_grid_rank + 1), &
@@ -51,7 +51,7 @@
 
      !! Create The New Matrix
      CALL ConstructEmptyMatrix(split_mat, this%actual_matrix_dimension, &
-          & process_grid_in=new_grid, is_complex_in=this%is_complex)
+          & process_grid_in = new_grid, is_complex_in = this%is_complex)
      IF (.NOT. split_slice) THEN
         CALL FillMatrixFromTripletList(split_mat, new_list, .TRUE.)
      ELSE
@@ -62,8 +62,8 @@
      CALL DestructTripletList(full_list)
      CALL DestructTripletList(new_list)
      IF (ALLOCATED(send_list)) THEN
-        DO counter = 1, between_grid_size
-           CALL DestructTripletList(send_list(counter))
+        DO II = 1, between_grid_size
+           CALL DestructTripletList(send_list(II))
         END DO
      END IF
   END IF

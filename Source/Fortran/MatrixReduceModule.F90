@@ -389,7 +389,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
-    TYPE(Matrix_lsr) :: temporary_matrix, sum_matrix
+    TYPE(Matrix_lsr) :: acc_matrix, sum_matrix
 
 #include "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER
@@ -426,7 +426,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
     !! Local Data
-    TYPE(Matrix_lsc) :: temporary_matrix, sum_matrix
+    TYPE(Matrix_lsc) :: acc_matrix, sum_matrix
 
 #include "comm_includes/ReduceAndSumMatrixCleanup.f90"
 #ifdef NOIALLGATHER

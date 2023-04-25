@@ -156,11 +156,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Solver Parameters")
     CALL EnterSubLog
-    CALL WriteElement(key="Verbosity", VALUE=this%be_verbose)
-    CALL WriteElement(key="Load Balancing", VALUE=this%do_load_balancing)
-    CALL WriteElement(key="Convergence Difference", VALUE=this%converge_diff)
-    CALL WriteElement(key="Threshold", VALUE=this%threshold)
-    CALL WriteElement(key="Maximum Iterations", VALUE=this%max_iterations)
+    CALL WriteElement(key = "Verbosity", &
+         & VALUE = this%be_verbose)
+    CALL WriteElement(key = "Load Balancing", &
+         & VALUE = this%do_load_balancing)
+    CALL WriteElement(key = "Convergence Difference", &
+         & VALUE = this%converge_diff)
+    CALL WriteElement(key = "Threshold", &
+         & VALUE = this%threshold)
+    CALL WriteElement(key = "Maximum Iterations", &
+         & VALUE = this%max_iterations)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

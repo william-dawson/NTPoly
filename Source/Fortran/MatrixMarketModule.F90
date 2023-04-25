@@ -65,13 +65,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     pos2 = INDEX(line(pos1:), ' ')
 
     !! This part is just "matrix".
-    pos1 = pos2+pos1
+    pos1 = pos2 + pos1
     pos2 = INDEX(line(pos1:), ' ')
 
     !! This part is coordinate or array.
-    pos1 = pos2+pos1
+    pos1 = pos2 + pos1
     pos2 = INDEX(line(pos1:), ' ')
-    SELECT CASE(TRIM(line(pos1:pos1+pos2-1)))
+    SELECT CASE(TRIM(line(pos1:pos1 + pos2 - 1)))
     CASE('coordinate')
        sparsity_type = MM_COORDINATE
     CASE('array')
@@ -81,9 +81,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END SELECT
 
     !! This part is real, integer, complex, pattern.
-    pos1 = pos2+pos1
+    pos1 = pos2 + pos1
     pos2 = INDEX(line(pos1:), ' ')
-    SELECT CASE(TRIM(line(pos1:pos1+pos2-1)))
+    SELECT CASE(TRIM(line(pos1: pos1 + pos2 - 1)))
     CASE('real')
        data_type = MM_REAL
     CASE('array')

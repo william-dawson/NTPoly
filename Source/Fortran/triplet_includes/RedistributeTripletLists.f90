@@ -10,7 +10,7 @@
   INTEGER, DIMENSION(:), ALLOCATABLE :: recv_buffer_col
   !! ETC
   INTEGER :: num_processes
-  INTEGER :: counter, inner_counter, insert_pt
+  INTEGER :: II, JJ, insert_pt
   INTEGER :: mpi_error
 
   !! Allocate Size Buffers
@@ -21,22 +21,20 @@
   ALLOCATE(recv_offsets(num_processes))
 
   !! Figure Out How Much Data Gets Sent
-  DO counter = 1, num_processes
-     send_per_process(counter) = triplet_lists(counter)%CurrentSize
+  DO II = 1, num_processes
+     send_per_process(II) = triplet_lists(II)%CurrentSize
   END DO
   send_offsets(1) = 0
-  DO counter = 2, num_processes
-     send_offsets(counter) = send_offsets(counter - 1) + &
-          & send_per_process(counter - 1)
+  DO II = 2, num_processes
+     send_offsets(II) = send_offsets(II - 1) + send_per_process(II - 1)
   END DO
 
   !! Figure Out How Much Data Gets Received
   CALL MPI_ALLTOALL(send_per_process, 1, MPINTINTEGER, recv_per_process, 1, &
        & MPINTINTEGER, comm, mpi_error)
   recv_offsets(1) = 0
-  DO counter = 2, num_processes
-     recv_offsets(counter) = recv_offsets(counter - 1) + &
-          & recv_per_process(counter - 1)
+  DO II = 2, num_processes
+     recv_offsets(II) = recv_offsets(II - 1) + recv_per_process(II - 1)
   END DO
 
   !! Allocate And Fill Send Buffers
@@ -49,9 +47,9 @@
 
   !! Fill Send Buffer
   insert_pt = 1
-  DO counter = 1, num_processes
-     DO inner_counter = 1, triplet_lists(counter)%CurrentSize
-        CALL GetTripletAt(triplet_lists(counter), inner_counter, temp_triplet)
+  DO II = 1, num_processes
+     DO JJ = 1, triplet_lists(II)%CurrentSize
+        CALL GetTripletAt(triplet_lists(II), JJ, temp_triplet)
         send_buffer_row(insert_pt) = temp_triplet%index_row
         send_buffer_col(insert_pt) = temp_triplet%index_column
         send_buffer_val(insert_pt) = temp_triplet%point_value
@@ -72,10 +70,10 @@
 
   !! Unpack Into The Output Triplet List
   CALL ConstructTripletList(local_data_out, size_in=SUM(recv_per_process))
-  DO counter = 1, SUM(recv_per_process)
-     local_data_out%DATA(counter)%index_column = recv_buffer_col(counter)
-     local_data_out%DATA(counter)%index_row = recv_buffer_row(counter)
-     local_data_out%DATA(counter)%point_value = recv_buffer_val(counter)
+  DO II = 1, SUM(recv_per_process)
+     local_data_out%DATA(II)%index_column = recv_buffer_col(II)
+     local_data_out%DATA(II)%index_row = recv_buffer_row(II)
+     local_data_out%DATA(II)%point_value = recv_buffer_val(II)
   END DO
 
   !! Cleanup

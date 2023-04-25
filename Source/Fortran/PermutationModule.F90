@@ -87,7 +87,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! First fill by counting.
-    CALL ConstructDefaultPermutation(this,matrix_dimension)
+    CALL ConstructDefaultPermutation(this, matrix_dimension)
 
     !! Do the shuffle
     shuffle: DO II = matrix_dimension, 1, -1
@@ -134,12 +134,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! First fill by counting.
-    CALL ConstructDefaultPermutation(this,logical_matrix_dimension)
+    CALL ConstructDefaultPermutation(this, logical_matrix_dimension)
 
     !! Do the shuffle
     shuffle: DO II = actual_matrix_dimension, 1, -1
        CALL RANDOM_NUMBER(rand_temp)
-       random_integer = FLOOR(actual_matrix_dimension*rand_temp)+1
+       random_integer = FLOOR(actual_matrix_dimension * rand_temp) + 1
        swap_space = this%index_lookup(actual_matrix_dimension)
        this%index_lookup(actual_matrix_dimension) = &
             & this%index_lookup(random_integer)

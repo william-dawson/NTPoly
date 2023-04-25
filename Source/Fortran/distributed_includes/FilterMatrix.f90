@@ -1,14 +1,13 @@
   !! Local Data
-  INTEGER :: counter
-  INTEGER :: size_temp
   TYPE(ProcessGrid_t) :: grid_temp
   LOGICAL :: is_complex_temp
+  INTEGER :: II, size_temp
 
-  CALL GetMatrixTripletList(this, triplet_list)
+  CALL GetMatrixTripletList(this, tlist)
   CALL ConstructTripletList(new_list)
 
-  DO counter=1,triplet_list%CurrentSize
-     CALL GetTripletAt(triplet_list, counter, temporary)
+  DO II = 1, tlist%CurrentSize
+     CALL GetTripletAt(tlist, II, temporary)
      IF (ABS(temporary%point_value) .GT. threshold) THEN
         CALL AppendToTripletList(new_list, temporary)
      END IF

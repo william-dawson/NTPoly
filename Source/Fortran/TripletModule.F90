@@ -155,7 +155,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_Type_extent(MPINTINTEGER, bytes_per_int, ierr)
     CALL MPI_Type_extent(MPINTREAL, bytes_per_double, ierr)
     triplet_block_length = [1, 1, 1]
-    triplet_displacement = [0, bytes_per_int, 2*bytes_per_int]
+    triplet_displacement = [0, bytes_per_int, 2 * bytes_per_int]
     triplet_sub_types = [MPINTINTEGER, MPINTINTEGER, MPINTREAL]
 
     CALL MPI_Type_create_struct(3, triplet_block_length, &
@@ -180,10 +180,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: error_occured
     INTEGER :: ierr
 
-    CALL MPI_Type_extent(MPINTINTEGER, bytes_per_int,ierr)
-    CALL MPI_Type_extent(MPINTCOMPLEX, bytes_per_double,ierr)
+    CALL MPI_Type_extent(MPINTINTEGER, bytes_per_int, ierr)
+    CALL MPI_Type_extent(MPINTCOMPLEX, bytes_per_double, ierr)
     triplet_block_length = [1, 1, 1]
-    triplet_displacement = [0, bytes_per_int, 2*bytes_per_int]
+    triplet_displacement = [0, bytes_per_int, 2 * bytes_per_int]
     triplet_sub_types = [MPINTINTEGER, MPINTINTEGER, MPINTCOMPLEX]
 
     CALL MPI_Type_create_struct(3, triplet_block_length, &
@@ -204,7 +204,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     rout_triplet%index_row = cin_triplet%index_row
     rout_triplet%index_column = cin_triplet%index_column
-    rout_triplet%point_value = REAL(cin_triplet%point_value, KIND=NTREAL)
+    rout_triplet%point_value = REAL(cin_triplet%point_value, KIND = NTREAL)
   END SUBROUTINE ConvertTripletToReal
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a real triplet to a complex triplet.

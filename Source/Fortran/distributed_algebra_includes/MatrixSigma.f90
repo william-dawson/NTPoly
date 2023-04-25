@@ -3,12 +3,10 @@
 
   ALLOCATE(column_sigma_contribution(LMAT%columns))
   column_sigma_contribution = 0
-  DO outer_counter = 1, LMAT%columns
-     DO inner_counter = LMAT%outer_index(outer_counter), &
-          & LMAT%outer_index(outer_counter + 1) - 1
-        column_sigma_contribution(outer_counter) = &
-             & column_sigma_contribution(outer_counter) + &
-             & ABS(LMAT%values(inner_counter + 1))
+  DO II = 1, LMAT%columns
+     DO JJ = LMAT%outer_index(II), LMAT%outer_index(II + 1) - 1
+        column_sigma_contribution(II) = column_sigma_contribution(II) + &
+             & ABS(LMAT%values(JJ + 1))
      END DO
   END DO
   CALL MPI_Allreduce(MPI_IN_PLACE, column_sigma_contribution, &

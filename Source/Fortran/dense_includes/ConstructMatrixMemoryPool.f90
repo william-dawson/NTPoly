@@ -17,9 +17,9 @@
   num_buckets = columns/this%hash_size + 1
 
   !! Allocate
-  ALLOCATE(this%pruned_list(columns * rows), stat=alloc_stat)
-  ALLOCATE(this%value_array(columns, rows), stat=alloc_stat)
-  ALLOCATE(this%dirty_array(columns, rows), stat=alloc_stat)
+  ALLOCATE(this%pruned_list(columns * rows), stat = alloc_stat)
+  ALLOCATE(this%value_array(columns, rows), stat = alloc_stat)
+  ALLOCATE(this%dirty_array(columns, rows), stat = alloc_stat)
 
   ALLOCATE(this%hash_index(columns, rows))
   ALLOCATE(this%inserted_per_bucket(columns, rows))

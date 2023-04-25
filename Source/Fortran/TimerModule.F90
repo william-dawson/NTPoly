@@ -146,14 +146,14 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The position of the timer. 0 means the timer has not been registered.
     INTEGER :: timer_position
     !! Local Data
-    INTEGER :: counter
+    INTEGER :: II
     LOGICAL :: not_found
 
     not_found = .TRUE.
 
     IF (ALLOCATED(timer_list)) THEN
-       DO counter=1, SIZE(timer_list)
-          IF (timer_name .EQ. timer_list(counter)) THEN
+       DO II = 1, SIZE(timer_list)
+          IF (timer_name .EQ. timer_list(II)) THEN
              not_found = .FALSE.
              EXIT
           END IF
@@ -163,7 +163,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (not_found) THEN
        timer_position = 0
     ELSE
-       timer_position = counter
+       timer_position = II
     END IF
   END FUNCTION GetTimerPosition
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

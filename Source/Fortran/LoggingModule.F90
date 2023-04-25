@@ -165,9 +165,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(UNIT, '(A)', ADVANCE='no') key
-       WRITE(UNIT, '(A)', ADVANCE='no') ": "
-       WRITE(UNIT, '(I20)', ADVANCE='no') VALUE
+       WRITE(UNIT, '(A)', ADVANCE = 'no') key
+       WRITE(UNIT, '(A)', ADVANCE = 'no') ": "
+       WRITE(UNIT, '(I20)', ADVANCE = 'no') VALUE
 
        WRITE(UNIT, *)
     END IF
@@ -183,9 +183,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(UNIT, '(A)', ADVANCE='no') key
-       WRITE(UNIT, '(A)', ADVANCE='no') ": "
-       WRITE(UNIT, '(A)', ADVANCE='no') VALUE
+       WRITE(UNIT, '(A)', ADVANCE = 'no') key
+       WRITE(UNIT, '(A)', ADVANCE = 'no') ": "
+       WRITE(UNIT, '(A)', ADVANCE = 'no') VALUE
 
        WRITE(UNIT,*)
     END IF
@@ -201,12 +201,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(UNIT, '(A)', ADVANCE='no') "- "
-       WRITE(UNIT, '(A)', ADVANCE='no') key
+       WRITE(UNIT, '(A)', ADVANCE = 'no') "- "
+       WRITE(UNIT, '(A)', ADVANCE = 'no') key
        IF (VALUE) THEN
-          WRITE(UNIT, '(A)', ADVANCE='no') ": True"
+          WRITE(UNIT, '(A)', ADVANCE = 'no') ": True"
        ELSE
-          WRITE(UNIT, '(A)', ADVANCE='no') ": False"
+          WRITE(UNIT, '(A)', ADVANCE = 'no') ": False"
        END IF
 
        WRITE(UNIT, *)
@@ -223,10 +223,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(UNIT, '(A)', ADVANCE='no') "- "
-       WRITE(UNIT, '(A)', ADVANCE='no') key
-       WRITE(UNIT, '(A)', ADVANCE='no') ": "
-       WRITE(UNIT, '(ES22.14)', ADVANCE='no') VALUE
+       WRITE(UNIT, '(A)', ADVANCE = 'no') "- "
+       WRITE(UNIT, '(A)', ADVANCE = 'no') key
+       WRITE(UNIT, '(A)', ADVANCE = 'no') ": "
+       WRITE(UNIT, '(ES22.14)', ADVANCE = 'no') VALUE
 
        WRITE(UNIT,*)
     END IF
@@ -242,10 +242,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(UNIT, '(A)', ADVANCE='no') "- "
-       WRITE(UNIT, '(A)', ADVANCE='no') key
-       WRITE(UNIT, '(A)', ADVANCE='no') ": "
-       WRITE(UNIT, '(I10)', ADVANCE='no') VALUE
+       WRITE(UNIT, '(A)', ADVANCE = 'no') "- "
+       WRITE(UNIT, '(A)', ADVANCE = 'no') key
+       WRITE(UNIT, '(A)', ADVANCE = 'no') ": "
+       WRITE(UNIT, '(I10)', ADVANCE = 'no') VALUE
 
        WRITE(UNIT,*)
     END IF
@@ -261,11 +261,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (IsActive) THEN
        CALL WriteIndent
 
-       WRITE(UNIT, '(A)', ADVANCE='no') "- "
-       WRITE(UNIT, '(A)', ADVANCE='no') key
+       WRITE(UNIT, '(A)', ADVANCE = 'no') "- "
+       WRITE(UNIT, '(A)', ADVANCE = 'no') key
        IF (PRESENT(VALUE)) THEN
-          WRITE(UNIT, '(A)', ADVANCE='no') ": "
-          WRITE(UNIT, '(A)', ADVANCE='no') VALUE
+          WRITE(UNIT, '(A)', ADVANCE = 'no') ": "
+          WRITE(UNIT, '(A)', ADVANCE = 'no') VALUE
        END IF
 
        WRITE(UNIT,*)
@@ -277,10 +277,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     DO II=1,initial_offset
-       WRITE(UNIT, '(A1)', ADVANCE='NO') " "
+       WRITE(UNIT, '(A1)', ADVANCE = 'NO') " "
     END DO
     DO II=1,CurrentLevel*2
-       WRITE(UNIT, '(A1)', ADVANCE='NO') " "
+       WRITE(UNIT, '(A1)', ADVANCE = 'NO') " "
     END DO
   END SUBROUTINE WriteIndent
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

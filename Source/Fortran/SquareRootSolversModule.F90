@@ -237,7 +237,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the lambda scaling value.
     CALL GershgorinBounds(InMat, e_min, e_max)
     max_between = MAX(ABS(e_min), ABS(e_max))
-    lambda = 1.0/max_between
+    lambda = 1.0 / max_between
 
     !! Initialize
     CALL FillMatrixIdentity(InverseSquareRootMat)
@@ -246,11 +246,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(SquareRootMat, SquareRootMat, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
        CALL PermuteMatrix(Identity, Identity, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
        CALL PermuteMatrix(InverseSquareRootMat, InverseSquareRootMat, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
     END IF
 
     !! Iterate.
@@ -260,41 +260,43 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     II = 1
     norm_value = params%converge_diff + 1.0_NTREAL
-    DO II = 1,params%max_iterations
+    DO II = 1, params%max_iterations
        !! Compute X_k
        CALL MatrixMultiply(SquareRootMat, InverseSquareRootMat, X_k, &
-            & threshold_in=params%threshold, memory_pool_in=mpool)
+            & threshold_in = params%threshold, memory_pool_in = mpool)
        CALL GershgorinBounds(X_k, e_min, e_max)
        max_between = MAX(ABS(e_min), ABS(e_max))
-       lambda = 1.0/max_between
+       lambda = 1.0 / max_between
 
        CALL ScaleMatrix(X_k, lambda)
 
        !! Check if Converged
        CALL CopyMatrix(Identity, Temp)
-       CALL IncrementMatrix(X_k, Temp, REAL(-1.0,NTREAL))
+       CALL IncrementMatrix(X_k, Temp, &
+            & alpha_in = -1.0_NTREAL)
        norm_value = MatrixNorm(Temp)
 
        !! Compute T_k
        CALL CopyMatrix(Identity, T_k)
-       CALL ScaleMatrix(T_k, REAL(3.0,NTREAL))
-       CALL IncrementMatrix(X_k, T_k, REAL(-1.0,NTREAL))
-       CALL ScaleMatrix(T_k, REAL(0.5,NTREAL))
+       CALL ScaleMatrix(T_k, 3.0_NTREAL)
+       CALL IncrementMatrix(X_k, T_k, &
+            & alpha_in = -1.0_NTREAL)
+       CALL ScaleMatrix(T_k, 0.5_NTREAL)
 
        !! Compute Z_k+1
        CALL CopyMatrix(InverseSquareRootMat, Temp)
        CALL MatrixMultiply(Temp, T_k, InverseSquareRootMat, &
-            & threshold_in=params%threshold, memory_pool_in=mpool)
+            & threshold_in = params%threshold, memory_pool_in = mpool)
        CALL ScaleMatrix(InverseSquareRootMat, SQRT(lambda))
 
        !! Compute Y_k+1
        CALL CopyMatrix(SquareRootMat, Temp)
        CALL MatrixMultiply(T_k, Temp, SquareRootMat, &
-            & threshold_in=params%threshold, memory_pool_in=mpool)
+            & threshold_in = params%threshold, memory_pool_in = mpool)
        CALL ScaleMatrix(SquareRootMat, SQRT(lambda))
 
        IF (params%be_verbose) THEN
-          CALL WriteElement(key="Convergence", VALUE=norm_value)
+          CALL WriteElement(key="Convergence", VALUE = norm_value)
        END IF
 
        IF (norm_value .LE. params%converge_diff) THEN
@@ -303,7 +305,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II)
+       CALL WriteElement(key = "Total Iterations", VALUE = II)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 
@@ -316,7 +318,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutMat, OutMat, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
     END IF
 
     !! Cleanup
@@ -384,7 +386,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the lambda scaling value.
     CALL GershgorinBounds(InMat, e_min, e_max)
     max_between = MAX(ABS(e_min), ABS(e_max))
-    lambda = 1.0_NTREAL/max_between
+    lambda = 1.0_NTREAL / max_between
 
     !! Initialize
     CALL FillMatrixIdentity(InverseSquareRootMat)
@@ -394,11 +396,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(SquareRootMat, SquareRootMat, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
        CALL PermuteMatrix(Identity, Identity, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
        CALL PermuteMatrix(InverseSquareRootMat, InverseSquareRootMat, &
-            & params%BalancePermutation, memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
     END IF
 
     !! Iterate.
@@ -411,15 +413,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, params%max_iterations
        !! Compute X_k = Z_k * Y_k - I
        CALL MatrixMultiply(InverseSquareRootMat, SquareRootMat, X_k, &
-            & threshold_in=params%threshold, memory_pool_in=mpool)
-       CALL IncrementMatrix(Identity,X_k,-1.0_NTREAL)
+            & threshold_in = params%threshold, memory_pool_in = mpool)
+       CALL IncrementMatrix(Identity, X_k, -1.0_NTREAL)
        norm_value = MatrixNorm(X_k)
 
        SELECT CASE(taylor_order)
        CASE(3)
           !! Compute X_k^2
           CALL MatrixMultiply(X_k, X_k, Temp, &
-               & threshold_in=params%threshold, memory_pool_in=mpool)
+               & threshold_in = params%threshold, memory_pool_in = mpool)
 
           !! X_k = I - 1/2 X_k + 3/8 X_k^2 + ...
           CALL ScaleMatrix(X_k, -0.5_NTREAL)
@@ -428,10 +430,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CASE(5)
           !! Compute p(x) = x^4 + A*x^3 + B*x^2 + C*x + D
           !! Scale to make coefficient of x^4 equal to 1
-          aa = -40.0_NTREAL/35.0_NTREAL
-          bb = 48.0_NTREAL/35.0_NTREAL
-          cc = -64.0_NTREAL/35.0_NTREAL
-          dd = 128.0_NTREAL/35.0_NTREAL
+          aa = -40.0_NTREAL / 35.0_NTREAL
+          bb = 48.0_NTREAL / 35.0_NTREAL
+          cc = -64.0_NTREAL / 35.0_NTREAL
+          dd = 128.0_NTREAL / 35.0_NTREAL
 
           !! The method of Knuth
           !! p = (z+x+b) * (z+c) + d
@@ -440,15 +442,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           !! b = B*(a+1) - C - a*(a+1)*(a+1)
           !! c = B - b - a*(a+1)
           !! d = D - b*c
-          a = (aa-1.0_NTREAL)/2.0_NTREAL
-          b = bb*(a+1.0_NTREAL)-cc-a*(a+1.0_NTREAL)**2
-          c = bb-b-a*(a+1.0_NTREAL)
-          d = dd-b*c
+          a = (aa - 1.0_NTREAL) / 2.0_NTREAL
+          b = bb*(a + 1.0_NTREAL) - cc - a * (a + 1.0_NTREAL)**2
+          c = bb - b - a * (a + 1.0_NTREAL)
+          d = dd - b * c
 
           !! Compute Temp = z = x * (x+a)
           CALL MatrixMultiply(X_k, X_k, Temp, &
-               & threshold_in=params%threshold, memory_pool_in=mpool)
-          CALL IncrementMatrix(X_k, Temp, a)
+               & threshold_in = params%threshold, memory_pool_in = mpool)
+          CALL IncrementMatrix(X_k, Temp, &
+               & alpha_in = a)
 
           !! Compute Temp2 = z + x + b
           CALL CopyMatrix(Identity, Temp2)
@@ -461,25 +464,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
           !! Compute X_k = (z+x+b) * (z+c) + d = Temp2 * Temp + d
           CALL MatrixMultiply(Temp2, Temp, X_k, &
-               & threshold_in=params%threshold, memory_pool_in=mpool)
-          CALL IncrementMatrix(Identity,X_k,d)
+               & threshold_in = params%threshold, memory_pool_in = mpool)
+          CALL IncrementMatrix(Identity, X_k, d)
 
           !! Scale back to the target coefficients
-          CALL ScaleMatrix(X_k, 35.0_NTREAL/128.0_NTREAL)
+          CALL ScaleMatrix(X_k, 35.0_NTREAL / 128.0_NTREAL)
        END SELECT
 
        !! Compute Z_k+1 = Z_k * X_k
        CALL CopyMatrix(InverseSquareRootMat, Temp)
        CALL MatrixMultiply(X_k, Temp, InverseSquareRootMat, &
-            & threshold_in=params%threshold,memory_pool_in=mpool)
+            & threshold_in = params%threshold,memory_pool_in=mpool)
 
        !! Compute Y_k+1 = X_k * Y_k
        CALL CopyMatrix(SquareRootMat, Temp)
        CALL MatrixMultiply(Temp, X_k, SquareRootMat, &
-            & threshold_in=params%threshold,memory_pool_in=mpool)
+            & threshold_in = params%threshold, memory_pool_in = mpool)
 
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        IF (norm_value .LE. params%converge_diff) THEN
@@ -488,7 +491,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II)
+       CALL WriteElement(key = "Total Iterations", VALUE = II)
        CALL PrintMatrixInformation(InverseSquareRootMat)
     END IF
 
@@ -496,14 +499,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(InverseSquareRootMat, SQRT(lambda))
        CALL CopyMatrix(InverseSquareRootMat, OutMat)
     ELSE
-       CALL ScaleMatrix(SquareRootMat, 1.0_NTREAL/SQRT(lambda))
+       CALL ScaleMatrix(SquareRootMat, 1.0_NTREAL / SQRT(lambda))
        CALL CopyMatrix(SquareRootMat, OutMat)
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutMat, OutMat, &
-            & params%BalancePermutation,memorypool_in=mpool)
+            & params%BalancePermutation, memorypool_in = mpool)
     END IF
 
     !! Cleanup
@@ -535,7 +538,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(KIND=NTREAL), INTENT(IN) :: val
     REAL(KIND=NTREAL) :: outval
 
-    outval = 1.0/SQRT(val)
+    outval = 1.0 / SQRT(val)
   END FUNCTION InverseSquareRootLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SquareRootSolversModule

@@ -80,8 +80,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Linear Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Pivoted Cholesky Decomposition")
-       CALL WriteElement(key="Target_Rank", VALUE=rank_in)
+       CALL WriteElement(key = "Method", &
+            & VALUE = "Pivoted Cholesky Decomposition")
+       CALL WriteElement(key = "Target_Rank", VALUE = rank_in)
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("aquilante2006fast")
@@ -138,7 +139,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (pi_j .GE. AMat%start_column .AND. pi_j .LT. AMat%end_column) THEN
           local_pi_j = pi_j - AMat%start_column + 1
           insert_value = SQRT(insert_value)
-          inverse_factor = 1.0_NTREAL/insert_value
+          inverse_factor = 1.0_NTREAL / insert_value
           !! Insert
           IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
              CALL AppendToVector(values_per_column_l(local_pi_j), &
@@ -159,7 +160,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & LMat%process_grid%row_comm, ierr)
 
        !! Extract the row of A to a dense matrix for easy lookup
-       DO II = MAX(acol%outer_index(pi_j),1), acol%outer_index(pi_j+1)
+       DO II = MAX(acol%outer_index(pi_j), 1), acol%outer_index(pi_j + 1)
           a_buf(acol%inner_index(II)) = acol%values(II)
        END DO
 
@@ -177,7 +178,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           IF (ABS(insert_value) .GT. params%threshold) THEN
              IF (JJ .GE. AMat%start_row .AND. JJ .LT. AMat%end_row) THEN
                 CALL AppendToVector(values_per_column_l(local_pi_i), &
-                     & index_l(:,local_pi_i), values_l(:, local_pi_i), &
+                     & index_l(:, local_pi_i), values_l(:, local_pi_i), &
                      & local_JJ, insert_value)
              END IF
           END IF
@@ -186,7 +187,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
 
        !! Clear up the A buffer
-       DO II = MAX(acol%outer_index(pi_j),1), acol%outer_index(pi_j+1)
+       DO II = MAX(acol%outer_index(pi_j), 1), acol%outer_index(pi_j + 1)
           a_buf(acol%inner_index(II)) = 0
        END DO
 
@@ -248,12 +249,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixIdentity(Identity)
 
     !! Purify
-    CALL TRS4(this, Identity, REAL(dim, KIND=NTREAL), PMat, &
-         & solver_parameters_in=params)
+    CALL TRS4(this, Identity, REAL(dim, KIND = NTREAL), PMat, &
+         & solver_parameters_in = params)
 
     !! Compute Eigenvectors of the Density Matrix
     CALL PivotedCholeskyDecomposition(PMat, PVec, dim, &
-         & solver_parameters_in=params)
+         & solver_parameters_in = params)
     CALL TransposeMatrix(PVec, PVecT)
     IF (PVecT%is_complex) THEN
        CALL ConjugateMatrix(PVecT)
@@ -261,7 +262,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Rotate to the divided subspace
     CALL SimilarityTransform(this, PVecT, PVec, VAV, &
-         & threshold_in=params%threshold)
+         & threshold_in = params%threshold)
 
     !! Extract
     CALL GetMatrixSlice(VAV, ReducedMat, 1, dim, 1, dim)

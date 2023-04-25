@@ -456,7 +456,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
              temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+             CALL AppendToTripletList(triplet_list, temporary_transpose)
           END IF
        END DO
     CASE(MM_SKEW_SYMMETRIC)
@@ -465,8 +465,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           IF (temporary%index_column .NE. temporary%index_row) THEN
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
-             temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+             temporary_transpose%point_value = -1.0 * temporary%point_value
+             CALL AppendToTripletList(triplet_list, temporary_transpose)
           END IF
        END DO
     END SELECT
@@ -493,7 +493,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
              temporary_transpose%point_value = temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+             CALL AppendToTripletList(triplet_list, temporary_transpose)
           END IF
        END DO
     CASE(MM_HERMITIAN)
@@ -503,7 +503,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
              temporary_transpose%point_value = CONJG(temporary%point_value)
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+             CALL AppendToTripletList(triplet_list, temporary_transpose)
           END IF
        END DO
     CASE(MM_SKEW_SYMMETRIC)
@@ -513,7 +513,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              temporary_transpose%index_row = temporary%index_column
              temporary_transpose%index_column = temporary%index_row
              temporary_transpose%point_value = -1.0*temporary%point_value
-             CALL AppendToTripletList(triplet_list,temporary_transpose)
+             CALL AppendToTripletList(triplet_list, temporary_transpose)
           END IF
        END DO
     END SELECT

@@ -1,29 +1,25 @@
   !! Temporary Variables
   INTEGER :: values_found
-  INTEGER :: total_counter, elements_per_inner
-  INTEGER :: outer_counter
-  INTEGER :: inner_counter
+  INTEGER :: elements_per_inner
+  INTEGER :: II, JJ, KK
 
   !! Fill a value buffer
   CALL ConstructEmptyMatrix(row_out, 1, this%columns)
   ALLOCATE(value_buffer(this%columns))
   values_found = 0
-  total_counter = 1
+  KK = 1
   row_out%outer_index(1) = 0
-  DO outer_counter = 1, this%columns
-     row_out%outer_index(outer_counter + 1) = &
-          & row_out%outer_index(outer_counter + 1) + &
-          & row_out%outer_index(outer_counter)
-     elements_per_inner = this%outer_index(outer_counter + 1) - &
-          & this%outer_index(outer_counter)
-     DO inner_counter = 1, elements_per_inner
-        IF (this%inner_index(total_counter) .EQ. row_number) THEN
+  DO II = 1, this%columns
+     row_out%outer_index(II + 1) = row_out%outer_index(II + 1) + &
+          & row_out%outer_index(II)
+     elements_per_inner = this%outer_index(II + 1) - this%outer_index(II)
+     DO JJ = 1, elements_per_inner
+        IF (this%inner_index(KK) .EQ. row_number) THEN
            values_found = values_found + 1
-           value_buffer(values_found) = this%values(total_counter)
-           row_out%outer_index(outer_counter + 1) = &
-                & row_out%outer_index(outer_counter + 1) + 1
+           value_buffer(values_found) = this%values(KK)
+           row_out%outer_index(II + 1) = row_out%outer_index(II + 1) + 1
         END IF
-        total_counter = total_counter + 1
+        KK = KK + 1
      END DO
   END DO
 

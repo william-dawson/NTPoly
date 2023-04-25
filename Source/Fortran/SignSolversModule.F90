@@ -132,7 +132,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ConjugateMatrix(UmatT)
        END IF
        CALL MatrixMultiply(UmatT, InMat, Hmat, &
-            & threshold_in=params%threshold)
+            & threshold_in = params%threshold)
        CALL DestructMatrix(UmatT)
     END IF
 
@@ -179,17 +179,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%do_load_balancing) THEN
        !! Permute Matrices
        CALL PermuteMatrix(Identity, Identity, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(InMat, OutMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     ELSE
        CALL CopyMatrix(InMat, OutMat)
     END IF
 
     !! Initialize
     CALL GershgorinBounds(InMat, e_min, e_max)
-    xk = ABS(e_min/e_max)
-    CALL ScaleMatrix(OutMat, 1.0_NTREAL/ABS(e_max))
+    xk = ABS(e_min / e_max)
+    CALL ScaleMatrix(OutMat, 1.0_NTREAL / ABS(e_max))
 
     !! Iterate.
     IF (params%be_verbose) THEN
@@ -200,12 +200,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = params%converge_diff + 1.0_NTREAL
     iterate: DO II = 1, params%max_iterations
        IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        !! Update Scaling Factors
-       alpha_k = MIN(SQRT(3.0_NTREAL/(1.0_NTREAL+xk+xk**2)), alpha)
-       xk = 0.5_NTREAL*alpha_k*xk*(3.0_NTREAL-(alpha_k**2)*xk**2)
+       alpha_k = MIN(SQRT(3.0_NTREAL / (1.0_NTREAL + xk + xk**2)), alpha)
+       xk = 0.5_NTREAL * alpha_k * xk * (3.0_NTREAL - (alpha_k**2) * xk**2)
 
        IF (needs_transpose) THEN
           CALL TransposeMatrix(OutMat, OutMatT)
@@ -213,19 +213,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              CALL ConjugateMatrix(OutMatT)
           END IF
           CALL MatrixMultiply(OutMatT, OutMat, Temp1, &
-               & alpha_in=-1.0_NTREAL*alpha_k**2, &
-               & threshold_in=params%threshold, memory_pool_in=pool)
+               & alpha_in = -1.0_NTREAL * alpha_k**2, &
+               & threshold_in = params%threshold, memory_pool_in = pool)
        ELSE
           CALL MatrixMultiply(OutMat, OutMat, Temp1, &
-               & alpha_in=-1.0_NTREAL*alpha_k**2, &
-               & threshold_in=params%threshold, memory_pool_in=pool)
+               & alpha_in = -1.0_NTREAL * alpha_k**2, &
+               & threshold_in = params%threshold, memory_pool_in = pool)
        END IF
-       CALL IncrementMatrix(Identity, Temp1, alpha_in=3.0_NTREAL)
+       CALL IncrementMatrix(Identity, Temp1, alpha_in = 3.0_NTREAL)
 
-       CALL MatrixMultiply(OutMat, Temp1, Temp2, alpha_in=0.5_NTREAL*alpha_k, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+       CALL MatrixMultiply(OutMat, Temp1, Temp2, &
+            & alpha_in = 0.5_NTREAL * alpha_k, &
+            & threshold_in = params%threshold, memory_pool_in = pool)
 
-       CALL IncrementMatrix(Temp2, OutMat, alpha_in=-1.0_NTREAL)
+       CALL IncrementMatrix(Temp2, OutMat, alpha_in = -1.0_NTREAL)
        norm_value = MatrixNorm(OutMat)
        CALL CopyMatrix(Temp2, OutMat)
 
@@ -235,14 +236,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO iterate
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II-1)
+       CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
        CALL PrintMatrixInformation(OutMat)
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutMat,OutMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     CALL DestructMatrix(Temp1)
@@ -257,7 +258,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(KIND=NTREAL), INTENT(IN) :: val
     REAL(KIND=NTREAL) :: outval
 
-    IF (val < 0.0_NTREAL) THEN
+    IF (val .LT. 0.0_NTREAL) THEN
        outval = -1.0_NTREAL
     ELSE
        outval = 1.0_NTREAL

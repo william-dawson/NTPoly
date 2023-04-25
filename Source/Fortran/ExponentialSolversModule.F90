@@ -71,7 +71,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Exponential Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Chebyshev")
+       CALL WriteElement(key = "Method", VALUE = "Chebyshev")
        CALL PrintParameters(params)
     END IF
 
@@ -81,16 +81,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL PowerBounds(InputMat, spectral_radius, psub_params)
     sigma_val = 1.0
     sigma_counter = 1
-    DO WHILE (spectral_radius/sigma_val .GT. 1.0)
+    DO WHILE (spectral_radius / sigma_val .GT. 1.0)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat, 1.0/sigma_val)
-    sub_params%threshold = sub_params%threshold/sigma_val
+    CALL ScaleMatrix(ScaledMat, 1.0 / sigma_val)
+    sub_params%threshold = sub_params%threshold / sigma_val
 
     IF (params%be_verbose) THEN
-       CALL WriteElement(key="Sigma", VALUE=sigma_val)
+       CALL WriteElement(key = "Sigma", VALUE = sigma_val)
     END IF
 
     !! Expand Chebyshev Series
@@ -117,12 +117,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Undo the scaling by squaring at the end.
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     DO counter = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat,OutputMat)
     END DO
 
@@ -132,7 +132,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
@@ -200,38 +200,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        sigma_counter = sigma_counter + 1
     END DO
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat,1.0/sigma_val)
+    CALL ScaleMatrix(ScaledMat, 1.0 / sigma_val)
     IF (params%be_verbose) THEN
-       CALL WriteElement(key="Sigma", VALUE=sigma_val)
-       CALL WriteElement(key="Scaling Steps", VALUE=sigma_counter)
+       CALL WriteElement(key = "Sigma", VALUE = sigma_val)
+       CALL WriteElement(key = "Scaling Steps", VALUE = sigma_counter)
     END IF
 
     !! Sub Solver Parameters
     CALL CopySolverParameters(params, sub_params)
-    sub_params%threshold = sub_params%threshold/sigma_val
+    sub_params%threshold = sub_params%threshold / sigma_val
 
     !! Power Matrices
     CALL MatrixMultiply(ScaledMat, ScaledMat, B1, &
-         & threshold_in=sub_params%threshold, memory_pool_in=pool)
+         & threshold_in = sub_params%threshold, memory_pool_in = pool)
     CALL MatrixMultiply(B1, B1, B2, &
-         & threshold_in=sub_params%threshold, memory_pool_in=pool)
+         & threshold_in = sub_params%threshold, memory_pool_in = pool)
     CALL MatrixMultiply(B2, B2, B3, &
-         & threshold_in=sub_params%threshold, memory_pool_in=pool)
+         & threshold_in = sub_params%threshold, memory_pool_in = pool)
 
     !! Polynomials - 1
     CALL CopyMatrix(IdentityMat, P1)
-    CALL ScaleMatrix(P1,17297280.0_NTREAL)
-    CALL IncrementMatrix(B1, P1, alpha_in=1995840.0_NTREAL)
-    CALL IncrementMatrix(B2, P1, alpha_in=25200.0_NTREAL)
-    CALL IncrementMatrix(B3, P1, alpha_in=56.0_NTREAL)
+    CALL ScaleMatrix(P1, 17297280.0_NTREAL)
+    CALL IncrementMatrix(B1, P1, alpha_in = 1995840.0_NTREAL)
+    CALL IncrementMatrix(B2, P1, alpha_in = 25200.0_NTREAL)
+    CALL IncrementMatrix(B3, P1, alpha_in = 56.0_NTREAL)
     !! Polynomials - 2
     CALL CopyMatrix(IdentityMat, TempMat)
-    CALL ScaleMatrix(TempMat,8648640.0_NTREAL)
-    CALL IncrementMatrix(B1, TempMat, alpha_in=277200.0_NTREAL)
-    CALL IncrementMatrix(B2, TempMat, alpha_in=1512.0_NTREAL)
+    CALL ScaleMatrix(TempMat, 8648640.0_NTREAL)
+    CALL IncrementMatrix(B1, TempMat, alpha_in = 277200.0_NTREAL)
+    CALL IncrementMatrix(B2, TempMat, alpha_in = 1512.0_NTREAL)
     CALL IncrementMatrix(B3, TempMat)
     CALL MatrixMultiply(ScaledMat, TempMat, P2, &
-         & threshold_in=sub_params%threshold, memory_pool_in=pool)
+         & threshold_in = sub_params%threshold, memory_pool_in = pool)
 
     !! Left and Right
     CALL CopyMatrix(P1, LeftMat)
@@ -244,7 +244,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Undo the scaling by squaring at the end.
     DO II = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat,OutputMat)
     END DO
 
@@ -317,13 +317,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Figure out how much to scale the matrix.
     sigma_val = 1.0
     sigma_counter = 1
-    DO WHILE (spectral_radius/sigma_val .GT. 3.0e-8)
+    DO WHILE (spectral_radius / sigma_val .GT. 3.0e-8)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
 
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat, 1.0/sigma_val)
+    CALL ScaleMatrix(ScaledMat, 1.0 / sigma_val)
 
     CALL ConstructEmptyMatrix(OutputMat, InputMat)
     CALL FillMatrixIdentity(OutputMat)
@@ -331,9 +331,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(ScaledMat, ScaledMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Expand Taylor Series
@@ -342,20 +342,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, 10
        taylor_denom = taylor_denom * II
        CALL MatrixMultiply(Ak, ScaledMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat, Ak)
        CALL IncrementMatrix(Ak, OutputMat)
     END DO
 
     DO II = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
-       CALL CopyMatrix(TempMat,OutputMat)
+            & threshold_in = params%threshold, memory_pool_in = pool)
+       CALL CopyMatrix(TempMat, OutputMat)
     END DO
 
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
@@ -442,7 +442,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Chebyshev")
+       CALL WriteElement(key = "Method", VALUE = "Chebyshev")
        CALL PrintParameters(params)
     END IF
 
@@ -466,11 +466,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteElement(key="Sigma", VALUE=sigma_val)
     END IF
     f_sub_params%threshold = &
-         & f_sub_params%threshold/REAL(2**(sigma_counter-1),NTREAL)
+         & f_sub_params%threshold / REAL(2**(sigma_counter - 1), NTREAL)
     CALL ComputeRoot(InputMat, ScaledMat, sigma_val, i_sub_params)
 
     !! Shift Scaled Matrix
-    CALL IncrementMatrix(IdentityMat, ScaledMat, alpha_in=-1.0_NTREAL)
+    CALL IncrementMatrix(IdentityMat, ScaledMat, alpha_in = -1.0_NTREAL)
 
     !! Expand Chebyshev Series
     CALL ConstructPolynomial(polynomial, 32)
@@ -510,7 +510,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FactorizedCompute(ScaledMat, OutputMat, polynomial, f_sub_params)
 
     !! Scale Back
-    CALL ScaleMatrix(OutputMat, REAL(2**(sigma_counter-1),NTREAL))
+    CALL ScaleMatrix(OutputMat, REAL(2**(sigma_counter - 1), NTREAL))
 
     !! Cleanup
     IF (params%be_verbose) THEN
@@ -561,7 +561,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Logarithm Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Taylor")
+       CALL WriteElement(key = "Method", VALUE = "Taylor")
        CALL PrintParameters(params)
     END IF
 
@@ -573,9 +573,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     sigma_val = 1.0
     sigma_counter = 1
     CALL CopyMatrix(InputMat, ScaledMat)
-    DO WHILE (spectral_radius/sigma_val .GT. 1.1e-7)
-       CALL SquareRoot(ScaledMat,TempMat, sub_params)
-       CALL CopyMatrix(TempMat,ScaledMat)
+    DO WHILE (spectral_radius / sigma_val .GT. 1.1e-7)
+       CALL SquareRoot(ScaledMat, TempMat, sub_params)
+       CALL CopyMatrix(TempMat, ScaledMat)
        CALL GershgorinBounds(ScaledMat, e_min, e_max)
        spectral_radius = MAX(ABS(e_min), ABS(e_max))
        sigma_val = sigma_val * 2
@@ -592,33 +592,33 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(ScaledMat, ScaledMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(Ak, Ak, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Expand taylor series.
-    CALL CopyMatrix(ScaledMat,OutputMat)
+    CALL CopyMatrix(ScaledMat, OutputMat)
     DO II = 2, 10
-       IF (MOD(II,2) .EQ. 0) THEN
+       IF (MOD(II, 2) .EQ. 0) THEN
           taylor_denom = -1 * II
        ELSE
           taylor_denom = II
        END IF
        CALL MatrixMultiply(Ak, ScaledMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat, Ak)
        CALL IncrementMatrix(Ak, OutputMat, &
-            & alpha_in=1.0/taylor_denom)
+            & alpha_in=1.0 / taylor_denom)
     END DO
 
     !! Undo scaling.
-    CALL ScaleMatrix(OutputMat, REAL(2**sigma_counter,NTREAL))
+    CALL ScaleMatrix(OutputMat, REAL(2**sigma_counter, NTREAL))
 
     !! Undo load params.
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
