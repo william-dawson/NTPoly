@@ -29,6 +29,7 @@ MODULE TripletListModule
   PUBLIC :: TripletList_r
   PUBLIC :: TripletList_c
   PUBLIC :: ConstructTripletList
+  PUBLIC :: CopyTripletList
   PUBLIC :: DestructTripletList
   PUBLIC :: ResizeTripletList
   PUBLIC :: AppendToTripletList
@@ -45,6 +46,10 @@ MODULE TripletListModule
      MODULE PROCEDURE ConstructTripletListSup_r
      MODULE PROCEDURE ConstructTripletListSup_c
   END INTERFACE ConstructTripletList
+  INTERFACE CopyTripletList
+     MODULE PROCEDURE CopyTripletList_r
+     MODULE PROCEDURE CopyTripletList_c
+  END INTERFACE CopyTripletList
   INTERFACE DestructTripletList
      MODULE PROCEDURE DestructTripletList_r
      MODULE PROCEDURE DestructTripletList_c
@@ -133,6 +138,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "triplet_includes/DestructTripletList.f90"
 
   END SUBROUTINE DestructTripletList_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopyTripletList_r(tripA, tripB)
+    !> The triplet list to copy.
+    TYPE(TripletList_r), INTENT(IN) :: tripA
+    !> tripB = tripA
+    TYPE(TripletList_r), INTENT(INOUT) :: tripB
+
+#include "triplet_includes/CopyTripletList.f90"
+  END SUBROUTINE CopyTripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  SUBROUTINE CopyTripletList_c(tripA, tripB)
+    !> The triplet list to copy.
+    TYPE(TripletList_c), INTENT(IN) :: tripA
+    !> tripB = tripA
+    TYPE(TripletList_c), INTENT(INOUT) :: tripB
+
+#include "triplet_includes/CopyTripletList.f90"
+  END SUBROUTINE CopyTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   PURE SUBROUTINE ResizeTripletList_r(this, size)

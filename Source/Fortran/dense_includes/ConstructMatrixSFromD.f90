@@ -1,37 +1,39 @@
   !! Local Variables
-  INTEGER :: inner_counter, outer_counter
-  INTEGER :: columns, rows
-
-  columns = dense_matrix%columns
-  rows = dense_matrix%rows
+  INTEGER :: II, JJ, KK, NNZ
+  REAL(NTREAL) :: threshold
 
   IF (PRESENT(threshold_in)) THEN
-     CALL ConstructTripletList(temporary_list)
-     DO outer_counter = 1, columns
-        temporary%index_column = outer_counter
-        DO inner_counter = 1, rows
-           temporary%point_value = &
-                & dense_matrix%DATA(inner_counter, outer_counter)
-           IF (ABS(temporary%point_value) .GT. threshold_in) THEN
-              temporary%index_row = inner_counter
-              CALL AppendToTripletList(temporary_list, temporary)
-           END IF
-        END DO
-     END DO
+     threshold = threshold_in
   ELSE
-     CALL ConstructTripletList(temporary_list, rows*columns)
-     DO outer_counter = 1, columns
-        temporary%index_column = outer_counter
-        DO inner_counter = 1, rows
-           temporary%point_value = &
-                & dense_matrix%DATA(inner_counter, outer_counter)
-           temporary%index_row = inner_counter
-           temporary_list%DATA(inner_counter+rows*(outer_counter-1)) = &
-                & temporary
-        END DO
-     END DO
+     threshold = 0.0_NTREAL
   END IF
 
-  CALL ConstructMatrixFromTripletList(sparse_matrix, temporary_list, &
-       & rows, columns)
-  CALL DestructTripletList(temporary_list)
+  CALL ConstructEmptyMatrix(sparse_matrix, dense_matrix%rows, &
+       & dense_matrix%columns)
+
+  !! Fill in the outer index information.
+  NNZ = 0
+  DO II = 1, dense_matrix%columns
+     DO JJ = 1, dense_matrix%rows
+        IF (ABS(dense_matrix%DATA(JJ, II)) .GT. threshold) THEN
+           NNZ = NNZ + 1
+        END IF
+     END DO
+     sparse_matrix%outer_index(II + 1) = NNZ
+  END DO
+
+  !! Allocate Storage
+  ALLOCATE(sparse_matrix%inner_index(NNZ))
+  ALLOCATE(sparse_matrix%values(NNZ))
+
+  !! Fill in the Values
+  KK = 1
+  DO II = 1, dense_matrix%columns
+     DO JJ = 1, dense_matrix%rows
+        IF (ABS(dense_matrix%DATA(JJ, II)) .GT. threshold) THEN
+           sparse_matrix%inner_index(KK) = JJ
+           sparse_matrix%values(KK) = dense_matrix%DATA(JJ, II)
+           KK = KK + 1
+        END IF
+     END DO
+  END DO

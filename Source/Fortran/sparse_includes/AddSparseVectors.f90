@@ -44,7 +44,7 @@
            counter_c = counter_c + 1
         END IF
         counter_b = counter_b + 1
-     ELSE !! implies working_index_b > working_index_b
+     ELSE !! implies working_index_b > working_index_a
         IF (ABS(working_value_a) .GT. threshold) THEN
            inner_index_c(counter_c) = working_index_a
            values_c(counter_c) = working_value_a

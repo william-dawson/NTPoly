@@ -10,7 +10,6 @@ MODULE EigenExaModule
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters, ConstructSolverParameters, &
        & CopySolverParameters
-  USE TimerModule, ONLY : StartTimer, StopTimer
   USE TripletModule, ONLY : Triplet_r, Triplet_c, SetTriplet
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & AppendToTripletList, GetTripletAt, ConstructTripletList, &

@@ -19,7 +19,7 @@
 
      !! Copy The Data Across New Process Grids. Unnecessary if we just split
      !! by slices.
-     CALL GetMatrixTripletList(this,full_list)
+     CALL GetMatrixTripletList(this, full_list)
      IF (.NOT. split_slice) THEN
         CALL MPI_COMM_SIZE(between_grid_comm, between_grid_size, ierr)
         CALL MPI_COMM_RANK(between_grid_comm, between_grid_rank, ierr)

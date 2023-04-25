@@ -13,7 +13,6 @@
   ALLOCATE(VD1(SIZE(VD,DIM=1)*SIZE(VD,DIM=2)))
   VD1 = PACK(VD, .TRUE.)
 
-  CALL StartTimer("EigenExaFilter")
   CALL ConstructTripletList(triplet_v)
   ind = 1
   DO JJ = col_start, col_end
@@ -27,11 +26,8 @@
      END DO
      ind = ind + exa%offset
   END DO
-  CALL StopTimer("EigenExaFilter")
 
-  CALL StartTimer("EigenFill")
   CALL FillMatrixFromTripletList(V, triplet_v)
-  CALL StopTimer("EigenFill")
 
   !! Cleanup
   CALL DestructTripletList(triplet_v)

@@ -1,4 +1,24 @@
-  CALL StartTimer("GEMM")
+  !! Communication Helpers
+  TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: row_helper
+  TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: column_helper
+  TYPE(ReduceHelper_t), DIMENSION(:,:), ALLOCATABLE :: slice_helper
+  !! For Iterating Over Local Blocks
+  INTEGER :: II, II2
+  INTEGER :: JJ, JJ2
+  INTEGER :: duplicate_start_column, duplicate_offset_column
+  INTEGER :: duplicate_start_row, duplicate_offset_row
+  REAL(NTREAL) :: working_threshold
+  !! Scheduling the A work
+  INTEGER, DIMENSION(:), ALLOCATABLE :: ATasks
+  INTEGER :: ATasks_completed
+  !! Scheduling the B work
+  INTEGER, DIMENSION(:), ALLOCATABLE :: BTasks
+  INTEGER :: BTasks_completed
+  !! Scheduling the AB work
+  INTEGER, DIMENSION(:,:), ALLOCATABLE :: ABTasks
+  INTEGER :: ABTasks_completed
+  !! Temporary AB matrix for scaling.
+  TYPE(Matrix_ps) :: matAB
 
   !! The threshold needs to be smaller if we are doing a sliced version
   !! because you might flush a value that would be kept in the summed version.
@@ -63,6 +83,7 @@
   ATasks_completed = 0
   BTasks_completed = 0
   ABTasks_completed = 0
+
   !$OMP PARALLEL
   !$OMP MASTER
   DO WHILE (ATasks_completed .LT. SIZE(ATasks) .OR. &
@@ -295,5 +316,3 @@
      END DO
   END DO
   DEALLOCATE(SliceContribution)
-
-  CALL StopTimer("GEMM")

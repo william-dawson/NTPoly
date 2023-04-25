@@ -7,6 +7,7 @@ MODULE ErrorModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructError
   PUBLIC :: SetGenericError
+  PUBLIC :: SetCustomError
   PUBLIC :: CheckMPIError
   PUBLIC :: CheckAllocError
   PUBLIC :: ErrorOccurred
