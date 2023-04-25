@@ -86,14 +86,14 @@ MODULE MatrixReduceModule
   END INTERFACE ReduceAndSumMatrix
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
-  SUBROUTINE ReduceAndComposeMatrixSizes_lsr(matrix, communicator, &
-       & gathered_matrix, helper)
+  SUBROUTINE ReduceAndComposeMatrixSizes_lsr(matrix, comm, gathered_matrix, &
+    & helper)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
@@ -104,14 +104,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndComposeMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
-  SUBROUTINE ReduceAndComposeMatrixSizes_lsc(matrix, communicator, &
-       & gathered_matrix, helper)
+  SUBROUTINE ReduceAndComposeMatrixSizes_lsc(matrix, comm, gathered_matrix, &
+    & helper)
     !! The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !! The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
-    !! The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
     !! The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
@@ -121,74 +121,66 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
   END SUBROUTINE ReduceAndComposeMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Second function to call, will gather the data and align it one matrix
-  SUBROUTINE ReduceAndComposeMatrixData_lsr(matrix, communicator, &
-       & gathered_matrix, helper)
+  !> Second function to call, will gather the data and align one matrix
+  !> next to another.
+  SUBROUTINE ReduceAndComposeMatrixData_lsr(matrix, comm, gathered_matrix, &
+    & helper)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
 #ifdef NOIALLGATHER
 #include "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
-            & II-1, 4, communicator, helper%data_send_request_list(II), &
-            & grid_error)
-       istart = helper%displacement(II)+1
+            & II - 1, 4, comm, helper%data_send_request_list(II), ierr)
+       istart = helper%displacement(II) + 1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, MPINTREAL, &
-            & II-1, 4, communicator, &
-            & helper%data_recv_request_list(II), grid_error)
+            & II - 1, 4, comm, helper%data_recv_request_list(II), ierr)
     END DO
 #else
 #include "comm_includes/ReduceAndComposeMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
-         & helper%displacement, MPINTREAL, communicator, helper%data_request, &
-         & grid_error)
+         & helper%displacement, MPINTREAL, comm, helper%data_request, ierr)
 #endif
   END SUBROUTINE ReduceAndComposeMatrixData_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Second function to call, will gather the data and align it one matrix
+  !> Second function to call, will gather the data and align one matrix
   !> next to another.
-  !> @param[in] matrix to send.
-  !> @param[inout] communicator to send along.
-  !> @param[inout] gathered_matrix the matrix we are gathering.
-  !> @param[inout] helper a helper associated with this gather.
-  SUBROUTINE ReduceAndComposeMatrixData_lsc(matrix, communicator, &
-       & gathered_matrix, helper)
+  SUBROUTINE ReduceAndComposeMatrixData_lsc(matrix, comm, gathered_matrix, &
+    & helper)
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
 #ifdef NOIALLGATHER
 #include "comm_includes/ReduceAndComposeMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
-            & II-1, 4, communicator, helper%data_send_request_list(II), &
-            & grid_error)
-       istart = helper%displacement(II)+1
+            & II - 1, 4, comm, helper%data_send_request_list(II), ierr)
+       istart = helper%displacement(II) + 1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, &
-            & MPINTCOMPLEX, II-1, 4, communicator, &
-            & helper%data_recv_request_list(II), grid_error)
+            & MPINTCOMPLEX, II - 1, 4, comm, &
+            & helper%data_recv_request_list(II), ierr)
     END DO
 #else
 #include "comm_includes/ReduceAndComposeMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
-         & helper%displacement, MPINTCOMPLEX, communicator, &
-         & helper%data_request, grid_error)
+         & helper%displacement, MPINTCOMPLEX, comm, helper%data_request, ierr)
 #endif
   END SUBROUTINE ReduceAndComposeMatrixData_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -262,13 +254,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Reduce and sum the matrices in one step. If you use this method, you
   !> lose the opportunity for overlapping communication.
-  SUBROUTINE ReduceAndComposeMatrix_lsr(matrix, gathered_matrix, comm)
+  SUBROUTINE ReduceAndComposeMatrix_lsr(matrix, comm, gathered_matrix)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)    :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)          :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsr), INTENT(INOUT) :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: comm
     !! Local Variables
     TYPE(ReduceHelper_t) :: helper
 
@@ -278,13 +270,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Reduce and sum the matrices in one step. If you use this method, you
   !> lose the opportunity for overlapping communication.
-  SUBROUTINE ReduceAndComposeMatrix_lsc(matrix, gathered_matrix, comm)
+  SUBROUTINE ReduceAndComposeMatrix_lsc(matrix, comm, gathered_matrix)
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)    :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)          :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: comm
     !! Local Variables
     TYPE(ReduceHelper_t) :: helper
 
@@ -293,14 +285,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndComposeMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
-  SUBROUTINE ReduceAndSumMatrixSizes_lsr(matrix, communicator,  &
-       & gathered_matrix, helper)
+  SUBROUTINE ReduceAndSumMatrixSizes_lsr(matrix, comm, gathered_matrix, helper)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
     !> The  helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
@@ -311,14 +302,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndSumMatrixSizes_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The first routine to call, gathers the sizes of the data to be sent.
-  SUBROUTINE ReduceAndSumMatrixSizes_lsc(matrix, communicator,  &
-       & gathered_matrix, helper)
+  SUBROUTINE ReduceAndSumMatrixSizes_lsc(matrix, comm, gathered_matrix, helper)
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
@@ -329,68 +319,61 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ReduceAndSumMatrixSizes_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine to call for gathering and summing up the data.
-  SUBROUTINE ReduceAndSumMatrixData_lsr(matrix, gathered_matrix, communicator, &
-       & helper)
+  SUBROUTINE ReduceAndSumMatrixData_lsr(matrix, comm, gathered_matrix, helper)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
 #include "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTREAL, &
-            & II-1, 4, communicator, helper%data_send_request_list(II), &
-            & grid_error)
-       istart = helper%displacement(II)+1
+            & II - 1, 4, comm, helper%data_send_request_list(II), ierr)
+       istart = helper%displacement(II) + 1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, MPINTREAL, &
-            & II-1, 4, communicator, &
-            & helper%data_recv_request_list(II), grid_error)
+            & II - 1, 4, comm, helper%data_recv_request_list(II), ierr)
     END DO
 #else
 #include "comm_includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTREAL,&
          & gathered_matrix%values, helper%values_per_process, &
-         & helper%displacement, MPINTREAL, communicator, helper%data_request, &
-         & grid_error)
+         & helper%displacement, MPINTREAL, comm, helper%data_request, ierr)
 #endif
   END SUBROUTINE ReduceAndSumMatrixData_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Second routine to call for gathering and summing up the data.
-  SUBROUTINE ReduceAndSumMatrixData_lsc(matrix, gathered_matrix, communicator, &
-       & helper)
+  SUBROUTINE ReduceAndSumMatrixData_lsc(matrix, comm, gathered_matrix, helper)
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)    :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: communicator
     !> The helper associated with this gather.
     TYPE(ReduceHelper_t), INTENT(INOUT) :: helper
 #ifdef NOIALLGATHER
 #include "comm_includes/ReduceAndSumMatrixData_sendrecv.f90"
     DO II = 1, helper%comm_size
        CALL MPI_ISend(matrix%values, SIZE(matrix%values), MPINTCOMPLEX, &
-            & II-1, 4, communicator, helper%data_send_request_list(II), &
-            & grid_error)
-       istart = helper%displacement(II)+1
+            & II - 1, 4, comm, helper%data_send_request_list(II), ierr)
+       istart = helper%displacement(II) + 1
        isize = helper%values_per_process(II)
        iend = istart + isize - 1
        CALL MPI_Irecv(gathered_matrix%values(istart:iend), isize, &
-            & MPINTCOMPLEX, II-1, 4, communicator, &
-            & helper%data_recv_request_list(II), grid_error)
+            & MPINTCOMPLEX, II - 1, 4, comm, &
+            & helper%data_recv_request_list(II), ierr)
     END DO
 #else
 #include "comm_includes/ReduceAndSumMatrixData.f90"
     CALL MPI_IAllGatherv(matrix%values, SIZE(matrix%values), MPINTCOMPLEX,&
          & gathered_matrix%values, helper%values_per_process, &
-         & helper%displacement, MPINTCOMPLEX, communicator, &
-         & helper%data_request, grid_error)
+         & helper%displacement, MPINTCOMPLEX, comm, helper%data_request, ierr)
 #endif
   END SUBROUTINE ReduceAndSumMatrixData_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -470,15 +453,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Reduce and sum the matrices in one step. If you use this method, you
   !> lose the opportunity for overlapping communication.
-  SUBROUTINE ReduceAndSumMatrix_lsr(matrix, gathered_matrix, threshold, comm)
+  SUBROUTINE ReduceAndSumMatrix_lsr(matrix, comm, gathered_matrix, threshold)
     !> The matrix to send.
     TYPE(Matrix_lsr), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The gathered_matrix the matrix being gathered.
     TYPE(Matrix_lsr), INTENT(INOUT)     :: gathered_matrix
     !> The threshold the threshold for flushing values.
     REAL(NTREAL), INTENT(IN)            :: threshold
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: comm
     !! Local Data
     TYPE(ReduceHelper_t) :: helper
 
@@ -487,15 +470,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Reduce and sum the matrices in one step. If you use this method, you
   !> lose the opportunity for overlapping communication.
-  SUBROUTINE ReduceAndSumMatrix_lsc(matrix, gathered_matrix, threshold, comm)
+  SUBROUTINE ReduceAndSumMatrix_lsc(matrix, comm, gathered_matrix, threshold)
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN)        :: matrix
+    !> The communicator to send along.
+    INTEGER, INTENT(INOUT)              :: comm
     !> The threshold the threshold for flushing values.
     TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
     !> The threshold the threshold for flushing values.
     REAL(NTREAL), INTENT(IN)            :: threshold
-    !> The communicator to send along.
-    INTEGER, INTENT(INOUT)              :: comm
     !! Local Data
     TYPE(ReduceHelper_t) :: helper
 

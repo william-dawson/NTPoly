@@ -1,8 +1,8 @@
   !! Local Data
-  INTEGER :: grid_error
   INTEGER :: sum_outer_indices
+  INTEGER :: ierr
 
-  CALL MPI_Comm_size(communicator, helper%comm_size, grid_error)
+  CALL MPI_Comm_size(comm, helper%comm_size, ierr)
 
   !! Build Storage
   CALL DestructMatrix(gathered_matrix)
@@ -12,4 +12,4 @@
   !! Gather Outer Indices
   CALL MPI_IAllGather(matrix%outer_index, matrix%columns+1, &
        & MPINTINTEGER, gathered_matrix%outer_index, matrix%columns + 1, &
-       & MPINTINTEGER, communicator, helper%outer_request, grid_error)
+       & MPINTINTEGER, comm, helper%outer_request, ierr)

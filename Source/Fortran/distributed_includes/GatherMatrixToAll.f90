@@ -2,13 +2,13 @@
 
   !! Merge Columns
   CALL TransposeMatrix(local, localT)
-  CALL ReduceAndComposeMatrix(localT, merged_columns, &
-       & this%process_grid%column_comm)
+  CALL ReduceAndComposeMatrix(localT, this%process_grid%column_comm, &
+       & merged_columns)
 
   !! Merge Rows
   CALL TransposeMatrix(merged_columns, merged_columnsT)
-  CALL ReduceAndComposeMatrix(merged_columnsT, gathered, &
-       & this%process_grid%row_comm)
+  CALL ReduceAndComposeMatrix(merged_columnsT, this%process_grid%row_comm, &
+       & gathered)
 
   !! Remove the excess rows and columns that come from the logical size.
   CALL ConstructEmptyMatrix(local_mat, this%actual_matrix_dimension, &

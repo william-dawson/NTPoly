@@ -37,8 +37,9 @@
      !! And reduce over the Z dimension. 
      IF (.NOT. preduplicated .AND. &
           & .NOT. this%process_grid%num_process_slices .EQ. 1) THEN
-        CALL ReduceAndSumMatrix(local_matrix, gathered_matrix, threshold, &
-             & this%process_grid%between_slice_comm)
+        CALL ReduceAndSumMatrix(local_matrix, &
+             & this%process_grid%between_slice_comm, &
+             & gathered_matrix, threshold)
         CALL SplitMatrixToLocalBlocks(this, gathered_matrix)
      ELSE
         CALL SplitMatrixToLocalBlocks(this, local_matrix)

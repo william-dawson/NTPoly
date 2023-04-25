@@ -1,9 +1,8 @@
   !! Local Data
-  INTEGER :: grid_error
-  INTEGER :: II
+  INTEGER :: II, idx
   INTEGER :: sum_total_values
   INTEGER :: istart, isize, iend
-  INTEGER :: idx
+  INTEGER :: ierr
 
   !! Send Receive Buffers
   ALLOCATE(helper%inner_send_request_list(helper%comm_size))
@@ -35,12 +34,12 @@
   DO II = 1, helper%comm_size
      !! Send/Recv inner index
      CALL MPI_ISend(matrix%inner_index, SIZE(matrix%inner_index), &
-          & MPINTINTEGER, II - 1, 2, communicator, &
-          & helper%inner_send_request_list(II), grid_error)
+          & MPINTINTEGER, II - 1, 2, comm, &
+          & helper%inner_send_request_list(II), ierr)
      istart = helper%displacement(II) + 1
      isize = helper%values_per_process(II)
      iend = istart + isize - 1
      CALL MPI_Irecv(gathered_matrix%inner_index(istart:iend), isize, &
-          & MPINTINTEGER, II - 1, 2, communicator, &
-          & helper%inner_recv_request_list(II), grid_error)
+          & MPINTINTEGER, II - 1, 2, comm, &
+          & helper%inner_recv_request_list(II), ierr)
   END DO
