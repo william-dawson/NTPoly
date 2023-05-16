@@ -450,7 +450,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
-       CALL WriteElement(key = "Method", VALUE = "WOM_GC")
+       CALL WriteElement(key = "Method", VALUE = "WOM_C")
        CALL WriteElement(key = "Inverse Temperature", VALUE = inv_temp)
        CALL WriteElement(key = "Target Trace", VALUE = trace)
        CALL PrintParameters(params)
@@ -546,7 +546,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & (REAL(W%actual_matrix_dimension, KIND = NTREAL) ** 2)
 
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "GC Steps", VALUE = II)
+          CALL WriteListElement(key = "C Steps", VALUE = II)
           CALL EnterSubLog
           CALL WriteElement("Beta", VALUE = B_I)
           CALL WriteElement("Sparsity", VALUE = sparsity)
