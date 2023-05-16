@@ -26,6 +26,7 @@ public:
                               double &chemical_potential_out,
                               const SolverParameters &solver_parameters);
   //! Compute the density matrix using wave operator minimization.
+  //! Fixed chemical potential version.
   //!\param Hamiltonian the matrix to compute the corresponding density from.
   //!\param InverseSquareRoot of the overlap matrix.
   //!\param Density the density matrix computed by this routine.
@@ -38,6 +39,20 @@ public:
                      Matrix_ps &Density, double chemical_potential,
                      double inv_temp, double &energy_value_out,
                      const SolverParameters &solver_parameters);
+  //! Compute the density matrix using wave operator minimization.
+  //! Fixed number of electrons version.
+  //!\param Hamiltonian the matrix to compute the corresponding density from.
+  //!\param InverseSquareRoot of the overlap matrix.
+  //!\param Density the density matrix computed by this routine.
+  //!\param trace the target trace of the matrix.
+  //!\param inv_temp the inverse temperature.
+  //!\param energy_value_out the energy of the system.
+  //!\param solver_parameters parameters for the solver
+  static void WOM_C(const Matrix_ps &Hamiltonian,
+                    const Matrix_ps &InverseSquareRoot,
+                    Matrix_ps &Density, double trace,
+                    double inv_temp, double &energy_value_out,
+                    const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

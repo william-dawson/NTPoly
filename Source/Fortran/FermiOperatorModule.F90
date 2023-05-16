@@ -7,7 +7,7 @@ MODULE FermiOperatorModule
   USE LoggingModule, ONLY : WriteElement, WriteHeader, &
        & EnterSubLog, ExitSubLog, WriteListElement
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, SimilarityTransform, &
-       & IncrementMatrix, MatrixNorm, ScaleMatrix, DotMatrix
+       & IncrementMatrix, MatrixNorm, ScaleMatrix, DotMatrix, MatrixTrace
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & FillMatrixFromTripletList, GetMatrixTripletList, &
        & TransposeMatrix, ConjugateMatrix, DestructMatrix, &
@@ -24,6 +24,7 @@ MODULE FermiOperatorModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ComputeDenseFOE
   PUBLIC :: WOM_GC
+  PUBLIC :: WOM_C
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix using a dense routine.
   SUBROUTINE ComputeDenseFOE(H, ISQ, trace, K, inv_temp_in, &
@@ -411,6 +412,192 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSolverParameters(params)
   END SUBROUTINE WOM_GC
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the density matrix according to the wave operator minization
+  !! method at fixed number of electrons.
+  SUBROUTINE WOM_C(H, ISQ, K, trace, inv_temp, &
+       & energy_value_out, solver_parameters_in)
+    !> The matrix to compute the corresponding density from.
+    TYPE(Matrix_ps), INTENT(IN) :: H
+    !> The inverse square root of the overlap matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: ISQ
+    !> The density matrix computed by this routine.
+    TYPE(Matrix_ps), INTENT(INOUT) :: K
+    !> The inverse temperature for smearing in a.u.
+    REAL(NTREAL), INTENT(IN) :: inv_temp
+    !> The target trace.
+    REAL(NTREAL), INTENT(IN) :: trace
+    !> The energy of the system (optional).
+    REAL(NTREAL), INTENT(OUT), OPTIONAL :: energy_value_out
+    !> Parameters for the solver (optional).
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! Handling Optional Parameters
+    TYPE(SolverParameters_t) :: params
+    !! Local Variables
+    TYPE(Matrix_ps) :: ISQT, WH, IMat, RK1, RK2, K0, K1
+    TYPE(Matrix_ps) :: Temp, W, A, X, KOrth
+    TYPE(MatrixMemoryPool_p) :: pool
+    INTEGER :: II
+    REAL(NTREAL) :: step, B_I, err, sparsity
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       CALL CopySolverParameters(solver_parameters_in, params)
+    ELSE
+       CALL ConstructSolverParameters(params)
+    END IF
+
+    !! Print out details
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Density Matrix Solver")
+       CALL EnterSubLog
+       CALL WriteElement(key = "Method", VALUE = "WOM_GC")
+       CALL WriteElement(key = "Inverse Temperature", VALUE = inv_temp)
+       CALL WriteElement(key = "Target Trace", VALUE = trace)
+       CALL PrintParameters(params)
+    END IF
+
+    !! Construct All The Necessary Matrices
+    CALL ConstructEmptyMatrix(IMat, H)
+    CALL FillMatrixIdentity(IMat)
+
+    !! Compute the working hamiltonian.
+    CALL TransposeMatrix(ISQ, ISQT)
+    CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
+         & threshold_in = params%threshold)
+
+    !! Load Balancing Step
+    IF (params%do_load_balancing) THEN
+       CALL PermuteMatrix(WH, WH, &
+            & params%BalancePermutation, memorypool_in = pool)
+       CALL PermuteMatrix(IMat, IMat, &
+            & params%BalancePermutation, memorypool_in = pool)
+    END IF
+
+    !! Construct the "A" Matrix 
+    CALL CopyMatrix(WH, A)
+
+    !! Construct the Initial Guess
+    CALL CopyMatrix(IMat, W)
+    CALL ScaleMatrix(W, SQRT(trace / WH%actual_matrix_dimension))
+
+    !! Iterate
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Iterations")
+       CALL EnterSubLog
+    END IF
+
+    II = 0
+    B_I = 0.0_NTREAL
+    step = 1.0_NTREAL
+    DO WHILE(B_I .LT. inv_temp)
+       !! First order step
+       step = min(step, inv_temp - B_I)
+       CALL ComputeX(W, IMat, pool, params%threshold, X)
+       CALL ComputeCStep(X, A, W, IMat, pool, params%threshold, K0)
+       II = II + 1
+       CALL CopyMatrix(K0, RK1)
+       CALL ScaleMatrix(RK1, step)
+       CALL IncrementMatrix(W, RK1, threshold_in = params%threshold)
+
+       !! Second Order Step
+       CALL ComputeX(RK1, IMat, pool, params%threshold, X)
+       CALL ComputeCStep(X, A, RK1, IMat, pool, params%threshold, K1)
+       II = II + 1
+       CALL CopyMatrix(W, RK2)
+       CALL IncrementMatrix(K0, RK2, alpha_in = step*0.5_NTREAL, &
+            & threshold_in = params%threshold)
+       CALL IncrementMatrix(K1, RK2, alpha_in = step*0.5_NTREAL, &
+            & threshold_in = params%threshold)
+
+       !! Check the Error
+       CALL CopyMatrix(RK1, Temp)
+       CALL IncrementMatrix(RK2, Temp, alpha_in = -1.0_NTREAL, &
+            & threshold_in = params%threshold)
+       err = MatrixNorm(Temp)
+
+       !! Correct Step Size as Needed
+       DO WHILE (err .GT. 1.1 * params%step_thresh)
+          step = step * (params%step_thresh / err)**(0.5)
+          !! Update First Order
+          CALL CopyMatrix(K0, RK1)
+          CALL ScaleMatrix(RK1, step)
+          CALL IncrementMatrix(W, RK1, threshold_in = params%threshold)
+          !! Update Second Order
+          CALL ComputeX(RK1, IMat, pool, params%threshold, X)
+          CALL ComputeCStep(X, A, RK1, IMat, pool, params%threshold, K1)
+          II = II + 1
+          CALL CopyMatrix(W, RK2)
+          CALL IncrementMatrix(K0, RK2, alpha_in = step*0.5_NTREAL, &
+               & threshold_in = params%threshold)
+          CALL IncrementMatrix(K1, RK2, alpha_in = step*0.5_NTREAL, &
+               & threshold_in = params%threshold)
+          !! New Error
+          CALL CopyMatrix(RK1, Temp)
+          CALL IncrementMatrix(RK2, Temp, alpha_in = -1.0_NTREAL, &
+               & threshold_in = params%threshold)
+          err = MatrixNorm(Temp)
+       END DO
+
+       !! Update
+       CALL CopyMatrix(RK2, W)
+       B_I = B_I + step
+       step = step * (params%step_thresh / err) ** (0.5)
+       sparsity = REAL(GetMatrixSize(W), KIND = NTREAL) / &
+            & (REAL(W%actual_matrix_dimension, KIND = NTREAL) ** 2)
+
+       IF (params%be_verbose) THEN
+          CALL WriteListElement(key = "GC Steps", VALUE = II)
+          CALL EnterSubLog
+          CALL WriteElement("Beta", VALUE = B_I)
+          CALL WriteElement("Sparsity", VALUE = sparsity)
+          CALL ExitSubLog
+       END IF
+    END DO
+
+    !! Form the density
+    CALL MatrixMultiply(W, W, KOrth, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+
+    IF (params%be_verbose) THEN
+       CALL ExitSubLog
+       CALL WriteElement(key = "Total_Iterations", VALUE = II)
+       CALL PrintMatrixInformation(W)
+    END IF
+
+    !! Compute the energy
+    CALL DotMatrix(WH, KOrth, energy_value_out)
+
+     !! Undo Load Balancing Step
+    IF (params%do_load_balancing) THEN
+       CALL UndoPermuteMatrix(KOrth, KOrth, &
+            & params%BalancePermutation, memorypool_in = pool)
+    END IF
+
+    !! Compute the density matrix in the non-orthogonalized basis
+    CALL SimilarityTransform(KOrth, ISQT, ISQ, K, pool, &
+         & threshold_in = params%threshold)
+
+    !! Cleanup
+    IF (params%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+    CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(params)
+    CALL DestructMatrix(ISQT)
+    CALL DestructMatrix(WH)
+    CALL DestructMatrix(IMat)
+    CALL DestructMatrix(RK1)
+    CALL DestructMatrix(RK2)
+    CALL DestructMatrix(K0)
+    CALL DestructMatrix(K1)
+    CALL DestructMatrix(Temp)
+    CALL DestructMatrix(W)
+    CALL DestructMatrix(A)
+    CALL DestructMatrix(X)
+    CALL DestructMatrix(KOrth)
+    CALL DestructSolverParameters(params)
+  END SUBROUTINE WOM_C
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the "X" matrix X = W [1 - W^2]
   !> Take one step for the WOM_GC algorithm. 
   SUBROUTINE ComputeX(W, I, pool, threshold, Out)
@@ -422,10 +609,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !> The threshold for small values.
     REAL(NTREAL), INTENT(IN) :: threshold
-    !> The identity matrix.
+    !> The result matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Out
     !! Local matrices.
-    TYPE(Matrix_ps) :: W2, Temp, Temp2
+    TYPE(Matrix_ps) :: W2, Temp
 
     !! Build
     CALL MatrixMultiply(W, W, W2, &
@@ -451,11 +638,57 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !> The threshold for small values.
     REAL(NTREAL), INTENT(IN) :: threshold
-    !> The identity matrix.
+    !> The result matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Out
 
     CALL MatrixMultiply(X, A, Out, alpha_in = -0.5_NTREAL, &
          & threshold_in = threshold, memory_pool_in = pool)
   END SUBROUTINE ComputeGCStep
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Take one step for the WOM_C algorithm. 
+  SUBROUTINE ComputeCStep(X, A, W, I, pool, threshold, Out)
+    !> The X matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: X
+    !> H
+    TYPE(Matrix_ps), INTENT(IN) :: A
+    !> The wave operator
+    TYPE(Matrix_ps), INTENT(IN) :: W
+    !> The identity matrix
+    TYPE(Matrix_ps), INTENT(IN) :: I
+    !> The memory pool.
+    TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
+    !> The threshold for small values.
+    REAL(NTREAL), INTENT(IN) :: threshold
+    !> The identity matrix.
+    TYPE(Matrix_ps), INTENT(INOUT) :: Out
+    !! Local matrices.
+    TYPE(Matrix_ps) :: Xt, XtW, Temp
+    REAL(NTREAL) :: num, denom
+
+    !! Form X^T W
+    CALL TransposeMatrix(X, Xt)
+    CALL ConjugateMatrix(Xt)
+    CALL MatrixMultiply(Xt, W, XtW, &
+         & threshold_in = threshold, memory_pool_in = pool)
+    
+    !! Scaling Factor
+    CALL MatrixTrace(XtW, denom)
+    CALL DotMatrix(A, XtW, num)
+
+    !! Form the inner part
+    CALL CopyMatrix(I, Temp)
+    CALL ScaleMatrix(Temp, -1.0_NTREAL * num / denom)
+    CALL IncrementMatrix(A, Temp)
+
+    !! Put it together
+    CALL MatrixMultiply(X, Temp, Out, alpha_in = -0.5_NTREAL, &
+         & threshold_in = threshold, memory_pool_in = pool)
+
+    !! Cleanup
+    CALL DestructMatrix(Xt)
+    CALL DestructMatrix(XtW)
+    CALL DestructMatrix(Temp)
+
+  END SUBROUTINE ComputeCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE FermiOperatorModule

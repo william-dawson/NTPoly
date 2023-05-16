@@ -94,7 +94,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiply two matrices together, and add to the third.
   !> C := alpha*matA*matB+ beta*matC
-  SUBROUTINE MatrixMultiply_ps(matA, matB ,matC, alpha_in, beta_in, &
+  SUBROUTINE MatrixMultiply_ps(matA, matB, matC, alpha_in, beta_in, &
        & threshold_in, memory_pool_in)
     !> Matrix A.
     TYPE(Matrix_ps), INTENT(IN)        :: matA
