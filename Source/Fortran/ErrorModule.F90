@@ -20,7 +20,7 @@ MODULE ErrorModule
      !> Flag for whether or not an error has occurred.
      LOGICAL :: error_set
      !> Detailed description of the error.
-     CHARACTER(len=1000) :: error_description
+     CHARACTER(LEN = 1000) :: error_description
      !> Store a failed MPI call error.
      INTEGER :: mpi_error
      !> Flag for whether mpi error occurred.
@@ -50,7 +50,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.
-    CHARACTER(len=*), INTENT(in)  :: error_description
+    CHARACTER(LEN = *), INTENT(in)  :: error_description
     !> If true, the cleanup error handler is called.
     LOGICAL, INTENT(in), OPTIONAL :: immediate_cleanup_in
     !! Local Data
@@ -73,7 +73,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & immediate_cleanup_in)
     TYPE(Error_t), INTENT(INOUT)  :: this
     INTEGER, INTENT(IN)           :: error_code
-    CHARACTER(len=*), INTENT(IN)  :: error_description
+    CHARACTER(LEN = *), INTENT(IN)  :: error_description
     LOGICAL, INTENT(IN), OPTIONAL :: immediate_cleanup_in
     !! Local Data
     LOGICAL :: immediate_cleanup
@@ -97,7 +97,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.
-    CHARACTER(len=*), INTENT(in)  :: error_description
+    CHARACTER(LEN = *), INTENT(in)  :: error_description
     !> The error variable produced by mpi.
     INTEGER, INTENT(in)           :: mpi_error
     !> If true, the cleanup error handler is called.
@@ -126,7 +126,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> This the error variable to be set.
     TYPE(Error_t), INTENT(inout)  :: this
     !> Some string describing the details of the error.
-    CHARACTER(len=*), INTENT(in)  :: error_description
+    CHARACTER(LEN = *), INTENT(in)  :: error_description
     !> The error variable produced by alloc.
     INTEGER, INTENT(in)           :: alloc_error
     !> If true, the cleanup error handler is called.
@@ -163,7 +163,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The error to print out.
     TYPE(Error_t), INTENT(in) :: this
     !! Local Data
-    CHARACTER(len=80) :: error_string
+    CHARACTER(LEN = 80) :: error_string
     INTEGER :: error_string_len
     INTEGER :: error_string_error
 

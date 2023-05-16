@@ -4,11 +4,11 @@
   !! Compute The Local Contribution
   trace_value = 0
   CALL MatrixToTripletList(LMAT, TLIST)
-  DO counter = 1, TLIST%CurrentSize
-     IF (this%start_row + TLIST%DATA(counter)%index_row .EQ. &
-          & this%start_column + TLIST%DATA(counter)%index_column) THEN
+  DO II = 1, TLIST%CurrentSize
+     IF (this%start_row + TLIST%DATA(II)%index_row .EQ. &
+          & this%start_column + TLIST%DATA(II)%index_column) THEN
         trace_value = trace_value + &
-             & REAL(TLIST%DATA(counter)%point_value, NTREAL)
+             & REAL(TLIST%DATA(II)%point_value, NTREAL)
      END IF
   END DO
 

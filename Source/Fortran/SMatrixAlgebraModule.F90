@@ -113,9 +113,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(IN)  :: matA
     !> Matrix B.
     TYPE(Matrix_lsr), INTENT(INOUT) :: matB
-    !> Multiplier (default=1.0).
+    !> Multiplier (default = 1.0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
-    !> For flushing values to zero (default=0).
+    !> For flushing values to zero (default = 0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Variables
     TYPE(Matrix_lsr) :: matC
@@ -130,9 +130,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(IN)  :: matA
     !> Matrix B.
     TYPE(Matrix_lsc), INTENT(INOUT) :: matB
-    !> Multiplier (default=1.0).
+    !> Multiplier (default = 1.0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: alpha_in
-    !> For flushing values to zero (default=0).
+    !> For flushing values to zero (default = 0).
     REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Local Variables
     TYPE(Matrix_lsc) :: matC
@@ -181,7 +181,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_lsr) :: matC
 
-    CALL PairwiseMultiplyMatrix(matA,matB,matC)
+    CALL PairwiseMultiplyMatrix(matA, matB, matC)
 
     CALL MatrixGrandSum(matC, product)
     CALL DestructMatrix(matC)
@@ -462,7 +462,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Memory pool to multiply into.
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: memorypool
     !! Temp Variables
-    REAL(NTREAL) :: temp_value_a, temp_value_b, temp_value_c
+    REAL(NTREAL) :: val_a, val_b, val_c
 
 #include "sparse_includes/MultiplyBlock.f90"
   END SUBROUTINE MultiplyBlock_lsr
@@ -476,7 +476,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Memory pool to multiply into.
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: memorypool
     !! Temp Variables
-    COMPLEX(NTCOMPLEX) :: temp_value_a, temp_value_b, temp_value_c
+    COMPLEX(NTCOMPLEX) :: val_a, val_b, val_c
 
 #include "sparse_includes/MultiplyBlock.f90"
   END SUBROUTINE MultiplyBlock_lsc

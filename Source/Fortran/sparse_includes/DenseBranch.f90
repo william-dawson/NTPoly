@@ -8,7 +8,7 @@
 
   !! Convert Back
   CALL ConstructMatrixSFromD(DenseC, matC, threshold)
-  CALL ScaleMatrix(matC,alpha)
+  CALL ScaleMatrix(matC, alpha)
 
   !! Cleanup
   CALL DestructMatrix(DenseA)

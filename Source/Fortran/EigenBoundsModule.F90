@@ -33,8 +33,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> An uppder bound on the eigenspectrum.
     REAL(NTREAL), INTENT(OUT) :: max_value
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list_r
-    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(TripletList_r) :: tlist_r
+    TYPE(TripletList_c) :: tlist_c
     !! Local Data
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_min
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: per_column_max
@@ -44,13 +44,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     IF (this%is_complex) THEN
-#define triplet_list triplet_list_c
+#define tlist tlist_c
 #include "solver_includes/GershgorinBounds.f90"
-#undef triplet_list
+#undef tlist
     ELSE
-#define triplet_list triplet_list_r
+#define tlist tlist_r
 #include "solver_includes/GershgorinBounds.f90"
-#undef triplet_list
+#undef tlist
     END IF
   END SUBROUTINE GershgorinBounds
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -111,18 +111,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm_value = param%converge_diff + 1.0_NTREAL
     DO II = 1, param%max_iterations
        IF (param%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
        END IF
 
        !! x = Ax
        CALL MatrixMultiply(this, vector, vector2, &
-            & threshold_in=param%threshold, memory_pool_in=pool)
+            & threshold_in = param%threshold, memory_pool_in = pool)
        !! x = x/||x||
-       scale_value = 1.0/MatrixNorm(vector2)
+       scale_value = 1.0 / MatrixNorm(vector2)
        CALL ScaleMatrix(vector2, scale_value)
 
        !! Check if Converged
-       CALL IncrementMatrix(vector2, vector, -1.0_NTREAL)
+       CALL IncrementMatrix(vector2, vector, alpha_in = -1.0_NTREAL)
        norm_value = MatrixNorm(vector)
 
        CALL CopyMatrix(vector2, vector)
@@ -133,18 +133,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (param%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II - 1)
+       CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
     END IF
 
     !! Compute The Largest Eigenvalue
     CALL DotMatrix(vector, vector, scale_value)
     CALL MatrixMultiply(this, vector, vector2, &
-         & threshold_in=param%threshold, memory_pool_in=pool)
+         & threshold_in = param%threshold, memory_pool_in = pool)
     CALL DotMatrix(vector, vector2, max_value)
     max_value = max_value / scale_value
 
     IF (param%be_verbose) THEN
-       CALL WriteElement(key="Max Eigen Value",VALUE=max_value)
+       CALL WriteElement(key = "Max Eigen Value", VALUE = max_value)
        CALL ExitSubLog
     END IF
 

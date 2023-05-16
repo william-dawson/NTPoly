@@ -161,9 +161,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
-    TYPE(TripletList_r) :: sorted_triplet_list
-    TYPE(Triplet_r) :: temporary
+    TYPE(TripletList_r) :: tlist
+    TYPE(TripletList_r) :: sorted_tlist
+    TYPE(Triplet_r) :: temp
 
 #include "sparse_includes/ConstructMatrixFromFile.f90"
   END SUBROUTINE ConstructMatrixFromFileSub_lsr
@@ -176,9 +176,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
-    TYPE(TripletList_c) :: sorted_triplet_list
-    TYPE(Triplet_c) :: temporary
+    TYPE(TripletList_c) :: tlist
+    TYPE(TripletList_c) :: sorted_tlist
+    TYPE(Triplet_c) :: temp
     REAL(NTREAL) :: real_val, comp_val
 
 #define ISCOMPLEX
@@ -516,8 +516,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsr), INTENT(IN) :: this
     !> The triplet list we created.
     TYPE(TripletList_r), INTENT(INOUT) :: triplet_list
-    !! Local Variables
-    TYPE(Triplet_r) :: temporary
 
 #include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsr
@@ -528,8 +526,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_lsc), INTENT(IN) :: this
     !> The triplet list we created.
     TYPE(TripletList_c), INTENT(INOUT) :: triplet_list
-    !! Local Variables
-    TYPE(Triplet_c) :: temporary
 
 #include "sparse_includes/MatrixToTripletList.f90"
   END SUBROUTINE MatrixToTripletList_lsc

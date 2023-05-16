@@ -60,7 +60,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Purification")
+       CALL WriteElement(key = "Method", VALUE = "Purification")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("niklasson2010trace")
@@ -80,9 +80,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(WorkingDensity, WorkingDensity, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(WorkingOverlap, WorkingOverlap, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Iterate
@@ -95,9 +95,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1, params%max_iterations
        !! Xn+1 = Xn S1 Xn
        CALL MatrixMultiply(WorkingDensity, WorkingOverlap, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL MatrixMultiply(TempMat, WorkingDensity, NewDensity, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
 
        !! Figure Out Sigma Value
        CALL DotMatrix(WorkingDensity, WorkingOverlap, trace_value)
@@ -113,9 +113,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = MatrixNorm(WorkingDensity)
 
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key="Convergence", VALUE=norm_value)
+          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key="Trace", VALUE=trace_value)
+          CALL WriteElement(key = "Trace", VALUE = trace_value)
           CALL ExitSubLog
        END IF
 
@@ -128,14 +128,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
-       CALL WriteElement(key="Total Iterations", VALUE=II)
+       CALL WriteElement(key = "Total Iterations", VALUE = II)
        CALL PrintMatrixInformation(NewDensity)
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(NewDensity, NewDensity, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     IF (params%be_verbose) THEN
@@ -184,7 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Lowdin")
+       CALL WriteElement(key = "Method", VALUE = "Lowdin")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("exner2002comparison")
@@ -196,9 +196,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL InverseSquareRoot(NewOverlap, ISQMat, params)
 
     CALL SimilarityTransform(PreviousDensity, SQRMat, SQRMat, TempMat, &
-         & pool_in=pool, threshold_in=params%threshold)
+         & pool_in = pool, threshold_in = params%threshold)
     CALL SimilarityTransform(TempMat, ISQMat, ISQMat, NewDensity, &
-         & pool_in=pool, threshold_in=params%threshold)
+         & pool_in = pool, threshold_in = params%threshold)
 
     IF (params%be_verbose) THEN
        CALL ExitSubLog

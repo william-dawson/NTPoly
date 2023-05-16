@@ -46,9 +46,9 @@
   END IF
 
   !! Initialization of Memory
-  sparsity_a = DBLE(SIZE(matA%values))/(matA%rows*matA%columns)
-  sparsity_b = DBLE(SIZE(matB%values))/(matB%rows*matB%columns)
-  sparsity_estimate = 4*MAX(sparsity_a,sparsity_b)
+  sparsity_a = DBLE(SIZE(matA%values)) / (matA%rows * matA%columns)
+  sparsity_b = DBLE(SIZE(matB%values)) / (matB%rows * matB%columns)
+  sparsity_estimate = 4*MAX(sparsity_a, sparsity_b)
   IF (sparsity_estimate > 1.0) THEN
      sparsity_estimate = 1.0
   ELSE IF (sparsity_estimate < 1e-8) THEN
@@ -88,13 +88,13 @@
   !! Handle the add part of GEMM
   IF (PRESENT(beta_in)) THEN
      IF (ABS(beta_in) .GT. 0) THEN
-        CALL ScaleMatrix(matC,beta)
-        CALL IncrementMatrix(matAB,matC)
+        CALL ScaleMatrix(matC, beta)
+        CALL IncrementMatrix(matAB, matC)
      ELSE
-        CALL CopyMatrix(matAB,matC)
+        CALL CopyMatrix(matAB, matC)
      END IF
   ELSE
-     CALL CopyMatrix(matAB,matC)
+     CALL CopyMatrix(matAB, matC)
   END IF
 
   CALL DestructMatrix(matAB)

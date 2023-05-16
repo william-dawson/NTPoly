@@ -111,9 +111,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Horner")
+       CALL WriteElement(key = "Method", VALUE = "Horner")
        CALL PrintParameters(params)
-       CALL WriteElement(key="Degree", VALUE=degree-1)
+       CALL WriteElement(key = "Degree", VALUE = degree-1)
     END IF
 
     !! Initial values for matrices
@@ -125,31 +125,31 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(Identity, Identity, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(BalancedInput, BalancedInput, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
     CALL CopyMatrix(Identity, OutputMat)
 
     IF (SIZE(poly%coefficients) .EQ. 1) THEN
        CALL ScaleMatrix(OutputMat, poly%coefficients(degree))
     ELSE
-       CALL ScaleMatrix(OutputMat,poly%coefficients(degree-1))
-       CALL IncrementMatrix(BalancedInput,OutputMat, &
+       CALL ScaleMatrix(OutputMat,poly%coefficients(degree - 1))
+       CALL IncrementMatrix(BalancedInput, OutputMat, &
             & poly%coefficients(degree))
-       DO II = degree-2, 1, -1
-          CALL MatrixMultiply(BalancedInput,OutputMat,Temporary, &
-               & threshold_in=params%threshold, memory_pool_in=pool)
-          CALL CopyMatrix(Temporary,OutputMat)
-          CALL IncrementMatrix(Identity, &
-               & OutputMat, alpha_in=poly%coefficients(II))
+       DO II = degree - 2, 1, -1
+          CALL MatrixMultiply(BalancedInput, OutputMat, Temporary, &
+               & threshold_in = params%threshold, memory_pool_in = pool)
+          CALL CopyMatrix(Temporary, OutputMat)
+          CALL IncrementMatrix(Identity, OutputMat, &
+               & alpha_in = poly%coefficients(II))
        END DO
     END IF
 
     !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
@@ -206,16 +206,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Polynomial Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Paterson Stockmeyer")
+       CALL WriteElement(key = "Method", VALUE = "Paterson Stockmeyer")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("paterson1973number")
        CALL ExitSubLog
        CALL PrintParameters(params)
-       CALL WriteElement(key="Degree", VALUE=degree-1)
+       CALL WriteElement(key = "Degree", VALUE = degree - 1)
     END IF
 
-    ALLOCATE(x_powers(s_value+1))
+    ALLOCATE(x_powers(s_value + 1))
 
     !! Initial values for matrices
     CALL ConstructEmptyMatrix(Identity, InputMat)
@@ -224,45 +224,45 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Create the X Powers
     CALL ConstructEmptyMatrix(x_powers(1), InputMat)
     CALL FillMatrixIdentity(x_powers(1))
-    DO II = 1, s_value+1-1
-       CALL MatrixMultiply(InputMat,x_powers(II-1+1),x_powers(II+1),&
-            & memory_pool_in=pool)
+    DO II = 1, s_value
+       CALL MatrixMultiply(InputMat,x_powers(II), x_powers(II + 1), &
+            & memory_pool_in = pool)
     END DO
-    CALL CopyMatrix(x_powers(s_value+1),Xs)
+    CALL CopyMatrix(x_powers(s_value + 1), Xs)
 
     !! S_k = bmX
     CALL CopyMatrix(Identity,Bk)
-    CALL ScaleMatrix(Bk, poly%coefficients(s_value*r_value+1))
-    DO II = 1, m_value-s_value*r_value+1-1
-       c_index = s_value*r_value + II
-       CALL IncrementMatrix(x_powers(II+1),Bk, &
-            & alpha_in=poly%coefficients(c_index+1))
+    CALL ScaleMatrix(Bk, poly%coefficients(s_value * r_value + 1))
+    DO II = 1, m_value - s_value * r_value
+       c_index = s_value * r_value + II
+       CALL IncrementMatrix(x_powers(II + 1), Bk, &
+            & alpha_in = poly%coefficients(c_index + 1))
     END DO
-    CALL MatrixMultiply(Bk, Xs, OutputMat, memory_pool_in=pool)
+    CALL MatrixMultiply(Bk, Xs, OutputMat, memory_pool_in = pool)
 
     !! S_k += bmx + bm-1I
     k_value = r_value - 1
     CALL CopyMatrix(Identity, Bk)
-    CALL ScaleMatrix(Bk, poly%coefficients(s_value*k_value+1))
-    DO II = 1, s_value-1+1-1
+    CALL ScaleMatrix(Bk, poly%coefficients(s_value * k_value + 1))
+    DO II = 1, s_value - 1
        c_index = s_value*k_value + II
-       CALL IncrementMatrix(x_powers(II+1),Bk, &
-            & alpha_in=poly%coefficients(c_index+1))
+       CALL IncrementMatrix(x_powers(II + 1), Bk, &
+            & alpha_in = poly%coefficients(c_index + 1))
     END DO
     CALL IncrementMatrix(Bk,OutputMat)
 
     !! Loop over the rest.
-    DO k_value=r_value-2,-1+1,-1
+    DO k_value = r_value - 2, 0, -1
        CALL CopyMatrix(Identity,Bk)
-       CALL ScaleMatrix(Bk, poly%coefficients(s_value*k_value+1))
-       DO II=1,s_value-1+1-1
-          c_index = s_value*k_value + II
-          CALL IncrementMatrix(x_powers(II+1),Bk, &
-               & alpha_in=poly%coefficients(c_index+1))
+       CALL ScaleMatrix(Bk, poly%coefficients(s_value * k_value + 1))
+       DO II = 1, s_value - 1
+          c_index = s_value * k_value + II
+          CALL IncrementMatrix(x_powers(II + 1), Bk, &
+               & alpha_in = poly%coefficients(c_index + 1))
        END DO
-       CALL MatrixMultiply(Xs,OutputMat,Temp)
-       CALL CopyMatrix(Temp,OutputMat)
-       CALL IncrementMatrix(Bk,OutputMat)
+       CALL MatrixMultiply(Xs, OutputMat, Temp)
+       CALL CopyMatrix(Temp, OutputMat)
+       CALL IncrementMatrix(Bk, OutputMat)
     END DO
 
     !! Cleanup

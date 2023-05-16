@@ -176,7 +176,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = 0
     DO II =1, this%rows
        DO JJ = 1,  this%columns
-          norm = norm + this%DATA(II,JJ)**2
+          norm = norm + this%DATA(II, JJ)**2
        END DO
     END DO
   END FUNCTION MatrixNorm_ldr
@@ -334,7 +334,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
     MatV%DATA = MatA%DATA
 
-    N = SIZE(MatA%DATA,DIM=1)
+    N = SIZE(MatA%DATA, DIM = 1)
     LDA = N
 
     !! Allocations
@@ -359,7 +359,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructEmptyMatrix(MatW, MatA%rows, MatA%columns)
        MatW%DATA = 0
        DO II = 1, N
-          MatW%DATA(II,II) = W(II)
+          MatW%DATA(II, II) = W(II)
        END DO
     END IF
 
@@ -457,9 +457,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     norm = 0
     DO II =1, this%rows
        DO JJ = 1,  this%columns
-          val = this%DATA(II,JJ)
+          val = this%DATA(II, JJ)
           conjval = CONJG(val)
-          norm = norm + REAL(val*conjval,KIND=NTREAL)
+          norm = norm + REAL(val*conjval, KIND = NTREAL)
        END DO
     END DO
   END FUNCTION MatrixNorm_ldc
@@ -621,7 +621,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
     MatV%DATA = MatA%DATA
 
-    N = SIZE(MatA%DATA,DIM=1)
+    N = SIZE(MatA%DATA, DIM = 1)
     LDA = N
 
     !! Allocations
@@ -648,7 +648,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructEmptyMatrix(MatW, MatA%rows, MatA%columns)
        MatW%DATA = 0
        DO II = 1, N
-          MatW%DATA(II,II) = W(II)
+          MatW%DATA(II, II) = W(II)
        END DO
     END IF
 

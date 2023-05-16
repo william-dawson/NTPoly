@@ -8,7 +8,7 @@
      CALL PairwiseMultiplyMatrix(matAH, matB, matC)
      CALL DestructMatrix(matAH)
   ELSE
-     CALL PairwiseMultiplyMatrix(matA,matB,matC)
+     CALL PairwiseMultiplyMatrix(matA, matB, matC)
   END IF
 
   CALL MatrixGrandSum(matC, product)

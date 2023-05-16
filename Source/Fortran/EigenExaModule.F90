@@ -83,8 +83,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Eigen Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="EigenExa")
-       CALL WriteElement(key="NVALS", VALUE=nvals)
+       CALL WriteElement(key = "Method", VALUE = "EigenExa")
+       CALL WriteElement(key = "NVALS", VALUE = nvals)
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("imamura2011development")
@@ -338,7 +338,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_sx(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_sx(N, exa%nvals, A, LDA, W, V, LDZ, mode = exa%MODE)
 
   END SUBROUTINE Compute_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -356,7 +356,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "eigenexa_includes/Compute.f90"
 
     !! Call
-    CALL eigen_h(N, exa%nvals, A, LDA, W, V, LDZ, mode=exa%MODE)
+    CALL eigen_h(N, exa%nvals, A, LDA, W, V, LDZ, mode = exa%MODE)
 
   END SUBROUTINE Compute_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

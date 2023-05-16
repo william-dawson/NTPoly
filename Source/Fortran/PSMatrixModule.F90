@@ -182,12 +182,12 @@ MODULE PSMatrixModule
   END INTERFACE GatherMatrixToProcess
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
-  SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim_, process_grid_in, &
+  SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim, process_grid_in, &
        & is_complex_in)
     !> The matrix to be constructed.
     TYPE(Matrix_ps), INTENT(INOUT)            :: this
     !> The dimension of the full matrix.
-    INTEGER, INTENT(IN)                       :: matrix_dim_
+    INTEGER, INTENT(IN)                       :: matrix_dim
     !> True if you want to use complex numbers.
     LOGICAL, INTENT(IN), OPTIONAL             :: is_complex_in
     !> A process grid to host the matrix.
@@ -213,8 +213,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Matrix Dimensions
-    this%actual_matrix_dimension = matrix_dim_
-    this%logical_matrix_dimension = CalculateScaledDimension(this, matrix_dim_)
+    this%actual_matrix_dimension = matrix_dim
+    this%logical_matrix_dimension = CalculateScaledDimension(this, matrix_dim)
 
     !! Full Local Data Size Description
     this%local_rows = &
@@ -268,18 +268,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II, JJ
 
     IF (ALLOCATED(this%local_data_r)) THEN
-       DO II = 1, SIZE(this%local_data_r,DIM=1)
-          DO JJ = 1, SIZE(this%local_data_r,DIM=2)
-             CALL DestructMatrix(this%local_data_r(II,JJ))
+       DO II = 1, SIZE(this%local_data_r, DIM = 1)
+          DO JJ = 1, SIZE(this%local_data_r, DIM = 2)
+             CALL DestructMatrix(this%local_data_r(II, JJ))
           END DO
        END DO
        DEALLOCATE(this%local_data_r)
     END IF
 
     IF (ALLOCATED(this%local_data_c)) THEN
-       DO II = 1, SIZE(this%local_data_c,DIM=1)
-          DO JJ = 1, SIZE(this%local_data_c,DIM=2)
-             CALL DestructMatrix(this%local_data_c(II,JJ))
+       DO II = 1, SIZE(this%local_data_c, DIM = 1)
+          DO JJ = 1, SIZE(this%local_data_c, DIM = 2)
+             CALL DestructMatrix(this%local_data_c(II, JJ))
           END DO
        END DO
        DEALLOCATE(this%local_data_c)
@@ -307,19 +307,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The grid to set it to.
     TYPE(ProcessGrid_t), INTENT(IN) :: grid
     !! Local variables
-    TYPE(TripletList_r) :: triplet_list_r
-    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(TripletList_r) :: tlist_r
+    TYPE(TripletList_c) :: tlist_c
     TYPE(Matrix_ps) :: new_mat
 
     !! Get the data in a triplet list
-    CALL ConstructTripletList(triplet_list_c)
-    CALL ConstructTripletList(triplet_list_r)
+    CALL ConstructTripletList(tlist_c)
+    CALL ConstructTripletList(tlist_r)
 
     IF (this%process_grid%my_slice .EQ. 0) THEN
        IF (this%is_complex) THEN
-          CALL GetMatrixTripletList(this, triplet_list_c)
+          CALL GetMatrixTripletList(this, tlist_c)
        ELSE
-          CALL GetMatrixTripletList(this, triplet_list_r)
+          CALL GetMatrixTripletList(this, tlist_r)
        END IF
     END IF
 
@@ -327,9 +327,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(new_mat, this%actual_matrix_dimension, grid, &
          & this%is_complex)
     IF (this%is_complex) THEN
-       CALL FillMatrixFromTripletList(new_mat, triplet_list_c)
+       CALL FillMatrixFromTripletList(new_mat, tlist_c)
     ELSE
-       CALL FillMatrixFromTripletList(new_mat, triplet_list_r)
+       CALL FillMatrixFromTripletList(new_mat, tlist_r)
     END IF
 
     !! Copy back to finish
@@ -337,8 +337,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructMatrix(new_mat)
-    CALL DestructTripletList(triplet_list_c)
-    CALL DestructTripletList(triplet_list_r)
+    CALL DestructTripletList(tlist_c)
+    CALL DestructTripletList(tlist_r)
   END SUBROUTINE SetMatrixProcessGrid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct distributed sparse matrix from a matrix market file in parallel.
@@ -350,7 +350,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Grid to distribute the matrix on.
     TYPE(ProcessGrid_t), INTENT(IN), OPTIONAL :: process_grid_in
     !> The name of the file to read.
-    CHARACTER(len=*), INTENT(IN) :: file_name
+    CHARACTER(LEN = *), INTENT(IN) :: file_name
     INTEGER, PARAMETER :: MAX_LINE_LENGTH = 100
     !! File Handles
     INTEGER :: local_file_handler
@@ -358,23 +358,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! About the matrix market file.
     INTEGER :: sparsity_type, data_type, pattern_type
     !! Reading The File
-    TYPE(TripletList_r) :: triplet_list_r
+    TYPE(TripletList_r) :: tlist_r
     TYPE(Triplet_r) :: temp_triplet_r
-    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(TripletList_c) :: tlist_c
     TYPE(Triplet_c) :: temp_triplet_c
     INTEGER :: matrix_rows, matrix_columns
     INTEGER(NTLONG) :: total_values
     !! Length Variables
     INTEGER :: header_length
-    INTEGER(KIND=MPI_OFFSET_KIND) :: total_file_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_offset
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_data_size
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_data_size_plus_buffer
+    INTEGER(KIND = MPI_OFFSET_KIND) :: total_file_size
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_offset
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_data_size
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_data_size_plus_buffer
     INTEGER :: current_line_length
     !! Input Buffers
-    CHARACTER(len=MAX_LINE_LENGTH) :: input_buffer
-    CHARACTER(len=:), ALLOCATABLE :: mpi_input_buffer
-    CHARACTER(len=MAX_LINE_LENGTH) :: temp_substring
+    CHARACTER(LEN = MAX_LINE_LENGTH) :: input_buffer
+    CHARACTER(LEN = :), ALLOCATABLE :: mpi_input_buffer
+    CHARACTER(LEN = MAX_LINE_LENGTH) :: temp_substring
     !! Temporary Variables
     REAL(NTREAL) :: realval, cval
     INTEGER :: bytes_per_character
@@ -395,9 +395,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (IsRoot(process_grid_in)) THEN
           header_length = 0
           local_file_handler = 16
-          OPEN(local_file_handler, file=file_name, iostat=ierr, status="old")
+          OPEN(local_file_handler, file = file_name, iostat = ierr, &
+               & status = "old")
           IF (ierr .NE. 0) THEN
-             CALL SetGenericError(err, TRIM(file_name)//" doesn't exist", &
+             CALL SetGenericError(err, TRIM(file_name) // " doesn't exist", &
                   & .TRUE.)
           END IF
           !! Parse the header.
@@ -445,11 +446,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Global read
        CALL MPI_File_open(this%process_grid%global_comm, file_name, &
-            & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler,ierr)
-       CALL MPI_File_get_size(mpi_file_handler, total_file_size,ierr)
+            & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
+       CALL MPI_File_get_size(mpi_file_handler, total_file_size, ierr)
 
        !! Compute Offsets And Data Size
-       local_data_size = (total_file_size - bytes_per_character*header_length)/&
+       local_data_size = &
+            & (total_file_size - bytes_per_character*header_length) / &
             & this%process_grid%total_processors
        IF (local_data_size .LT. 2*MAX_LINE_LENGTH) THEN
           local_data_size = 2*MAX_LINE_LENGTH
@@ -477,7 +479,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! A buffer to read the data into.
-       ALLOCATE(CHARACTER(LEN=local_data_size_plus_buffer) :: mpi_input_buffer)
+       ALLOCATE(CHARACTER(LEN = local_data_size_plus_buffer) :: &
+            & mpi_input_buffer)
 
        !! Do Actual Reading
        CALL MPI_File_read_at_all(mpi_file_handler, local_offset, &
@@ -487,7 +490,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Trim Off The Half Read Line At The Start
        IF (.NOT. this%process_grid%global_rank .EQ. &
             & this%process_grid%RootID) THEN
-          full_buffer_counter = INDEX(mpi_input_buffer,new_LINE('A')) + 1
+          full_buffer_counter = INDEX(mpi_input_buffer, new_LINE('A')) + 1
        ELSE
           full_buffer_counter = 1
        END IF
@@ -499,9 +502,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (this%is_complex) THEN
-          CALL ConstructTripletList(triplet_list_c)
+          CALL ConstructTripletList(tlist_c)
        ELSE
-          CALL ConstructTripletList(triplet_list_r)
+          CALL ConstructTripletList(tlist_r)
        END IF
        DO WHILE(.NOT. end_of_buffer)
           current_line_length = INDEX(mpi_input_buffer(full_buffer_counter:),&
@@ -511,29 +514,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              end_of_buffer = .TRUE.
           ELSE
              temp_substring = mpi_input_buffer(full_buffer_counter: &
-                  & full_buffer_counter+current_line_length-1)
+                  & full_buffer_counter + current_line_length - 1)
              IF (current_line_length .GT. 1) THEN
                 IF (data_type .EQ. MM_COMPLEX) THEN
-                   READ(temp_substring(:current_line_length-1),*) &
+                   READ(temp_substring(:current_line_length - 1),*) &
                         & temp_triplet_c%index_row, &
                         & temp_triplet_c%index_column, &
                         & realval, cval
                    temp_triplet_c%point_value = &
-                        & CMPLX(realval, cval, KIND=NTCOMPLEX)
-                   CALL AppendToTripletList(triplet_list_c, temp_triplet_c)
+                        & CMPLX(realval, cval, KIND = NTCOMPLEX)
+                   CALL AppendToTripletList(tlist_c, temp_triplet_c)
                 ELSE
-                   READ(temp_substring(:current_line_length-1),*) &
+                   READ(temp_substring(:current_line_length - 1),*) &
                         & temp_triplet_r%index_row, &
                         & temp_triplet_r%index_column, &
                         & temp_triplet_r%point_value
-                   CALL AppendToTripletList(triplet_list_r, temp_triplet_r)
+                   CALL AppendToTripletList(tlist_r, temp_triplet_r)
                 END IF
              END IF
 
              IF (full_buffer_counter + current_line_length .GE. &
-                  & local_data_size+2) THEN
+                  & local_data_size + 2) THEN
                 IF (.NOT. this%process_grid%global_rank .EQ. &
-                     & this%process_grid%total_processors-1) THEN
+                     & this%process_grid%total_processors - 1) THEN
                    end_of_buffer = .TRUE.
                 END IF
              END IF
@@ -542,18 +545,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END DO
 
        !! Cleanup
-       CALL MPI_File_close(mpi_file_handler,ierr)
-       CALL MPI_Barrier(this%process_grid%global_comm,ierr)
+       CALL MPI_File_close(mpi_file_handler, ierr)
+       CALL MPI_Barrier(this%process_grid%global_comm, ierr)
 
        !! Redistribute The Matrix
        IF (this%is_complex) THEN
-          CALL SymmetrizeTripletList(triplet_list_c, pattern_type)
-          CALL FillMatrixFromTripletList(this,triplet_list_c)
-          CALL DestructTripletList(triplet_list_c)
+          CALL SymmetrizeTripletList(tlist_c, pattern_type)
+          CALL FillMatrixFromTripletList(this, tlist_c)
+          CALL DestructTripletList(tlist_c)
        ELSE
-          CALL SymmetrizeTripletList(triplet_list_r, pattern_type)
-          CALL FillMatrixFromTripletList(this,triplet_list_r)
-          CALL DestructTripletList(triplet_list_r)
+          CALL SymmetrizeTripletList(tlist_r, pattern_type)
+          CALL FillMatrixFromTripletList(this, tlist_r)
+          CALL DestructTripletList(tlist_r)
        END IF
 
        DEALLOCATE(mpi_input_buffer)
@@ -573,8 +576,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
     INTEGER :: triplet_mpi_type
-    TYPE(TripletList_r) :: triplet_list_r
-    TYPE(TripletList_c) :: triplet_list_c
+    TYPE(TripletList_r) :: tlist_r
+    TYPE(TripletList_c) :: tlist_c
     !! File Handles
     INTEGER :: mpi_file_handler
     !! Reading The File
@@ -582,8 +585,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER(NTLONG) :: total_values
     INTEGER, DIMENSION(3) :: matrix_information
     INTEGER :: local_triplets
-    INTEGER(KIND=MPI_OFFSET_KIND) :: local_offset
-    INTEGER(KIND=MPI_OFFSET_KIND) :: header_size
+    INTEGER(KIND = MPI_OFFSET_KIND) :: local_offset
+    INTEGER(KIND = MPI_OFFSET_KIND) :: header_size
     INTEGER :: bytes_per_int, bytes_per_data, bytes_per_long
     !! Temporary variables
     INTEGER :: message_status(MPI_STATUS_SIZE)
@@ -631,10 +634,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Build Local Storage
        IF (complex_flag .EQ. 1) THEN
           CALL ConstructEmptyMatrix(this, matrix_rows, process_grid_in, &
-               & is_complex_in=.TRUE.)
+               & is_complex_in = .TRUE.)
        ELSE
           CALL ConstructEmptyMatrix(this, matrix_rows, process_grid_in, &
-               & is_complex_in=.FALSE.)
+               & is_complex_in = .FALSE.)
        END IF
 
        !! Sizes specific to the type
@@ -647,8 +650,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute Offset
-       local_triplets = total_values/this%process_grid%total_processors
-       local_offset = local_triplets * (this%process_grid%global_rank)
+       local_triplets = total_values / this%process_grid%total_processors
+       local_offset = local_triplets * this%process_grid%global_rank
        header_size = 3 * bytes_per_int + bytes_per_long
        IF (this%process_grid%global_rank .EQ. &
             & this%process_grid%total_processors - 1) THEN
@@ -662,22 +665,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & triplet_mpi_type, triplet_mpi_type, "native", MPI_INFO_NULL, &
             & ierr)
        IF (this%is_complex) THEN
-          CALL ConstructTripletList(triplet_list_c, local_triplets)
-          CALL MPI_File_read_all(mpi_file_handler, triplet_list_c%DATA, &
+          CALL ConstructTripletList(tlist_c, local_triplets)
+          CALL MPI_File_read_all(mpi_file_handler, tlist_c%DATA, &
                & local_triplets, triplet_mpi_type, message_status, ierr)
        ELSE
-          CALL ConstructTripletList(triplet_list_r, local_triplets)
-          CALL MPI_File_read_all(mpi_file_handler, triplet_list_r%DATA, &
+          CALL ConstructTripletList(tlist_r, local_triplets)
+          CALL MPI_File_read_all(mpi_file_handler, tlist_r%DATA, &
                & local_triplets, triplet_mpi_type, message_status, ierr)
        END IF
        CALL MPI_File_close(mpi_file_handler,ierr)
 
        IF (this%is_complex) THEN
-          CALL FillMatrixFromTripletList(this,triplet_list_c)
-          CALL DestructTripletList(triplet_list_c)
+          CALL FillMatrixFromTripletList(this, tlist_c)
+          CALL DestructTripletList(tlist_c)
        ELSE
-          CALL FillMatrixFromTripletList(this,triplet_list_r)
-          CALL DestructTripletList(triplet_list_r)
+          CALL FillMatrixFromTripletList(this, tlist_r)
+          CALL DestructTripletList(tlist_r)
        END IF
     END IF
 
@@ -711,7 +714,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The triplet type, which distinguishes real and complex triplets.
     INTEGER, INTENT(IN) :: triplet_mpi_type
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
     TYPE(Matrix_lsr) :: merged_local_data
 
 #include "distributed_includes/WriteMatrixToBinary.f90"
@@ -727,7 +730,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The triplet type, which distinguishes real and complex triplets.
     INTEGER, INTENT(IN) :: triplet_mpi_type
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
     TYPE(Matrix_lsc) :: merged_local_data
 
 #include "distributed_includes/WriteMatrixToBinary.f90"
@@ -756,7 +759,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
     TYPE(Matrix_lsr) :: merged_local_data
 
 #include "distributed_includes/WriteToMatrixMarket.f90"
@@ -770,7 +773,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The name of the file to write to.
     CHARACTER(len=*), INTENT(IN) :: file_name
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
     TYPE(Matrix_lsc) :: merged_local_data
 
 #define ISCOMPLEX
@@ -797,7 +800,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Data
     TYPE(Matrix_ps) :: temp_matrix
     TYPE(TripletList_r) :: shifted
-    TYPE(TripletList_r) :: sorted_triplet_list
+    TYPE(TripletList_r) :: sorted_tlist
     TYPE(Matrix_lsr) :: local_matrix
     TYPE(Matrix_lsr) :: gathered_matrix
     !! Local Data
@@ -832,7 +835,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: prepartitioned_in
     !! Local Data
     TYPE(TripletList_c) :: shifted
-    TYPE(TripletList_c) :: sorted_triplet_list
+    TYPE(TripletList_c) :: sorted_tlist
     TYPE(Matrix_lsc) :: local_matrix
     TYPE(Matrix_lsc) :: gathered_matrix
     !! Local Data
@@ -869,7 +872,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
 
 #include "distributed_includes/FillMatrixIdentity.f90"
 
@@ -880,7 +883,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
 
 #include "distributed_includes/FillMatrixIdentity.f90"
 
@@ -922,7 +925,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> If true permute rows, false permute columns.
     LOGICAL, INTENT(IN) :: rows
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
 
 #include "distributed_includes/FillMatrixPermutation.f90"
 
@@ -937,7 +940,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> If true permute rows, false permute columns.
     LOGICAL, INTENT(IN) :: rows
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
 
 #include "distributed_includes/FillMatrixPermutation.f90"
 
@@ -963,7 +966,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
 
 #include "distributed_includes/FillMatrixDense.f90"        
 
@@ -974,7 +977,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix being filled.
     TYPE(Matrix_ps), INTENT(INOUT) :: this
     !! Local Data
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
 
 #include "distributed_includes/FillMatrixDense.f90"        
 
@@ -1243,17 +1246,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: min_size, max_size
     REAL(NTREAL) :: sparsity
 
-    CALL GetMatrixLoadBalance(this,min_size,max_size)
-    sparsity = REAL(GetMatrixSize(this),KIND=NTREAL) / &
-         & (REAL(this%actual_matrix_dimension,KIND=NTREAL)**2)
+    CALL GetMatrixLoadBalance(this, min_size, max_size)
+    sparsity = REAL(GetMatrixSize(this), KIND = NTREAL) / &
+         & (REAL(this%actual_matrix_dimension, KIND = NTREAL)**2)
 
     CALL WriteHeader("Load_Balance")
     CALL EnterSubLog
-    CALL WriteListElement(key="min_size", VALUE=min_size)
-    CALL WriteListElement(key="max_size", VALUE=max_size)
+    CALL WriteListElement(key = "min_size", VALUE = min_size)
+    CALL WriteListElement(key = "max_size", VALUE = max_size)
     CALL ExitSubLog
-    CALL WriteElement(key="Dimension",VALUE=this%actual_matrix_dimension)
-    CALL WriteElement(key="Sparsity", VALUE=sparsity)
+    CALL WriteElement(key = "Dimension",VALUE = this%actual_matrix_dimension)
+    CALL WriteElement(key = "Sparsity", VALUE = sparsity)
   END SUBROUTINE PrintMatrixInformation_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out a distributed sparse matrix.
@@ -1326,9 +1329,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Threshold (absolute) values below this are filtered
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
     TYPE(TripletList_r) :: new_list
-    TYPE(Triplet_r) :: temporary
+    TYPE(Triplet_r) :: trip
 
 #include "distributed_includes/FilterMatrix.f90"
   END SUBROUTINE FilterMatrix_psr
@@ -1340,9 +1343,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Threshold (absolute) values below this are filtered
     REAL(NTREAL), INTENT(IN) :: threshold
     !! Local Variables
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
     TYPE(TripletList_c) :: new_list
-    TYPE(Triplet_c) :: temporary
+    TYPE(Triplet_c) :: trip
 
 #include "distributed_includes/FilterMatrix.f90"
   END SUBROUTINE FilterMatrix_psc
@@ -1372,10 +1375,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Global Sum
-    CALL MPI_Allreduce(local_size,temp_size,1,MPINTREAL,MPI_SUM,&
+    CALL MPI_Allreduce(local_size, temp_size, 1, MPINTREAL, MPI_SUM, &
          & this%process_grid%within_slice_comm, ierr)
 
-    total_size = INT(temp_size, kind=NTLONG)
+    total_size = INT(temp_size, KIND = NTLONG)
 
   END FUNCTION GetMatrixSize_ps
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1407,9 +1410,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Global Reduce
-    CALL MPI_Allreduce(local_size,max_size,1,MPINTINTEGER,MPI_MAX,&
+    CALL MPI_Allreduce(local_size, max_size, 1, MPINTINTEGER, MPI_MAX,&
          & this%process_grid%within_slice_comm, ierr)
-    CALL MPI_Allreduce(local_size,min_size,1,MPINTINTEGER,MPI_MIN,&
+    CALL MPI_Allreduce(local_size, min_size, 1, MPINTINTEGER, MPI_MIN,&
          & this%process_grid%within_slice_comm, ierr)
 
   END SUBROUTINE GetMatrixLoadBalance_ps
@@ -1437,9 +1440,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> TransMat = A^T .
     TYPE(Matrix_ps), INTENT(INOUT) :: TransMat
     !! Local Variables
-    TYPE(TripletList_r) :: triplet_list
+    TYPE(TripletList_r) :: tlist
     TYPE(TripletList_r) :: new_list
-    TYPE(Triplet_r) :: temporary, temporary_t
+    TYPE(Triplet_r) :: trip, trip_t
 
 #include "distributed_includes/TransposeMatrix.f90"
 
@@ -1452,9 +1455,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> TransMat = A^T .
     TYPE(Matrix_ps), INTENT(INOUT) :: TransMat
     !! Local Variables
-    TYPE(TripletList_c) :: triplet_list
+    TYPE(TripletList_c) :: tlist
     TYPE(TripletList_c) :: new_list
-    TYPE(Triplet_c) :: temporary, temporary_t
+    TYPE(Triplet_c) :: trip, trip_t
 
 #include "distributed_includes/TransposeMatrix.f90"
 
@@ -1600,11 +1603,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & this%process_grid%num_process_columns* &
          & this%process_grid%num_process_rows
 
-    size_ratio = matrix_dim/lcm
+    size_ratio = matrix_dim / lcm
     IF (size_ratio * lcm .EQ. matrix_dim) THEN
        scaled_dim = matrix_dim
     ELSE
-       scaled_dim = (size_ratio + 1)*(lcm)
+       scaled_dim = (size_ratio + 1) * lcm
     END IF
   END FUNCTION CalculateScaledDimension
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

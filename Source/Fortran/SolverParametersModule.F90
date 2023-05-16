@@ -45,8 +45,7 @@ MODULE SolverParametersModule
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a data type which stores iterative solver parameters.
   SUBROUTINE ConstructSolverParameters(this, converge_diff_in, threshold_in, &
-       & max_iterations_in, be_verbose_in, step_thresh_in, &
-       & BalancePermutation_in)
+       & max_iterations_in, be_verbose_in, BalancePermutation_in)
     !> The parameters to construct.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Converge_diff_in the difference between iterations to consider
@@ -60,8 +59,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
     !> For load balancing
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
-    !> The threshold for step size searches.
-    REAL(NTREAL), INTENT(IN), OPTIONAL :: step_thresh_in
 
     CALL DestructSolverParameters(this)
 
@@ -91,11 +88,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        this%do_load_balancing = .TRUE.
        CALL CopyPermutation(BalancePermutation_in, this%BalancePermutation)
-    END IF
-    IF (.NOT. PRESENT(step_thresh_in)) THEN
-       this%step_thresh = 1E-2_NTREAL
-    ELSE
-       this%step_thresh = step_thresh_in
     END IF
   END SUBROUTINE ConstructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -177,12 +169,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL WriteHeader("Solver Parameters")
     CALL EnterSubLog
-    CALL WriteElement(key="Verbosity", VALUE=this%be_verbose)
-    CALL WriteElement(key="Load Balancing", VALUE=this%do_load_balancing)
-    CALL WriteElement(key="Convergence Difference", VALUE=this%converge_diff)
-    CALL WriteElement(key="Threshold", VALUE=this%threshold)
-    CALL WriteElement(key="Maximum Iterations", VALUE=this%max_iterations)
-    CALL WriteElement(key="Step Threshold", VALUE=this%step_thresh)
+    CALL WriteElement(key = "Verbosity", &
+         & VALUE = this%be_verbose)
+    CALL WriteElement(key = "Load Balancing", &
+         & VALUE = this%do_load_balancing)
+    CALL WriteElement(key = "Convergence Difference", &
+         & VALUE = this%converge_diff)
+    CALL WriteElement(key = "Threshold", &
+         & VALUE = this%threshold)
+    CALL WriteElement(key = "Maximum Iterations", &
+         & VALUE = this%max_iterations)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

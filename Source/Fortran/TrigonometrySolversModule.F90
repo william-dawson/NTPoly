@@ -39,7 +39,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! A temporary matrix to hold the transformation from sine to cosine.
     TYPE(Matrix_ps) :: ShiftedMat
     TYPE(Matrix_ps) :: IdentityMat
-    REAL(NTREAL), PARAMETER :: PI = 4*ATAN(1.00_NTREAL)
+    REAL(NTREAL), PARAMETER :: PI = 4 * ATAN(1.00_NTREAL)
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -53,7 +53,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
     CALL IncrementMatrix(IdentityMat, ShiftedMat, &
-         & alpha_in=REAL(-1.0_NTREAL*PI/2.0_NTREAL,NTREAL))
+         & alpha_in = -1.0_NTREAL * PI / 2.0_NTREAL)
     CALL DestructMatrix(IdentityMat)
 
     CALL ScaleSquareTrigonometry(ShiftedMat, OutputMat, solver_parameters_in)
@@ -177,7 +177,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Taylor")
+       CALL WriteElement(key = "Method", VALUE = "Taylor")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("higham2003computing")
@@ -198,7 +198,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat, 1.0_NTREAL/sigma_val)
+    CALL ScaleMatrix(ScaledMat, 1.0_NTREAL / sigma_val)
     CALL ConstructEmptyMatrix(OutputMat, InputMat)
     CALL FillMatrixIdentity(OutputMat)
     CALL ConstructEmptyMatrix(IdentityMat, InputMat)
@@ -207,44 +207,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(ScaledMat, ScaledMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(IdentityMat, IdentityMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Square the scaled matrix.
     taylor_denom = -2.0_NTREAL
     CALL CopyMatrix(OutputMat, Ak)
     CALL MatrixMultiply(ScaledMat, ScaledMat, TempMat, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL CopyMatrix(TempMat,ScaledMat)
+         & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL CopyMatrix(TempMat, ScaledMat)
 
     !! Expand Taylor Series
     DO II = 2, 40, 2
        CALL MatrixMultiply(Ak, ScaledMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
-       CALL CopyMatrix(TempMat,Ak)
-       CALL IncrementMatrix(Ak,OutputMat, &
-            & alpha_in=REAL(1.0_NTREAL/taylor_denom,NTREAL))
-       taylor_denom = taylor_denom * (II+1)
-       taylor_denom = -1.0_NTREAL*taylor_denom*(II+1)
+            & threshold_in = params%threshold, memory_pool_in = pool)
+       CALL CopyMatrix(TempMat, Ak)
+       CALL IncrementMatrix(Ak, OutputMat, &
+            & alpha_in = 1.0_NTREAL / taylor_denom)
+       taylor_denom = taylor_denom * (II + 1)
+       taylor_denom = -1.0_NTREAL * taylor_denom * (II + 1)
     END DO
 
     !! Undo scaling
-    DO II = 1, sigma_counter-1
+    DO II = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat, OutputMat)
-       CALL ScaleMatrix(OutputMat, REAL(2.0_NTREAL,NTREAL))
+       CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
        CALL IncrementMatrix(IdentityMat, OutputMat, &
-            & REAL(-1.0_NTREAL,NTREAL))
+            & alpha_in=-1.0_NTREAL)
     END DO
 
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
@@ -287,7 +287,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Trigonometry Solver")
        CALL EnterSubLog
-       CALL WriteElement(key="Method", VALUE="Chebyshev")
+       CALL WriteElement(key = "Method", VALUE = "Chebyshev")
        CALL WriteHeader("Citations")
        CALL EnterSubLog
        CALL WriteListElement("serbin1980algorithm")
@@ -304,13 +304,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Figure out how much to scale the matrix.
     sigma_val = 1.0_NTREAL
     sigma_counter = 1
-    DO WHILE (spectral_radius/sigma_val .GT. 1.0_NTREAL)
+    DO WHILE (spectral_radius / sigma_val .GT. 1.0_NTREAL)
        sigma_val = sigma_val * 2
        sigma_counter = sigma_counter + 1
     END DO
 
     CALL CopyMatrix(InputMat, ScaledMat)
-    CALL ScaleMatrix(ScaledMat, 1.0_NTREAL/sigma_val)
+    CALL ScaleMatrix(ScaledMat, 1.0_NTREAL / sigma_val)
     CALL ConstructEmptyMatrix(OutputMat, InputMat)
     CALL ConstructEmptyMatrix(IdentityMat, InputMat)
     CALL FillMatrixIdentity(IdentityMat)
@@ -318,9 +318,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL PermuteMatrix(ScaledMat, ScaledMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
        CALL PermuteMatrix(IdentityMat, IdentityMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Expand the Chebyshev Polynomial.
@@ -343,46 +343,49 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     coefficients(17) = 9.181480886537484e-17_NTREAL
 
     !! Basic T Values.
-    CALL MatrixMultiply(ScaledMat, ScaledMat,T2, alpha_in=2.0_NTREAL,&
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL IncrementMatrix(IdentityMat, T2, alpha_in=-1.0_NTREAL)
-    CALL MatrixMultiply(T2, T2, T4, alpha_in=2.0_NTREAL,&
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL IncrementMatrix(IdentityMat, T4, alpha_in=-1.0_NTREAL)
-    CALL MatrixMultiply(T4, T2, T6, alpha_in=2.0_NTREAL,&
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL IncrementMatrix(T2, T6, alpha_in=-1.0_NTREAL)
-    CALL MatrixMultiply(T6, T2, T8,alpha_in=2.0_NTREAL,&
-         & threshold_in=params%threshold, memory_pool_in=pool)
-    CALL IncrementMatrix(T4, T8, alpha_in=-1.0_NTREAL)
+    CALL MatrixMultiply(ScaledMat, ScaledMat,T2, alpha_in = 2.0_NTREAL, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL IncrementMatrix(IdentityMat, T2, alpha_in = -1.0_NTREAL)
+    CALL MatrixMultiply(T2, T2, T4, alpha_in = 2.0_NTREAL, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL IncrementMatrix(IdentityMat, T4, alpha_in = -1.0_NTREAL)
+    CALL MatrixMultiply(T4, T2, T6, alpha_in = 2.0_NTREAL, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL IncrementMatrix(T2, T6, alpha_in = -1.0_NTREAL)
+    CALL MatrixMultiply(T6, T2, T8,alpha_in = 2.0_NTREAL, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL IncrementMatrix(T4, T8, alpha_in = -1.0_NTREAL)
 
     !! Contribution from the second half.
     CALL CopyMatrix(T8, OutputMat)
-    CALL ScaleMatrix(OutputMat, 0.5_NTREAL*coefficients(17))
-    CALL IncrementMatrix(T6, OutputMat, alpha_in=0.5_NTREAL*coefficients(15))
-    CALL IncrementMatrix(T4, OutputMat, alpha_in=0.5_NTREAL*coefficients(13))
-    CALL IncrementMatrix(T2, OutputMat, alpha_in=0.5_NTREAL*coefficients(11))
+    CALL ScaleMatrix(OutputMat, 0.5_NTREAL * coefficients(17))
+    CALL IncrementMatrix(T6, OutputMat, &
+         & alpha_in = 0.5_NTREAL*coefficients(15))
+    CALL IncrementMatrix(T4, OutputMat, &
+         & alpha_in = 0.5_NTREAL*coefficients(13))
+    CALL IncrementMatrix(T2, OutputMat, &
+         & alpha_in = 0.5_NTREAL*coefficients(11))
     CALL MatrixMultiply(T8, OutputMat, TempMat,&
-         & threshold_in=params%threshold, memory_pool_in=pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
 
     !! Contribution from the first half.
     CALL CopyMatrix(T8, OutputMat)
     CALL ScaleMatrix(OutputMat, coefficients(9))
     CALL IncrementMatrix(T6, OutputMat, &
-         & alpha_in=coefficients(7)+0.5_NTREAL*coefficients(11))
+         & alpha_in = coefficients(7) + 0.5_NTREAL * coefficients(11))
     CALL IncrementMatrix(T4, OutputMat, &
-         & alpha_in=coefficients(5)+0.5_NTREAL*coefficients(13))
+         & alpha_in = coefficients(5) + 0.5_NTREAL * coefficients(13))
     CALL IncrementMatrix(T2, OutputMat, &
-         & alpha_in=coefficients(3)+0.5_NTREAL*coefficients(15))
+         & alpha_in = coefficients(3) + 0.5_NTREAL * coefficients(15))
     CALL IncrementMatrix(IdentityMat, OutputMat, &
-         & alpha_in=coefficients(1)+0.5_NTREAL*coefficients(17))
+         & alpha_in = coefficients(1) + 0.5_NTREAL * coefficients(17))
 
     CALL IncrementMatrix(TempMat, OutputMat)
 
     !! Undo scaling
-    DO II = 1, sigma_counter-1
+    DO II = 1, sigma_counter - 1
        CALL MatrixMultiply(OutputMat, OutputMat, TempMat, &
-            & threshold_in=params%threshold, memory_pool_in=pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        CALL CopyMatrix(TempMat, OutputMat)
        CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
        CALL IncrementMatrix(IdentityMat, OutputMat, -1.0_NTREAL)
@@ -390,7 +393,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(OutputMat, OutputMat, &
-            & params%BalancePermutation, memorypool_in=pool)
+            & params%BalancePermutation, memorypool_in = pool)
     END IF
 
     !! Cleanup
@@ -409,16 +412,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical sine function for mapping. 
   FUNCTION SineLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = SIN(val)
   END FUNCTION SineLambda
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prototypical cosine function. 
   FUNCTION CosineLambda(val) RESULT(outval)
-    REAL(KIND=NTREAL), INTENT(IN) :: val
-    REAL(KIND=NTREAL) :: outval
+    REAL(KIND = NTREAL), INTENT(IN) :: val
+    REAL(KIND = NTREAL) :: outval
 
     outval = COS(val)
   END FUNCTION CosineLambda

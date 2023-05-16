@@ -79,10 +79,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteHeader("Density Matrix Solver")
        CALL EnterSubLog
        IF (do_smearing) THEN
-          CALL WriteElement(key="Method", VALUE="Dense FOE")
-          CALL WriteElement(key="Inverse Temperature", VALUE=inv_temp)
+          CALL WriteElement(key = "Method", VALUE = "Dense FOE")
+          CALL WriteElement(key = "Inverse Temperature", VALUE = inv_temp)
        ELSE
-          CALL WriteElement(key="Method", VALUE="Dense Step Function")
+          CALL WriteElement(key = "Method", VALUE = "Dense Step Function")
        END IF
        CALL PrintParameters(params)
     END IF
@@ -90,13 +90,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
     CALL MatrixMultiply(ISQ, H, Temp, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
     CALL MatrixMultiply(Temp, ISQT, WH, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
 
     !! Perform the eigendecomposition
     CALL EigenDecomposition(WH, vals, &
-         & eigenvectors_in=vecs, solver_parameters_in=params)
+         & eigenvectors_in = vecs, solver_parameters_in = params)
 
     !! Gather the eigenvalues on to every process
     CALL GetMatrixTripletList(vals, tlist)
@@ -142,8 +142,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (params%be_verbose) THEN
        CALL WriteHeader("Chemical Potential Search")
        CALL EnterSubLog
-       CALL WriteElement(key="Potential", VALUE=chemical_potential)
-       CALL WriteElement(key="Iterations", VALUE=JJ)
+       CALL WriteElement(key = "Potential", VALUE = chemical_potential)
+       CALL WriteElement(key = "Iterations", VALUE = JJ)
        CALL ExitSubLog
     END IF
 
@@ -175,20 +175,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Fill
     CALL ConstructEmptyMatrix(vals, H)
-    CALL FillMatrixFromTripletList(vals, tlist, preduplicated_in=.TRUE.)
+    CALL FillMatrixFromTripletList(vals, tlist, preduplicated_in = .TRUE.)
 
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, vals, temp, threshold_in=params%threshold)
+    CALL MatrixMultiply(vecs, vals, temp, threshold_in = params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
     CALL ConjugateMatrix(vecsT)
     CALL MatrixMultiply(temp, vecsT, WD, &
-         & threshold_in=params%threshold)
+         & threshold_in = params%threshold)
 
     !! Compute the density matrix in the non-orthogonalized basis
     CALL MatrixMultiply(ISQT, WD, Temp, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
     CALL MatrixMultiply(Temp, ISQ, K, &
-         & threshold_in=params%threshold, memory_pool_in=pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
 
     !! Optional out variables.
     IF (PRESENT(energy_value_out)) THEN

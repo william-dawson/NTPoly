@@ -81,16 +81,16 @@ MODULE ProcessGridModule
   END INTERFACE ConstructNewProcessGrid
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
-  SUBROUTINE ConstructProcessGrid_full(world_comm_, process_rows_, &
-       & process_columns_, process_slices_, be_verbose_in)
+  SUBROUTINE ConstructProcessGrid_full(world_comm, process_rows, &
+       & process_columns, process_slices, be_verbose_in)
     !> A communicator that every process in the grid is a part of.
-    INTEGER, INTENT(IN) :: world_comm_
+    INTEGER, INTENT(IN) :: world_comm
     !> The number of grid rows.
-    INTEGER, INTENT(IN) :: process_rows_
+    INTEGER, INTENT(IN) :: process_rows
     !> The number of grid columns.
-    INTEGER, INTENT(IN) :: process_columns_
+    INTEGER, INTENT(IN) :: process_columns
     !> The number of grid slices.
-    INTEGER, INTENT(IN) :: process_slices_
+    INTEGER, INTENT(IN) :: process_slices
     !> Set true to print process grid info.
     LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
     !! Local Data
@@ -103,15 +103,15 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        be_verbose = .FALSE.
     END IF
 
-    CALL ConstructNewProcessGrid(global_grid, world_comm_, process_rows_, &
-         & process_columns_, process_slices_)
+    CALL ConstructNewProcessGrid(global_grid, world_comm, process_rows, &
+         & process_columns, process_slices)
   END SUBROUTINE ConstructProcessGrid_full
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup a process grid specifying only the slices
-  SUBROUTINE ConstructProcessGrid_onlyslice(world_comm_, process_slices_in, &
+  SUBROUTINE ConstructProcessGrid_onlyslice(world_comm, process_slices_in, &
        & be_verbose_in)
     !> A communicator that every process in the grid is a part of.
-    INTEGER, INTENT(IN) :: world_comm_
+    INTEGER, INTENT(IN) :: world_comm
     !> The number of grid slices.
     INTEGER, INTENT(IN), OPTIONAL :: process_slices_in
     !> Set true to print process grid info.
@@ -123,7 +123,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Total processors
-    CALL MPI_COMM_SIZE(world_comm_, total_processors, ierr)
+    CALL MPI_COMM_SIZE(world_comm, total_processors, ierr)
 
     !! Process Optional Parameters
     IF (PRESENT(be_verbose_in)) THEN
@@ -131,6 +131,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        be_verbose = .FALSE.
     END IF
+
     IF (PRESENT(process_slices_in)) THEN
        process_slices = process_slices_in
     ELSE
@@ -142,23 +143,23 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & process_columns)
 
     !! Now call the full setup
-    CALL ConstructProcessGrid(world_comm_, process_rows, process_columns, &
+    CALL ConstructProcessGrid(world_comm, process_rows, process_columns, &
          & process_slices, be_verbose)
   END SUBROUTINE ConstructProcessGrid_onlyslice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a process grid.
-  SUBROUTINE ConstructNewProcessGrid_full(grid, world_comm_, process_rows_, &
-       & process_columns_, process_slices_)
+  SUBROUTINE ConstructNewProcessGrid_full(grid, world_comm, process_rows, &
+       & process_columns, process_slices)
     !> The grid to construct
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
     !> A communicator that every process in the grid is a part of.
-    INTEGER, INTENT(IN) :: world_comm_
+    INTEGER, INTENT(IN) :: world_comm
     !> The number of grid rows.
-    INTEGER, INTENT(IN) :: process_rows_
+    INTEGER, INTENT(IN) :: process_rows
     !> The number of grid columns.
-    INTEGER, INTENT(IN) :: process_columns_
+    INTEGER, INTENT(IN) :: process_columns
     !> The number of grid slices.
-    INTEGER, INTENT(IN) :: process_slices_
+    INTEGER, INTENT(IN) :: process_slices
     !! Local Data
     INTEGER :: column_block_multiplier
     INTEGER :: row_block_multiplier
@@ -170,17 +171,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Error_t) :: err
 
     CALL ConstructError(err)
-    CALL MPI_COMM_DUP(world_comm_, grid%global_comm, ierr)
+    CALL MPI_COMM_DUP(world_comm, grid%global_comm, ierr)
     !! Grid Dimensions
-    grid%num_process_rows = process_rows_
-    grid%num_process_columns = process_columns_
-    grid%num_process_slices = process_slices_
+    grid%num_process_rows = process_rows
+    grid%num_process_columns = process_columns
+    grid%num_process_slices = process_slices
     CALL MPI_COMM_SIZE(grid%global_comm, grid%total_processors, ierr)
-    grid%slice_size = grid%total_processors/grid%num_process_slices
+    grid%slice_size = grid%total_processors / grid%num_process_slices
 
     !! Do a sanity check
-    IF (grid%num_process_rows*grid%num_process_columns*grid%num_process_slices &
-         & .NE. grid%total_processors) THEN
+    IF (grid%num_process_rows * grid%num_process_columns &
+         & * grid%num_process_slices .NE. grid%total_processors) THEN
        CALL SetGenericError(err, &
             & "you did not specify a consistent process grid size", .TRUE.)
     END IF
@@ -189,16 +190,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & MIN(grid%num_process_rows, grid%num_process_columns)) &
             & .NE. 0) THEN
           CALL SetGenericError(err, &
-               & "if slices >1, either rows or columns must be a multiple"//&
+               & "if slices >1, either rows or columns must be a multiple" // &
                & "of the other.", &
                & .TRUE.)
        END IF
     END IF
 
     !! Grid ID
-    CALL MPI_COMM_RANK(grid%global_comm,grid%global_rank,ierr)
-    grid%my_slice = grid%global_rank/grid%slice_size
-    grid%my_row = MOD(grid%global_rank, grid%slice_size)/ &
+    CALL MPI_COMM_RANK(grid%global_comm,grid%global_rank, ierr)
+    grid%my_slice = grid%global_rank / grid%slice_size
+    grid%my_row = MOD(grid%global_rank, grid%slice_size) / &
          & grid%num_process_columns
     grid%my_column = MOD(grid%global_rank, grid%num_process_columns)
 
@@ -209,20 +210,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_COMM_SPLIT(grid%global_comm, grid%within_slice_rank, &
          & grid%global_rank, grid%between_slice_comm, ierr)
     CALL MPI_COMM_RANK(grid%between_slice_comm, grid%between_slice_rank, ierr)
-    CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_row, grid%global_rank, &
-         & grid%row_comm, ierr)
+    CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_row, &
+         & grid%global_rank, grid%row_comm, ierr)
     CALL MPI_COMM_RANK(grid%row_comm, grid%row_rank, ierr)
     CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_column, &
          & grid%global_rank, grid%column_comm, ierr)
     CALL MPI_COMM_RANK(grid%column_comm, grid%column_rank, ierr)
 
     !! Blocking Information
-    column_block_multiplier = (grid%num_process_rows/grid%num_process_columns)*&
+    column_block_multiplier = &
+         & (grid%num_process_rows / grid%num_process_columns) * &
          & grid%num_process_slices
     IF (column_block_multiplier .EQ. 0) THEN
-       column_block_multiplier = 1*grid%num_process_slices
+       column_block_multiplier = grid%num_process_slices
     END IF
-    row_block_multiplier = (grid%num_process_columns/grid%num_process_rows)* &
+    row_block_multiplier = &
+         & (grid%num_process_columns / grid%num_process_rows) * &
          & grid%num_process_slices
     IF (row_block_multiplier .EQ. 0) THEN
        row_block_multiplier = 1*grid%num_process_slices
@@ -238,8 +241,8 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     num_threads = omp_get_num_threads()
     grid%omp_max_threads = omp_get_max_threads()
     !$omp end PARALLEL
-    grid%block_multiplier = num_threads/&
-         & (column_block_multiplier+row_block_multiplier)
+    grid%block_multiplier = num_threads / &
+         & (column_block_multiplier + row_block_multiplier)
     IF (grid%block_multiplier .EQ. 0) THEN
        grid%block_multiplier = 1
     END IF
@@ -248,9 +251,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #endif
 
     grid%number_of_blocks_columns = &
-         & column_block_multiplier*grid%block_multiplier
+         & column_block_multiplier * grid%block_multiplier
     grid%number_of_blocks_rows = &
-         & row_block_multiplier*grid%block_multiplier
+         & row_block_multiplier * grid%block_multiplier
 
     !! Create Blocked Communicators
     ALLOCATE(grid%blocked_row_comm(grid%number_of_blocks_rows))
@@ -260,21 +263,21 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ALLOCATE(grid%blocked_between_slice_comm(grid%number_of_blocks_rows, &
          & grid%number_of_blocks_columns))
 
-    DO JJ=1,grid%number_of_blocks_columns
-       DO II=1,grid%number_of_blocks_rows
+    DO JJ = 1, grid%number_of_blocks_columns
+       DO II = 1, grid%number_of_blocks_rows
           CALL MPI_COMM_SPLIT(grid%global_comm, grid%my_slice, &
-               & grid%global_rank, grid%blocked_within_slice_comm(II,JJ), &
+               & grid%global_rank, grid%blocked_within_slice_comm(II, JJ), &
                & ierr)
           CALL MPI_COMM_SPLIT(grid%global_comm, grid%within_slice_rank, &
-               & grid%global_rank, grid%blocked_between_slice_comm(II,JJ), &
+               & grid%global_rank, grid%blocked_between_slice_comm(II, JJ), &
                & ierr)
        END DO
     END DO
-    DO JJ=1,grid%number_of_blocks_columns
+    DO JJ = 1, grid%number_of_blocks_columns
        CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_column, &
             & grid%global_rank, grid%blocked_column_comm(JJ), ierr)
     END DO
-    DO II=1,grid%number_of_blocks_rows
+    DO II = 1, grid%number_of_blocks_rows
        CALL MPI_COMM_SPLIT(grid%within_slice_comm, grid%my_row, &
             & grid%global_rank, grid%blocked_row_comm(II), ierr)
     END DO
@@ -282,12 +285,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructNewProcessGrid_full
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup a process grid specifying only the slices
-  SUBROUTINE ConstructNewProcessGrid_onlyslice(grid, world_comm_, &
+  SUBROUTINE ConstructNewProcessGrid_onlyslice(grid, world_comm, &
        & process_slices_in)
     !> The grid to construct
     TYPE(ProcessGrid_t), INTENT(INOUT) :: grid
     !> A communicator that every process in the grid is a part of.
-    INTEGER, INTENT(IN) :: world_comm_
+    INTEGER, INTENT(IN) :: world_comm
     !> The number of grid slices.
     INTEGER, INTENT(IN), OPTIONAL :: process_slices_in
     !! Local Data
@@ -296,7 +299,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: ierr
 
     !! Total processors
-    CALL MPI_COMM_SIZE(world_comm_, total_processors, ierr)
+    CALL MPI_COMM_SIZE(world_comm, total_processors, ierr)
 
     !! Process Optional Parameters
     IF (PRESENT(process_slices_in)) THEN
@@ -310,7 +313,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & process_columns)
 
     !! Now call the full setup
-    CALL ConstructNewProcessGrid(grid, world_comm_, process_rows, &
+    CALL ConstructNewProcessGrid(grid, world_comm, process_rows, &
          & process_columns, process_slices)
   END SUBROUTINE ConstructNewProcessGrid_onlyslice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -364,16 +367,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MPI_COMM_DUP(old_grid%blocked_column_comm(JJ), &
             & new_grid%blocked_column_comm(JJ), ierr)
     END DO
-    DO JJ=1,new_grid%number_of_blocks_columns
-       DO II=1,new_grid%number_of_blocks_rows
-          CALL MPI_COMM_DUP(old_grid%blocked_within_slice_comm(II,JJ), &
-               & new_grid%blocked_within_slice_comm(II,JJ), ierr)
+    DO JJ = 1, new_grid%number_of_blocks_columns
+       DO II = 1,new_grid%number_of_blocks_rows
+          CALL MPI_COMM_DUP(old_grid%blocked_within_slice_comm(II, JJ), &
+               & new_grid%blocked_within_slice_comm(II, JJ), ierr)
        END DO
     END DO
-    DO JJ=1,new_grid%number_of_blocks_columns
-       DO II=1,new_grid%number_of_blocks_rows
-          CALL MPI_COMM_DUP(old_grid%blocked_between_slice_comm(II,JJ), &
-               & new_grid%blocked_between_slice_comm(II,JJ), ierr)
+    DO JJ = 1, new_grid%number_of_blocks_columns
+       DO II = 1, new_grid%number_of_blocks_rows
+          CALL MPI_COMM_DUP(old_grid%blocked_between_slice_comm(II, JJ), &
+               & new_grid%blocked_between_slice_comm(II, JJ), ierr)
        END DO
     END DO
 
@@ -422,9 +425,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (ALLOCATED(grid_in%blocked_within_slice_comm)) THEN
-          DO JJ=1,grid_in%number_of_blocks_columns
-             DO II=1,grid_in%number_of_blocks_rows
-                CALL MPI_COMM_FREE(grid_in%blocked_within_slice_comm(II,JJ), &
+          DO JJ = 1, grid_in%number_of_blocks_columns
+             DO II = 1, grid_in%number_of_blocks_rows
+                CALL MPI_COMM_FREE(grid_in%blocked_within_slice_comm(II, JJ), &
                      & ierr)
              END DO
           END DO
@@ -432,9 +435,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        IF (ALLOCATED(grid_in%blocked_between_slice_comm)) THEN
-          DO JJ=1,grid_in%number_of_blocks_columns
-             DO II=1,grid_in%number_of_blocks_rows
-                CALL MPI_COMM_FREE(grid_in%blocked_between_slice_comm(II,JJ), &
+          DO JJ = 1, grid_in%number_of_blocks_columns
+             DO II = 1, grid_in%number_of_blocks_rows
+                CALL MPI_COMM_FREE(grid_in%blocked_between_slice_comm(II, JJ), &
                      & ierr)
              END DO
           END DO
@@ -477,7 +480,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        between_rank = 0
        !! First preferentially try to split along slices
     ELSE IF (old_grid%num_process_slices .GT. 1) THEN
-       midpoint = old_grid%num_process_slices/2
+       midpoint = old_grid%num_process_slices / 2
        cols = old_grid%num_process_columns
        rows = old_grid%num_process_rows
        IF (old_grid%my_slice .LT. midpoint) THEN
@@ -489,10 +492,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
        between_rank = old_grid%my_slice
        split_slice = .TRUE.
-       left_grid_size = midpoint*cols*rows
+       left_grid_size = midpoint * cols * rows
        !! Next try to split the bigger direction
     ELSE IF (old_grid%num_process_rows .GT. old_grid%num_process_columns) THEN
-       midpoint = old_grid%num_process_rows/2
+       midpoint = old_grid%num_process_rows / 2
        cols = old_grid%num_process_columns
        slices = 1
        IF (old_grid%my_row .LT. midpoint) THEN
@@ -503,10 +506,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           rows = old_grid%num_process_rows - midpoint
        END IF
        between_rank = old_grid%my_row
-       left_grid_size = midpoint*cols*slices
+       left_grid_size = midpoint * cols * slices
        !! Default Case
     ELSE
-       midpoint = old_grid%num_process_columns/2
+       midpoint = old_grid%num_process_columns / 2
        slices = 1
        rows = old_grid%num_process_rows
        IF (old_grid%my_column .LT. midpoint) THEN
@@ -517,7 +520,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           cols = old_grid%num_process_columns - midpoint
        END IF
        between_rank = old_grid%my_column
-       left_grid_size = midpoint*slices*rows
+       left_grid_size = midpoint * slices * rows
     END IF
 
     !! Construct
@@ -606,12 +609,12 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     rows   = 1
     columns = 1
-    slice_size = total_processors/set_slices
+    slice_size = total_processors / set_slices
     size_search = FLOOR(SQRT(REAL(slice_size)))
-    DO II=size_search,1,-1
-       IF (MOD(slice_size,II) .EQ. 0) THEN
+    DO II = size_search, 1, -1
+       IF (MOD(slice_size, II) .EQ. 0) THEN
           rows = II
-          columns = slice_size/II
+          columns = slice_size / II
           EXIT
        END IF
     END DO
@@ -646,7 +649,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! If not, we try a grid where the rows are twice the number of columns.
        slice_dim = FLOOR(SQRT(REAL(slice_size/2)))
-       IF (slice_dim*slice_dim*2 .EQ. slice_size) THEN
+       IF (slice_dim*slice_dim * 2 .EQ. slice_size) THEN
           FOUND = .TRUE.
           EXIT
        END IF
@@ -663,16 +666,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(this)) THEN
        CALL WriteHeader("Process Grid")
        CALL EnterSubLog
-       CALL WriteListElement("Process Rows", &
-            & VALUE=this%num_process_rows)
+       CALL WriteListElement(key = "Process Rows", &
+            & VALUE = this%num_process_rows)
        CALL WriteListElement(key = "Process Columns", &
-            & VALUE=this%num_process_columns)
+            & VALUE = this%num_process_columns)
        CALL WriteListElement(key = "Process Slices", &
-            & VALUE=this%num_process_slices)
+            & VALUE = this%num_process_slices)
        CALL WriteListElement(key = "Column Blocks", &
-            & VALUE=this%number_of_blocks_columns)
+            & VALUE = this%number_of_blocks_columns)
        CALL WriteListElement(key = "Row Blocks", &
-            & VALUE=this%number_of_blocks_rows)
+            & VALUE = this%number_of_blocks_rows)
        CALL ExitSubLog
     ELSE
        CALL WriteProcessGridInfo(global_grid)
