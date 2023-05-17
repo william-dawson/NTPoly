@@ -187,6 +187,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & VALUE = this%threshold)
     CALL WriteElement(key = "Maximum Iterations", &
          & VALUE = this%max_iterations)
+    CALL WriteElement(key = "Step Threshold", &
+         & VALUE = this%step_thresh)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

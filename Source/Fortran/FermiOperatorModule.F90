@@ -379,7 +379,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the energy
-    CALL DotMatrix(WH, KOrth, energy_value_out)
+    IF (PRESENT(energy_value_out)) THEN
+       CALL DotMatrix(WH, KOrth, energy_value_out)
+    END IF
 
      !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
@@ -565,7 +567,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the energy
-    CALL DotMatrix(WH, KOrth, energy_value_out)
+    IF (PRESENT(energy_value_out)) THEN
+       CALL DotMatrix(WH, KOrth, energy_value_out)
+    END IF
 
      !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
