@@ -483,7 +483,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & (REAL(W%actual_matrix_dimension, KIND = NTREAL) ** 2)
 
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "C Steps", VALUE = II)
+          CALL WriteListElement(key = "Gradient Evaluations", VALUE = II)
           CALL EnterSubLog
           CALL WriteElement("Beta", VALUE = B_I)
           CALL WriteElement("Sparsity", VALUE = sparsity)
@@ -589,9 +589,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & threshold_in = threshold, memory_pool_in = pool)
 
     !! Scaling Factor Bottom
-    CALL TransposeMatrix(X, Xt)
-    CALL ConjugateMatrix(Xt)
-    CALL DotMatrix(Xt, W, denom)
+    CALL DotMatrix(X, W, denom)
     CALL DotMatrix(W, XA, num)
     CALL CopyMatrix(X, Out)
     CALL ScaleMatrix(Out, -1.0_NTREAL * num / denom)
@@ -602,7 +600,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Cleanup
     CALL DestructMatrix(XA)
-    CALL DestructMatrix(Xt)
 
   END SUBROUTINE ComputeCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
