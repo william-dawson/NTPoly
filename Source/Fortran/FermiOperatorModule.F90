@@ -495,7 +495,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! First order step
        step = min(step, inv_temp - B_I)
        CALL ComputeX(W, IMat, pool, params%threshold, X)
-       CALL ComputeCStep(X, A, W, IMat, pool, params%threshold, K0)
+       CALL ComputeCStep(X, A, W, pool, params%threshold, K0)
        II = II + 1
        CALL CopyMatrix(K0, RK1)
        CALL ScaleMatrix(RK1, step)
@@ -503,7 +503,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Second Order Step
        CALL ComputeX(RK1, IMat, pool, params%threshold, X)
-       CALL ComputeCStep(X, A, RK1, IMat, pool, params%threshold, K1)
+       CALL ComputeCStep(X, A, RK1, pool, params%threshold, K1)
        II = II + 1
        CALL CopyMatrix(W, RK2)
        CALL IncrementMatrix(K0, RK2, alpha_in = step*0.5_NTREAL, &
@@ -526,7 +526,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL IncrementMatrix(W, RK1, threshold_in = params%threshold)
           !! Update Second Order
           CALL ComputeX(RK1, IMat, pool, params%threshold, X)
-          CALL ComputeCStep(X, A, RK1, IMat, pool, params%threshold, K1)
+          CALL ComputeCStep(X, A, RK1, pool, params%threshold, K1)
           II = II + 1
           CALL CopyMatrix(W, RK2)
           CALL IncrementMatrix(K0, RK2, alpha_in = step*0.5_NTREAL, &
@@ -650,15 +650,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ComputeGCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take one step for the WOM_C algorithm. 
-  SUBROUTINE ComputeCStep(X, A, W, I, pool, threshold, Out)
+  SUBROUTINE ComputeCStep(X, A, W, pool, threshold, Out)
     !> The X matrix.
     TYPE(Matrix_ps), INTENT(IN) :: X
     !> H
     TYPE(Matrix_ps), INTENT(IN) :: A
     !> The wave operator
     TYPE(Matrix_ps), INTENT(IN) :: W
-    !> The identity matrix
-    TYPE(Matrix_ps), INTENT(IN) :: I
     !> The memory pool.
     TYPE(MatrixMemoryPool_p), INTENT(INOUT) :: pool
     !> The threshold for small values.
@@ -666,32 +664,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The identity matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Out
     !! Local matrices.
-    TYPE(Matrix_ps) :: Xt, XtW, Temp
+    TYPE(Matrix_ps) :: XA, Xt
+    ! TYPE(Matrix_ps) :: Xt, XtW, Temp
     REAL(NTREAL) :: num, denom
 
-    !! Form X^T W
+    !! Form XA
+    CALL MatrixMultiply(X, A, XA, &
+         & threshold_in = threshold, memory_pool_in = pool)
+
+    !! Scaling Factor Bottom
     CALL TransposeMatrix(X, Xt)
     CALL ConjugateMatrix(Xt)
-    CALL MatrixMultiply(Xt, W, XtW, &
-         & threshold_in = threshold, memory_pool_in = pool)
-    
-    !! Scaling Factor
-    CALL MatrixTrace(XtW, denom)
-    CALL DotMatrix(A, XtW, num)
+    CALL DotMatrix(Xt, W, denom)
+    CALL DotMatrix(W, XA, num)
+    CALL CopyMatrix(X, Out)
+    CALL ScaleMatrix(Out, -1.0_NTREAL * num / denom)
 
-    !! Form the inner part
-    CALL CopyMatrix(I, Temp)
-    CALL ScaleMatrix(Temp, -1.0_NTREAL * num / denom)
-    CALL IncrementMatrix(A, Temp)
-
-    !! Put it together
-    CALL MatrixMultiply(X, Temp, Out, alpha_in = -0.5_NTREAL, &
-         & threshold_in = threshold, memory_pool_in = pool)
+    !! Combine
+    CALL IncrementMatrix(XA, Out)
+    CALL ScaleMatrix(Out, -0.5_NTREAL)
 
     !! Cleanup
+    CALL DestructMatrix(XA)
     CALL DestructMatrix(Xt)
-    CALL DestructMatrix(XtW)
-    CALL DestructMatrix(Temp)
 
   END SUBROUTINE ComputeCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
