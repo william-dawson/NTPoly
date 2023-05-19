@@ -35,9 +35,9 @@ public:
   //!\param energy_value_out the energy of the system.
   //!\param solver_parameters parameters for the solver
   static void WOM_GC(const Matrix_ps &Hamiltonian,
-                     const Matrix_ps &InverseSquareRoot,
-                     Matrix_ps &Density, double chemical_potential,
-                     double inv_temp, double &energy_value_out,
+                     const Matrix_ps &InverseSquareRoot, Matrix_ps &Density,
+                     double chemical_potential, double inv_temp,
+                     double &energy_value_out,
                      const SolverParameters &solver_parameters);
   //! Compute the density matrix using wave operator minimization.
   //! Fixed number of electrons version.
@@ -49,9 +49,8 @@ public:
   //!\param energy_value_out the energy of the system.
   //!\param solver_parameters parameters for the solver
   static void WOM_C(const Matrix_ps &Hamiltonian,
-                    const Matrix_ps &InverseSquareRoot,
-                    Matrix_ps &Density, double trace,
-                    double inv_temp, double &energy_value_out,
+                    const Matrix_ps &InverseSquareRoot, Matrix_ps &Density,
+                    double trace, double inv_temp, double &energy_value_out,
                     const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly

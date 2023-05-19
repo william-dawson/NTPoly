@@ -416,7 +416,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     step = 1.0_NTREAL
     DO WHILE(B_I .LT. inv_temp)
        !! First order step
-       step = min(step, inv_temp - B_I)
+       step = MIN(step, inv_temp - B_I)
        CALL ComputeX(W, IMat, pool, params%threshold, X)
        IF (GC) THEN
           CALL ComputeGCStep(X, A, pool, params%threshold, K0)
@@ -506,7 +506,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DotMatrix(WH, KOrth, energy_value_out)
     END IF
 
-     !! Undo Load Balancing Step
+    !! Undo Load Balancing Step
     IF (params%do_load_balancing) THEN
        CALL UndoPermuteMatrix(KOrth, KOrth, &
             & params%BalancePermutation, memorypool_in = pool)
@@ -563,6 +563,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     CALL MatrixMultiply(X, A, Out, alpha_in = -0.5_NTREAL, &
          & threshold_in = threshold, memory_pool_in = pool)
+
   END SUBROUTINE ComputeGCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Take one step for the WOM_C algorithm. 
@@ -580,8 +581,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The identity matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Out
     !! Local matrices.
-    TYPE(Matrix_ps) :: XA, Xt
-    ! TYPE(Matrix_ps) :: Xt, XtW, Temp
+    TYPE(Matrix_ps) :: XA
     REAL(NTREAL) :: num, denom
 
     !! Form XA

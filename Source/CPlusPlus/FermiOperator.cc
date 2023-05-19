@@ -21,22 +21,21 @@ void FermiOperator::ComputeDenseFOE(const Matrix_ps &Hamiltonian,
                       &chemical_potential_out, GetIH(solver_parameters));
 }
 void FermiOperator::WOM_GC(const Matrix_ps &Hamiltonian,
-                           const Matrix_ps &Overlap,
-                           Matrix_ps &Density, double chemical_potential, 
-                           double inv_temp, double &energy_value_out,
+                           const Matrix_ps &Overlap, Matrix_ps &Density,
+                           double chemical_potential, double inv_temp,
+                           double &energy_value_out,
                            const SolverParameters &solver_parameters) {
-  WOM_GC_wrp(GetIH(Hamiltonian), GetIH(Overlap),
-             GetIH(Density), &chemical_potential, &inv_temp, 
-             &energy_value_out, GetIH(solver_parameters));
+  WOM_GC_wrp(GetIH(Hamiltonian), GetIH(Overlap), GetIH(Density),
+             &chemical_potential, &inv_temp, &energy_value_out,
+             GetIH(solver_parameters));
 }
 void FermiOperator::WOM_C(const Matrix_ps &Hamiltonian,
-                          const Matrix_ps &Overlap,
-                          Matrix_ps &Density, double trace, 
-                          double inv_temp, double &energy_value_out,
+                          const Matrix_ps &Overlap, Matrix_ps &Density,
+                          double trace, double inv_temp,
+                          double &energy_value_out,
                           const SolverParameters &solver_parameters) {
-  WOM_C_wrp(GetIH(Hamiltonian), GetIH(Overlap),
-            GetIH(Density), &trace, &inv_temp, 
-            &energy_value_out, GetIH(solver_parameters));
+  WOM_C_wrp(GetIH(Hamiltonian), GetIH(Overlap), GetIH(Density), &trace,
+            &inv_temp, &energy_value_out, GetIH(solver_parameters));
 }
 
 } // namespace NTPoly

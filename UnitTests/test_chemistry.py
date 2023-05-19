@@ -346,7 +346,6 @@ class TestChemistry:
         self.assertLessEqual(global_norm, THRESHOLD)
         self.assertLessEqual(global_en, THRESHOLD)
 
-
     def test_wom_c(self):
         '''Test the wom_c solver.'''
         from helpers import result_file, THRESHOLD
@@ -385,10 +384,6 @@ class TestChemistry:
                 DOrth = v @ diag(we) @ matrix(v).H
             else:
                 DOrth = v @ diag(we) @ v.T
-            if trace(DOrth) > self.nel:
-                right = mu
-            else:
-                left = mu
         D = ISQ.dot(DOrth).dot(ISQ)
         check_energy = trace(FOrth.dot(DOrth))
 
@@ -411,7 +406,6 @@ class TestChemistry:
         global_en = comm.bcast(check_energy - energy_value, root=0)
         self.assertLessEqual(global_norm, THRESHOLD)
         self.assertLessEqual(global_en, THRESHOLD)
-
 
     def test_mcweeny_step(self):
         from scipy.io import mmread
