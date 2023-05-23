@@ -7,7 +7,7 @@
   ALLOCATE(this%DATA(size))
 
   !! Copy back
-  this%DATA(:this%CurrentSize) = temporary_data
+  this%DATA(:) = temporary_data
 
   !! Cleanup
   DEALLOCATE(temporary_data)

@@ -1,2 +1,2 @@
   CALL ConstructEmptyMatrix(matAT, matA%columns, matA%rows)
-  matAT%DATA = TRANSPOSE(matA%DATA)
+  matAT%DATA(:, :) = TRANSPOSE(matA%DATA)
