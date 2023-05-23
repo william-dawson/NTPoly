@@ -1,1 +1,1 @@
-  matA%values = constant * matA%values
+  matA%values(:) = constant * matA%values

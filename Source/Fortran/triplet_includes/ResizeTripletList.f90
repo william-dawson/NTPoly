@@ -1,6 +1,6 @@
   !! Temporary copy
   ALLOCATE(temporary_data(this%CurrentSize))
-  temporary_data = this%DATA(:this%CurrentSize)
+  temporary_data(:) = this%DATA(:this%CurrentSize)
 
   !! Create new memory
   IF (ALLOCATED(this%DATA)) DEALLOCATE(this%DATA)

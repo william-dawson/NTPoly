@@ -38,10 +38,10 @@
   !! Cleanup
   CALL DestructMatrix(matC)
   CALL ConstructEmptyMatrix(matC, TempMat%rows, TempMat%columns)
-  matC%outer_index = TempMat%outer_index
+  matC%outer_index(:) = TempMat%outer_index
   ALLOCATE(matC%inner_index(TempMat%outer_index(TempMat%columns+1)))
   ALLOCATE(matC%values(TempMat%outer_index(TempMat%columns+1)))
-  matC%inner_index = TempMat%inner_index(&
+  matC%inner_index(:) = TempMat%inner_index(&
        & :TempMat%outer_index(TempMat%columns+1))
-  matC%values = TempMat%values(:TempMat%outer_index(TempMat%columns+1))
+  matC%values(:) = TempMat%values(:TempMat%outer_index(TempMat%columns+1))
   CALL DestructMatrix(TempMat)

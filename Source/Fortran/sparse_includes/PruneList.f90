@@ -31,7 +31,7 @@
 
   !! Convert to matrix
   CALL ConstructTripletList(unsorted_pruned_list, PII - 1)
-  unsorted_pruned_list%DATA = memorypool%pruned_list(1:PII - 1)
+  unsorted_pruned_list%DATA(:) = memorypool%pruned_list(1:PII - 1)
   CALL SortTripletList(unsorted_pruned_list, mat_c_columns, mat_c_rows, &
        & sorted_pruned_list, bubble_in = .TRUE.)
   CALL ConstructMatrixFromTripletList(matAB, sorted_pruned_list, mat_c_rows, &

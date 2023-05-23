@@ -11,7 +11,7 @@
 
   !! Convert to a 1D array for index ease.
   ALLOCATE(VD1(SIZE(VD, DIM = 1)*SIZE(VD, DIM = 2)))
-  VD1 = PACK(VD, .TRUE.)
+  VD1(:) = PACK(VD, .TRUE.)
 
   CALL ConstructTripletList(triplet_v)
   ind = 1

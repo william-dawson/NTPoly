@@ -619,7 +619,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     CALL ConstructEmptyMatrix(MatV, MatA%rows, MatA%columns)
-    MatV%DATA = MatA%DATA
+    MatV%DATA(:, :) = MatA%DATA
 
     N = SIZE(MatA%DATA, DIM = 1)
     LDA = N
