@@ -13,9 +13,9 @@
   !! Remove the excess rows and columns that come from the logical size.
   CALL ConstructEmptyMatrix(local_mat, this%actual_matrix_dimension, &
        & this%actual_matrix_dimension)
-  local_mat%outer_index = &
+  local_mat%outer_index(:) = &
        & gathered%outer_index(:this%actual_matrix_dimension + 1)
   ALLOCATE(local_mat%inner_index(SIZE(gathered%inner_index)))
-  local_mat%inner_index = gathered%inner_index
+  local_mat%inner_index(:) = gathered%inner_index
   ALLOCATE(local_mat%values(SIZE(gathered%values)))
-  local_mat%values = gathered%values
+  local_mat%values(:) = gathered%values

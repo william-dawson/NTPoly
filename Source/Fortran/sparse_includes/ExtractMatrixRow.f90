@@ -27,7 +27,7 @@
   ALLOCATE(row_out%inner_index(values_found))
   row_out%inner_index = 1
   ALLOCATE(row_out%values(values_found))
-  row_out%values = value_buffer(:values_found)
+  row_out%values(:) = value_buffer(:values_found)
 
   !! Cleanup
   DEALLOCATE(value_buffer)

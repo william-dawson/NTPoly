@@ -20,18 +20,19 @@
      CALL ConstructEmptyMatrix(split_list(II), this%rows, lcolumns)
 
      !! Copy Outer Index
-     split_list(II)%outer_index = this%outer_index(loffset:loffset + lcolumns)
-     split_list(II)%outer_index = split_list(II)%outer_index - &
+     split_list(II)%outer_index(:) = &
+          & this%outer_index(loffset:loffset + lcolumns)
+     split_list(II)%outer_index(:) = split_list(II)%outer_index(:) - &
           & split_list(II)%outer_index(1)
      total_values = split_list(II)%outer_index(lcolumns + 1)
 
      !! Copy Inner Indices and Values
      IF (total_values .GT. 0) THEN
         ALLOCATE(split_list(II)%inner_index(total_values))
-        split_list(II)%inner_index = &
+        split_list(II)%inner_index(:) = &
              & this%inner_index(linner_offset:linner_offset + total_values - 1)
         ALLOCATE(split_list(II)%values(total_values))
-        split_list(II)%values = &
+        split_list(II)%values(:) = &
              & this%values(linner_offset:linner_offset + total_values - 1)
      END IF
   END DO

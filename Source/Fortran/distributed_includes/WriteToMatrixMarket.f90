@@ -38,7 +38,7 @@
        & // new_LINE('A') // "%" // new_LINE('A')
 #endif
   ALLOCATE(CHARACTER(LEN = LEN_TRIM(temp_string1)) :: header_line1)
-  header_line1 = TRIM(temp_string1)
+  header_line1(:) = TRIM(temp_string1)
 
   CALL WriteMMSize(temp_string2, this%actual_matrix_dimension, &
        & this%actual_matrix_dimension, GetMatrixSize(this))

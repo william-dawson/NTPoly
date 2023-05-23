@@ -562,7 +562,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to compute the complex conjugate of.
     TYPE(Matrix_lsc), INTENT(INOUT) :: this
 
-    this%values = CONJG(this%values)
+    this%values(:) = CONJG(this%values)
   END SUBROUTINE ConjugateMatrix_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Convert a complex matrix to a real matrix.

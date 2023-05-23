@@ -12,13 +12,13 @@
      total_values = helper%values_per_process(II)
      ALLOCATE(acc_matrix%values(total_values))
      ALLOCATE(acc_matrix%inner_index(total_values))
-     acc_matrix%values = gathered_matrix%values( &
+     acc_matrix%values(:) = gathered_matrix%values( &
           & helper%displacement(II) + 1: &
           & helper%displacement(II) + helper%values_per_process(II))
-     acc_matrix%inner_index = gathered_matrix%inner_index( &
+     acc_matrix%inner_index(:) = gathered_matrix%inner_index( &
           & helper%displacement(II) + 1: &
           & helper%displacement(II) + helper%values_per_process(II))
-     acc_matrix%outer_index = gathered_matrix%outer_index(&
+     acc_matrix%outer_index(:) = gathered_matrix%outer_index(&
           & (matrix%columns + 1) * (II - 1) + 1:(matrix%columns + 1) * II)
      IF (II .EQ. helper%comm_size) THEN
         CALL IncrementMatrix(acc_matrix, sum_matrix, &

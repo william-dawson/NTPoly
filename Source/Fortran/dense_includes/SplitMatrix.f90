@@ -39,7 +39,7 @@
      DO II = 1, block_rows
         CALL ConstructEmptyMatrix(split_array(II, JJ), block_size_column(JJ), &
              & block_size_row(II))
-        split_array(II, JJ)%DATA = &
+        split_array(II, JJ)%DATA(:, :) = &
              & this%DATA(row_offsets(II):row_offsets(II + 1) - 1, &
              & column_offsets(JJ):column_offsets(JJ + 1) - 1)
      END DO
