@@ -190,7 +190,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
-       energy_value = 2.0_NTREAL * energy_value
        norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
@@ -403,7 +402,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
-       energy_value = 2.0_NTREAL * energy_value
        norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
@@ -633,7 +631,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
-       energy_value = 2.0_NTREAL * energy_value
        norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN
@@ -878,7 +875,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(D1, WH, energy_value)
-       energy_value = 2.0_NTREAL * energy_value
        norm_value = ABS(energy_value - energy_value_old)
 
        IF (params%be_verbose) THEN

@@ -193,7 +193,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional out variables.
     IF (PRESENT(energy_value_out)) THEN
-       energy_value_out = 2.0_NTREAL * energy_value
+       energy_value_out = energy_value
     END IF
     IF (PRESENT(chemical_potential_out)) THEN
        chemical_potential_out = chemical_potential

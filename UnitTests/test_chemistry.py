@@ -175,9 +175,9 @@ class TestChemistry:
         computed = 0
         for i, v in enumerate(eig_vals):
             if i < floor(self.nel):
-                computed += 2.0*v
+                computed += v
             elif ceil(self.nel) == i:
-                computed += 2.0*(ceil(self.nel) - self.nel) * v
+                computed += (ceil(self.nel) - self.nel) * v
 
         self.assertLessEqual(abs(energy - computed), THRESHOLD)
 
