@@ -22,6 +22,7 @@ MODULE SolverParametersModule_wrp
   PUBLIC :: SetParametersThreshold_wrp
   PUBLIC :: SetParametersBeVerbose_wrp
   PUBLIC :: SetParametersLoadBalance_wrp
+  PUBLIC :: SetParametersStepThreshold_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the iterat solver parameters.
   SUBROUTINE ConstructSolverParameters_wrp(ih_this) &
@@ -101,5 +102,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_new_value = TRANSFER(ih_new_value, h_new_value)
     CALL SetParametersLoadBalance(h_this%DATA, h_new_value%DATA)
   END SUBROUTINE SetParametersLoadBalance_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the step threshold.
+  SUBROUTINE SetParametersStepThreshold_wrp(ih_this,new_value) &
+       & BIND(c,name="SetParametersStepThreshold_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    REAL(NTREAL), INTENT(IN) :: new_value
+    TYPE(SolverParameters_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    CALL SetParametersStepThreshold(h_this%DATA,new_value)
+  END SUBROUTINE SetParametersStepThreshold_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SolverParametersModule_wrp

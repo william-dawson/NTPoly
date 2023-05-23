@@ -7,6 +7,7 @@ void SetParametersMaxIterations_wrp(int *ih_this, const int *new_value);
 void SetParametersBeVerbose_wrp(int *ih_this, const bool *new_value);
 void SetParametersThreshold_wrp(int *ih_this, const double *new_value);
 void SetParametersLoadBalance_wrp(int *ih_this, const int *ih_permutation);
+void SetParametersStepThreshold_wrp(int *ih_this, const double *new_value);
 void DestructSolverParameters_wrp(int *ih_this);
 
 #endif
