@@ -14,4 +14,4 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -cpp -fopenmp")
 
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -fopenmp -Wall")
-set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall")
+set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall -std=f2003")

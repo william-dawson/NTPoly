@@ -6,6 +6,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 namespace NTPoly {
 class Matrix_ps;
+////////////////////////////////////////////////////////////////////////////////
+//! Helper routines for converting an NTPoly matrix to other program types.
 class MatrixConversion {
 public:
   //! Some codes use a fixed sparsity pattern for a matrix instead of filtering
