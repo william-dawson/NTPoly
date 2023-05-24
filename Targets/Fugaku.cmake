@@ -10,8 +10,8 @@ set(TOOLCHAIN_LIBS "")
 
 # Release Suggestions
 set(CXX_TOOLCHAINFLAGS_RELEASE
-    "-Kfast,-Kparallel,openmp,optmsg=2 --linkfortran")
-set(F_TOOLCHAINFLAGS_RELEASE "-Kfast,-Kparallel,openmp,optmsg=2 -Cpp")
+    "-Kfast,parallel,openmp --linkfortran")
+set(F_TOOLCHAINFLAGS_RELEASE "-Kfast,parallel,openmp -Cpp")
 
 # Debug Suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "--linkfortran")
