@@ -249,10 +249,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: M
     INTEGER :: N
     INTEGER :: K
-    DOUBLE PRECISION, PARAMETER :: ALPHA = 1.0
+    REAL(NTREAL), PARAMETER :: ALPHA = 1.0
     INTEGER :: LDA
     INTEGER :: LDB
-    DOUBLE PRECISION, PARAMETER :: BETA = 0.0
+    REAL(NTREAL), PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
     !! Optional Parameters
@@ -321,9 +321,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local variables
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: WORK
-    DOUBLE PRECISION, DIMENSION(1) :: WORKTEMP
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: W
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: WORK
+    REAL(NTREAL), DIMENSION(1) :: WORKTEMP
     INTEGER :: LWORK
     INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
     INTEGER, DIMENSION(1) :: IWORKTEMP
@@ -532,10 +532,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: M
     INTEGER :: N
     INTEGER :: K
-    COMPLEX*16, PARAMETER :: ALPHA = 1.0
+    COMPLEX(NTCOMPLEX), PARAMETER :: ALPHA = 1.0
     INTEGER :: LDA
     INTEGER :: LDB
-    COMPLEX*16, PARAMETER :: BETA = 0.0
+    COMPLEX(NTCOMPLEX), PARAMETER :: BETA = 0.0
     INTEGER :: LDC
 
     !! Optional Parameters
@@ -604,17 +604,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Standard parameters
     CHARACTER, PARAMETER :: job = 'V', uplo = 'U'
     INTEGER :: N, LDA
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: W
-    COMPLEX*16, DIMENSION(:), ALLOCATABLE :: WORK
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: W
+    COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: WORK
     INTEGER :: LWORK
-    DOUBLE PRECISION, DIMENSION(:), ALLOCATABLE :: RWORK
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: RWORK
     INTEGER :: LRWORK
     INTEGER, DIMENSION(:), ALLOCATABLE :: IWORK
     INTEGER :: LIWORK
     INTEGER :: INFO
     !! Temp
-    COMPLEX*16, DIMENSION(1) :: WORKTEMP
-    DOUBLE PRECISION, DIMENSION(1) :: RWORKTEMP
+    COMPLEX(NTCOMPLEX), DIMENSION(1) :: WORKTEMP
+    REAL(NTREAL), DIMENSION(1) :: RWORKTEMP
     INTEGER, DIMENSION(1) :: IWORKTEMP
     INTEGER :: II
 

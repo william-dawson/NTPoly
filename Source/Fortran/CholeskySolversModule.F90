@@ -227,7 +227,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(OUT) :: num_local_pivots
     !! Local Variables
     REAL(NTREAL) :: temp_diag
-    DOUBLE PRECISION, DIMENSION(2) :: max_diag
+    REAL(NTREAL), DIMENSION(2) :: max_diag
 
 #include "solver_includes/GetPivot.f90"
 
