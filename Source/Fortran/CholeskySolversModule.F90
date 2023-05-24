@@ -90,9 +90,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the vector holding the accumulated diagonal values
   SUBROUTINE ConstructDiag_r(AMat, process_grid, dense_a, diag)
-    !> AMat the matrix we're working on (for meta data).
+    !> AMat the matrix we are working on (for meta data).
     TYPE(Matrix_ps), INTENT(IN) :: AMat
-    !> The process grid we're operating on.
+    !> The process grid we are operating on.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
     !> A dense representation of the values.
     TYPE(Matrix_ldr), INTENT(IN) :: dense_a
@@ -107,11 +107,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a lookup for columns
   SUBROUTINE ConstructRankLookup(AMat, process_grid, col_root_lookup)
-    !> Matrix we're computing.
+    !> Matrix we are computing.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
-    !> Grid we're computing along.
+    !> Grid we are computing along.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid
-    !> The lookup we're computing.
+    !> The lookup we are computing.
     INTEGER, DIMENSION(:), INTENT(INOUT) :: col_root_lookup
     !! Local Variables
     INTEGER, DIMENSION(process_grid%num_process_columns) :: cols_per_proc
@@ -207,7 +207,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the pivot vector.
   SUBROUTINE GetPivot_r(AMat, process_grid, start_index, pivot_vector, diag, &
        & index, VALUE, local_pivots, num_local_pivots)
-    !> The matrix we're working on.
+    !> The matrix we are working on.
     TYPE(Matrix_ps), INTENT(IN) :: AMat
     !> The process grid to compute on.
     TYPE(ProcessGrid_t), INTENT(INOUT) :: process_grid

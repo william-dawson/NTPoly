@@ -2,7 +2,7 @@
   INTEGER :: II, KK
 
   !! Build Local Triplet List
-  !! There can't be more than one entry per row
+  !! There can not be more than one entry per row
   CALL ConstructTripletList(tlist, this%local_rows)
   KK = 0
   IF (rows) THEN
