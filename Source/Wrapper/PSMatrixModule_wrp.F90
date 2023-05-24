@@ -73,8 +73,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructMatrixFromMatrixMarket_ps_wrp(ih_this, file_name, &
        & name_size) BIND(c,NAME="ConstructMatrixFromMatrixMarket_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -94,8 +94,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & name_size, ih_grid) &
        & BIND(c,NAME="ConstructMatrixFromMatrixMarketPG_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
     !! Local Data
     TYPE(Matrix_ps_wrp) :: h_this
@@ -117,8 +117,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructMatrixFromBinary_ps_wrp(ih_this,file_name,name_size) &
        & BIND(c,NAME="ConstructMatrixFromBinary_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     !! Local Data
     TYPE(Matrix_ps_wrp) :: h_this
     CHARACTER(len=name_size) :: local_string
@@ -138,8 +138,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        & name_size, ih_grid) &
        & BIND(c,NAME="ConstructMatrixFromBinaryPG_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: ih_grid(SIZE_wrp)
     !! Local Data
     TYPE(Matrix_ps_wrp) :: h_this
@@ -185,8 +185,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE WriteMatrixToBinary_ps_wrp(ih_this,file_name,name_size) &
        & BIND(c,NAME="WriteMatrixToBinary_ps_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -204,8 +204,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE WriteMatrixToMatrixMarket_ps_wrp(ih_this,file_name,name_size) &
        & BIND(c,NAME="WriteMatrixToMatrixMarket_ps_wrp")
     INTEGER(KIND=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=c_int), INTENT(IN) :: name_size
+    CHARACTER(KIND=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_ps_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string

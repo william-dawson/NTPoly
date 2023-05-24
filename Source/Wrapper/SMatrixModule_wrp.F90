@@ -54,8 +54,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructMatrixFromFile_lsr_wrp(ih_this, file_name, name_size) &
        & BIND(c,name="ConstructMatrixFromFile_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_lsr_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -205,8 +205,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PrintMatrixF_lsr_wrp(ih_this, file_name, name_size) &
        & BIND(c,name="PrintMatrixF_lsr_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_lsr_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -249,8 +249,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ConstructMatrixFromFile_lsc_wrp(ih_this, file_name, name_size) &
        & BIND(c,name="ConstructMatrixFromFile_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_lsc_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string
@@ -410,8 +410,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE PrintMatrixF_lsc_wrp(ih_this, file_name, name_size) &
        & BIND(c,name="PrintMatrixF_lsc_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
-    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     INTEGER(kind=c_int), INTENT(IN) :: name_size
+    CHARACTER(kind=c_char), INTENT(IN) :: file_name(name_size)
     TYPE(Matrix_lsc_wrp) :: h_this
     !! Local Data
     CHARACTER(len=name_size) :: local_string

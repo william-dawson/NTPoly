@@ -56,7 +56,7 @@ MODULE ProcessGridModule
   END TYPE ProcessGrid_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default process grid.
-  TYPE(ProcessGrid_t), TARGET, PUBLIC :: global_grid
+  TYPE(ProcessGrid_t), TARGET, PUBLIC, SAVE :: global_grid
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructProcessGrid
   PUBLIC :: ConstructNewProcessGrid

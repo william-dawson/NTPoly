@@ -14,8 +14,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE ActivateLoggerFile_wrp(start_document, file_name, name_size) &
        & BIND(C,NAME="ActivateLoggerFile_wrp")
     LOGICAL(KIND=C_BOOL) :: start_document
-    CHARACTER(KIND=C_CHAR), INTENT(IN) :: file_name(name_size)
     INTEGER(KIND=C_INT), INTENT(IN) :: name_size
+    CHARACTER(KIND=C_CHAR), INTENT(IN) :: file_name(name_size)
     !! Local Data
     CHARACTER(LEN=name_size) :: local_string
     INTEGER :: II
