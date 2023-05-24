@@ -1,0 +1,34 @@
+---
+layout: post
+title:  "Release of Version 3.0"
+date:   2023-05-24 11:00:00 +0900
+categories: blog update
+---
+
+[Version 3.0](/NTPoly/downloads) of NTPoly is now available.
+
+Going from version 2.7 to 3.0 includes the following changes.
+
+Version upped to 3 because of a significant change to the density matrix
+solver interfaces (not because there are a ton of new features). Basically,
+instead of an integer for the number of electrons, it now takes in a float
+which is the trace of the density matrix you want. This clarifies some of 
+the factors of two issues, and leaves room for partial occupancy.
+
+Additionally, to make the `SolverParameters_t` objects, you should now call
+`ConstructSolverParameters`.
+
+Features:
+
+* Floating point number for number of electrons
+* IsIdentity routine
+* Similarity transform helper
+* McWeeny step helper
+* Reduce dimension feature
+* Maps with integer optional data
+* Should avoid assign alloc everywhere, including data types, using proper copy routines for all derived types.
+* Print the process grid information.
+* Fix integer out of bounds potential issue in I/O.
+* Eigensolver based dense fallback for most routines.
+* Wave operator minimization method.
+
