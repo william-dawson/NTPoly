@@ -9,13 +9,15 @@ permalink: /documentation/
 Currently we have hosted here for your convenience. First, we have documentation
 for the current release version:
 
+* [3.0 Fortran Documentation](../doc/3.0/Fortran/index.html)
+* [3.0 C++ Documentation](../doc/3.0/CPP/index.html)
+
+For legacy purposes, we also maintain documentation of the final version 2.0
+and 1.0 series release:
+
 * [2.7 Fortran Documentation](../doc/2.7/Fortran/index.html)
 * [2.7 C++ Documentation](../doc/2.7/CPP/index.html)
-
-For legacy purposes, we also maintain documentation of the final version 1.0
-series release:
-
-[NTPoly 1.3](../doc/1.3/index.html)
+* [NTPoly 1.3](../doc/1.3/index.html)
 
 And the version submitted to Computer Physics Communications:
 
@@ -27,14 +29,6 @@ To build local documentation, after building NTPoly stay in the Build directory
 and type:
 
 > make doc
-
-## NTChem Documentation
-
-A special version of NTPoly has been built for integration into the NTChem
-code. This documentation can be viewed below:
-
-* [Future Fortran Documentation](../doc/NTChem/Fortran/index.html)
-* [Future C++ Documentation](../doc/NTChem/CPlusPlus/index.html)
 
 ## Further Help
 
