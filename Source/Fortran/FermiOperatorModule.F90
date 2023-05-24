@@ -243,12 +243,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
-    !! Local Variables
-    TYPE(Matrix_ps) :: ISQT, WH, IMat, RK1, RK2, K0, K1
-    TYPE(Matrix_ps) :: Temp, W, A, X, KOrth
-    TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: II
-    REAL(NTREAL) :: step, B_I, err, sparsity
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -303,12 +297,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
-    !! Local Variables
-    TYPE(Matrix_ps) :: ISQT, WH, IMat, RK1, RK2, K0, K1
-    TYPE(Matrix_ps) :: Temp, W, A, X, KOrth
-    TYPE(MatrixMemoryPool_p) :: pool
-    INTEGER :: II
-    REAL(NTREAL) :: step, B_I, err, sparsity
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
