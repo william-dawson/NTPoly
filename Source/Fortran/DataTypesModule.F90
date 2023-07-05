@@ -19,6 +19,6 @@ MODULE DataTypesModule
   !> MPI Integer type we will use in this program.
   INTEGER, PARAMETER, PUBLIC :: MPINTINTEGER = MPI_INTEGER
   !> MPI Integer type we will use in this program.
-  INTEGER, PARAMETER, PUBLIC :: MPINTLONG = MPI_LONG
+  INTEGER, PARAMETER, PUBLIC :: MPINTLONG = MPI_INTEGER8
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE DataTypesModule
