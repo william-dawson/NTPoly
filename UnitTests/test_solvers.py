@@ -1058,7 +1058,6 @@ class TestSolvers(unittest.TestCase):
     def test_estimategap(self):
         '''Test routines to estimate homo-lumo gap.'''
         from scipy.linalg import eigh
-        from scipy.sparse import csc_matrix, diags
         # Starting Matrix
         H = self.create_matrix(add_gap=True)
         self.write_matrix(H, self.input_file)

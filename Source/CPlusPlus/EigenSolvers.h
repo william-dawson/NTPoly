@@ -48,7 +48,7 @@ public:
   //!\param gap computed gap value.
   //!\param solver_parameters parameters for computing.
   static void EstimateGap(const Matrix_ps &H, const Matrix_ps &K,
-                          double chemical_potential, double* gap,
+                          double chemical_potential, double *gap,
                           const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
