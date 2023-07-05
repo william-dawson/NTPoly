@@ -40,6 +40,16 @@ public:
   SingularValueDecomposition(const Matrix_ps &matrix, Matrix_ps &leftvectors,
                              Matrix_ps &rightvectors, Matrix_ps &singularvalues,
                              const SolverParameters &solver_parameters);
+  //! Estimate the HOMO-LUMO gap of a matrix.
+  //!\param H matrix to compute the gap of.
+  //!\param ISQ inverse square root of the overlap matrix.
+  //!\param K density matrix.
+  //!\param chemical_potential (estimated from purification).
+  //!\param gap computed gap value.
+  //!\param solver_parameters parameters for computing.
+  static void EstimateGap(const Matrix_ps &H, const Matrix_ps &K,
+                          double chemical_potential, double* gap,
+                          const SolverParameters &solver_parameters);
 };
 } // namespace NTPoly
 #endif

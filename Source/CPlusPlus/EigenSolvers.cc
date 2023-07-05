@@ -30,4 +30,11 @@ void EigenSolvers::SingularValueDecomposition(
                                 GetIH(rightvectors), GetIH(singularvalues),
                                 GetIH(solver_parameters));
 }
+////////////////////////////////////////////////////////////////////////////////
+void EigenSolvers::EstimateGap(const Matrix_ps &H, const Matrix_ps &K,
+      double chemical_potential, double* gap,
+      const SolverParameters &solver_parameters) {
+  EstimateGap_wrp(GetIH(H), GetIH(K), &chemical_potential, gap,
+                  GetIH(solver_parameters));
+}
 } // namespace NTPoly
