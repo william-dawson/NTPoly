@@ -29,8 +29,8 @@ plugins:
   - jekyll-feed
 
 include:
-  - doc/3.0/python/_sources/*
-  - doc/3.0/python/_static/*
+  - doc/3.0/python/_sources
+  - doc/3.0/python/_static
 
 # Exclude from processing.
 # The following items will not be processed, by default. Create a custom list
