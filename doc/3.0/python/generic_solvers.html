@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generic Solvers Module &mdash; NTPoly 3.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Solver Parameters" href="parameters.html" />
+    <link rel="prev" title="Electronic Structure Solvers" href="electronic_solvers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NTPoly
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="electronic_solvers.html">Electronic Structure Solvers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Generic Solvers Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.ChebyshevPolynomial"><code class="docutils literal notranslate"><span class="pre">ChebyshevPolynomial</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ChebyshevPolynomial.Compute"><code class="docutils literal notranslate"><span class="pre">ChebyshevPolynomial.Compute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ChebyshevPolynomial.ComputeFactorized"><code class="docutils literal notranslate"><span class="pre">ChebyshevPolynomial.ComputeFactorized()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ChebyshevPolynomial.SetCoefficient"><code class="docutils literal notranslate"><span class="pre">ChebyshevPolynomial.SetCoefficient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ChebyshevPolynomial.thisown"><code class="docutils literal notranslate"><span class="pre">ChebyshevPolynomial.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers.ComputeDenseExponential"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers.ComputeDenseExponential()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers.ComputeDenseLogarithm"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers.ComputeDenseLogarithm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers.ComputeExponential"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers.ComputeExponential()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers.ComputeExponentialPade"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers.ComputeExponentialPade()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers.ComputeLogarithm"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers.ComputeLogarithm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ExponentialSolvers.thisown"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.HermitePolynomial"><code class="docutils literal notranslate"><span class="pre">HermitePolynomial</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.HermitePolynomial.Compute"><code class="docutils literal notranslate"><span class="pre">HermitePolynomial.Compute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.HermitePolynomial.SetCoefficient"><code class="docutils literal notranslate"><span class="pre">HermitePolynomial.SetCoefficient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.HermitePolynomial.thisown"><code class="docutils literal notranslate"><span class="pre">HermitePolynomial.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.InverseSolvers"><code class="docutils literal notranslate"><span class="pre">InverseSolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.InverseSolvers.DenseInvert"><code class="docutils literal notranslate"><span class="pre">InverseSolvers.DenseInvert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.InverseSolvers.Invert"><code class="docutils literal notranslate"><span class="pre">InverseSolvers.Invert()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.InverseSolvers.PseudoInverse"><code class="docutils literal notranslate"><span class="pre">InverseSolvers.PseudoInverse()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.InverseSolvers.thisown"><code class="docutils literal notranslate"><span class="pre">InverseSolvers.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.LinearSolvers"><code class="docutils literal notranslate"><span class="pre">LinearSolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.LinearSolvers.CGSolver"><code class="docutils literal notranslate"><span class="pre">LinearSolvers.CGSolver()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.LinearSolvers.CholeskyDecomposition"><code class="docutils literal notranslate"><span class="pre">LinearSolvers.CholeskyDecomposition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.LinearSolvers.thisown"><code class="docutils literal notranslate"><span class="pre">LinearSolvers.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.Polynomial"><code class="docutils literal notranslate"><span class="pre">Polynomial</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Polynomial.HornerCompute"><code class="docutils literal notranslate"><span class="pre">Polynomial.HornerCompute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Polynomial.PatersonStockmeyerCompute"><code class="docutils literal notranslate"><span class="pre">Polynomial.PatersonStockmeyerCompute()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Polynomial.SetCoefficient"><code class="docutils literal notranslate"><span class="pre">Polynomial.SetCoefficient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Polynomial.thisown"><code class="docutils literal notranslate"><span class="pre">Polynomial.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.RootSolvers"><code class="docutils literal notranslate"><span class="pre">RootSolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.RootSolvers.ComputeInverseRoot"><code class="docutils literal notranslate"><span class="pre">RootSolvers.ComputeInverseRoot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.RootSolvers.ComputeRoot"><code class="docutils literal notranslate"><span class="pre">RootSolvers.ComputeRoot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.RootSolvers.thisown"><code class="docutils literal notranslate"><span class="pre">RootSolvers.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.SignSolvers"><code class="docutils literal notranslate"><span class="pre">SignSolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SignSolvers.ComputeDenseSign"><code class="docutils literal notranslate"><span class="pre">SignSolvers.ComputeDenseSign()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SignSolvers.ComputePolarDecomposition"><code class="docutils literal notranslate"><span class="pre">SignSolvers.ComputePolarDecomposition()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SignSolvers.ComputeSign"><code class="docutils literal notranslate"><span class="pre">SignSolvers.ComputeSign()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SignSolvers.thisown"><code class="docutils literal notranslate"><span class="pre">SignSolvers.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.SquareRootSolvers"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SquareRootSolvers.DenseInverseSquareRoot"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers.DenseInverseSquareRoot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SquareRootSolvers.DenseSquareRoot"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers.DenseSquareRoot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SquareRootSolvers.InverseSquareRoot"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers.InverseSquareRoot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SquareRootSolvers.SquareRoot"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers.SquareRoot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SquareRootSolvers.thisown"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.TrigonometrySolvers"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.TrigonometrySolvers.Cosine"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers.Cosine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.TrigonometrySolvers.DenseCosine"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers.DenseCosine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.TrigonometrySolvers.DenseSine"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers.DenseSine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.TrigonometrySolvers.Sine"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers.Sine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.TrigonometrySolvers.thisown"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers.thisown</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Solver Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_parallel.html">Core Parallel Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Core Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maps.html">Matrix Maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other.html">Other Functionality</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NTPoly</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Generic Solvers Module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/generic_solvers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="generic-solvers-module">
+<h1>Generic Solvers Module<a class="headerlink" href="#generic-solvers-module" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.ChebyshevPolynomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">ChebyshevPolynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ChebyshevPolynomial" title="Permalink to this definition"></a></dt>
+<dd><p>A Class For Computing Matrix functions based on Chebyshev polynomials.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ChebyshevPolynomial.Compute">
+<span class="sig-name descname"><span class="pre">Compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ChebyshevPolynomial.Compute" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute A Matrix Chebyshev Polynomial.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = p(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ChebyshevPolynomial.ComputeFactorized">
+<span class="sig-name descname"><span class="pre">ComputeFactorized</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ChebyshevPolynomial.ComputeFactorized" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute A Matrix Chebyshev Polynomial Recursively.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = p(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ChebyshevPolynomial.SetCoefficient">
+<span class="sig-name descname"><span class="pre">SetCoefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ChebyshevPolynomial.SetCoefficient" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Set a polynomial coefficient.:type degree: int</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>degree</strong> – for which to set the coefficient.:type coefficient: float</p></li>
+<li><p><strong>coefficient</strong> – value.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.ChebyshevPolynomial.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.ChebyshevPolynomial.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">ExponentialSolvers</span></span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A Module For Computing General Matrix Exponentials.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers.ComputeDenseExponential">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeDenseExponential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers.ComputeDenseExponential" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix exponential (dense version).:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the exponential of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = exp(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers.ComputeDenseLogarithm">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeDenseLogarithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers.ComputeDenseLogarithm" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix logarithm (dense version).:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the exponential of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = log(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers.ComputeExponential">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeExponential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers.ComputeExponential" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix exponential.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the exponential of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = exp(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers.ComputeExponentialPade">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeExponentialPade</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers.ComputeExponentialPade" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix exponential using the Pade method.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the exponential of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = exp(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers.ComputeLogarithm">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeLogarithm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers.ComputeLogarithm" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix logarithm.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the exponential of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = log(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.ExponentialSolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.ExponentialSolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.HermitePolynomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">HermitePolynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.HermitePolynomial" title="Permalink to this definition"></a></dt>
+<dd><p>A Class For Computing Matrix functions based on Hermite polynomials.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.HermitePolynomial.Compute">
+<span class="sig-name descname"><span class="pre">Compute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.HermitePolynomial.Compute" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute A Matrix Hermite Polynomial.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = p(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.HermitePolynomial.SetCoefficient">
+<span class="sig-name descname"><span class="pre">SetCoefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.HermitePolynomial.SetCoefficient" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Set a polynomial coefficient.:type degree: int</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>degree</strong> – for which to set the coefficient.:type coefficient: float</p></li>
+<li><p><strong>coefficient</strong> – value.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.HermitePolynomial.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.HermitePolynomial.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.InverseSolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">InverseSolvers</span></span><a class="headerlink" href="#NTPolySwig.InverseSolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A class for inverting matrices.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.InverseSolvers.DenseInvert">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DenseInvert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Overlap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">InverseMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.InverseSolvers.DenseInvert" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the inverse of a matrix (dense version).:type Overlap: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Overlap</strong> – the matrix to invert.:type InverseMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>InverseMat</strong> – = Overlap^-1.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.InverseSolvers.Invert">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Invert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Overlap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">InverseMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.InverseSolvers.Invert" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the inverse of a matrix. An implementation of Hotelling’s method.:type Overlap: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Overlap</strong> – the matrix to invert.:type InverseMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>InverseMat</strong> – = Overlap^-1.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.InverseSolvers.PseudoInverse">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PseudoInverse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Overlap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">InverseMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.InverseSolvers.PseudoInverse" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the pseudoinverse of a matrix. An implementation of Hotelling’s method, with a different convergence criteria.:type Overlap: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Overlap</strong> – the matrix to invert.:type InverseMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>InverseMat</strong> – = Overlap^-1.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.InverseSolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.InverseSolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.LinearSolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">LinearSolvers</span></span><a class="headerlink" href="#NTPolySwig.LinearSolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A class for solving matrix equations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.LinearSolvers.CGSolver">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CGSolver</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">XMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.LinearSolvers.CGSolver" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Solve the matrix equation AX = B using conjugate gradient method.:type AMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AMat</strong> – the matrix A, must be symmetric, positive definite.:type XMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>XMat</strong> – the solved for matrix X.:type BMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>BMat</strong> – the right hand side.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.LinearSolvers.CholeskyDecomposition">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">CholeskyDecomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">AMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">LMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.LinearSolvers.CholeskyDecomposition" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute The Cholesky Decomposition of a Symmetric Positive Definite matrix.:type AMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>AMat</strong> – the matrix A, must be symmetric, positive definite.:type LMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>LMat</strong> – the matrix computed.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.LinearSolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.LinearSolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.Polynomial">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">Polynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Polynomial" title="Permalink to this definition"></a></dt>
+<dd><p>A Class For Computing General Matrix Polynomials.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Polynomial.HornerCompute">
+<span class="sig-name descname"><span class="pre">HornerCompute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Polynomial.HornerCompute" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute A Matrix Polynomial Using Horner’s Method.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = p(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Polynomial.PatersonStockmeyerCompute">
+<span class="sig-name descname"><span class="pre">PatersonStockmeyerCompute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Polynomial.PatersonStockmeyerCompute" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute A Matrix Polynomial Using Paterson and Stockmeyer’s Method.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = p(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Polynomial.SetCoefficient">
+<span class="sig-name descname"><span class="pre">SetCoefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">degree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coefficient</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Polynomial.SetCoefficient" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Set a polynomial coefficient.:type degree: int</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>degree</strong> – for which to set the coefficient.:type coefficient: float</p></li>
+<li><p><strong>coefficient</strong> – value.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.Polynomial.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.Polynomial.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.RootSolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">RootSolvers</span></span><a class="headerlink" href="#NTPolySwig.RootSolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A Class For Computing General Matrix Roots.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.RootSolvers.ComputeInverseRoot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeInverseRoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.RootSolvers.ComputeInverseRoot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the general matrix inverse root.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = InputMat^(-1/root):type root: int</p></li>
+<li><p><strong>root</strong> – = which root:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.RootSolvers.ComputeRoot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeRoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.RootSolvers.ComputeRoot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute a general matrix root.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – input matrix.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = InputMat^(1/root):type root: int</p></li>
+<li><p><strong>root</strong> – = which root:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.RootSolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.RootSolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.SignSolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">SignSolvers</span></span><a class="headerlink" href="#NTPolySwig.SignSolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A Class For Computing The Matrix Sign Function.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SignSolvers.ComputeDenseSign">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeDenseSign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mat1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SignMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SignSolvers.ComputeDenseSign" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix sign function (dense version).:type Mat1: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Mat1</strong> – input matrix.:type SignMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>SignMat</strong> – = Sign(Mat1):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SignSolvers.ComputePolarDecomposition">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputePolarDecomposition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mat1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Umat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Hmat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SignSolvers.ComputePolarDecomposition" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Computes the polar decomposition of a matrix Mat1 = U*H.:type Mat1: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Mat1</strong> – input matrix.:type Umat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>Umat</strong> – the unitary polar factor.:type Hmat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>Hmat</strong> – the hermitian matrix factor.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SignSolvers.ComputeSign">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ComputeSign</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Mat1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">SignMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SignSolvers.ComputeSign" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the matrix sign function.:type Mat1: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Mat1</strong> – input matrix.:type SignMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>SignMat</strong> – = Sign(Mat1):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.SignSolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.SignSolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.SquareRootSolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">SquareRootSolvers</span></span><a class="headerlink" href="#NTPolySwig.SquareRootSolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A Class For Computing The Square Root of a Matrix.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SquareRootSolvers.DenseInverseSquareRoot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DenseInverseSquareRoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SquareRootSolvers.DenseInverseSquareRoot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the inverse square root of a matrix (dense version).:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the inversesquareroot of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = InputMat^-1/2.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SquareRootSolvers.DenseSquareRoot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DenseSquareRoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SquareRootSolvers.DenseSquareRoot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the square root of a matrix (dense version).:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the inversesquareroot of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = InputMat^1/2.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SquareRootSolvers.InverseSquareRoot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">InverseSquareRoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SquareRootSolvers.InverseSquareRoot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the inverse square root of a matrix.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the inversesquareroot of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = InputMat^-1/2.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SquareRootSolvers.SquareRoot">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">SquareRoot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SquareRootSolvers.SquareRoot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the square root of a matrix.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the inversesquareroot of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = InputMat^1/2.:type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.SquareRootSolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.SquareRootSolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.TrigonometrySolvers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">TrigonometrySolvers</span></span><a class="headerlink" href="#NTPolySwig.TrigonometrySolvers" title="Permalink to this definition"></a></dt>
+<dd><p>A Module For Computing Trigonometric functions of a Matrix.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.TrigonometrySolvers.Cosine">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Cosine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.TrigonometrySolvers.Cosine" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the cosine of a matrix.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the cosine of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = cos(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.TrigonometrySolvers.DenseCosine">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DenseCosine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.TrigonometrySolvers.DenseCosine" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the cosine of a matrix (dense version).:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the cosine of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = cos(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.TrigonometrySolvers.DenseSine">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">DenseSine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.TrigonometrySolvers.DenseSine" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the sine of a matrix (dense version).:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the sine of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = sin(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.TrigonometrySolvers.Sine">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Sine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">InputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">OutputMat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solver_parameters</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.TrigonometrySolvers.Sine" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Compute the sine of a matrix.:type InputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>InputMat</strong> – matrix to compute the sine of.:type OutputMat: <a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>OutputMat</strong> – = sin(InputMat):type solver_parameters: <a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters" title="NTPolySwig.SolverParameters"><code class="xref py py-class docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></p></li>
+<li><p><strong>solver_parameters</strong> – parameters for the solver</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.TrigonometrySolvers.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.TrigonometrySolvers.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="electronic_solvers.html" class="btn btn-neutral float-left" title="Electronic Structure Solvers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="parameters.html" class="btn btn-neutral float-right" title="Solver Parameters" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, William Dawson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

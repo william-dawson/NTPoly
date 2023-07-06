@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Solver Parameters &mdash; NTPoly 3.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Core Parallel Datastructures" href="basic_parallel.html" />
+    <link rel="prev" title="Generic Solvers Module" href="generic_solvers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NTPoly
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="electronic_solvers.html">Electronic Structure Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generic_solvers.html">Generic Solvers Module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Solver Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.LoadBalancer"><code class="docutils literal notranslate"><span class="pre">LoadBalancer</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.LoadBalancer.PermuteMatrix"><code class="docutils literal notranslate"><span class="pre">LoadBalancer.PermuteMatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.LoadBalancer.UndoPermuteMatrix"><code class="docutils literal notranslate"><span class="pre">LoadBalancer.UndoPermuteMatrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.LoadBalancer.thisown"><code class="docutils literal notranslate"><span class="pre">LoadBalancer.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.SolverParameters"><code class="docutils literal notranslate"><span class="pre">SolverParameters</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.SetConvergeDiff"><code class="docutils literal notranslate"><span class="pre">SolverParameters.SetConvergeDiff()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.SetLoadBalance"><code class="docutils literal notranslate"><span class="pre">SolverParameters.SetLoadBalance()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.SetMaxIterations"><code class="docutils literal notranslate"><span class="pre">SolverParameters.SetMaxIterations()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.SetStepThreshold"><code class="docutils literal notranslate"><span class="pre">SolverParameters.SetStepThreshold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.SetThreshold"><code class="docutils literal notranslate"><span class="pre">SolverParameters.SetThreshold()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.SetVerbosity"><code class="docutils literal notranslate"><span class="pre">SolverParameters.SetVerbosity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.SolverParameters.thisown"><code class="docutils literal notranslate"><span class="pre">SolverParameters.thisown</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic_parallel.html">Core Parallel Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Core Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maps.html">Matrix Maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other.html">Other Functionality</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NTPoly</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Solver Parameters</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/parameters.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="solver-parameters">
+<h1>Solver Parameters<a class="headerlink" href="#solver-parameters" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.LoadBalancer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">LoadBalancer</span></span><a class="headerlink" href="#NTPolySwig.LoadBalancer" title="Permalink to this definition"></a></dt>
+<dd><p>A data structure for storing permutations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.LoadBalancer.PermuteMatrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PermuteMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memorypool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.LoadBalancer.PermuteMatrix" title="Permalink to this definition"></a></dt>
+<dd><p>Apply a permutation to a matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.LoadBalancer.UndoPermuteMatrix">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">UndoPermuteMatrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mat_in</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mat_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permutation</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memorypool</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.LoadBalancer.UndoPermuteMatrix" title="Permalink to this definition"></a></dt>
+<dd><p>Undo a permutation applied to a matrix.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.LoadBalancer.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.LoadBalancer.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">SolverParameters</span></span><a class="headerlink" href="#NTPolySwig.SolverParameters" title="Permalink to this definition"></a></dt>
+<dd><p>A class to store all the parameters used for solvers.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.SetConvergeDiff">
+<span class="sig-name descname"><span class="pre">SetConvergeDiff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SolverParameters.SetConvergeDiff" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>When do we consider a calculation converged.:type new_value: float</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_value</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.SetLoadBalance">
+<span class="sig-name descname"><span class="pre">SetLoadBalance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SolverParameters.SetLoadBalance" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Load balance settings.:type new_value: <a class="reference internal" href="basic.html#NTPolySwig.Permutation" title="NTPolySwig.Permutation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Permutation</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_value</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.SetMaxIterations">
+<span class="sig-name descname"><span class="pre">SetMaxIterations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SolverParameters.SetMaxIterations" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Max iterations to perform.:type new_value: int</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_value</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.SetStepThreshold">
+<span class="sig-name descname"><span class="pre">SetStepThreshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SolverParameters.SetStepThreshold" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Thresholds for step size searches.:type new_value: float</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_value</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.SetThreshold">
+<span class="sig-name descname"><span class="pre">SetThreshold</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SolverParameters.SetThreshold" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Threshold for flushing small values.:type new_value: float</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_value</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.SetVerbosity">
+<span class="sig-name descname"><span class="pre">SetVerbosity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.SolverParameters.SetVerbosity" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Whether to have a verbose calculation.:type new_value: boolean</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_value</strong> – </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.SolverParameters.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.SolverParameters.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="generic_solvers.html" class="btn btn-neutral float-left" title="Generic Solvers Module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="basic_parallel.html" class="btn btn-neutral float-right" title="Core Parallel Datastructures" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, William Dawson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

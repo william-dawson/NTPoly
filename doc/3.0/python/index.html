@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NTPoly’s Python Documentation &mdash; NTPoly 3.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Electronic Structure Solvers" href="electronic_solvers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            NTPoly
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="electronic_solvers.html">Electronic Structure Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generic_solvers.html">Generic Solvers Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Solver Parameters</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_parallel.html">Core Parallel Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Core Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maps.html">Matrix Maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other.html">Other Functionality</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">NTPoly</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">NTPoly’s Python Documentation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="ntpoly-s-python-documentation">
+<h1>NTPoly’s Python Documentation<a class="headerlink" href="#ntpoly-s-python-documentation" title="Permalink to this heading"></a></h1>
+<a class="reference external image-reference" href="https://github.com/william-dawson/NTPoly/workflows/CI/badge.svg"><img alt="Build Status" src="https://github.com/william-dawson/NTPoly/workflows/CI/badge.svg" /></a>
+<p>NTPoly is a massively parallel library for computing the functions of sparse,
+Hermitian matrices based on polynomial expansions. For sufficiently sparse
+matrices, most of the matrix functions in NTPoly can be computed in linear
+time.</p>
+<section id="set-up-guide">
+<h2>Set Up Guide<a class="headerlink" href="#set-up-guide" title="Permalink to this heading"></a></h2>
+<p>NTPoly is freely available and open source under the MIT license. It can be
+downloaded from the <a class="reference external" href="https://github.com/william-dawson/NTPoly">Github</a>
+repository. We of course recommend that you download a
+<a class="reference external" href="https://github.com/william-dawson/NTPoly/releases">release version</a>
+to get started.</p>
+<p>Installing NTPoly requires the following software:</p>
+<ul class="simple">
+<li><p>A Fortran Compiler.</p></li>
+<li><p>An MPI Installation (MPI-3 Standard+).</p></li>
+<li><p>CMake (Version 3.2+).</p></li>
+<li><p>BLAS: for multiplying dense matrices, if they emerge in the calculation.</p></li>
+<li><p>LAPACK: for dense solvers.</p></li>
+</ul>
+<p>The following optional software can greatly enhance the NTPoly experience:</p>
+<ul class="simple">
+<li><p>A C++ Compiler for building C++ bindings.</p></li>
+<li><p>Ford: for building documentation.</p></li>
+<li><p>Doxygen: for building C++ documentation.</p></li>
+<li><p>SWIG (Version 3.0+): for building the Python bindings.</p></li>
+<li><p>Python (Version 2.7+): if you would like python bindings.</p></li>
+<li><p>MPI4PY: for testing.</p></li>
+<li><p>SciPy: for testing.</p></li>
+<li><p>NumPy: for testing.</p></li>
+<li><p>EigenExa: for dense, parallel calculations.</p></li>
+</ul>
+<p>NTPoly uses CMake as a build system. First, take a look in the Targets
+directory. You’ll find a list of <code class="docutils literal notranslate"><span class="pre">.cmake</span></code> files which have example
+configurations on popular systems. You should copy one of these files, and
+create your own mymachine.cmake file. Then, cd into the Build directory, and
+type:</p>
+<blockquote>
+<div><p>cmake -DCMAKE_TOOLCHAIN_FILE=../Targets/mymachine.cmake ..</p>
+</div></blockquote>
+<p>After that you can build using:</p>
+<blockquote>
+<div><p>make</p>
+</div></blockquote>
+<p>And for the documentation:</p>
+<blockquote>
+<div><p>make doc</p>
+</div></blockquote>
+<p>If you aren’t cross compiling and have built the python bindings, you can
+perform local tests using:</p>
+<blockquote>
+<div><p>make test</p>
+</div></blockquote>
+<p>There are a few options you can pass to CMake to modify the build. A few
+useful standard options are:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-DCMAKE_BUILD_TYPE=</span></code> <code class="docutils literal notranslate"><span class="pre">Debug</span></code> or <code class="docutils literal notranslate"><span class="pre">Release</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-DCMAKE_INSTALL_PREFIX=</span></code> followed by the path to your desired install</p></li>
+</ul>
+<p>directory.</p>
+<p>There are also some custom options special for NTPoly:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-DFORTRAN_ONLY=</span></code> set to <code class="docutils literal notranslate"><span class="pre">Yes</span></code> if you only want to build the Fortran bindings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-DNOSWIG=</span></code> set to <code class="docutils literal notranslate"><span class="pre">Yes</span></code> if you don’t want to build Python bindings.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-DUSE_MPIH=</span></code> on some systems, there is no <code class="docutils literal notranslate"><span class="pre">use</span> <span class="pre">mpi</span></code> feature for Fortran,</p></li>
+</ul>
+<p>just <code class="docutils literal notranslate"><span class="pre">#include</span> <span class="pre">&quot;mpi.h&quot;</span></code>. You can set this option to activate the later.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">-DNOIALLGATHER=</span></code> on older MPI implementations, there is no non blocking</p></li>
+</ul>
+<dl class="simple">
+<dt>collective operations. You can disable this feature using this option, but</dt><dd><p>beware this might reduce performance.</p>
+</dd>
+</dl>
+<p><a class="reference external" href="https://william-dawson.github.io/NTPoly/documentation/">Online documentation</a>
+is also available. Further details about the library can be found on the
+<a class="reference external" href="https://github.com/william-dawson/NTPoly/wiki">Wiki</a>.</p>
+</section>
+<section id="basic-theory">
+<h2>Basic Theory<a class="headerlink" href="#basic-theory" title="Permalink to this heading"></a></h2>
+<p>The theory of matrix functions is a long studied branch of matrix algebra.
+Matrix functions have a wide range of applications, including graph problems,
+differential equations, and materials science. Common examples of matrix
+functions include the matrix exponential:</p>
+<blockquote>
+<div><p>f(A) = e^A.</p>
+</div></blockquote>
+<p>from the study of networks, or the inverse square root:</p>
+<blockquote>
+<div><p>f(A) = A^(-1/2)</p>
+</div></blockquote>
+<p>from quantum chemistry. NTPoly is a massively parallel library that can be used
+to compute a variety of matrix using polynomial expansions. Consider for example
+the Taylor series expansion of a function <em>f(x)</em> .</p>
+<blockquote>
+<div><p>f(x) = f(0) + f’(0)x + f’’(0)x^2/2! + …</p>
+</div></blockquote>
+<p>We can imagine expanding this from the function of a single variable, to a
+function of a matrix:</p>
+<blockquote>
+<div><p>f(A) = f(0) + f’(0)A + f’’(0)A^2/2! + …</p>
+</div></blockquote>
+<p>where matrices can be summed using matrix addition, and raised to a power
+using matrix multiplication. At the heart of NTPoly are polynomial expansions
+like this. We implement not only Taylor expansions, but also Chebyshev
+polynomial expansions, and other specialized expansions based on the function
+of interest.</p>
+<p>When the input matrix <em>A</em> and the output matrix <em>f(A)</em> are sparse, we can
+replace the dense matrix addition and multiplication routines with sparse
+matrix routines. This allows us to use NTPoly to efficiently compute many
+functions of sparse matrices.</p>
+</section>
+<section id="getting-start-with-examples">
+<h2>Getting Start With Examples<a class="headerlink" href="#getting-start-with-examples" title="Permalink to this heading"></a></h2>
+<p>In the examples directory, there are a number of different example programs that
+use NTPoly. You can check the ReadMe.md file in each example directory to
+learn how to build and run each example. The simplest example is PremadeMatrix,
+which includes sample output you can compare to.</p>
+</section>
+<section id="feature-outline">
+<h2>Feature Outline<a class="headerlink" href="#feature-outline" title="Permalink to this heading"></a></h2>
+<p>The following features and methods have been implemented in NTPoly:</p>
+<ul class="simple">
+<li><p>General Polynomials</p>
+<ul>
+<li><p>Standard Polynomials</p></li>
+<li><p>Chebyshev Polynomials</p></li>
+<li><p>Hermite Polynomials</p></li>
+</ul>
+</li>
+<li><p>Transcendental Functions</p>
+<ul>
+<li><p>Trigonometric Functions</p></li>
+<li><p>Exponential and Logarithm</p></li>
+</ul>
+</li>
+<li><p>Matrix Roots</p>
+<ul>
+<li><p>Square Root and Inverse Square Root</p></li>
+<li><p>Matrix <em>p</em> th Root</p></li>
+</ul>
+</li>
+<li><p>Quantum Chemistry</p>
+<ul>
+<li><p>Density Matrix Purification</p></li>
+<li><p>Chemical Potential Calculation</p></li>
+<li><p>Geometry Optimization</p></li>
+</ul>
+</li>
+<li><p>Other</p>
+<ul>
+<li><p>Matrix Inverse/Moore-Penrose Pseudo Inverse</p></li>
+<li><p>Sign Function/Polar Decomposition</p></li>
+<li><p>Interface to Dense Eigen/Singular Value Decomposition</p></li>
+<li><p>Load Balancing Matrices</p></li>
+<li><p>File I/O</p></li>
+</ul>
+</li>
+</ul>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Permalink to this heading"></a></h2>
+<p>A description of the techniques used in NTPoly can be found in the following
+Computer Physics Communications paper:</p>
+<blockquote>
+<div><p>Dawson, William, and Takahito Nakajima. “Massively parallel sparse matrix
+function calculations with NTPoly.” Computer Physics Communications (2017).</p>
+</div></blockquote>
+<p>Please cite this paper in accordance to the practices in your field.</p>
+</section>
+<section id="how-to-contribute">
+<h2>How To Contribute<a class="headerlink" href="#how-to-contribute" title="Permalink to this heading"></a></h2>
+<p>To begin contributing to NTPoly, take a look at the
+<a class="reference external" href="https://github.com/william-dawson/NTPoly/wiki">Wiki</a> pages. The
+<a class="reference external" href="https://github.com/william-dawson/NTPoly/blob/master/CONTRIBUTING.md">Contributing Guide</a>
+provides an overview of best development practices. Additionally, there is a
+<a class="reference external" href="https://github.com/william-dawson/NTPoly/wiki/Adding-New-Functionality-(Example)">Adding New Functionality</a>
+page which documents how one would go about adding a matrix function to NTPoly.</p>
+</section>
+<section id="python-interface">
+<h2>Python Interface<a class="headerlink" href="#python-interface" title="Permalink to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="electronic_solvers.html">Electronic Structure Solvers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="electronic_solvers.html#NTPolySwig.DensityMatrixSolvers"><code class="docutils literal notranslate"><span class="pre">DensityMatrixSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="electronic_solvers.html#NTPolySwig.FermiOperator"><code class="docutils literal notranslate"><span class="pre">FermiOperator</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="generic_solvers.html">Generic Solvers Module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.ChebyshevPolynomial"><code class="docutils literal notranslate"><span class="pre">ChebyshevPolynomial</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.ExponentialSolvers"><code class="docutils literal notranslate"><span class="pre">ExponentialSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.HermitePolynomial"><code class="docutils literal notranslate"><span class="pre">HermitePolynomial</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.InverseSolvers"><code class="docutils literal notranslate"><span class="pre">InverseSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.LinearSolvers"><code class="docutils literal notranslate"><span class="pre">LinearSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.Polynomial"><code class="docutils literal notranslate"><span class="pre">Polynomial</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.RootSolvers"><code class="docutils literal notranslate"><span class="pre">RootSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.SignSolvers"><code class="docutils literal notranslate"><span class="pre">SignSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.SquareRootSolvers"><code class="docutils literal notranslate"><span class="pre">SquareRootSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="generic_solvers.html#NTPolySwig.TrigonometrySolvers"><code class="docutils literal notranslate"><span class="pre">TrigonometrySolvers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Solver Parameters</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#NTPolySwig.LoadBalancer"><code class="docutils literal notranslate"><span class="pre">LoadBalancer</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="parameters.html#NTPolySwig.SolverParameters"><code class="docutils literal notranslate"><span class="pre">SolverParameters</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic_parallel.html">Core Parallel Datastructures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic_parallel.html#NTPolySwig.Matrix_ps"><code class="docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_parallel.html#NTPolySwig.PMatrixMemoryPool"><code class="docutils literal notranslate"><span class="pre">PMatrixMemoryPool</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic_parallel.html#NTPolySwig.ProcessGrid"><code class="docutils literal notranslate"><span class="pre">ProcessGrid</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Core Datastructures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.MatrixMemoryPool_r"><code class="docutils literal notranslate"><span class="pre">MatrixMemoryPool_r</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.MatrixMemoryPool_c"><code class="docutils literal notranslate"><span class="pre">MatrixMemoryPool_c</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.Matrix_lsr"><code class="docutils literal notranslate"><span class="pre">Matrix_lsr</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.Permutation"><code class="docutils literal notranslate"><span class="pre">Permutation</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.Triplet_r"><code class="docutils literal notranslate"><span class="pre">Triplet_r</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.Triplet_c"><code class="docutils literal notranslate"><span class="pre">Triplet_c</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.TripletList_r"><code class="docutils literal notranslate"><span class="pre">TripletList_r</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="basic.html#NTPolySwig.TripletList_c"><code class="docutils literal notranslate"><span class="pre">TripletList_c</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="maps.html">Matrix Maps</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="maps.html#NTPolySwig.MatrixMapper"><code class="docutils literal notranslate"><span class="pre">MatrixMapper</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maps.html#NTPolySwig.RealOperation"><code class="docutils literal notranslate"><span class="pre">RealOperation</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="maps.html#NTPolySwig.ComplexOperation"><code class="docutils literal notranslate"><span class="pre">ComplexOperation</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="other.html">Other Functionality</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="other.html#NTPolySwig.Analysis"><code class="docutils literal notranslate"><span class="pre">Analysis</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="other.html#NTPolySwig.EigenBounds"><code class="docutils literal notranslate"><span class="pre">EigenBounds</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="other.html#NTPolySwig.EigenSolvers"><code class="docutils literal notranslate"><span class="pre">EigenSolvers</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="other.html#NTPolySwig.MatrixConversion"><code class="docutils literal notranslate"><span class="pre">MatrixConversion</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="other.html#logging">Logging</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+</section>
+<section id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this heading"></a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="electronic_solvers.html" class="btn btn-neutral float-right" title="Electronic Structure Solvers" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, William Dawson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

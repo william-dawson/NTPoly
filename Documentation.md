@@ -11,6 +11,7 @@ for the current release version:
 
 * [3.0 Fortran Documentation](../doc/3.0/Fortran/index.html)
 * [3.0 C++ Documentation](../doc/3.0/CPP/index.html)
+* [3.0 Python](../doc/3.0/python/index.html)
 
 For legacy purposes, we also maintain documentation of the final version 2.0
 and 1.0 series release:

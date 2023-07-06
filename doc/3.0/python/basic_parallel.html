@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Core Parallel Datastructures &mdash; NTPoly 3.0 documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="_static/jquery.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Core Datastructures" href="basic.html" />
+    <link rel="prev" title="Solver Parameters" href="parameters.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            NTPoly
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="electronic_solvers.html">Electronic Structure Solvers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="generic_solvers.html">Generic Solvers Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="parameters.html">Solver Parameters</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Core Parallel Datastructures</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.Matrix_ps"><code class="docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Conjugate"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Conjugate()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Dot"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Dot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Dot_c"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Dot_c()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.FillDense"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.FillDense()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.FillDistributedPermutation"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.FillDistributedPermutation()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.FillFromTripletList"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.FillFromTripletList()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.FillIdentity"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.FillIdentity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Gemm"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Gemm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.GetActualDimension"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.GetActualDimension()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.GetLogicalDimension"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.GetLogicalDimension()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.GetMatrixBlock"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.GetMatrixBlock()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.GetMatrixSlice"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.GetMatrixSlice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.GetSize"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.GetSize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.GetTripletList"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.GetTripletList()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Increment"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Increment()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.IsIdentity"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.IsIdentity()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Norm"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Norm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.PairwiseMultiply"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.PairwiseMultiply()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Resize"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Resize()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Scale"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Scale()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Trace"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Trace()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.Transpose"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.Transpose()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.WriteToBinary"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.WriteToBinary()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.WriteToMatrixMarket"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.WriteToMatrixMarket()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.Matrix_ps.thisown"><code class="docutils literal notranslate"><span class="pre">Matrix_ps.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.PMatrixMemoryPool"><code class="docutils literal notranslate"><span class="pre">PMatrixMemoryPool</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.PMatrixMemoryPool.thisown"><code class="docutils literal notranslate"><span class="pre">PMatrixMemoryPool.thisown</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#NTPolySwig.ProcessGrid"><code class="docutils literal notranslate"><span class="pre">ProcessGrid</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.GetMyColumn"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.GetMyColumn()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.GetMyRow"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.GetMyRow()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.GetMySlice"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.GetMySlice()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.GetNumColumns"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.GetNumColumns()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.GetNumRows"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.GetNumRows()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.GetNumSlices"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.GetNumSlices()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.WriteInfo"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.WriteInfo()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#NTPolySwig.ProcessGrid.thisown"><code class="docutils literal notranslate"><span class="pre">ProcessGrid.thisown</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic.html">Core Datastructures</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maps.html">Matrix Maps</a></li>
+<li class="toctree-l1"><a class="reference internal" href="other.html">Other Functionality</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">NTPoly</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Core Parallel Datastructures</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/basic_parallel.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="core-parallel-datastructures">
+<h1>Core Parallel Datastructures<a class="headerlink" href="#core-parallel-datastructures" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">Matrix_ps</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps" title="Permalink to this definition"></a></dt>
+<dd><p>A Module For Performing Distributed Sparse Matrix Operations.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Conjugate">
+<span class="sig-name descname"><span class="pre">Conjugate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Conjugate" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the complex conjugate of a matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Dot">
+<span class="sig-name descname"><span class="pre">Dot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Dot" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>this = dot(this,matB):type matB: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>matB</strong> – the matrix to dot.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Dot_c">
+<span class="sig-name descname"><span class="pre">Dot_c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Dot_c" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>this = dot(this,matB):type matB: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>matB</strong> – the matrix to dot.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.FillDense">
+<span class="sig-name descname"><span class="pre">FillDense</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.FillDense" title="Permalink to this definition"></a></dt>
+<dd><p>This routine will fill a dense matrix so that every element has a given a value of 1. This is useful as a starting point for further filtering or mapping operations.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.FillDistributedPermutation">
+<span class="sig-name descname"><span class="pre">FillDistributedPermutation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lb</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">permuterows</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.FillDistributedPermutation" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Fill the matrix based on a permutation.:type lb: <a class="reference internal" href="basic.html#NTPolySwig.Permutation" title="NTPolySwig.Permutation"><code class="xref py py-class docutils literal notranslate"><span class="pre">Permutation</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lb</strong> – the permutation.:type permuterows: boolean, optional</p></li>
+<li><p><strong>permuterows</strong> – true if this is a row permutation matrix.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.FillFromTripletList">
+<span class="sig-name descname"><span class="pre">FillFromTripletList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.FillFromTripletList" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt><em>Overload 1:</em></dt><dd><p>Fill in the matrix based on the contents of triplet lists.:type triplet_list: <a class="reference internal" href="basic.html#NTPolySwig.TripletList_r" title="NTPolySwig.TripletList_r"><code class="xref py py-class docutils literal notranslate"><span class="pre">TripletList_r</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>triplet_list</strong> – list of values. Need to be absolute coordinates.</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="simple">
+<dt><em>Overload 2:</em></dt><dd><p>Fill in the matrix based on the contents of triplet lists.:type triplet_list: <a class="reference internal" href="basic.html#NTPolySwig.TripletList_c" title="NTPolySwig.TripletList_c"><code class="xref py py-class docutils literal notranslate"><span class="pre">TripletList_c</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>triplet_list</strong> – list of values. Need to be absolute coordinates.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.FillIdentity">
+<span class="sig-name descname"><span class="pre">FillIdentity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.FillIdentity" title="Permalink to this definition"></a></dt>
+<dd><p>Fills this matrix as the identity matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Gemm">
+<span class="sig-name descname"><span class="pre">Gemm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">memory_pool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Gemm" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>this := alpha*matA*matB+ beta*this (GEMM):type matA: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matA</strong> – first mat.:type matB: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>matB</strong> – second mat.:type memory_pool: <a class="reference internal" href="#NTPolySwig.PMatrixMemoryPool" title="NTPolySwig.PMatrixMemoryPool"><code class="xref py py-class docutils literal notranslate"><span class="pre">PMatrixMemoryPool</span></code></a></p></li>
+<li><p><strong>memory_pool</strong> – memory pool for intermediates.:type alpha: float, optional</p></li>
+<li><p><strong>alpha</strong> – scaling factor.:type beta: float, optional</p></li>
+<li><p><strong>beta</strong> – scaling factor.:type threshold: float, optional</p></li>
+<li><p><strong>threshold</strong> – for flushing small values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.GetActualDimension">
+<span class="sig-name descname"><span class="pre">GetActualDimension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.GetActualDimension" title="Permalink to this definition"></a></dt>
+<dd><p>get the actual dimension of the matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.GetLogicalDimension">
+<span class="sig-name descname"><span class="pre">GetLogicalDimension</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.GetLogicalDimension" title="Permalink to this definition"></a></dt>
+<dd><p>the logical dimension is scaled so each process has an even slice.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.GetMatrixBlock">
+<span class="sig-name descname"><span class="pre">GetMatrixBlock</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.GetMatrixBlock" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt><em>Overload 1:</em></dt><dd><p>Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates. :type triplet_list: <a class="reference internal" href="basic.html#NTPolySwig.TripletList_r" title="NTPolySwig.TripletList_r"><code class="xref py py-class docutils literal notranslate"><span class="pre">TripletList_r</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triplet_list</strong> – the list to fill. :type start_row: int</p></li>
+<li><p><strong>start_row</strong> – the starting row for data to store on this process. :type end_row: int</p></li>
+<li><p><strong>end_row</strong> – the ending row for data to store on this process. :type start_column: int</p></li>
+<li><p><strong>start_column</strong> – the starting col for data to store on this process :type end_column: int</p></li>
+<li><p><strong>end_column</strong> – the ending col for data to store on this process</p></li>
+</ul>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="simple">
+<dt><em>Overload 2:</em></dt><dd><p>Extract an arbitrary block of a matrix into a triplet list. Block is defined by the row/column start/end values. This is slower than GetTripletList, because communication is required. Data is returned with absolute coordinates. :type triplet_list: <a class="reference internal" href="basic.html#NTPolySwig.TripletList_c" title="NTPolySwig.TripletList_c"><code class="xref py py-class docutils literal notranslate"><span class="pre">TripletList_c</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>triplet_list</strong> – the list to fill. :type start_row: int</p></li>
+<li><p><strong>start_row</strong> – the starting row for data to store on this process. :type end_row: int</p></li>
+<li><p><strong>end_row</strong> – the ending row for data to store on this process. :type start_column: int</p></li>
+<li><p><strong>start_column</strong> – the starting col for data to store on this process :type end_column: int</p></li>
+<li><p><strong>end_column</strong> – the ending col for data to store on this process</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.GetMatrixSlice">
+<span class="sig-name descname"><span class="pre">GetMatrixSlice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">submatrix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_row</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_column</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.GetMatrixSlice" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Copy an arbitrary slice from a matrix into a new smaller matrix. NTPoly only works with square matrices, so if the number of rows and columns is different the matrix is resized to the maximum size. :type submatrix: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>submatrix</strong> – the slice to fill. :type start_row: int</p></li>
+<li><p><strong>start_row</strong> – the starting row to include in this matrix. :type end_row: int</p></li>
+<li><p><strong>end_row</strong> – the ending row to include in this matrix. :type start_column: int</p></li>
+<li><p><strong>start_column</strong> – the starting column to include in this matrix. :type end_column: int</p></li>
+<li><p><strong>end_column</strong> – the last column to include in this matrix.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.GetSize">
+<span class="sig-name descname"><span class="pre">GetSize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.GetSize" title="Permalink to this definition"></a></dt>
+<dd><p>Get the total number of non-zero entries in the matrix</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.GetTripletList">
+<span class="sig-name descname"><span class="pre">GetTripletList</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.GetTripletList" title="Permalink to this definition"></a></dt>
+<dd><dl class="simple">
+<dt><em>Overload 1:</em></dt><dd><p>Extracts a triplet list of the data that is stored on this process. Data is returned with absolute coordinates. :type triplet_list: <a class="reference internal" href="basic.html#NTPolySwig.TripletList_r" title="NTPolySwig.TripletList_r"><code class="xref py py-class docutils literal notranslate"><span class="pre">TripletList_r</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>triplet_list</strong> – the list to fill.</p>
+</dd>
+</dl>
+<div class="line-block">
+<div class="line"><br /></div>
+</div>
+<dl class="simple">
+<dt><em>Overload 2:</em></dt><dd><p>Extracts a triplet list of the data that is stored on this process. Data is returned with absolute coordinates. :type triplet_list: <a class="reference internal" href="basic.html#NTPolySwig.TripletList_c" title="NTPolySwig.TripletList_c"><code class="xref py py-class docutils literal notranslate"><span class="pre">TripletList_c</span></code></a></p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>triplet_list</strong> – the list to fill.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Increment">
+<span class="sig-name descname"><span class="pre">Increment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matB</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Increment" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>this = alpha*MatB + this (AXPY):type matB: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matB</strong> – the matrix to add.:type alpha: float, optional</p></li>
+<li><p><strong>alpha</strong> – scaling factor.:type threshold: float, optional</p></li>
+<li><p><strong>threshold</strong> – for flushing small values.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.IsIdentity">
+<span class="sig-name descname"><span class="pre">IsIdentity</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.IsIdentity" title="Permalink to this definition"></a></dt>
+<dd><p>Determine if this is the identity matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Norm">
+<span class="sig-name descname"><span class="pre">Norm</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Norm" title="Permalink to this definition"></a></dt>
+<dd><p>compute the norm of a matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.PairwiseMultiply">
+<span class="sig-name descname"><span class="pre">PairwiseMultiply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matA</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matB</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.PairwiseMultiply" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Elementwise multiplication. C_ij = A_ij * B_ij. Also known as a Hadamard:type matA: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matA</strong> – first mat.:type matB: <a class="reference internal" href="#NTPolySwig.Matrix_ps" title="NTPolySwig.Matrix_ps"><code class="xref py py-class docutils literal notranslate"><span class="pre">Matrix_ps</span></code></a></p></li>
+<li><p><strong>matB</strong> – second mat.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Resize">
+<span class="sig-name descname"><span class="pre">Resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Resize" title="Permalink to this definition"></a></dt>
+<dd><p>Change the size of a matrix. If the new size is smaller, then values outside that range are deleted. IF the new size is bigger, zero padding is applied. Warning: this requires a full data redistribution.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Scale">
+<span class="sig-name descname"><span class="pre">Scale</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constant</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Scale" title="Permalink to this definition"></a></dt>
+<dd><p>scale the matrix by a constatn. constant the value to scale by.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Trace">
+<span class="sig-name descname"><span class="pre">Trace</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Trace" title="Permalink to this definition"></a></dt>
+<dd><p>compute the trace of a matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.Transpose">
+<span class="sig-name descname"><span class="pre">Transpose</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matA</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.Transpose" title="Permalink to this definition"></a></dt>
+<dd><p>Transpose a sparse matrix.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.WriteToBinary">
+<span class="sig-name descname"><span class="pre">WriteToBinary</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.WriteToBinary" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Write the matrix to a custom binary format.:type file_name: string</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> – file to write to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.WriteToMatrixMarket">
+<span class="sig-name descname"><span class="pre">WriteToMatrixMarket</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.Matrix_ps.WriteToMatrixMarket" title="Permalink to this definition"></a></dt>
+<dd><blockquote>
+<div><p>Write the matrix to the matrix market format.:type file_name: string</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>file_name</strong> – file to write to.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.Matrix_ps.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.Matrix_ps.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.PMatrixMemoryPool">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">PMatrixMemoryPool</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Matrix</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.PMatrixMemoryPool" title="Permalink to this definition"></a></dt>
+<dd><p>A memory pool datatype that can be reused for matrix matrix multiplication this is to prevent excessive alloc/dealloc.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.PMatrixMemoryPool.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.PMatrixMemoryPool.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">NTPolySwig.</span></span><span class="sig-name descname"><span class="pre">ProcessGrid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid" title="Permalink to this definition"></a></dt>
+<dd><p>A datatype which stores a process grid and all its communicators.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.GetMyColumn">
+<span class="sig-name descname"><span class="pre">GetMyColumn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.GetMyColumn" title="Permalink to this definition"></a></dt>
+<dd><p>Get the column of the current process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.GetMyRow">
+<span class="sig-name descname"><span class="pre">GetMyRow</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.GetMyRow" title="Permalink to this definition"></a></dt>
+<dd><p>Get the row of the current process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.GetMySlice">
+<span class="sig-name descname"><span class="pre">GetMySlice</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.GetMySlice" title="Permalink to this definition"></a></dt>
+<dd><p>Get the slice of the current process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.GetNumColumns">
+<span class="sig-name descname"><span class="pre">GetNumColumns</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.GetNumColumns" title="Permalink to this definition"></a></dt>
+<dd><p>Get the number of columns in this grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.GetNumRows">
+<span class="sig-name descname"><span class="pre">GetNumRows</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.GetNumRows" title="Permalink to this definition"></a></dt>
+<dd><p>Get the number of rows in this grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.GetNumSlices">
+<span class="sig-name descname"><span class="pre">GetNumSlices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.GetNumSlices" title="Permalink to this definition"></a></dt>
+<dd><p>Get the number of slices in this grid.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.WriteInfo">
+<span class="sig-name descname"><span class="pre">WriteInfo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#NTPolySwig.ProcessGrid.WriteInfo" title="Permalink to this definition"></a></dt>
+<dd><p>Write out some basic information about this process grid to the log.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="NTPolySwig.ProcessGrid.thisown">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">thisown</span></span><a class="headerlink" href="#NTPolySwig.ProcessGrid.thisown" title="Permalink to this definition"></a></dt>
+<dd><p>The membership flag</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="parameters.html" class="btn btn-neutral float-left" title="Solver Parameters" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="basic.html" class="btn btn-neutral float-right" title="Core Datastructures" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, William Dawson.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
