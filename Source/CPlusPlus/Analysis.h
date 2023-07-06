@@ -19,8 +19,8 @@ public:
   static void
   PivotedCholeskyDecomposition(const Matrix_ps &AMat, Matrix_ps &LMat, int rank,
                                const SolverParameters &solver_parameters);
-  //!  When we want to only compute the first n eigenvalues of a matrix, this
-  //!  routine will project out the higher eigenvalues.
+  //! When we want to only compute the first n eigenvalues of a matrix, this
+  //! routine will project out the higher eigenvalues.
   //!\param AMat The starting matrix.
   //!\param dim  The number of eigenvalues ot keep.
   //!\param RMat a dimxdim matrix with the same first n eigenvalues as A.
