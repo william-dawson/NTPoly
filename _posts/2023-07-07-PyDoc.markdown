@@ -5,7 +5,7 @@ date:   2023-07-07 00:00:00 +0900
 categories: blog update
 ---
 
-I've added [python documentation](/NTPoly/doc) to NTPoly. This documentation
+I've added [python documentation](/NTPoly/documentation) to NTPoly. This documentation
 is automatically generated using the doxygen documentation in the C++ API.
 I don't think anyone is using the python version of NTPoly except me, but
 this could help some adventerous users.
