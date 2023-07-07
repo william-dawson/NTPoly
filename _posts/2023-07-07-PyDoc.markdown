@@ -1,0 +1,30 @@
+---
+layout: post
+title:  "Python Documentation"
+date:   2023-07-07 11:00:00 +0900
+categories: blog update
+---
+
+I've added [python documentation](/NTPoly/doc) to NTPoly. This documentation
+is automatically generated using the doxygen documentation in the C++ API.
+I don't think anyone is using the python version of NTPoly except me, but
+this could help some adventerous users.
+
+## Some Technical Details
+
+To get this to work, you first have to configure the CMake calling of swig.
+Adding the `-doxygen` flag is enough (`set(CMAKE_SWIG_FLAGS "-doxygen")`)
+to trigger swig to copy the C++ documentation to the generated python code.
+
+Then you need to create a website with that documentation. You can do
+something simple with `pydoc`, but `sphinx` makes something more readible.
+My only complaint about `sphinx` is that even with the `autodoc` features,
+you will want to manually write pages to organize the different classes.
+
+The last tricky part I ran into was related to using Jekyll for the NTPoly
+website. Jekyll ignores files and folders which start with an underscore,
+which is what `sphinx` will generate. For a mixed Jekyll/raw generated html
+site, there aren't any great solutions. I ended up using an old script
+called [sphinx-to-github](https://github.com/michaeljones/sphinx-to-github)
+which brute force renames everything.
+
