@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> Wraps the eigensolvers module for calling from other languages.
 MODULE EigenSolversModule_wrp
+  USE DataTypesModule, ONLY : NTREAL
   USE EigenSolversModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE PSMAtrixModule, ONLY : PrintMatrix
@@ -12,6 +13,7 @@ MODULE EigenSolversModule_wrp
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition_wrp
+  PUBLIC :: EstimateGap_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigendecomposition of a matrix.
   SUBROUTINE EigenDecomposition_wrp(ih_this, ih_eigenvalues, nvals, &
@@ -83,5 +85,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SingularValueDecomposition(h_this%DATA, h_leftvectors%DATA, &
          & h_rightvectors%DATA, h_singularvalues%DATA, h_solver_parameters%DATA)
   END SUBROUTINE SingularValueDecompostion_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Estimate the HOMO-LUMO gap of a matrix.
+  SUBROUTINE EstimateGap_wrp(ih_H, ih_K, chemical_potential, gap, &
+       & ih_solver_parameters) &
+       & BIND(c,name="EstimateGap_wrp")
+    INTEGER(KIND=C_INT), INTENT(IN) :: ih_H(SIZE_wrp)
+    INTEGER(KIND=C_INT), INTENT(IN) :: ih_K(SIZE_wrp)
+    REAL(NTREAL), INTENT(IN) :: chemical_potential
+    REAL(NTREAL), INTENT(INOUT) :: gap
+    INTEGER(KIND=C_INT), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_H
+    TYPE(Matrix_ps_wrp) :: h_ISQ
+    TYPE(Matrix_ps_wrp) :: h_K
+    TYPE(SolverParameters_wrp) :: h_solver_parameters
+
+    h_H = TRANSFER(ih_H, h_H)
+    h_K = TRANSFER(ih_K, h_K)
+    h_solver_parameters = TRANSFER(ih_solver_parameters, h_solver_parameters)
+
+    CALL EstimateGap(h_H%DATA, h_K%DATA, &
+         & chemical_potential, gap, h_solver_parameters%DATA)
+
+  END SUBROUTINE EstimateGap_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenSolversModule_wrp

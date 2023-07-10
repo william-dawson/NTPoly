@@ -1055,6 +1055,39 @@ class TestSolvers(unittest.TestCase):
         comm.barrier()
         self.check_result()
 
+    def test_estimategap(self):
+        '''Test routines to estimate homo-lumo gap.'''
+        from scipy.linalg import eigh
+        # Starting Matrix
+        H = self.create_matrix(add_gap=True)
+        self.write_matrix(H, self.input_file)
+
+        # Check Matrix
+        vals, _ = eigh(H.todense())
+        nel = int(self.mat_dim/2)
+        gap_gold = vals[nel] - vals[nel - 1]
+        cp = vals[nel - 1] + 0.5 * gap_gold
+
+        # Compute
+        Hmat = nt.Matrix_ps(self.input_file, False)
+        Kmat = nt.Matrix_ps(Hmat.GetActualDimension())
+
+        # Density Part
+        ISQ = nt.Matrix_ps(Hmat.GetActualDimension())
+        ISQ.FillIdentity()
+        SRoutine = nt.DensityMatrixSolvers.TRS4
+        _, _ = SRoutine(Hmat, ISQ, nel, Kmat, self.isp)
+
+        # Estimate Driver
+        gap = nt.EigenSolvers.EstimateGap(Hmat, Kmat, cp, self.isp)
+
+        # Check the value. Threshold has to be lose because of degenerate
+        # eigenvalues near the gap.
+        threshold = 0.5
+        relative_error = abs(gap_gold - gap)
+        global_error = comm.bcast(relative_error, root=0)
+        self.assertLessEqual(global_error, threshold)
+
 
 class TestSolvers_r(TestSolvers):
     def test_cholesky(self):

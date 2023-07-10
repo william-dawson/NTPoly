@@ -10,4 +10,7 @@ void EigenDecomposition_novec_wrp(const int *ih_this, int *ih_eigenvectors,
 void SingularValueDecompostion_wrp(const int *ih_this, int *ih_leftvectors,
                                    int *ih_rightvectors, int *ih_singularvalues,
                                    const int *ih_solver_parameters);
+void EstimateGap_wrp(const int *ih_H, const int *ih_K,
+                     const double *chemical_potential, double *gap,
+                     const int *ih_solver_parameters);
 #endif

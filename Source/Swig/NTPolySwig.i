@@ -5,6 +5,7 @@
 %apply double *OUTPUT { double *max_power_eig };
 %apply double *OUTPUT { double *min_ger_eig };
 %apply double *OUTPUT { double *max_ger_eig };
+%apply double *OUTPUT { double *gap };
 
 %{
 #include "SolverBase.h"

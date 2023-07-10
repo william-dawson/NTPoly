@@ -4,15 +4,19 @@ MODULE EigenSolversModule
   USE DataTypesModule, ONLY : NTREAL
   USE DMatrixModule, ONLY : Matrix_ldr, Matrix_ldc, ConstructMatrixDFromS, &
        & ConstructMatrixSFromD, DestructMatrix
+  USE EigenBoundsModule, ONLY : GershgorinBounds, PowerBounds
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, WriteElement
-  USE PSMatrixAlgebraModule, ONLY : MatrixMultiply
+  USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
+       & DestructMatrixMemoryPool
+  USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
+       & ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, GatherMatrixToProcess, &
        & FillMatrixFromTripletList, ConstructEmptyMatrix, ConvertMatrixToReal, &
        & DestructMatrix, CopyMatrix, GetMatrixTripletList, TransposeMatrix, &
-       & ConjugateMatrix
+       & ConjugateMatrix, FillMatrixIdentity, WriteMatrixToMatrixMarket
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters, ConstructSolverParameters, &
        & CopySolverParameters
@@ -26,6 +30,7 @@ MODULE EigenSolversModule
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: EigenDecomposition
   PUBLIC :: DenseMatrixFunction
+  PUBLIC :: EstimateGap
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the eigendecomposition of a matrix.
   !! Uses a dense routine.
@@ -138,6 +143,69 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructSolverParameters(params)
 
   END SUBROUTINE DenseMatrixFunction
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Estimate the HOMO-LUMO gap of a matrix.
+  SUBROUTINE EstimateGap(H, K, chemical_potential, gap,  solver_parameters_in)
+    !> The matrix to compute the gap of.
+    TYPE(Matrix_ps), INTENT(IN) :: H
+    !> The density matrix.
+    TYPE(Matrix_ps), INTENT(IN) :: K
+    !> The chemical potential (estimated from purification)
+    REAL(NTREAL), INTENT(IN) :: chemical_potential
+    !> The computed estimate of the HOMO-LUMO gap
+    REAL(NTREAL), INTENT(OUT) :: gap
+    !> Parameters for computing
+    TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
+    !! For Handling Optional Parameters
+    TYPE(SolverParameters_t) :: params
+    !! Local Variables
+    TYPE(Matrix_ps) :: KH, ShiftH
+    TYPE(MatrixMemoryPool_p) :: pool
+    REAL(NTREAL) :: e_min, e_max
+
+    !! Optional Parameters
+    IF (PRESENT(solver_parameters_in)) THEN
+       CALL CopySolverParameters(solver_parameters_in, params)
+    ELSE
+       CALL ConstructSolverParameters(params)
+    END IF
+
+    IF (params%be_verbose) THEN
+       CALL WriteHeader("Estimate Gap")
+       CALL EnterSubLog
+       CALL PrintParameters(params)
+    END IF
+
+    !! Shift the matrix so the HOMO is the largest magnitude eigenvalue
+    CALL GershgorinBounds(H, e_min, e_max)
+    CALL WriteElement("Gershgorin e_min", VALUE = e_min)
+    CALL WriteElement("Gershgorin e_max", VALUE = e_max)
+    CALL ConstructEmptyMatrix(ShiftH, H)
+    CALL FillMatrixIdentity(ShiftH)
+    CALL ScaleMatrix(ShiftH, -e_min)
+    CALL IncrementMatrix(H, ShiftH)
+
+    !! Project Out the Virtual Orbitals
+    CALL MatrixMultiply(K, ShiftH, KH, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+
+    !! Use the power method to get the largest eigenvalue
+    CALL PowerBounds(KH, e_max, params)
+    e_max = e_max + e_min
+    CALL WriteElement("HOMO Estimate", VALUE = e_max)
+    gap = 2.0_NTREAL * (chemical_potential - e_max)
+
+    !! Cleanup
+    IF (params%be_verbose) THEN
+       CALL ExitSubLog
+    END IF
+
+    CALL DestructMatrix(KH)
+    CALL DestructMatrix(ShiftH)
+    CALL DestructMatrixMemoryPool(pool)
+    CALL DestructSolverParameters(params)
+
+  END SUBROUTINE EstimateGap
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The base case: use lapack to solve.
   SUBROUTINE EigenSerial(this, eigenvalues, nvals, solver_params, &
