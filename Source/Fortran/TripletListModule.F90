@@ -41,6 +41,7 @@ MODULE TripletListModule
   PUBLIC :: RedistributeTripletLists
   PUBLIC :: ShiftTripletList
   PUBLIC :: ConvertTripletListType
+  PUBLIC :: MergeTripletLists
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructTripletList
      MODULE PROCEDURE ConstructTripletListSup_r
@@ -98,6 +99,10 @@ MODULE TripletListModule
      MODULE PROCEDURE ConvertTripletListToReal
      MODULE PROCEDURE ConvertTripletListToComplex
   END INTERFACE ConvertTripletListType
+  INTERFACE MergeTripletLists
+     MODULE PROCEDURE MergeTripletLists_r
+     MODULE PROCEDURE MergeTripletLists_c
+  END INTERFACE MergeTripletLists
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Subroutine wrapper for constructing a triplet list.
   PURE SUBROUTINE ConstructTripletListSup_r(this, size_in)
@@ -550,5 +555,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 
   END SUBROUTINE ConvertTripletListToComplex
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Merge a list of TripletList objects together.
+  SUBROUTINE MergeTripletLists_r(this, tlists)
+    !> The starting triplet list. This will be completely replaced.
+    TYPE(TripletList_r), INTENT(INOUT) :: this
+    !> An array of triplet list objects.
+    TYPE(TripletList_r), DIMENSION(:), INTENT(IN) :: tlists
+
+#include "triplet_includes/MergeTripletLists.f90"
+
+  END SUBROUTINE MergeTripletLists_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Merge a list of TripletList objects together.
+  SUBROUTINE MergeTripletLists_c(this, tlists)
+    !> The starting triplet list. This will be completely replaced.
+    TYPE(TripletList_c), INTENT(INOUT) :: this
+    !> An array of triplet list objects.
+    TYPE(TripletList_c), DIMENSION(:), INTENT(IN) :: tlists
+
+#include "triplet_includes/MergeTripletLists.f90"
+
+  END SUBROUTINE MergeTripletLists_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE TripletListModule
