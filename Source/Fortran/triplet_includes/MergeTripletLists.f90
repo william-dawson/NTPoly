@@ -4,7 +4,7 @@
   !! Figure out how big the list should be
   new_size = 0
   DO II = 1, SIZE(tlists)
-    new_size = new_size + tlists(II)%CurrentSize
+     new_size = new_size + tlists(II)%CurrentSize
   END DO
 
   !! Allocate
