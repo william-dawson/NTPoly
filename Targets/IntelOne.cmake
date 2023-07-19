@@ -1,8 +1,6 @@
-################################################################################
-# Build file for an intel compiler system.
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_C_COMPILER mpiicc)
-set(CMAKE_Fortran_COMPILER mpiifort)
+set(CMAKE_Fortran_COMPILER mpiifx)
 set(CMAKE_CXX_COMPILER mpiicpc)
 
 # Library Files
