@@ -19,6 +19,7 @@ MODULE LoggingModule
   PUBLIC :: ExitSubLog
   PUBLIC :: WriteElement
   PUBLIC :: WriteHeader
+  PUBLIC :: WriteComment
   PUBLIC :: WriteListElement
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: SetInitialOffset
@@ -115,6 +116,18 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        WRITE(UNIT, '(A1)') ":"
     END IF
   END SUBROUTINE WriteHeader
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Write out a comment to the log.
+  SUBROUTINE WriteComment(header_value)
+    !> The text of the header.
+    CHARACTER(LEN=*), INTENT(IN) :: header_value
+
+    IF (IsActive) THEN
+       CALL WriteIndent
+       WRITE(UNIT, '(A)', ADVANCE='no') "# "
+       WRITE(UNIT, '(A)') header_value
+    END IF
+  END SUBROUTINE WriteComment
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Write out a element.
   SUBROUTINE WriteElement_bool(key, VALUE)
@@ -299,3 +312,4 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END FUNCTION GetLoggerLevel
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE LoggingModule
+
