@@ -31,8 +31,9 @@
      size_of_mat = mat_list(II)%outer_index(mat_list(II)%columns + 1)
      inner_length = size_of_mat
      DO JJ = 1, SIZE(mat_list(II)%inner_index)
-       out_matrix%inner_index(inner_start + JJ - 1) = mat_list(II)%inner_index(JJ)
-       out_matrix%values(inner_start + JJ - 1) = mat_list(II)%values(JJ)
+        out_matrix%inner_index(inner_start + JJ - 1) = &
+             & mat_list(II)%inner_index(JJ)
+        out_matrix%values(inner_start + JJ - 1) = mat_list(II)%values(JJ)
      END DO
      inner_start = inner_start + inner_length
      !! Outer Indices

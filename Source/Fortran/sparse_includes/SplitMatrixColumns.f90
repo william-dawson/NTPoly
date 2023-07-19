@@ -31,8 +31,9 @@
         ALLOCATE(split_list(II)%inner_index(total_values))
         ALLOCATE(split_list(II)%values(total_values))
         DO JJ = 1, total_values
-          split_list(II)%inner_index(JJ) = this%inner_index(linner_offset + JJ - 1)
-          split_list(II)%values(JJ) = this%values(linner_offset + JJ - 1)
+           split_list(II)%inner_index(JJ) = &
+                & this%inner_index(linner_offset + JJ - 1)
+           split_list(II)%values(JJ) = this%values(linner_offset + JJ - 1)
         END DO
      END IF
   END DO
