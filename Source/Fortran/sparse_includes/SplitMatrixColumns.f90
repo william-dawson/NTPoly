@@ -1,7 +1,7 @@
   !! Local Data
   INTEGER, DIMENSION(num_blocks+1) :: block_offsets
   !! Temporary variables
-  INTEGER :: II, loffset, lcolumns, linner_offset, total_values
+  INTEGER :: II, JJ, loffset, lcolumns, linner_offset, total_values
 
   !! Compute Offsets
   block_offsets(1) = 1
@@ -29,10 +29,10 @@
      !! Copy Inner Indices and Values
      IF (total_values .GT. 0) THEN
         ALLOCATE(split_list(II)%inner_index(total_values))
-        split_list(II)%inner_index(:) = &
-             & this%inner_index(linner_offset:linner_offset + total_values - 1)
         ALLOCATE(split_list(II)%values(total_values))
-        split_list(II)%values(:) = &
-             & this%values(linner_offset:linner_offset + total_values - 1)
+        DO JJ = 1, total_values
+          split_list(II)%inner_index(JJ) = this%inner_index(linner_offset + JJ - 1)
+          split_list(II)%values(JJ) = this%values(linner_offset + JJ - 1)
+        END DO
      END IF
   END DO
