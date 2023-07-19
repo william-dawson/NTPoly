@@ -14,4 +14,5 @@ set(F_TOOLCHAINFLAGS_RELEASE "-O3 -fpp -qopenmp")
 
 # Debug suggestions
 set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -qopenmp -lgomp")
-set(F_TOOLCHAINFLAGS_DEBUG "-check bounds -O0 -g -fpp -traceback -qopenmp -DPURE=")
+set(F_TOOLCHAINFLAGS_DEBUG "-check bounds -O0 -g -fpp -traceback "
+                           "-qopenmp -DPURE=")
