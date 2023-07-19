@@ -1,3 +1,5 @@
+################################################################################
+# Build file for an intel oneapi compiler system.
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_C_COMPILER mpiicc)
 set(CMAKE_Fortran_COMPILER mpiifx)
