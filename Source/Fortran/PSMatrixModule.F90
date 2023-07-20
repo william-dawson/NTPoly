@@ -1838,7 +1838,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: tlist
     TYPE(Triplet_c) :: trip
 
+#define ISCOMPLEX
 #include "distributed_includes/IsIdentity.f90"
+#undef ISCOMPLEX
   END FUNCTION IsIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule

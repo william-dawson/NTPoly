@@ -182,8 +182,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: root
     !> Parameters for the solver.
     TYPE(SolverParameters_t), INTENT(IN) :: params
-    !! Constants.
-    REAL(NTREAL), PARAMETER :: NEGATIVE_ONE = -1.0
     !! Local Matrices
     TYPE(Matrix_ps) :: SqrtMat, FthrtMat
     TYPE(Matrix_ps) :: IdentityMat

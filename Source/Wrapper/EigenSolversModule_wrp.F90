@@ -96,7 +96,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(INOUT) :: gap
     INTEGER(KIND=C_INT), INTENT(IN) :: ih_solver_parameters(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_H
-    TYPE(Matrix_ps_wrp) :: h_ISQ
     TYPE(Matrix_ps_wrp) :: h_K
     TYPE(SolverParameters_wrp) :: h_solver_parameters
 

@@ -12,7 +12,13 @@
      IF (trip%index_row .NE. trip%index_column) THEN
         is_identity = .FALSE.
         EXIT
-     ELSE IF (trip%point_value .NE. 1.0_NTREAL) THEN
+#ifdef ISCOMPLEX
+     ELSE IF (ABS(trip%point_value - 1.0_NTCOMPLEX) &
+          & .GT. TINY(1.0_NTREAL)) THEN
+#else
+     ELSE IF (ABS(trip%point_value - 1.0_NTREAL) &
+          & .GT. TINY(1.0_NTREAL)) THEN
+#endif
         is_identity = .FALSE.
      ELSE
         diag_count = diag_count + 1

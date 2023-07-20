@@ -262,7 +262,7 @@
   !$OMP END PARALLEL
 
   !! Copy to output matrix.
-  IF (beta .EQ. 0.0) THEN
+  IF (ABS(beta) .LT. TINY(beta)) THEN
      CALL CopyMatrix(matAB, matC)
   ELSE
      CALL ScaleMatrix(MatC, beta)
