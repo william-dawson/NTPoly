@@ -1825,9 +1825,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_r) :: tlist
     TYPE(Triplet_r) :: trip
 
-#define ISCOMPLEX
 #include "distributed_includes/IsIdentity.f90"
-#undef ISCOMPLEX
   END FUNCTION IsIdentity_psr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Determine if this is the identity matrix (complex implementation).
@@ -1840,7 +1838,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(TripletList_c) :: tlist
     TYPE(Triplet_c) :: trip
 
+#define ISCOMPLEX
 #include "distributed_includes/IsIdentity.f90"
+#undef ISCOMPLEX
   END FUNCTION IsIdentity_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule
