@@ -14,10 +14,10 @@
         EXIT
 #ifdef ISCOMPLEX
      ELSE IF (ABS(trip%point_value - 1.0_NTCOMPLEX) &
-              & .GT. TINY(trip%point_value)) THEN
+          & .GT. TINY(trip%point_value)) THEN
 #else
      ELSE IF (REAL(trip%point_value - 1.0_NTREAL) .GT. TINY(1.0_NTREAL) .OR. &
-            & AIMAG(trip%point_value - 1.0_NTREAL) .GT. TINY(1.0_NTREAL)) THEN
+          & AIMAG(trip%point_value - 1.0_NTREAL) .GT. TINY(1.0_NTREAL)) THEN
 #endif
         is_identity = .FALSE.
      ELSE
