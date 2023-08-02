@@ -355,7 +355,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp, W, A, X, KOrth
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II
-    REAL(NTREAL) :: step, B_I, err, sparsity
+    REAL(NTREAL) :: step, B_I, B_I_old, err, sparsity, energy
 
     GC = PRESENT(mu_in)
 
@@ -405,7 +405,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO WHILE(B_I .LT. inv_temp)
        !! First order step
        step = MIN(step, inv_temp - B_I)
-       CALL ComputeX(W, IMat, pool, params%threshold, X)
+       CALL ComputeX(W, IMat, pool, params%threshold, X, W2_out=KOrth)
+       CALL DotMatrix(WH, KOrth, energy)
        IF (GC) THEN
           CALL ComputeGCStep(X, A, pool, params%threshold, K0)
        ELSE
@@ -465,6 +466,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Update
        CALL CopyMatrix(RK2, W)
+       B_I_old = B_I
        B_I = B_I + step
        step = step * (params%step_thresh / err) ** (0.5)
        sparsity = REAL(GetMatrixSize(W), KIND = NTREAL) / &
@@ -473,8 +475,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key = "Gradient Evaluations", VALUE = II)
           CALL EnterSubLog
-          CALL WriteElement("Beta", VALUE = B_I)
+          CALL WriteElement("Beta", VALUE = B_I_old)
           CALL WriteElement("Sparsity", VALUE = sparsity)
+          CALL WriteElement("Energy", VALUE = energy)
           CALL ExitSubLog
        END IF
     END DO
@@ -508,7 +511,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the "X" matrix X = W [1 - W^2]
   !> Take one step for the WOM_GC algorithm. 
-  SUBROUTINE ComputeX(W, I, pool, threshold, Out)
+  SUBROUTINE ComputeX(W, I, pool, threshold, Out, W2_out)
     !> The working wave operator.
     TYPE(Matrix_ps), INTENT(IN) :: W
     !> The identity matrix.
@@ -519,6 +522,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: threshold
     !> The result matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Out
+    !> If you want the wave operator's square
+    TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: W2_out
     !! Local matrices.
     TYPE(Matrix_ps) :: W2, Temp
 
@@ -530,6 +535,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL IncrementMatrix(I, Temp, threshold_in = threshold)
     CALL MatrixMultiply(W, Temp, Out, &
          & threshold_in=threshold, memory_pool_in = pool)
+
+    IF (PRESENT(W2_out)) THEN
+       CALL CopyMatrix(W2, W2_out)
+    END IF
 
     !! Cleanup
     CALL DestructMatrix(W2)
