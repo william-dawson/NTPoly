@@ -355,7 +355,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp, W, A, X, KOrth
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II
-    REAL(NTREAL) :: step, B_I, err, sparsity, energy
+    REAL(NTREAL) :: step, B_I, B_I_old, err, sparsity, energy
 
     GC = PRESENT(mu_in)
 
@@ -466,6 +466,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Update
        CALL CopyMatrix(RK2, W)
+       B_I_old = B_I
        B_I = B_I + step
        step = step * (params%step_thresh / err) ** (0.5)
        sparsity = REAL(GetMatrixSize(W), KIND = NTREAL) / &
@@ -474,7 +475,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (params%be_verbose) THEN
           CALL WriteListElement(key = "Gradient Evaluations", VALUE = II)
           CALL EnterSubLog
-          CALL WriteElement("Beta", VALUE = B_I)
+          CALL WriteElement("Beta", VALUE = B_I_old)
           CALL WriteElement("Sparsity", VALUE = sparsity)
           CALL WriteElement("Energy", VALUE = energy)
           CALL ExitSubLog
