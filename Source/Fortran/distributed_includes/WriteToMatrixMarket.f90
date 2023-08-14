@@ -50,6 +50,7 @@
 
   !! Local Data
   CALL MatrixToTripletList(merged_local_data, tlist)
+  CALL DestructMatrix(merged_local_data)
 
   !! Absolute Positions
   CALL ShiftTripletList(tlist, this%start_row - 1, this%start_column - 1)
@@ -93,6 +94,7 @@
           & temp_string2(1:temp_length)
      OFF_JJ = OFF_JJ + temp_length
   END DO
+  CALL DestructTripletList(tlist)
 
   !! Figure out the offset sizes
   ALLOCATE(local_values_buffer(this%process_grid%slice_size))
@@ -138,3 +140,8 @@
      CALL MPI_File_close(mpi_file_handler, ierr)
   END IF
   CALL MPI_Barrier(this%process_grid%global_comm, ierr)
+
+  DEALLOCATE(header_line1)
+  DEALLOCATE(header_line2)
+  DEALLOCATE(write_buffer)
+  DEALLOCATE(local_values_buffer)
