@@ -15,7 +15,7 @@
   !! Temporary Values
   INTEGER :: II, OFF_JJ
   INTEGER :: NEW_LINE_LENGTH
-  CHARACTER(LEN = MAX_LINE_LENGTH*2) :: temp_string1
+  CHARACTER(LEN = MAX_LINE_LENGTH * 2) :: temp_string1
   CHARACTER(LEN = MAX_LINE_LENGTH) :: temp_string2
   CHARACTER(LEN = MAX_LINE_LENGTH) :: temp_string3
   INTEGER :: temp_length
@@ -28,14 +28,14 @@
   CALL MPI_Type_size(MPI_CHARACTER, bytes_per_character, ierr)
 
   !! Create the matrix size line
-  NEW_LINE_LENGTH = LEN(new_LINE('A'))
+  NEW_LINE_LENGTH = LEN(NEW_LINE('A'))
 #ifdef ISCOMPLEX
   WRITE(temp_string1, '(A)') &
        & "%%MatrixMarket matrix coordinate complex general" &
-       & // new_LINE('A') // "%" // new_LINE('A')
+       & // NEW_LINE('A') // "%" // NEW_LINE('A')
 #else
   WRITE(temp_string1, '(A)') "%%MatrixMarket matrix coordinate real general" &
-       & // new_LINE('A') // "%" // new_LINE('A')
+       & // NEW_LINE('A') // "%" // NEW_LINE('A')
 #endif
   ALLOCATE(CHARACTER(LEN = LEN_TRIM(temp_string1)) :: header_line1)
   header_line1(:) = TRIM(temp_string1)
@@ -111,7 +111,7 @@
   IF (this%process_grid%between_slice_rank .EQ. 0) THEN
      CALL MPI_File_open(this%process_grid%within_slice_comm, file_name, &
           & IOR(MPI_MODE_CREATE,MPI_MODE_WRONLY), MPI_INFO_NULL, &
-          & mpi_file_handler,ierr)
+          & mpi_file_handler, ierr)
      CALL MPI_File_set_size(mpi_file_handler, zero_size, ierr)
 
      !! Write Header
