@@ -603,13 +603,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DotMatrix(X_k2, Fx_right, trace_fx)
        CALL DotMatrix(X_k2, Gx_right, trace_gx)
 
-       !! Avoid Overflow
+       !! Compute Sigma - avoiding overflow
        IF (ABS(trace_gx) .LT. 1.0e-14_NTREAL) THEN
-          EXIT
+          sigma_array(II) = sigma_max + 1.0_NTREAL
+       ELSE
+          sigma_array(II) = (trace - trace_fx) / trace_gx
        END IF
-
-       !! Compute Sigma
-       sigma_array(II) = (trace - trace_fx) / trace_gx
 
        !! Update The Matrix
        IF (sigma_array(II) .GT. sigma_max) THEN
