@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE FermiOperatorModule, ONLY : ComputeDenseFOE
@@ -64,7 +65,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
     REAL(NTREAL) :: trace_value2
-    REAL(NTREAL) :: norm_value
     REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
@@ -79,6 +79,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
@@ -143,7 +146,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     II = 1
-    norm_value = params%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
     DO II = 1, params%max_iterations
        !! Compute X_k2
@@ -190,18 +192,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
-       norm_value = ABS(energy_value - energy_value_old)
 
+       CALL AppendValue(params%monitor, energy_value - energy_value_old)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
           CALL WriteElement("Energy Value", VALUE = energy_value)
           CALL ExitSubLog
        END IF
 
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
     END DO
     total_iterations = II - 1
     IF (params%be_verbose) THEN
@@ -310,7 +309,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value
     REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
@@ -325,6 +323,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
@@ -375,7 +376,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     II = 1
-    norm_value = params%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
     DO II = 1, params%max_iterations
        !! Compute Sigma
@@ -402,17 +402,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
-       norm_value = ABS(energy_value - energy_value_old)
 
+       CALL AppendValue(params%monitor, energy_value - energy_value_old)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
           CALL WriteElement("Energy Value", VALUE = energy_value)
           CALL ExitSubLog
-       END IF
-
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
        END IF
     END DO
     total_iterations = II - 1
@@ -514,7 +510,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
-    REAL(NTREAL) :: norm_value
     REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
@@ -531,6 +526,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
@@ -584,7 +582,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     II = 1
-    norm_value = params%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
     DO II = 1, params%max_iterations
        !! Compute X_k2
@@ -630,17 +627,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
-       norm_value = ABS(energy_value - energy_value_old)
 
+       CALL AppendValue(params%monitor, energy_value - energy_value_old)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
-          CALL WriteElement(key = "Energy Value", VALUE = energy_value)
+          CALL WriteElement("Energy Value", VALUE = energy_value)
           CALL ExitSubLog
-       END IF
-
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
        END IF
     END DO
     total_iterations = II - 1
@@ -756,7 +749,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: mu
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: sigma_array
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value
     REAL(NTREAL) :: energy_value, energy_value_old
     !! For computing the chemical potential
     REAL(NTREAL) :: zero_value, midpoint, interval_a, interval_b
@@ -772,6 +764,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
@@ -840,7 +835,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     II = 1
-    norm_value = params%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
     DO II = 1, params%max_iterations
        !! Compute the hole matrix DH
@@ -852,7 +846,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(D1, DH, DDH, &
             & threshold_in = params%threshold, memory_pool_in = pool)
        CALL MatrixTrace(DDH, trace_value)
-       norm_value = ABS(trace_value)
 
        !! Compute D2DH
        CALL MatrixMultiply(D1, DDH, D2DH, &
@@ -874,17 +867,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! Energy value based convergence
        energy_value_old = energy_value
        CALL DotMatrix(D1, WH, energy_value)
-       norm_value = ABS(energy_value - energy_value_old)
 
+       CALL AppendValue(params%monitor, energy_value - energy_value_old)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
           CALL WriteElement("Energy Value", VALUE = energy_value)
           CALL ExitSubLog
-       END IF
-
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
        END IF
     END DO
     total_iterations = II - 1
@@ -990,7 +979,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: e_min, e_max
     REAL(NTREAL) :: Beta, BetaBar, alpha
     REAL(NTREAL) :: trace_value
-    REAL(NTREAL) :: norm_value
     REAL(NTREAL) :: energy_value, energy_value_old
     !! Temporary Variables
     TYPE(MatrixMemoryPool_p) :: pool
@@ -1002,6 +990,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
@@ -1053,7 +1044,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL EnterSubLog
     END IF
     II = 1
-    norm_value = params%converge_diff + 1.0_NTREAL
     energy_value = 0.0_NTREAL
     DO II = 1, params%max_iterations
        !! Determine the path
@@ -1081,17 +1071,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        energy_value_old = energy_value
        CALL DotMatrix(X_k, WH, energy_value)
        energy_value = 2.0_NTREAL*energy_value
-       norm_value = ABS(energy_value - energy_value_old)
 
+       CALL AppendValue(params%monitor, energy_value - energy_value_old)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
           CALL WriteElement("Energy Value", VALUE = energy_value)
           CALL ExitSubLog
-       END IF
-
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
        END IF
     END DO
     IF (params%be_verbose) THEN

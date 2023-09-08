@@ -4,6 +4,7 @@ MODULE LinearSolversModule
   USE CholeskyModule, ONLY : ConstructRankLookup, AppendToVector, &
        & BroadcastVector, ConstructDiag, DotAllHelper, DotAllPivoted, &
        & GatherMatrixColumn, GetPivot, UnpackCholesky
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE DMatrixModule, ONLY : Matrix_ldr, DestructMatrix, &
        & ConstructMatrixDFromS
@@ -59,6 +60,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     !! Print out parameters
     IF (params%be_verbose) THEN
@@ -107,13 +111,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     norm_value = params%converge_diff + 1.0_NTREAL
     DO II = 1, params%max_iterations
-       IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
-       END IF
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
-
        !! Compute the Step Size
        CALL MatrixMultiply(ABalanced, PMat, QMat, &
             & threshold_in = params%threshold, memory_pool_in = pool)
@@ -150,6 +147,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        step_size = new_top / top
        CALL ScaleMatrix(PMat, step_size)
        CALL IncrementMatrix(RMat, PMat)
+
+       !! Check Exit Condition
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
 
     END DO
     IF (params%be_verbose) THEN

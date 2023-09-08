@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Inverse of a Matrix.
 MODULE InverseSolversModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL
   USE EigenSolversModule, ONLY : DenseMatrixFunction
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
@@ -49,6 +50,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
@@ -117,9 +121,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(Temp2, OutputMat, &
             & threshold_in = params%threshold)
 
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
@@ -205,6 +208,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Inverse Solver")
@@ -249,10 +255,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     II = 1
     norm_value = params%converge_diff + 1.0_NTREAL
     DO II = 1,params%max_iterations
-       IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
-       END IF
-
        CALL MatrixMultiply(OutputMat, BalancedMat, Temp1, &
             & threshold_in = params%threshold, memory_pool_in = pool)
        CALL MatrixMultiply(Temp1, OutputMat, Temp2, alpha_in = -1.0_NTREAL, &
@@ -269,11 +271,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(OutputMat, Temp1, -1.0_NTREAL)
        norm_value = MatrixNorm(Temp1)
 
-       !! Sometimes the first few values don't change so much, so that's why
-       !! I added the outer counter check
-       IF (norm_value .LE. params%converge_diff .AND. II .GT. 3) THEN
-          EXIT
-       END IF
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog

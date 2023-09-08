@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Matrix Sign Function.
 MODULE SignSolversModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE EigenSolversModule, ONLY : DenseMatrixFunction
@@ -152,7 +153,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Output of the routine.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver.
-    TYPE(SolverParameters_t), INTENT(IN) :: params
+    TYPE(SolverParameters_t), INTENT(INOUT) :: params
     !> Whether we need to perform transposes in this routine (for polar).
     LOGICAL, INTENT(IN) :: needs_transpose
     !! Local Matrices
@@ -168,6 +169,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: xk
     REAL(NTREAL) :: norm_value
     INTEGER :: II
+
+    !! Setup the monitor
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyMatrix(Identity, InMat)
@@ -199,9 +205,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     II = 1
     norm_value = params%converge_diff + 1.0_NTREAL
     iterate: DO II = 1, params%max_iterations
-       IF (params%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
-       END IF
 
        !! Update Scaling Factors
        alpha_k = MIN(SQRT(3.0_NTREAL / (1.0_NTREAL + xk + xk**2)), alpha)
@@ -230,9 +233,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        norm_value = MatrixNorm(OutMat)
        CALL CopyMatrix(Temp2, OutMat)
 
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
+       !! Check Exit Condition
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
+
     END DO iterate
     IF (params%be_verbose) THEN
        CALL ExitSubLog

@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Square Root of a Matrix.
 MODULE SquareRootSolversModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE EigenSolversModule, ONLY : DenseMatrixFunction
@@ -167,7 +168,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The Matrix computed.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutputMat
     !> Parameters about how to solve.
-    TYPE(SolverParameters_t),INTENT(IN) :: params
+    TYPE(SolverParameters_t),INTENT(INOUT) :: params
     !> True if we are computing the inverse square root.
     LOGICAL, INTENT(IN) :: compute_inverse
     !> The polynomial degree to use (optional, default = 5)
@@ -200,7 +201,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Mat^-1/2 or Mat^1/2.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver
-    TYPE(SolverParameters_t), INTENT(IN) :: params
+    TYPE(SolverParameters_t), INTENT(INOUT) :: params
     !> Whether to compute the inverse square root.
     LOGICAL, INTENT(IN) :: compute_inverse
     !! Local Variables
@@ -214,6 +215,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
     REAL(NTREAL) :: norm_value
     TYPE(MatrixMemoryPool_p) :: mpool
+
+    !! Setup the monitor
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Newton Schultz Inverse Square Root")
@@ -295,13 +301,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & threshold_in = params%threshold, memory_pool_in = mpool)
        CALL ScaleMatrix(SquareRootMat, SQRT(lambda))
 
-       IF (params%be_verbose) THEN
-          CALL WriteElement(key = "Convergence", VALUE = norm_value)
-       END IF
+       !! Check Exit Condition
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
 
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
@@ -343,7 +346,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Mat^-1/2 or Mat^1/2.
     TYPE(Matrix_ps), INTENT(INOUT) :: OutMat
     !> Parameters for the solver.
-    TYPE(SolverParameters_t), INTENT(IN) :: params
+    TYPE(SolverParameters_t), INTENT(INOUT) :: params
     !> Order of polynomial to use.
     INTEGER, INTENT(IN) :: taylor_order
     !> Whether to compute the inverse square root or not.
@@ -361,6 +364,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
     REAL(NTREAL) :: norm_value
     TYPE(MatrixMemoryPool_p) :: mpool
+
+    !! Setup the monitor
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Newton Schultz Inverse Square Root")
@@ -481,13 +489,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL MatrixMultiply(Temp, X_k, SquareRootMat, &
             & threshold_in = params%threshold, memory_pool_in = mpool)
 
-       IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
-       END IF
+       !! Check Exit Condition
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
 
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog

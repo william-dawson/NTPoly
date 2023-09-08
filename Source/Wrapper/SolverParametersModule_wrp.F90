@@ -23,6 +23,7 @@ MODULE SolverParametersModule_wrp
   PUBLIC :: SetParametersBeVerbose_wrp
   PUBLIC :: SetParametersLoadBalance_wrp
   PUBLIC :: SetParametersStepThreshold_wrp
+  PUBLIC :: SetParametersMonitorConvergence_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the iterat solver parameters.
   SUBROUTINE ConstructSolverParameters_wrp(ih_this) &
@@ -47,7 +48,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructSolverParameters_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the convergence difference.
-  SUBROUTINE SetParametersConvergeDiff_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersConvergeDiff_wrp(ih_this, new_value) &
        & BIND(c,name="SetParametersConvergeDiff_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: new_value
@@ -58,7 +59,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersConvergeDiff_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the max iterations.
-  SUBROUTINE SetParametersMaxIterations_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersMaxIterations_wrp(ih_this, new_value) &
        & BIND(c,name="SetParametersMaxIterations_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: new_value
@@ -69,7 +70,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersMaxIterations_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the threshold.
-  SUBROUTINE SetParametersThreshold_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersThreshold_wrp(ih_this, new_value) &
        & BIND(c,name="SetParametersThreshold_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: new_value
@@ -80,7 +81,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersThreshold_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the verbosity.
-  SUBROUTINE SetParametersBeVerbose_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersBeVerbose_wrp(ih_this, new_value) &
        & BIND(c,name="SetParametersBeVerbose_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     LOGICAL(kind=c_bool), INTENT(IN) :: new_value
@@ -104,14 +105,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersLoadBalance_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the step threshold.
-  SUBROUTINE SetParametersStepThreshold_wrp(ih_this,new_value) &
+  SUBROUTINE SetParametersStepThreshold_wrp(ih_this, new_value) &
        & BIND(c,name="SetParametersStepThreshold_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
     REAL(NTREAL), INTENT(IN) :: new_value
     TYPE(SolverParameters_wrp) :: h_this
 
     h_this = TRANSFER(ih_this,h_this)
-    CALL SetParametersStepThreshold(h_this%DATA,new_value)
+    CALL SetParametersStepThreshold(h_this%DATA, new_value)
   END SUBROUTINE SetParametersStepThreshold_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the convergence monitoring.
+  SUBROUTINE SetParametersMonitorConvergence_wrp(ih_this, new_value) &
+       & BIND(c,name="SetParametersMonitorConvergence_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_this(SIZE_wrp)
+    LOGICAL(kind=c_bool), INTENT(IN) :: new_value
+    TYPE(SolverParameters_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this, h_this)
+    CALL SetParametersMonitorConvergence(h_this%DATA, LOGICAL(new_value))
+  END SUBROUTINE SetParametersMonitorConvergence_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SolverParametersModule_wrp

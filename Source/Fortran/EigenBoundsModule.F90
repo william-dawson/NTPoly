@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for computing estimates of the bounds of the spectrum of a matrix.
 MODULE EigenBoundsModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteListElement, WriteHeader
@@ -64,11 +65,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The parameters for this calculation.
     TYPE(SolverParameters_t), INTENT(IN), OPTIONAL :: solver_parameters_in
     !! Handling Optional Parameters
-    TYPE(SolverParameters_t) :: param
+    TYPE(SolverParameters_t) :: params
     !! Local Data
     TYPE(Matrix_ps) :: vector, vector2
     REAL(NTREAL) :: scale_value
-    REAL(NTREAL) :: norm_value
     TYPE(TripletList_r) :: temp_list
     TYPE(Triplet_r) :: temp_triplet
     INTEGER :: II
@@ -76,16 +76,19 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
-       CALL CopySolverParameters(solver_parameters_in, param)
+       CALL CopySolverParameters(solver_parameters_in, params)
     ELSE
-       CALL ConstructSolverParameters(param)
-       param%max_iterations = 10
+       CALL ConstructSolverParameters(params)
+       params%max_iterations = 10
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
-    IF (param%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Power Bounds Solver")
        CALL EnterSubLog
-       CALL PrintParameters(param)
+       CALL PrintParameters(params)
     END IF
 
     !! Diagonal matrices serve as vectors.
@@ -103,35 +106,26 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL FillMatrixFromTripletList(vector, temp_list)
 
     !! Iterate
-    IF (param%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
     END IF
     II = 1
-    norm_value = param%converge_diff + 1.0_NTREAL
-    DO II = 1, param%max_iterations
-       IF (param%be_verbose .AND. II .GT. 1) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
-       END IF
-
+    DO II = 1, params%max_iterations
        !! x = Ax
        CALL MatrixMultiply(this, vector, vector2, &
-            & threshold_in = param%threshold, memory_pool_in = pool)
+            & threshold_in = params%threshold, memory_pool_in = pool)
        !! x = x/||x||
        scale_value = 1.0 / MatrixNorm(vector2)
        CALL ScaleMatrix(vector2, scale_value)
 
        !! Check if Converged
        CALL IncrementMatrix(vector2, vector, alpha_in = -1.0_NTREAL)
-       norm_value = MatrixNorm(vector)
-
+       CALL AppendValue(params%monitor, MatrixNorm(vector))
        CALL CopyMatrix(vector2, vector)
-
-       IF (norm_value .LE. param%converge_diff) THEN
-          EXIT
-       END IF
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
     END DO
-    IF (param%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL ExitSubLog
        CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
     END IF
@@ -139,11 +133,11 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute The Largest Eigenvalue
     CALL DotMatrix(vector, vector, scale_value)
     CALL MatrixMultiply(this, vector, vector2, &
-         & threshold_in = param%threshold, memory_pool_in = pool)
+         & threshold_in = params%threshold, memory_pool_in = pool)
     CALL DotMatrix(vector, vector2, max_value)
     max_value = max_value / scale_value
 
-    IF (param%be_verbose) THEN
+    IF (params%be_verbose) THEN
        CALL WriteElement(key = "Max Eigen Value", VALUE = max_value)
        CALL ExitSubLog
     END IF
@@ -152,7 +146,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(vector)
     CALL DestructMatrix(vector2)
     CALL DestructMatrixMemoryPool(pool)
-    CALL DestructSolverParameters(param)
+    CALL DestructSolverParameters(params)
   END SUBROUTINE PowerBounds
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE EigenBoundsModule

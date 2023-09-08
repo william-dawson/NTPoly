@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing General Matrix Roots.
 MODULE RootSolversModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
   USE InverseSolversModule, ONLY : Invert
@@ -181,7 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Which inverse root to compute.
     INTEGER, INTENT(IN) :: root
     !> Parameters for the solver.
-    TYPE(SolverParameters_t), INTENT(IN) :: params
+    TYPE(SolverParameters_t), INTENT(INOUT) :: params
     !! Local Matrices
     TYPE(Matrix_ps) :: SqrtMat, FthrtMat
     TYPE(Matrix_ps) :: IdentityMat
@@ -199,6 +200,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
     INTEGER :: JJ
     TYPE(MatrixMemoryPool_p) :: pool
+
+    !! Setup the monitor
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Root Solver")
@@ -291,9 +297,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & alpha_in=-1.0_NTREAL)
        norm_value = MatrixNorm(Temp)
 
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
+       !! Check Exit Condition
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog

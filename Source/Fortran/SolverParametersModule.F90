@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Storing The Parameters For Iterative Solvers.
 MODULE SolverParametersModule
+  USE ConvergenceMonitor, ONLY : Monitor_t, DestructMonitor
   USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
        & WriteHeader
@@ -25,6 +26,10 @@ MODULE SolverParametersModule
      TYPE(Permutation_t) :: BalancePermutation
      !> Thresholds for step size searches.
      REAL(NTREAL) :: step_thresh
+     !> Whether to do an automatic convergence detection.
+     LOGICAL :: monitor_convergence
+     !> The convergence monitor
+     TYPE(Monitor_t) :: monitor
   END TYPE SolverParameters_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ConstructSolverParameters
@@ -35,6 +40,7 @@ MODULE SolverParametersModule
   PUBLIC :: SetParametersBeVerbose
   PUBLIC :: SetParametersLoadBalance
   PUBLIC :: SetParametersStepThreshold
+  PUBLIC :: SetParametersMonitorConvergence
   PUBLIC :: PrintParameters
   PUBLIC :: DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -46,7 +52,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a data type which stores iterative solver parameters.
   SUBROUTINE ConstructSolverParameters(this, converge_diff_in, threshold_in, &
        & max_iterations_in, be_verbose_in, BalancePermutation_in, &
-       & step_thresh_in)
+       & step_thresh_in, monitor_convergence_in)
     !> The parameters to construct.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Converge_diff_in the difference between iterations to consider
@@ -62,6 +68,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Permutation_t), INTENT(IN), OPTIONAL :: BalancePermutation_in
     !> Step size for differential equation solvers.
     REAL(NTREAL), INTENT(IN), OPTIONAL :: step_thresh_in
+    !> Whether to do automatic convergence monitoring (default = True).
+    LOGICAL, INTENT(IN), OPTIONAL :: monitor_convergence_in
 
     CALL DestructSolverParameters(this)
 
@@ -97,6 +105,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        this%step_thresh = step_thresh_in
     END IF
+    IF (.NOT. PRESENT(monitor_convergence_in)) THEN
+       this%monitor_convergence = .TRUE.
+    ELSE
+       this%monitor_convergence = monitor_convergence_in
+    END IF
   END SUBROUTINE ConstructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE CopySolverParameters(paramA, paramB)
@@ -110,7 +123,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE CopySolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the convergence difference.
-  PURE SUBROUTINE SetParametersConvergeDiff(this,new_value)
+  PURE SUBROUTINE SetParametersConvergeDiff(this, new_value)
     !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Value to set it to.
@@ -120,7 +133,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersConvergeDiff
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the max iterations.
-  PURE SUBROUTINE SetParametersMaxIterations(this,new_value)
+  PURE SUBROUTINE SetParametersMaxIterations(this, new_value)
     !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Value to set it to.
@@ -130,7 +143,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersMaxIterations
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the threshold.
-  PURE SUBROUTINE SetParametersThreshold(this,new_value)
+  PURE SUBROUTINE SetParametersThreshold(this, new_value)
     !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Value to set it to.
@@ -140,7 +153,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersThreshold
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the verbosity.
-  PURE SUBROUTINE SetParametersBeVerbose(this,new_value)
+  PURE SUBROUTINE SetParametersBeVerbose(this, new_value)
     !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Value to set it to.
@@ -150,7 +163,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersBeVerbose
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the load balance.
-  PURE SUBROUTINE SetParametersLoadBalance(this,new_value)
+  PURE SUBROUTINE SetParametersLoadBalance(this, new_value)
     !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Value to set it to.
@@ -161,7 +174,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SetParametersLoadBalance
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Set the value of the step threshold.
-  PURE SUBROUTINE SetParametersStepThreshold(this,new_value)
+  PURE SUBROUTINE SetParametersStepThreshold(this, new_value)
     !> The parameter object.
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
     !> Value to set it to.
@@ -169,6 +182,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     this%step_thresh = new_value
   END SUBROUTINE SetParametersStepThreshold
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Set the value of the monitoring of convergence
+  PURE SUBROUTINE SetParametersMonitorConvergence(this, new_value)
+    !> The parameter object.
+    TYPE(SolverParameters_t), INTENT(INOUT) :: this
+    !> Value to set it to.
+    LOGICAL, INTENT(IN) :: new_value
+
+    this%monitor_convergence = new_value
+  END SUBROUTINE SetParametersMonitorConvergence
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Print out the iterative solver parameter values.
   SUBROUTINE PrintParameters(this)
@@ -189,6 +212,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & VALUE = this%max_iterations)
     CALL WriteElement(key = "Step Threshold", &
          & VALUE = this%step_thresh)
+    CALL WriteElement(key = "Monitor Convergence", &
+         & VALUE = this%monitor_convergence)
     CALL ExitSubLog
   END SUBROUTINE PrintParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -198,6 +223,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(SolverParameters_t), INTENT(INOUT) :: this
 
     CALL DestructPermutation(this%BalancePermutation)
+    CALL DestructMonitor(this%monitor)
   END SUBROUTINE DestructSolverParameters
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SolverParametersModule
