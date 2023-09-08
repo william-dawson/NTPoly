@@ -257,20 +257,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     DO II = 1,params%max_iterations
        CALL MatrixMultiply(OutputMat, BalancedMat, Temp1, &
             & threshold_in = params%threshold, memory_pool_in = pool)
+
+       !! Convergence measures
+       CALL CopyMatrix(Identity, Temp2)
+       CALL IncrementMatrix(Temp1, Temp2, -1.0_NTREAL)
+       norm_value = MatrixNorm(Temp2)
+
        CALL MatrixMultiply(Temp1, OutputMat, Temp2, alpha_in = -1.0_NTREAL, &
             & threshold_in = params%threshold, memory_pool_in = pool)
-
-       !! Save a copy of the last inverse matrix
-       CALL CopyMatrix(OutputMat, Temp1)
-
        CALL ScaleMatrix(OutputMat, 2.0_NTREAL)
        CALL IncrementMatrix(Temp2, OutputMat, &
             & threshold_in = params%threshold)
 
        !! Check if Converged
-       CALL IncrementMatrix(OutputMat, Temp1, -1.0_NTREAL)
-       norm_value = MatrixNorm(Temp1)
-
        CALL AppendValue(params%monitor, norm_value)
        IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
     END DO

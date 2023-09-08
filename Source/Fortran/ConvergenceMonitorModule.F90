@@ -41,7 +41,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The length of the long window (default: 6)
     INTEGER, INTENT(IN), OPTIONAL :: long_len_in
     !> If the average is greater than this than we aren't 
-    !! converged (default: 0.001)
+    !! converged (default: 0.01)
     REAL(NTREAL), INTENT(IN), OPTIONAL :: loose_cutoff_in
     !> If the last value is less than this, we definitely are converged 
     !! (default: 1e-8).
@@ -69,7 +69,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (PRESENT(loose_cutoff_in)) THEN
        this%loose_cutoff = loose_cutoff_in
     ELSE
-       this%loose_cutoff = 1E-3_NTREAL
+       this%loose_cutoff = 1E-2_NTREAL
     END IF
 
     IF (PRESENT(tight_cutoff_in)) THEN
