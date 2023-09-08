@@ -7,7 +7,7 @@
 MODULE ConvergenceMonitor
   USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
-      & WriteListElement
+       & WriteListElement
   IMPLICIT NONE
   PRIVATE
   !> Monitor convergence with a moving average
@@ -33,7 +33,7 @@ MODULE ConvergenceMonitor
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the monitor.
   SUBROUTINE ConstructMonitor(this, short_len_in, long_len_in, &
-      & loose_cutoff_in, tight_cutoff_in, automatic_in)
+       & loose_cutoff_in, tight_cutoff_in, automatic_in)
     !> The monitor to construct.
     TYPE(Monitor_t), INTENT(INOUT) :: this
     !> The length of the short window (default: 3)
@@ -137,12 +137,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL WriteListElement(key = "Convergence", VALUE = last)
     END IF
     IF (ABS(last) .GT. this%tight_cutoff) THEN
-      conv = .FALSE.
+       conv = .FALSE.
     ELSE
-      conv = .TRUE.
-      CALL EnterSubLog
-      CALL WriteElement(key = "Trigger", VALUE = "Tight Criteria")
-      CALL ExitSubLog
+       conv = .TRUE.
+       CALL EnterSubLog
+       CALL WriteElement(key = "Trigger", VALUE = "Tight Criteria")
+       CALL ExitSubLog
     END IF
     IF (.NOT. this%automatic .OR. conv) RETURN
 
