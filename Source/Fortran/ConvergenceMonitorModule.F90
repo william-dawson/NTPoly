@@ -32,7 +32,7 @@ MODULE ConvergenceMonitor
   PUBLIC :: CheckConverged
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct the monitor.
-  SUBROUTINE ConstructMonitor(this, short_len_in, long_len_in, &
+  PURE SUBROUTINE ConstructMonitor(this, short_len_in, long_len_in, &
        & loose_cutoff_in, tight_cutoff_in, automatic_in)
     !> The monitor to construct.
     TYPE(Monitor_t), INTENT(INOUT) :: this
@@ -88,7 +88,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE ConstructMonitor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Destruct the monitor.
-  SUBROUTINE DestructMonitor(this)
+  PURE SUBROUTINE DestructMonitor(this)
     !> The monitor to destruct.
     TYPE(Monitor_t), INTENT(INOUT) :: this
     IF (ALLOCATED(this%win_short)) DEALLOCATE(this%win_short)
@@ -96,7 +96,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DestructMonitor
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Add a value to the window
-  SUBROUTINE AppendValue(this, val)
+  PURE SUBROUTINE AppendValue(this, val)
     !> Add a value to the window
     TYPE(Monitor_t), INTENT(INOUT) :: this
     !> Value to add
