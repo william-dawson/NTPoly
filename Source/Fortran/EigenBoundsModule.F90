@@ -97,13 +97,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Guess Vector
     CALL ConstructTripletList(temp_list)
-    IF (this%process_grid%global_rank .EQ. 0) THEN
+    DO II = this%start_column, this%end_column - 1
        temp_triplet%index_row = 1
-       temp_triplet%index_column = 1
-       temp_triplet%point_value = 1.0_NTREAL
+       temp_triplet%index_column = II
+       temp_triplet%point_value = 1.0_NTREAL / vector%actual_matrix_dimension
        CALL AppendToTripletList(temp_list, temp_triplet)
-    END IF
-    CALL FillMatrixFromTripletList(vector, temp_list)
+    END DO
+    CALL FillMatrixFromTripletList(vector, temp_list, prepartitioned_in=.TRUE.)
 
     !! Iterate
     IF (params%be_verbose) THEN
