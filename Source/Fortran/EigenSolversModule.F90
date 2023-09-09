@@ -182,7 +182,10 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! back to the Gershgorin Bounds
     CALL MatrixMultiply(K, H, KH, &
          & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL WriteElement("Estimate Minimum")
+    CALL EnterSubLog
     CALL PowerBounds(KH, e_min, params)
+    CALL ExitSubLog
     IF (e_min .GT. 0_NTREAL) THEN
        CALL WriteComment("Switching to GershgorinBounds")
        CALL GershgorinBounds(H, e_min, e_max)

@@ -161,7 +161,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        IF (CheckConverged(params%monitor, params%be_verbose)) THEN
           !! Make sure the two estimates vaguely agree
           IF(ABS(aitken_values(3) - ritz_values(3)) .LT. &
-             & params%monitor%loose_cutoff) THEN
+               & params%monitor%loose_cutoff) THEN
              EXIT
           END IF
        END IF
