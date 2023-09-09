@@ -158,7 +158,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! for the largest eigenvalue value.
        CALL AppendValue(params%monitor,  &
             & - (aitken_values(3) - aitken_values(2)))
-       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
+       IF (CheckConverged(params%monitor, params%be_verbose)) THEN
+          !! Make sure the two estimates vaguely agree
+          IF(ABS(aitken_values(3) - ritz_values(3)) .LT. &
+             & params%monitor%loose_cutoff) THEN
+             EXIT
+          END IF
+       END IF
        IF (params%be_verbose) THEN
           CALL EnterSubLog
           CALL WriteElement(key="Estimate", VALUE=ritz_values(3))
