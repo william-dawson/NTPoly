@@ -105,11 +105,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER :: II
 
     !! Shift
-    DO II = SIZE(this%win_short), 2, -1
-       this%win_short(II - 1) = this%win_short(II) 
+    DO II = 1, SIZE(this%win_short) -1
+       this%win_short(II) = this%win_short(II + 1) 
     END DO
-    DO II = SIZE(this%win_long), 2, -1
-       this%win_long(II - 1) = this%win_long(II)
+    DO II = 1, SIZE(this%win_long) - 1
+       this%win_long(II) = this%win_long(II + 1)
     END DO
 
     !! Append
@@ -152,18 +152,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! First check that we've seen enough values to make a judgement.
     IF (this%nval .LT. SIZE(this%win_long)) conv = .FALSE.
 
-    !! Now check that the two windows are within an order of magnitude
+    !! Compute Averages
     avg_short = SUM(this%win_short) / SIZE(this%win_short)
     avg_long = SUM(this%win_long) / SIZE(this%win_long)
-    IF (.NOT. (10 * avg_short .GT. avg_long .AND. &
-         & avg_short / 10 .LT. avg_long)) THEN
-       conv = .FALSE.
-    END IF
     IF (be_verbose) THEN
        CALL EnterSubLog
        CALL WriteElement(key = "Avg Short", VALUE = avg_short)
        CALL WriteElement(key = "Avg Long", VALUE = avg_long)
        CALL ExitSubLog
+    END IF
+
+    !! Now check that the two windows are within an order of magnitude
+    IF (.NOT. (10 * avg_short .GT. avg_long .AND. &
+         & avg_short / 10 .LT. avg_long)) THEN
+       conv = .FALSE.
+    END IF
+
+    !! The last convergence value should also be within an order of magnitude
+    !! of the long average.
+    IF (.NOT. (10 * last .GT. avg_long .AND. last / 10 .LT. avg_long)) THEN
+       conv = .FALSE.
     END IF
 
     !! No convergence if the lastest value is negative
