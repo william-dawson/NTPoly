@@ -204,6 +204,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     e_max = e_max + e_min
     CALL WriteElement("HOMO Estimate", VALUE = e_max)
     gap = 2.0_NTREAL * (chemical_potential - e_max)
+    CALL WriteElement("Gap Estimate", VALUE = gap)
 
     !! Cleanup
     IF (params%be_verbose) THEN

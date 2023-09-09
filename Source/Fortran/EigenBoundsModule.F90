@@ -67,6 +67,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
     !! Local Data
+    REAL(NTREAL), DIMENSION(3) :: ritz_values
+    REAL(NTREAL), DIMENSION(3) :: aitken_values
+    REAL(NTREAL) :: num, den
     TYPE(Matrix_ps) :: vector, vector2
     REAL(NTREAL) :: scale_value
     TYPE(TripletList_r) :: temp_list
@@ -98,18 +101,20 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Guess Vector
     CALL ConstructTripletList(temp_list)
     IF (this%start_row .EQ. 1) THEN
-        DO II = this%start_column, this%end_column - 1
-           temp_triplet%index_row = 1
-           temp_triplet%index_column = II
-           temp_triplet%point_value = &
+       DO II = this%start_column, this%end_column - 1
+          temp_triplet%index_row = 1
+          temp_triplet%index_column = II
+          temp_triplet%point_value = &
                & 1.0_NTREAL / vector%actual_matrix_dimension
-           CALL AppendToTripletList(temp_list, temp_triplet)
-        END DO
+          CALL AppendToTripletList(temp_list, temp_triplet)
+       END DO
     END IF
     CALL FillMatrixFromTripletList(vector, temp_list, &
          & preduplicated_in=.TRUE., prepartitioned_in=.TRUE.)
 
     !! Iterate
+    ritz_values = 0
+    aitken_values = 0
     IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
        CALL EnterSubLog
@@ -119,30 +124,54 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        !! x = Ax
        CALL MatrixMultiply(this, vector, vector2, &
             & threshold_in = params%threshold, memory_pool_in = pool)
+
+       !! Compute the ritz value
+       CALL DotMatrix(vector, vector, scale_value)
+       CALL DotMatrix(vector, vector2, max_value)
+       max_value = max_value / scale_value
+
        !! x = x/||x||
        scale_value = 1.0 / MatrixNorm(vector2)
        CALL ScaleMatrix(vector2, scale_value)
-
-       !! Check if Converged
-       CALL IncrementMatrix(vector2, vector, alpha_in = -1.0_NTREAL)
-       CALL AppendValue(params%monitor, MatrixNorm(vector))
        CALL CopyMatrix(vector2, vector)
+
+       !! Aitken's Extrapolation
+       ritz_values(1) = ritz_values(2)
+       ritz_values(2) = ritz_values(3)
+       ritz_values(3) = max_value
+       aitken_values(1) = aitken_values(2)
+       aitken_values(2) = aitken_values(3)
+       IF (II .GE. 3) THEN
+          num = ritz_values(3)*ritz_values(1) - ritz_values(2)**2
+          den = ritz_values(3) - 2 * ritz_values(2) + ritz_values(1)
+          !! Avoid division by zero
+          IF (ABS(den) .GT. 1E-14_NTREAL) THEN
+             aitken_values(3) = num / den
+          ELSE
+             aitken_values(3) = ritz_values(3)
+          END IF
+       ELSE
+          aitken_values(3) = ritz_values(3)
+       END IF
+
+       !! Check if Converged - pass the negative value because we're looking
+       !! for the largest eigenvalue value.
+       CALL AppendValue(params%monitor,  &
+            & - (aitken_values(3) - aitken_values(2)))
        IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
+       IF (params%be_verbose) THEN
+          CALL EnterSubLog
+          CALL WriteElement(key="Estimate", VALUE=ritz_values(3))
+          CALL WriteElement(key="Aitken Estimate", VALUE=aitken_values(3))
+          CALL ExitSubLog
+       END IF
+
     END DO
+    max_value = aitken_values(3)
     IF (params%be_verbose) THEN
        CALL ExitSubLog
        CALL WriteElement(key = "Total Iterations", VALUE = II - 1)
-    END IF
-
-    !! Compute The Largest Eigenvalue
-    CALL DotMatrix(vector, vector, scale_value)
-    CALL MatrixMultiply(this, vector, vector2, &
-         & threshold_in = params%threshold, memory_pool_in = pool)
-    CALL DotMatrix(vector, vector2, max_value)
-    max_value = max_value / scale_value
-
-    IF (params%be_verbose) THEN
-       CALL WriteElement(key = "Max Eigen Value", VALUE = max_value)
+       CALL WriteElement(key = "Max Eigen Value", VALUE = aitken_values(3))
        CALL ExitSubLog
     END IF
 
