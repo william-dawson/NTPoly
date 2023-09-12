@@ -3,6 +3,7 @@ set(Fsrc
     AnalysisModule.F90
     ChebyshevSolversModule.F90
     CholeskySolversModule.F90
+    ConvergenceMonitorModule.F90
     DataTypesModule.F90
     DensityMatrixSolversModule.F90
     DMatrixModule.F90

@@ -32,6 +32,9 @@ public:
   //! Thresholds for step size searches.
   //!\param new_value
   void SetStepThreshold(double new_value);
+  //! Whether to automatically monitor convergence
+  //!\param new_value
+  void SetMonitorConvergence(bool new_value);
   ~SolverParameters();
 
 private:

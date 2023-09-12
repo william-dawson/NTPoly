@@ -43,4 +43,9 @@ void SolverParameters::SetLoadBalance(const Permutation &new_value) {
 void SolverParameters::SetStepThreshold(double new_value) {
   SetParametersStepThreshold_wrp(ih_this, &new_value);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+void SolverParameters::SetMonitorConvergence(bool new_value) {
+  SetParametersMonitorConvergence_wrp(ih_this, &new_value);
+}
 } // namespace NTPoly

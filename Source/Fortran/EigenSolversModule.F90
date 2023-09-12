@@ -8,7 +8,8 @@ MODULE EigenSolversModule
 #if EIGENEXA
   USE EigenExaModule, ONLY : EigenExa_s
 #endif
-  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, WriteElement
+  USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
+       & WriteComment, WriteElement
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
@@ -176,10 +177,22 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL PrintParameters(params)
     END IF
 
+    !! Use the power method to get the smallest eigenvalue. This works
+    !! because we project out the rydberg states, but if not we fall
+    !! back to the Gershgorin Bounds
+    CALL MatrixMultiply(K, H, KH, &
+         & threshold_in = params%threshold, memory_pool_in = pool)
+    CALL WriteElement("Estimate Minimum")
+    CALL EnterSubLog
+    CALL PowerBounds(KH, e_min, params)
+    CALL ExitSubLog
+    IF (e_min .GT. 0_NTREAL) THEN
+       CALL WriteComment("Switching to GershgorinBounds")
+       CALL GershgorinBounds(H, e_min, e_max)
+    END IF
+    CALL WriteElement("Estimated e_min", VALUE = e_min)
+
     !! Shift the matrix so the HOMO is the largest magnitude eigenvalue
-    CALL GershgorinBounds(H, e_min, e_max)
-    CALL WriteElement("Gershgorin e_min", VALUE = e_min)
-    CALL WriteElement("Gershgorin e_max", VALUE = e_max)
     CALL ConstructEmptyMatrix(ShiftH, H)
     CALL FillMatrixIdentity(ShiftH)
     CALL ScaleMatrix(ShiftH, -e_min)
@@ -194,6 +207,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     e_max = e_max + e_min
     CALL WriteElement("HOMO Estimate", VALUE = e_max)
     gap = 2.0_NTREAL * (chemical_potential - e_max)
+    CALL WriteElement("Gap Estimate", VALUE = gap)
 
     !! Cleanup
     IF (params%be_verbose) THEN

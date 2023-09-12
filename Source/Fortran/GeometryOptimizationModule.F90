@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Geometry Optimization
 MODULE GeometryOptimizationModule
+  USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteHeader, &
@@ -56,6 +57,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        CALL ConstructSolverParameters(params)
     END IF
+    CALL ConstructMonitor(params%monitor, &
+         & automatic_in = params%monitor_convergence, &
+         & tight_cutoff_in=params%converge_diff)
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Extrapolator")
@@ -108,23 +112,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL IncrementMatrix(WorkingDensity, NewDensity, 2.0_NTREAL)
        END IF
 
-       !! Check Convergence
+       !! Convergence Measure
        CALL IncrementMatrix(NewDensity, WorkingDensity, -1.0_NTREAL)
        norm_value = MatrixNorm(WorkingDensity)
 
+       !! Xn = Xn+1
+       CALL CopyMatrix(NewDensity, WorkingDensity)
+
+       !! Check Convergence
+       CALL AppendValue(params%monitor, norm_value)
+       IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
        IF (params%be_verbose) THEN
-          CALL WriteListElement(key = "Convergence", VALUE = norm_value)
           CALL EnterSubLog
           CALL WriteElement(key = "Trace", VALUE = trace_value)
           CALL ExitSubLog
        END IF
-
-       IF (norm_value .LE. params%converge_diff) THEN
-          EXIT
-       END IF
-
-       !! Xn = Xn+1
-       CALL CopyMatrix(NewDensity, WorkingDensity)
     END DO
     IF (params%be_verbose) THEN
        CALL ExitSubLog
