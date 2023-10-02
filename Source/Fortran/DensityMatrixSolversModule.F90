@@ -602,7 +602,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Compute Sigma - avoiding overflow
        IF (ABS(trace_gx) .LT. 1.0e-14_NTREAL) THEN
-          sigma_array(II) = sigma_max + 1.0_NTREAL
+          sigma_array(II) = 0.5_NTREAL * (sigma_max - sigma_min)
        ELSE
           sigma_array(II) = (trace - trace_fx) / trace_gx
        END IF
