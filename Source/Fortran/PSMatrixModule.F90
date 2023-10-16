@@ -651,7 +651,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
        !! Compute Offset
        local_triplets = total_values / this%process_grid%total_processors
-       local_offset = local_triplets * this%process_grid%global_rank
+       local_offset = INT(local_triplets, KIND=NTLONG) * &
+          & this%process_grid%global_rank
        header_size = 3 * bytes_per_int + bytes_per_long
        IF (this%process_grid%global_rank .EQ. &
             & this%process_grid%total_processors - 1) THEN
