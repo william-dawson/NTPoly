@@ -25,6 +25,7 @@
   CALL MPI_Allgather(SIZE(merged_local_data%values), 1, MPINTINTEGER, &
        & local_values_buffer, 1, MPINTINTEGER, &
        & this%process_grid%within_slice_comm, ierr)
+  total_values = GetMatrixSize(this)
 
   write_offset = 0
   write_offset = write_offset + header_size
@@ -53,7 +54,6 @@
         END IF
         CALL MPI_File_write_at(mpi_file_handler, zero_offset, header_buffer, &
              & 3, MPINTINTEGER, message_status, ierr)
-        total_values = SUM(local_values_buffer)
         CALL MPI_File_write_at(mpi_file_handler, &
              & zero_offset + bytes_per_int * 3, total_values, &
              & 1, MPINTLONG, message_status, ierr)
