@@ -398,7 +398,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           OPEN(local_file_handler, file = file_name, iostat = ierr, &
                & status = "old")
           IF (ierr .NE. 0) THEN
-             CALL SetGenericError(err, TRIM(file_name) // " doesn't exist", &
+             CALL SetGenericError(err, TRIM(file_name) // " does not exist", &
                   & .TRUE.)
           END IF
           !! Parse the header.
@@ -600,7 +600,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ConstructError(err)
        CALL MPI_File_open(process_grid_in%global_comm, file_name, &
             & MPI_MODE_RDONLY, MPI_INFO_NULL, mpi_file_handler, ierr)
-       error_occured = CheckMPIError(err, TRIM(file_name)//" doesn't exist", &
+       error_occured = CheckMPIError(err, TRIM(file_name)//" does not exist", &
             & ierr, .TRUE.)
 
        !! General Sizes
@@ -650,7 +650,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute Offset
-       local_triplets = total_values / this%process_grid%total_processors
+       local_triplets = INT(total_values / this%process_grid%total_processors)
        local_offset = INT(local_triplets, KIND=NTLONG) * &
             & this%process_grid%global_rank
        header_size = 3 * bytes_per_int + bytes_per_long

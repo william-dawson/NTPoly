@@ -1,7 +1,7 @@
 ################################################################################
 ## Basic Setup
 cmake_minimum_required (VERSION 3.9)
-project(NTPoly VERSION 2.7.0 DESCRIPTION 
+project(NTPoly VERSION 3.1.0 DESCRIPTION 
 	"A parallel library for computing the functions of sparse matrices")
 enable_language(Fortran)
 
