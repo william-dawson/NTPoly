@@ -522,7 +522,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL), INTENT(IN) :: threshold
     !> The result matrix.
     TYPE(Matrix_ps), INTENT(INOUT) :: Out
-    !> If you want the wave operator's square
+    !> If you want square of the wave operator
     TYPE(Matrix_ps), INTENT(INOUT), OPTIONAL :: W2_out
     !! Local matrices.
     TYPE(Matrix_ps) :: W2, Temp

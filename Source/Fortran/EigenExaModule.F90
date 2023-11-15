@@ -164,7 +164,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the eigen exa data structures.
   SUBROUTINE InitializeEigenExa(A, nvals, eigenvectors, exa)
-    !> The matrix we're working on.
+    !> The matrix we are working on.
     TYPE(Matrix_ps), INTENT(IN) :: A
     !> Number of eigenvalues to compute.
     INTEGER, INTENT(IN) :: nvals

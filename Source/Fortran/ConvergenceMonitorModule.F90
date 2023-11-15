@@ -18,7 +18,7 @@ MODULE ConvergenceMonitor
      REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: win_long
      !> The number of values that have been added
      INTEGER :: nval
-     !> We aren't converged if the average isn't below this.
+     !> We are not converged if the average is not below this.
      REAL(NTREAL) :: loose_cutoff
      !> We definitely are converged if the last value is below this.
      REAL(NTREAL) :: tight_cutoff
@@ -40,7 +40,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN), OPTIONAL :: short_len_in
     !> The length of the long window (default: 6)
     INTEGER, INTENT(IN), OPTIONAL :: long_len_in
-    !> If the average is greater than this than we aren't 
+    !> If the average is greater than this than we are not
     !! converged (default: 0.01)
     REAL(NTREAL), INTENT(IN), OPTIONAL :: loose_cutoff_in
     !> If the last value is less than this, we definitely are converged 
