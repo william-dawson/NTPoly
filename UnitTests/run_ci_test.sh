@@ -7,6 +7,9 @@ fi
 if [[ "$THREADOFF" == "1" ]]; then
    export OMP_NUM_THREADS=1
    echo "Setting threads to 1"
+else
+   export OMP_NUM_THREADS=2
+   echo "Setting threads to 2"
 fi
 
 cd Build
