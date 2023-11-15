@@ -27,7 +27,7 @@ Matrix_ps::Matrix_ps(int matrix_dimension, const ProcessGrid &grid) {
 
 //////////////////////////////////////////////////////////////////////////////
 Matrix_ps::Matrix_ps(std::string file_name, bool is_binary) {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   if (is_binary) {
     ConstructMatrixFromBinary_ps_wrp(ih_this, &file_name.c_str()[0],
                                      &string_length);
@@ -40,7 +40,7 @@ Matrix_ps::Matrix_ps(std::string file_name, bool is_binary) {
 //////////////////////////////////////////////////////////////////////////////
 Matrix_ps::Matrix_ps(std::string file_name, const ProcessGrid &grid,
                      bool is_binary) {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   if (is_binary) {
     ConstructMatrixFromBinaryPG_ps_wrp(ih_this, &file_name.c_str()[0],
                                        &string_length, grid.ih_this);
@@ -61,13 +61,13 @@ Matrix_ps::Matrix_ps(const Matrix_ps &matB) {
 
 //////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::WriteToBinary(std::string file_name) const {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   WriteMatrixToBinary_ps_wrp(ih_this, &file_name.c_str()[0], &string_length);
 }
 
 //////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::WriteToMatrixMarket(string file_name) const {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   WriteMatrixToMatrixMarket_ps_wrp(ih_this, &file_name.c_str()[0],
                                    &string_length);
 }

@@ -1,6 +1,12 @@
 #ifndef PROCESSGRID_h
 #define PROCESSGRID_h
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-function-type"
+#pragma GCC diagnostic ignored "-Wuseless-cast"
+#pragma GCC diagnostic ignored "-Wold-style-cast"
 #include <mpi.h>
+#pragma GCC diagnostic pop
 
 #include "Wrapper.h"
 

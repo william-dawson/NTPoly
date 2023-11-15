@@ -21,12 +21,12 @@ Matrix_lsc::Matrix_lsc(int columns, int rows) {
 
 ////////////////////////////////////////////////////////////////////////////////
 Matrix_lsr::Matrix_lsr(std::string file_name) {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   ConstructMatrixFromFile_lsr_wrp(ih_this, &file_name.c_str()[0],
                                   &string_length);
 }
 Matrix_lsc::Matrix_lsc(std::string file_name) {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   ConstructMatrixFromFile_lsc_wrp(ih_this, &file_name.c_str()[0],
                                   &string_length);
 }
@@ -193,12 +193,12 @@ void Matrix_lsc::Print() const { PrintMatrix_lsc_wrp(ih_this); }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Matrix_lsr::WriteToMatrixMarket(string file_name) const {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   PrintMatrixF_lsr_wrp(ih_this, &file_name.c_str()[0], &string_length);
 }
 
 void Matrix_lsc::WriteToMatrixMarket(string file_name) const {
-  int string_length = file_name.length();
+  int string_length = static_cast<int>(file_name.length());
   PrintMatrixF_lsc_wrp(ih_this, &file_name.c_str()[0], &string_length);
 }
 
