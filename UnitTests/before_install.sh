@@ -32,4 +32,5 @@ elif [[ "$TESTOS" == "OSX" ]]; then
   sudo pip3 install flake8 --upgrade --no-cache-dir
   sudo pip3 install pyyaml --upgrade --no-cache-dir
   sudo pip3 install ford --upgrade --no-cache-dir
+  sudo pip3 install distutils --upgrade --no-cache-dir
 fi
