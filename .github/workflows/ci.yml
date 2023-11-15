@@ -92,7 +92,7 @@ jobs:
       env:
         MAKETEST:         ${{ matrix.maketest }}
         TESTOS:           ${{ matrix.testos }}
-        OMP_NUM_THREADS:  ${{ matrix.num_thread }}
+        OMP_NUM_THREADS:  ${{ matrix.numthread }}
     - name:               check examples
       run:                |
         bash -l UnitTests/check_examples.sh
