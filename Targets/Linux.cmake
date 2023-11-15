@@ -18,6 +18,6 @@ set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -fopenmp -Wall -Wextra \
     -Wdouble-promotion -Woverloaded-virtual -Wmisleading-indentation \
     -Wduplicated-cond -Wduplicated-branches -Wlogical-op -Wuseless-cast \
     -Wsign-conversion -Wconversion -Wcast-align -Wold-style-cast")
-set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall -Wextra -Werror \
+set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall -Wextra \
     -pedantic -fimplicit-none -ffpe-trap=invalid,zero,overflow,underflow \
     -std=f2003")
