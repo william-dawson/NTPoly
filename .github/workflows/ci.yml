@@ -4,6 +4,7 @@ on:                       [push, pull_request]
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
                            ubuntu-nogather, mac-thread-cap]
