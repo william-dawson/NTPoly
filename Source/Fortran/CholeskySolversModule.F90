@@ -79,7 +79,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> Root from which we broadcast.
     INTEGER, INTENT(IN) :: root
     !> Communicator to broadcast along.
-    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: comm
     !! Local
     INTEGER :: err
 
@@ -153,7 +153,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The dot product values for each vector j.
     REAL(NTREAL), DIMENSION(:), INTENT(OUT) :: out_values
     !> The communicator to reduce along.
-    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: comm
 
 #include "solver_includes/DotAllHelper.f90"
 

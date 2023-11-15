@@ -331,7 +331,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> A list of triplet lists, one for each process.
     TYPE(TripletList_r), DIMENSION(:), INTENT(IN) :: triplet_lists
     !> The mpi communicator to redistribute along.
-    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: comm
     !> The resulting local triplet list.
     TYPE(TripletList_r), INTENT(INOUT) :: local_data_out
     !! Local data (type specific)
@@ -352,7 +352,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> A list of triplet lists, one for each process.
     TYPE(TripletList_c), DIMENSION(:), INTENT(IN) :: triplet_lists
     !> The mpi communicator to redistribute along.
-    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: comm
     !> The resulting local triplet list.
     TYPE(TripletList_c), INTENT(INOUT) :: local_data_out
     !! Local data (type specific)

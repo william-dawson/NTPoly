@@ -352,7 +352,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN) :: matrix
     !> The communicator to send along.
-    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: comm
     !> The matrix we are gathering.
     TYPE(Matrix_lsc), INTENT(INOUT) :: gathered_matrix
     !> The helper associated with this gather.
@@ -474,7 +474,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !> The matrix to send.
     TYPE(Matrix_lsc), INTENT(IN) :: matrix
     !> The communicator to send along.
-    INTEGER, INTENT(INOUT) :: comm
+    INTEGER, INTENT(IN) :: comm
     !> The threshold the threshold for flushing values.
     TYPE(Matrix_lsc), INTENT(INOUT)     :: gathered_matrix
     !> The threshold the threshold for flushing values.
