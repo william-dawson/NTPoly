@@ -58,7 +58,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL SetCoefficient(h_this%DATA, degree, coefficient)
   END SUBROUTINE SetCoefficient_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute A Matrix Polynomial Using Horner's Method.
+  !> Compute A Matrix Polynomial Using Horner Method.
   SUBROUTINE HornerCompute_wrp(ih_InputMat, ih_OutputMat, ih_polynomial, &
        & ih_solver_parameters) BIND(c,name="HornerCompute_wrp")
     INTEGER(kind=c_int), INTENT(IN)    :: ih_InputMat(SIZE_wrp)
@@ -79,7 +79,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & h_polynomial%DATA, h_solver_parameters%DATA)
   END SUBROUTINE HornerCompute_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> Compute A Matrix Polynomial Using Paterson and Stockmeyer's method.
+  !> Compute A Matrix Polynomial Using Paterson and Stockmeyer method.
   SUBROUTINE PatersonStockmeyerCompute_wrp(ih_InputMat, ih_OutputMat, &
        & ih_polynomial, ih_solver_parameters) &
        & BIND(c,name="PatersonStockmeyerCompute_wrp")

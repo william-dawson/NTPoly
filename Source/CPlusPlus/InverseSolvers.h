@@ -11,7 +11,7 @@ class Matrix_ps;
 class InverseSolvers : public SolverBase {
 public:
   //! Compute the inverse of a matrix.
-  //! An implementation of Hotelling's method.
+  //! An implementation of Hotelling method.
   //!\param Overlap the matrix to invert.
   //!\param InverseMat = Overlap^-1.
   //!\param solver_parameters parameters for the solver
@@ -24,7 +24,7 @@ public:
   static void DenseInvert(const Matrix_ps &Overlap, Matrix_ps &InverseMat,
                           const SolverParameters &solver_parameters);
   //! Compute the pseudoinverse of a matrix.
-  //! An implementation of Hotelling's method, with a different convergence
+  //! An implementation of Hotelling method, with a different convergence
   //! criteria.
   //!\param Overlap the matrix to invert.
   //!\param InverseMat = Overlap^-1.

@@ -23,13 +23,13 @@ public:
   void SetCoefficient(int degree, double coefficient);
 
 public:
-  //! Compute A Matrix Polynomial Using Horner's Method.
+  //! Compute A Matrix Polynomial Using Horner Method.
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver
   void HornerCompute(const Matrix_ps &InputMat, Matrix_ps &OutputMat,
                      const SolverParameters &solver_parameters) const;
-  //! Compute A Matrix Polynomial Using Paterson and Stockmeyer's Method.
+  //! Compute A Matrix Polynomial Using Paterson and Stockmeyer Method.
   //!\param InputMat input matrix.
   //!\param OutputMat = p(InputMat)
   //!\param solver_parameters parameters for the solver

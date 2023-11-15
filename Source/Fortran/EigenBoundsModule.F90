@@ -135,7 +135,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ScaleMatrix(vector2, scale_value)
        CALL CopyMatrix(vector2, vector)
 
-       !! Aitken's Extrapolation
+       !! Aitken Extrapolation
        ritz_values(1) = ritz_values(2)
        ritz_values(2) = ritz_values(3)
        ritz_values(3) = max_value
@@ -154,7 +154,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           aitken_values(3) = ritz_values(3)
        END IF
 
-       !! Check if Converged - pass the negative value because we're looking
+       !! Check if Converged - pass the negative value because we are looking
        !! for the largest eigenvalue value.
        CALL AppendValue(params%monitor,  &
             & - (aitken_values(3) - aitken_values(2)))

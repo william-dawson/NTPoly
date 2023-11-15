@@ -1,9 +1,9 @@
 !> A module for monitoring convergence of an iterative algorithim.
-!! In basic mode, we monitor that the last value isn't below the tight cutoff.
+!! In basic mode, we monitor that the last value is not below the tight cutoff.
 !! In automatic mode we monitor the following conditions:
-!! o The last value can't be negative
+!! o The last value can not be negative
 !! o The moving average is within an order of magnitude
-!! o The value isn't above the loose cutoff
+!! o The value is not above the loose cutoff
 MODULE ConvergenceMonitor
   USE DataTypesModule, ONLY : NTREAL
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, WriteElement, &
@@ -149,7 +149,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Automatic disabled
     conv = .TRUE.
 
-    !! First check that we've seen enough values to make a judgement.
+    !! First check that we have seen enough values to make a judgement.
     IF (this%nval .LT. SIZE(this%win_long)) conv = .FALSE.
 
     !! Compute Averages

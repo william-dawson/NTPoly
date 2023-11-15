@@ -11,7 +11,7 @@ class Matrix_ps;
 class EigenBounds : public SolverBase {
 public:
   //! Compute a bounds on the minimum and maximum eigenvalue of a matrix.
-  //! Uses Gershgorin's theorem.
+  //! Uses Gershgorin theorem.
   //!\param matrix the matrix to compute the min/max of.
   //!\param min_ger_eig a lower bound on the eigenspectrum.
   //!\param max_ger_eig an uppder bound on the eigenspectrum.
