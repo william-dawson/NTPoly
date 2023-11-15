@@ -17,7 +17,7 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
-            threadoff:    0
+            numthread:    1
             elsi:         0
           - name:         ubuntu-debug
             os:           ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
             debug:        1
             noalligather: 0
             mpich:        0
-            threadoff:    0
+            numthread:    1
             elsi:         0
           - name:         ubuntu-nogather
             os:           ubuntu-latest
@@ -37,7 +37,7 @@ jobs:
             debug:        0
             noalligather: 1
             mpich:        0
-            threadoff:    0
+            numthread:    1
             elsi:         0
           - name:         ubuntu-mpich
             os:           ubuntu-latest
@@ -47,7 +47,7 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        1
-            threadoff:    0
+            numthread:    3
             elsi:         0
           - name:         mac-thread-cap
             os:           macos-latest
@@ -57,7 +57,7 @@ jobs:
             debug:        0
             noalligather: 0
             mpich:        0
-            threadoff:    1
+            numthread:    3
             elsi:         0
           - name:         mac
             os:           macos-latest
@@ -68,7 +68,7 @@ jobs:
             noalligather: 0
             mpich:        0
             lint:         1
-            threadoff:    0
+            numthread:    3
             elsi:         1
     runs-on:              ${{ matrix.os }}
     steps:
@@ -92,7 +92,7 @@ jobs:
       env:
         MAKETEST:         ${{ matrix.maketest }}
         TESTOS:           ${{ matrix.testos }}
-        THREADOFF:        ${{ matrix.threadoff }}
+        OMP_NUM_THREADS:  ${{ matrix.num_thread }}
     - name:               check examples
       run:                |
         bash -l UnitTests/check_examples.sh
