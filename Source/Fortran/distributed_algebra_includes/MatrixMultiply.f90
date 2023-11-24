@@ -103,9 +103,14 @@
                    & duplicate_offset_column * (JJ2 - 1)),&
                    & AdjacentABlocks(II, JJ2))
            END DO
-           !! Then Do A Local Gather
+           !! Then Do A Local Gather and Cleanup
            CALL ComposeMatrixColumns(AdjacentABlocks(II, :), &
                 & LocalRowContribution(II))
+           DO JJ2 = 1, &
+                & matAB%process_grid%number_of_blocks_columns / &
+                & matAB%process_grid%num_process_slices
+              CALL DestructMatrix(AdjacentABlocks(II, JJ2))
+           END DO
            ATasks(II) = SendSizeA
            !$OMP END TASK
         CASE(SendSizeA)
@@ -156,9 +161,13 @@
                    & duplicate_offset_row * (II2 - 1), JJ), &
                    & TransposedBBlocks(II2, JJ))
            END DO
-           !! Then Do A Local Gather
+           !! Then Do A Local Gather and Cleanup
            CALL ComposeMatrixColumns(TransposedBBlocks(:, JJ), &
                 & LocalColumnContribution(JJ))
+           DO II2 = 1, matAB%process_grid%number_of_blocks_rows / &
+                & matAB%process_grid%num_process_slices
+              CALL DestructMatrix(TransposedBBlocks(II2, JJ))
+           END DO
            BTasks(JJ) = SendSizeB
            !$OMP END TASK
         CASE(SendSizeB)

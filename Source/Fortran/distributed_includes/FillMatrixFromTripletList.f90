@@ -46,4 +46,5 @@
   END IF
 
   CALL DestructMatrix(local_matrix)
+  CALL DestructTripletList(shifted)
   CALL DestructTripletList(sorted_tlist)
