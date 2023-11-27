@@ -17,6 +17,7 @@
      CALL ShiftTripletList(shifted, 1 - this%start_row, 1 - this%start_column)
      CALL SortTripletList(shifted, this%local_columns, &
           & this%local_rows, sorted_tlist)
+     CALL DestructTripletList(shifted)
      !! Build
      CALL ConstructMatrixFromTripletList(local_matrix, sorted_tlist, &
           & this%local_rows, this%local_columns)
@@ -46,5 +47,4 @@
   END IF
 
   CALL DestructMatrix(local_matrix)
-  CALL DestructTripletList(shifted)
   CALL DestructTripletList(sorted_tlist)

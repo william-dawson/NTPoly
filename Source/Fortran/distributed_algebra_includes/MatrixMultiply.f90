@@ -3,8 +3,8 @@
   TYPE(ReduceHelper_t), DIMENSION(:), ALLOCATABLE :: column_helper
   TYPE(ReduceHelper_t), DIMENSION(:, :), ALLOCATABLE :: slice_helper
   !! For Iterating Over Local Blocks
-  INTEGER :: II, II2
-  INTEGER :: JJ, JJ2
+  INTEGER :: II, II2, II2_range
+  INTEGER :: JJ, JJ2, JJ2_range
   INTEGER :: duplicate_start_column, duplicate_offset_column
   INTEGER :: duplicate_start_row, duplicate_offset_row
   REAL(NTREAL) :: working_threshold
@@ -93,11 +93,11 @@
         SELECT CASE (ATasks(II))
         CASE(LocalGatherA)
            ATasks(II) = TaskRunningA
-           !$OMP TASK DEFAULT(SHARED), PRIVATE(JJ2), FIRSTPRIVATE(II)
+           !$OMP TASK DEFAULT(SHARED), PRIVATE(JJ2, JJ2_range), FIRSTPRIVATE(II)
            !! First Align The Data We Are Working With
-           DO JJ2 = 1, &
-                & matAB%process_grid%number_of_blocks_columns / &
-                & matAB%process_grid%num_process_slices
+           JJ2_range = matAB%process_grid%number_of_blocks_columns / &
+                     & matAB%process_grid%num_process_slices
+           DO JJ2 = 1, JJ2_range
               CALL CopyMatrix(matA%LMAT(II, &
                    & duplicate_start_column + &
                    & duplicate_offset_column * (JJ2 - 1)),&
@@ -106,9 +106,7 @@
            !! Then Do A Local Gather and Cleanup
            CALL ComposeMatrixColumns(AdjacentABlocks(II, :), &
                 & LocalRowContribution(II))
-           DO JJ2 = 1, &
-                & matAB%process_grid%number_of_blocks_columns / &
-                & matAB%process_grid%num_process_slices
+           DO JJ2 = 1, JJ2_range
               CALL DestructMatrix(AdjacentABlocks(II, JJ2))
            END DO
            ATasks(II) = SendSizeA
@@ -139,8 +137,10 @@
            !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(II)
            CALL ReduceAndComposeMatrixCleanup(LocalRowContribution(II), &
                 & GatheredRowContribution(II), row_helper(II))
+           CALL DestructMatrix(LocalRowContribution(II))
            CALL TransposeMatrix(GatheredRowContribution(II), &
                 & GatheredRowContributionT(II))
+           CALL DestructMatrix(GatheredRowContribution(II))
            ATasks(II) = CleanupA
            !$OMP END TASK
         CASE(CleanupA)
@@ -153,10 +153,11 @@
         SELECT CASE (BTasks(JJ))
         CASE(LocalGatherB)
            BTasks(JJ) = TaskRunningB
-           !$OMP TASK DEFAULT(SHARED), PRIVATE(II2), FIRSTPRIVATE(JJ)
+           !$OMP TASK DEFAULT(SHARED), PRIVATE(II2, II2_range), FIRSTPRIVATE(JJ)
            !! First Transpose The Data We Are Working With
-           DO II2 = 1, matAB%process_grid%number_of_blocks_rows / &
-                & matAB%process_grid%num_process_slices
+           II2_range = matAB%process_grid%number_of_blocks_rows / &
+                     & matAB%process_grid%num_process_slices
+           DO II2 = 1, II2_range
               CALL TransposeMatrix(matB%LMAT(duplicate_start_row + &
                    & duplicate_offset_row * (II2 - 1), JJ), &
                    & TransposedBBlocks(II2, JJ))
@@ -164,8 +165,7 @@
            !! Then Do A Local Gather and Cleanup
            CALL ComposeMatrixColumns(TransposedBBlocks(:, JJ), &
                 & LocalColumnContribution(JJ))
-           DO II2 = 1, matAB%process_grid%number_of_blocks_rows / &
-                & matAB%process_grid%num_process_slices
+           DO II2 = 1, II2_range
               CALL DestructMatrix(TransposedBBlocks(II2, JJ))
            END DO
            BTasks(JJ) = SendSizeB
@@ -196,6 +196,7 @@
            !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(JJ)
            CALL ReduceAndComposeMatrixCleanup(LocalColumnContribution(JJ), &
                 & GatheredColumnContribution(JJ), column_helper(JJ))
+           CALL DestructMatrix(LocalColumnContribution(JJ))
            BTasks(JJ) = CleanupB
            !$OMP END TASK
         CASE(CleanupB)
@@ -225,6 +226,7 @@
               IF (matAB%process_grid%num_process_slices .EQ. 1) THEN
                  ABTasks(II,JJ) = CleanupAB
                  CALL CopyMatrix(SliceContribution(II, JJ), matAB%LMAT(II, JJ))
+                 CALL DestructMatrix(SliceContribution(II, JJ))
               ELSE
                  ABTasks(II, JJ) = SendSizeAB
               END IF
@@ -254,6 +256,7 @@
               !$OMP TASK DEFAULT(SHARED), FIRSTPRIVATE(II, JJ)
               CALL ReduceAndSumMatrixCleanup(SliceContribution(II, JJ), &
                    & matAB%LMAT(II, JJ), threshold, slice_helper(II, JJ))
+              CALL DestructMatrix(SliceContribution(II, JJ))
               ABTasks(II, JJ) = CleanupAB
               !$OMP END TASK
            CASE(CleanupAB)
@@ -270,16 +273,7 @@
   !$OMP END MASTER
   !$OMP END PARALLEL
 
-  !! Copy to output matrix.
-  IF (ABS(beta) .LT. TINY(beta)) THEN
-     CALL CopyMatrix(matAB, matC)
-  ELSE
-     CALL ScaleMatrix(MatC, beta)
-     CALL IncrementMatrix(MatAB, MatC)
-  END IF
-
   !! Cleanup
-  CALL DestructMatrix(matAB)
   DEALLOCATE(row_helper)
   DEALLOCATE(column_helper)
   DEALLOCATE(slice_helper)
@@ -325,3 +319,12 @@
      END DO
   END DO
   DEALLOCATE(SliceContribution)
+
+  !! Copy to output matrix.
+  IF (ABS(beta) .LT. TINY(beta)) THEN
+     CALL CopyMatrix(matAB, matC)
+  ELSE
+     CALL ScaleMatrix(MatC, beta)
+     CALL IncrementMatrix(MatAB, MatC)
+  END IF
+  CALL DestructMatrix(matAB)

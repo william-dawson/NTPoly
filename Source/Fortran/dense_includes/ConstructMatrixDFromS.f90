@@ -3,8 +3,8 @@
   INTEGER :: KK  ! Total element counter
   INTEGER :: elements_per_inner
 
-  CALL ConstructEmptyMatrix(dense_matrix, sparse_matrix%rows, &
-       & sparse_matrix%columns)
+  CALL ConstructEmptyMatrix(dense_matrix, &
+       & sparse_matrix%rows, sparse_matrix%columns)
   dense_matrix%DATA = 0
 
   !! Loop over elements.

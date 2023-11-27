@@ -122,6 +122,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Convert to a triplet list, map the triplet list, fill.
     CALL GetMatrixTripletList(vals, tlist)
+    CALL DestructMatrix(vals)
     DO II = 1, tlist%CurrentSize
        tlist%DATA(II)%point_value = func(tlist%DATA(II)%point_value)
     END DO
@@ -129,18 +130,17 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Fill
     CALL ConstructEmptyMatrix(ResultMat, this)
     CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in = .TRUE.)
+    CALL DestructTripletList(tlist)
 
     !! Multiply Back Together
     CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in = params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
+    CALL DestructMatrix(vecs)
     CALL ConjugateMatrix(vecsT)
     CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in = params%threshold)
 
     !! Cleanup
-    CALL DestructMatrix(vecs)
     CALL DestructMatrix(temp)
-    CALL DestructMatrix(vals)
-    CALL DestructTripletList(tlist)
     CALL DestructSolverParameters(params)
 
   END SUBROUTINE DenseMatrixFunction
