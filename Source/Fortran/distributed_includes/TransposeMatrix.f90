@@ -22,9 +22,9 @@
           & AMat%process_grid%my_slice) THEN
         KK = KK + 1
         CALL GetTripletAt(tlist, II, trip)
-        new_list%data(KK)%index_row = trip%index_column
-        new_list%data(KK)%index_column = trip%index_row
-        new_list%data(KK)%point_value = trip%point_value
+        new_list%DATA(KK)%index_row = trip%index_column
+        new_list%DATA(KK)%index_column = trip%index_row
+        new_list%DATA(KK)%point_value = trip%point_value
      END IF
   END DO
   CALL DestructTripletList(tlist)

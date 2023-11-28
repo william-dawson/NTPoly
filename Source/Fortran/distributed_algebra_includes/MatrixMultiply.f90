@@ -96,7 +96,7 @@
            !$OMP TASK DEFAULT(SHARED), PRIVATE(JJ2, JJ2_range), FIRSTPRIVATE(II)
            !! First Align The Data We Are Working With
            JJ2_range = matAB%process_grid%number_of_blocks_columns / &
-                     & matAB%process_grid%num_process_slices
+                & matAB%process_grid%num_process_slices
            DO JJ2 = 1, JJ2_range
               CALL CopyMatrix(matA%LMAT(II, &
                    & duplicate_start_column + &
@@ -156,7 +156,7 @@
            !$OMP TASK DEFAULT(SHARED), PRIVATE(II2, II2_range), FIRSTPRIVATE(JJ)
            !! First Transpose The Data We Are Working With
            II2_range = matAB%process_grid%number_of_blocks_rows / &
-                     & matAB%process_grid%num_process_slices
+                & matAB%process_grid%num_process_slices
            DO II2 = 1, II2_range
               CALL TransposeMatrix(matB%LMAT(duplicate_start_row + &
                    & duplicate_offset_row * (II2 - 1), JJ), &

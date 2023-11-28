@@ -21,7 +21,7 @@
   DO JJ = col_start, col_end
      DO II = row_start, row_end
         IF (ABS(VD1(ind + II -1)) .GT. params%threshold) THEN
-          KK = KK + 1
+           KK = KK + 1
         END IF
      END DO
      ind = ind + exa%offset
@@ -39,7 +39,7 @@
         IF (ABS(VD1(ind + II -1)) .GT. params%threshold) THEN
            KK = KK + 1
            ilookup = eigen_translate_l2g(II, exa%proc_rows, exa%rowid)
-           CALL SetTriplet(triplet_v%data(KK), jlookup, ilookup, &
+           CALL SetTriplet(triplet_v%DATA(KK), jlookup, ilookup, &
                 & VD1(ind + II -1))
         END IF
      END DO
