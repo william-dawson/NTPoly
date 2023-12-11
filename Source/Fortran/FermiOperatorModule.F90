@@ -5,7 +5,7 @@ MODULE FermiOperatorModule
   USE EigenSolversModule, ONLY : EigenDecomposition
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteHeader, &
-       & EnterSubLog, ExitSubLog, WriteListElement
+       & EnterSubLog, ExitSubLog, WriteListElement, WriteComment
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, SimilarityTransform, &
        & IncrementMatrix, MatrixNorm, ScaleMatrix, DotMatrix, MatrixTrace
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
@@ -355,7 +355,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: Temp, W, A, X, KOrth
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II
-    REAL(NTREAL) :: step, B_I, B_I_old, err, sparsity, energy
+    REAL(NTREAL) :: step, B_I, B_I_old, err, err2, sparsity, energy
 
     GC = PRESENT(mu_in)
 
@@ -464,6 +464,16 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           err = MatrixNorm(Temp)
        END DO
 
+       !! Early Exit Criteria
+       CALL CopyMatrix(RK2, Temp)
+       CALL IncrementMatrix(W, Temp, alpha_in = -1.0_NTREAL, &
+            & threshold_in = params%threshold)
+       err2 = MatrixNorm(Temp)
+       IF (err2 .LT. params%converge_diff) THEN
+          CALL WriteComment("Early Exit Triggered")
+          EXIT
+       END IF
+
        !! Update
        CALL CopyMatrix(RK2, W)
        B_I_old = B_I
@@ -478,6 +488,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL WriteElement("Beta", VALUE = B_I_old)
           CALL WriteElement("Sparsity", VALUE = sparsity)
           CALL WriteElement("Energy", VALUE = energy)
+          CALL WriteElement("Norm of Change", VALUE = err2)
           CALL ExitSubLog
        END IF
     END DO
