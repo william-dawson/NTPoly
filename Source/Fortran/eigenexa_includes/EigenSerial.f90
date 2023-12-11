@@ -1,9 +1,11 @@
   !! Gather as dense
   CALL GatherMatrixToProcess(this, local_s)
   CALL ConstructMatrixDFromS(local_s, local_d)
+  CALL DestructMatrix(local_s)
 
   !! Decompose
   CALL EigenDecomposition(local_d, V, W)
+  CALL DestructMatrix(local_d)
 
   !! Filter if necessary
   IF (nvals+1 .LE. V%rows) THEN
@@ -35,7 +37,5 @@
   END IF
 
   !! Cleanup
-  CALL DestructMatrix(local_s)
-  CALL DestructMatrix(local_d)
   CALL DestructTripletList(V_t)
   CALL DestructTripletList(W_t)
