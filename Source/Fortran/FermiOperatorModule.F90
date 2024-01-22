@@ -156,7 +156,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              energy_value = energy_value + tlist%DATA(II)%point_value
              tlist%DATA(II)%point_value = 1.0_NTREAL
           ELSE IF (tlist%DATA(II)%index_column .EQ. CEILING(trace)) THEN
-             occ_temp = CEILING(trace) - trace
+             occ_temp = trace - FLOOR(trace)
              energy_value = energy_value + &
                   & occ_temp * tlist%DATA(II)%point_value
              tlist%DATA(II)%point_value = occ_temp
