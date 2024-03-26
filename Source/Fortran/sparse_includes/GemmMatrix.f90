@@ -55,9 +55,12 @@
      sparsity_estimate = 1e-8
   END IF
 
+  CALL RoundTripLowP(matA, matAL)
+  CALL RoundTripLowP(matB, matBL)
+
   !! Decide whether to do dense or sparse version.
   IF (MIN(sparsity_a, sparsity_b) .GT. sparsity_threshold) THEN
-     CALL DenseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
+     CALL DenseBranch(matAL, matBL, matAB, IsATransposed, IsBTransposed, &
           & alpha, threshold)
   ELSE
      !! Setup the memory pool
@@ -77,10 +80,10 @@
      END IF
      !! Multiply
      IF (pool_flag) THEN
-        CALL SparseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
+        CALL SparseBranch(matAL, matBL, matAB, IsATransposed, IsBTransposed, &
              & alpha, threshold, blocked_memory_pool_in)
      ELSE
-        CALL SparseBranch(matA, matB, matAB, IsATransposed, IsBTransposed, &
+        CALL SparseBranch(matAL, matBL, matAB, IsATransposed, IsBTransposed, &
              & alpha, threshold, blocked_memory_pool)
      END IF
   END IF
@@ -98,4 +101,6 @@
   END IF
 
   CALL DestructMatrix(matAB)
+  CALL DestructMatrix(matAL)
+  CALL DestructMatrix(matBL)
   CALL DestructMatrixMemoryPool(blocked_memory_pool)

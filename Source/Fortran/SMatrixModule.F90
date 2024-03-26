@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module for handling locally stored CSR matrices.
 MODULE SMatrixModule
-  USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX, NTLONG
+  USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX, NTLONG, NTLOWP
   USE MatrixMarketModule, ONLY : ParseMMHeader, WriteMMSize, WriteMMLine, &
        & MAX_LINE_LENGTH
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
@@ -51,6 +51,7 @@ MODULE SMatrixModule
   PUBLIC :: ConjugateMatrix
   PUBLIC :: PrintMatrix
   PUBLIC :: MatrixToTripletList
+  PUBLIC :: RoundTripLowP
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructEmptyMatrix
      MODULE PROCEDURE ConstructEmptyMatrixSub_lsr
@@ -123,6 +124,10 @@ MODULE SMatrixModule
      MODULE PROCEDURE ConvertMatrixType_lsrtolsc
      MODULE PROCEDURE ConvertMatrixType_lsctolsr
   END INTERFACE ConvertMatrixType
+  INTERFACE RoundTripLowP
+     MODULE PROCEDURE RoundTripLowP_lsr
+     MODULE PROCEDURE RoundTripLowP_lsc
+  END INTERFACE RoundTripLowP
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> A subroutine type wrapper for the constructor.
   PURE SUBROUTINE ConstructEmptyMatrixSub_lsr(this, rows, columns, zero_in)
@@ -603,4 +608,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ConvertMatrixType_lsctolsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  PURE SUBROUTINE RoundTripLowP_lsr(matA, matB)
+    TYPE(Matrix_lsr), INTENT(IN) :: matA
+    TYPE(Matrix_lsr), INTENT(INOUT) :: matB
+    INTEGER :: II
+
+    CALL CopyMatrix(matA, matB)
+    DO II = 1, SIZE(matB%values)
+      matB%values(II) = REAL(matB%values(II), KIND=NTLOWP)
+    END DO
+  END SUBROUTINE RoundTripLowP_lsr
+  PURE SUBROUTINE RoundTripLowP_lsc(matA, matB)
+    TYPE(Matrix_lsc), INTENT(IN) :: matA
+    TYPE(Matrix_lsc), INTENT(INOUT) :: matB
+    INTEGER :: II
+
+    CALL CopyMatrix(matA, matB)
+  END SUBROUTINE RoundTripLowP_lsc
 END MODULE SMatrixModule

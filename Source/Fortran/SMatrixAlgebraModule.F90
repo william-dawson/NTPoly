@@ -10,7 +10,7 @@ MODULE SMatrixAlgebraModule
        & ConstructMatrixMemoryPool
   USE SMatrixModule, ONLY: Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix, &
        & TransposeMatrix, ConjugateMatrix, ConstructMatrixFromTripletList, &
-       & ConstructEmptyMatrix
+       & ConstructEmptyMatrix, RoundTripLowP
   USE SVectorModule, ONLY : AddSparseVectors, PairwiseMultiplyVectors
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, SortTripletList, &
        & DestructTripletList, ConstructTripletList
@@ -237,6 +237,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & INTENT(INOUT), TARGET :: blocked_memory_pool_in
     !! Intermediate Data
     TYPE(Matrix_lsr) :: matAB
+    TYPE(Matrix_lsr) :: matAL, matBL
     LOGICAL :: IsATransposed, IsBTransposed
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: beta
@@ -272,6 +273,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & INTENT(INOUT), TARGET :: blocked_memory_pool_in
     !! Intermediate Data
     TYPE(Matrix_lsc) :: matAB
+    TYPE(Matrix_lsc) :: matAL, matBL
     LOGICAL :: IsATransposed, IsBTransposed
     REAL(NTREAL) :: alpha
     REAL(NTREAL) :: beta
