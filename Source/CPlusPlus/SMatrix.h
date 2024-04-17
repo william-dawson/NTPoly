@@ -76,6 +76,10 @@ public:
   void Gemm(const NTPoly::Matrix_lsr &matA, const NTPoly::Matrix_lsr &matB,
             bool isATransposed, bool isBTransposed, double alpha, double beta,
             double threshold, NTPoly::MatrixMemoryPool_r &memory_pool);
+  //! Scale a matrix using a diagonal matrix (triplet list form).
+  //!\param tlist the triplet list.
+  //!\param threshold for flushing small values.
+  void DiagonalScale(const NTPoly::TripletList_r &tlist, double threshold);
 
 public:
   //! Transpose a sparse matrix.
@@ -170,6 +174,10 @@ public:
   void Gemm(const NTPoly::Matrix_lsc &matA, const NTPoly::Matrix_lsc &matB,
             bool isATransposed, bool isBTransposed, double alpha, double beta,
             double threshold, NTPoly::MatrixMemoryPool_c &memory_pool);
+  //! Scale a matrix using a diagonal matrix (triplet list form).
+  //!\param tlist the triplet list.
+  //!\param threshold for flushing small values.
+  void DiagonalScale(const NTPoly::TripletList_c &tlist, double threshold);
 
 public:
   //! Transpose a sparse matrix.

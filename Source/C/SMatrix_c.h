@@ -34,6 +34,8 @@ void PrintMatrix_lsr_wrp(const int *ih_this);
 void PrintMatrixF_lsr_wrp(const int *ih_this, const char *file_name,
                           const int *name_size);
 void MatrixToTripletList_lsr_wrp(const int *ih_this, int *ih_triplet_list);
+void DiagonalScale_lsr_wrp(int *ih_mat, const int *ih_tlist,
+                           const double *threhsold);
 
 void ConstructMatrixFromFile_lsc_wrp(int *ih_this, const char *file_name,
                                      const int *name_size);
@@ -70,5 +72,7 @@ void PrintMatrix_lsc_wrp(const int *ih_this);
 void PrintMatrixF_lsc_wrp(const int *ih_this, const char *file_name,
                           const int *name_size);
 void MatrixToTripletList_lsc_wrp(const int *ih_this, int *ih_triplet_list);
+void DiagonalScale_lsc_wrp(int *ih_mat, const int *ih_tlist,
+                           const double *threhsold);
 
 #endif

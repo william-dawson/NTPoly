@@ -18,12 +18,14 @@ MODULE SMatrixAlgebraModule_wrp
   PUBLIC :: DotMatrix_lsr_wrp
   PUBLIC :: PairwiseMultiplyMatrix_lsr_wrp
   PUBLIC :: MatrixMultiply_lsr_wrp
+  PUBLIC :: DiagonalScale_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ScaleMatrix_lsc_wrp
   PUBLIC :: IncrementMatrix_lsc_wrp
   PUBLIC :: DotMatrix_lsc_wrp
   PUBLIC :: PairwiseMultiplyMatrix_lsc_wrp
   PUBLIC :: MatrixMultiply_lsc_wrp
+  PUBLIC :: DiagonalScale_lsc_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
   SUBROUTINE ScaleMatrix_lsr_wrp(ih_this, constant) &
@@ -110,6 +112,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & LOGICAL(IsATransposed), LOGICAL(IsBTransposed), alpha, &
          & beta, threshold, h_blocked_memory_pool%DATA)
   END SUBROUTINE MatrixMultiply_lsr_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE DiagonalScale_lsr_wrp(ih_mat, ih_tlist, threshold) &
+       & BIND(c,name="DiagonalScale_lsr_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
+    REAL(NTREAL), INTENT(in) :: threshold
+    TYPE(Matrix_lsr_wrp) :: h_mat
+    TYPE(TripletList_r_wrp) :: h_tlist
+
+    h_mat = TRANSFER(ih_mat, h_mat)
+    h_tlist = TRANSFER(ih_tlist, h_tlist)
+
+    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA, threshold)
+  END SUBROUTINE DiagonalScale_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
   SUBROUTINE ScaleMatrix_lsc_wrp(ih_this, constant) &
@@ -201,5 +218,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & LOGICAL(IsATransposed), LOGICAL(IsBTransposed), alpha, &
          & beta, threshold, h_blocked_memory_pool%DATA)
   END SUBROUTINE MatrixMultiply_lsc_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE DiagonalScale_lsc_wrp(ih_mat, ih_tlist, threshold) &
+       & BIND(c,name="DiagonalScale_lsc_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
+    REAL(NTREAL), INTENT(in) :: threshold
+    TYPE(Matrix_lsc_wrp) :: h_mat
+    TYPE(TripletList_c_wrp) :: h_tlist
+
+    h_mat = TRANSFER(ih_mat, h_mat)
+    h_tlist = TRANSFER(ih_tlist, h_tlist)
+
+    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA, threshold)
+  END SUBROUTINE DiagonalScale_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule_wrp
