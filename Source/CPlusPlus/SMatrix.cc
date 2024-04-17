@@ -181,7 +181,7 @@ void Matrix_lsr::DiagonalScale(const TripletList_r &tlist) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-void Matrix_lsc::DiagonalScale(const TripletList_c &tlist, double threshold) {
+void Matrix_lsc::DiagonalScale(const TripletList_c &tlist) {
   MatrixDiagonalScale_lsc_wrp(ih_this, tlist.ih_this);
 }
 
