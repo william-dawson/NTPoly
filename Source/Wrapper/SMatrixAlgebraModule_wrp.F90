@@ -18,14 +18,14 @@ MODULE SMatrixAlgebraModule_wrp
   PUBLIC :: DotMatrix_lsr_wrp
   PUBLIC :: PairwiseMultiplyMatrix_lsr_wrp
   PUBLIC :: MatrixMultiply_lsr_wrp
-  PUBLIC :: DiagonalScale_lsr_wrp
+  PUBLIC :: MatrixDiagonalScale_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   PUBLIC :: ScaleMatrix_lsc_wrp
   PUBLIC :: IncrementMatrix_lsc_wrp
   PUBLIC :: DotMatrix_lsc_wrp
   PUBLIC :: PairwiseMultiplyMatrix_lsc_wrp
   PUBLIC :: MatrixMultiply_lsc_wrp
-  PUBLIC :: DiagonalScale_lsc_wrp
+  PUBLIC :: MatrixDiagonalScale_lsc_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
   SUBROUTINE ScaleMatrix_lsr_wrp(ih_this, constant) &
@@ -114,8 +114,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixMultiply_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsr_wrp(ih_mat, ih_tlist) &
-       & BIND(c,name="DiagonalScale_lsr_wrp")
+  SUBROUTINE MatrixDiagonalScale_lsr_wrp(ih_mat, ih_tlist) &
+       & BIND(c,name="MatrixDiagonalScale_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
     TYPE(Matrix_lsr_wrp) :: h_mat
@@ -124,8 +124,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_mat = TRANSFER(ih_mat, h_mat)
     h_tlist = TRANSFER(ih_tlist, h_tlist)
 
-    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA)
-  END SUBROUTINE DiagonalScale_lsr_wrp
+    CALL MatrixDiagonalScale(h_mat%DATA, h_tlist%DATA)
+  END SUBROUTINE MatrixDiagonalScale_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
   SUBROUTINE ScaleMatrix_lsc_wrp(ih_this, constant) &
@@ -219,8 +219,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixMultiply_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsc_wrp(ih_mat, ih_tlist) &
-       & BIND(c,name="DiagonalScale_lsc_wrp")
+  SUBROUTINE MatrixDiagonalScale_lsc_wrp(ih_mat, ih_tlist) &
+       & BIND(c,name="MatrixDiagonalScale_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
     TYPE(Matrix_lsc_wrp) :: h_mat
@@ -229,7 +229,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_mat = TRANSFER(ih_mat, h_mat)
     h_tlist = TRANSFER(ih_tlist, h_tlist)
 
-    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA)
-  END SUBROUTINE DiagonalScale_lsc_wrp
+    CALL MatrixDiagonalScale(h_mat%DATA, h_tlist%DATA)
+  END SUBROUTINE MatrixDiagonalScale_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule_wrp

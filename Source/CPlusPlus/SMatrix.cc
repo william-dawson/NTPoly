@@ -177,12 +177,12 @@ void Matrix_lsc::Gemm(const Matrix_lsc &matA, const Matrix_lsc &matB,
 
 ////////////////////////////////////////////////////////////////////////////////
 void Matrix_lsr::DiagonalScale(const TripletList_r &tlist) {
-  DiagonalScale_lsr_wrp(ih_this, tlist.ih_this);
+  MatrixDiagonalScale_lsr_wrp(ih_this, tlist.ih_this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 void Matrix_lsc::DiagonalScale(const TripletList_c &tlist, double threshold) {
-  DiagonalScale_lsc_wrp(ih_this, tlist.ih_this);
+  MatrixDiagonalScale_lsc_wrp(ih_this, tlist.ih_this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

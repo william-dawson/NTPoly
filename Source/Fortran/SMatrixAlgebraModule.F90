@@ -25,7 +25,7 @@ MODULE SMatrixAlgebraModule
   PUBLIC :: MatrixColumnNorm
   PUBLIC :: MatrixNorm
   PUBLIC :: MatrixGrandSum
-  PUBLIC :: DiagonalScale
+  PUBLIC :: MatrixDiagonalScale
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ScaleMatrix
      MODULE PROCEDURE ScaleMatrix_lsr
@@ -76,10 +76,10 @@ MODULE SMatrixAlgebraModule
      MODULE PROCEDURE DenseBranch_lsr
      MODULE PROCEDURE DenseBranch_lsc
   END INTERFACE DenseBranch
-  INTERFACE DiagonalScale
-     MODULE PROCEDURE DiagonalScale_lsr
-     MODULE PROCEDURE DiagonalScale_lsc
-  END INTERFACE DiagonalScale
+  INTERFACE MatrixDiagonalScale
+     MODULE PROCEDURE MatrixDiagonalScale_lsr
+     MODULE PROCEDURE MatrixDiagonalScale_lsc
+  END INTERFACE MatrixDiagonalScale
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
   PURE SUBROUTINE ScaleMatrix_lsr(matA,constant)
@@ -533,7 +533,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PruneList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsr(mat, tlist)
+  SUBROUTINE MatrixDiagonalScale_lsr(mat, tlist)
     !> The matrix to scale.
     TYPE(Matrix_lsr), INTENT(INOUT)  :: mat
     !> The diagonal matrix.
@@ -542,10 +542,10 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: val
 
 #include "sparse_includes/DiagonalScale.f90"
-  END SUBROUTINE DiagonalScale_lsr
+  END SUBROUTINE MatrixDiagonalScale_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsc(mat, tlist)
+  SUBROUTINE MatrixDiagonalScale_lsc(mat, tlist)
     !> The matrix to scale.
     TYPE(Matrix_lsc), INTENT(INOUT)  :: mat
     !> The diagonal matrix.
@@ -554,6 +554,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     COMPLEX(NTCOMPLEX) :: val
 
 #include "sparse_includes/DiagonalScale.f90"
-  END SUBROUTINE DiagonalScale_lsc
+  END SUBROUTINE MatrixDiagonalScale_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule
