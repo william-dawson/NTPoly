@@ -416,7 +416,7 @@ class TestLocalMatrix(unittest.TestCase):
                 tlist.Append(t)
                 CheckMat[:, i] *= i
             ntmatrix = self.SMatrix(self.file1)
-            ntmatrix.DiagonalScale(tlist, 0)
+            ntmatrix.DiagonalScale(tlist)
             ntmatrix.WriteToMatrixMarket(self.file2)
 
             ResultMat = mmread(self.file2)

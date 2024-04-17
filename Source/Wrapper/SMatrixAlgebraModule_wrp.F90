@@ -114,18 +114,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixMultiply_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsr_wrp(ih_mat, ih_tlist, threshold) &
+  SUBROUTINE DiagonalScale_lsr_wrp(ih_mat, ih_tlist) &
        & BIND(c,name="DiagonalScale_lsr_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
-    REAL(NTREAL), INTENT(in) :: threshold
     TYPE(Matrix_lsr_wrp) :: h_mat
     TYPE(TripletList_r_wrp) :: h_tlist
 
     h_mat = TRANSFER(ih_mat, h_mat)
     h_tlist = TRANSFER(ih_tlist, h_tlist)
 
-    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA, threshold)
+    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA)
   END SUBROUTINE DiagonalScale_lsr_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the scale a sparse matrix by a constant routine.
@@ -220,18 +219,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixMultiply_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsc_wrp(ih_mat, ih_tlist, threshold) &
+  SUBROUTINE DiagonalScale_lsc_wrp(ih_mat, ih_tlist) &
        & BIND(c,name="DiagonalScale_lsc_wrp")
     INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
     INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
-    REAL(NTREAL), INTENT(in) :: threshold
     TYPE(Matrix_lsc_wrp) :: h_mat
     TYPE(TripletList_c_wrp) :: h_tlist
 
     h_mat = TRANSFER(ih_mat, h_mat)
     h_tlist = TRANSFER(ih_tlist, h_tlist)
 
-    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA, threshold)
+    CALL DiagonalScale(h_mat%DATA, h_tlist%DATA)
   END SUBROUTINE DiagonalScale_lsc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule_wrp

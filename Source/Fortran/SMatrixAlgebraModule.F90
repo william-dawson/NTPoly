@@ -533,13 +533,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PruneList_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsr(mat, tlist, threshold_in)
+  SUBROUTINE DiagonalScale_lsr(mat, tlist)
     !> The matrix to scale.
     TYPE(Matrix_lsr), INTENT(INOUT)  :: mat
     !> The diagonal matrix.
     TYPE(TripletList_r), INTENT(IN)  :: tlist
-    !> For flushing values to zero. Default value is 0.0.
-    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Intermediate Data
     REAL(NTREAL) :: val
 
@@ -547,13 +545,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DiagonalScale_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Scale a matrix using a diagonal matrix (triplet list form).
-  SUBROUTINE DiagonalScale_lsc(mat, tlist, threshold_in)
+  SUBROUTINE DiagonalScale_lsc(mat, tlist)
     !> The matrix to scale.
     TYPE(Matrix_lsc), INTENT(INOUT)  :: mat
     !> The diagonal matrix.
     TYPE(TripletList_c), INTENT(IN)  :: tlist
-    !> For flushing values to zero. Default value is 0.0.
-    REAL(NTREAL), OPTIONAL, INTENT(IN) :: threshold_in
     !! Intermediate Data
     COMPLEX(NTCOMPLEX) :: val
 

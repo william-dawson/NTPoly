@@ -79,7 +79,7 @@ public:
   //! Scale a matrix using a diagonal matrix (triplet list form).
   //!\param tlist the triplet list.
   //!\param threshold for flushing small values.
-  void DiagonalScale(const NTPoly::TripletList_r &tlist, double threshold);
+  void DiagonalScale(const NTPoly::TripletList_r &tlist);
 
 public:
   //! Transpose a sparse matrix.
