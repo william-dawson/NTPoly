@@ -284,6 +284,29 @@ class TestPSMatrixAlgebra:
 
             self.check_result()
 
+    def test_scalediag(self):
+        '''Test routines to scale by a diagonal matrix.'''
+        from copy import deepcopy
+        for param in self.parameters:
+            matrix = param.create_matrix(complex=self.complex)
+            mmwrite(self.file1, matrix)
+            CheckMat = deepcopy(matrix)
+
+            tlist = self.TripletList()
+            for i in range(matrix.shape[1]):
+                t = self.Triplet()
+                t.index_column = i + 1
+                t.index_row = i + 1
+                t.point_value = i
+                tlist.Append(t)
+                CheckMat[:, i] *= i
+            ntmatrix = self.PSMatrix(self.file1)
+            ntmatrix.DiagonalScale(tlist)
+            ntmatrix.WriteToMatrixMarket(self.file2)
+
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
+
 
 class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
     '''Special routines for real algebra'''
@@ -291,6 +314,8 @@ class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = False
     # Whether the second matrix is complex or not
     complex2 = False
+    TripletList = nt.TripletList_r
+    Triplet = nt.Triplet_r
 
     def test_dot(self):
         '''Test routines to add together matrices.'''
@@ -327,6 +352,8 @@ class TestPSMatrixAlgebra_c(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = True
     # Whether the second matrix is complex or not
     complex2 = True
+    TripletList = nt.TripletList_c
+    Triplet = nt.Triplet_c
 
     def test_dot(self):
         '''Test routines to add together matrices.'''
@@ -366,6 +393,8 @@ class TestPSMatrixAlgebra_rc(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = True
     # Whether the second matrix is complex or not
     complex2 = False
+    TripletList = nt.TripletList_r
+    Triplet = nt.Triplet_r
 
     def setUp(self):
         '''Set up a specific test.'''
@@ -381,6 +410,8 @@ class TestPSMatrixAlgebra_cr(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = False
     # Whether the second matrix is complex or not
     complex2 = True
+    TripletList = nt.TripletList_c
+    Triplet = nt.Triplet_c
 
     def setUp(self):
         '''Set up a specific test.'''

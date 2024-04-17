@@ -1443,7 +1443,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(TripletList_r) :: tlist
     TYPE(TripletList_r) :: new_list
-    TYPE(Triplet_r) :: trip, trip_t
+    TYPE(Triplet_r) :: trip
 
 #include "distributed_includes/TransposeMatrix.f90"
 
@@ -1458,7 +1458,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(TripletList_c) :: tlist
     TYPE(TripletList_c) :: new_list
-    TYPE(Triplet_c) :: trip, trip_t
+    TYPE(Triplet_c) :: trip
 
 #include "distributed_includes/TransposeMatrix.f90"
 

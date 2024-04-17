@@ -20,6 +20,7 @@ MODULE PSMatrixAlgebraModule_wrp
   PUBLIC :: ScaleMatrix_ps_wrp
   PUBLIC :: MatrixNorm_ps_wrp
   PUBLIC :: MatrixTrace_ps_wrp
+  PUBLIC :: MatrixDiagonalScale_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   SUBROUTINE IncrementMatrix_ps_wrp(ih_matA, ih_matB, alpha_in,threshold_in) &
@@ -143,5 +144,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     CALL MatrixTrace(h_this%DATA, trace_value)
   END SUBROUTINE MatrixTrace_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE MatrixDiagonalScale_ps_wrp(ih_mat, ih_tlist) &
+       & BIND(c,name="MatrixDiagonalScale_ps_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_mat
+    TYPE(TripletList_r_wrp) :: h_tlist
+
+    h_mat = TRANSFER(ih_mat, h_mat)
+    h_tlist = TRANSFER(ih_tlist, h_tlist)
+
+    CALL MatrixDiagonalScale(h_mat%DATA, h_tlist%DATA)
+  END SUBROUTINE MatrixDiagonalScale_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule_wrp
