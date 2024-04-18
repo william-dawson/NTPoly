@@ -182,7 +182,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Scale the eigenvectors
     IF (vecs%is_complex) THEN
-      CALL CopyTripletList(tlist, tlist_c)
+       CALL CopyTripletList(tlist, tlist_c)
        CALL MatrixDiagonalScale(vecs, tlist_c)
     ELSE
        CALL MatrixDiagonalScale(vecs, tlist)
