@@ -288,8 +288,8 @@ class TestPSMatrixAlgebra:
         '''Test routines to scale by a diagonal matrix.'''
         from copy import deepcopy
         for param in self.parameters:
-            matrix = param.create_matrix(complex=self.complex)
-            mmwrite(self.file1, matrix)
+            matrix = param.create_matrix(complex=self.complex1)
+            self.write_matrix(matrix, self.input_file1)
             CheckMat = deepcopy(matrix)
 
             tlist = self.TripletList()
@@ -300,9 +300,9 @@ class TestPSMatrixAlgebra:
                 t.point_value = i
                 tlist.Append(t)
                 CheckMat[:, i] *= i
-            ntmatrix = self.PSMatrix(self.file1)
+            ntmatrix = nt.Matrix_ps(self.input_file1)
             ntmatrix.DiagonalScale(tlist)
-            ntmatrix.WriteToMatrixMarket(self.file2)
+            ntmatrix.WriteToMatrixMarket(self.input_file2)
 
             ResultMat = mmread(self.file2)
             self._compare_mat(CheckMat, ResultMat)
