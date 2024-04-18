@@ -184,7 +184,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        tripB%DATA(II)%index_row = tripA%DATA(II)%index_row
        tripB%DATA(II)%index_column = tripA%DATA(II)%index_column
        tripB%DATA(II)%point_value = &
-           & CMPLX(tripA%DATA(II)%point_value, KIND=NTCOMPLEX)
+            & CMPLX(tripA%DATA(II)%point_value, KIND=NTCOMPLEX)
     END DO
   END SUBROUTINE CopyTripletList_rc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

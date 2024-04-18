@@ -171,7 +171,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ! occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
           occ_temp = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
           energy_value = energy_value + &
-             & occ_temp * tlist%DATA(II)%point_value
+               & occ_temp * tlist%DATA(II)%point_value
           IF (occ_temp .LT. 0) THEN  ! for safety
              tlist%DATA(II)%point_value = 0
           ELSE
