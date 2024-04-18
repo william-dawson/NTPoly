@@ -290,7 +290,7 @@ class TestPSMatrixAlgebra:
         for param in self.parameters:
             matrix = param.create_matrix(complex=self.complex1)
             self.write_matrix(matrix, self.input_file1)
-            CheckMat = deepcopy(matrix)
+            self.CheckMat = deepcopy(matrix)
 
             tlist = self.TripletList()
             for i in range(matrix.shape[1]):
@@ -299,13 +299,13 @@ class TestPSMatrixAlgebra:
                 t.index_row = i + 1
                 t.point_value = i
                 tlist.Append(t)
-                CheckMat[:, i] *= i
+                self.CheckMat[:, i] *= i
             ntmatrix = nt.Matrix_ps(self.input_file1)
             ntmatrix.DiagonalScale(tlist)
-            ntmatrix.WriteToMatrixMarket(self.input_file2)
+            ntmatrix.WriteToMatrixMarket(self.result_file)
 
-            ResultMat = mmread(self.file2)
-            self._compare_mat(CheckMat, ResultMat)
+            comm.barrier()
+            self.check_result()
 
 
 class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):
