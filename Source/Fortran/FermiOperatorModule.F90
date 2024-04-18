@@ -7,17 +7,19 @@ MODULE FermiOperatorModule
   USE LoggingModule, ONLY : WriteElement, WriteHeader, &
        & EnterSubLog, ExitSubLog, WriteListElement, WriteComment
   USE PSMatrixAlgebraModule, ONLY : MatrixMultiply, SimilarityTransform, &
-       & IncrementMatrix, MatrixNorm, ScaleMatrix, DotMatrix, MatrixTrace
+       & IncrementMatrix, MatrixNorm, ScaleMatrix, DotMatrix, MatrixTrace, &
+       & MatrixDiagonalScale
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & FillMatrixFromTripletList, GetMatrixTripletList, &
-       & TransposeMatrix, ConjugateMatrix, DestructMatrix, &
-       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix, GetMatrixSize
+       & TransposeMatrix, ConjugateMatrix, DestructMatrix, FilterMatrix, &
+       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix, GetMatrixSize, printmatrix
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE SolverParametersModule, ONLY : SolverParameters_t, &
        & PrintParameters, DestructSolverParameters, CopySolverParameters, &
        & ConstructSolverParameters
-  USE TripletListModule, ONLY : TripletList_r, DestructTripletList
+  USE TripletListModule, ONLY : TripletList_r, DestructTripletList, &
+       & AllGatherTripletList
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -54,7 +56,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: WD
     TYPE(Matrix_ps) :: vecs, vecsT, vals, Temp
     TYPE(MatrixMemoryPool_p) :: pool
-    TYPE(TripletList_r) :: tlist
+    TYPE(TripletList_r) :: tlist, gathered_list
     REAL(NTREAL) :: chemical_potential, energy_value
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: eigs, occ
     REAL(NTREAL) :: sval, sv, occ_temp
@@ -148,7 +150,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL ExitSubLog
     END IF
 
-    !! Map
+    !! Map - note that we store the square root of the occupation numbers
     energy_value = 0.0_NTREAL
     DO II = 1, tlist%CurrentSize
        IF (.NOT. do_smearing) THEN
@@ -159,7 +161,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
              occ_temp = trace - FLOOR(trace)
              energy_value = energy_value + &
                   & occ_temp * tlist%DATA(II)%point_value
-             tlist%DATA(II)%point_value = occ_temp
+             tlist%DATA(II)%point_value = SQRT(occ_temp)
           ELSE
              tlist%DATA(II)%point_value = 0.0_NTREAL
           ENDIF
@@ -168,21 +170,26 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           ! occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
           occ_temp = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
           energy_value = energy_value + occ_temp * tlist%DATA(II)%point_value
-          tlist%DATA(II)%point_value = occ_temp
+          IF (occ_temp .LT. 0) THEN  ! for safety
+             tlist%DATA(II)%point_value = 0
+          ELSE
+             tlist%DATA(II)%point_value = SQRT(occ_temp)
+          END IF
        END IF
     END DO
     CALL MPI_ALLREDUCE(MPI_IN_PLACE, energy_value, 1, MPINTREAL, MPI_SUM, &
          & H%process_grid%within_slice_comm, ierr)
+    
+    !! Gather the triplet lists
+    CALL AllGatherTripletList(tlist, H%process_grid%column_comm, gathered_list)
 
-    !! Fill
-    CALL ConstructEmptyMatrix(vals, H)
-    CALL FillMatrixFromTripletList(vals, tlist, preduplicated_in = .TRUE.)
+    !! Scale the eigenvectors
+    CALL MatrixDiagonalScale(vecs, gathered_list)
 
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, vals, temp, threshold_in = params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
     CALL ConjugateMatrix(vecsT)
-    CALL MatrixMultiply(temp, vecsT, WD, &
+    CALL MatrixMultiply(vecs, vecsT, WD, &
          & threshold_in = params%threshold)
 
     !! Compute the density matrix in the non-orthogonalized basis
@@ -208,6 +215,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(vals)
     CALL DestructMatrix(temp)
     CALL DestructTripletList(tlist)
+    CALL DestructTripletList(gathered_list)
     CALL DestructMatrixMemoryPool(pool)
     IF (ALLOCATED(occ)) THEN
        DEALLOCATE(occ)
