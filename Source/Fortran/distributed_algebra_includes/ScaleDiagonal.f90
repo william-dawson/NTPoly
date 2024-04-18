@@ -1,4 +1,4 @@
-INTEGER :: II, row
+INTEGER :: II, col
 
 !! Merge to the local block
 CALL MergeMatrixLocalBlocks(this, lmat)
@@ -7,10 +7,10 @@ CALL MergeMatrixLocalBlocks(this, lmat)
 CALL ConstructTripletList(filtered)
 DO II = 1, tlist%CurrentSize
     CALL GetTripletAt(tlist, II, trip)
-    row = trip%index_row
-    IF (row .GE. this%start_row .AND. row .LT. this%end_row) THEN
-        trip%index_row = trip%index_row - this%start_row + 1
-        trip%index_column = trip%index_row
+    col = trip%index_column
+    IF (col .GE. this%start_column .AND. col .LT. this%end_column) THEN
+        trip%index_column = trip%index_column - this%start_column + 1
+        trip%index_row = trip%index_column
         CALL AppendToTripletList(filtered, trip)
     END IF
 END DO
