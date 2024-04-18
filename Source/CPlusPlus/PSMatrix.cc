@@ -219,7 +219,12 @@ void Matrix_ps::Scale(double constant) {
 
 //////////////////////////////////////////////////////////////////////////////
 void Matrix_ps::DiagonalScale(const TripletList_r &tlist) {
-  MatrixDiagonalScale_ps_wrp(ih_this, tlist.ih_this);
+  MatrixDiagonalScale_psr_wrp(ih_this, tlist.ih_this);
+}
+
+//////////////////////////////////////////////////////////////////////////////
+void Matrix_ps::DiagonalScale(const TripletList_c &tlist) {
+  MatrixDiagonalScale_psc_wrp(ih_this, tlist.ih_this);
 }
 
 //////////////////////////////////////////////////////////////////////////////

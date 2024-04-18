@@ -292,6 +292,10 @@ class TestPSMatrixAlgebra:
             self.write_matrix(matrix, self.input_file1)
             self.CheckMat = deepcopy(matrix)
 
+            # Need a guard because otherwise we write a real matrix by mistake.
+            if self.complex1 and matrix.nnz == 0:
+                continue
+
             tlist = self.TripletList()
             for i in range(matrix.shape[1]):
                 t = self.Triplet()
@@ -393,8 +397,8 @@ class TestPSMatrixAlgebra_rc(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = True
     # Whether the second matrix is complex or not
     complex2 = False
-    TripletList = nt.TripletList_r
-    Triplet = nt.Triplet_r
+    TripletList = nt.TripletList_c
+    Triplet = nt.Triplet_c
 
     def setUp(self):
         '''Set up a specific test.'''
@@ -410,8 +414,8 @@ class TestPSMatrixAlgebra_cr(TestPSMatrixAlgebra, unittest.TestCase):
     complex1 = False
     # Whether the second matrix is complex or not
     complex2 = True
-    TripletList = nt.TripletList_c
-    Triplet = nt.Triplet_c
+    TripletList = nt.TripletList_r
+    Triplet = nt.Triplet_r
 
     def setUp(self):
         '''Set up a specific test.'''

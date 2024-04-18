@@ -170,6 +170,9 @@ public:
   //!\param tlist the triplet list.
   //!\param threshold for flushing small values.
   void DiagonalScale(const NTPoly::TripletList_r &tlist);
+  //!\param tlist the triplet list.
+  //!\param threshold for flushing small values.
+  void DiagonalScale(const NTPoly::TripletList_c &tlist);
 
 public:
   //! Destructor.
