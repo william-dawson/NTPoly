@@ -87,6 +87,7 @@ MODULE PSMatrixModule
   PUBLIC :: CommSplitMatrix
   PUBLIC :: ResizeMatrix
   PUBLIC :: GatherMatrixToProcess
+  PUBLIC :: GatherMatrixTripletList
   PUBLIC :: IsIdentity
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ConstructEmptyMatrix
@@ -180,6 +181,10 @@ MODULE PSMatrixModule
      MODULE PROCEDURE GatherMatrixToProcess_psc_id
      MODULE PROCEDURE GatherMatrixToProcess_psc_all
   END INTERFACE GatherMatrixToProcess
+  INTERFACE GatherMatrixTripletList
+     MODULE PROCEDURE GatherMatrixTripletList_r
+     MODULE PROCEDURE GatherMatrixTripletList_c
+  END INTERFACE GatherMatrixTripletList
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct an empty sparse, distributed, matrix.
   SUBROUTINE ConstructEmptyMatrix_ps(this, matrix_dim, process_grid_in, &
@@ -1843,5 +1848,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "distributed_includes/IsIdentity.f90"
 #undef ISCOMPLEX
   END FUNCTION IsIdentity_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This gathers the entire matrix into a triplet list on all processes.
+  SUBROUTINE GatherMatrixTripletList_r(this, tlist)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(TripletList_r), INTENT(INOUT) :: tlist
+    !! Local Variables
+    TYPE(Matrix_lsr) :: lmat
+
+#include "distributed_includes/GatherMatrixTripletList.f90"
+  END SUBROUTINE GatherMatrixTripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> This gathers the entire matrix into a triplet list on all processes.
+  SUBROUTINE GatherMatrixTripletList_c(this, tlist)
+    !> The matrix to gather.
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The full matrix, stored in a local matrix.
+    TYPE(TripletList_c), INTENT(INOUT) :: tlist
+    !! Local Variables
+    TYPE(Matrix_lsc) :: lmat
+
+#include "distributed_includes/GatherMatrixTripletList.f90"
+  END SUBROUTINE GatherMatrixTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixModule

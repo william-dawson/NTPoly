@@ -51,6 +51,7 @@ MODULE TripletListModule
   INTERFACE CopyTripletList
      MODULE PROCEDURE CopyTripletList_r
      MODULE PROCEDURE CopyTripletList_c
+     MODULE PROCEDURE CopyTripletList_rc
   END INTERFACE CopyTripletList
   INTERFACE DestructTripletList
      MODULE PROCEDURE DestructTripletList_r
@@ -149,6 +150,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE DestructTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy a triplet list (real).
   SUBROUTINE CopyTripletList_r(tripA, tripB)
     !> The triplet list to copy.
     TYPE(TripletList_r), INTENT(IN) :: tripA
@@ -158,6 +160,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "triplet_includes/CopyTripletList.f90"
   END SUBROUTINE CopyTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy a triplet list (complex).
   SUBROUTINE CopyTripletList_c(tripA, tripB)
     !> The triplet list to copy.
     TYPE(TripletList_c), INTENT(IN) :: tripA
@@ -166,6 +169,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include "triplet_includes/CopyTripletList.f90"
   END SUBROUTINE CopyTripletList_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy and upcast a triplet list (real -> complex).
+  SUBROUTINE CopyTripletList_rc(tripA, tripB)
+    !> The triplet list to copy.
+    TYPE(TripletList_r), INTENT(IN) :: tripA
+    !> tripB = tripA
+    TYPE(TripletList_c), INTENT(INOUT) :: tripB
+    !! Local varaibles
+    INTEGER II
+
+    CALL ConstructTripletList(tripB, tripA%CurrentSize)
+    DO II = 1, tripA%CurrentSize
+       tripB%DATA(II)%index_row = tripA%DATA(II)%index_row
+       tripB%DATA(II)%index_column = tripA%DATA(II)%index_column
+       tripB%DATA(II)%point_value = &
+           & CMPLX(tripA%DATA(II)%point_value, KIND=NTCOMPLEX)
+    END DO
+  END SUBROUTINE CopyTripletList_rc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   PURE SUBROUTINE ResizeTripletList_r(this, size)

@@ -12,14 +12,15 @@ MODULE FermiOperatorModule
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
        & FillMatrixFromTripletList, GetMatrixTripletList, &
        & TransposeMatrix, ConjugateMatrix, DestructMatrix, FilterMatrix, &
-       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix, GetMatrixSize, printmatrix
+       & FillMatrixIdentity, PrintMatrixInformation, CopyMatrix, &
+       & GatherMatrixTripletList, GetMatrixSize
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE SolverParametersModule, ONLY : SolverParameters_t, &
        & PrintParameters, DestructSolverParameters, CopySolverParameters, &
        & ConstructSolverParameters
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & DestructTripletList, AllGatherTripletList, ConstructTripletList
+       & DestructTripletList, CopyTripletList
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -56,15 +57,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: WD
     TYPE(Matrix_ps) :: vecs, vecsT, vals, Temp
     TYPE(MatrixMemoryPool_p) :: pool
-    TYPE(TripletList_r) :: tlist, gathered_list
-    TYPE(TripletList_c) :: gathered_list_c
+    TYPE(TripletList_r) :: tlist
+    TYPE(TripletList_c) :: tlist_c
     REAL(NTREAL) :: chemical_potential, energy_value
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: eigs, occ
     REAL(NTREAL) :: sval, sv, occ_temp
     REAL(NTREAL) :: left, right, homo, lumo
     INTEGER :: num_eigs
     INTEGER :: II, JJ
-    INTEGER :: ierr
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -103,15 +103,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & eigenvectors_in = vecs, solver_parameters_in = params)
 
     !! Gather the eigenvalues on to every process
-    CALL GetMatrixTripletList(vals, tlist)
+    CALL GatherMatrixTripletList(vals, tlist)
+
+    !! Put them in an array for simplicity
     num_eigs = H%actual_matrix_dimension
     ALLOCATE(eigs(num_eigs))
     eigs = 0
     DO II = 1, tlist%CurrentSize
-       eigs(tlist%DATA(II)%index_column) = tlist%DATA(II)%point_value
+       eigs(II) = tlist%DATA(II)%point_value
     END DO
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, eigs, num_eigs, MPINTREAL, &
-         & MPI_SUM, H%process_grid%within_slice_comm, ierr)
 
     !! Compute MU By Bisection
     IF (do_smearing) THEN
@@ -119,7 +119,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        left = MINVAL(eigs)
        right = MAXVAL(eigs)
        DO JJ = 1, 10*params%max_iterations 
-          chemical_potential = left + (right - left)/2 
+          chemical_potential = left + (right - left) / 2 
           DO II = 1, num_eigs
              sval = eigs(II) - chemical_potential
              ! occ(II) = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
@@ -170,7 +170,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           sval = tlist%DATA(II)%point_value - chemical_potential
           ! occ_temp = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
           occ_temp = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
-          energy_value = energy_value + occ_temp * tlist%DATA(II)%point_value
+          energy_value = energy_value + &
+             & occ_temp * tlist%DATA(II)%point_value
           IF (occ_temp .LT. 0) THEN  ! for safety
              tlist%DATA(II)%point_value = 0
           ELSE
@@ -178,25 +179,13 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           END IF
        END IF
     END DO
-    CALL MPI_ALLREDUCE(MPI_IN_PLACE, energy_value, 1, MPINTREAL, MPI_SUM, &
-         & H%process_grid%within_slice_comm, ierr)
-    
-    !! Gather the triplet lists
-    CALL AllGatherTripletList(tlist, H%process_grid%column_comm, gathered_list)
 
     !! Scale the eigenvectors
     IF (vecs%is_complex) THEN
-       CALL ConstructTripletList(gathered_list_c, gathered_list%CurrentSize)
-       DO II = 1, gathered_list%CurrentSize
-          gathered_list_c%DATA(II)%index_row = gathered_list%DATA(II)%index_row
-          gathered_list_c%DATA(II)%index_column = &
-              & gathered_list%DATA(II)%index_column
-          gathered_list_c%DATA(II)%point_value = &
-              & CMPLX(gathered_list%DATA(II)%point_value, KIND=NTCOMPLEX)
-       END DO
-       CALL MatrixDiagonalScale(vecs, gathered_list_c)
+      CALL CopyTripletList(tlist, tlist_c)
+       CALL MatrixDiagonalScale(vecs, tlist_c)
     ELSE
-       CALL MatrixDiagonalScale(vecs, gathered_list)
+       CALL MatrixDiagonalScale(vecs, tlist)
     END IF
     CALL FilterMatrix(vecs, params%threshold)
 
@@ -229,8 +218,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(vals)
     CALL DestructMatrix(temp)
     CALL DestructTripletList(tlist)
-    CALL DestructTripletList(gathered_list)
-    CALL DestructTripletList(gathered_list_c)
+    CALL DestructTripletList(tlist_c)
     CALL DestructMatrixMemoryPool(pool)
     IF (ALLOCATED(occ)) THEN
        DEALLOCATE(occ)
