@@ -185,6 +185,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Scale the eigenvectors
     CALL MatrixDiagonalScale(vecs, gathered_list)
+    CALL FilterMatrix(vecs, params%threshold)
 
     !! Multiply Back Together
     CALL TransposeMatrix(vecs, vecsT)
