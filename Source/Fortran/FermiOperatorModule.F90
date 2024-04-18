@@ -1,7 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Computing The Density Matrix Using the Fermi Operator Expansion
 MODULE FermiOperatorModule
-  USE DataTypesModule, ONLY : NTREAL, MPINTREAL
+  USE DataTypesModule, ONLY : NTREAL, MPINTREAL, NTCOMPLEX
   USE EigenSolversModule, ONLY : EigenDecomposition
   USE LoadBalancerModule, ONLY : PermuteMatrix, UndoPermuteMatrix
   USE LoggingModule, ONLY : WriteElement, WriteHeader, &
@@ -18,8 +18,8 @@ MODULE FermiOperatorModule
   USE SolverParametersModule, ONLY : SolverParameters_t, &
        & PrintParameters, DestructSolverParameters, CopySolverParameters, &
        & ConstructSolverParameters
-  USE TripletListModule, ONLY : TripletList_r, DestructTripletList, &
-       & AllGatherTripletList
+  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
+       & DestructTripletList, AllGatherTripletList, ConstructTripletList
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -57,6 +57,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: vecs, vecsT, vals, Temp
     TYPE(MatrixMemoryPool_p) :: pool
     TYPE(TripletList_r) :: tlist, gathered_list
+    TYPE(TripletList_c) :: gathered_list_c
     REAL(NTREAL) :: chemical_potential, energy_value
     REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: eigs, occ
     REAL(NTREAL) :: sval, sv, occ_temp
@@ -184,7 +185,19 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL AllGatherTripletList(tlist, H%process_grid%column_comm, gathered_list)
 
     !! Scale the eigenvectors
-    CALL MatrixDiagonalScale(vecs, gathered_list)
+    IF (vecs%is_complex) THEN
+       CALL ConstructTripletList(gathered_list_c, gathered_list%CurrentSize)
+       DO II = 1, gathered_list%CurrentSize
+          gathered_list_c%DATA(II)%index_row = gathered_list%DATA(II)%index_row
+          gathered_list_c%DATA(II)%index_column = &
+              & gathered_list%DATA(II)%index_column
+          gathered_list_c%DATA(II)%point_value = &
+              & CMPLX(gathered_list%DATA(II)%point_value, KIND=NTCOMPLEX)
+       END DO
+       CALL MatrixDiagonalScale(vecs, gathered_list_c)
+    ELSE
+       CALL MatrixDiagonalScale(vecs, gathered_list)
+    END IF
     CALL FilterMatrix(vecs, params%threshold)
 
     !! Multiply Back Together
@@ -217,6 +230,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(temp)
     CALL DestructTripletList(tlist)
     CALL DestructTripletList(gathered_list)
+    CALL DestructTripletList(gathered_list_c)
     CALL DestructMatrixMemoryPool(pool)
     IF (ALLOCATED(occ)) THEN
        DEALLOCATE(occ)
