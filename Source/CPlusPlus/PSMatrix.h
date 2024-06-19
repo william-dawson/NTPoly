@@ -165,6 +165,8 @@ public:
   void Scale(double constant);
   //! compute the norm of a matrix.
   double Norm() const;
+  //! compute the asymmetry (norm(A - A.T)) of a matrix.
+  double MeasureAsymmetry() const;
   //! compute the trace of a matrix.
   double Trace() const;
 

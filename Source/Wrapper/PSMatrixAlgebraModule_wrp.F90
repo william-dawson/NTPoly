@@ -20,6 +20,7 @@ MODULE PSMatrixAlgebraModule_wrp
   PUBLIC :: ScaleMatrix_ps_wrp
   PUBLIC :: MatrixNorm_ps_wrp
   PUBLIC :: MatrixTrace_ps_wrp
+  PUBLIC :: MeasureAsymmetry_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   SUBROUTINE IncrementMatrix_ps_wrp(ih_matA, ih_matB, alpha_in,threshold_in) &
@@ -143,5 +144,17 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     CALL MatrixTrace(h_this%DATA, trace_value)
   END SUBROUTINE MatrixTrace_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the norm of a distributed sparse matrix along the rows.
+  FUNCTION MeasureAsymmetry_ps_wrp(ih_this) &
+       & BIND(c,name="MeasureAsymmetry_ps_wrp") &
+       & RESULT(norm_value)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    REAL(NTREAL) :: norm_value
+    TYPE(Matrix_ps_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    norm_value = MeasureAsymmetry(h_this%DATA)
+  END FUNCTION MeasureAsymmetry_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule_wrp

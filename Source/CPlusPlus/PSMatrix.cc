@@ -228,5 +228,10 @@ double Matrix_ps::Trace() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
+double Matrix_ps::MeasureAsymmetry() const {
+  return MeasureAsymmetry_ps_wrp(ih_this);
+}
+
+//////////////////////////////////////////////////////////////////////////////
 Matrix_ps::~Matrix_ps() { DestructMatrix_ps_wrp(ih_this); }
 } // namespace NTPoly

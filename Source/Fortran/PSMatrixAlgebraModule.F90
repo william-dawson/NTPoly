@@ -13,7 +13,7 @@ MODULE PSMatrixAlgebraModule
        & ConstructMatrixMemoryPool
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
-       & MergeMatrixLocalBlocks, IsIdentity
+       & MergeMatrixLocalBlocks, IsIdentity, TransposeMatrix
   USE SMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixGrandSum, &
        & PairwiseMultiplyMatrix, IncrementMatrix, ScaleMatrix, &
        & MatrixColumnNorm
@@ -34,6 +34,7 @@ MODULE PSMatrixAlgebraModule
   PUBLIC :: ScaleMatrix
   PUBLIC :: MatrixTrace
   PUBLIC :: SimilarityTransform
+  PUBLIC :: MeasureAsymmetry
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixSigma
      MODULE PROCEDURE MatrixSigma_ps
@@ -525,6 +526,22 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef TLIST
     END IF
   END SUBROUTINE MatrixTrace_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Measure the asymmetry of a matrix NORM(A - A.T)
+  FUNCTION MeasureAsymmetry(this) RESULT(norm_value)
+    !> The matrix to measure
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The norm value of the full distributed sparse matrix.
+    REAL(NTREAL) :: norm_value
+    !! Local variables
+    TYPE(Matrix_ps) :: tmat
+
+    CALL TransposeMatrix(this, tmat)
+    CALL ConjugateMatrix(tmat)
+    CALL IncrementMatrix(this, tmat, alpha_in=-1.0_NTREAL)
+    norm_value = MatrixNorm(tmat)
+
+  END FUNCTION MeasureAsymmetry
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transform a matrix B = P * A * P^-1
   !! This routine will check if P is the identity matrix, and if so
