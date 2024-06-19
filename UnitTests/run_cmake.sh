@@ -7,8 +7,7 @@ fi
 cd Build
 
 if [[ "$TESTOS" == "OSX" ]]; then
-  cmake -G Ninja \
-    -DCMAKE_BUILD_TYPE=Release ;
+  cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Release ;
 else
   if [[ "${NOIALLGATHER:-0}" -eq 1 ]]; then
     cmake -G Ninja .. -DCMAKE_BUILD_TYPE=Debug -DNOIALLGATHER=YES;
