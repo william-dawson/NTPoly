@@ -540,6 +540,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConjugateMatrix(tmat)
     CALL IncrementMatrix(this, tmat, alpha_in=-1.0_NTREAL)
     norm_value = MatrixNorm(tmat)
+    CALL DestructMatrix(tmat)
 
   END FUNCTION MeasureAsymmetry
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
