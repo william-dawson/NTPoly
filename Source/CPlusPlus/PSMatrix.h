@@ -169,6 +169,8 @@ public:
   double MeasureAsymmetry() const;
   //! compute the trace of a matrix.
   double Trace() const;
+  //! symmetrize the matrix
+  void Symmetrize();
 
 public:
   //! Destructor.

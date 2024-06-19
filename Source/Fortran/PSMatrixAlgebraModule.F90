@@ -35,6 +35,7 @@ MODULE PSMatrixAlgebraModule
   PUBLIC :: MatrixTrace
   PUBLIC :: SimilarityTransform
   PUBLIC :: MeasureAsymmetry
+  PUBLIC :: SymmetrizeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixSigma
      MODULE PROCEDURE MatrixSigma_ps
@@ -543,6 +544,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL DestructMatrix(tmat)
 
   END FUNCTION MeasureAsymmetry
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Make the matrix symmetric
+  SUBROUTINE SymmetrizeMatrix(this)
+    !> The matrix to symmetrize
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !! Local variables
+    TYPE(Matrix_ps) :: tmat
+
+    CALL TransposeMatrix(this, tmat)
+    CALL ConjugateMatrix(tmat)
+    CALL IncrementMatrix(tmat, this, alpha_in=1.0_NTREAL)
+    CALL ScaleMatrix(this, 0.5_NTREAL)
+    CALL DestructMatrix(tmat)
+
+  END SUBROUTINE SymmetrizeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transform a matrix B = P * A * P^-1
   !! This routine will check if P is the identity matrix, and if so

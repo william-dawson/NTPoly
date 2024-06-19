@@ -63,5 +63,6 @@ double MatrixNorm_ps_wrp(const int *ih_this);
 double MeasureAsymmetry_ps_wrp(const int *ih_this);
 void MatrixTrace_ps_wrp(const int *ih_this, double *trace_val);
 int IsIdentity_ps_wrp(const int *ih_this);
+void SymmetrizeMatrix_ps_wrp(int *ih_this);
 
 #endif

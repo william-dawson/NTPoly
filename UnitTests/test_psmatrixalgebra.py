@@ -285,7 +285,7 @@ class TestPSMatrixAlgebra:
             self.check_result()
 
     def test_asymmetry(self):
-        '''Test routines to permute a matrix.'''
+        '''Test routines to measure asymmetry of a matrix.'''
         from numpy import inf
         from scipy.linalg import norm
         for param in self.parameters:
@@ -304,6 +304,29 @@ class TestPSMatrixAlgebra:
             comp = ntmatrix1.MeasureAsymmetry()
 
             self.check_floats(ref, comp)
+
+    def test_symmetrize(self):
+        '''Test routines to symmetrize a matrix.'''
+        from numpy import inf
+        from scipy.linalg import norm
+        for param in self.parameters:
+            matrix1 = param.create_matrix(snum=1, complex=self.complex1)
+            self.write_matrix(matrix1, self.input_file1)
+
+            comm.barrier()
+
+            if param.sparsity > 0.0:
+                ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            else:
+                ntmatrix1 = nt.Matrix_ps(param.rows)
+
+            self.CheckMat = 0.5 * (matrix1 + matrix1.H)
+            ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
+            ntmatrix1.Symmetrize()
+            ntmatrix1.WriteToMatrixMarket(self.result_file)
+            comm.barrier()
+
+            self.check_result()
 
 
 class TestPSMatrixAlgebra_r(TestPSMatrixAlgebra, unittest.TestCase):

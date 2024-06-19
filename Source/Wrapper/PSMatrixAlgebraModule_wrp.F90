@@ -21,6 +21,7 @@ MODULE PSMatrixAlgebraModule_wrp
   PUBLIC :: MatrixNorm_ps_wrp
   PUBLIC :: MatrixTrace_ps_wrp
   PUBLIC :: MeasureAsymmetry_ps_wrp
+  PUBLIC :: SymmetrizeMatrix_ps_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   SUBROUTINE IncrementMatrix_ps_wrp(ih_matA, ih_matB, alpha_in,threshold_in) &
@@ -156,5 +157,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_this = TRANSFER(ih_this,h_this)
     norm_value = MeasureAsymmetry(h_this%DATA)
   END FUNCTION MeasureAsymmetry_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Symmetrize a matrix
+  SUBROUTINE SymmetrizeMatrix_ps_wrp(ih_matA) &
+        & BIND(c,NAME="SymmetrizeMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_matA
+
+    h_matA = TRANSFER(ih_matA,h_matA)
+    CALL SymmetrizeMatrix(h_matA%DATA)
+  END SUBROUTINE SymmetrizeMatrix_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule_wrp
