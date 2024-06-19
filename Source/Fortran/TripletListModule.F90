@@ -39,6 +39,7 @@ MODULE TripletListModule
   PUBLIC :: SymmetrizeTripletList
   PUBLIC :: GetTripletListSize
   PUBLIC :: RedistributeTripletLists
+  PUBLIC :: AllGatherTripletList
   PUBLIC :: ShiftTripletList
   PUBLIC :: ConvertTripletListType
   PUBLIC :: MergeTripletLists
@@ -50,6 +51,7 @@ MODULE TripletListModule
   INTERFACE CopyTripletList
      MODULE PROCEDURE CopyTripletList_r
      MODULE PROCEDURE CopyTripletList_c
+     MODULE PROCEDURE CopyTripletList_rc
   END INTERFACE CopyTripletList
   INTERFACE DestructTripletList
      MODULE PROCEDURE DestructTripletList_r
@@ -91,6 +93,10 @@ MODULE TripletListModule
      MODULE PROCEDURE RedistributeTripletLists_r
      MODULE PROCEDURE RedistributeTripletLists_c
   END INTERFACE RedistributeTripletLists
+  INTERFACE AllGatherTripletList
+     MODULE PROCEDURE AllGatherTripletList_r
+     MODULE PROCEDURE AllGatherTripletList_c
+  END INTERFACE AllGatherTripletList
   INTERFACE ShiftTripletList
      MODULE PROCEDURE ShiftTripletList_r
      MODULE PROCEDURE ShiftTripletList_c
@@ -144,6 +150,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE DestructTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy a triplet list (real).
   SUBROUTINE CopyTripletList_r(tripA, tripB)
     !> The triplet list to copy.
     TYPE(TripletList_r), INTENT(IN) :: tripA
@@ -153,6 +160,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #include "triplet_includes/CopyTripletList.f90"
   END SUBROUTINE CopyTripletList_r
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy a triplet list (complex).
   SUBROUTINE CopyTripletList_c(tripA, tripB)
     !> The triplet list to copy.
     TYPE(TripletList_c), INTENT(IN) :: tripA
@@ -161,6 +169,24 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include "triplet_includes/CopyTripletList.f90"
   END SUBROUTINE CopyTripletList_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Copy and upcast a triplet list (real -> complex).
+  SUBROUTINE CopyTripletList_rc(tripA, tripB)
+    !> The triplet list to copy.
+    TYPE(TripletList_r), INTENT(IN) :: tripA
+    !> tripB = tripA
+    TYPE(TripletList_c), INTENT(INOUT) :: tripB
+    !! Local varaibles
+    INTEGER II
+
+    CALL ConstructTripletList(tripB, tripA%CurrentSize)
+    DO II = 1, tripA%CurrentSize
+       tripB%DATA(II)%index_row = tripA%DATA(II)%index_row
+       tripB%DATA(II)%index_column = tripA%DATA(II)%index_column
+       tripB%DATA(II)%point_value = &
+            & CMPLX(tripA%DATA(II)%point_value, KIND=NTCOMPLEX)
+    END DO
+  END SUBROUTINE CopyTripletList_rc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Increase the size of a triplet list.
   PURE SUBROUTINE ResizeTripletList_r(this, size)
@@ -365,6 +391,44 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef MPIDATATYPE
 
   END SUBROUTINE RedistributeTripletLists_c
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Gather triplet lists from a set of processors.
+  SUBROUTINE AllGatherTripletList_r(triplet_in, comm, gathered_out)
+    !> Locally held triplet list
+    TYPE(TripletList_r), INTENT(IN) :: triplet_in
+    !> The mpi communicator to gather along.
+    INTEGER, INTENT(IN) :: comm
+    !> The resulting gathered triplet list.
+    TYPE(TripletList_r), INTENT(INOUT) :: gathered_out
+    !! Local data (type specific)
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: send_buffer_val
+    REAL(NTREAL), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
+    TYPE(Triplet_r) :: temp_triplet
+
+#define MPIDATATYPE MPINTREAL
+#include "triplet_includes/GatherTripletList.f90"
+#undef MPIDATATYPE
+
+  END SUBROUTINE AllGatherTripletList_r
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Gather triplet lists from a set of processors.
+  SUBROUTINE AllGatherTripletList_c(triplet_in, comm, gathered_out)
+    !> Locally held triplet list
+    TYPE(TripletList_c), INTENT(IN) :: triplet_in
+    !> The mpi communicator to gather along.
+    INTEGER, INTENT(IN) :: comm
+    !> The resulting gathered triplet list.
+    TYPE(TripletList_c), INTENT(INOUT) :: gathered_out
+    !! Local data (type specific)
+    COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: send_buffer_val
+    COMPLEX(NTCOMPLEX), DIMENSION(:), ALLOCATABLE :: recv_buffer_val
+    TYPE(Triplet_c) :: temp_triplet
+
+#define MPIDATATYPE MPINTCOMPLEX
+#include "triplet_includes/GatherTripletList.f90"
+#undef MPIDATATYPE
+
+  END SUBROUTINE AllGatherTripletList_c
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Shift the rows and columns of a triplet list by set values.
   !> Frequently, we have a triplet list that comes from the global matrix which

@@ -176,6 +176,16 @@ void Matrix_lsc::Gemm(const Matrix_lsc &matA, const Matrix_lsc &matB,
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+void Matrix_lsr::DiagonalScale(const TripletList_r &tlist) {
+  MatrixDiagonalScale_lsr_wrp(ih_this, tlist.ih_this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+void Matrix_lsc::DiagonalScale(const TripletList_c &tlist) {
+  MatrixDiagonalScale_lsc_wrp(ih_this, tlist.ih_this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 void Matrix_lsr::Transpose(const Matrix_lsr &matA) {
   TransposeMatrix_lsr_wrp(matA.ih_this, ih_this);
 }

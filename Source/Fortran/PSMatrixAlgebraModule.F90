@@ -13,13 +13,16 @@ MODULE PSMatrixAlgebraModule
        & ConstructMatrixMemoryPool
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
-       & MergeMatrixLocalBlocks, IsIdentity
+       & MergeMatrixLocalBlocks, IsIdentity, SplitMatrixToLocalBlocks
   USE SMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixGrandSum, &
        & PairwiseMultiplyMatrix, IncrementMatrix, ScaleMatrix, &
-       & MatrixColumnNorm
+       & MatrixColumnNorm, MatrixDiagonalScale
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, DestructMatrix, CopyMatrix,&
        & TransposeMatrix, ComposeMatrixColumns, MatrixToTripletList
-  USE TripletListModule, ONLY : TripletList_r, TripletList_c
+  USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
+       & ConstructTripletList, AppendToTripletList, DestructTripletList, &
+       & GetTripletAt
+  USE TripletModule, ONLY : Triplet_r, Triplet_c
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -34,6 +37,7 @@ MODULE PSMatrixAlgebraModule
   PUBLIC :: ScaleMatrix
   PUBLIC :: MatrixTrace
   PUBLIC :: SimilarityTransform
+  PUBLIC :: MatrixDiagonalScale
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixSigma
      MODULE PROCEDURE MatrixSigma_ps
@@ -62,6 +66,10 @@ MODULE PSMatrixAlgebraModule
      MODULE PROCEDURE ScaleMatrix_psr
      MODULE PROCEDURE ScaleMatrix_psc
   END INTERFACE ScaleMatrix
+  INTERFACE MatrixDiagonalScale
+     MODULE PROCEDURE MatrixDiagonalScale_psr
+     MODULE PROCEDURE MatrixDiagonalScale_psc
+  END INTERFACE MatrixDiagonalScale
   INTERFACE MatrixTrace
      MODULE PROCEDURE MatrixTrace_psr
   END INTERFACE MatrixTrace
@@ -491,6 +499,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
   END SUBROUTINE ScaleMatrix_psc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Will scale a distributed sparse matrix by a constant.
+  SUBROUTINE MatrixDiagonalScale_psr(this, tlist)
+    !> Matrix to scale.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A constant scale factor.
+    TYPE(TripletList_r), INTENT(IN) :: tlist
+    !! Local Data
+    TYPE(Matrix_lsr) :: lmat
+    TYPE(TripletList_r) :: filtered
+    TYPE(Triplet_r) :: trip
+
+#include "distributed_algebra_includes/ScaleDiagonal.f90"
+  END SUBROUTINE MatrixDiagonalScale_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Will scale a distributed sparse matrix by a constant.
+  RECURSIVE SUBROUTINE MatrixDiagonalScale_psc(this, tlist)
+    !> Matrix to scale.
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !> A constant scale factor.
+    TYPE(TripletList_c), INTENT(IN) :: tlist
+    !! Local Data
+    TYPE(Matrix_lsc) :: lmat
+    TYPE(TripletList_c) :: filtered
+    TYPE(Triplet_c) :: trip
+
+#include "distributed_algebra_includes/ScaleDiagonal.f90"
+  END SUBROUTINE MatrixDiagonalScale_psc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the trace of the matrix.
   SUBROUTINE MatrixTrace_psr(this, trace_value)

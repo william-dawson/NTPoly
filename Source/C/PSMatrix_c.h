@@ -62,5 +62,7 @@ void ScaleMatrix_ps_wrp(int *ih_this, const double *constant);
 double MatrixNorm_ps_wrp(const int *ih_this);
 void MatrixTrace_ps_wrp(const int *ih_this, double *trace_val);
 int IsIdentity_ps_wrp(const int *ih_this);
+void MatrixDiagonalScale_psr_wrp(int *ih_mat, const int *ih_tlist);
+void MatrixDiagonalScale_psc_wrp(int *ih_mat, const int *ih_tlist);
 
 #endif
