@@ -25,6 +25,7 @@ MODULE SMatrixAlgebraModule
   PUBLIC :: MatrixColumnNorm
   PUBLIC :: MatrixNorm
   PUBLIC :: MatrixGrandSum
+  PUBLIC :: MatrixDiagonalScale
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE ScaleMatrix
      MODULE PROCEDURE ScaleMatrix_lsr
@@ -75,6 +76,10 @@ MODULE SMatrixAlgebraModule
      MODULE PROCEDURE DenseBranch_lsr
      MODULE PROCEDURE DenseBranch_lsc
   END INTERFACE DenseBranch
+  INTERFACE MatrixDiagonalScale
+     MODULE PROCEDURE MatrixDiagonalScale_lsr
+     MODULE PROCEDURE MatrixDiagonalScale_lsc
+  END INTERFACE MatrixDiagonalScale
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Will scale a sparse matrix by a constant.
   PURE SUBROUTINE ScaleMatrix_lsr(matA,constant)
@@ -526,5 +531,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include "sparse_includes/PruneList.f90"
   END SUBROUTINE PruneList_lsc
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE MatrixDiagonalScale_lsr(mat, tlist)
+    !> The matrix to scale.
+    TYPE(Matrix_lsr), INTENT(INOUT)  :: mat
+    !> The diagonal matrix.
+    TYPE(TripletList_r), INTENT(IN)  :: tlist
+    !! Intermediate Data
+    REAL(NTREAL) :: val
+
+#include "sparse_includes/DiagonalScale.f90"
+  END SUBROUTINE MatrixDiagonalScale_lsr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE MatrixDiagonalScale_lsc(mat, tlist)
+    !> The matrix to scale.
+    TYPE(Matrix_lsc), INTENT(INOUT)  :: mat
+    !> The diagonal matrix.
+    TYPE(TripletList_c), INTENT(IN)  :: tlist
+    !! Intermediate Data
+    COMPLEX(NTCOMPLEX) :: val
+
+#include "sparse_includes/DiagonalScale.f90"
+  END SUBROUTINE MatrixDiagonalScale_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE SMatrixAlgebraModule

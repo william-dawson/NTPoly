@@ -6,7 +6,7 @@ MODULE PSMatrixAlgebraModule_wrp
   USE PSMatrixAlgebraModule
   USE PSMatrixModule_wrp, ONLY : Matrix_ps_wrp
   USE PermutationModule_wrp, ONLY : Permutation_wrp
-  USE TripletListModule_wrp, ONLY : TripletList_r_wrp
+  USE TripletListModule_wrp, ONLY : TripletList_r_wrp, TripletList_c_wrp
   USE WrapperModule, ONLY : SIZE_wrp
   USE ISO_C_BINDING, ONLY : c_int, c_char, c_bool
   IMPLICIT NONE
@@ -22,6 +22,8 @@ MODULE PSMatrixAlgebraModule_wrp
   PUBLIC :: MatrixTrace_ps_wrp
   PUBLIC :: MeasureAsymmetry_ps_wrp
   PUBLIC :: SymmetrizeMatrix_ps_wrp
+  PUBLIC :: MatrixDiagonalScale_psr_wrp
+  PUBLIC :: MatrixDiagonalScale_psc_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Matrix B = alpha*Matrix A + Matrix B (AXPY)
   SUBROUTINE IncrementMatrix_ps_wrp(ih_matA, ih_matB, alpha_in,threshold_in) &
@@ -167,5 +169,32 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     h_matA = TRANSFER(ih_matA,h_matA)
     CALL SymmetrizeMatrix(h_matA%DATA)
   END SUBROUTINE SymmetrizeMatrix_ps_wrp
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE MatrixDiagonalScale_psr_wrp(ih_mat, ih_tlist) &
+       & BIND(c,name="MatrixDiagonalScale_psr_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_mat
+    TYPE(TripletList_r_wrp) :: h_tlist
+
+    h_mat = TRANSFER(ih_mat, h_mat)
+    h_tlist = TRANSFER(ih_tlist, h_tlist)
+
+    CALL MatrixDiagonalScale(h_mat%DATA, h_tlist%DATA)
+  END SUBROUTINE MatrixDiagonalScale_psr_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Scale a matrix using a diagonal matrix (triplet list form).
+  SUBROUTINE MatrixDiagonalScale_psc_wrp(ih_mat, ih_tlist) &
+       & BIND(c,name="MatrixDiagonalScale_psc_wrp")
+    INTEGER(kind=c_int), INTENT(INOUT) :: ih_mat(SIZE_wrp)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_tlist(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_mat
+    TYPE(TripletList_c_wrp) :: h_tlist
+
+    h_mat = TRANSFER(ih_mat, h_mat)
+    h_tlist = TRANSFER(ih_tlist, h_tlist)
+
+    CALL MatrixDiagonalScale(h_mat%DATA, h_tlist%DATA)
+  END SUBROUTINE MatrixDiagonalScale_psc_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE PSMatrixAlgebraModule_wrp

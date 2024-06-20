@@ -57,6 +57,8 @@ class TestLocalMatrix(unittest.TestCase):
     SMatrix = nt.Matrix_lsr
     MatrixMemoryPool = nt.MatrixMemoryPool_r
     complex = False
+    TripletList = nt.TripletList_r
+    Triplet = nt.Triplet_r
 
     def _compare_mat(self, val1, val2):
         from helpers import THRESHOLD
@@ -397,12 +399,37 @@ class TestLocalMatrix(unittest.TestCase):
             ResultMat = mmread(self.file2)
             self._compare_mat(CheckMat, ResultMat)
 
+    def test_scalediag(self):
+        '''Test routines to scale by a diagonal matrix.'''
+        from copy import deepcopy
+        for param in self.parameters:
+            matrix = param.create_matrix(complex=self.complex)
+            mmwrite(self.file1, matrix)
+            CheckMat = deepcopy(matrix)
+
+            tlist = self.TripletList()
+            for i in range(matrix.shape[1]):
+                t = self.Triplet()
+                t.index_column = i + 1
+                t.index_row = i + 1
+                t.point_value = i
+                tlist.Append(t)
+                CheckMat[:, i] *= i
+            ntmatrix = self.SMatrix(self.file1)
+            ntmatrix.DiagonalScale(tlist)
+            ntmatrix.WriteToMatrixMarket(self.file2)
+
+            ResultMat = mmread(self.file2)
+            self._compare_mat(CheckMat, ResultMat)
+
 
 class TestLocalMatrix_c(TestLocalMatrix):
     '''Specialization for complex matrices'''
     SMatrix = nt.Matrix_lsc
     MatrixMemoryPool = nt.MatrixMemoryPool_c
     complex = True
+    TripletList = nt.TripletList_c
+    Triplet = nt.Triplet_c
 
     def test_conjugatetranspose(self):
         '''Test routines to compute the conjugate transpose of a matrix.'''

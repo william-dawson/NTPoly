@@ -13,10 +13,10 @@ MODULE EigenSolversModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixMultiply, &
-       & ScaleMatrix
+       & ScaleMatrix, MatrixDiagonalScale
   USE PSMatrixModule, ONLY : Matrix_ps, GatherMatrixToProcess, &
        & FillMatrixFromTripletList, ConstructEmptyMatrix, ConvertMatrixToReal, &
-       & DestructMatrix, CopyMatrix, GetMatrixTripletList, TransposeMatrix, &
+       & DestructMatrix, CopyMatrix, GatherMatrixTripletList, TransposeMatrix, &
        & ConjugateMatrix, FillMatrixIdentity, WriteMatrixToMatrixMarket
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters, ConstructSolverParameters, &
@@ -24,7 +24,7 @@ MODULE EigenSolversModule
   USE SMatrixModule, ONLY : Matrix_lsr, Matrix_lsc, MatrixToTripletList, &
        & DestructMatrix
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
-       & ConstructTripletList, DestructTripletList
+       & ConstructTripletList, CopyTripletList, DestructTripletList
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -107,6 +107,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Local Variables
     TYPE(Matrix_ps) :: vecs, vecsT, vals, temp
     TYPE(TripletList_r) :: tlist
+    TYPE(TripletList_c) :: tlist_c
     INTEGER :: II
 
     !! Optional Parameters
@@ -121,26 +122,29 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
          & eigenvectors_in = vecs)
 
     !! Convert to a triplet list, map the triplet list, fill.
-    CALL GetMatrixTripletList(vals, tlist)
+    CALL GatherMatrixTripletList(vals, tlist)
     CALL DestructMatrix(vals)
     DO II = 1, tlist%CurrentSize
        tlist%DATA(II)%point_value = func(tlist%DATA(II)%point_value)
     END DO
 
-    !! Fill
-    CALL ConstructEmptyMatrix(ResultMat, this)
-    CALL FillMatrixFromTripletList(ResultMat, tlist, preduplicated_in = .TRUE.)
-    CALL DestructTripletList(tlist)
-
     !! Multiply Back Together
-    CALL MatrixMultiply(vecs, ResultMat, temp, threshold_in = params%threshold)
     CALL TransposeMatrix(vecs, vecsT)
-    CALL DestructMatrix(vecs)
     CALL ConjugateMatrix(vecsT)
-    CALL MatrixMultiply(temp, vecsT, ResultMat, threshold_in = params%threshold)
+    IF (this%is_complex) THEN
+       CALL CopyTripletList(tlist, tlist_c)
+       CALL MatrixDiagonalScale(vecs, tlist_c)
+    ELSE
+       CALL MatrixDiagonalScale(vecs, tlist)
+    END IF
+    CALL MatrixMultiply(vecs, vecsT, ResultMat, threshold_in = params%threshold)
 
     !! Cleanup
+    CALL DestructMatrix(vecs)
+    CALL DestructMatrix(vecsT)
     CALL DestructMatrix(temp)
+    CALL DestructTripletList(tlist)
+    CALL DestructTripletList(tlist_c)
     CALL DestructSolverParameters(params)
 
   END SUBROUTINE DenseMatrixFunction

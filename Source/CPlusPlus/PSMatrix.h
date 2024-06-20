@@ -160,7 +160,7 @@ public:
   void Gemm(const Matrix_ps &matA, const Matrix_ps &matB,
             PMatrixMemoryPool &memory_pool, double alpha = 1.0,
             double beta = 0.0, double threshold = 0.0);
-  //! scale the matrix by a constatn.
+  //! scale the matrix by a constant.
   //! constant the value to scale by.
   void Scale(double constant);
   //! compute the norm of a matrix.
@@ -171,6 +171,12 @@ public:
   double Trace() const;
   //! symmetrize the matrix
   void Symmetrize();
+  //!\param tlist the triplet list.
+  //!\param threshold for flushing small values.
+  void DiagonalScale(const NTPoly::TripletList_r &tlist);
+  //!\param tlist the triplet list.
+  //!\param threshold for flushing small values.
+  void DiagonalScale(const NTPoly::TripletList_c &tlist);
 
 public:
   //! Destructor.
