@@ -20,6 +20,8 @@ MODULE PSMatrixAlgebraModule_wrp
   PUBLIC :: ScaleMatrix_ps_wrp
   PUBLIC :: MatrixNorm_ps_wrp
   PUBLIC :: MatrixTrace_ps_wrp
+  PUBLIC :: MeasureAsymmetry_ps_wrp
+  PUBLIC :: SymmetrizeMatrix_ps_wrp
   PUBLIC :: MatrixDiagonalScale_psr_wrp
   PUBLIC :: MatrixDiagonalScale_psc_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -146,6 +148,27 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MatrixTrace(h_this%DATA, trace_value)
   END SUBROUTINE MatrixTrace_ps_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Compute the norm of a distributed sparse matrix along the rows.
+  FUNCTION MeasureAsymmetry_ps_wrp(ih_this) &
+       & BIND(c,name="MeasureAsymmetry_ps_wrp") &
+       & RESULT(norm_value)
+    INTEGER(kind=c_int), INTENT(IN) :: ih_this(SIZE_wrp)
+    REAL(NTREAL) :: norm_value
+    TYPE(Matrix_ps_wrp) :: h_this
+
+    h_this = TRANSFER(ih_this,h_this)
+    norm_value = MeasureAsymmetry(h_this%DATA)
+  END FUNCTION MeasureAsymmetry_ps_wrp
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Symmetrize a matrix
+  SUBROUTINE SymmetrizeMatrix_ps_wrp(ih_matA) &
+       & BIND(c,NAME="SymmetrizeMatrix_ps_wrp")
+    INTEGER(KIND=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
+    TYPE(Matrix_ps_wrp) :: h_matA
+
+    h_matA = TRANSFER(ih_matA,h_matA)
+    CALL SymmetrizeMatrix(h_matA%DATA)
+  END SUBROUTINE SymmetrizeMatrix_ps_wrp
   !> Scale a matrix using a diagonal matrix (triplet list form).
   SUBROUTINE MatrixDiagonalScale_psr_wrp(ih_mat, ih_tlist) &
        & BIND(c,name="MatrixDiagonalScale_psr_wrp")

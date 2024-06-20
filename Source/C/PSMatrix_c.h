@@ -60,9 +60,10 @@ void MatrixMultiply_ps_wrp(const int *ih_matA, const int *ih_matB, int *ih_matC,
                            const double *threshold_in, int *ih_memory_pool_in);
 void ScaleMatrix_ps_wrp(int *ih_this, const double *constant);
 double MatrixNorm_ps_wrp(const int *ih_this);
+double MeasureAsymmetry_ps_wrp(const int *ih_this);
 void MatrixTrace_ps_wrp(const int *ih_this, double *trace_val);
 int IsIdentity_ps_wrp(const int *ih_this);
+void SymmetrizeMatrix_ps_wrp(int *ih_this);
 void MatrixDiagonalScale_psr_wrp(int *ih_mat, const int *ih_tlist);
 void MatrixDiagonalScale_psc_wrp(int *ih_mat, const int *ih_tlist);
-
 #endif

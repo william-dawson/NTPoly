@@ -13,7 +13,8 @@ MODULE PSMatrixAlgebraModule
        & ConstructMatrixMemoryPool
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, CopyMatrix, &
        & DestructMatrix, ConvertMatrixToComplex, ConjugateMatrix, &
-       & MergeMatrixLocalBlocks, IsIdentity, SplitMatrixToLocalBlocks
+       & MergeMatrixLocalBlocks, IsIdentity, TransposeMatrix, &
+       & SplitMatrixToLocalBlocks
   USE SMatrixAlgebraModule, ONLY : MatrixMultiply, MatrixGrandSum, &
        & PairwiseMultiplyMatrix, IncrementMatrix, ScaleMatrix, &
        & MatrixColumnNorm, MatrixDiagonalScale
@@ -37,6 +38,8 @@ MODULE PSMatrixAlgebraModule
   PUBLIC :: ScaleMatrix
   PUBLIC :: MatrixTrace
   PUBLIC :: SimilarityTransform
+  PUBLIC :: MeasureAsymmetry
+  PUBLIC :: SymmetrizeMatrix
   PUBLIC :: MatrixDiagonalScale
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   INTERFACE MatrixSigma
@@ -561,6 +564,38 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #undef TLIST
     END IF
   END SUBROUTINE MatrixTrace_psr
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Measure the asymmetry of a matrix NORM(A - A.T)
+  FUNCTION MeasureAsymmetry(this) RESULT(norm_value)
+    !> The matrix to measure
+    TYPE(Matrix_ps), INTENT(IN) :: this
+    !> The norm value of the full distributed sparse matrix.
+    REAL(NTREAL) :: norm_value
+    !! Local variables
+    TYPE(Matrix_ps) :: tmat
+
+    CALL TransposeMatrix(this, tmat)
+    CALL ConjugateMatrix(tmat)
+    CALL IncrementMatrix(this, tmat, alpha_in=-1.0_NTREAL)
+    norm_value = MatrixNorm(tmat)
+    CALL DestructMatrix(tmat)
+
+  END FUNCTION MeasureAsymmetry
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> Make the matrix symmetric
+  SUBROUTINE SymmetrizeMatrix(this)
+    !> The matrix to symmetrize
+    TYPE(Matrix_ps), INTENT(INOUT) :: this
+    !! Local variables
+    TYPE(Matrix_ps) :: tmat
+
+    CALL TransposeMatrix(this, tmat)
+    CALL ConjugateMatrix(tmat)
+    CALL IncrementMatrix(tmat, this, alpha_in=1.0_NTREAL)
+    CALL ScaleMatrix(this, 0.5_NTREAL)
+    CALL DestructMatrix(tmat)
+
+  END SUBROUTINE SymmetrizeMatrix
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Transform a matrix B = P * A * P^-1
   !! This routine will check if P is the identity matrix, and if so
