@@ -243,9 +243,7 @@ double Matrix_ps::MeasureAsymmetry() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-void Matrix_ps::Symmetrize() {
-  SymmetrizeMatrix_ps_wrp(ih_this);
-}
+void Matrix_ps::Symmetrize() { SymmetrizeMatrix_ps_wrp(ih_this); }
 
 //////////////////////////////////////////////////////////////////////////////
 Matrix_ps::~Matrix_ps() { DestructMatrix_ps_wrp(ih_this); }

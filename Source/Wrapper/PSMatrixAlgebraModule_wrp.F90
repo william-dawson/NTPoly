@@ -162,7 +162,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Symmetrize a matrix
   SUBROUTINE SymmetrizeMatrix_ps_wrp(ih_matA) &
-        & BIND(c,NAME="SymmetrizeMatrix_ps_wrp")
+       & BIND(c,NAME="SymmetrizeMatrix_ps_wrp")
     INTEGER(KIND=c_int), INTENT(INOUT) :: ih_matA(SIZE_wrp)
     TYPE(Matrix_ps_wrp) :: h_matA
 
