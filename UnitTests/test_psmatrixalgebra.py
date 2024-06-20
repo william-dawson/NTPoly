@@ -307,8 +307,6 @@ class TestPSMatrixAlgebra:
 
     def test_symmetrize(self):
         '''Test routines to symmetrize a matrix.'''
-        from numpy import inf
-        from scipy.linalg import norm
         for param in self.parameters:
             matrix1 = param.create_matrix(snum=1, complex=self.complex1)
             self.write_matrix(matrix1, self.input_file1)
