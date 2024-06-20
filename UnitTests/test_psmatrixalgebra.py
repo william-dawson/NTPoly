@@ -121,7 +121,8 @@ class TestPSMatrixAlgebra:
     def check_floats(self, val1, val2):
         from helpers import THRESHOLD
         normval = abs(val1 - val2)
-        self.assertLessEqual(normval, THRESHOLD)
+        global_norm = comm.bcast(normval, root=0)
+        self.assertLessEqual(global_norm, THRESHOLD)
 
     def test_addition_pg(self):
         '''Test routines to add together matrices with an explicit grid.'''
@@ -302,6 +303,7 @@ class TestPSMatrixAlgebra:
             diff = matrix1 - matrix1.H
             ref = norm(diff.todense(), ord=inf)
             comp = ntmatrix1.MeasureAsymmetry()
+            comm.barrier()
 
             self.check_floats(ref, comp)
 
@@ -323,6 +325,8 @@ class TestPSMatrixAlgebra:
             ntmatrix1.Symmetrize()
             ntmatrix1.WriteToMatrixMarket(self.result_file)
             comm.barrier()
+
+            self.check_result()
 
     def test_scalediag(self):
         '''Test routines to scale by a diagonal matrix.'''
