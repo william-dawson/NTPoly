@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Paper Recommendation: DB-SpGEMM"
-date:   2024-08-17 00:00:00 +0900
+date:   2024-08-15 00:00:00 +0900
 categories: blog literature
 ---
 
