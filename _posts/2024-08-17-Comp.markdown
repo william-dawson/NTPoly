@@ -1,0 +1,20 @@
+---
+layout: post
+title:  "Paper Recommendation: DB-SpGEMM"
+date:   2024-08-17 00:00:00 +0900
+categories: blog literature
+---
+
+I'd like to recommend a new article published in ICPP'24 entitled: [DB-SpGEMM: A Massively Distributed Block-Sparse Matrix-Matrix Multiplication for Linear-Scaling DFT Calculations](https://doi.org/10.1145/3673038.3673159).
+
+In this paper, they develop a library for sparse matrix - sparse matrix multiplication to be used for linear scaling density functional theory calculations on the Sunway supercomputer in China. This is a similar goal to NTPoly, so much so that they're kind enough to compare their new library with NTPoly. Unsurprisingly, the efforts of the group led to substantial speedups: up to 10x! There's a lot for me to learn from this paper that could hopefully improve the NTPoly library someday.
+
+There is some overlap in the ideas here, which makes me feel good about the overall design of NTPoly. In this paper, they also use the 2.5D matrix multiplication algorithm. Another overlap is that they use a task based framework for managing dependencies and executing the different blocks. In fact, their careful implementation of a runtime for managing these tasks was a key contributor to their improved performance. NTPoly has something of a custom task runtime, though it's built on OpenMP, since at the time of the K computer task dependencies were not supported by Fujitsu's compilers.
+
+The main difference is that for the local blocks in NTPoly, we store them and multiply them as sparse matrices. DB-SpGEMM follows a different approach (used in libraries like DBCSR) where the local blocks are dense matrices. Thus the sparsity is on a block level - if a block has no non-zero elements it is not stored - whereas in NTPoly sparsity is on an element level. This means they can exploit the high performance of vendor tuned dense multiplications, whereas the core operation in NTPoly is my handwritten sparse matrix - sparse matrix kernel (though we fall back on DGEMM as a fail safe if a block ends up being dense).
+
+Coupled closely to this design decision is that they use matrices coming from DGDFT. This leads to a block sparse matrix with larger dense blocks than you might find in a code based on localized orbitals. When writing NTPoly, I didn't want to program an approach based on dense local blocks because: 1) I wanted to be able to use NTPoly for solving graph problems where the structure is not so friendly and 2) I worried that I would be spending all my time tuning small matrix multiplications (something the DBCSR developers have put substantial effort into). Specializing for DGDFT helps here: the blocks are well defined by the application and they're big enough to expect good performance from a vendor library.
+
+One small critique I might offer about this paper is that they only evaluate the error in the energy. But DGDFT has an SCF procedure, so we need to evaluate as well the accuracy of the produced density matrix. The accuracy of the energy depends only on non-zero elements that have the same support as the original Hamiltonian, so it doesn't tell the full story of how much error filtering introduces. Hopefully we get an application paper showing off the full capabilities of this library soon!
+
+Reading this paper makes me want to revisit the blocking scheme in NTPoly. It seems like there is a lot of performance to be gained. I also have a suspicion that dense blocks can help with convergence by making sure we don't filter elements whose sparsity is not related to nearsightedness. This paper will definitely be in my mind as I consider a new NTPoly aimed at the successor to supercomputer Fugaku.
