@@ -282,7 +282,7 @@ class TestLocalMatrix(unittest.TestCase):
         from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = param.create_matrix(complex=self.complex).H
+            matrix2 = param.create_matrix(complex=self.complex).getH()
             mmwrite(self.file1, matrix1.T)
             mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
@@ -310,7 +310,7 @@ class TestLocalMatrix(unittest.TestCase):
         from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = param.create_matrix(complex=self.complex).H
+            matrix2 = param.create_matrix(complex=self.complex).getH()
             mmwrite(self.file1, matrix1.T)
             mmwrite(self.file2, matrix2.T)
             alpha = uniform(1.0, 2.0)
@@ -338,7 +338,7 @@ class TestLocalMatrix(unittest.TestCase):
         from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = 0 * param.create_matrix(complex=self.complex).H
+            matrix2 = 0 * param.create_matrix(complex=self.complex).getH()
             mmwrite(self.file1, matrix1)
             mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
@@ -443,7 +443,7 @@ class TestLocalMatrix_c(TestLocalMatrix):
             matrix2T.Conjugate()
             matrix2T.WriteToMatrixMarket(self.file2)
 
-            CheckMat = matrix1.H
+            CheckMat = matrix1.getH()
             ResultMat = mmread(self.file2)
             self._compare_mat(CheckMat, ResultMat)
 
