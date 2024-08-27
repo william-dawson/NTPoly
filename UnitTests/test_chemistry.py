@@ -26,7 +26,7 @@ class TestChemistry:
         fock = rand(self.mat_dim, self.mat_dim, density=1.0)
         if self.is_complex:
             fock += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
-            fock = fock + fock.H
+            fock = fock + fock.getH()
         else:
             fock = fock + fock.T
         overlap = rand(self.mat_dim, self.mat_dim, density=1.0)
@@ -76,7 +76,7 @@ class TestChemistry:
         rows = int(environ['PROCESS_ROWS'])
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
-        nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
     @classmethod
     def tearDownClass(self):
@@ -320,7 +320,7 @@ class TestChemistry:
         we = [1.0/(1 + exp(beta*(x - mu))) for x in w]
 
         if self.is_complex:
-            DOrth = v @ diag(we) @ matrix(v).H
+            DOrth = v @ diag(we) @ matrix(v).getH()
         else:
             DOrth = v @ diag(we) @ v.T
         D = ISQ.dot(DOrth).dot(ISQ)
@@ -381,7 +381,7 @@ class TestChemistry:
         while abs(trace(DOrth) - self.nel) > 1e-12:
             we = [1.0/(1 + exp(beta*(x - mu))) for x in w]
             if self.is_complex:
-                DOrth = v @ diag(we) @ matrix(v).H
+                DOrth = v @ diag(we) @ matrix(v).getH()
             else:
                 DOrth = v @ diag(we) @ v.T
         D = ISQ.dot(DOrth).dot(ISQ)

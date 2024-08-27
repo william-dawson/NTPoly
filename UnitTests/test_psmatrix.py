@@ -577,7 +577,7 @@ class TestPSMatrix_c(TestPSMatrix):
             matrix1 = param.create_matrix(self.complex)
             self.write_matrix(matrix1, self.input_file1)
 
-            self.CheckMat = matrix1.H
+            self.CheckMat = matrix1.getH()
 
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix2 = nt.Matrix_ps(ntmatrix1.GetActualDimension())

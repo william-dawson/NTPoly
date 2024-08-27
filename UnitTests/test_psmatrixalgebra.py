@@ -300,7 +300,7 @@ class TestPSMatrixAlgebra:
             else:
                 ntmatrix1 = nt.Matrix_ps(param.rows)
 
-            diff = matrix1 - matrix1.H
+            diff = matrix1 - matrix1.getH()
             ref = norm(diff.todense(), ord=inf)
             comp = ntmatrix1.MeasureAsymmetry()
             comm.barrier()
@@ -320,7 +320,7 @@ class TestPSMatrixAlgebra:
             else:
                 ntmatrix1 = nt.Matrix_ps(param.rows)
 
-            self.CheckMat = 0.5 * (matrix1 + matrix1.H)
+            self.CheckMat = 0.5 * (matrix1 + matrix1.getH())
             ntmatrix1 = nt.Matrix_ps(self.input_file1, False)
             ntmatrix1.Symmetrize()
             ntmatrix1.WriteToMatrixMarket(self.result_file)

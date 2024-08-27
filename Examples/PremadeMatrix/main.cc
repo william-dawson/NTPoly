@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
 
   // Setup the process grid.
   NTPoly::ConstructGlobalProcessGrid(MPI_COMM_WORLD, process_rows,
-                                     process_columns, process_slices, true);
+                                     process_columns, process_slices);
   if (NTPoly::GetGlobalIsRoot()) {
     NTPoly::ActivateLogger();
   }
