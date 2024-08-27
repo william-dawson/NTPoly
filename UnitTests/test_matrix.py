@@ -114,7 +114,7 @@ class TestLocalMatrix(unittest.TestCase):
         '''Test routines to read and write matrices.'''
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex, square=True)
-            matrix1 = matrix1 + matrix1.H
+            matrix1 = matrix1 + matrix1.getH()
             mmwrite(self.file1, matrix1)
             matrix2 = self.SMatrix(self.file1)
             matrix2.WriteToMatrixMarket(self.file2)
@@ -226,7 +226,7 @@ class TestLocalMatrix(unittest.TestCase):
         from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = param.create_matrix(complex=self.complex).H
+            matrix2 = param.create_matrix(complex=self.complex).getH()
             mmwrite(self.file1, matrix1)
             mmwrite(self.file2, matrix2)
             alpha = uniform(1.0, 2.0)
@@ -254,7 +254,7 @@ class TestLocalMatrix(unittest.TestCase):
         from random import uniform
         for param in self.parameters:
             matrix1 = param.create_matrix(complex=self.complex)
-            matrix2 = param.create_matrix(complex=self.complex).H
+            matrix2 = param.create_matrix(complex=self.complex).getH()
             mmwrite(self.file1, matrix1)
             mmwrite(self.file2, matrix2.T)
             alpha = uniform(1.0, 2.0)

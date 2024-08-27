@@ -663,7 +663,7 @@ class TestSolvers(unittest.TestCase):
             val[i] = 0
             for j in range(0, len(coef)):
                 val[i] = val[i] + coef[j] * (temp**j)
-        temp_poly = dot(dot(vec, diag(val)), vec.H)
+        temp_poly = dot(dot(vec, diag(val)), vec.getH())
         self.CheckMat = csr_matrix(temp_poly)
 
         # Result Matrix
@@ -702,7 +702,7 @@ class TestSolvers(unittest.TestCase):
             val[i] = 0
             for j in range(0, len(coef)):
                 val[i] = val[i] + coef[j] * (temp**j)
-        temp_poly = dot(dot(vec, diag(val)), vec.H)
+        temp_poly = dot(dot(vec, diag(val)), vec.getH())
         self.CheckMat = csr_matrix(temp_poly)
 
         # Result Matrix
@@ -1189,16 +1189,16 @@ class TestSolvers_c(TestSolvers):
         from numpy import diag
         mat = rand(self.mat_dim, self.mat_dim, density=1.0)
         mat += 1j * rand(self.mat_dim, self.mat_dim, density=1.0)
-        mat = mat + mat.H
+        mat = mat + mat.getH()
         if SPD:
-            mat = mat.H.dot(mat)
+            mat = mat.getH().dot(mat)
         if diag_dom:
             identity_matrix = identity(self.mat_dim)
             mat = mat + identity_matrix * self.mat_dim
         if scaled:
             mat = (1.0 / self.mat_dim) * mat
         if rank:
-            mat = mat[rank:].dot(mat[rank:].H)
+            mat = mat[rank:].dot(mat[rank:].getH())
         if add_gap:
             w, v = eigh(mat.todense())
             gap = (w[-1] - w[0]) / 2.0
