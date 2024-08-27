@@ -76,31 +76,24 @@ private:
 //! \param[in] process_rows number of grid rows.
 //! \param[in] process_columns number of grid columns.
 //! \param[in] process_slices number of grid slices.
-//! \param[in] be_verbose verbosity flag.
 void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_rows,
-                                int process_columns, int process_slices,
-                                bool be_verbose = false);
+                                int process_columns, int process_slices);
 //! Construct the global process grid from comm world
 //! \param[in] process_rows number of grid rows.
 //! \param[in] process_columns number of grid columns.
 //! \param[in] process_slices number of grid slices.
-//! \param[in] be_verbose verbosity flag.
 void ConstructGlobalProcessGrid(int process_rows, int process_columns,
-                                int process_slices, bool be_verbose = false);
+                                int process_slices);
 //! Construct the global process grid.
 //! \param[in] world_comm a communicator that every process in the grid is
 //! a part of.
 //! \param[in] process_slices number of grid slices.
-//! \param[in] be_verbose verbosity flag.
-void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_slices,
-                                bool be_verbose = false);
+void ConstructGlobalProcessGrid(MPI_Comm world_comm, int process_slices);
 //! Construct the global process grid from comm world
 //! \param[in] process_slices number of grid slices.
-//! \param[in] be_verbose verbosity flag.
-void ConstructGlobalProcessGrid(int process_slices, bool be_verbose = false);
+void ConstructGlobalProcessGrid(int process_slices);
 //! Construct the global process grid from comm world
-//! \param[in] be_verbose verbosity flag.
-void ConstructGlobalProcessGrid(bool be_verbose = false);
+void ConstructGlobalProcessGrid();
 //! Get the slice of the current process.
 int GetGlobalMySlice();
 //! Get the column of the current process.

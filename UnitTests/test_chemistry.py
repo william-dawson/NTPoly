@@ -76,7 +76,7 @@ class TestChemistry:
         rows = int(environ['PROCESS_ROWS'])
         columns = int(environ['PROCESS_COLUMNS'])
         slices = int(environ['PROCESS_SLICES'])
-        nt.ConstructGlobalProcessGrid(rows, columns, slices, True)
+        nt.ConstructGlobalProcessGrid(rows, columns, slices)
 
     @classmethod
     def tearDownClass(self):

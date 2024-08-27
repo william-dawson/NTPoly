@@ -4,13 +4,10 @@
 void ConstructGlobalProcessGrid_wrp(const int *world_comm,
                                     const int *process_rows,
                                     const int *process_columns,
-                                    const int *process_slices,
-                                    const bool *be_verbose);
+                                    const int *process_slices);
 void ConstructGlobalProcessGrid_onlyslice_wrp(const int *world_comm,
-                                              const int *process_slices,
-                                              const bool *be_verbose);
-void ConstructGlobalProcessGrid_default_wrp(const int *world_comm,
-                                            const bool *be_verbose);
+                                              const int *process_slices);
+void ConstructGlobalProcessGrid_default_wrp(const int *world_comm);
 void CopyProcessGrid_wrp(const int *ih_old_grid, int *ih_new_grid);
 int GetGlobalMySlice_wrp();
 int GetGlobalMyColumn_wrp();

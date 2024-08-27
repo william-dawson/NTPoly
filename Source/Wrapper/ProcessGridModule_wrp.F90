@@ -40,34 +40,30 @@ MODULE ProcessGridModule_wrp
 CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
   SUBROUTINE ConstructGlobalProcessGrid_wrp(world_comm_, process_rows_, &
-       & process_columns_, process_slices_, be_verbose) &
+       & process_columns_, process_slices_) &
        & BIND(c,name="ConstructGlobalProcessGrid_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     INTEGER(kind=c_int), INTENT(IN) :: process_rows_
     INTEGER(kind=c_int), INTENT(IN) :: process_columns_
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
-    LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
     CALL ConstructProcessGrid(world_comm_, process_rows_, process_columns_, &
-         & process_slices_, LOGICAL(be_verbose))
+         & process_slices_)
   END SUBROUTINE ConstructGlobalProcessGrid_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
   SUBROUTINE ConstructGlobalProcessGrid_onlyslice_wrp(world_comm_, &
-       & process_slices_, be_verbose) &
+       & process_slices_) &
        & BIND(c,name="ConstructGlobalProcessGrid_onlyslice_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
     INTEGER(kind=c_int), INTENT(IN) :: process_slices_
-    LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
-    CALL ConstructProcessGrid(world_comm_, process_slices_in=process_slices_, &
-         & be_verbose_in=LOGICAL(be_verbose))
+    CALL ConstructProcessGrid(world_comm_, process_slices_in=process_slices_)
   END SUBROUTINE ConstructGlobalProcessGrid_onlyslice_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Wrap the process grid construction routine.
-  SUBROUTINE ConstructGlobalProcessGrid_default_wrp(world_comm_, be_verbose) &
+  SUBROUTINE ConstructGlobalProcessGrid_default_wrp(world_comm_) &
        & BIND(c,name="ConstructGlobalProcessGrid_default_wrp")
     INTEGER(kind=c_int), INTENT(IN) :: world_comm_
-    LOGICAL(kind=c_bool), INTENT(IN) :: be_verbose
-    CALL ConstructProcessGrid(world_comm_, be_verbose_in=LOGICAL(be_verbose))
+    CALL ConstructProcessGrid(world_comm_)
   END SUBROUTINE ConstructGlobalProcessGrid_default_wrp
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Get the slice of the current process.

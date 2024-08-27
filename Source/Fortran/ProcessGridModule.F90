@@ -82,7 +82,7 @@ MODULE ProcessGridModule
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
   SUBROUTINE ConstructProcessGrid_full(world_comm, process_rows, &
-       & process_columns, process_slices, be_verbose_in)
+       & process_columns, process_slices)
     !> A communicator that every process in the grid is a part of.
     INTEGER, INTENT(IN) :: world_comm
     !> The number of grid rows.
@@ -91,33 +91,18 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     INTEGER, INTENT(IN) :: process_columns
     !> The number of grid slices.
     INTEGER, INTENT(IN) :: process_slices
-    !> Set true to print process grid info.
-    LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
-    !! Local Data
-    LOGICAL :: be_verbose
-
-    !! Process Optional Parameters
-    IF (PRESENT(be_verbose_in)) THEN
-       be_verbose = be_verbose_in
-    ELSE
-       be_verbose = .FALSE.
-    END IF
 
     CALL ConstructNewProcessGrid(global_grid, world_comm, process_rows, &
          & process_columns, process_slices)
   END SUBROUTINE ConstructProcessGrid_full
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup a process grid specifying only the slices
-  SUBROUTINE ConstructProcessGrid_onlyslice(world_comm, process_slices_in, &
-       & be_verbose_in)
+  SUBROUTINE ConstructProcessGrid_onlyslice(world_comm, process_slices_in)
     !> A communicator that every process in the grid is a part of.
     INTEGER, INTENT(IN) :: world_comm
     !> The number of grid slices.
     INTEGER, INTENT(IN), OPTIONAL :: process_slices_in
-    !> Set true to print process grid info.
-    LOGICAL, INTENT(IN), OPTIONAL :: be_verbose_in
     !! Local Data
-    LOGICAL :: be_verbose
     INTEGER :: process_rows, process_columns, process_slices
     INTEGER :: total_processors
     INTEGER :: ierr
@@ -126,12 +111,6 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL MPI_COMM_SIZE(world_comm, total_processors, ierr)
 
     !! Process Optional Parameters
-    IF (PRESENT(be_verbose_in)) THEN
-       be_verbose = be_verbose_in
-    ELSE
-       be_verbose = .FALSE.
-    END IF
-
     IF (PRESENT(process_slices_in)) THEN
        process_slices = process_slices_in
     ELSE
@@ -144,7 +123,7 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     !! Now call the full setup
     CALL ConstructProcessGrid(world_comm, process_rows, process_columns, &
-         & process_slices, be_verbose)
+         & process_slices)
   END SUBROUTINE ConstructProcessGrid_onlyslice
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Construct a process grid.
