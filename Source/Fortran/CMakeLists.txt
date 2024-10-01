@@ -44,6 +44,7 @@ set(Fsrc
     TrigonometrySolversModule.F90
     TripletListModule.F90
     TripletModule.F90
+    test_ntpoly_link.f90
 )
 
 ################################################################################
