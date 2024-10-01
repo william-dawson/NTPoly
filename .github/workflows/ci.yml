@@ -111,12 +111,6 @@ jobs:
       if:                 ${{ matrix.elsi }}
       run:
         python UnitTests/generate_elsi.py
-    - name: upload artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: build
-        path: Build
     - name: upload elsi
       if:                 ${{ matrix.elsi }}
       uses: actions/upload-artifact@v4
