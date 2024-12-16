@@ -122,8 +122,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           chemical_potential = left + (right - left) / 2 
           DO II = 1, num_eigs
              sval = eigs(II) - chemical_potential
-             ! occ(II) = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
-             occ(II) = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
+             ! Guard against overflow
+             IF (inv_temp * sval .GT. 30) THEN
+                occ(II) = 0.5_NTREAL * (1.0_NTREAL - ERF(inv_temp * sval))
+             ELSE
+                occ(II) = 1.0_NTREAL / (1.0_NTREAL + EXP(inv_temp * sval))
+             END IF
           END DO
           sv = SUM(occ)
           IF (ABS(trace - sv) .LT. 1E-8_NTREAL) THEN
