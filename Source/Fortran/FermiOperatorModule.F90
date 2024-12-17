@@ -626,4 +626,23 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
   END SUBROUTINE ComputeCStep
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !> ERF is a Fortran2008 feature, and we just need a crude approximation here
+  !! so we implement it with the Abramowitz and Stegun approximation
+  !! (credit ChatGPT).
+  FUNCTION ERF(x)
+    REAL(NTREAL) :: x, erf
+    REAL(NTREAL) :: t, z, tau
+    REAL(NTREAL), PARAMETER :: a1 = 0.254829592_NTREAL
+    REAL(NTREAL), PARAMETER :: a2 = -0.284496736_NTREAL
+    REAL(NTREAL), PARAMETER :: a3 = 1.421413741_NTREAL
+    REAL(NTREAL), PARAMETER :: a4 = -1.453152027_NTREAL
+    REAL(NTREAL), PARAMETER :: a5 = 1.061405429_NTREAL
+    REAL(NTREAL), PARAMETER :: p = 0.3275911_NTREAL
+
+    z = ABS(x)
+    t = 1.0_NTREAL / (1.0_NTREAL + p * z)
+    tau = t * (a1 + t * (a2 + t * (a3 + t * (a4 + t * a5))))
+    erf = SIGN(1.0_NTREAL, x) * (1.0_NTREAL - tau * EXP(-z * z))
+  END FUNCTION ERF
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 END MODULE FermiOperatorModule
