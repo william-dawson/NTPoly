@@ -60,9 +60,9 @@ if __name__ == "__main__":
 
     # Copy the files.
     file_list = glob(join("ElsiBuild", "Source", "Fortran", "CMakeFiles",
-                          "NTPoly.dir", "*.f90"))
+                          "NTPoly.dir", "*.F90.fii"))
     for f in file_list:
-        new_name = basename(f.replace(".F90", ""))
+        new_name = basename(f.replace(".fii", ""))
         with open(f) as ifile:
             source = "".join([x for x in ifile if x[0] != "#"])
         with open(join("ElsiBuild", "elsi_output", new_name), "w") as ofile:
