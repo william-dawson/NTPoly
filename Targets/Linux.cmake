@@ -21,3 +21,4 @@ set(CXX_TOOLCHAINFLAGS_DEBUG "-O0 -fopenmp -Wall -Wextra \
 set(F_TOOLCHAINFLAGS_DEBUG "-O0 -cpp -fcheck=all -Wall -Wextra \
     -pedantic -fimplicit-none -ffpe-trap=invalid,zero,overflow,underflow \
     -std=f2003")
+set(NTPOLY_SWIG_NO_STRICT ON)
