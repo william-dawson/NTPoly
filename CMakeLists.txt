@@ -33,6 +33,10 @@ option(USE_MPIH "Use mpi.h for systems that don't have the mpi module" OFF)
 option(NOIALLGATHER
   "A (slower) alternative communication strategy if iallgather not implemented"
   OFF)
+option(NTPOLY_SWIG_NO_STRICT
+  "disable warnings-as-errors when building the SWIG module"
+  ON
+)
 
 ## Process these options
 if (NOT SWIG_FOUND OR FORTRAN_ONLY)

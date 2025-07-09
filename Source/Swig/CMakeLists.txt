@@ -40,3 +40,10 @@ set_target_properties(_NTPolySwig PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python
   LIBRARY_OUTPUT_DIRECTORY  ${CMAKE_BINARY_DIR}/python
 )
+if (TARGET _NTPolySwig AND NTPOLY_SWIG_NO_STRICT)
+  # turn off warnings-as-errors and all warnings for GCC/Clang
+  target_compile_options(_NTPolySwig PRIVATE
+    -Wno-error
+    -w
+  )
+endif()

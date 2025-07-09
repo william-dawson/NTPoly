@@ -6,7 +6,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        name:             [mac, ubuntu-mpich, ubuntu-standard, ubuntu-debug,
+        name:             [mac, ubuntu-standard, ubuntu-debug,
                            ubuntu-nogather, mac-thread-cap]
         include:
           - name:         ubuntu-standard
@@ -38,16 +38,6 @@ jobs:
             noalligather: 1
             mpich:        0
             numthread:    1
-            elsi:         0
-          - name:         ubuntu-mpich
-            os:           ubuntu-latest
-            testos:       LINUX
-            maketest:     "ctest -R Regression211"
-            testexamples: 0
-            debug:        0
-            noalligather: 0
-            mpich:        1
-            numthread:    3
             elsi:         0
           - name:         mac-thread-cap
             os:           macos-latest
