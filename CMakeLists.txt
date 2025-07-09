@@ -35,7 +35,7 @@ option(NOIALLGATHER
   OFF)
 option(NTPOLY_SWIG_NO_STRICT
   "disable warnings-as-errors when building the SWIG module"
-  OFF
+  ON
 )
 
 ## Process these options
