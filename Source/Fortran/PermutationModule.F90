@@ -63,7 +63,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Fill by counting.
     fill: DO II = 1, matrix_dimension
        this%index_lookup(II) = matrix_dimension - II + 1
-       this%reverse_index_lookup(II) = II
+       this%reverse_index_lookup(II) = matrix_dimension - II + 1
     END DO fill
 
   END SUBROUTINE ConstructReversePermutation
@@ -92,9 +92,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Do the shuffle
     shuffle: DO II = matrix_dimension, 1, -1
        CALL RANDOM_NUMBER(rand_temp)
-       random_integer = FLOOR(matrix_dimension*rand_temp)+1
-       swap_space = this%index_lookup(matrix_dimension)
-       this%index_lookup(matrix_dimension) = this%index_lookup(random_integer)
+       random_integer = FLOOR(II*rand_temp)+1
+       swap_space = this%index_lookup(II)
+       this%index_lookup(II) = this%index_lookup(random_integer)
        this%index_lookup(random_integer) = swap_space
     END DO shuffle
 
@@ -139,9 +139,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Do the shuffle
     shuffle: DO II = actual_matrix_dimension, 1, -1
        CALL RANDOM_NUMBER(rand_temp)
-       random_integer = FLOOR(actual_matrix_dimension * rand_temp) + 1
-       swap_space = this%index_lookup(actual_matrix_dimension)
-       this%index_lookup(actual_matrix_dimension) = &
+       random_integer = FLOOR(II * rand_temp) + 1
+       swap_space = this%index_lookup(II)
+       this%index_lookup(II) = &
             & this%index_lookup(random_integer)
        this%index_lookup(random_integer) = swap_space
     END DO shuffle
