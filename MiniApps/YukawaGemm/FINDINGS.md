@@ -2937,3 +2937,59 @@ This result does not invalidate the earlier successful faster two-node
 runs on other nodes/layouts, nor establish a cluster-wide transport failure.
 Exact maps, raw profiler reports and analysis are in the scaling subdirectory
 of outer validation/rikyu-import-20261111.
+
+## Finding 32: cuSOLVERMp strong scaling and native profiling (2026-11-11)
+
+Job313506 completed collection on c102/c117 with eight allocated GPUs.
+All runs use the same binaries, input matrices, OMP1, explicit placement and
+NIC merging disabled. Dense uses installed cuSOLVERMp0.7.2/cuBLASMp0.8.0,
+block512, FP64 eigenvectors, occupied-density GEMM and sparse host export.
+Warm means exclude the first of three solves.
+
+| N | Application ranks | Dense complete | Native TRS2 API | Native active GPUs |
+|---|---:|---:|---:|---:|
+| 10k | 1 | 0.7871 s | 0.05126 s | 1 |
+| 10k | 2 | 3.0773 s | 0.06190 s | 1 |
+| 10k | 4 | 5.6551 s | 0.05663 s | 1 |
+| 10k | 8 | Timeout, no result | 0.05392 s | 1 |
+| 64k | 1 | Workspace budget rejection | Not admitted by current index bounds | — |
+| 64k | 2 | 94.9443 s | Not admitted by current index bounds | — |
+| 64k | 4 | 59.7541 s | 0.17346 s | 4 |
+| 64k | 8 | Timeout, no result | Bootstrap timeout, no result | — |
+
+Dense64k two→four gives1.589x speedup,79.4% efficiency relative to ideal
+doubling. EVD91.1579→57.7893 s, density3.7460→1.9439 s and export
+0.0380→0.0197 s. The dense four-GPU result is97% EVD; host export is
+negligible. Dense10k worsens with more GPUs; four are7.18x slower than one.
+Native10k is a coalescing/CPU/redistribution curve, not GPU strong scaling.
+
+The eight-GPU512 dense correctness test passes, but no large dense result
+completes within585 s, and no10k dense result within175 s. Native64k
+times out during NCCL bootstrap after135 s. These cases are preserved as
+failures and excluded from speedup calculations; collection exit zero does
+not mean every solver case passed. The dense harness prints phase times
+only after a complete pass, so its timeout does not identify the failing
+phase or establish the same cause as native bootstrap.
+
+The prior completed matched native4→8 result from Finding31 remains a
+separate allocation:0.1762→1.03–1.09 s, about8% scaling efficiency with
+NCCL/wait dominance. Thus four GPUs/one node is the useful observed64k
+configuration in this deployment; no universal16-GPU or larger-N limit
+is inferred. Root/all selection cannot choose four active GPUs from an
+eight-rank64k application; intermediate placement remains important.
+
+Dense complete sums import/EVD/density/export phase maxima; native complete
+is the normal maximum-rank API wall. Persistent dense setup/validation and
+external native read/permutation/validation are excluded. Cold scopes differ,
+and exact dense FP64 versus thresholded TRS2 is not equal accuracy.
+Later cuSOLVERMp releases have untested algorithm/Blackwell improvements;
+these are measurements of the installed version.
+
+The prior native warm four-GPU profile breaks183/323 ms identity/banded
+into approximately117/146 ms iteration,25/29 ms export/GPU cleanup,
+31/90 ms final transform/cleanup,4/50 ms working H and the remaining
+small setup stages. Independent stage maxima need not sum to the API.
+Eight-GPU rank-zero kernel time is80.9% NCCL send/receive plus15.1%
+scalar allreduce; it includes peer waits and is not network bandwidth.
+Raw outputs, all failures, binary hashes, stage provenance, CSV and replayable
+analysis are in outer validation/rikyu-solver-scaling-20261111.
