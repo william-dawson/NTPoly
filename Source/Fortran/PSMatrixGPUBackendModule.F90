@@ -28,6 +28,11 @@ MODULE PSMatrixGPUBackendModule
     GENERIC :: ASSIGNMENT(=) => AssignGPU
   END TYPE
   INTERFACE
+    INTEGER(C_INT) FUNCTION import_csc(slot,rows,columns,nnz,cp,ri,values) BIND(C,NAME='gpu_ops_import_csc_')
+      IMPORT C_INT,C_PTR
+      INTEGER(C_INT) :: slot,rows,columns,nnz
+      TYPE(C_PTR), VALUE :: cp,ri,values
+    END FUNCTION
     INTEGER(C_INT) FUNCTION bounds_slot(slot,columns,diagonal,lower,upper) BIND(C,NAME='gpu_ops_bounds_')
       IMPORT C_INT,C_DOUBLE
       INTEGER(C_INT) :: slot,columns,diagonal
@@ -387,18 +392,24 @@ CONTAINS
   END SUBROUTINE
 
   SUBROUTINE UploadGPU(host,matrix)
-    TYPE(Matrix_ps), INTENT(IN) :: host
+    TYPE(Matrix_ps), INTENT(IN), TARGET :: host
     TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
     TYPE(Matrix_lsr) :: local
     IF(host%is_complex) CALL FailGPU('complex upload is unsupported')
     CALL ShapeGPU(host,matrix)
+    IF(SIZE(host%local_data_r,1)==1 .AND. SIZE(host%local_data_r,2)==1) THEN
+      ! Borrow the existing block for the synchronous conversion. No merge
+      ! or payload access on the CPU is needed for the common one-block case.
+      CALL UploadLocalGPU(host%local_data_r(1,1),matrix)
+      RETURN
+    END IF
     CALL MergeMatrixLocalBlocks(host,local)
     CALL UploadLocalGPU(local,matrix)
     CALL DestructMatrix(local)
   END SUBROUTINE
 
   SUBROUTINE UploadLocalGPU(local,matrix)
-    TYPE(Matrix_lsr), INTENT(IN) :: local
+    TYPE(Matrix_lsr), INTENT(IN), TARGET :: local
     TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
     INTEGER, ALLOCATABLE :: rp(:),ci(:)
     REAL(C_DOUBLE), ALLOCATABLE :: values(:)
@@ -406,6 +417,24 @@ CONTAINS
     TYPE(C_PTR) :: pr,pi,pv
     INTEGER(C_INT), POINTER :: fr(:),fi(:)
     REAL(C_DOUBLE), POINTER :: fv(:)
+    CHARACTER(16) :: mode,report
+    mode=''
+    CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_IMPORT',mode)
+    IF(TRIM(mode)/='' .AND. TRIM(mode)/='auto' .AND. TRIM(mode)/='host') CALL FailGPU('invalid GPU import mode')
+    IF(TRIM(mode)/='host') THEN
+      nnz=SIZE(local%values)
+      pi=C_NULL_PTR; pv=C_NULL_PTR
+      IF(nnz>0) THEN
+        pi=C_LOC(local%inner_index(1)); pv=C_LOC(local%values(1))
+      END IF
+      status=import_csc(matrix%handle,matrix%rows,matrix%columns,nnz,C_LOC(local%outer_index(1)),pi,pv)
+      IF(status<0) CALL FailGPU('device CSC import failed')
+      IF(status==0) THEN
+        CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_IMPORT_REPORT',report)
+        IF(TRIM(report)=='1') PRINT *, 'NTPoly GPU import: borrowed CSC arrays, nnz=',nnz
+        RETURN
+      END IF
+    END IF
     CALL TransposeCSR(matrix%columns,matrix%rows,local%outer_index,local%inner_index,local%values,rp,ci,values)
     nnz=SIZE(ci)
     CALL allocate_slot(matrix%handle,matrix%rows,nnz,pr,pi,pv,status)

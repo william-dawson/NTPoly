@@ -39,6 +39,7 @@ def main():
         fixture_app.mkdir()
         (fixture_app / 'tests').mkdir()
         shutil.copyfile(HERE / 'device_partials_test.cpp', fixture_app / 'tests/device_partials_test.cpp')
+        shutil.copyfile(HERE / 'import_csc_test.cu', fixture_app / 'tests/import_csc_test.cu')
         shutil.copyfile(HERE / 'resident_panels_test.cpp', fixture_app / 'tests/resident_panels_test.cpp')
         shutil.copyfile(HERE / 'nccl_transport_test.cpp', fixture_app / 'tests/nccl_transport_test.cpp')
         shutil.copyfile(HERE / 'test_identity.f90', fixture_app / 'tests/test_identity.f90')

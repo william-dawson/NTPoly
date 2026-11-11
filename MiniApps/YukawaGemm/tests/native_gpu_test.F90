@@ -53,7 +53,7 @@ PROGRAM NativeGPUTest
   CALL ConstructDefaultPermutation(permutation,h%logical_matrix_dimension)
   CALL OwnershipTest()
   CALL BoundsTest()
-  DO example=1,3
+  DO example=1,4
     CALL CopyMatrix(identity,overlap)
     IF(example==2) THEN
       CALL ConstructTripletList(entries)
@@ -78,7 +78,7 @@ PROGRAM NativeGPUTest
       END DO
     END IF
     IF(example==3) CALL ScaleMatrix(h,1.01_NTREAL)
-    IF(example==2) THEN
+    IF(example==2 .OR. example==4) THEN
       CALL ConstructSolverParameters(params,converge_diff_in=1e-10_NTREAL,threshold_in=1e-8_NTREAL, &
         max_iterations_in=60,be_verbose_in=.TRUE.,BalancePermutation_in=permutation)
     ELSE

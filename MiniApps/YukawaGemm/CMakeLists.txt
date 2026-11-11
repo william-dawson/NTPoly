@@ -113,6 +113,15 @@ if (NVCC_BIN)
                 ${CUSPARSE_LIB} ${CUDA_HOME}/lib64/libcudart.so)
         endif()
         add_executable(device_partials_test tests/device_partials_test.cpp ${CUSPARSE_OBJ})
+        set(IMPORT_TEST_OBJ ${CMAKE_CURRENT_BINARY_DIR}/import_csc_test.o)
+        add_custom_command(OUTPUT ${IMPORT_TEST_OBJ}
+            COMMAND ${NVCC_BIN} -O2 -std=c++17 -ccbin ${CMAKE_CXX_COMPILER}
+                -arch=sm_100 -c ${CMAKE_CURRENT_SOURCE_DIR}/tests/import_csc_test.cu -o ${IMPORT_TEST_OBJ}
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/tests/import_csc_test.cu VERBATIM)
+        set_source_files_properties(${IMPORT_TEST_OBJ} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
+        add_executable(import_csc_test ${IMPORT_TEST_OBJ} ${CUSPARSE_OBJ})
+        set_target_properties(import_csc_test PROPERTIES LINKER_LANGUAGE CXX)
+        target_link_libraries(import_csc_test PRIVATE ${CUSPARSE_LIB} ${CUDA_HOME}/lib64/libcudart.so)
         target_link_libraries(device_partials_test PRIVATE ${CUSPARSE_LIB}
             ${CUDA_HOME}/lib64/libcudart.so)
         target_link_libraries(yukawa_gemm PRIVATE ${CUSPARSE_LIB})

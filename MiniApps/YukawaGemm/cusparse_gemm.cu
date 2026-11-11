@@ -1430,6 +1430,85 @@ int gpu_memory_info_(int64_t *free_bytes,int64_t *total_bytes) {
 // rows is sorted, and scale does not reorder. Increment sums duplicates
 // on the fly (C + alpha*B); thresholding is left to the caller (v1: 0).
 // ---------------------------------------------------------------------------
+// Returns a directly usable address without reading the allocation on CPU.
+// Full unified-memory systems also support ordinary Fortran allocations.
+static const void *import_device_address(const void *pointer,int pageable,cudaError_t &error) {
+    if(!pointer) return nullptr;
+    cudaPointerAttributes attributes{};
+    cudaError_t status=cudaPointerGetAttributes(&attributes,pointer);
+    if(status==cudaErrorInvalidValue) {
+        (void)cudaGetLastError();
+        return pageable?pointer:nullptr;
+    }
+    if(status!=cudaSuccess) { error=status; return nullptr; }
+    if(attributes.type==cudaMemoryTypeManaged) return pointer;
+    if(attributes.type==cudaMemoryTypeDevice) {
+        int current=-1;
+        status=cudaGetDevice(&current);
+        if(status!=cudaSuccess) { error=status; return nullptr; }
+        if(attributes.device==current) return pointer;
+        return nullptr;
+    }
+    if(attributes.type==cudaMemoryTypeHost) return attributes.devicePointer;
+    return pageable?pointer:nullptr;
+}
+
+__global__ void import_one_based_offsets(int count,const int *source,int *output) {
+    int j=blockIdx.x*blockDim.x+threadIdx.x;
+    if(j<count) output[j]=source[j]+1;
+}
+struct ImportScratch {
+    int *offsets=nullptr;
+    void *workspace=nullptr;
+    ~ImportScratch() { if(workspace) cudaFree(workspace); if(offsets) cudaFree(offsets); }
+};
+
+// Synchronous, read-only borrowing of CSC inputs. Output owns its CSR storage.
+// 1 declines to the existing host conversion; -1 is an execution error.
+int gpu_ops_import_csc_(int *slot,int *rows,int *columns,int *nnz,
+    const int *column_ptr,const int *row_indices,const double *values) {
+    if(*slot<1 || *rows<1 || *columns<1 || *nnz<0) return -1;
+    int device,pageable=0;
+    CU_CHECK(cudaGetDevice(&device));
+    CU_CHECK(cudaDeviceGetAttribute(&pageable,cudaDevAttrPageableMemoryAccess,device));
+    cudaError_t pointer_error=cudaSuccess;
+    auto cp=static_cast<const int*>(import_device_address(column_ptr,pageable,pointer_error));
+    auto ri=static_cast<const int*>(import_device_address(row_indices,pageable,pointer_error));
+    auto input=static_cast<const double*>(import_device_address(values,pageable,pointer_error));
+    if(pointer_error!=cudaSuccess) {
+        std::fprintf(stderr,"CSC pointer query failed: %s\n",cudaGetErrorString(pointer_error));
+        return -1;
+    }
+    if(!cp || (*nnz && (!ri || !input))) return 1;
+    CU_CHECK(cudaDeviceSynchronize());
+    int *rp,*ci,error; double *output;
+    gpu_ops_alloc_(slot,rows,nnz,&rp,&ci,&output,&error);
+    if(error) return -1;
+    if(*nnz==0) return 0;
+    cusparseHandle_t handle=get_handle();
+    if(!handle) return -1;
+    ImportScratch scratch;
+    size_t offsets_bytes=(size_t(*columns)+1)*sizeof(int);
+    CU_CHECK(cudaMalloc(&scratch.offsets,offsets_bytes));
+    size_t workspace_bytes=0,free_bytes,total_bytes;
+    cusparseStatus_t status=cusparseCsr2cscEx2_bufferSize(handle,*columns,*rows,*nnz,input,
+        scratch.offsets,ri,output,rp,ci,CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,
+        CUSPARSE_CSR2CSC_ALG1,&workspace_bytes);
+    if(status!=CUSPARSE_STATUS_SUCCESS) return -1;
+    CU_CHECK(cudaMemGetInfo(&free_bytes,&total_bytes));
+    if(workspace_bytes>free_bytes-free_bytes/5) return 1;
+    if(workspace_bytes) CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));
+    import_one_based_offsets<<<(*columns+256)/256,256>>>(*columns+1,cp,scratch.offsets);
+    CU_CHECK(cudaGetLastError());
+    status=cusparseCsr2cscEx2(handle,*columns,*rows,*nnz,input,scratch.offsets,ri,output,rp,ci,
+        CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,CUSPARSE_CSR2CSC_ALG1,scratch.workspace);
+    if(status!=CUSPARSE_STATUS_SUCCESS) return -1;
+    subtract_one_kernel<<<(*rows+256)/256,256>>>(rp,*rows+1);
+    CU_CHECK(cudaGetLastError());
+    CU_CHECK(cudaDeviceSynchronize());
+    return 0;
+}
+
 #define OPS_SLOTS 4
 typedef struct {
     int *rp;

@@ -789,6 +789,36 @@ Aliasing the output with either input is rejected. The square ABI remains.
 Identity construction now visits only the owned diagonal intersection,
 including padded/empty blocks, for real and complex matrices.
 
+### Reusing accessible input storage
+
+The caller can construct or update H on CPU or GPU. Native imports now borrow
+existing CSC arrays when CUDA can access them: managed allocations, allocations
+on the current GPU, mapped host memory, and ordinary system allocations on
+devices reporting `cudaDevAttrPageableMemoryAccess`. The source is read-only,
+the conversion completes before return, and no borrowed pointer is retained.
+The backend still needs an independently owned CSR representation; cuSPARSE
+performs that required conversion on GPU without CPU payload staging.
+
+For one local block, import skips CPU block composition entirely. Multiple
+local blocks retain the existing CPU merge; coalescing retains the host MPI
+gather. Unsupported memory falls back to the host conversion. Numerical data
+is not cached by address, so changing values or patterns cannot reuse stale
+payloads. CPU/GPU synchronization is explicit at the import boundary.
+
+With identity overlap and no balancing, GPU TRS2 also borrows H directly as
+the working-H input. It materializes a separate host WH only if CPU fallback
+is selected. Balancing retains its independent working matrix. Public host
+output and caller placement choices are preserved.
+
+`NTPOLY_GPU_IMPORT=auto` (default) enables this path; `host` selects CPU
+layout conversion as a control. `NTPOLY_GPU_IMPORT_REPORT=1` prints borrowed
+CSC imports for diagnostics; leave it off for latency measurement.
+`NTPOLY_TRS2_PROFILE=1` also reports whether identity H was borrowed.
+The `import_csc_test` target exercises managed/device/system/mapped arrays,
+device-only value changes on a separate stream, sorted output, changing
+dimensions and empty matrices. On ATS systems, Compute Sanitizer may need
+`NV_COMPUTE_SANITIZER_SHARED_ADDRESSING_SUPPORT=force` for system allocations.
+
 
 ### Work estimates and GPU memory admission (Finding 25)
 

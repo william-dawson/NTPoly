@@ -292,7 +292,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   SUBROUTINE TRS2(H, ISQ, trace, K, &
        & energy_value_out, chemical_potential_out, solver_parameters_in)
     !> The matrix to compute the corresponding density from
-    TYPE(Matrix_ps), INTENT(IN) :: H
+    TYPE(Matrix_ps), INTENT(IN), TARGET :: H
     !> The inverse square root of the overlap matrix.
     TYPE(Matrix_ps), INTENT(IN) :: ISQ
     !> The trace of the density matrix (usually the number of electrons)
@@ -308,7 +308,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
     !! Local Matrices
-    TYPE(Matrix_ps) :: WH
+    TYPE(Matrix_ps), TARGET :: WH
     TYPE(Matrix_ps) :: IMat
     TYPE(Matrix_ps) :: ISQT
     TYPE(Matrix_ps) :: X_k, X_k2
@@ -331,6 +331,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
       'allocate','working_h','balance','bounds','initial_x','backend','iteration','export_cleanup','final']
 #ifdef NTPOLY_ENABLE_GPU_TRS2
     TYPE(GPUMatrix_t) :: gpu_x,gpu_x2,gpu_wh
+    TYPE(Matrix_ps), POINTER :: gpu_working_host
+    LOGICAL :: gpu_borrow_identity
     LOGICAL :: gpu_enabled,gpu_root,gpu_participant,gpu_memory_allowed,gpu_transform_done,gpu_basis_identity
     REAL(8) :: gpu_t0,gpu_setup_seconds,gpu_loop_seconds,gpu_export_seconds
     INTEGER :: gpu_ierr
@@ -358,6 +360,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #ifdef NTPOLY_ENABLE_GPU_TRS2
     gpu_enabled=GPURequested(H)
     gpu_root=.FALSE.; gpu_participant=.TRUE.
+    gpu_working_host=>WH
+    gpu_borrow_identity=.FALSE.
 
 #endif
 
@@ -393,7 +397,14 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF(gpu_enabled) THEN
        gpu_basis_identity=IsIdentity(ISQ)
        IF(gpu_basis_identity) THEN
-          CALL CopyMatrix(H,WH)
+          IF(params%do_load_balancing) THEN
+             CALL CopyMatrix(H,WH)
+          ELSE
+             ! H is read-only. Borrow its storage instead of copying payloads
+             ! onto the CPU merely to create an identical working H.
+             gpu_working_host=>H
+             gpu_borrow_identity=.TRUE.
+          END IF
           gpu_transform_done=.TRUE.
        ELSE
           CALL TryGPUSimilarityTransform(H,ISQ,ISQT,WH,params%threshold,gpu_transform_done)
@@ -426,20 +437,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ! Admit using WH and an upper bound for the shifted X0 pattern. This lets
     ! GPU bounds/X0 use the imported WH without a CPU X0 or a second upload.
 #ifdef NTPOLY_ENABLE_GPU_TRS2
-    IF(gpu_enabled) CALL SelectGPUBackend(WH,WH,gpu_enabled,gpu_root,params%max_iterations, &
+    IF(gpu_enabled) CALL SelectGPUBackend(gpu_working_host,gpu_working_host, &
+       gpu_enabled,gpu_root,params%max_iterations, &
        extra_fixed_nnz=INT(H%actual_matrix_dimension,INT64),initial_shift=.TRUE.)
     gpu_participant=.NOT.gpu_root .OR. H%process_grid%global_rank==0
     IF(gpu_enabled) THEN
        gpu_t0=MPI_Wtime()
        CALL BeginGPUBackend(H,gpu_root)
-       CALL CheckGPUMemory(WH,WH,gpu_root,gpu_memory_allowed,INT(H%actual_matrix_dimension,INT64))
+       CALL CheckGPUMemory(gpu_working_host,gpu_working_host,gpu_root,gpu_memory_allowed, &
+          INT(H%actual_matrix_dimension,INT64))
        IF(.NOT.gpu_memory_allowed) THEN
           IF(gpu_participant) CALL EndGPUBackend()
           gpu_enabled=.FALSE.
        ELSE
-          CALL UploadGPURegion(WH,gpu_wh,gpu_root)
+          CALL UploadGPURegion(gpu_working_host,gpu_wh,gpu_root)
        END IF
     END IF
+    IF(gpu_borrow_identity .AND. .NOT.gpu_enabled) CALL CopyMatrix(H,WH)
+    IF(profile_stages .AND. H%process_grid%global_rank==0) &
+       PRINT *, 'ntpoly_gpu_trs2_borrowed_identity_input:',gpu_borrow_identity .AND. gpu_enabled
 #endif
     IF(profile_stages) THEN
        stage_seconds(6)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
@@ -448,7 +464,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Compute the lambda scaling values from the resident working Hamiltonian.
 #ifdef NTPOLY_ENABLE_GPU_TRS2
     IF(gpu_enabled) THEN
-       CALL BoundsGPURegion(gpu_wh,WH,gpu_root,e_min,e_max)
+       CALL BoundsGPURegion(gpu_wh,gpu_working_host,gpu_root,e_min,e_max)
     ELSE
 #endif
        CALL GershgorinBounds(WH,e_min,e_max)

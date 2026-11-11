@@ -2812,3 +2812,128 @@ transform/host handoffs, defer bounds microtuning. No further speculative
 kernel changes were made. Full scripts, hashes, raw text, per-call audit and
 replayable analyses are in outer validation/rikyu-basis-20261111 and
 validation/rikyu-hotspots-20261111.
+
+## Finding 30: borrow accessible CSC input and skip redundant working-H copies (2026-11-11)
+
+The caller may build H on CPU or GPU. Native import now checks CUDA pointer
+accessibility and borrows existing CSC arrays during a synchronous GPU
+conversion to the backend CSR layout. It supports managed allocations,
+current-device allocations, mapped host memory, and system allocations when
+the device reports pageableMemoryAccess. It does not touch source payloads
+on CPU or copy them into input staging buffers. Source pointers do not escape
+the call; conversion output is independently owned. Address-based numerical
+caching is not introduced. Unsupported allocations retain host conversion.
+
+For one local block, import skips CPU block composition as well. Multiple
+local blocks still use CPU merge; root coalescing still uses host gather.
+With identity overlap and no balancing, GPU TRS2 borrows H as its working-H
+input rather than copying it onto CPU. If admission selects CPU fallback,
+WH is materialized before the CPU algorithm. Identity with balancing retains
+a separate working matrix and has a new regression case.
+
+NTPOLY_GPU_IMPORT=auto is default; host is the layout-conversion control.
+NTPOLY_GPU_IMPORT_REPORT=1 emits diagnostic borrowed-import markers; final
+performance runs disable it. The existing stage profiler also reports
+identity-input borrowing. Runtime pointer-query errors remain fatal rather
+than being mistaken for unsupported memory.
+
+### Matched one-node measurements
+
+Job313383 completed on c118, four GPUs, GPU4xOMP1 and bound CPU4xOMP32.
+Each GPU executable makes five API calls; warm means calls2–5, retaining
+outliers. Old is unchanged b5fe68ce. Host control includes merge/identity-copy
+removal but retains CPU CSC-to-CSR conversion.
+
+| Full API | Old warm mean | New host-conversion control | New auto warm mean |
+|---|---:|---:|---:|
+| 10k identity | 60.66 ms | 59.83 ms | 58.42 ms |
+| 64k identity | 207.25 ms | 183.54 ms | 183.31 ms |
+| 64k banded | 379.21 ms | 330.89 ms | 322.71 ms |
+
+The 64k gains are 1.13x identity and 1.18x banded for the full API.
+Warm medians are 198.95→179.29 ms and 379.10→311.69 ms; both means and
+medians are retained because isolated slower calls affect these short runs.
+The host/auto comparison shows most mean improvement comes from removing
+redundant CPU composition/copies, rather than the GPU conversion alone.
+The new path additionally provides required device-accessible input coverage.
+Bound CPU banded mean is 5.39385 s, 16.71x the new GPU warm mean.
+
+Cold 64k calls remain expensive: old/new 6.021/6.034 s identity,
+6.163/6.258 s banded. Five-call sums are 6.850/6.767 s and 7.680/7.549 s:
+only 1–2% batch gain after including startup. At10k the five-call sum
+increases from0.5045 to0.5162 s despite slightly faster warm calls.
+Do not claim a robust small-matrix or cold-start improvement.
+
+Full old/new density differences are at most6.11e-15 identity64k,
+4.45e-16 banded64k and5.56e-16 identity10k. CPU/GPU banded scalar
+fingerprints agree. Tiny full matrices/chemical potentials pass auto/all,
+1x4, independent communicators, identity/nonidentity balancing, changed H,
+CPU alternation, zero-cap fallback and teardown.
+
+### Memory checks and coverage limits
+
+The real CUDA test exercises24 allocation/dimension cases: managed, device,
+system and mapped host memory; rectangular shapes, zero nnz/empty rows and
+columns, sorted output, slot reuse, and repeated device-only value changes
+on a separate nonblocking stream. All pass; source values are not copied
+back to CPU before conversion. Compute Sanitizer reports zero errors when
+NV_COMPUTE_SANITIZER_SHARED_ADDRESSING_SUPPORT=force is used.
+
+Initial job313375 stopped on system-memory accesses under sanitizer auto
+detection; job313380 used obsolete --hmm-support and exited before tests.
+The force setting resolved the instrumented run without implementation
+changes. Both failed logs are preserved; these are not cluster outages.
+CPU-only library/reference targets and the full host regressions pass.
+
+Two-node/eight-GPU job313385 passes small/all/split suites and full10k/64k
+matrix comparisons on c116/c117, with NIC merging disabled for both binaries.
+Later old/new means are55.19/54.75 ms at10k,1.1032/1.1012 s identity64k
+and0.9563/0.9523 s banded64k: no meaningful large-case improvement.
+The identity iteration stage alone takes1.059 s, so import optimization
+does not explain or remove the dominant cost in that allocation/layout.
+Keep the earlier unresolved default-NCCL transport caveat.
+
+The direct input path is not a whole-library no-copy guarantee. It still
+performs required layout conversion, leaves multi-block merging/root gather
+on CPU and exports normal public matrices. Further work should follow
+measured full-API headroom and required coverage. Evidence, specs, source
+hashes, all failures/successes and replayable analysis are in outer
+validation/rikyu-import-20261111.
+
+## Finding 31: matched eight-GPU slowdown is NCCL/wait dominated (2026-11-11)
+
+Follow-up job313441 completed on c117/c118 in one two-node allocation.
+The same new executable runs four GPUs on one node, then eight GPUs in
+2x4 and4x2 process grids, with explicit placement maps saved. All use
+OMP1, NIC merging disabled and the same64k identity-overlap input.
+
+| Layout | Warm full API mean |
+|---|---:|
+| Four GPUs, 2x2 | 0.17623 s |
+| Eight GPUs, 2x4 | 1.08754 s |
+| Eight GPUs, 4x2 | 1.02818 s |
+
+All energy/trace/grandsum fingerprints pass. The two-node numerical tests
+in Finding30 also save full matrices; this follow-up checks fingerprints
+and timing rather than another full matrix dump. Reversing grid orientation
+does not remove the slowdown. Prior old/new eight-GPU controls are equally
+slow, so this is not evidence of a regression from borrowed imports.
+
+The rank-zero eight-GPU Nsight capture over three solves records2.50445 s
+in584 NCCL send/receive kernels and0.46803 s in145 scalar allreduce kernels:
+about96% of GPU kernel time is communication/wait. Product totals16.1 ms,
+clear42.3 ms and compact38.9 ms. Kernel lifetime includes waiting for peers;
+it is not a direct measurement of physical network transfer bandwidth.
+No transport debug log was captured, so IB/RDMA versus socket selection
+and rank-arrival imbalance are not established by this trace.
+
+The next performance investigation must inspect transport selection and
+per-rank arrival skew on a matched allocation. Local kernel/PTX tuning
+cannot address most of this runtime. The placement model still chooses only
+root or all ranks; at64k the single-GPU index bound rejects root, so it
+cannot retain four active GPUs when the application uses eight ranks.
+Intermediate active grids are a concrete remaining scalability feature.
+This result does not invalidate the earlier successful faster two-node
+runs on other nodes/layouts, nor establish a cluster-wide transport failure.
+Exact maps, raw profiler reports and analysis are in the scaling subdirectory
+of outer validation/rikyu-import-20261111.
