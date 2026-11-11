@@ -1,6 +1,5 @@
 // Minimal descriptor API for exercising the real upload helpers on the host.
 constexpr int cudaMemcpyHostToDevice=0;
-template<class T> int cudaMalloc(T **p,size_t n) { return cudaMallocManaged(p,n); }
 struct Descriptor { int rows,columns,nnz; };
 using cusparseSpMatDescr_t=Descriptor*;
 constexpr int CUSPARSE_INDEX_32I=0, CUSPARSE_INDEX_BASE_ZERO=0, CUDA_R_64F=0;

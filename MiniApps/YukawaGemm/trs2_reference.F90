@@ -13,6 +13,8 @@ PROGRAM TRS2Reference
   USE PermutationModule
   USE LoadBalancerModule, ONLY: PermuteMatrix
   USE LoggingModule, ONLY: ActivateLogger, DeactivateLogger
+  USE TripletModule, ONLY: Triplet_r
+  USE TripletListModule, ONLY: TripletList_r, ConstructTripletList, AppendToTripletList, DestructTripletList
 #ifdef REFERENCE_OPENACC
   USE openacc
 #endif
@@ -21,6 +23,9 @@ PROGRAM TRS2Reference
   TYPE(Permutation_t) :: permutation
   TYPE(SolverParameters_t) :: params
   CHARACTER(1024) :: filename, arg, output_density
+  CHARACTER(16) :: basis_mode
+  TYPE(TripletList_r) :: basis_entries
+  TYPE(Triplet_r) :: basis_entry
   INTEGER :: rank, nranks, ierr, provided, i, seed_size, reps, prows, pcols
   INTEGER :: max_iter, shared, local_rank, local_size
   INTEGER, ALLOCATABLE :: seed(:)
@@ -32,8 +37,8 @@ PROGRAM TRS2Reference
   CALL MPI_Comm_size(MPI_COMM_WORLD, nranks, ierr)
   ! Positional arguments keep the benchmark configuration explicit.
   ! input prows pcols nelec threshold tolerance max_iter repetitions
-  IF (COMMAND_ARGUMENT_COUNT() < 8 .OR. COMMAND_ARGUMENT_COUNT() > 9) THEN
-    IF (rank==0) PRINT *, 'input prows pcols nelec threshold tolerance max_iter repetitions'
+  IF (COMMAND_ARGUMENT_COUNT() < 8 .OR. COMMAND_ARGUMENT_COUNT() > 10) THEN
+    IF (rank==0) PRINT *, 'input prows pcols nelec threshold tolerance max_iter repetitions [output|-] [identity|banded]'
     CALL MPI_Abort(MPI_COMM_WORLD, 1, ierr)
   END IF
   CALL GET_COMMAND_ARGUMENT(1,filename)
@@ -45,7 +50,11 @@ PROGRAM TRS2Reference
   CALL GET_COMMAND_ARGUMENT(7,arg); READ(arg,*) max_iter
   CALL GET_COMMAND_ARGUMENT(8,arg); READ(arg,*) reps
   output_density = ''
-  IF (COMMAND_ARGUMENT_COUNT()==9) CALL GET_COMMAND_ARGUMENT(9,output_density)
+  IF (COMMAND_ARGUMENT_COUNT()>=9) CALL GET_COMMAND_ARGUMENT(9,output_density)
+  IF(TRIM(output_density)=='-') output_density=''
+  basis_mode='identity'
+  IF(COMMAND_ARGUMENT_COUNT()==10) CALL GET_COMMAND_ARGUMENT(10,basis_mode)
+  IF(TRIM(basis_mode)/='identity' .AND. TRIM(basis_mode)/='banded') CALL MPI_Abort(MPI_COMM_WORLD,4,ierr)
   IF (prows*pcols/=nranks .OR. reps<1) CALL MPI_Abort(MPI_COMM_WORLD,2,ierr)
 #ifdef REFERENCE_OPENACC
   CALL MPI_Comm_split_type(MPI_COMM_WORLD, MPI_COMM_TYPE_SHARED, rank, MPI_INFO_NULL, shared, ierr)
@@ -80,7 +89,28 @@ PROGRAM TRS2Reference
     WRITE(*,*) 'Gershgorin bounds:',emin,emax
   END IF
   CALL ConstructEmptyMatrix(identity,h)
-  CALL FillMatrixIdentity(identity)
+  IF(TRIM(basis_mode)=='identity') THEN
+    CALL FillMatrixIdentity(identity)
+  ELSE
+    ! A positive-definite tridiagonal inverse-overlap factor: I + 0.01*T.
+    ! Constructed in the working input ordering, outside timed TRS2 calls.
+    CALL ConstructTripletList(basis_entries)
+    IF(rank==0) THEN
+      DO i=1,h%actual_matrix_dimension
+        basis_entry%index_row=i; basis_entry%index_column=i; basis_entry%point_value=1.0_NTREAL
+        CALL AppendToTripletList(basis_entries,basis_entry)
+        IF(i<h%actual_matrix_dimension) THEN
+          basis_entry%index_row=i; basis_entry%index_column=i+1; basis_entry%point_value=0.01_NTREAL
+          CALL AppendToTripletList(basis_entries,basis_entry)
+          basis_entry%index_row=i+1; basis_entry%index_column=i
+          CALL AppendToTripletList(basis_entries,basis_entry)
+        END IF
+      END DO
+    END IF
+    CALL FillMatrixFromTripletList(identity,basis_entries)
+    CALL DestructTripletList(basis_entries)
+  END IF
+  IF(rank==0) PRINT *, 'reference inverse-overlap factor:',TRIM(basis_mode)
   CALL ConstructSolverParameters(params,converge_diff_in=tolerance, &
        threshold_in=threshold,max_iterations_in=max_iter,be_verbose_in=.TRUE.)
   DO i=1,reps

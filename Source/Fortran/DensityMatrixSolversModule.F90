@@ -1,6 +1,7 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A Module For Solving Quantum Chemistry Systems using Purification.
 MODULE DensityMatrixSolversModule
+  USE ISO_FORTRAN_ENV, ONLY: INT64
   USE ConvergenceMonitor, ONLY : ConstructMonitor, CheckConverged, AppendValue
   USE DataTypesModule, ONLY : NTREAL, MPINTREAL
   USE EigenBoundsModule, ONLY : GershgorinBounds
@@ -15,14 +16,15 @@ MODULE DensityMatrixSolversModule
        & DotMatrix, MatrixTrace, ScaleMatrix, SimilarityTransform
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, DestructMatrix, &
        & CopyMatrix, PrintMatrixInformation, FillMatrixIdentity, &
-       & TransposeMatrix
+       & TransposeMatrix, IsIdentity
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters, ConstructSolverParameters, &
        & CopySolverParameters
 #ifdef NTPOLY_ENABLE_GPU_TRS2
   USE PSMatrixGPUBackendModule, ONLY: GPUMatrix_t, GPURequested, SelectGPUBackend, CheckGPUMemory, BeginGPUBackend, &
       & EndGPUBackend, &
-    UploadGPURegion, DownloadGPURegion, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU
+    UploadGPURegion, DownloadGPURegion, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU, &
+    TryGPUSimilarityTransform, ReleaseGPU, BoundsGPURegion
 #endif
   IMPLICIT NONE
   PRIVATE
@@ -321,12 +323,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II, JJ
     INTEGER :: total_iterations
+    REAL(8) :: stage_t0,stage_seconds(9)
+    INTEGER :: profile_flag,profile_ierr,stage_i
+    LOGICAL :: profile_stages
+    CHARACTER(16) :: profile_option
+    CHARACTER(20), PARAMETER :: stage_names(9) = [CHARACTER(20) :: &
+      'allocate','working_h','balance','bounds','initial_x','backend','iteration','export_cleanup','final']
 #ifdef NTPOLY_ENABLE_GPU_TRS2
     TYPE(GPUMatrix_t) :: gpu_x,gpu_x2,gpu_wh
-    LOGICAL :: gpu_enabled,gpu_root,gpu_participant,gpu_memory_allowed
+    LOGICAL :: gpu_enabled,gpu_root,gpu_participant,gpu_memory_allowed,gpu_transform_done,gpu_basis_identity
     REAL(8) :: gpu_t0,gpu_setup_seconds,gpu_loop_seconds,gpu_export_seconds
     INTEGER :: gpu_ierr
 #endif
+
+    profile_flag=0
+    IF(H%process_grid%global_rank==0) THEN
+       CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_TRS2_PROFILE',profile_option)
+       IF(TRIM(profile_option)=='1') profile_flag=1
+    END IF
+    CALL MPI_Bcast(profile_flag,1,MPI_INTEGER,0,H%process_grid%global_comm,profile_ierr)
+    profile_stages=profile_flag==1
+    stage_seconds=0.0_8
+    IF(profile_stages) stage_t0=MPI_Wtime()
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -365,10 +383,34 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructEmptyMatrix(IMat, H)
     CALL FillMatrixIdentity(IMat)
 
+    IF(profile_stages) THEN
+       stage_seconds(1)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
     !! Compute the working hamiltonian.
     CALL TransposeMatrix(ISQ, ISQT)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    gpu_transform_done=.FALSE.
+    IF(gpu_enabled) THEN
+       gpu_basis_identity=IsIdentity(ISQ)
+       IF(gpu_basis_identity) THEN
+          CALL CopyMatrix(H,WH)
+          gpu_transform_done=.TRUE.
+       ELSE
+          CALL TryGPUSimilarityTransform(H,ISQ,ISQT,WH,params%threshold,gpu_transform_done)
+       END IF
+       IF(H%process_grid%global_rank==0) PRINT *, 'ntpoly_trs2_gpu_working_transform:', &
+          gpu_transform_done .AND. .NOT.gpu_basis_identity
+    END IF
+    IF(.NOT.gpu_transform_done) THEN
+#endif
     CALL SimilarityTransform(H, ISQ, ISQT, WH, pool, &
          & threshold_in = params%threshold)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    END IF
+#endif
+    IF(profile_stages) THEN
+       stage_seconds(2)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
 
     !! Load Balancing Step
     IF (params%do_load_balancing) THEN
@@ -378,33 +420,74 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             & params%BalancePermutation, memorypool_in = pool)
     END IF
 
-    !! Compute the lambda scaling value.
-    CALL GershgorinBounds(WH, e_min, e_max)
-
-    !! Initialize
-    CALL CopyMatrix(WH, X_k)
-    CALL ScaleMatrix(X_k, -1.0_NTREAL)
-    CALL IncrementMatrix(IMat, X_k, alpha_in = e_max)
-    CALL ScaleMatrix(X_k, 1.0_NTREAL / (e_max - e_min))
-
+    IF(profile_stages) THEN
+       stage_seconds(3)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
+    ! Admit using WH and an upper bound for the shifted X0 pattern. This lets
+    ! GPU bounds/X0 use the imported WH without a CPU X0 or a second upload.
 #ifdef NTPOLY_ENABLE_GPU_TRS2
-    IF(gpu_enabled) CALL SelectGPUBackend(WH,X_k,gpu_enabled,gpu_root,params%max_iterations)
+    IF(gpu_enabled) CALL SelectGPUBackend(WH,WH,gpu_enabled,gpu_root,params%max_iterations, &
+       extra_fixed_nnz=INT(H%actual_matrix_dimension,INT64),initial_shift=.TRUE.)
     gpu_participant=.NOT.gpu_root .OR. H%process_grid%global_rank==0
     IF(gpu_enabled) THEN
        gpu_t0=MPI_Wtime()
        CALL BeginGPUBackend(H,gpu_root)
-       CALL CheckGPUMemory(WH,X_k,gpu_root,gpu_memory_allowed)
+       CALL CheckGPUMemory(WH,WH,gpu_root,gpu_memory_allowed,INT(H%actual_matrix_dimension,INT64))
        IF(.NOT.gpu_memory_allowed) THEN
           IF(gpu_participant) CALL EndGPUBackend()
           gpu_enabled=.FALSE.
+       ELSE
+          CALL UploadGPURegion(WH,gpu_wh,gpu_root)
        END IF
     END IF
-    IF(gpu_enabled) THEN
-       CALL UploadGPURegion(WH,gpu_wh,gpu_root)
-       CALL UploadGPURegion(X_k,gpu_x,gpu_root)
-       gpu_setup_seconds=MPI_Wtime()-gpu_t0
-       gpu_t0=MPI_Wtime()
+#endif
+    IF(profile_stages) THEN
+       stage_seconds(6)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
     END IF
+
+    !! Compute the lambda scaling values from the resident working Hamiltonian.
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    IF(gpu_enabled) THEN
+       CALL BoundsGPURegion(gpu_wh,WH,gpu_root,e_min,e_max)
+    ELSE
+#endif
+       CALL GershgorinBounds(WH,e_min,e_max)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    END IF
+#endif
+    IF(profile_stages) THEN
+       stage_seconds(4)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
+
+    !! Initialize X0 directly on the GPU. Only the sparse identity is imported;
+    !! the full WH payload is copied/scaled/shifted without a CPU round trip.
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    IF(gpu_enabled) THEN
+       BLOCK
+          TYPE(GPUMatrix_t) :: gpu_identity
+          CALL UploadGPURegion(IMat,gpu_identity,gpu_root)
+          IF(gpu_participant) THEN
+             CALL CopyGPU(gpu_wh,gpu_x)
+             CALL ScaleGPU(gpu_x,-1.0_NTREAL)
+             CALL IncrementGPU(gpu_identity,gpu_x,e_max,0.0_NTREAL)
+             CALL ScaleGPU(gpu_x,1.0_NTREAL/(e_max-e_min))
+          END IF
+       END BLOCK
+       gpu_setup_seconds=MPI_Wtime()-gpu_t0
+    ELSE
+#endif
+       CALL CopyMatrix(WH,X_k)
+       CALL ScaleMatrix(X_k,-1.0_NTREAL)
+       CALL IncrementMatrix(IMat,X_k,alpha_in=e_max)
+       CALL ScaleMatrix(X_k,1.0_NTREAL/(e_max-e_min))
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    END IF
+#endif
+    IF(profile_stages) THEN
+       stage_seconds(5)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    IF(gpu_enabled) gpu_t0=MPI_Wtime()
 #endif
     !! Iterate
     IF (params%be_verbose) THEN
@@ -490,6 +573,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END DO
 #ifdef NTPOLY_ENABLE_GPU_TRS2
     END IF
+#endif
+    IF(profile_stages) THEN
+       stage_seconds(7)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
+#ifdef NTPOLY_ENABLE_GPU_TRS2
     IF(gpu_enabled) THEN
        IF(gpu_root) THEN
           CALL MPI_Bcast(II,1,MPI_INTEGER,0,H%process_grid%global_comm,gpu_ierr)
@@ -501,6 +589,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL DownloadGPURegion(gpu_x,X_k,gpu_root)
        gpu_export_seconds=MPI_Wtime()-gpu_t0
        IF(gpu_participant) CALL EndGPUBackend()
+       CALL ReleaseGPU(gpu_wh); CALL ReleaseGPU(gpu_x); CALL ReleaseGPU(gpu_x2)
        CALL MPI_Allreduce(MPI_IN_PLACE,gpu_setup_seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,gpu_ierr)
        CALL MPI_Allreduce(MPI_IN_PLACE,gpu_loop_seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,gpu_ierr)
        CALL MPI_Allreduce(MPI_IN_PLACE,gpu_export_seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,gpu_ierr)
@@ -511,6 +600,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
     END IF
 #endif
+    IF(profile_stages) THEN
+       stage_seconds(8)=MPI_Wtime()-stage_t0; stage_t0=MPI_Wtime()
+    END IF
     total_iterations = II - 1
     IF (params%be_verbose) THEN
        CALL ExitSubLog
@@ -529,8 +621,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     !! Compute the density matrix in the non-orthogonalized basis
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    gpu_transform_done=.FALSE.
+    IF(gpu_enabled) THEN
+       IF(gpu_basis_identity) THEN
+          CALL CopyMatrix(X_k,K)
+          gpu_transform_done=.TRUE.
+       ELSE
+          CALL TryGPUSimilarityTransform(X_k,ISQT,ISQ,K,params%threshold,gpu_transform_done)
+       END IF
+       IF(H%process_grid%global_rank==0) PRINT *, 'ntpoly_trs2_gpu_final_transform:', &
+          gpu_transform_done .AND. .NOT.gpu_basis_identity
+    END IF
+    IF(.NOT.gpu_transform_done) THEN
+#endif
     CALL SimilarityTransform(X_k, ISQT, ISQ, K, pool, &
          & threshold_in = params%threshold)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    END IF
+#endif
 
     !! Cleanup
     CALL DestructMatrix(WH)
@@ -578,6 +687,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! Cleanup
     DEALLOCATE(sigma_array)
     CALL DestructSolverParameters(params)
+    IF(profile_stages) THEN
+       stage_seconds(9)=MPI_Wtime()-stage_t0
+       CALL MPI_Allreduce(MPI_IN_PLACE,stage_seconds,9,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,profile_ierr)
+       IF(H%process_grid%global_rank==0) THEN
+          DO stage_i=1,9
+             WRITE(*,'(A,A,A,ES24.16)') 'ntpoly_trs2_stage_',TRIM(stage_names(stage_i)),'_seconds: ',stage_seconds(stage_i)
+          END DO
+       END IF
+    END IF
   END SUBROUTINE TRS2
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Compute the density matrix from a Hamiltonian using the TRS4 method.

@@ -2696,3 +2696,119 @@ All six jobs finished. Generated matrices/builds stay on group storage;
 home quota is not consumed by new builds or density output. Next: bound the
 quadratic workspace, recalibrate placement using cache state, and move CPU
 bounds/X0/setup to GPU before generalizing resident operations/solver families.
+
+## Finding 28: OpenACC cold multiplies dominate; PTX has no spills (2026-11-11)
+
+Nsight Systems job312960 on c119 captures the validated OpenACC mini-app's
+embedded NTPoly reference and the separate native four-GPU library backend.
+The OpenACC path really launches GPU kernels: 26 real MultiplyBlock launches
+total47.953 s, but three cold launches alone take47.686 s (99.44%).
+Their durations are11.312/17.977/18.398 s; median across26 is10.849 ms.
+PruneList totals0.4332 s. The reference API reports47.135 s, with correct
+energy/trace. The capture includes input-permutation products and a later
+legacy CUDA solve; these must not all be assigned to the reference API.
+OpenACC Compute and Wait events overlap and must not be summed.
+
+Cold launches coincide with thousands of managed-memory GPU fault groups.
+Whole-capture CPU faults number1,287,988 versus453 for native4.
+This motivates explicit workspace residency/first-touch investigation; fault
+counts do not measure unique pages or prove a migration-time breakdown.
+A separate OpenACC fixed H-squared test, one warmup plus three timed rounds,
+has0.58353 s median. Its runtime reports a13.1519 s cold multiply, versus
+0.36774 s minimum, but warns CUPTI is unavailable: device-time subfields are
+unreliable. Fixed H-squared differs from late TRS2 squares.
+
+Recompilation with NVHPC26.3 keep/lineinfo/ptxinfo and inspection of extracted
+PTX/SASS show112 physical registers for real multiply (118 complex), and
+zero stack/spill loads/stores. Runtime confirms112regs,608x128 launch.
+The outer column loop is parallel; both inner sparse loops remain sequential.
+Threads varying the second index of Fortran value_array(idx_b,II) access
+columns512 KiB apart at64k. Source/PTX therefore suggest poor locality and
+coalescing; achieved bandwidth/occupancy were not measured. Static PTX has
+seven signed-divide sites for hash insertion, FP64 FMA, descriptor/indirect
+loads, no local-memory accesses and no calls. Static unrolled sites are not
+dynamic counts per update. There is no evidence supporting spill tuning.
+
+Native4 has no OpenACC launches. Baseline rank-zero kernel time over three
+solves is62.94% bitmap clear+compact,12.3% product and6.7% NCCL send/receive.
+Eliminating clear+compact entirely could improve kernel time at most2.70x;
+API/startup costs remain. MPI initialization/input I/O dominate whole-process
+MPI totals; resident payload communication uses NCCL. Detailed reports,
+per-launch SQL audit, source/resource interpretation and replayable analyzer
+are in outer validation/rikyu-hotspots-20261111.
+
+## Finding 29: resident AB, GPU bounds/X0 and a useful CPU setup fix (2026-11-11)
+
+The resident panel product now accepts independent A/B, retaining the square
+ABI. Both inputs must have matching square global layouts, with rectangular
+local blocks supported. Either output/input alias is rejected. Nonidentity
+working-H and final density transforms use two resident products when
+collective memory/index admission succeeds; unsafe cases retain CPU fallback.
+Transform boundaries still import/export normal host matrices.
+
+After working-H construction/balancing, admission uses WH plus an upper
+bound for the identity-shifted X0 pattern. GPU computes Gershgorin column
+contributions; only O(local columns) vectors go to host MPI reductions.
+Root coalescing explicitly retains the CPU padded-zero-column convention.
+X0 is copied/scaled/shifted on GPU, avoiding CPU construction and a second
+full payload upload. A sparse identity is still imported. CPU balancing,
+host public matrices and other solver families remain.
+
+New optional NTPOLY_TRS2_PROFILE=1 stage counters exposed a CPU identity fill
+that scanned every local row/column pair looking for diagonal entries.
+FillMatrixIdentity now visits only the owned diagonal intersection, clipped
+to actual dimension. It preserves real/complex, padded and empty-block
+semantics. In the paired 64k GPU control, the allocation stage fell from
+0.328/0.593 s (identity/banded, third call) to 1.90/2.04 ms.
+This was materially more useful than tuning a small GPU kernel.
+
+Job313129 completed on c117 with four GPUs. CPU is four MPI ranks x32 bound
+threads; GPU uses one thread/rank. Each fresh executable makes three calls.
+Threshold1e-4, convergence1e-6, actualN64000:
+
+| Full TRS2 API | Identity overlap | Banded inverse-overlap |
+|---|---:|---:|
+| New CPU, later mean | 2.8100 s | 5.3639 s |
+| Previous GPU, later mean | 0.5881 s | 1.0403 s |
+| New GPU, later mean | 0.19795 s | 0.37275 s |
+| GPU first call | 6.2316 s | 6.5839 s |
+| New CPU/GPU later speedup | 14.20x | 14.39x |
+| New CPU/GPU three-call speedup | 1.30x | 2.22x |
+| Previous/new GPU later speedup | 2.97x | 2.79x |
+
+The previous GPU binary in this table already has the new AB transforms,
+but retains CPU bounds/X0 and quadratic identity fill; it is the separately
+hashed initial revision, not an unchanged 7fb3231b executable. Both binaries
+run on the same allocation. API max-rank times include internal setup,
+transfers, iteration, export and final transform; exclude launch/input,
+external permutation, full-matrix checking and output writes. Final grid
+communication teardown is outside the API. Cold startup remains expensive.
+
+The banded input factor is SPD tridiagonal I+0.01T in the externally permuted
+input ordering, constructed outside timing. It represents a supplied
+inverse-overlap factor, not a separately timed inverse square root.
+Physical trace(K) need not equal electron count in this basis.
+Full CPU/GPU density matrices agree within6.22e-15 identity and3.34e-16 banded;
+energy/trace/grandsum agree. Tiny tests also compare chemical potentials and
+full matrices with nonidentity overlap, reverse balancing, changed H,
+auto/all placement, split application communicators, CPU alternation,
+zero-cap fallback, ownership and zero-context teardown.
+
+Resident A/B tests pass with shared NCCL off/on at1/2/4 ranks, both1x2/2x1,
+independent nonsymmetric matrices, zero A/B, pruning, reuse after empty and
+both alias rejections. Identity tests pass real/complex, N1/5/8,1/2/4 ranks
+and both grid orientations. GPU positive padded bounds match CPU conventions
+in full/root modes. CPU library/reference/identity targets and the full host
+regressions pass. The existing padded threaded CPU10k failure is not fixed;
+its timings remain excluded. Latest code has single-node validation.
+
+Updated native Nsight job313171 on c365 confirms bounds takes1.5–2.2 ms per
+call, under1% of warm API time. It uses26 registers with no spills.
+Clear+compact still dominate kernel time, but eliminating them entirely gives
+only an estimated1.34x warm identity API ceiling and1.22–1.24x banded,
+assuming all that work is on the critical path. The cold-call ceiling is
+about1%. Optimize useful end-to-end headroom: prioritize startup and remaining
+transform/host handoffs, defer bounds microtuning. No further speculative
+kernel changes were made. Full scripts, hashes, raw text, per-call audit and
+replayable analyses are in outer validation/rikyu-basis-20261111 and
+validation/rikyu-hotspots-20261111.

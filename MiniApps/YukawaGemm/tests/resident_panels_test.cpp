@@ -16,6 +16,7 @@ int solver_nccl_init_(const int*,const int*,const int*,const int8_t*);
 int solver_nccl_members_(const int*,const int*);
 int solver_nccl_finish_();
 int gpu_resident_square_(int,int,int,int,int,int,int,double,double*);
+int gpu_resident_multiply_(int,int,int,int,int,int,int,int,double,double*);
 int gpu_resident_free_();
 }
 static void check(bool ok) { if(!ok) { std::fprintf(stderr,"Resident CSR test failed\n"); MPI_Abort(MPI_COMM_WORLD,1); } }
@@ -81,6 +82,52 @@ int main(int argc,char **argv) {
             }
             check(cursor==nz);
         }
+        // Independent A*B cases, including empty operands, different sparsity,
+        // cancellation, thresholding and reuse after a structurally empty result.
+        for(int example=0;example<5;++example) {
+            std::vector<double> left(size_t(n)*n,0),right(size_t(n)*n,0);
+            for(int r=0;r<n;++r) for(int c=0;c<n;++c) {
+                if(example!=2 && (r+c*3+example)%3)
+                    left[size_t(r)*n+c]=double((r*5+c*7+example)%13-6)/8;
+                if(example!=3 && (r*2+c+example)%4)
+                    right[size_t(r)*n+c]=double((r*11+c*3+2*example)%11-5)/4;
+            }
+            for(int operand=0;operand<2;++operand) {
+                auto &matrix=operand==0?left:right;
+                std::vector<int> rp(1,0),ci;std::vector<double> values;
+                for(int r=0;r<m;++r) {
+                    for(int c=0;c<k;++c) {
+                        double v=matrix[size_t(row*m+r)*n+col*k+c];
+                        if(v!=0) {ci.push_back(c+1);values.push_back(v);}
+                    }
+                    rp.push_back(int(ci.size()));
+                }
+                int slot=operand==0?1:3,nz=int(ci.size()),*drp,*dci;double *dv;
+                gpu_ops_alloc_(&slot,&m,&nz,&drp,&dci,&dv,&error);check(error==0);
+                std::memcpy(drp,rp.data(),rp.size()*sizeof(int));
+                if(nz) {std::memcpy(dci,ci.data(),nz*sizeof(int));std::memcpy(dv,values.data(),nz*sizeof(double));}
+            }
+            double phases[4];
+            check(gpu_resident_multiply_(1,3,1,m,n,k,pr,pc,.125,phases)!=0);
+            check(gpu_resident_multiply_(1,3,3,m,n,k,pr,pc,.125,phases)!=0);
+            check(gpu_resident_multiply_(1,3,2,m,n,k,pr,pc,.125,phases)==0);
+            int slot=2,rows,nz,*rp,*ci;double *values;
+            gpu_ops_get_(&slot,&rp,&ci,&values,&rows,&nz);check(rows==m);
+            int cursor=0;
+            for(int r=0;r<m;++r) {
+                check(rp[r]==cursor);
+                for(int c=0;c<k;++c) {
+                    double expected=0;
+                    for(int t=0;t<n;++t)expected+=left[size_t(row*m+r)*n+t]*right[size_t(t)*n+col*k+c];
+                    if(std::fabs(expected)>.125) {
+                        check(cursor<nz && ci[cursor]==c+1 && std::fabs(values[cursor]-expected)<1e-14);++cursor;
+                    }
+                }
+                check(rp[r+1]==cursor);
+            }
+            check(cursor==nz);
+        }
+        if(rank==0)std::printf("Resident independent AB/empty/reuse/alias checks: PASS grid=%dx%d N=%d\n",pr,pc,n);
         check(gpu_resident_free_()==0); check(solver_nccl_finish_()==0);
         MPI_Comm_free(&comms[1]); MPI_Comm_free(&comms[2]);
         if(rank==0) std::printf("Resident nonsymmetric/empty/reset tests: PASS grid=%dx%d N=%d\n",pr,pc,n);

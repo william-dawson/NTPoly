@@ -52,6 +52,7 @@ PROGRAM NativeGPUTest
   CALL ConstructEmptyMatrix(identity,h); CALL FillMatrixIdentity(identity)
   CALL ConstructDefaultPermutation(permutation,h%logical_matrix_dimension)
   CALL OwnershipTest()
+  CALL BoundsTest()
   DO example=1,3
     CALL CopyMatrix(identity,overlap)
     IF(example==2) THEN
@@ -60,6 +61,12 @@ PROGRAM NativeGPUTest
         DO j=1,h%actual_matrix_dimension
           entry%index_row=j; entry%index_column=j; entry%point_value=1.0_NTREAL+0.01_NTREAL*j
           CALL AppendToTripletList(entries,entry)
+          IF(j<h%actual_matrix_dimension) THEN
+            entry%index_row=j; entry%index_column=j+1; entry%point_value=0.005_NTREAL
+            CALL AppendToTripletList(entries,entry)
+            entry%index_row=j+1; entry%index_column=j
+            CALL AppendToTripletList(entries,entry)
+          END IF
         END DO
       END IF
       CALL FillMatrixFromTripletList(overlap,entries)
@@ -105,6 +112,29 @@ PROGRAM NativeGPUTest
   IF(rank==0) PRINT *, 'GPU CONTEXT TEARDOWN PASS'
   CALL MPI_Comm_free(work_comm,ierr); CALL MPI_Finalize(ierr)
 CONTAINS
+  SUBROUTINE BoundsTest()
+    TYPE(Matrix_ps) :: positive
+    TYPE(GPUMatrix_t) :: device_matrix
+    REAL(NTREAL) :: lower,upper,expected_lower
+    LOGICAL :: root_mode
+    INTEGER :: mode
+    CALL ConstructEmptyMatrix(positive,5)
+    CALL FillMatrixIdentity(positive)
+    expected_lower=1.0_NTREAL
+    IF(positive%logical_matrix_dimension>5) expected_lower=0.0_NTREAL
+    DO mode=1,2
+      root_mode=mode==2
+      CALL BeginGPUBackend(positive,root_mode)
+      CALL UploadGPURegion(positive,device_matrix,root_mode)
+      CALL BoundsGPURegion(device_matrix,positive,root_mode,lower,upper)
+      IF(lower/=expected_lower .OR. upper/=1.0_NTREAL) CALL MPI_Abort(MPI_COMM_WORLD,16,ierr)
+      CALL ReleaseGPU(device_matrix)
+      IF(.NOT.root_mode .OR. rank==0) CALL EndGPUBackend()
+    END DO
+    CALL DestructMatrix(positive)
+    IF(rank==0) PRINT *, 'GPU BOUNDS COLUMN/PADDING PASS'
+  END SUBROUTINE
+
   SUBROUTINE ContextLifetimeTest()
     TYPE(ProcessGrid_t), TARGET :: copied,reshaped
     TYPE(Matrix_ps) :: other

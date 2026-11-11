@@ -709,8 +709,12 @@ NTPOLY_GPU_TRS2=1 YUKAWA_BITMAP_ACCUM=1 YUKAWA_NCCL_SHARED_COMM=1 \
 
 `NTPOLY_ENABLE_GPU_TRS2` defaults OFF. In an enabled build,
 `NTPOLY_GPU_TRS2=1` selects the GPU iteration; otherwise TRS2 uses CPU.
-CPU setup (including nonidentity overlap and load balancing) and the final
-basis transform/output remain supported. GPU results are exported to the
+Real nonidentity working-H and final basis transforms now use resident A×B
+when admission succeeds, with host imports/exports at each transform boundary.
+Bounds are computed from resident WH with O(local columns) host MPI reductions.
+X0 is copied, shifted and scaled on GPU; only the sparse identity is imported.
+Load balancing and the public matrix interface still use CPU paths.
+GPU results are exported to the
 normal distributed host matrix before TRS2 returns. The GPU matrix type owns
 independent dynamic handles with deep-copy assignment and finalization;
 legacy mini-app slots are reserved separately. Multiply/merge scratch is
@@ -740,7 +744,7 @@ bounds/X0, matrices or the quadratic product workspace per grid.
 - `all`: request all application ranks; unsafe layouts fall back to CPU.
 - `root`: request one active GPU; unsafe layouts fall back to CPU.
 
-Coalescing gathers WH/X0 once, leaves other ranks outside the iteration,
+Coalescing gathers WH and the sparse identity, leaves other ranks outside the iteration,
 and redistributes the result once. It broadcasts the iteration count, sigma
 history and energy for consistent output/chemical potentials on every rank.
 The application's input/output matrix distribution is preserved. The original
@@ -759,12 +763,31 @@ exclude MPI launch, input read/permutation and validation/output file writes.
 All twelve saved matrices pass full comparison (<6.4e-16 relative norm).
 
 `ntpoly_gpu_trs2_{setup,loop,export}_seconds` are per-call maximum-rank
-phase counters. Setup covers GPU runtime/communication/import, not preceding
-CPU bounds/X0 construction. Coalesced loop counters can include idle-rank
-arrival skew. Use the enclosing API timing for latency comparisons; do not
-sum independent phase maxima. Communicators are currently rebuilt each
-call: at 64k the later normal GPU call takes 3.9–4.0 s versus ~3.3 s CPU,
-despite a 0.14–0.15 s GPU loop. Communicator reuse remains a priority.
+phase counters. Setup now covers GPU runtime/communication/import, bounds and
+X0 construction; it excludes preceding working-H construction and balancing.
+Coalesced loop counters can include idle-rank arrival skew. Use the enclosing
+API timing for latency comparisons; do not sum independent phase maxima.
+Contexts are reused per process grid (Finding 27).
+
+`NTPOLY_TRS2_PROFILE=1` adds maximum-rank stage counters in CPU and GPU
+builds: allocate, working_h, balance, backend, bounds, initial_x, iteration,
+export_cleanup and final. Allocation includes matrix/identity construction;
+export_cleanup includes GPU matrix destruction. Final includes undo balancing,
+basis transform, chemical potential and cleanup. Independent maxima need not
+sum to the API maximum, and automatic host finalization can occur afterward.
+
+The reference driver's optional arguments after repetitions are an output
+filename (or `-`) and `identity|banded`. Banded constructs an SPD tridiagonal
+inverse-overlap factor with diagonal1 and nearest neighbors0.01 outside
+the API, in the already permuted input ordering. It tests nonidentity
+transforms; the physical density's ordinary trace need not equal electron
+count in a nonorthogonal basis. Compare full CPU/GPU matrices and energy.
+
+The general resident product accepts independent real square A/B matrices
+with matching distributed layouts; local blocks can be rectangular.
+Aliasing the output with either input is rejected. The square ABI remains.
+Identity construction now visits only the owned diagonal intersection,
+including padded/empty blocks, for real and complex matrices.
 
 
 ### Work estimates and GPU memory admission (Finding 25)

@@ -41,6 +41,7 @@ def main():
         shutil.copyfile(HERE / 'device_partials_test.cpp', fixture_app / 'tests/device_partials_test.cpp')
         shutil.copyfile(HERE / 'resident_panels_test.cpp', fixture_app / 'tests/resident_panels_test.cpp')
         shutil.copyfile(HERE / 'nccl_transport_test.cpp', fixture_app / 'tests/nccl_transport_test.cpp')
+        shutil.copyfile(HERE / 'test_identity.f90', fixture_app / 'tests/test_identity.f90')
         for name in ("CMakeLists.txt", "yukawa_gemm.f90", "trs2_reference.F90", "solver_csr.f90", "solver_nccl.f90", "generate_yukawa.f90", "cusparse_gemm.cu", "nccl_panels.cu", "resident_panels.cu"):
             shutil.copyfile(APP / name, fixture_app / name)
         (fixture / "CMakeLists.txt").write_text("cmake_minimum_required(VERSION 3.20)\n"
@@ -130,6 +131,11 @@ END MODULE
         matrix.write_text("%%MatrixMarket matrix coordinate real general\n5 5 25\n" +
                           "".join(f"{r+1} {c+1} {h[r][c]:.17g}\n" for r in range(5) for c in range(5)))
         env = dict(os.environ, OMP_NUM_THREADS="1")
+        run(["mpifort", "-g", "-fcheck=all", "-I", build / "include", "-J", work,
+             HERE / "test_identity.f90", build / "lib/libNTPoly.a", "-fopenmp",
+             "-framework", "Accelerate", "-o", work / "identity"])
+        for ranks in (1, 2, 4):
+            print(run(["mpirun", "-n", ranks, work / "identity"], env=env, timeout=30).strip())
         for ranks, side, balance, diagonal in [(1,1,False,False), (2,1,False,False), (4,2,False,False), (4,2,True,False), (4,2,False,True)]:
             case = work / f"np{ranks}-lb{balance}-diag{diagonal}"
             case.mkdir()

@@ -1494,6 +1494,39 @@ static void ops_check(cudaError_t status) {
     }
 }
 
+// Gershgorin column contributions, matching NTPoly's column-wise CPU bounds.
+// Only O(local columns) host results leave the GPU for the MPI reductions.
+__global__ void ops_bounds_kernel(int rows,const int *rp,const int *ci,
+    const double *values,int diagonal,double *lower,double *upper) {
+    int row=blockIdx.x;
+    if(row>=rows) return;
+    for(int j=rp[row]+threadIdx.x;j<rp[row+1];j+=blockDim.x) {
+        int column=ci[j]-1;
+        double value=values[j];
+        atomicAdd(lower+column,column==row+diagonal?value:-fabs(value));
+        atomicAdd(upper+column,column==row+diagonal?value:fabs(value));
+    }
+}
+
+int gpu_ops_bounds_(int *slot,int *columns,int *diagonal,double *lower,double *upper) {
+    int index=*slot-1;
+    if(index<0 || index>=static_cast<int>(g_ops.size()) || *columns<1) return -1;
+    auto &matrix=g_ops[index];
+    double *device=nullptr;
+    size_t bytes=size_t(*columns)*sizeof(double);
+    ops_check(cudaMalloc(&device,2*bytes));
+    ops_check(cudaMemset(device,0,2*bytes));
+    if(matrix.m>0) {
+        ops_bounds_kernel<<<matrix.m,128>>>(matrix.m,matrix.rp,matrix.ci,matrix.val,*diagonal,device,device+*columns);
+        ops_check(cudaGetLastError());
+    }
+    ops_check(cudaDeviceSynchronize());
+    ops_check(cudaMemcpy(lower,device,bytes,cudaMemcpyDeviceToHost));
+    ops_check(cudaMemcpy(upper,device+*columns,bytes,cudaMemcpyDeviceToHost));
+    ops_check(cudaFree(device));
+    return 0;
+}
+
 // Bind this process to its GPU (per local rank). Must be called before
 // any managed allocation. Returns the bound device index so the Fortran
 // side can point the OpenACC runtime (NTPoly kernels) at the same device.

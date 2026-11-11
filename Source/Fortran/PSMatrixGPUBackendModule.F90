@@ -2,11 +2,11 @@
 ! Host Matrix_ps remains authoritative outside the explicitly bounded GPU region.
 MODULE PSMatrixGPUBackendModule
   USE ISO_C_BINDING
-  USE DataTypesModule, ONLY: NTREAL, MPINTLONG
+  USE DataTypesModule, ONLY: NTREAL, MPINTLONG, MPINTREAL
   USE ISO_FORTRAN_ENV, ONLY: INT64, REAL64
   USE GPUPlanningModule, ONLY: EstimateGPUPlan, GPUMemoryBudget
   USE NTMPIModule
-  USE PSMatrixModule, ONLY: Matrix_ps, MergeMatrixLocalBlocks, SplitMatrixToLocalBlocks, &
+  USE PSMatrixModule, ONLY: Matrix_ps, ConstructEmptyMatrix, MergeMatrixLocalBlocks, SplitMatrixToLocalBlocks, &
     GatherMatrixToProcess, FillMatrixFromTripletList
   USE SMatrixModule, ONLY: Matrix_lsr, DestructMatrix, MatrixToTripletList
   USE TripletListModule, ONLY: TripletList_r, ConstructTripletList, DestructTripletList
@@ -16,7 +16,8 @@ MODULE PSMatrixGPUBackendModule
   PRIVATE
   PUBLIC :: GPUMatrix_t, GPURequested, SelectGPUBackend, CheckGPUMemory, BeginGPUBackend, EndGPUBackend
   PUBLIC :: UploadGPURegion, DownloadGPURegion
-  PUBLIC :: UploadGPU, DownloadGPU, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU
+  PUBLIC :: UploadGPU, DownloadGPU, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU, MultiplyGPU
+  PUBLIC :: TryGPUSimilarityTransform, ReleaseGPU, BoundsGPURegion
   TYPE :: GPUMatrix_t
     PRIVATE
     INTEGER(C_INT) :: handle=0, rows=0, columns=0, dimension=0, diagonal=0
@@ -27,6 +28,11 @@ MODULE PSMatrixGPUBackendModule
     GENERIC :: ASSIGNMENT(=) => AssignGPU
   END TYPE
   INTERFACE
+    INTEGER(C_INT) FUNCTION bounds_slot(slot,columns,diagonal,lower,upper) BIND(C,NAME='gpu_ops_bounds_')
+      IMPORT C_INT,C_DOUBLE
+      INTEGER(C_INT) :: slot,columns,diagonal
+      REAL(C_DOUBLE) :: lower(*),upper(*)
+    END FUNCTION
     INTEGER(C_INT) FUNCTION create_context(context) BIND(C,NAME='solver_nccl_context_create_')
       IMPORT C_PTR,C_INT
       TYPE(C_PTR) :: context
@@ -100,6 +106,13 @@ MODULE PSMatrixGPUBackendModule
       REAL(C_DOUBLE), VALUE :: threshold
       REAL(C_DOUBLE) :: phases(*)
     END FUNCTION
+    INTEGER(C_INT) FUNCTION resident_multiply(left,right,output,m,n,k,pr,pc,threshold,phases) &
+        BIND(C,NAME='gpu_resident_multiply_')
+      IMPORT C_INT,C_DOUBLE
+      INTEGER(C_INT), VALUE :: left,right,output,m,n,k,pr,pc
+      REAL(C_DOUBLE), VALUE :: threshold
+      REAL(C_DOUBLE) :: phases(*)
+    END FUNCTION
     INTEGER(C_INT) FUNCTION free_panels() BIND(C,NAME='gpu_resident_free_')
       IMPORT C_INT
     END FUNCTION
@@ -130,10 +143,12 @@ CONTAINS
   END FUNCTION
 
   ! Selection happens after CPU WH/X0 setup, using the actual working pattern.
-  SUBROUTINE SelectGPUBackend(wh,x,enabled,root_only,expected_iterations)
+  SUBROUTINE SelectGPUBackend(wh,x,enabled,root_only,expected_iterations,extra_fixed_nnz,initial_shift)
     TYPE(Matrix_ps), INTENT(IN) :: wh,x
     LOGICAL, INTENT(OUT) :: enabled,root_only
     INTEGER, INTENT(IN) :: expected_iterations
+    INTEGER(INT64), OPTIONAL, INTENT(IN) :: extra_fixed_nnz
+    LOGICAL, OPTIONAL, INTENT(IN) :: initial_shift
     CHARACTER(64) :: policy,cap_text,multinode
     INTEGER :: code,flags(2),global_flags(2),ierr,pr,pc,comm,rank,iterations,io,j,k
     INTEGER :: local_comm,local_size,valid,all_valid
@@ -178,6 +193,18 @@ CONTAINS
     END DO
     CALL MPI_Allreduce(local_wh,nnz_wh,1,MPINTLONG,MPI_SUM,comm,ierr)
     CALL MPI_Allreduce(local_x,nnz_x,1,MPINTLONG,MPI_SUM,comm,ierr)
+    IF(PRESENT(initial_shift)) THEN
+      IF(initial_shift) THEN
+        ! X0 adds at most one diagonal per actual row. Use that upper bound
+        ! for ranking without materializing X0 on the CPU first.
+        nnz_x=MIN(nnz_x+INT(wh%actual_matrix_dimension,INT64), &
+          INT(wh%logical_matrix_dimension,INT64)*INT(wh%logical_matrix_dimension,INT64))
+      END IF
+    END IF
+    IF(PRESENT(extra_fixed_nnz)) THEN
+      IF(extra_fixed_nnz<0 .OR. nnz_wh>HUGE(nnz_wh)-extra_fixed_nnz) CALL FailGPU('fixed input count overflow')
+      nnz_wh=nnz_wh+extra_fixed_nnz
+    END IF
     pr=wh%process_grid%num_process_rows; pc=wh%process_grid%num_process_columns
     iterations=MAX(1,MIN(24,expected_iterations))
     CALL EstimateGPUPlan(wh%actual_matrix_dimension,1,1,nnz_wh,nnz_x,iterations, &
@@ -237,10 +264,11 @@ CONTAINS
   END SUBROUTINE
 
   ! Recheck after runtime/NCCL creation, before allocating matrix payloads.
-  SUBROUTINE CheckGPUMemory(wh,x,root_only,allowed)
+  SUBROUTINE CheckGPUMemory(wh,x,root_only,allowed,extra_fixed_nnz)
     TYPE(Matrix_ps), INTENT(IN) :: wh,x
     LOGICAL, INTENT(IN) :: root_only
     LOGICAL, INTENT(OUT) :: allowed
+    INTEGER(INT64), OPTIONAL, INTENT(IN) :: extra_fixed_nnz
     INTEGER :: comm,rank,ierr,j,k,valid,all_valid,pr,pc,n,io
     INTEGER(INT64) :: local_wh,nnz_wh,peak,budget,cap,cap_mb,free_bytes,total_bytes
     REAL(REAL64) :: seconds
@@ -256,6 +284,10 @@ CONTAINS
       END DO
     END DO
     CALL MPI_Allreduce(local_wh,nnz_wh,1,MPINTLONG,MPI_SUM,comm,ierr)
+    IF(PRESENT(extra_fixed_nnz)) THEN
+      IF(extra_fixed_nnz<0 .OR. nnz_wh>HUGE(nnz_wh)-extra_fixed_nnz) CALL FailGPU('fixed input count overflow')
+      nnz_wh=nnz_wh+extra_fixed_nnz
+    END IF
     pr=wh%process_grid%num_process_rows; pc=wh%process_grid%num_process_columns
     n=wh%logical_matrix_dimension
     IF(root_only) THEN
@@ -336,6 +368,11 @@ CONTAINS
   IMPURE ELEMENTAL SUBROUTINE DestroyGPU(matrix)
     TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
     IF(matrix%handle/=0) CALL destroy_slot(matrix%handle)
+  END SUBROUTINE
+
+  SUBROUTINE ReleaseGPU(matrix)
+    TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
+    CALL DestroyGPU(matrix)
   END SUBROUTINE
 
   SUBROUTINE ShapeGPU(host,matrix)
@@ -498,6 +535,41 @@ CONTAINS
     CALL SolverScalarSum(value)
   END SUBROUTINE
 
+  SUBROUTINE BoundsGPURegion(matrix,host,root_only,lower_bound,upper_bound)
+    TYPE(GPUMatrix_t), INTENT(IN) :: matrix
+    TYPE(Matrix_ps), INTENT(IN) :: host
+    LOGICAL, INTENT(IN) :: root_only
+    REAL(NTREAL), INTENT(OUT) :: lower_bound,upper_bound
+    REAL(C_DOUBLE), ALLOCATABLE :: lower(:),upper(:)
+    REAL(NTREAL) :: bounds(2)
+    INTEGER :: ierr
+    IF(.NOT.root_only .OR. host%process_grid%global_rank==0) THEN
+      ALLOCATE(lower(matrix%columns),upper(matrix%columns))
+      IF(bounds_slot(matrix%handle,matrix%columns,matrix%diagonal,lower,upper)/=0) CALL FailGPU('bounds failed')
+      IF(.NOT.root_only) THEN
+        CALL MPI_Allreduce(MPI_IN_PLACE,lower,SIZE(lower),MPINTREAL,MPI_SUM,host%process_grid%column_comm,ierr)
+        CALL MPI_Allreduce(MPI_IN_PLACE,upper,SIZE(upper),MPINTREAL,MPI_SUM,host%process_grid%column_comm,ierr)
+      END IF
+      lower_bound=MINVAL(lower); upper_bound=MAXVAL(upper)
+      IF(root_only) THEN
+        ! The coalesced CSR omits padded zero columns; the CPU algorithm
+        ! includes them in its extrema. Retain that numerical convention.
+        IF(host%logical_matrix_dimension>host%actual_matrix_dimension) THEN
+          lower_bound=MIN(0.0_NTREAL,lower_bound); upper_bound=MAX(0.0_NTREAL,upper_bound)
+        END IF
+      ELSE
+        CALL MPI_Allreduce(MPI_IN_PLACE,lower_bound,1,MPINTREAL,MPI_MIN,host%process_grid%row_comm,ierr)
+        CALL MPI_Allreduce(MPI_IN_PLACE,upper_bound,1,MPINTREAL,MPI_MAX,host%process_grid%row_comm,ierr)
+      END IF
+      DEALLOCATE(lower,upper)
+      bounds=[lower_bound,upper_bound]
+    END IF
+    IF(root_only) THEN
+      CALL MPI_Bcast(bounds,2,MPINTREAL,0,host%process_grid%global_comm,ierr)
+      lower_bound=bounds(1); upper_bound=bounds(2)
+    END IF
+  END SUBROUTINE
+
   SUBROUTINE DotGPU(a,b,value)
     TYPE(GPUMatrix_t), INTENT(IN) :: a,b
     REAL(NTREAL), INTENT(OUT) :: value
@@ -510,14 +582,71 @@ CONTAINS
     TYPE(GPUMatrix_t), INTENT(IN) :: source
     TYPE(GPUMatrix_t), INTENT(INOUT) :: destination
     REAL(NTREAL), INTENT(IN) :: threshold
+    CALL MultiplyGPU(source,source,destination,threshold)
+  END SUBROUTINE
+
+  SUBROUTINE MultiplyGPU(left,right,destination,threshold)
+    TYPE(GPUMatrix_t), INTENT(IN) :: left,right
+    TYPE(GPUMatrix_t), INTENT(INOUT) :: destination
+    REAL(NTREAL), INTENT(IN) :: threshold
     REAL(C_DOUBLE) :: phases(4)
-    IF(source%handle==0) CALL FailGPU('square of uninitialized matrix')
+    CALL CheckShapes(left,right)
     IF(destination%handle==0) CALL create_slot(destination%handle)
-    IF(source%handle==destination%handle) CALL FailGPU('in-place square is unsupported')
-    IF(resident_square(source%handle,destination%handle,source%rows,source%dimension,source%columns, &
-        source%process_rows,source%process_columns,threshold,phases)/=0) CALL FailGPU('resident square failed')
-    destination%rows=source%rows; destination%columns=source%columns
-    destination%dimension=source%dimension; destination%diagonal=source%diagonal
-    destination%process_rows=source%process_rows; destination%process_columns=source%process_columns
+    IF(left%handle==destination%handle .OR. right%handle==destination%handle) CALL FailGPU('in-place product is unsupported')
+    IF(resident_multiply(left%handle,right%handle,destination%handle,left%rows,left%dimension,left%columns, &
+        left%process_rows,left%process_columns,threshold,phases)/=0) CALL FailGPU('resident product failed')
+    destination%rows=left%rows; destination%columns=left%columns
+    destination%dimension=left%dimension; destination%diagonal=left%diagonal
+    destination%process_rows=left%process_rows; destination%process_columns=left%process_columns
+  END SUBROUTINE
+
+  ! Transitional host-facing transform: products are resident, boundaries still
+  ! import/export Matrix_ps. Preserve the CPU path when admission is unsafe.
+  SUBROUTINE TryGPUSimilarityTransform(a,p,pinv,result,threshold,performed)
+    TYPE(Matrix_ps), INTENT(IN) :: a,p,pinv
+    TYPE(Matrix_ps), INTENT(INOUT) :: result
+    REAL(NTREAL), INTENT(IN) :: threshold
+    LOGICAL, INTENT(OUT) :: performed
+    TYPE(GPUMatrix_t) :: ga,gp,gpinv,temp,output
+    LOGICAL :: root_mode,allowed
+    INTEGER :: j,k,ierr,valid,all_valid
+    INTEGER(INT64) :: extra,global_extra
+    performed=.FALSE.; valid=1
+    IF(a%is_complex .OR. p%is_complex .OR. pinv%is_complex) valid=0
+    IF(.NOT.ASSOCIATED(a%process_grid,p%process_grid) .OR. &
+       .NOT.ASSOCIATED(a%process_grid,pinv%process_grid)) valid=0
+    IF(a%logical_matrix_dimension/=p%logical_matrix_dimension .OR. &
+       a%logical_matrix_dimension/=pinv%logical_matrix_dimension) valid=0
+    IF(a%actual_matrix_dimension/=p%actual_matrix_dimension .OR. &
+       a%actual_matrix_dimension/=pinv%actual_matrix_dimension) valid=0
+    CALL MPI_Allreduce(valid,all_valid,1,MPI_INTEGER,MPI_MIN,a%process_grid%global_comm,ierr)
+    IF(all_valid==0) RETURN
+    ! Three fixed inputs, two product outputs; the planner's three full dynamic
+    ! CSR slots conservatively cover both outputs plus its existing scratch.
+    extra=0
+    DO j=1,SIZE(p%local_data_r,2)
+      DO k=1,SIZE(p%local_data_r,1)
+        extra=extra+SIZE(p%local_data_r(k,j)%values,KIND=INT64)
+        extra=extra+SIZE(pinv%local_data_r(k,j)%values,KIND=INT64)
+      END DO
+    END DO
+    CALL MPI_Allreduce(extra,global_extra,1,MPINTLONG,MPI_SUM,a%process_grid%global_comm,ierr)
+    CALL SelectGPUBackend(a,a,allowed,root_mode,2,global_extra)
+    IF(.NOT.allowed) RETURN
+    CALL BeginGPUBackend(a,root_mode)
+    CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra)
+    IF(allowed) THEN
+      CALL UploadGPURegion(a,ga,root_mode)
+      CALL UploadGPURegion(p,gp,root_mode)
+      CALL UploadGPURegion(pinv,gpinv,root_mode)
+      CALL ConstructEmptyMatrix(result,a)
+      IF(.NOT.root_mode .OR. a%process_grid%global_rank==0) THEN
+        CALL MultiplyGPU(gp,ga,temp,threshold)
+        CALL MultiplyGPU(temp,gpinv,output,threshold)
+      END IF
+      CALL DownloadGPURegion(output,result,root_mode)
+      performed=.TRUE.
+    END IF
+    IF(.NOT.root_mode .OR. a%process_grid%global_rank==0) CALL EndGPUBackend()
   END SUBROUTINE
 END MODULE

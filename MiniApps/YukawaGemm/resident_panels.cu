@@ -107,20 +107,9 @@ int exchange(int which,int rows,int nnz,CSR &received,Buffer &device_displs,
     DCUDA(cudaDeviceSynchronize());
     return 0;
 }
-}
-
-extern "C" int gpu_resident_square_(int input_slot,int output_slot,int rows,int n,
-    int columns,int process_rows,int process_columns,double threshold,double *phases) {
-    if(rows<1 || columns<1 || n<1 || input_slot==output_slot ||
-       (long long)rows*process_rows!=n || (long long)columns*process_columns!=n) return -1;
-    int peers,rank;
-    CHECK(solver_nccl_group_info_(1,&peers,&rank));
-    if(peers!=process_columns) return -1;
-    CHECK(solver_nccl_group_info_(2,&peers,&rank));
-    if(peers!=process_rows) return -1;
-    auto start=std::chrono::steady_clock::now();
-    int *rp,*ci,slot_rows,nnz; double *values;
-    gpu_ops_get_(&input_slot,&rp,&ci,&values,&slot_rows,&nnz);
+int snapshot(int slot,int rows,int &nnz) {
+    int *rp,*ci,slot_rows; double *values;
+    gpu_ops_get_(&slot,&rp,&ci,&values,&slot_rows,&nnz);
     if(slot_rows!=rows || nnz<0) return -1;
     CHECK(local.rp.reserve(size_t(rows+1)*sizeof(int)));
     CHECK(local.ci.reserve(size_t(nnz)*sizeof(int)));
@@ -130,6 +119,23 @@ extern "C" int gpu_resident_square_(int input_slot,int output_slot,int rows,int 
         DCUDA(cudaMemcpyAsync(local.ci.data,ci,size_t(nnz)*sizeof(int),cudaMemcpyDeviceToDevice));
         DCUDA(cudaMemcpyAsync(local.values.data,values,size_t(nnz)*sizeof(double),cudaMemcpyDeviceToDevice));
     }
+    return 0;
+}
+}
+
+extern "C" int gpu_resident_multiply_(int left_slot,int right_slot,int output_slot,int rows,int n,
+    int columns,int process_rows,int process_columns,double threshold,double *phases) {
+    if(rows<1 || columns<1 || n<1 || process_rows<1 || process_columns<1 ||
+       left_slot==output_slot || right_slot==output_slot ||
+       (long long)rows*process_rows!=n || (long long)columns*process_columns!=n) return -1;
+    int peers,rank;
+    CHECK(solver_nccl_group_info_(1,&peers,&rank));
+    if(peers!=process_columns) return -1;
+    CHECK(solver_nccl_group_info_(2,&peers,&rank));
+    if(peers!=process_rows) return -1;
+    auto start=std::chrono::steady_clock::now();
+    int nnz;
+    CHECK(snapshot(left_slot,rows,nnz));
     std::vector<int> counts,displs;
     int nnz_a,nnz_b;
     CHECK(exchange(1,rows,nnz,row_received,row_displacements,counts,displs,nnz_a));
@@ -145,6 +151,7 @@ extern "C" int gpu_resident_square_(int input_slot,int output_slot,int rows,int 
         a.rp.as<int>(),a.ci.as<int>(),a.values.as<double>());
     DCUDA(cudaGetLastError()); DCUDA(cudaDeviceSynchronize());
     phases[1]=elapsed(start); start=std::chrono::steady_clock::now();
+    if(left_slot!=right_slot) CHECK(snapshot(right_slot,rows,nnz));
     CHECK(exchange(2,rows,nnz,column_received,column_displacements,counts,displs,nnz_b));
     CHECK(b.rp.reserve(size_t(n+1)*sizeof(int)));
     vertical_rows<<<(n+1+255)/256,256>>>(rows,process_rows,column_received.rp.as<int>(),
@@ -157,6 +164,12 @@ extern "C" int gpu_resident_square_(int input_slot,int output_slot,int rows,int 
         column_received.values.as<double>(),threshold,output_slot));
     DCUDA(cudaDeviceSynchronize()); phases[3]=elapsed(start);
     return 0;
+}
+
+extern "C" int gpu_resident_square_(int input_slot,int output_slot,int rows,int n,
+    int columns,int process_rows,int process_columns,double threshold,double *phases) {
+    return gpu_resident_multiply_(input_slot,input_slot,output_slot,rows,n,columns,
+                                  process_rows,process_columns,threshold,phases);
 }
 
 extern "C" int gpu_resident_free_() {

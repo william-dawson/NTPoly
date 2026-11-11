@@ -24,6 +24,7 @@ constexpr int cudaSuccess=0, cudaMemcpyDeviceToDevice=0, cudaMemcpyDeviceToHost=
 template<class T> int cudaMallocManaged(T **p, size_t n) {
     *p=static_cast<T*>(malloc(n)); return *p ? 0 : 1;
 }
+template<class T> int cudaMalloc(T **p, size_t n) { return cudaMallocManaged(p,n); }
 inline int cudaFree(void *p) { free(p); return 0; }
 inline int cudaMemset(void *p, int v, size_t n) { memset(p,v,n); return 0; }
 inline int cudaMemcpy(void *d,const void *s,size_t n,int) { memmove(d,s,n); return 0; }

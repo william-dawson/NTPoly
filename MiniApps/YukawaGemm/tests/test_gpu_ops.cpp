@@ -20,6 +20,12 @@ int main() {
     int *rp,*ci,m,n; double *v;
     gpu_ops_get_(&a,&rp,&ci,&v,&m,&n);
     for(int j=0;j<6;++j) { assert(ci[j]==j+1); assert(v[j]==j+1); }
+    int columns=8,diagonal=2;double lower[8],upper[8];
+    assert(gpu_ops_bounds_(&a,&columns,&diagonal,lower,upper)==0);
+    for(int j=0;j<8;++j) {
+        double value=j<6?double(j+1):0;
+        assert(upper[j]==value && lower[j]==(j==2?value:-value));
+    }
     fill(a,{1,2,3},{1,2,3}); fill(b,{1,2,4},{-1,-1.99,.1});
     threshold=.1;
     gpu_ops_increment_threshold_(&a,&b,&alpha,&threshold,&out);
