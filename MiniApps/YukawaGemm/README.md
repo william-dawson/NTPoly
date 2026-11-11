@@ -714,7 +714,23 @@ basis transform/output remain supported. GPU results are exported to the
 normal distributed host matrix before TRS2 returns. The GPU matrix type owns
 independent dynamic handles with deep-copy assignment and finalization;
 legacy mini-app slots are reserved separately. Multiply/merge scratch is
-still a process-wide cache, and one GPU solver context/process is supported.
+still a process-wide cache, and one active GPU solver context/process is
+supported. Sequential calls now borrow a cached communication context owned
+by their process grid: full-grid and coalesced-root contexts are separate,
+and each is initialized/warmed only on its first use. Matrix/panel payloads
+are still released at the solve boundary. Changed H, dimensions, overlap and
+CPU calls between GPU solves do not invalidate communication-only state.
+`NTPoly GPU context reused: T/F` records reuse per GPU call.
+
+`DestructProcessGrid` releases its cached NCCL communicators, streams, events
+and staging buffers before freeing MPI handles; call it before MPI_Finalize.
+`CopyProcessGrid` creates an independent grid/context lifetime. As with its
+MPI handles, intrinsic assignment of owning grids is unsupported. Several
+grids can retain independent idle contexts; nested/concurrent GPU calls are
+unsupported. Communication settings are read when each context is created.
+Cached library-internal NCCL storage remains until grid destruction; payload
+memory admission still uses live free HBM. This does not cache numerical
+bounds/X0, matrices or the quadratic product workspace per grid.
 
 `NTPOLY_GPU_RANK_POLICY` accepts:
 

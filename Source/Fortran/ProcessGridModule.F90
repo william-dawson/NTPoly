@@ -1,6 +1,9 @@
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !> A module to manage the process grid.
 MODULE ProcessGridModule
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+  USE ISO_C_BINDING, ONLY: C_PTR, C_NULL_PTR, C_ASSOCIATED, C_INT
+#endif
   USE ErrorModule, ONLY : Error_t, ConstructError, SetGenericError
   USE LoggingModule, ONLY : EnterSubLog, ExitSubLog, &
        & WriteHeader, WriteListElement
@@ -53,6 +56,10 @@ MODULE ProcessGridModule
      INTEGER, DIMENSION(:,:), ALLOCATABLE, PUBLIC :: blocked_between_slice_comm
      !> The maximum number of openmp threads.
      INTEGER :: omp_max_threads
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+     ! Owned by this grid, borrowed by its matrices. Separate full/root contexts.
+     TYPE(C_PTR) :: gpu_context(2) = C_NULL_PTR
+#endif
   END TYPE ProcessGrid_t
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> The default process grid.
@@ -79,6 +86,14 @@ MODULE ProcessGridModule
      MODULE PROCEDURE ConstructNewProcessGrid_full
      MODULE PROCEDURE ConstructNewProcessGrid_onlyslice
   END INTERFACE ConstructNewProcessGrid
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+  INTERFACE
+     INTEGER(C_INT) FUNCTION FreeGPUContext(context) BIND(C,NAME='solver_nccl_context_free_')
+       IMPORT C_PTR, C_INT
+       TYPE(C_PTR) :: context
+     END FUNCTION
+  END INTERFACE
+#endif
 CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Setup the default process grid.
   SUBROUTINE ConstructProcessGrid_full(world_comm, process_rows, &
@@ -384,6 +399,16 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     IF (.NOT. PRESENT(grid_in)) THEN
        CALL DestructProcessGrid(global_grid)
     ELSE !! Destruct
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       ! Destruction is collective on this grid, before its MPI handles expire.
+       DO II=1,2
+          IF(C_ASSOCIATED(grid_in%gpu_context(II))) THEN
+             IF(FreeGPUContext(grid_in%gpu_context(II))/=0) THEN
+                CALL MPI_Abort(grid_in%global_comm,1,ierr)
+             END IF
+          END IF
+       END DO
+#endif
        IF (ALLOCATED(grid_in%blocked_row_comm)) THEN
           CALL MPI_COMM_FREE(grid_in%global_comm, ierr)
           CALL MPI_COMM_FREE(grid_in%row_comm, ierr)

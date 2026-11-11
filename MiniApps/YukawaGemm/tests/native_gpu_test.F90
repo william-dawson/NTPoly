@@ -31,6 +31,9 @@ PROGRAM NativeGPUTest
     INTEGER(C_INT) FUNCTION live_count() BIND(C,NAME='gpu_ops_live_count_')
       IMPORT C_INT
     END FUNCTION
+    INTEGER(C_INT) FUNCTION context_count() BIND(C,NAME='solver_nccl_context_count_')
+      IMPORT C_INT
+    END FUNCTION
   END INTERFACE
   CALL MPI_Init(ierr)
   CALL MPI_Comm_rank(MPI_COMM_WORLD,rank,ierr); CALL MPI_Comm_size(MPI_COMM_WORLD,nr,ierr)
@@ -95,9 +98,36 @@ PROGRAM NativeGPUTest
     END DO
     CALL DestructSolverParameters(params); CALL DestructMatrix(overlap)
   END DO
+  CALL ContextLifetimeTest()
   CALL DestructPermutation(permutation); CALL DestructMatrix(h); CALL DestructMatrix(identity)
-  CALL DestructProcessGrid; CALL MPI_Comm_free(work_comm,ierr); CALL MPI_Finalize(ierr)
+  CALL DestructProcessGrid
+  IF(context_count()/=0) CALL MPI_Abort(MPI_COMM_WORLD,11,ierr)
+  IF(rank==0) PRINT *, 'GPU CONTEXT TEARDOWN PASS'
+  CALL MPI_Comm_free(work_comm,ierr); CALL MPI_Finalize(ierr)
 CONTAINS
+  SUBROUTINE ContextLifetimeTest()
+    TYPE(ProcessGrid_t), TARGET :: copied,reshaped
+    TYPE(Matrix_ps) :: other
+    INTEGER :: baseline
+    baseline=context_count()
+    ! Copy is an independent grid: no borrowed CUDA/NCCL ownership.
+    CALL CopyProcessGrid(global_grid,copied)
+    CALL ConstructEmptyMatrix(other,5,process_grid_in=copied)
+    CALL BeginGPUBackend(other); CALL EndGPUBackend()
+    IF(context_count()/=baseline+1) CALL MPI_Abort(MPI_COMM_WORLD,12,ierr)
+    CALL BeginGPUBackend(h); CALL EndGPUBackend()
+    CALL BeginGPUBackend(other); CALL EndGPUBackend()
+    IF(context_count()/=baseline+1) CALL MPI_Abort(MPI_COMM_WORLD,13,ierr)
+    CALL DestructMatrix(other); CALL DestructProcessGrid(copied)
+    IF(context_count()/=baseline) CALL MPI_Abort(MPI_COMM_WORLD,14,ierr)
+    ! Reuse the same Fortran object/MPI handle storage with a different grid.
+    CALL ConstructNewProcessGrid(reshaped,work_comm,pc,pr,1)
+    CALL ConstructEmptyMatrix(other,5,process_grid_in=reshaped)
+    CALL BeginGPUBackend(other); CALL EndGPUBackend()
+    CALL DestructMatrix(other); CALL DestructProcessGrid(reshaped)
+    IF(context_count()/=baseline) CALL MPI_Abort(MPI_COMM_WORLD,15,ierr)
+    IF(rank==0) PRINT *, 'GPU CONTEXT GRID COPY/SWITCH/RESHAPE PASS'
+  END SUBROUTINE
   SUBROUTINE OwnershipTest()
     INTEGER :: i
     CALL BeginGPUBackend(h)

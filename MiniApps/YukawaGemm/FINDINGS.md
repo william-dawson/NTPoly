@@ -2602,3 +2602,97 @@ describe improved SYTRD/STEDC and Blackwell registered-workspace performance;
 this experiment does not measure those releases. Testing a newer cuSOLVERMp,
 larger GPU grids, representative BigDFT matrices, and matched accuracy remain
 follow-ups. Native communicator reuse and the padded CPU bug remain open.
+
+## Finding 27 — grid-owned NCCL reuse in native TRS2 (2026-11-11)
+
+Native solves now borrow communication contexts from their owning process
+grid. Full-grid and coalesced-root contexts have separate lazy slots; the
+first use initializes/warms NCCL, later uses reactivate it. Each grid owns
+its communicators, stream, ordering events and small staging buffers;
+`DestructProcessGrid` releases them before MPI handles, and `CopyProcessGrid`
+starts an independent lifetime. This avoids matching recycled MPI handles or
+silently borrowing a different application's communicator. Concurrent/nested
+GPU calls remain unsupported; multiply scratch is still process-wide.
+Matrix owners and panel payloads are freed at each solve boundary. Cached
+communication has no H, bounds, X0, numerical matrix or dimension payload.
+
+### Measured native API costs
+
+At gapped 64k/half filling, threshold 1e-4 and convergence 1e-6, five solves
+on one node/four GPUs (job 312787, c183, OMP1) give:
+
+| Scope | Previous code | Grid-owned reuse |
+|---|---:|---:|
+| First call | 5.6599 s | 5.3479 s |
+| Later four calls, mean | 2.7842 s | 0.67184 s |
+| Later range | 2.6275–3.1021 s | 0.5654–0.9193 s |
+| Sum of five API calls | 16.7966 s | 8.0353 s |
+| Later narrow GPU-setup counter | 1.8153 s | 0.02909 s |
+| Later resident loop | 0.13262 s | 0.13809 s |
+
+The measured gain is **4.14x for later API calls**, with essentially the same
+GPU loop; this removes repeated bootstrap/destruction, not numerical work.
+The same allocation's CPU128 control (4 MPI x 32 bound threads) averages
+3.2369 s on later calls, 4.82x the new GPU API cost. These are full TRS2 API
+times, not loop-only timings; external input read/permutation, MPI launch,
+matrix validation and disk writes are excluded. First-call cost is still
+large and must not be silently amortized. Final communication teardown now
+occurs at grid destruction, outside the API sums. Recorded five-solve executable
+wall times, including launch, input, density write and teardown, are 26.60 s
+old versus 18.09 s new; these include filesystem costs.
+At 10k/coalesced one GPU, later
+means are 0.08048 s old and 0.08221 s new; no useful speed improvement there.
+
+A separate bound-affinity control (312802, also c183) gives later API means
+0.73371 s for GPU/OMP1, 0.91378 s for GPU/OMP32, and 3.13395 s for CPU128.
+OMP32 is numerically valid at this unpadded 64k size, but slower for GPU;
+retain OMP1 for these GPU runs. The measured five-call API sums are 9.8774 s
+GPU/OMP1 versus 15.9290 s CPU128, a 1.61x batch gain after including first use.
+This does not resolve the separate padded 10k threaded-CPU bug from Finding 26.
+
+### Correctness, lifetime and transport checks
+
+One-node tests cover auto/root coalescing, full 2x2 and 1x4 grids, interleaved
+independent application communicators, nonidentity overlap, load balancing,
+changed H, repeated CPU/GPU alternation, deep GPU matrix ownership,
+independent grid copies, alternating grids, reshaped grids and teardown.
+Each process asserts zero owned contexts after final grid destruction.
+Full 10k/64k old/new density comparisons give maximum entry differences
+6.67e-16/8.11e-15. Separate CPU128 versus GPU/OMP1 and GPU/OMP32 64k matrices
+agree within 6.67e-15. The large matrices are retained on group storage;
+the exact comparison scripts and raw error maxima are in the text records.
+
+Two-node/eight-GPU validation succeeds in job 312812 on c387/c390, using
+`NCCL_IB_MERGE_NICS=0`: old/new later native API means 2.3825/0.35887 s,
+resident loops 0.10636/0.10597 s. Both use the same setting/allocation.
+First new API call is 5.0276 s. Full-grid and split-application tiny suites
+also pass full CPU/GPU matrix parity, grid switching and zero-context teardown.
+Large two-node solves pass energy/trace/grandsum fingerprints; they did not
+save large matrices for a separate full entrywise comparison in this run.
+
+Initial multi-node job 312792 timed out during first bootstrap on c186/c188,
+before reuse. A paired control on the same nodes (312805) times out with
+**both unchanged old and new executables** (code 110, no completed solves).
+Its scheduler job exits zero because the driver records these failures and
+continues; do not confuse that with numerical validation. Logs show asymmetric
+merged NIC descriptions, but that is not a proven cause. The successful run
+changes both node pair and merging setting, so it **does not establish a
+transport fix or a causal effect of disabling NIC merging**. No cluster outage
+or regression from reuse is diagnosed. Library network defaults are unchanged;
+multi-node remains opt-in. NVIDIA documents the test setting in its
+[NCCL 2.29 environment reference](https://docs.nvidia.com/deeplearning/nccl/archives/nccl_2297/user-guide/docs/env.html).
+
+Legacy compatibility job 312829 passes actual NCCL fixed/variable/empty/scalar
+transport checks at four ranks, and resident nonsymmetric/empty/reset tests
+on both 1x2 and 2x1 grids, with shared communication disabled and enabled.
+CPU-only NTPoly/reference targets build, and the full host regression suite
+passes. An all-target CPU build still encounters the existing unlinked GPU
+mini-app symbols without CUDA; this is not claimed as a successful build.
+
+`validation/rikyu-context-20261111` preserves source/transfer hashes, specs,
+scheduler statuses, raw outputs, both failed/successful transport logs, and
+an independent analyzer checking fingerprints, context reuse and timing scopes.
+All six jobs finished. Generated matrices/builds stay on group storage;
+home quota is not consumed by new builds or density output. Next: bound the
+quadratic workspace, recalibrate placement using cache state, and move CPU
+bounds/X0/setup to GPU before generalizing resident operations/solver families.

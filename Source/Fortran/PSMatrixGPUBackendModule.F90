@@ -27,6 +27,17 @@ MODULE PSMatrixGPUBackendModule
     GENERIC :: ASSIGNMENT(=) => AssignGPU
   END TYPE
   INTERFACE
+    INTEGER(C_INT) FUNCTION create_context(context) BIND(C,NAME='solver_nccl_context_create_')
+      IMPORT C_PTR,C_INT
+      TYPE(C_PTR) :: context
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION select_context(context) BIND(C,NAME='solver_nccl_context_select_')
+      IMPORT C_PTR,C_INT
+      TYPE(C_PTR), VALUE :: context
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION suspend_context() BIND(C,NAME='solver_nccl_context_suspend_')
+      IMPORT C_INT
+    END FUNCTION
     INTEGER(C_INT) FUNCTION device_info(device,count,identity) BIND(C,NAME='gpu_device_info_')
       IMPORT C_INT,C_INT8_T
       INTEGER(C_INT) :: device,count
@@ -274,21 +285,40 @@ CONTAINS
     TYPE(Matrix_ps), INTENT(IN) :: matrix
     LOGICAL, OPTIONAL, INTENT(IN) :: root_only
     INTEGER(C_INT) :: status,device
-    LOGICAL :: root_mode
+    INTEGER :: mode,comm,hit,all_hit,ierr
+    LOGICAL :: root_mode,reused
     root_mode=.FALSE.
     IF(PRESENT(root_only)) root_mode=root_only
     IF(root_mode .AND. matrix%process_grid%global_rank/=0) RETURN
     IF(nccl_active) CALL FailGPU('nested GPU solver contexts are unsupported')
     CALL init_gpu(status,device)
     IF(status/=0) CALL FailGPU('CUDA initialization failed')
+    mode=1; comm=matrix%process_grid%global_comm
     IF(root_mode) THEN
-      CALL InitSolverNCCL(MPI_COMM_SELF,MPI_COMM_SELF,MPI_COMM_SELF)
-      CALL WarmSolverNCCL(MPI_COMM_SELF,MPI_COMM_SELF)
+      mode=2; comm=MPI_COMM_SELF
+    END IF
+    reused=C_ASSOCIATED(matrix%process_grid%gpu_context(mode))
+    hit=0; IF(reused) hit=1
+    CALL MPI_Allreduce(hit,all_hit,1,MPI_INTEGER,MPI_SUM,comm,ierr)
+    CALL MPI_Comm_size(comm,hit,ierr)
+    IF(all_hit/=0 .AND. all_hit/=hit) CALL FailGPU('inconsistent grid context ownership')
+    IF(.NOT.reused) THEN
+      IF(create_context(matrix%process_grid%gpu_context(mode))/=0) CALL FailGPU('context allocation failed')
+    END IF
+    IF(select_context(matrix%process_grid%gpu_context(mode))/=0) CALL FailGPU('context activation failed')
+    IF(reused) THEN
+      nccl_active=.TRUE.
     ELSE
-      CALL InitSolverNCCL(matrix%process_grid%row_comm,matrix%process_grid%column_comm,matrix%process_grid%global_comm)
-      CALL WarmSolverNCCL(matrix%process_grid%row_comm,matrix%process_grid%column_comm)
+      IF(root_mode) THEN
+        CALL InitSolverNCCL(MPI_COMM_SELF,MPI_COMM_SELF,MPI_COMM_SELF)
+        CALL WarmSolverNCCL(MPI_COMM_SELF,MPI_COMM_SELF)
+      ELSE
+        CALL InitSolverNCCL(matrix%process_grid%row_comm,matrix%process_grid%column_comm,matrix%process_grid%global_comm)
+        CALL WarmSolverNCCL(matrix%process_grid%row_comm,matrix%process_grid%column_comm)
+      END IF
     END IF
     IF(matrix%process_grid%global_rank==0) THEN
+      PRINT *, 'NTPoly GPU context reused:',reused
       IF(root_mode) THEN
         PRINT *, 'NTPoly GPU TRS2 active ranks: 1 (coalesced)'
       ELSE
@@ -299,7 +329,8 @@ CONTAINS
 
   SUBROUTINE EndGPUBackend()
     IF(free_panels()/=0) CALL FailGPU('panel cleanup failed')
-    CALL FinishSolverNCCL()
+    IF(suspend_context()/=0) CALL FailGPU('context release failed')
+    nccl_active=.FALSE.
   END SUBROUTINE
 
   IMPURE ELEMENTAL SUBROUTINE DestroyGPU(matrix)

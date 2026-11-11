@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <vector>
+#include <new>
 #ifdef YUKAWA_HAVE_NCCL
 #include <cuda_runtime.h>
 #include <nccl.h>
@@ -17,11 +18,19 @@ struct Group {
     int size=0,rank=0;
     bool world_shared=false;
     std::vector<int> members;
-} groups[3];
-cudaStream_t stream=nullptr;
-cudaEvent_t device_ready=nullptr,device_done=nullptr;
-void *input=nullptr,*output=nullptr;
-size_t input_capacity=0,output_capacity=0;
+};
+struct Context {
+    Group groups[3];
+    cudaStream_t stream=nullptr;
+    cudaEvent_t device_ready=nullptr,device_done=nullptr;
+    void *input=nullptr,*output=nullptr;
+    size_t input_capacity=0,output_capacity=0;
+    int device=-1;
+};
+// The mini-app retains its legacy context. Library grids own independent contexts.
+Context legacy_context;
+Context *current=&legacy_context;
+int owned_contexts=0;
 #define CUDA(call) do { auto e=(call); if(e!=cudaSuccess) { std::fprintf(stderr,"NCCL staging CUDA: %s\n",cudaGetErrorString(e)); return -1; } } while(0)
 #define NCCL(call) do { auto e=(call); if(e!=ncclSuccess) { std::fprintf(stderr,"NCCL: %s\n",ncclGetErrorString(e)); return -1; } } while(0)
 int reserve(void **p,size_t &capacity,size_t required) {
@@ -33,7 +42,7 @@ int reserve(void **p,size_t &capacity,size_t required) {
 int gather(int which,const void *send,int count,void *receive,const int *counts,
            const int *displacements,bool real) {
     if(which<0 || which>=3 || count<0) return -1;
-    Group &g=groups[which];
+    Group &g=current->groups[which];
     if(g.size<1 || counts[g.rank]!=count) return -1;
     const size_t width=real?sizeof(double):sizeof(int);
     size_t total=0; bool uniform=true;
@@ -48,29 +57,54 @@ int gather(int which,const void *send,int count,void *receive,const int *counts,
         return 0;
     }
     if(g.world_shared && g.members.size()!=size_t(g.size)) return -1;
-    if(reserve(&input,input_capacity,size_t(count)*width) || reserve(&output,output_capacity,total*width)) return -1;
-    if(count) CUDA(cudaMemcpyAsync(input,send,size_t(count)*width,cudaMemcpyHostToDevice,stream));
+    if(reserve(&current->input,current->input_capacity,size_t(count)*width) || reserve(&current->output,current->output_capacity,total*width)) return -1;
+    if(count) CUDA(cudaMemcpyAsync(current->input,send,size_t(count)*width,cudaMemcpyHostToDevice,current->stream));
     ncclDataType_t type=real?ncclDouble:ncclInt;
     if(uniform && !g.world_shared) {
-        NCCL(ncclAllGather(input,output,count,type,g.comm,stream));
+        NCCL(ncclAllGather(current->input,current->output,count,type,g.comm,current->stream));
     } else {
         // All peers must make progress together (NCCL grouped P2P).
         NCCL(ncclGroupStart());
         for(int peer=0;peer<g.size;++peer) if(peer!=g.rank) {
             const int target=g.world_shared ? g.members[peer] : peer;
-            if(count) NCCL(ncclSend(input,count,type,target,g.comm,stream));
-            if(counts[peer]) NCCL(ncclRecv(static_cast<char*>(output)+size_t(displacements[peer])*width,
-                                         counts[peer],type,target,g.comm,stream));
+            if(count) NCCL(ncclSend(current->input,count,type,target,g.comm,current->stream));
+            if(counts[peer]) NCCL(ncclRecv(static_cast<char*>(current->output)+size_t(displacements[peer])*width,
+                                         counts[peer],type,target,g.comm,current->stream));
         }
         NCCL(ncclGroupEnd());
-        if(count) CUDA(cudaMemcpyAsync(static_cast<char*>(output)+size_t(displacements[g.rank])*width,
-                                      input,size_t(count)*width,cudaMemcpyDeviceToDevice,stream));
+        if(count) CUDA(cudaMemcpyAsync(static_cast<char*>(current->output)+size_t(displacements[g.rank])*width,
+                                      current->input,size_t(count)*width,cudaMemcpyDeviceToDevice,current->stream));
     }
-    if(total) CUDA(cudaMemcpyAsync(receive,output,total*width,cudaMemcpyDeviceToHost,stream));
-    CUDA(cudaStreamSynchronize(stream)); return 0;
+    if(total) CUDA(cudaMemcpyAsync(receive,current->output,total*width,cudaMemcpyDeviceToHost,current->stream));
+    CUDA(cudaStreamSynchronize(current->stream)); return 0;
 }
 }
 extern "C" {
+int solver_nccl_context_create_(void **ptr) {
+    if(!ptr || *ptr) return -1;
+    auto *context=new(std::nothrow) Context;
+    if(!context) return -1;
+    auto error=cudaGetDevice(&context->device);
+    if(error!=cudaSuccess) { delete context; return -1; }
+    *ptr=context;
+    ++owned_contexts;
+    return 0;
+}
+int solver_nccl_context_count_() { return owned_contexts; }
+int solver_nccl_context_select_(void *ptr) {
+    if(!ptr || current!=&legacy_context || current->groups[0].size>0) return -1;
+    auto *context=static_cast<Context*>(ptr);
+    int device; CUDA(cudaGetDevice(&device));
+    if(device!=context->device) return -1;
+    current=context;
+    return 0;
+}
+int solver_nccl_context_suspend_() {
+    if(current==&legacy_context) return -1;
+    if(current->stream) CUDA(cudaStreamSynchronize(current->stream));
+    current=&legacy_context;
+    return 0;
+}
 int solver_nccl_available_() { return 1; }
 int solver_nccl_id_(int8_t *bytes) {
     static_assert(sizeof(ncclUniqueId)==128,"Fortran bootstrap ID size");
@@ -78,14 +112,14 @@ int solver_nccl_id_(int8_t *bytes) {
 }
 int solver_nccl_init_(const int *which,const int *size,const int *rank,const int8_t *bytes) {
     if(*which<0 || *which>=3 || *size<1 || *rank<0 || *rank>=*size) return -1;
-    if(!stream) CUDA(cudaStreamCreateWithFlags(&stream,cudaStreamNonBlocking));
-    Group &g=groups[*which]; g.size=*size; g.rank=*rank;
+    if(!current->stream) CUDA(cudaStreamCreateWithFlags(&current->stream,cudaStreamNonBlocking));
+    Group &g=current->groups[*which]; g.size=*size; g.rank=*rank;
     const char *shared=std::getenv("YUKAWA_NCCL_SHARED_COMM");
     g.world_shared=*which>0 && shared && std::strcmp(shared,"1")==0;
     if(*size>1) {
         if(g.world_shared) {
-            if(!groups[0].comm) return -1;
-            g.comm=groups[0].comm;
+            if(!current->groups[0].comm) return -1;
+            g.comm=current->groups[0].comm;
         } else {
             ncclUniqueId id; std::memcpy(&id,bytes,128);
             NCCL(ncclCommInitRank(&g.comm,*size,id,*rank));
@@ -96,22 +130,22 @@ int solver_nccl_init_(const int *which,const int *size,const int *rank,const int
 }
 int solver_nccl_members_(const int *which,const int *members) {
     if(*which<0 || *which>=3) return -1;
-    Group &g=groups[*which];
+    Group &g=current->groups[*which];
     g.members.assign(members,members+g.size);
-    for(int rank:g.members) if(rank<0 || rank>=groups[0].size) return -1;
+    for(int rank:g.members) if(rank<0 || rank>=current->groups[0].size) return -1;
     return 0;
 }
 int solver_nccl_group_info_(int which,int *size,int *rank) {
-    if(which<0 || which>=3 || groups[which].size<1) return -1;
-    *size=groups[which].size; *rank=groups[which].rank; return 0;
+    if(which<0 || which>=3 || current->groups[which].size<1) return -1;
+    *size=current->groups[which].size; *rank=current->groups[which].rank; return 0;
 }
 // Device-facing transport. Producer/consumer work stays on the default
-// compute stream; events order it against the nonblocking NCCL stream.
+// compute current->stream; events order it against the nonblocking NCCL current->stream.
 // Only counts/displacements live on the CPU. No payload staging or host wait.
 int solver_nccl_device_gather_(int which,const void *send,int count,void *receive,
                                const int *counts,const int *displs,int real) {
     if(which<0 || which>=3 || count<0) return -1;
-    Group &g=groups[which];
+    Group &g=current->groups[which];
     if(g.size<1 || counts[g.rank]!=count) return -1;
     const size_t width=real?sizeof(double):sizeof(int);
     size_t total=0; bool uniform=true;
@@ -127,27 +161,27 @@ int solver_nccl_device_gather_(int which,const void *send,int count,void *receiv
         return 0;
     }
     if(g.world_shared && g.members.size()!=size_t(g.size)) return -1;
-    if(!device_ready) CUDA(cudaEventCreateWithFlags(&device_ready,cudaEventDisableTiming));
-    if(!device_done) CUDA(cudaEventCreateWithFlags(&device_done,cudaEventDisableTiming));
-    CUDA(cudaEventRecord(device_ready,0));
-    CUDA(cudaStreamWaitEvent(stream,device_ready,0));
+    if(!current->device_ready) CUDA(cudaEventCreateWithFlags(&current->device_ready,cudaEventDisableTiming));
+    if(!current->device_done) CUDA(cudaEventCreateWithFlags(&current->device_done,cudaEventDisableTiming));
+    CUDA(cudaEventRecord(current->device_ready,0));
+    CUDA(cudaStreamWaitEvent(current->stream,current->device_ready,0));
     const auto type=real?ncclDouble:ncclInt;
     if(uniform && !g.world_shared) {
-        NCCL(ncclAllGather(send,receive,count,type,g.comm,stream));
+        NCCL(ncclAllGather(send,receive,count,type,g.comm,current->stream));
     } else {
         NCCL(ncclGroupStart());
         for(int peer=0;peer<g.size;++peer) if(peer!=g.rank) {
             int target=g.world_shared?g.members[peer]:peer;
-            if(count) NCCL(ncclSend(send,count,type,target,g.comm,stream));
+            if(count) NCCL(ncclSend(send,count,type,target,g.comm,current->stream));
             if(counts[peer]) NCCL(ncclRecv(static_cast<char*>(receive)+size_t(displs[peer])*width,
-                                         counts[peer],type,target,g.comm,stream));
+                                         counts[peer],type,target,g.comm,current->stream));
         }
         NCCL(ncclGroupEnd());
         if(count) CUDA(cudaMemcpyAsync(static_cast<char*>(receive)+size_t(displs[g.rank])*width,
-                                      send,size_t(count)*width,cudaMemcpyDeviceToDevice,stream));
+                                      send,size_t(count)*width,cudaMemcpyDeviceToDevice,current->stream));
     }
-    CUDA(cudaEventRecord(device_done,stream));
-    CUDA(cudaStreamWaitEvent(0,device_done,0));
+    CUDA(cudaEventRecord(current->device_done,current->stream));
+    CUDA(cudaStreamWaitEvent(0,current->device_done,0));
     return 0;
 }
 int solver_nccl_gather_i_(const int *which,const int *send,const int *count,int *receive,const int *counts,const int *displacements) {
@@ -157,29 +191,47 @@ int solver_nccl_gather_r_(const int *which,const double *send,const int *count,d
     return gather(*which,send,*count,receive,counts,displacements,true);
 }
 int solver_nccl_sum_(double *value) {
-    Group &g=groups[0]; if(g.size==1) return 0; if(g.size<1) return -1;
-    if(reserve(&input,input_capacity,sizeof(double)) || reserve(&output,output_capacity,sizeof(double))) return -1;
-    CUDA(cudaMemcpyAsync(input,value,sizeof(double),cudaMemcpyHostToDevice,stream));
-    NCCL(ncclAllReduce(input,output,1,ncclDouble,ncclSum,g.comm,stream));
-    CUDA(cudaMemcpyAsync(value,output,sizeof(double),cudaMemcpyDeviceToHost,stream));
-    CUDA(cudaStreamSynchronize(stream)); return 0;
+    Group &g=current->groups[0]; if(g.size==1) return 0; if(g.size<1) return -1;
+    if(reserve(&current->input,current->input_capacity,sizeof(double)) || reserve(&current->output,current->output_capacity,sizeof(double))) return -1;
+    CUDA(cudaMemcpyAsync(current->input,value,sizeof(double),cudaMemcpyHostToDevice,current->stream));
+    NCCL(ncclAllReduce(current->input,current->output,1,ncclDouble,ncclSum,g.comm,current->stream));
+    CUDA(cudaMemcpyAsync(value,current->output,sizeof(double),cudaMemcpyDeviceToHost,current->stream));
+    CUDA(cudaStreamSynchronize(current->stream)); return 0;
 }
 int solver_nccl_finish_() {
-    if(stream) CUDA(cudaStreamSynchronize(stream));
-    for(auto &g:groups) {
+    if(current->stream) CUDA(cudaStreamSynchronize(current->stream));
+    for(auto &g:current->groups) {
         if(g.comm && !g.world_shared) NCCL(ncclCommDestroy(g.comm));
-        g.comm=nullptr; g.members.clear();
+        g.comm=nullptr; g.members.clear(); g.size=0; g.rank=0; g.world_shared=false;
     }
-    if(input) CUDA(cudaFree(input)); if(output) CUDA(cudaFree(output));
-    input=output=nullptr; input_capacity=output_capacity=0;
-    if(device_ready) CUDA(cudaEventDestroy(device_ready));
-    if(device_done) CUDA(cudaEventDestroy(device_done));
-    device_ready=device_done=nullptr;
-    if(stream) CUDA(cudaStreamDestroy(stream)); stream=nullptr; return 0;
+    if(current->input) CUDA(cudaFree(current->input)); if(current->output) CUDA(cudaFree(current->output));
+    current->input=current->output=nullptr; current->input_capacity=current->output_capacity=0;
+    if(current->device_ready) CUDA(cudaEventDestroy(current->device_ready));
+    if(current->device_done) CUDA(cudaEventDestroy(current->device_done));
+    current->device_ready=current->device_done=nullptr;
+    if(current->stream) CUDA(cudaStreamDestroy(current->stream)); current->stream=nullptr; return 0;
+}
+int solver_nccl_context_free_(void **ptr) {
+    if(!ptr || !*ptr) return 0;
+    auto *context=static_cast<Context*>(*ptr);
+    if(current==context) return -1; // A leased grid cannot be destroyed.
+    int old_device; CUDA(cudaGetDevice(&old_device));
+    CUDA(cudaSetDevice(context->device));
+    Context *saved=current; current=context;
+    int status=solver_nccl_finish_(); current=saved;
+    CUDA(cudaSetDevice(old_device));
+    if(status) return status;
+    delete context; *ptr=nullptr; --owned_contexts;
+    return 0;
 }
 }
 #else
 extern "C" {
+int solver_nccl_context_count_() { return 0; }
+int solver_nccl_context_create_(void**) { return -1; }
+int solver_nccl_context_select_(void*) { return -1; }
+int solver_nccl_context_suspend_() { return -1; }
+int solver_nccl_context_free_(void**) { return -1; }
 int solver_nccl_available_() { return 0; }
 int solver_nccl_id_(int8_t*) { return -1; }
 int solver_nccl_init_(const int*,const int*,const int*,const int8_t*) { return -1; }
