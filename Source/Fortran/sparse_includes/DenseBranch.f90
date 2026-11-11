@@ -11,8 +11,9 @@
   CALL DestructMatrix(DenseB)
 
   !! Convert Back
+  ! Match SparseBranch: threshold the scaled product, not the raw AB.
+  DenseC%DATA = alpha*DenseC%DATA
   CALL ConstructMatrixSFromD(DenseC, matC, threshold)
-  CALL ScaleMatrix(matC, alpha)
 
   !! Cleanup
   CALL DestructMatrix(DenseC)

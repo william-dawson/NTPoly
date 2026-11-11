@@ -4,6 +4,7 @@ MODULE PSMatrixGPUBackendModule
   USE ISO_C_BINDING
   USE DataTypesModule, ONLY: NTREAL, MPINTLONG, MPINTREAL
   USE ISO_FORTRAN_ENV, ONLY: INT64, REAL64
+  USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
   USE GPUPlanningModule, ONLY: EstimateGPUPlan, GPUMemoryBudget
   USE NTMPIModule
   USE PSMatrixModule, ONLY: Matrix_ps, ConstructEmptyMatrix, MergeMatrixLocalBlocks, SplitMatrixToLocalBlocks, &
@@ -17,7 +18,7 @@ MODULE PSMatrixGPUBackendModule
   PUBLIC :: GPUMatrix_t, GPURequested, SelectGPUBackend, CheckGPUMemory, BeginGPUBackend, EndGPUBackend
   PUBLIC :: UploadGPURegion, DownloadGPURegion
   PUBLIC :: UploadGPU, DownloadGPU, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU, MultiplyGPU
-  PUBLIC :: TryGPUSimilarityTransform, ReleaseGPU, BoundsGPURegion
+  PUBLIC :: TryGPUSimilarityTransform, TryGPUMatrixMultiply, ReleaseGPU, BoundsGPURegion, PruneGPU
   TYPE :: GPUMatrix_t
     PRIVATE
     INTEGER(C_INT) :: handle=0, rows=0, columns=0, dimension=0, diagonal=0
@@ -94,6 +95,11 @@ MODULE PSMatrixGPUBackendModule
       INTEGER(C_INT) :: dst,src,nnz
       REAL(C_DOUBLE) :: alpha,threshold
     END SUBROUTINE
+    SUBROUTINE prune_slot(slot,threshold,nnz) BIND(C,NAME='gpu_ops_prune_')
+      IMPORT C_INT,C_DOUBLE
+      INTEGER(C_INT) :: slot,nnz
+      REAL(C_DOUBLE) :: threshold
+    END SUBROUTINE
     SUBROUTINE trace_slot(slot,diagonal,value) BIND(C,NAME='gpu_ops_trace_')
       IMPORT C_INT,C_DOUBLE
       INTEGER(C_INT) :: slot,diagonal
@@ -131,32 +137,41 @@ CONTAINS
     ERROR STOP
   END SUBROUTINE
 
-  LOGICAL FUNCTION GPURequested(matrix) RESULT(requested)
+  LOGICAL FUNCTION GPURequested(matrix,option_name) RESULT(requested)
     TYPE(Matrix_ps), INTENT(IN) :: matrix
+    CHARACTER(*), OPTIONAL, INTENT(IN) :: option_name
+    CHARACTER(32) :: name
     CHARACTER(16) :: option
     INTEGER :: flags(2),global_flags(2),ierr
-    CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_TRS2',option)
+    name='NTPOLY_GPU_TRS2'
+    IF(PRESENT(option_name)) name=option_name
+    CALL GET_ENVIRONMENT_VARIABLE(TRIM(name),option)
     flags(1)=0
     IF(TRIM(option)=='1') flags(1)=1
     flags(2)=-flags(1)
     CALL MPI_Allreduce(flags,global_flags,2,MPI_INTEGER,MPI_MAX,matrix%process_grid%global_comm,ierr)
-    IF(global_flags(1)/=-global_flags(2)) CALL FailGPU('NTPOLY_GPU_TRS2 differs between ranks')
+    IF(global_flags(1)/=-global_flags(2)) CALL FailGPU(TRIM(name)//' differs between ranks')
     requested=global_flags(1)==1
     IF(.NOT.requested) RETURN
-    IF(matrix%is_complex .OR. matrix%process_grid%num_process_slices/=1) &
-      CALL FailGPU('TRS2 GPU backend currently requires real matrices and one slice')
+    IF(matrix%is_complex .OR. matrix%process_grid%num_process_slices/=1) THEN
+      IF(PRESENT(option_name)) THEN
+        requested=.FALSE.
+      ELSE
+        CALL FailGPU('TRS2 GPU backend currently requires real matrices and one slice')
+      END IF
+    END IF
   END FUNCTION
 
   ! Selection happens after CPU WH/X0 setup, using the actual working pattern.
-  SUBROUTINE SelectGPUBackend(wh,x,enabled,root_only,expected_iterations,extra_fixed_nnz,initial_shift)
+  SUBROUTINE SelectGPUBackend(wh,x,enabled,root_only,expected_iterations,extra_fixed_nnz,initial_shift,preserve_padding)
     TYPE(Matrix_ps), INTENT(IN) :: wh,x
     LOGICAL, INTENT(OUT) :: enabled,root_only
     INTEGER, INTENT(IN) :: expected_iterations
     INTEGER(INT64), OPTIONAL, INTENT(IN) :: extra_fixed_nnz
-    LOGICAL, OPTIONAL, INTENT(IN) :: initial_shift
+    LOGICAL, OPTIONAL, INTENT(IN) :: initial_shift,preserve_padding
     CHARACTER(64) :: policy,cap_text,multinode
     INTEGER :: code,flags(2),global_flags(2),ierr,pr,pc,comm,rank,iterations,io,j,k
-    INTEGER :: local_comm,local_size,valid,all_valid
+    INTEGER :: local_comm,local_size,valid,all_valid,root_dimension
     INTEGER(C_INT8_T), ALLOCATABLE :: devices(:,:)
     INTEGER(C_INT8_T) :: identity(16)
     INTEGER(C_INT) :: device,count,status
@@ -212,7 +227,11 @@ CONTAINS
     END IF
     pr=wh%process_grid%num_process_rows; pc=wh%process_grid%num_process_columns
     iterations=MAX(1,MIN(24,expected_iterations))
-    CALL EstimateGPUPlan(wh%actual_matrix_dimension,1,1,nnz_wh,nnz_x,iterations, &
+    root_dimension=wh%actual_matrix_dimension
+    IF(PRESENT(preserve_padding)) THEN
+      IF(preserve_padding) root_dimension=wh%logical_matrix_dimension
+    END IF
+    CALL EstimateGPUPlan(root_dimension,1,1,nnz_wh,nnz_x,iterations, &
       root_peak,root_seconds,root_index)
     CALL EstimateGPUPlan(wh%logical_matrix_dimension,pr,pc,nnz_wh,nnz_x,iterations, &
       all_peak,all_seconds,all_index)
@@ -269,11 +288,12 @@ CONTAINS
   END SUBROUTINE
 
   ! Recheck after runtime/NCCL creation, before allocating matrix payloads.
-  SUBROUTINE CheckGPUMemory(wh,x,root_only,allowed,extra_fixed_nnz)
+  SUBROUTINE CheckGPUMemory(wh,x,root_only,allowed,extra_fixed_nnz,preserve_padding)
     TYPE(Matrix_ps), INTENT(IN) :: wh,x
     LOGICAL, INTENT(IN) :: root_only
     LOGICAL, INTENT(OUT) :: allowed
     INTEGER(INT64), OPTIONAL, INTENT(IN) :: extra_fixed_nnz
+    LOGICAL, OPTIONAL, INTENT(IN) :: preserve_padding
     INTEGER :: comm,rank,ierr,j,k,valid,all_valid,pr,pc,n,io
     INTEGER(INT64) :: local_wh,nnz_wh,peak,budget,cap,cap_mb,free_bytes,total_bytes
     REAL(REAL64) :: seconds
@@ -297,6 +317,9 @@ CONTAINS
     n=wh%logical_matrix_dimension
     IF(root_only) THEN
       pr=1; pc=1; n=wh%actual_matrix_dimension
+      IF(PRESENT(preserve_padding)) THEN
+        IF(preserve_padding) n=wh%logical_matrix_dimension
+      END IF
     END IF
     CALL EstimateGPUPlan(n,pr,pc,nnz_wh,0_INT64,1,peak,seconds,index_safe)
     CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_MEMORY_MB',cap_text)
@@ -470,19 +493,25 @@ CONTAINS
     CALL DestructMatrix(local)
   END SUBROUTINE
 
-  SUBROUTINE UploadGPURegion(host,matrix,root_only)
+  SUBROUTINE UploadGPURegion(host,matrix,root_only,preserve_padding)
     TYPE(Matrix_ps), INTENT(IN) :: host
     TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
     LOGICAL, INTENT(IN) :: root_only
+    LOGICAL, OPTIONAL, INTENT(IN) :: preserve_padding
+    LOGICAL :: keep_padding
     TYPE(Matrix_lsr) :: local
     IF(.NOT.root_only) THEN
       CALL UploadGPU(host,matrix)
       RETURN
     END IF
-    CALL GatherMatrixToProcess(host,local,0)
+    keep_padding=.FALSE.
+    IF(PRESENT(preserve_padding)) keep_padding=preserve_padding
+    CALL GatherMatrixToProcess(host,local,0,include_padding_in=keep_padding)
     IF(host%process_grid%global_rank==0) THEN
       IF(matrix%handle==0) CALL create_slot(matrix%handle)
-      matrix%rows=host%actual_matrix_dimension; matrix%columns=matrix%rows
+      matrix%rows=host%actual_matrix_dimension
+      IF(keep_padding) matrix%rows=host%logical_matrix_dimension
+      matrix%columns=matrix%rows
       matrix%dimension=matrix%rows; matrix%diagonal=0
       matrix%process_rows=1; matrix%process_columns=1
       CALL UploadLocalGPU(local,matrix)
@@ -554,6 +583,15 @@ CONTAINS
     CALL CheckShapes(source,destination)
     CALL increment_slot(destination%handle,source%handle,alpha,threshold,nnz)
     IF(nnz<0) CALL FailGPU('increment failed')
+  END SUBROUTINE
+
+  SUBROUTINE PruneGPU(matrix,threshold)
+    TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
+    REAL(NTREAL), INTENT(IN) :: threshold
+    INTEGER(C_INT) :: nnz
+    IF(matrix%handle==0) CALL FailGPU('prune of uninitialized matrix')
+    CALL prune_slot(matrix%handle,threshold,nnz)
+    IF(nnz<0) CALL FailGPU('prune failed')
   END SUBROUTINE
 
   SUBROUTINE TraceGPU(matrix,value)
@@ -629,6 +667,88 @@ CONTAINS
     destination%process_rows=left%process_rows; destination%process_columns=left%process_columns
   END SUBROUTINE
 
+  ! Shared API boundary for iterative solver families. Keep the public CPU
+  ! representation and perform the expensive product on the admitted GPU grid.
+  SUBROUTINE TryGPUMatrixMultiply(a,b,c,alpha,beta,threshold,performed)
+    TYPE(Matrix_ps), INTENT(IN) :: a,b
+    TYPE(Matrix_ps), INTENT(INOUT) :: c
+    REAL(NTREAL), INTENT(IN) :: alpha,beta,threshold
+    LOGICAL, INTENT(OUT) :: performed
+    TYPE(GPUMatrix_t) :: ga,gb,gc,product
+    LOGICAL :: root_mode,allowed,keep_c,participant
+    INTEGER :: valid,all_valid,ierr,j,k
+    INTEGER(INT64) :: extra,global_extra
+    CHARACTER(16) :: report
+    performed=.FALSE.
+    IF(.NOT.GPURequested(a,'NTPOLY_GPU_ALGEBRA')) RETURN
+    keep_c=ABS(beta)>=TINY(beta)
+    valid=1
+    IF(nccl_active .OR. b%is_complex) valid=0
+    IF(.NOT.ASSOCIATED(a%process_grid,b%process_grid)) valid=0
+    IF(a%logical_matrix_dimension/=b%logical_matrix_dimension .OR. &
+       a%actual_matrix_dimension/=b%actual_matrix_dimension) valid=0
+    IF(.NOT.IEEE_IS_FINITE(alpha) .OR. .NOT.IEEE_IS_FINITE(beta) .OR. &
+       .NOT.IEEE_IS_FINITE(threshold) .OR. threshold<0) valid=0
+    IF(keep_c) THEN
+      IF(c%is_complex .OR. .NOT.ASSOCIATED(a%process_grid,c%process_grid)) valid=0
+      IF(a%logical_matrix_dimension/=c%logical_matrix_dimension .OR. &
+         a%actual_matrix_dimension/=c%actual_matrix_dimension) valid=0
+    END IF
+    CALL MPI_Allreduce(valid,all_valid,1,MPI_INTEGER,MPI_MIN,a%process_grid%global_comm,ierr)
+    IF(all_valid==0) RETURN
+    extra=0
+    DO j=1,SIZE(b%local_data_r,2)
+      DO k=1,SIZE(b%local_data_r,1)
+        extra=extra+SIZE(b%local_data_r(k,j)%values,KIND=INT64)
+      END DO
+    END DO
+    IF(keep_c) THEN
+      DO j=1,SIZE(c%local_data_r,2)
+        DO k=1,SIZE(c%local_data_r,1)
+          extra=extra+SIZE(c%local_data_r(k,j)%values,KIND=INT64)
+        END DO
+      END DO
+    END IF
+    CALL MPI_Allreduce(extra,global_extra,1,MPINTLONG,MPI_SUM,a%process_grid%global_comm,ierr)
+    CALL SelectGPUBackend(a,a,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+    IF(.NOT.allowed) RETURN
+    CALL BeginGPUBackend(a,root_mode)
+    CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+    participant=.NOT.root_mode .OR. a%process_grid%global_rank==0
+    IF(allowed) THEN
+      CALL UploadGPURegion(a,ga,root_mode,preserve_padding=.TRUE.)
+      CALL UploadGPURegion(b,gb,root_mode,preserve_padding=.TRUE.)
+      IF(keep_c) CALL UploadGPURegion(c,gc,root_mode,preserve_padding=.TRUE.)
+      IF(participant) THEN
+        ! CPU GEMM thresholds alpha*A*B BEFORE adding beta*C.
+        ! Thresholding AB first would lose terms when |alpha|>1.
+        IF(ABS(alpha)==1.0_NTREAL) THEN
+          CALL MultiplyGPU(ga,gb,product,threshold)
+          IF(alpha<0) CALL ScaleGPU(product,alpha)
+        ELSE
+          CALL MultiplyGPU(ga,gb,product,0.0_NTREAL)
+          CALL ScaleGPU(product,alpha)
+          CALL PruneGPU(product,threshold)
+        END IF
+        IF(keep_c) THEN
+          CALL ScaleGPU(gc,beta)
+          CALL IncrementGPU(product,gc,1.0_NTREAL,0.0_NTREAL)
+        END IF
+      END IF
+      CALL ConstructEmptyMatrix(c,a)
+      IF(keep_c) THEN
+        CALL DownloadGPURegion(gc,c,root_mode)
+      ELSE
+        CALL DownloadGPURegion(product,c,root_mode)
+      END IF
+      performed=.TRUE.
+      CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_REPORT',report)
+      IF(TRIM(report)=='1' .AND. a%process_grid%global_rank==0) PRINT *, 'NTPoly GPU algebra product'
+    END IF
+    CALL ReleaseGPU(ga); CALL ReleaseGPU(gb); CALL ReleaseGPU(gc); CALL ReleaseGPU(product)
+    IF(participant) CALL EndGPUBackend()
+  END SUBROUTINE
+
   ! Transitional host-facing transform: products are resident, boundaries still
   ! import/export Matrix_ps. Preserve the CPU path when admission is unsafe.
   SUBROUTINE TryGPUSimilarityTransform(a,p,pinv,result,threshold,performed)
@@ -676,6 +796,8 @@ CONTAINS
       CALL DownloadGPURegion(output,result,root_mode)
       performed=.TRUE.
     END IF
+    CALL ReleaseGPU(ga); CALL ReleaseGPU(gp); CALL ReleaseGPU(gpinv)
+    CALL ReleaseGPU(temp); CALL ReleaseGPU(output)
     IF(.NOT.root_mode .OR. a%process_grid%global_rank==0) CALL EndGPUBackend()
   END SUBROUTINE
 END MODULE

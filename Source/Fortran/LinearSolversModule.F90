@@ -14,9 +14,9 @@ MODULE LinearSolversModule
   USE PMatrixMemoryPoolModule, ONLY : MatrixMemoryPool_p, &
        & DestructMatrixMemoryPool
   USE PSMatrixAlgebraModule, ONLY : IncrementMatrix, MatrixNorm, &
-       & MatrixMultiply, MatrixTrace, ScaleMatrix
+       & MatrixMultiply, DotMatrix, ScaleMatrix
   USE PSMatrixModule, ONLY : Matrix_ps, ConstructEmptyMatrix, &
-       & TransposeMatrix, DestructMatrix, ConjugateMatrix, CopyMatrix, &
+       & DestructMatrix, CopyMatrix, &
        & FillMatrixIdentity, PrintMatrixInformation, MergeMatrixLocalBlocks
   USE SMatrixModule, ONLY : Matrix_lsr
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
@@ -46,7 +46,6 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(Matrix_ps) :: ABalanced
     TYPE(Matrix_ps) :: BBalanced
     TYPE(Matrix_ps) :: RMat, PMat, QMat
-    TYPE(Matrix_ps) :: RMatT, PMatT
     TYPE(Matrix_ps) :: TempMat
     !! Temporary Variables
     INTEGER :: II
@@ -111,24 +110,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     norm_value = params%converge_diff + 1.0_NTREAL
     DO II = 1, params%max_iterations
+       !! Stop on a solved residual before forming another search product.
+       IF(MatrixNorm(RMat)<=params%converge_diff) EXIT
+       CALL DotMatrix(RMat, RMat, top)
+       IF(top==0.0_NTREAL) EXIT
        !! Compute the Step Size
        CALL MatrixMultiply(ABalanced, PMat, QMat, &
             & threshold_in = params%threshold, memory_pool_in = pool)
-
-       CALL TransposeMatrix(RMat,RMatT)
-       IF (RMatT%is_complex) THEN
-          CALL ConjugateMatrix(RMatT)
+       CALL DotMatrix(PMat, QMat, bottom)
+       ! Absolute sparsity pruning may erase A*P near convergence. Retry
+       ! that product without pruning rather than divide by a false zero.
+       IF(bottom==0.0_NTREAL) THEN
+          CALL MatrixMultiply(ABalanced, PMat, QMat, &
+               & threshold_in = 0.0_NTREAL, memory_pool_in = pool)
+          CALL DotMatrix(PMat, QMat, bottom)
        END IF
-       CALL MatrixMultiply(RMatT, RMat, TempMat, &
-            & threshold_in = params%threshold, memory_pool_in = pool)
-       CALL MatrixTrace(TempMat, top)
-       CALL TransposeMatrix(PMat, PMatT)
-       IF (PMatT%is_complex) THEN
-          CALL ConjugateMatrix(PMatT)
-       END IF
-       CALL MatrixMultiply(PMatT, QMat, TempMat, &
-            & threshold_in = params%threshold, memory_pool_in = pool)
-       CALL MatrixTrace(TempMat, bottom)
        step_size = top / bottom
 
        !! Update
@@ -137,13 +133,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        CALL IncrementMatrix(QMat, RMat, alpha_in = -1.0_NTREAL * step_size)
 
        !! Update PMat
-       CALL TransposeMatrix(RMat, RMatT)
-       IF (RMatT%is_complex) THEN
-          CALL ConjugateMatrix(RMatT)
-       END IF
-       CALL MatrixMultiply(RMatT, RMat, TempMat, &
-            & threshold_in = params%threshold, memory_pool_in = pool)
-       CALL MatrixTrace(TempMat, new_top)
+       CALL DotMatrix(RMat, RMat, new_top)
+       IF(new_top==0.0_NTREAL) EXIT
        step_size = new_top / top
        CALL ScaleMatrix(PMat, step_size)
        CALL IncrementMatrix(RMat, PMat)

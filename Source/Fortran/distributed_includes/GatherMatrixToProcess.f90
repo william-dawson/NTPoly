@@ -5,6 +5,9 @@
 
   !! Setup
   mat_dim = this%actual_matrix_dimension
+  IF(PRESENT(include_padding_in)) THEN
+     IF(include_padding_in) mat_dim = this%logical_matrix_dimension
+  END IF
 
   !! Local List
   CALL GetMatrixTripletList(this, tlist)

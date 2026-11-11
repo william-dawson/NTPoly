@@ -32,6 +32,21 @@ int main() {
     assert(out==1);
     gpu_ops_get_(&a,&rp,&ci,&v,&m,&n);
     assert(ci[0]==3 && v[0]==3); // exact cancellation, below/equal threshold
+    fill(a,{1,2,3,4},{0,.1,-.1,2});
+    gpu_ops_prune_(&a,&threshold,&out);
+    assert(out==1);
+    gpu_ops_get_(&a,&rp,&ci,&v,&m,&n);
+    assert(ci[0]==4 && v[0]==2);
+    double scale=-.5;
+    gpu_ops_scale_(&a,&scale);
+    gpu_ops_prune_(&a,&threshold,&out);
+    assert(out==1);
+    gpu_ops_get_(&a,&rp,&ci,&v,&m,&n);
+    assert(v[0]==-1);
+    scale=0;
+    gpu_ops_scale_(&a,&scale);
+    gpu_ops_prune_(&a,&threshold,&out);
+    assert(out==0 && gpu_ops_live_count_()==0);
     int zero=0,err;
     gpu_ops_alloc_(&a,&m,&zero,&rp,&ci,&v,&err);
     assert(err==0 && rp[0]==0 && rp[1]==0);

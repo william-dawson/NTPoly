@@ -2993,3 +2993,90 @@ Eight-GPU rank-zero kernel time is80.9% NCCL send/receive plus15.1%
 scalar allreduce; it includes peer waits and is not network bandwidth.
 Raw outputs, all failures, binary hashes, stage provenance, CSV and replayable
 analysis are in outer validation/rikyu-solver-scaling-20261111.
+
+## Finding 33: shared products cover solver families; preserve padding (2026-11-11)
+
+The real single-slice GPU backend now dispatches ordinary distributed
+`MatrixMultiply` calls with `NTPOLY_GPU_ALGEBRA=1`. This reaches iterative
+inverse/root/sign/polynomial/exponential/trigonometry/Fermi/CG and density
+families through one implementation. Normal Matrix_ps outputs remain available
+between calls; this is not whole-solver residency. `NTPOLY_GPU_TRS2=1` retains
+the specialized resident TRS2 loop. Both flags coexist. Complex, sliced,
+incompatible and inadmissible cases retain CPU paths; defaults stay opt-in.
+Cheap scalar/control and linear operations remain CPU work unless already
+inside the resident TRS2 region. Dense eigendecomposition and custom Cholesky
+remain CPU implementations; the standalone cuSOLVERMp harness is not integrated
+into those library entry points. See Documentation/GPUCoverage.md.
+
+Numerical/API fixes found while broadening coverage:
+
+- Preserve `prune(alpha*A*B,threshold)` before adding beta*C. CPU dense GEMM
+  previously pruned before scaling, disagreeing with the sparse branch. Both
+  now prune the scaled product; the independent regression fails on old code.
+- CG obtains Frobenius products directly instead of forming thresholded Gram
+  matrices for their traces. This removes three products per iteration and
+  avoids erasing small residuals. Check residual convergence before another
+  step, and retry an erased search product without pruning.
+- Shared root coalescing must gather the entire logical dimension: permutation
+  matrices can have entries in padding. Physical-dimension gathering corrupted
+  the combined padded/balanced test. Import, product and memory/index admission
+  now consistently use the logical dimension. The bounded native TRS2 region
+  retains its existing dimension policy.
+- FillMatrixPermutation no longer evaluates an absent optional argument; its
+  documented row-permutation default is explicit.
+- Shared API boundaries explicitly release temporary GPU owners, including the
+  existing similarity-transform boundary. Lifetime assertions remain enabled.
+
+Validated source is reconstructed by the initial source manifest and successive
+patch manifests in `validation/rikyu-algebra-20261111`. Job316524 completes536
+comparisons:49 solver entry points plus18 algebra cases across1/2/4-rank
+root/all layouts, zero-memory CPU fallback and a two-slice CPU fallback. Largest
+relative difference is3.73e-9. Complex fallback and logical-padding gather are
+also checked. Combined resident/shared TRS2 passes40 comparisons across all,
+root, split communicators and forced fallback, with changed H, balancing,
+nonidentity factors, owned slots and context teardown. CPU-only49-entry tests
+pass on1/4 ranks; host regressions and ASan/bounds coverage pass.
+
+At64k, form the well-conditioned SPD problem I+0.2*H/||H||1 outside timing.
+Use1e-8 pruning,1e-5 convergence,50-iteration cap, and three calls per setting.
+CPU32 grids are constructed with32 threads. Full API max-rank warm means:
+
+| Solver | CPU4 (4x1) | CPU128 (4x32) | GPU4 shared path | CPU128/GPU |
+|---|---:|---:|---:|---:|
+| Inverse |9.211 s|1.842 s|1.420 s|1.30x|
+| Inverse square root |8.144 s|1.616 s|1.174 s|1.38x|
+
+Full output relative differences are below8.91e-16. Independently evaluated
+||A*X-I||1 and ||X*A*X-I||1 are about9.87e-7 and1.09e-6, respectively;
+validation is outside the API timer. GPU inverse first call is5.880 s, including
+runtime/NCCL initialization; the later ISR family reuses that context. These
+are different problems/accuracy settings from the physical-H purification
+comparison and do not inherit its much larger speedups.
+
+Earlier inverse timings with1e-8 convergence hit the50-iteration cap (100 GPU
+products), so retain them as fixed-iteration observations rather than converged
+inverse performance. Two subsequent Nsight CUDA+MPI captures time out before
+any solver records. Their unprofiled controls complete; the overall collection
+jobs exit110 because of profiling. Do not call the profiler captures successful
+or infer a cluster/solver outage. A shorter CUDA-only capture is tracked
+separately. The failed harness initially indexed coefficient0 in a1-based
+Fortran API; corrected CPU bounds/ASan checks identify and clear that mistake.
+All failures and corrected runs are retained separately.
+
+Cleanup direction: keep dispatch/admission/ownership shared, leave inexpensive
+host code simple, move GPU build ownership out of MiniApps, and split the large
+CUDA source by storage/basic operations/products in a separate behavior-preserving
+change. Further residency work should follow full-API profiling, not kernel-only
+percentages or the claim that every tested wrapper is fully GPU implemented.
+
+CUDA-only follow-up317170 completes all six GPU solver calls, preserves their
+~1e-6 residuals, and writes a usable Nsight report. Its exit1 is a subsequent
+statistics-export refusal (SQLite older than the report); summaries are being
+regenerated with `--force-export=true`. Rank-zero kernels total1.073s across
+all six calls, cold startup and untimed residual validation. Largest custom
+kernels total0.213s compact,0.142s product and0.099s clear; cuSPARSE conversion
+also appears prominently. This capture is neither a warm-only decomposition
+nor an all-rank critical-path bound. It shows no reason to start another PTX
+microtuning exercise: host boundaries/control and cold initialization still
+have substantially more useful headroom. Profiled solver times are slower;
+use the separate unprofiled benchmark table above for speedups.

@@ -42,7 +42,8 @@ def main():
         shutil.copyfile(HERE / 'import_csc_test.cu', fixture_app / 'tests/import_csc_test.cu')
         shutil.copyfile(HERE / 'resident_panels_test.cpp', fixture_app / 'tests/resident_panels_test.cpp')
         shutil.copyfile(HERE / 'nccl_transport_test.cpp', fixture_app / 'tests/nccl_transport_test.cpp')
-        shutil.copyfile(HERE / 'test_identity.f90', fixture_app / 'tests/test_identity.f90')
+        for name in ('test_identity.f90', 'test_gemm_threshold.f90', 'test_cg_residual.f90'):
+            shutil.copyfile(HERE / name, fixture_app / 'tests' / name)
         for name in ("CMakeLists.txt", "yukawa_gemm.f90", "trs2_reference.F90", "solver_csr.f90", "solver_nccl.f90", "generate_yukawa.f90", "cusparse_gemm.cu", "nccl_panels.cu", "resident_panels.cu"):
             shutil.copyfile(APP / name, fixture_app / name)
         (fixture / "CMakeLists.txt").write_text("cmake_minimum_required(VERSION 3.20)\n"
@@ -124,6 +125,31 @@ END MODULE
         run(["mpifort", work / "driver.o", work / "csr.o", work / "nccl.o", work / "nccl-stub.o", work / "acc.o", work / "ops.o",
              work / "spgemm.o", build / "lib/libNTPoly.a", "-lc++", "-fopenmp",
              "-framework", "Accelerate", "-o", work / "solver"])
+        run(["mpifort", "-g", "-fcheck=all", "-I", build / "include", "-J", work,
+             HERE / "test_gemm_threshold.f90", build / "lib/libNTPoly.a", "-fopenmp",
+             "-framework", "Accelerate", "-o", work / "gemm-threshold"])
+        print(run([work / "gemm-threshold"], env=dict(os.environ, OMP_NUM_THREADS="1")).strip())
+        run(["mpifort", "-g", "-fcheck=all", "-I", build / "include", "-J", work,
+             HERE / "test_cg_residual.f90", build / "lib/libNTPoly.a", "-fopenmp",
+             "-framework", "Accelerate", "-o", work / "cg-residual"])
+        for ranks in (1, 2, 4):
+            print(run(["mpirun", "-n", ranks, work / "cg-residual"],
+                      env=dict(os.environ, OMP_NUM_THREADS="1"), timeout=30).strip())
+        # The same API suite must remain usable in a CPU-only library build.
+        # Only GPU ownership counters are stubbed; all solver/algebra code is real.
+        (work / "no-gpu-owners.cpp").write_text(
+            'extern "C" int gpu_ops_live_count_() { return 0; }\n'
+            'extern "C" int solver_nccl_context_count_() { return 0; }\n')
+        run(["clang++", "-c", work / "no-gpu-owners.cpp", "-o", work / "no-gpu-owners.o"])
+        run(["mpifort", "-g", "-fcheck=all", "-ffree-line-length-none", "-I", build / "include", "-J", work,
+             HERE / "algebra_gpu_test.F90", work / "no-gpu-owners.o", build / "lib/libNTPoly.a", "-fopenmp",
+             "-framework", "Accelerate", "-o", work / "cpu-solver-coverage"])
+        for ranks in (1, 4):
+            result = run(["mpirun", "-n", ranks, work / "cpu-solver-coverage", "1"],
+                         env=dict(os.environ, OMP_NUM_THREADS="1"), timeout=90)
+            assert result.count("SOLVER PARITY PASS") == 49, result
+            assert "ALGEBRA SOLVER COVERAGE COMPLETE" in result, result
+            print(f"CPU-only build: 49 solver APIs, complex fallback, ownership stubs, np={ranks}: PASS")
         # Odd dimension exercises padded NTPoly blocks; off-diagonal blocks are nonsymmetric.
         h = [[-1.1, .03, .02, .04, .01], [.03, -.8, .05, .01, .02],
              [.02, .05, .7, .03, .01], [.04, .01, .03, 1.0, .02],

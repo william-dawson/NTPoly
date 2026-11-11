@@ -1965,6 +1965,22 @@ void gpu_ops_get_(int *slot, int **rp, int **ci, double **val,
     *nnz = g_ops[s].nnz;
 }
 
+// Reuse the sorted merge/compaction path with a separate empty source.
+// A self increment with alpha=0 would evaluate 0*Inf and change values.
+void gpu_ops_prune_(int *slot, double *threshold, int *nnz)
+{
+    *nnz = -1;
+    int s = *slot - 1;
+    if (s < 0 || s >= static_cast<int>(g_ops.size()) || !std::isfinite(*threshold) || *threshold < 0) return;
+    int rows = g_ops[s].m, empty = 0, zero = 0, status = -1;
+    int *rp = nullptr, *ci = nullptr;
+    double *values = nullptr, alpha = 0;
+    gpu_ops_create_(&empty);
+    gpu_ops_alloc_(&empty, &rows, &zero, &rp, &ci, &values, &status);
+    if (status == 0) gpu_ops_increment_threshold_(slot, &empty, &alpha, threshold, nnz);
+    gpu_ops_destroy_(&empty);
+}
+
 void cusparse_gemm_free_(int *row_ptr, int *col_ind, double *val) {
     // No-op: buffers are persistent (freed at program exit).
 }

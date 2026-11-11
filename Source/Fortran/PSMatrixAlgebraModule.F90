@@ -24,6 +24,9 @@ MODULE PSMatrixAlgebraModule
        & ConstructTripletList, AppendToTripletList, DestructTripletList, &
        & GetTripletAt
   USE TripletModule, ONLY : Triplet_r, Triplet_c
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+  USE PSMatrixGPUBackendModule, ONLY: TryGPUMatrixMultiply
+#endif
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -128,6 +131,9 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     REAL(NTREAL) :: beta
     REAL(NTREAL) :: threshold
     TYPE(MatrixMemoryPool_p) :: memory_pool
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    LOGICAL :: gpu_performed
+#endif
 
     !! Handle the optional parameters
     IF (.NOT. PRESENT(alpha_in)) THEN
@@ -145,6 +151,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     ELSE
        threshold = threshold_in
     END IF
+
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    CALL TryGPUMatrixMultiply(matA,matB,matC,alpha,beta,threshold,gpu_performed)
+    IF(gpu_performed) RETURN
+#endif
 
     !! Setup Memory Pool
     IF (PRESENT(memory_pool_in)) THEN

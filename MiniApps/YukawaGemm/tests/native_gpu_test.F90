@@ -86,9 +86,11 @@ PROGRAM NativeGPUTest
         max_iterations_in=60,be_verbose_in=.TRUE.)
     END IF
     DO repetition=1,2
+      status=setenv('NTPOLY_GPU_ALGEBRA'//C_NULL_CHAR,'0'//C_NULL_CHAR,1_C_INT)
       status=setenv('NTPOLY_GPU_TRS2'//C_NULL_CHAR,'0'//C_NULL_CHAR,1_C_INT)
       IF(rank==0) CALL ActivateLogger()
       CALL TRS2(h,overlap,2.0_NTREAL,cpu,ec,muc,params)
+      status=setenv('NTPOLY_GPU_ALGEBRA'//C_NULL_CHAR,'1'//C_NULL_CHAR,1_C_INT)
       status=setenv('NTPOLY_GPU_TRS2'//C_NULL_CHAR,'1'//C_NULL_CHAR,1_C_INT)
       CALL TRS2(h,overlap,2.0_NTREAL,gpu,eg,mug,params)
       IF(rank==0) CALL DeactivateLogger()

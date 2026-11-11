@@ -908,11 +908,8 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     LOGICAL :: permute_rows
 
     !! Figure out what type of permutation
-    IF (PRESENT(permute_rows_in) .AND. permute_rows_in .EQV. .FALSE.) THEN
-       permute_rows = .FALSE.
-    ELSE
-       permute_rows = .TRUE.
-    END IF
+    permute_rows = .TRUE.
+    IF (PRESENT(permute_rows_in)) permute_rows = permute_rows_in
 
     IF (this%is_complex) THEN
        CALL FillMatrixPermutation_psc(this, permutation_vector, permute_rows)
@@ -1743,13 +1740,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
   !> given process. The process id is a within_slice id, so the data will
   !> still be replicated across slices.
-  SUBROUTINE GatherMatrixToProcess_psr_id(this, local_mat, within_slice_id)
+  SUBROUTINE GatherMatrixToProcess_psr_id(this, local_mat, within_slice_id, include_padding_in)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsr), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
     INTEGER, INTENT(IN) :: within_slice_id
+    !> Preserve logical padding entries (default: gather the physical matrix).
+    LOGICAL, OPTIONAL, INTENT(IN) :: include_padding_in
     !! Local Variables
     TYPE(TripletList_r) :: tlist, sorted
     TYPE(TripletList_r), DIMENSION(:), ALLOCATABLE :: slist
@@ -1776,13 +1775,15 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> This subroutine gathers the entire matrix into a local matrix on the
   !> given process. The process id is a within_slice id, so the data will
   !> still be replicated across slices.
-  SUBROUTINE GatherMatrixToProcess_psc_id(this, local_mat, within_slice_id)
+  SUBROUTINE GatherMatrixToProcess_psc_id(this, local_mat, within_slice_id, include_padding_in)
     !> The matrix to gather.
     TYPE(Matrix_ps), INTENT(IN) :: this
     !> The full matrix, stored in a local matrix.
     TYPE(Matrix_lsc), INTENT(INOUT) :: local_mat
     !> Which process to gather on.
     INTEGER, INTENT(IN) :: within_slice_id
+    !> Preserve logical padding entries (default: gather the physical matrix).
+    LOGICAL, OPTIONAL, INTENT(IN) :: include_padding_in
     !! Local Variables
     TYPE(TripletList_c) :: tlist, sorted
     TYPE(TripletList_c), DIMENSION(:), ALLOCATABLE :: slist
