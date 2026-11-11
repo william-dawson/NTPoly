@@ -643,6 +643,10 @@ element (128 MB/GPU at 64k/2×2). The numerical dense allocation remains;
 this option saves work, not O(N²/GPUs) storage. It is off by default and
 affects the resident direct multiply.
 
+For a dense diagonalization comparison, the standalone MPI/CUDA
+[`cusolvermp_bench.cu`](cusolvermp_bench.cu) forms the occupied density using
+cuSOLVERMp and cuBLASMp. See [build instructions and timing scopes](CUSOLVERMP.md).
+
 `--solver-reps N` restores cached GPU X0 before N independently converged
 solves, reusing communicators and allocations. Every result receives full
 reference parity. This repeats the same H; changed H needs new bounds/X0.

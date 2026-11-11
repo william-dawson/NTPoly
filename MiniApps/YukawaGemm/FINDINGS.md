@@ -2526,3 +2526,79 @@ No active jobs remain. Latest executable:
 **Next:** communicator lifetime/reuse and cost recalibration, intermediate
 active grids, broader N/fill/imbalance measurements, and a bounded sparse or
 chunked workspace to reduce the pessimistic full-fill admission requirement.
+
+## Finding 26 — cuSOLVERMp diagonalization comparison (2026-11-11)
+
+The standalone `cusolvermp_bench.cu` benchmarks installed cuSOLVERMp 0.7.2
+Syevd with eigenvectors, cuBLASMp 0.8.0 occupied-state FP64 GEMM, and sparse
+host coordinate export at 1e-4. The input is the same gapped 64k Hamiltonian
+and its principal 10k submatrix; half filling and identity overlap match TRS2.
+TRS2 uses threshold 1e-4, convergence 1e-6, and the fixed random permutation.
+Diagonalization uses the original ordering; energy/trace comparisons are
+permutation invariant. Dense setup/file reading is outside repeated timings.
+
+Later-call means (two calls after repetition zero, seconds):
+
+| Matrix | cuSOLVERMp active GPUs | Dense EVD + density + host export | Native GPU TRS2 API, same allocation | Ratio |
+|---|---:|---:|---:|---:|
+| 10k | 1 | 0.7873 | 0.08124 (1 active GPU, 4 app ranks) | 9.69 |
+| 10k | 4 | 4.6891 | 0.08124 | 57.7 |
+| 64k | 4 | 58.4877 | 2.6062 | 22.4 |
+
+These are workload-specific, different-accuracy comparisons. Dense output is
+host COO; native output is a normal distributed NTPoly matrix. Dense COO
+sorting/CSR construction/redistribution is excluded, making its comparison
+optimistic. Dense contexts/workspaces persist across repetitions; native
+TRS2 still initializes contexts per call. The native timings include normal
+setup, loop and export; **do not use its ~0.134 s loop as the headline API
+speedup**. Small-matrix coalescing is important for both algorithms.
+
+Job 312738 on c396 used block 512. At 64k, later EVD, density GEMM and export
+average 56.5214, 1.9451 and 0.02008 s. The density GEMM performs
+2*N*N*nelec operations, about 134.8 TFLOP/s aggregate; the eigensolve is the
+main expense. Explicit A/Q/workspace/coordinate allocations are about
+50.22 GB per GPU, excluding internal allocations and temporary output. Dense
+setup is 5.1822 s; first complete solve 62.5899 s versus first native API
+5.6022 s. At 10k/1 GPU, setup is 1.0949 s and first complete solve 0.83066 s;
+the paired native first call is 0.50505 s. No setup is silently amortized
+into the reported later means. Initial job 312731 on c388 used block 256:
+64k later EVD+density 59.0543 s, native API 2.5234 s. It used accepted jobz Z
+and omitted sparse export; the final source uses documented jobz V and full
+export timing. Preserve the earlier source/hash separately.
+
+Bound CPU128 control (4 MPI x 32 threads, core binding, job 312746/c393)
+passes the 64k fingerprint and averages 3.1516 s, with paired native GPU
+2.6065 s. Unbound CPU controls are slower and are not the selected baseline.
+The 10k CPU32 controls are **numerically invalid**, despite exit status zero:
+trace 4978.6163 without explicit binding, 4932.4405 with binding, instead of
+5000.00002794. Exclude their timings. Valid one-thread CPU10k controls
+(job 312752/c191) give 3.4339 s on one rank and 1.1463 s on four ranks.
+This extends the padded threaded-CPU correctness concern beyond OMP36;
+root cause is unresolved and requires a separate minimal regression/fix.
+
+Every dense solve has info=0, trace/nelec and norm-squared/nelec within
+roundoff, and Tr(H D) agrees with the occupied eigenvalue sum to roundoff.
+An independent CPU check at N512 on 1/4 GPUs gives relative eigen-residual
+6.74e-17, orthogonality error 5.03e-15, and zero projector entry error.
+These exhaustive checks are limited to the small input. At 64k, exact dense
+energy is 15947.3141381810 versus TRS2 15947.3151489420: absolute difference
+0.0010107610, relative 6.34e-8. At 10k the energy difference is 0.0001195884
+(4.80e-8 relative). TRS2 prunes intermediates and is not exact EVD; no full
+large-matrix norm parity or equal-accuracy speedup is claimed.
+
+`CUSOLVERMP.md` documents building, memory and timing scopes. Raw text,
+scripts, input/source/binary hashes, statuses and the replayable analyzer
+are in outer `validation/rikyu-cusolvermp-20261111`. Jobs 312731, 312738,
+312746 and 312752 all completed; 312730 failed immediately on nvcc's rejection
+of mpicxx's -pthread flag, fixed by separating compilation and MPI linking.
+One intermediate diagnostic line in 312746 contains malformed binary bytes;
+the exact raw log is preserved locally/remotely with SHA-256, while the
+tracked decoded text escapes control bytes. Final fingerprints are intact.
+Do not interpret the filesystem tool's UTF-8 decoding error as SSH failure.
+
+Installed 0.7.2 lacks registered-workspace APIs. NVIDIA's newer
+[release notes](https://docs.nvidia.com/cuda/cusolvermp/release_notes/index.html)
+describe improved SYTRD/STEDC and Blackwell registered-workspace performance;
+this experiment does not measure those releases. Testing a newer cuSOLVERMp,
+larger GPU grids, representative BigDFT matrices, and matched accuracy remain
+follow-ups. Native communicator reuse and the padded CPU bug remain open.
