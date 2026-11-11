@@ -1,6 +1,7 @@
   !! Temporary variables
   INTEGER :: alloc_stat
   INTEGER :: num_buckets
+  INTEGER(KIND=NTLONG) :: total_elements
 
   CALL DestructMatrixMemoryPool(this)
 
@@ -16,8 +17,10 @@
 
   num_buckets = columns/this%hash_size + 1
 
-  !! Allocate
-  ALLOCATE(this%pruned_list(columns * rows), stat = alloc_stat)
+  !! Allocate — use INT64 for total element count to avoid INT32 overflow
+  !! on large local blocks (e.g. 64k×64k = 4.1B > INT32_MAX)
+  total_elements = INT(columns, KIND=NTLONG) * INT(rows, KIND=NTLONG)
+  ALLOCATE(this%pruned_list(total_elements), stat = alloc_stat)
   ALLOCATE(this%value_array(columns, rows), stat = alloc_stat)
   ALLOCATE(this%dirty_array(columns, rows), stat = alloc_stat)
 

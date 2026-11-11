@@ -359,7 +359,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MatrixGrandSum_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculates the matrix product if using sparse-sparse algorithm.
-  PURE SUBROUTINE SparseBranch_lsr(matA, matB, matC, IsATransposed, &
+  SUBROUTINE SparseBranch_lsr(matA, matB, matC, IsATransposed, &
        & IsBTransposed, alpha, threshold, blocked_memory_pool)
     !> Matrix A.
     TYPE(Matrix_lsr), INTENT(IN)  :: matA
@@ -384,7 +384,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE SparseBranch_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Calculates the matrix product if using the sparse-sparse algorithm.
-  PURE SUBROUTINE SparseBranch_lsc(matA, matB, matC, IsATransposed, &
+  SUBROUTINE SparseBranch_lsc(matA, matB, matC, IsATransposed, &
        & IsBTransposed, alpha, threshold, blocked_memory_pool)
     !> Matrix A.
     TYPE(Matrix_lsc), INTENT(IN)  :: matA
@@ -459,7 +459,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE DenseBranch_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiplies a single block fo sparse-sparse.
-  PURE SUBROUTINE MultiplyBlock_lsr(matAT,matBT,memorypool)
+  SUBROUTINE MultiplyBlock_lsr(matAT,matBT,memorypool)
     !> Matrix A, already transposed.
     TYPE(Matrix_lsr), INTENT(IN)  :: matAT
     !> Matrix B, already transposed.
@@ -473,7 +473,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MultiplyBlock_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Multiplies a single block fo sparse-sparse.
-  PURE SUBROUTINE MultiplyBlock_lsc(matAT,matBT,memorypool)
+  SUBROUTINE MultiplyBlock_lsc(matAT,matBT,memorypool)
     !> Matrix A, already transposed.
     TYPE(Matrix_lsc), INTENT(IN)  :: matAT
     !> Matrix B, already transposed.
@@ -487,7 +487,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE MultiplyBlock_lsc
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prunes out the values of the hash table into the matrix.
-  PURE SUBROUTINE PruneList_lsr(memorypool,alpha,threshold, mat_c_columns, &
+  SUBROUTINE PruneList_lsr(memorypool,alpha,threshold, mat_c_columns, &
        & mat_c_rows, matAB)
     !> Memory pool to prune from.
     TYPE(MatrixMemoryPool_lr), INTENT(INOUT) :: memorypool
@@ -510,7 +510,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   END SUBROUTINE PruneList_lsr
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !> Prunes out the values of the hash table into the matrix.
-  PURE SUBROUTINE PruneList_lsc(memorypool,alpha,threshold, &
+  SUBROUTINE PruneList_lsc(memorypool,alpha,threshold, &
        & mat_c_columns, mat_c_rows, matAB)
     !> Memory pool to prune from.
     TYPE(MatrixMemoryPool_lc), INTENT(INOUT) :: memorypool

@@ -1,0 +1,18 @@
+{
+  "app": "bench_cusparse",
+  "gpu": "NVIDIA GB200",
+  "matrix": "matrices/yukawa_sc_884736.bin",
+  "matrix_dimension": 884736,
+  "input_nnz": 37034650,
+  "warmup": 3,
+  "rounds": 10,
+  "threshold": 1.000000000000000e-04,
+  "gemm_median_ms": 185.1014,
+  "gemm_min_ms": 183.0810,
+  "gemm_max_ms": 185.4566,
+  "result_nnz": 221943932,
+  "nnz_above_threshold": 70223486,
+  "nnz_per_row": 250,
+  "trace": 8.887679556928221e+05,
+  "grand_sum": 1.371137490937045e+06
+}

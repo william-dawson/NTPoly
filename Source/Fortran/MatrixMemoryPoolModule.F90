@@ -3,7 +3,7 @@
 !> The purpose of this module is to avoid having to allocate memory on the
 !> heap during a matrix multiply, and to manage the underlying hash table.
 MODULE MatrixMemoryPoolModule
-  USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX
+  USE DataTypesModule, ONLY: NTREAL, NTCOMPLEX, NTLONG
   USE TripletModule, ONLY : Triplet_r, Triplet_c
   IMPLICIT NONE
   PRIVATE

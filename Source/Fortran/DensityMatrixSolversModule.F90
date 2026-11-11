@@ -19,6 +19,11 @@ MODULE DensityMatrixSolversModule
   USE SolverParametersModule, ONLY : SolverParameters_t, PrintParameters, &
        & DestructSolverParameters, ConstructSolverParameters, &
        & CopySolverParameters
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+  USE PSMatrixGPUBackendModule, ONLY: GPUMatrix_t, GPURequested, SelectGPUBackend, CheckGPUMemory, BeginGPUBackend, &
+      & EndGPUBackend, &
+    UploadGPURegion, DownloadGPURegion, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU
+#endif
   IMPLICIT NONE
   PRIVATE
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -316,6 +321,12 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     TYPE(MatrixMemoryPool_p) :: pool
     INTEGER :: II, JJ
     INTEGER :: total_iterations
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    TYPE(GPUMatrix_t) :: gpu_x,gpu_x2,gpu_wh
+    LOGICAL :: gpu_enabled,gpu_root,gpu_participant,gpu_memory_allowed
+    REAL(8) :: gpu_t0,gpu_setup_seconds,gpu_loop_seconds,gpu_export_seconds
+    INTEGER :: gpu_ierr
+#endif
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -326,6 +337,11 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL ConstructMonitor(params%monitor, &
          & automatic_in = params%monitor_convergence, &
          & tight_cutoff_in=params%converge_diff)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    gpu_enabled=GPURequested(H)
+    gpu_root=.FALSE.; gpu_participant=.TRUE.
+
+#endif
 
     IF (params%be_verbose) THEN
        CALL WriteHeader("Density Matrix Solver")
@@ -339,6 +355,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
     ALLOCATE(sigma_array(params%max_iterations))
+    sigma_array=0.0_NTREAL
 
     !! Construct All The Necessary Matrices
     CALL ConstructEmptyMatrix(K, H)
@@ -370,6 +387,25 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     CALL IncrementMatrix(IMat, X_k, alpha_in = e_max)
     CALL ScaleMatrix(X_k, 1.0_NTREAL / (e_max - e_min))
 
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    IF(gpu_enabled) CALL SelectGPUBackend(WH,X_k,gpu_enabled,gpu_root,params%max_iterations)
+    gpu_participant=.NOT.gpu_root .OR. H%process_grid%global_rank==0
+    IF(gpu_enabled) THEN
+       gpu_t0=MPI_Wtime()
+       CALL BeginGPUBackend(H,gpu_root)
+       CALL CheckGPUMemory(WH,X_k,gpu_root,gpu_memory_allowed)
+       IF(.NOT.gpu_memory_allowed) THEN
+          IF(gpu_participant) CALL EndGPUBackend()
+          gpu_enabled=.FALSE.
+       END IF
+    END IF
+    IF(gpu_enabled) THEN
+       CALL UploadGPURegion(WH,gpu_wh,gpu_root)
+       CALL UploadGPURegion(X_k,gpu_x,gpu_root)
+       gpu_setup_seconds=MPI_Wtime()-gpu_t0
+       gpu_t0=MPI_Wtime()
+    END IF
+#endif
     !! Iterate
     IF (params%be_verbose) THEN
        CALL WriteHeader("Iterations")
@@ -377,9 +413,20 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
     II = 1
     energy_value = 0.0_NTREAL
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    IF(.NOT.gpu_enabled .OR. gpu_participant) THEN
+#endif
     DO II = 1, params%max_iterations
        !! Compute Sigma
-       CALL MatrixTrace(X_k, trace_value)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       IF(gpu_enabled) THEN
+          CALL TraceGPU(gpu_x,trace_value)
+       ELSE
+#endif
+          CALL MatrixTrace(X_k, trace_value)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       END IF
+#endif
        IF (trace - trace_value .LT. 0.0_NTREAL) THEN
           sigma_array(II) = -1.0_NTREAL
        ELSE
@@ -387,10 +434,28 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        END IF
 
        !! Compute X_k2
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       IF(gpu_enabled) THEN
+          CALL SquareGPU(gpu_x,gpu_x2,params%threshold)
+       ELSE
+#endif
        CALL MatrixMultiply(X_k, X_k, X_k2, &
             & threshold_in = params%threshold, memory_pool_in = pool)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       END IF
+#endif
 
        !! Update X_k
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       IF(gpu_enabled) THEN
+          IF(sigma_array(II)>0.0_NTREAL) THEN
+             CALL ScaleGPU(gpu_x,2.0_NTREAL)
+             CALL IncrementGPU(gpu_x2,gpu_x,-1.0_NTREAL,params%threshold)
+          ELSE
+             CALL CopyGPU(gpu_x2,gpu_x)
+          END IF
+       ELSE
+#endif
        IF (sigma_array(II) .GT. 0.0_NTREAL) THEN
           CALL ScaleMatrix(X_k, 2.0_NTREAL)
           CALL IncrementMatrix(X_k2, X_k, &
@@ -399,9 +464,21 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL CopyMatrix(X_k2,X_k)
        END IF
 
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       END IF
+#endif
+
        !! Energy value based convergence
        energy_value_old = energy_value
-       CALL DotMatrix(X_k, WH, energy_value)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       IF(gpu_enabled) THEN
+          CALL DotGPU(gpu_x,gpu_wh,energy_value)
+       ELSE
+#endif
+          CALL DotMatrix(X_k, WH, energy_value)
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+       END IF
+#endif
 
        CALL AppendValue(params%monitor, energy_value - energy_value_old)
        IF (CheckConverged(params%monitor, params%be_verbose)) EXIT
@@ -411,6 +488,29 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           CALL ExitSubLog
        END IF
     END DO
+#ifdef NTPOLY_ENABLE_GPU_TRS2
+    END IF
+    IF(gpu_enabled) THEN
+       IF(gpu_root) THEN
+          CALL MPI_Bcast(II,1,MPI_INTEGER,0,H%process_grid%global_comm,gpu_ierr)
+          CALL MPI_Bcast(energy_value,1,MPINTREAL,0,H%process_grid%global_comm,gpu_ierr)
+          CALL MPI_Bcast(sigma_array,SIZE(sigma_array),MPINTREAL,0,H%process_grid%global_comm,gpu_ierr)
+       END IF
+       gpu_loop_seconds=MPI_Wtime()-gpu_t0
+       gpu_t0=MPI_Wtime()
+       CALL DownloadGPURegion(gpu_x,X_k,gpu_root)
+       gpu_export_seconds=MPI_Wtime()-gpu_t0
+       IF(gpu_participant) CALL EndGPUBackend()
+       CALL MPI_Allreduce(MPI_IN_PLACE,gpu_setup_seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,gpu_ierr)
+       CALL MPI_Allreduce(MPI_IN_PLACE,gpu_loop_seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,gpu_ierr)
+       CALL MPI_Allreduce(MPI_IN_PLACE,gpu_export_seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,H%process_grid%global_comm,gpu_ierr)
+       IF(H%process_grid%global_rank==0) THEN
+          WRITE(*,'(A,ES24.16)') 'ntpoly_gpu_trs2_setup_seconds: ',gpu_setup_seconds
+          WRITE(*,'(A,ES24.16)') 'ntpoly_gpu_trs2_loop_seconds: ',gpu_loop_seconds
+          WRITE(*,'(A,ES24.16)') 'ntpoly_gpu_trs2_export_seconds: ',gpu_export_seconds
+       END IF
+    END IF
+#endif
     total_iterations = II - 1
     IF (params%be_verbose) THEN
        CALL ExitSubLog

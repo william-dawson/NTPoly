@@ -49,6 +49,12 @@ set(Fsrc
 
 ################################################################################
 add_library(NTPoly ${Fsrc})
+if(NTPOLY_ENABLE_GPU_TRS2)
+  target_sources(NTPoly PRIVATE GPUPlanningModule.F90 PSMatrixGPUBackendModule.F90
+    ${PROJECT_SOURCE_DIR}/MiniApps/YukawaGemm/solver_csr.f90
+    ${PROJECT_SOURCE_DIR}/MiniApps/YukawaGemm/solver_nccl.f90)
+  target_compile_definitions(NTPoly PUBLIC NTPOLY_ENABLE_GPU_TRS2)
+endif()
 if (NOT NOSWIG)
   set_target_properties(NTPoly PROPERTIES POSITION_INDEPENDENT_CODE True)
 endif()

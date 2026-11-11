@@ -1,0 +1,3 @@
+# Preserve Fortran-generated benchmark records byte-for-byte.
+MiniApps/YukawaGemm/results/** -whitespace
+MiniApps/YukawaGemm/yukawa_gemm_results.json -whitespace

@@ -5,7 +5,14 @@
   !! Counters
   INTEGER :: II, AA, BB
 
-  !! Multiply
+  !! Multiply — parallelize over II (columns of A^T = rows of result).
+  !! Each II writes to column II of the 2D accumulator arrays, so different
+  !! II values are independent. The inner AA/BB loops are sequential within
+  !! each II (hash insertion ordering dependencies).
+  !! Note: tested num_gangs(4096) vector_length(256) — made 64k 1.4× slower
+  !! due to register pressure. Default compiler choice (608 gangs × 128
+  !! threads) is near-optimal for this kernel's sequential inner loops.
+!$acc parallel loop independent
   DO II = 1, matAT%columns
      elements_per_inner_a = matAT%outer_index(II + 1) - &
           & matAT%outer_index(II)

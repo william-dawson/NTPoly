@@ -1,0 +1,22 @@
+{
+  "app": "yukawa_gemm_op_bench",
+  "mpi_ranks": 16,
+  "input": "matrices/yukawa_sc_64000.bin",
+  "op": "grandsum",
+  "reps": 20,
+  "alpha": 1.01,
+  "block_rows": 16000,
+  "block_cols": 16000,
+  "block_nnz_start": 232176,
+  "block_nnz_end": 232176,
+  "gpu_s": {
+    "min": 5.45029e-04,
+    "median": 6.0179749e-04,
+    "mean": 5.973571e-04,
+    "max": 6.31686e-04
+  },
+  "cpu_median_s": 7.662517391306677e-05,
+  "result_gpu": 79329.81169958437,
+  "result_cpu": 79329.81169958445,
+  "rel_err": 9.171782282475202e-16
+}

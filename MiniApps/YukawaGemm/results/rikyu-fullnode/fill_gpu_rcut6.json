@@ -1,0 +1,18 @@
+{
+  "app": "bench_cusparse",
+  "gpu": "NVIDIA GB200",
+  "matrix": "matrices/fill32k_rcut6.bin",
+  "matrix_dimension": 32768,
+  "input_nnz": 1308276,
+  "warmup": 2,
+  "rounds": 5,
+  "threshold": 1.000000000000000e-04,
+  "gemm_median_ms": 7.0269,
+  "gemm_min_ms": 6.9970,
+  "gemm_max_ms": 7.0814,
+  "result_nnz": 7485052,
+  "nnz_above_threshold": 2444530,
+  "nnz_per_row": 228,
+  "trace": 3.291393065162921e+04,
+  "grand_sum": 5.018612080062294e+04
+}

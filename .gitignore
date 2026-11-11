@@ -1,0 +1,15 @@
+# Local builds and machine-specific configuration.
+/BuildCheck/
+/Targets/mymachine.cmake
+__pycache__/
+*.pyc
+*.o
+*.mod
+.DS_Store
+
+# Generated synthetic input data and transfer fragments.
+/MiniApps/**/*.bin
+/MiniApps/**/*.bin.part_*
+/MiniApps/**/*.mtx
+/MiniApps/**/*.mtx.json
+/MiniApps/**/chunk_*

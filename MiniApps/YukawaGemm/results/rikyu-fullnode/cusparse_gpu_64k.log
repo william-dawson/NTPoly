@@ -1,0 +1,6 @@
+GPU: NVIDIA GB200, SM 10.0, 197568 MB, 152 SMs
+Matrix: 64000 x 64000, nnz = 2591820
+CSR: 64000 x 64000, nnz = 2591820
+cuSPARSE SpGEMM: 10 rounds, median 13.89 ms (min 13.37, max 13.99)
+Result nnz: 15040832, nnz above threshold: 4865120, nnz/row: 235
+Trace: 6.428704835001098e+04, Grand sum: 9.837304410666446e+04

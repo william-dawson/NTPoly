@@ -27,6 +27,7 @@ endif()
 
 ################################################################################
 ## Options
+option(NTPOLY_ENABLE_GPU_TRS2 "Build the experimental resident GPU backend for library TRS2" OFF)
 option(FORTRAN_ONLY "Build only the Fortran bindings." OFF)
 option(NOSWIG "Don't build the swig bindings." OFF)
 option(USE_MPIH "Use mpi.h for systems that don't have the mpi module" OFF)
@@ -39,6 +40,14 @@ option(NTPOLY_SWIG_NO_STRICT
 )
 
 ## Process these options
+if(NTPOLY_ENABLE_GPU_TRS2)
+  if(CMAKE_VERSION VERSION_LESS 3.20)
+    message(FATAL_ERROR "The optional GPU TRS2 backend requires CMake 3.20 or newer")
+  endif()
+  cmake_policy(SET CMP0079 NEW)
+  cmake_policy(SET CMP0118 NEW)
+endif()
+
 if (NOT SWIG_FOUND OR FORTRAN_ONLY)
   set(NOSWIG TRUE)
 endif()
@@ -96,6 +105,7 @@ endif()
 ## Get at the source files
 subdirs(Documentation)
 subdirs(Source)
+subdirs(MiniApps)
 
 if (NOT NOSWIG)
   subdirs(UnitTests)
