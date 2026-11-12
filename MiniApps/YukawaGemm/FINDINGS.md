@@ -3710,3 +3710,97 @@ of already-backed caller output storage or earlier/parallel page preparation;
 measure any extra staging copy and ownership changes end-to-end. Conversion-only
 overlap has limited headroom. Complex bitmap/touched-entry work remains the other
 material kernel priority; custom Cholesky remains deferred.
+
+## Finding 44: latest resident TRS2 vs CPU and dense GPU density construction (2026-11-12)
+
+Fresh one-node comparison on c140,job326260 completes exit0. Production head
+e2c22d4c (implementation7290e763). No algorithm or production library change:
+a source archive adds diagnostic-only local stage prints and driver rank elapsed
+times, profile start/stop and optional Hamiltonian output. Included source and
+diagnostic hashes, exact scripts, binaries, maps and numerical checks are saved
+under validation/rikyu-trs2-dense-current-20261112. All remote files/raw nsys
+reports stay under its data1 workdir. Home files untouched except provider script
+read-only inspection. CPU-only and GPU libraries are independently rebuilt.
+
+N64000 real FP64,identity overlap,trace32000,fixed permutation seed424242,2x2
+process grid. CPU uses4 ranks x32 bound CPU cores; GPU uses4 ranks x1 host core,
+one GPU/rank. Both TRS2 paths threshold1e-4,converge_diff1e-6,max60,24 iterations.
+The dense driver is the current repo's cuSOLVERMp benchmark,installed0.7.2,
+cuBLASMp occupied-density FP64 GEMM,block512,with sparse host COO export1e-4.
+It reads the exact Hamiltonian permutation written by GPU TRS2 outside timing.
+This is a favorable dense compute+density+host-export baseline, not the library
+Matrix_ps dense wrapper; host COO-to-Matrix_ps finalization is not charged.
+
+| Warm complete density construction | Resources | Mean seconds |
+|---|---|---:|
+| Resident native GPU TRS2 | 4 GPUs | 0.140938 |
+| CPU-only TRS2 | 128 CPU cores | 2.800668 |
+| Dense Syevd eigenvectors+density+host export | 4 GPUs | 59.712017 |
+
+GPU TRS2 is19.872x faster than CPU TRS2 and423.676x faster than this dense baseline.
+CPU TRS2 is21.321x faster than dense GPU density construction. GPU mean pools8
+warm calls from two independent5-call launches bracketing CPU/dense work; CPU
+mean includes all4 warm calls; dense mean includes both warm calls after one cold
+call. No warm samples dropped. GPU median0.141025s. Before/after GPU warm means
+are0.141099/0.140777s. CPU warm samples2.955306/2.766920/2.738651/2.741795s.
+Dense warm complete samples59.831970/59.592064s.
+
+Dense warm phase means(s): sparse-to-dense import0.001173,EVD57.744832,density
+GEMM1.946357,threshold/compact/host export0.019655. Complete is the sum of those
+synchronized maximum-rank phases; scalar/residual validation0.012441s and runtime/
+workspace setup4.640659s are excluded. Native times are maximum-rank normal TRS2
+API walls and include internal setup,iteration,export,final copy/cleanup and
+normal logging; external read/permutation and post-call validation are excluded.
+These dense and native API/setup boundaries are not identical. Large EVD time
+makes small output-format/setup differences immaterial to the headline ratio.
+
+Cold GPU API calls6.252080/6.215841s include runtime/NCCL bootstrap. CPU first API
+3.011727s. Dense first complete68.105022s excludes the separate4.640659s setup.
+Do not present the0.141s warm GPU result as first-use latency: CPU beats a new
+GPU process for a single solve in this case.
+
+Additive GPU TRS2 critical-rank mean stages(ms),8 warm calls. Rank0 is slowest
+in every call; select its local stages for that call rather than summing
+independently reduced maxima:
+
+| Stage | Mean ms |
+|---|---:|
+| Allocate/identity setup | 1.246 |
+| Working Hamiltonian preparation | 3.116 |
+| GPU context/input preparation | 1.987 |
+| Bounds + initial density guess | 1.815 |
+| Resident purification iteration loop (24 products) | 98.955 |
+| Density export + GPU cleanup | 3.374 |
+| Final density copy, reporting and host cleanup | 29.720 |
+| Remaining API/profile reporting | 0.725 |
+| Full API | 140.938 |
+
+Profiling is a separate capture of3 warm complete solves on all4 ranks.
+Rank0 kernel milliseconds per solve: bitmap clear28.483,multiplication10.900,
+count4.185,compact24.655,NCCL panel SendRecv6.028,scalar AllReduce4.141. Other
+kernels7.832ms; total kernel interval sum86.225ms. These are contained in full
+stages and overlap host activity; do not add them to140.938ms or equate their
+sum with loop wall time. Arithmetic averages0.454ms/product in purification;
+it is not the earlier unpermuted fixed-H-squared0.314ms kernel. Other-rank
+arithmetic totals8.992–10.936ms/solve. NCCL per solve:192 SendRecv=24x8,
+48 scalar reductions=24x2,matching the iteration/communication structure.
+NCCL kernel lifetime includes peer waits, not just wire transfer.
+Profiled warm whole APIs0.317093/0.148421/0.159081s demonstrate perturbation;
+use unprofiled0.140938s for the headline and additive wall breakdown.
+
+CPU/GPU final TRS2 matrices both have2,992,322 entries; maximum element difference
+5.662e-15,relative Frobenius1.310e-15. Both energy15947.315148941967,trace about
+32000.000143710. Dense unpruned projector energy15947.31413818099,trace32000,
+norm232000,gap0.783682. Dense energy differs about0.001011 from thresholded TRS2;
+dense host export has3,013,636 entries after pruning. Dense scalar projector
+invariants/info0 pass, but exact dense FP64 and thresholded purification remain
+different accuracy/work tradeoffs. This is real/identity coverage; no new complex,
+nonidentity,one-GPU64k or multi-node claim is introduced. Earlier threaded BLAS
+failure remains undiagnosed; it did not recur in the current64k CPU control.
+
+The expensive fresh-host output experiment in Finding43 describes one public
+matrix product, not each resident purification iteration. Here density export
+and GPU cleanup are3.374ms once per solve, about2.4% of warm API. Further export
+work has bounded whole-solve headroom. The loop is70.2% and final reporting/copy/
+host cleanup21.1%; profile within those larger stages before optimizing boundaries.
+Custom Cholesky remains deferred; complex residency/bitmap work remains separate.

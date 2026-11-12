@@ -276,6 +276,22 @@ behavior before implementing host reuse. Full public controls remain10.104/
 confirm the isolated scopes. Production remains7290e763. Evidence:
 validation/rikyu-export-profile-20261112.
 
+## Latest complete purification comparison
+
+Finding44 reruns64k real,identity-overlap density construction on one allocation:
+GPU4 resident TRS2 mean0.140938s,CPU128 TRS2 2.800668s,GPU4 cuSOLVERMp eigenvectors+
+density+host export59.712017s. Speedups19.87x/423.68x are warm; GPU first API is
+6.22–6.25s and CPU first3.012s. Dense excludes4.641s setup and validates separately;
+its host output is sparse COO rather than Matrix_ps. TRS2 uses1e-4 pruning and
+1e-6 convergence,so accuracy/work differs from exact dense FP64 projection.
+CPU/GPU returned density matrices match within5.662e-15 elementwise. Dense info0,
+trace/projector checks pass. GPU additive wall stages(ms): allocate1.246,working
+H3.116,context/input1.987,bounds/X01.815,24-step iteration98.955,export/GPU cleanup
+3.374,final copy/reporting/host cleanup29.720,other0.725,total140.938. Separate
+profile records10.900ms arithmetic multiply per solve,already inside those stages.
+Export occurs once per resident solve,not once per product. Evidence/replay:
+validation/rikyu-trs2-dense-current-20261112. No production algorithm changed.
+
 ## Cleanup direction
 
 1. Keep GPU admission, context leasing, import/export and ownership in the shared
