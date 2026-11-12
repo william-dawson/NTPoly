@@ -77,6 +77,11 @@ MODULE PSMatrixGPUBackendModule
       TYPE(C_PTR), VALUE :: cp,ri,values
       REAL(C_DOUBLE) :: times(5)
     END FUNCTION
+    INTEGER(C_INT) FUNCTION export_csc(slot,columns,cp,ri,values) BIND(C,NAME='gpu_ops_export_csc_')
+      IMPORT C_INT,C_PTR
+      INTEGER(C_INT) :: slot,columns
+      TYPE(C_PTR), VALUE :: cp,ri,values
+    END FUNCTION
     INTEGER(C_INT) FUNCTION bounds_slot(slot,columns,diagonal,lower,upper) BIND(C,NAME='gpu_ops_bounds_')
       IMPORT C_INT,C_DOUBLE
       INTEGER(C_INT) :: slot,columns,diagonal
@@ -545,12 +550,13 @@ CONTAINS
 
   SUBROUTINE DownloadLocalGPU(matrix,local)
     TYPE(GPUMatrix_t), INTENT(IN) :: matrix
-    TYPE(Matrix_lsr), INTENT(INOUT) :: local
-    INTEGER(C_INT) :: rows,nnz
+    TYPE(Matrix_lsr), INTENT(INOUT), TARGET :: local
+    INTEGER(C_INT) :: rows,nnz,status
     TYPE(C_PTR) :: pr,pi,pv
     INTEGER(C_INT), POINTER :: rp(:),ci(:)
     REAL(C_DOUBLE), POINTER :: values(:)
     REAL(C_DOUBLE) :: stamp,transpose_phases(4)
+    CHARACTER(16) :: mode,report
     IF(timing_product) stamp=MPI_Wtime()
     IF(matrix%handle==0) CALL FailGPU('download from uninitialized matrix')
     CALL get_slot(matrix%handle,pr,pi,pv,rows,nnz)
@@ -558,6 +564,24 @@ CONTAINS
     CALL C_F_POINTER(pv,values,[MAX(nnz,1)])
     local%rows=matrix%rows; local%columns=matrix%columns
     CALL MarkProductStage(35,stamp)
+    CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_EXPORT',mode)
+    IF(TRIM(mode)/='' .AND. TRIM(mode)/='auto' .AND. TRIM(mode)/='host') CALL FailGPU('invalid GPU export mode')
+    IF(TRIM(mode)/='host') THEN
+      CALL DestructMatrix(local)
+      ALLOCATE(local%outer_index(matrix%columns+1),local%inner_index(nnz),local%values(nnz))
+      pi=C_NULL_PTR;pv=C_NULL_PTR
+      IF(nnz>0) THEN
+        pi=C_LOC(local%inner_index(1));pv=C_LOC(local%values(1))
+      END IF
+      status=export_csc(matrix%handle,matrix%columns,C_LOC(local%outer_index(1)),pi,pv)
+      IF(status<0) CALL FailGPU('device CSC export failed')
+      IF(status==0) THEN
+        CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_EXPORT_REPORT',report)
+        IF(TRIM(report)=='1') PRINT *, 'NTPoly GPU export: borrowed CSC destination, nnz=',nnz
+        CALL MarkProductStage(36,stamp)
+        RETURN
+      END IF
+    END IF
     IF(timing_product) THEN
       CALL TransposeCSR(matrix%rows,matrix%columns,rp,ci,values,local%outer_index,local%inner_index,local%values, &
         transpose_phases)
@@ -577,7 +601,17 @@ CONTAINS
       CALL FailGPU('download shape mismatch')
     CALL DownloadLocalGPU(matrix,local)
     IF(timing_product) stamp=MPI_Wtime()
-    CALL SplitMatrixToLocalBlocks(host,local)
+    IF(SIZE(host%local_data_r,1)==1 .AND. SIZE(host%local_data_r,2)==1) THEN
+      ! The downloaded temporary has no further users. Transfer ownership into
+      ! the final block instead of allocating/copying the same CSC payload.
+      host%local_data_r(1,1)%rows=local%rows
+      host%local_data_r(1,1)%columns=local%columns
+      CALL MOVE_ALLOC(local%outer_index,host%local_data_r(1,1)%outer_index)
+      CALL MOVE_ALLOC(local%inner_index,host%local_data_r(1,1)%inner_index)
+      CALL MOVE_ALLOC(local%values,host%local_data_r(1,1)%values)
+    ELSE
+      CALL SplitMatrixToLocalBlocks(host,local)
+    END IF
     CALL MarkProductStage(37,stamp)
     CALL DestructMatrix(local)
     CALL MarkProductStage(38,stamp)

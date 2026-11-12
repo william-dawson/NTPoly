@@ -1534,6 +1534,60 @@ int gpu_ops_import_csc_timed_(int *slot,int *rows,int *columns,int *nnz,
     return gpu_ops_import_csc_impl(slot,rows,columns,nnz,column_ptr,row_indices,values,times);
 }
 
+// Export owned CSR into caller-owned CSC arrays. Coherent systems can write
+// ordinary Fortran allocations. Convert in device memory, then copy whole
+// arrays; avoid scattered GPU writes into fresh pageable host destinations.
+struct ExportScratch {
+    ImportScratch conversion;
+    int *cp=nullptr,*ri=nullptr;double *values=nullptr;
+    ~ExportScratch(){if(cp)cudaFree(cp);if(ri)cudaFree(ri);if(values)cudaFree(values);}
+};
+void gpu_ops_get_(int*,int**,int**,double**,int*,int*);
+int gpu_ops_export_csc_(int *slot,int *columns,int *column_ptr,int *row_indices,double *values) {
+    if(*slot<1 || *columns<1) return -1;
+    int *rp=nullptr,*ci=nullptr,rows=-1,nnz=-1;double *input=nullptr;
+    gpu_ops_get_(slot,&rp,&ci,&input,&rows,&nnz);
+    if(rows<1 || nnz<0) return -1;
+    int device,pageable=0;
+    CU_CHECK(cudaGetDevice(&device));
+    CU_CHECK(cudaDeviceGetAttribute(&pageable,cudaDevAttrPageableMemoryAccess,device));
+    cudaError_t pointer_error=cudaSuccess;
+    auto cp=static_cast<int*>(const_cast<void*>(import_device_address(column_ptr,pageable,pointer_error)));
+    auto ri=static_cast<int*>(const_cast<void*>(import_device_address(row_indices,pageable,pointer_error)));
+    auto output=static_cast<double*>(const_cast<void*>(import_device_address(values,pageable,pointer_error)));
+    if(pointer_error!=cudaSuccess)return -1;
+    if(!cp || (nnz && (!ri || !output)))return 1;
+    if(nnz==0) {
+        CU_CHECK(cudaMemset(cp,0,(size_t(*columns)+1)*sizeof(int)));
+        CU_CHECK(cudaDeviceSynchronize());return 0;
+    }
+    auto handle=get_handle();if(!handle)return -1;
+    ExportScratch storage;auto& scratch=storage.conversion;
+    CU_CHECK(cudaMalloc(&storage.cp,(size_t(*columns)+1)*sizeof(int)));
+    CU_CHECK(cudaMalloc(&storage.ri,size_t(nnz)*sizeof(int)));
+    CU_CHECK(cudaMalloc(&storage.values,size_t(nnz)*sizeof(double)));
+    CU_CHECK(cudaMalloc(&scratch.offsets,(size_t(rows)+1)*sizeof(int)));
+    size_t workspace_bytes=0,free_bytes,total_bytes;
+    auto status=cusparseCsr2cscEx2_bufferSize(handle,rows,*columns,nnz,input,scratch.offsets,ci,
+        storage.values,storage.cp,storage.ri,CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,
+        CUSPARSE_CSR2CSC_ALG1,&workspace_bytes);
+    if(status!=CUSPARSE_STATUS_SUCCESS)return -1;
+    CU_CHECK(cudaMemGetInfo(&free_bytes,&total_bytes));
+    if(workspace_bytes>free_bytes-free_bytes/5)return 1;
+    if(workspace_bytes)CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));
+    import_one_based_offsets<<<(rows+256)/256,256>>>(rows+1,rp,scratch.offsets);
+    CU_CHECK(cudaGetLastError());
+    status=cusparseCsr2cscEx2(handle,rows,*columns,nnz,input,scratch.offsets,ci,storage.values,storage.cp,storage.ri,
+        CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,CUSPARSE_CSR2CSC_ALG1,scratch.workspace);
+    if(status!=CUSPARSE_STATUS_SUCCESS)return -1;
+    subtract_one_kernel<<<(*columns+256)/256,256>>>(storage.cp,*columns+1);
+    CU_CHECK(cudaGetLastError());CU_CHECK(cudaDeviceSynchronize());
+    CU_CHECK(cudaMemcpy(cp,storage.cp,(size_t(*columns)+1)*sizeof(int),cudaMemcpyDefault));
+    CU_CHECK(cudaMemcpy(ri,storage.ri,size_t(nnz)*sizeof(int),cudaMemcpyDefault));
+    CU_CHECK(cudaMemcpy(output,storage.values,size_t(nnz)*sizeof(double),cudaMemcpyDefault));
+    return 0;
+}
+
 #define OPS_SLOTS 4
 typedef struct {
     int *rp;

@@ -3418,3 +3418,66 @@ memcheck257 with0 errors pass. API-probe reporting remains suppressed as before.
 Job325611 completes exit0. Evidence: validation/rikyu-product-stages-20261112;
 all task files on data1. This adds diagnostics without changing arithmetic,
 data movement, existing synchronization or the user's resident-performance scope.
+
+## Finding 40: remove real output reconstruction overhead (2026-11-12)
+
+The measured full public64k real call improves128.778→25.522ms median (5.05x)
+on a matched four-GPU allocation, with14 warm calls per variant in forward and
+reverse execution order. Retaining CPU conversion but transferring the final
+single-block CSC arrays into place gives54.987ms. Headline numbers are complete
+MatrixMultiply calls, including ordinary host output, imports, NCCL and cleanup.
+They are separate from the retained resident control,3.014ms.
+
+Three changes preserve ordinary matrix ownership and numerical semantics:
+- SplitMatrixToLocalBlocks uses intrinsic allocatable assignment for one local
+  block rather than the general split/two-transpose path. Empty constructors
+  with unallocated inner/value arrays normalize to allocated length0 storage.
+  This applies to real/complex and CPU-only builds; multiple blocks retain the
+  existing general splitter.
+- Real GPU download transfers its completed temporary CSC arrays into a single
+  final host block with MOVE_ALLOC. The temporary has no other users, and the
+  final matrix owns/deallocates the arrays. This avoids allocating/copying the
+  output again; multiple blocks keep the general path.
+- Real CSR-to-CSC output conversion uses cuSPARSE in device scratch, then bulk
+  array copies to accessible caller-owned CSC destinations. Completion is
+  synchronous. Unsupported destinations or excessive conversion workspace
+  decline to CPU conversion; NTPOLY_GPU_EXPORT=host forces that existing path,
+  while unset/auto selects device conversion. Input freshness rules are unchanged.
+
+The first implementation was correct but only1.44x faster: generic one-block
+copy still cost41–52ms, and direct scattered GPU writes into fresh CPU output
+allocations cost17.55ms. Those measured costs justified ownership transfer and
+HBM conversion followed by bulk copies. Keep the initial evidence; do not
+attribute its expensive host-buffer behavior to an unmeasured page-fault cause.
+
+Final critical-rank mean result reconstruction falls109.526→6.845ms; format
+conversion35.967→6.737ms and block population72.869→0.004ms. These are means,
+not additive components of the headline medians. Full means include outliers:
+153.344ms baseline,55.024ms host,27.331ms auto. All raw samples are retained.
+New full public10k/20k medians are8.800/12.421ms; no paired old-binary smaller
+controls were run in this final allocation. Complex multiplication arithmetic
+and resident complex coverage are unchanged; no complex speedup is claimed.
+
+Primitive tests round-trip24 changing CSC inputs across96 output memory-kind
+combinations: managed/device/system/mapped, rectangular, empty, stored zeros,
+changed values, sortedness and reuse. The producer stream is synchronized before
+borrowing, caller pointers are not retained, and unavailable destinations
+safely decline. Primitive and257 public-product device memchecks report0 with
+API-probe reporting suppressed as before. Rebuilt CPU host regressions and
+source-mutation/destruction ownership checks on1/4 threads pass. Real49 APIs
+pass with auto/host export, root coalescing and multiple local blocks; complex48
+APIs remain correct. Full64k outputs retain15,040,832 nnz and errors<4.60e-16.
+
+Job325657 completes exit0 for the initial implementation. Job325670 builds the
+final implementation and passes primitive tests/memchecks and real auto/host
+square suites, then stops in the four-thread multiblock suite after solver12
+with a DGEMM argument8 error. Job325703 reruns exact baseline, initial, final-auto
+and final-host multiblock controls on the same allocation; all four complete49
+APIs, and remaining root/complex/memcheck/timings pass. The original failure's
+root cause remains undetermined, not proven fixed or assigned to the machine.
+Preserve failed logs and follow up on that intermittent threaded case.
+
+All jobs are finished. Evidence/replay/final source hashes:
+validation/rikyu-result-rebuild-20261112; all remote task files on data1.
+Next resident GPU target remains the complex full dense prune/count/pack passes
+from Finding38. Custom Cholesky remains deferred.

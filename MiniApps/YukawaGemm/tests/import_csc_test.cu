@@ -10,6 +10,7 @@ void gpu_ops_init_(int*,int*);
 void gpu_ops_create_(int*);
 void gpu_ops_destroy_(int*);
 int gpu_ops_import_csc_(int*,int*,int*,int*,const int*,const int*,const double*);
+int gpu_ops_export_csc_(int*,int*,int*,int*,double*);
 void gpu_ops_get_(int*,int**,int**,double**,int*,int*);
 }
 static void check(bool ok) { if(!ok) { std::fprintf(stderr,"CSC import test failed\n"); std::exit(1); } }
@@ -89,12 +90,35 @@ int main() {
                 for(int r=0;r<rows;++r) for(int j=rp[r];j<rp[r+1];++j)
                     check(std::abs(output[j]-6*dense[r*columns+ci[j]-1])<1e-14);
             }
+            // Round-trip all destination allocation kinds, including changed
+            // source values, empty matrices, stored zeros and rectangular shapes.
+            check(gpu_ops_export_csc_(&slot,&columns,nullptr,nullptr,nullptr)==1);
+            for(int destination_mode=0;destination_mode<4;++destination_mode) {
+                auto ocp=static_cast<int*>(allocate(cp.size()*sizeof(int),destination_mode));
+                auto ori=static_cast<int*>(allocate(ri.size()*sizeof(int),destination_mode));
+                auto ov=static_cast<double*>(allocate(values.size()*sizeof(double),destination_mode));
+                int exported=gpu_ops_export_csc_(&slot,&columns,ocp,ori,ov);
+                if(destination_mode==2 && !pageable)check(exported==1);
+                else {
+                    check(exported==0);
+                    std::vector<int> hcp(cp.size()),hri(ri.size());std::vector<double> hv(values.size());
+                    cuda_check(cudaMemcpy(hcp.data(),ocp,hcp.size()*sizeof(int),cudaMemcpyDeviceToHost));
+                    check(hcp==cp);
+                    if(nnz) {
+                        cuda_check(cudaMemcpy(hri.data(),ori,hri.size()*sizeof(int),cudaMemcpyDeviceToHost));
+                        cuda_check(cudaMemcpy(hv.data(),ov,hv.size()*sizeof(double),cudaMemcpyDeviceToHost));
+                        check(hri==ri);
+                        for(int j=0;j<nnz;++j)check(std::abs(hv[j]-6*values[j])<1e-14);
+                    }
+                }
+                release(ocp,destination_mode);release(ori,destination_mode);release(ov,destination_mode);
+            }
         }
         release(dcp,mode); release(dri,mode); release(dv,mode);
     }
     gpu_ops_destroy_(&slot); check(slot==0);
     cuda_check(cudaStreamDestroy(stream));
-    std::printf("Borrowed CSC import: managed/device/system/mapped, changed values, "
+    std::printf("Borrowed CSC import/export: managed/device/system/mapped, changed values, "
                 "rectangular/empty/reuse/sorted PASS borrowed=%d declined=%d pageable=%d\n",
                 borrowed,declined,pageable);
 }

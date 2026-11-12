@@ -179,6 +179,35 @@ the product stage inside the public call8.195ms; subtracting separate scopes
 does not isolate conversion alone. Baseline/timer-disabled controls have
 126–127ms medians. No algorithm or one-block shortcut is changed here.
 
+## Optimized real host-result reconstruction
+
+Single-local-block matrices now avoid the general split/two-transpose path.
+Read-only split inputs retain independent allocatable copies; empty storage is
+normalized. Real GPU downloads can transfer their completed temporary CSC
+arrays into the final single block with MOVE_ALLOC, avoiding a second payload
+copy. The final Matrix_ps owns those arrays. Multiple blocks retain general
+splitting.
+
+Real output conversion uses cuSPARSE in device scratch and bulk copies into
+accessible caller CSC buffers. Unset/`NTPOLY_GPU_EXPORT=auto` enables it;
+`NTPOLY_GPU_EXPORT=host` forces CPU conversion. Unsupported destinations or
+excessive scratch requirements decline to CPU conversion. No caller pointer
+is cached or retained. Complex products keep their existing export path.
+
+Matched64k/4GPU full public medians improve128.778→25.522ms (5.05x), with the
+ownership-transfer/CPU-conversion control54.987ms. Fourteen warm calls per
+variant run in forward/reverse order. Mean host-result cost falls109.526→6.845ms;
+block population72.869→0.004ms. Means and medians have different scopes; outliers
+are retained. Resident multiplication remains3.014ms on the same allocation.
+Full new public10k/20k medians are8.800/12.421ms. These are real products, not
+new whole-solver or complex speedup results. See Finding40 and
+validation/rikyu-result-rebuild-20261112.
+
+Primitive/memory/ownership and final auto/host/root/multiblock solver reruns
+pass. One earlier four-thread multiblock invocation stopped with a DGEMM
+argument8 error; the exact baseline/initial/final-auto/final-host controls all
+pass on rerun. The failure remains undiagnosed and its logs are preserved.
+
 ## Cleanup direction
 
 1. Keep GPU admission, context leasing, import/export and ownership in the shared

@@ -1,6 +1,7 @@
 PROGRAM ResizeGridTest
   USE NTMPIModule
   USE ProcessGridModule
+  USE SMatrixModule, ONLY: Matrix_lsr,Matrix_lsc,DestructLocal=>DestructMatrix
   USE PSMatrixModule
   USE DataTypesModule, ONLY: NTREAL
   USE TripletListModule
@@ -8,6 +9,8 @@ PROGRAM ResizeGridTest
   IMPLICIT NONE
   TYPE(ProcessGrid_t), TARGET :: grid
   TYPE(Matrix_ps) :: matrix
+  TYPE(Matrix_lsr) :: local_r
+  TYPE(Matrix_lsc) :: local_c
   TYPE(TripletList_c) :: list
   TYPE(Triplet_c) :: entry
   INTEGER :: ierr,nr,rank,kind,i,target,stage
@@ -26,6 +29,18 @@ PROGRAM ResizeGridTest
       IF(matrix%is_complex .NEQV. (kind==1)) CALL MPI_Abort(MPI_COMM_WORLD,2,ierr)
       IF(matrix%actual_matrix_dimension/=target) CALL MPI_Abort(MPI_COMM_WORLD,3,ierr)
       IF(GetMatrixSize(matrix)/=5) CALL MPI_Abort(MPI_COMM_WORLD,4,ierr)
+      ! Replacement preserves values, and the destination owns its arrays.
+      IF(kind==0) THEN
+        CALL MergeMatrixLocalBlocks(matrix,local_r)
+        CALL SplitMatrixToLocalBlocks(matrix,local_r)
+        local_r%values=-7.0_NTREAL
+        CALL DestructLocal(local_r)
+      ELSE
+        CALL MergeMatrixLocalBlocks(matrix,local_c)
+        CALL SplitMatrixToLocalBlocks(matrix,local_c)
+        local_c%values=CMPLX(-7.0_NTREAL,.25_NTREAL,NTREAL)
+        CALL DestructLocal(local_c)
+      END IF
       CALL GetMatrixTripletList(matrix,list)
       DO i=1,list%CurrentSize
         entry=list%DATA(i)
@@ -37,6 +52,6 @@ PROGRAM ResizeGridTest
     CALL DestructMatrix(matrix)
   END DO
   CALL DestructProcessGrid(grid)
-  IF(rank==0) PRINT *, 'RESIZE CUSTOM GRID REAL/COMPLEX SHRINK/GROW PASS'
+  IF(rank==0) PRINT *, 'RESIZE CUSTOM GRID REAL/COMPLEX SHRINK/GROW PASS; SPLIT OWNERSHIP PASS'
   CALL MPI_Finalize(ierr)
 END PROGRAM
