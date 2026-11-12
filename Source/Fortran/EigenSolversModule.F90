@@ -25,6 +25,9 @@ MODULE EigenSolversModule
        & DestructMatrix
   USE TripletListModule, ONLY : TripletList_r, TripletList_c, &
        & ConstructTripletList, CopyTripletList, DestructTripletList
+#ifdef NTPOLY_ENABLE_CUSOLVERMP
+  USE PSMatrixEigenGPUModule, ONLY: TryGPUEigenDecomposition
+#endif
   USE NTMPIModule
   IMPLICIT NONE
   PRIVATE
@@ -50,6 +53,9 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! For Handling Optional Parameters
     TYPE(SolverParameters_t) :: params
     INTEGER :: nvals
+#ifdef NTPOLY_ENABLE_CUSOLVERMP
+    LOGICAL :: gpu_performed
+#endif
 
     !! Optional Parameters
     IF (PRESENT(solver_parameters_in)) THEN
@@ -63,6 +69,13 @@ CONTAINS !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
        nvals = this%actual_matrix_dimension
     END IF
 
+#ifdef NTPOLY_ENABLE_CUSOLVERMP
+    CALL TryGPUEigenDecomposition(this,eigenvalues,nvals,params%threshold,gpu_performed,eigenvectors_in)
+    IF(gpu_performed) THEN
+       CALL DestructSolverParameters(params)
+       RETURN
+    END IF
+#endif
 #if EIGENEXA
     IF (PRESENT(eigenvectors_in)) THEN
        CALL EigenExa_s(this, eigenvalues, nvals, eigenvectors_in, &

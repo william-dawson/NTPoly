@@ -28,6 +28,7 @@ endif()
 ################################################################################
 ## Options
 option(NTPOLY_ENABLE_GPU_TRS2 "Build the experimental resident GPU backend for library TRS2" OFF)
+option(NTPOLY_ENABLE_CUSOLVERMP "Build optional real FP64 distributed GPU eigendecomposition" OFF)
 option(FORTRAN_ONLY "Build only the Fortran bindings." OFF)
 option(NOSWIG "Don't build the swig bindings." OFF)
 option(USE_MPIH "Use mpi.h for systems that don't have the mpi module" OFF)
@@ -40,7 +41,7 @@ option(NTPOLY_SWIG_NO_STRICT
 )
 
 ## Process these options
-if(NTPOLY_ENABLE_GPU_TRS2)
+if(NTPOLY_ENABLE_GPU_TRS2 OR NTPOLY_ENABLE_CUSOLVERMP)
   if(CMAKE_VERSION VERSION_LESS 3.20)
     message(FATAL_ERROR "The optional GPU TRS2 backend requires CMake 3.20 or newer")
   endif()

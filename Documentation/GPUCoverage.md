@@ -32,8 +32,8 @@ is no pointer-address cache: changed values at the same address are re-imported.
 | CG | A*P and initial residual product | Direct Frobenius dot products and updates |
 | Canonical/grand-canonical Fermi expansion | Expansion and density/basis products | Scalar occupation/control and updates |
 | Energy density, McWeeny, gap estimate, geometry extrapolation | Their shared products | Control and linear operations |
-| Dense functions, dense density/FOE | Surrounding distributed products | Dense eigendecomposition remains CPU LAPACK/EigenExa |
-| SVD | Polar iteration and postprocessing products | Eigenproblem remains CPU LAPACK/EigenExa |
+| Dense functions, dense density/FOE | Products; optional real cuSOLVERMp eigendecomposition | Control and unsupported eigenproblem fallback |
+| SVD | Polar/products; optional real cuSOLVERMp Hermitian eigenproblem | Unsupported eigenproblem fallback |
 | Cholesky | No product-based acceleration | Existing column/pivot implementation |
 
 Resident GPU matrices already provide owned copy, scale, thresholded increment,
@@ -43,8 +43,11 @@ run on CPU. Keep these simple until whole-call measurements identify a material
 cost or a residency requirement; do not add import/export solely to move a cheap
 operation to a GPU.
 
-The standalone cuSOLVERMp comparison does not integrate a GPU eigensolver into
-these library entry points. That remains a distinct implementation task.
+The optional `NTPOLY_ENABLE_CUSOLVERMP` backend now connects real FP64 dense
+EigenDecomposition to cuSOLVERMp with `NTPOLY_GPU_EIGEN=1`; dense wrappers and
+SVD inherit that eigenproblem path. See [CUSOLVERMP.md](CUSOLVERMP.md) for its
+placement, conversion, fallback and validation boundaries. Custom Cholesky
+remains on CPU pending discussion.
 
 ## Validation scope
 

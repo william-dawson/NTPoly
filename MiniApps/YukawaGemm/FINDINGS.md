@@ -3080,3 +3080,66 @@ nor an all-rank critical-path bound. It shows no reason to start another PTX
 microtuning exercise: host boundaries/control and cold initialization still
 have substantially more useful headroom. Profiled solver times are slower;
 use the separate unprofiled benchmark table above for speedups.
+
+## Finding 34: cuSOLVERMp backs the normal dense eigen API (2026-11-12)
+
+`NTPOLY_ENABLE_CUSOLVERMP=ON` builds an independent library-owned backend under
+Source/GPU. `NTPOLY_GPU_EIGEN=1` dispatches real FP64 one-slice
+EigenDecomposition before CPU LAPACK/EigenExa. Dense functions, density/FOE and
+SVD inherit that shared eigenproblem path; low-level local DMatrix LAPACK and
+custom Cholesky are unchanged. Complex and sliced requests retain CPU fallback.
+The sparse GPU backend can be enabled independently or together with this one.
+
+The adapter redistributes Matrix_ps triplets into block-cyclic dense A, calls
+cuSOLVERMp Syevd and returns ascending diagonal values and column eigenvectors
+through the existing Matrix_ps API. It honors partial/zero/oversized nvals,
+optional vector output and separate entry thresholding. It mirrors the CPU
+LAPACK upper triangle into the dense symmetric input. GPU vector compaction
+precedes host return; there are still coordinate staging/redistribution
+boundaries. Installed0.7.2 computes vectors internally even for values-only
+requests; such requests skip vector export. Session resources are released
+per call rather than cached across application grids.
+
+Automatic placement coalesces N<=16384; larger problems use a balanced solver
+grid independent of the caller's grid. Memory admission includes dense arrays,
+input packing, queried solver workspace and worst-case compacted vector output,
+with live-free-memory headroom and an optional lower MiB cap. Unsafe capacity/
+layouts decline collectively; runtime/numerical errors do not silently rerun
+CPU. Multi-node remains opt-in through the existing NCCL flag and is unvalidated
+for this new library entry point.
+
+A concrete layout failure was caught:129/block64/1x4 returned info0 but GPU
+trace132.259 and residual~2.13, versus CPU trace194.129/residual6.7e-15.
+Filling both triangles did not fix it. Nonempty257/1x4 and129/2x2 controls pass.
+The adapter therefore uses a balanced grid and declines empty-owner layouts.
+This is a conservative tested workaround, not a cluster-wide fault diagnosis.
+
+Job324756 completes104 eigen API comparisons across1/2/4 application ranks,
+root/all policies, padded/rectangular/square/split layouts, zero-memory and
+sliced fallback, plus complex fallback and dense callers. Residuals,
+orthogonality and spectral projectors are checked, including1025/block512
+fully distributed vectors. The49-solver integration suite also passes; an
+auto-mode rerun ensures small dense callers actually enter cuSOLVERMp.
+CPU-only host regressions pass. Standalone cuSOLVERMp build with sparse GPU
+backend disabled passes, and324780 builds/runs a separate installed CMake
+consumer and the combined-backend build. The packaging checks repaired missing
+BLAS/LAPACK export in the RIKYU toolchain and mixed plain/PUBLIC CMake linking.
+
+The initial sanitizer report includes4937 CUDA API errors from UCX/NCCL probes;
+raw output is retained. With API-error logging disabled, device memcheck reports
+zero errors while adapter CUDA status checks remain active. This result covers
+device accesses, not the ignored library API reports. Numerical and installed
+client checks complete successfully. All jobs are finished; individual failures
+remain separate from successful final checks.
+
+The existing10k input in a four-rank application selects one GPU automatically.
+Three eigenvalues-only public API calls take1.982s first, then1.064/1.061s
+(1.063s warm mean). Spectrum trace/square fingerprints and repeat comparisons
+agree within2.92e-15. These times include backend session creation, conversion
+and normal API return. They exclude input reading and post-call validation;
+they do not measure density construction or host eigenvector export. Do not
+compare them directly with persistent-workspace standalone benchmark scopes.
+
+Details, raw failures, hashes and replay scripts:
+`validation/rikyu-eigen-20261112`; API/build documentation:
+Documentation/CUSOLVERMP.md. Custom Cholesky remains deferred pending discussion.

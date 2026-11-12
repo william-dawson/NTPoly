@@ -1,6 +1,9 @@
 ################################################################################
 ## Basic Code
-subdirs(Fortran)
+add_subdirectory(Fortran)
+if(NTPOLY_ENABLE_CUSOLVERMP)
+  add_subdirectory(GPU)
+endif()
 
 ## C++ Bindings
 if (NOT FORTRAN_ONLY)

@@ -55,10 +55,14 @@ if(NTPOLY_ENABLE_GPU_TRS2)
     ${PROJECT_SOURCE_DIR}/MiniApps/YukawaGemm/solver_nccl.f90)
   target_compile_definitions(NTPoly PUBLIC NTPOLY_ENABLE_GPU_TRS2)
 endif()
+if(NTPOLY_ENABLE_CUSOLVERMP)
+  target_sources(NTPoly PRIVATE PSMatrixEigenGPUModule.F90)
+  target_compile_definitions(NTPoly PUBLIC NTPOLY_ENABLE_CUSOLVERMP)
+endif()
 if (NOT NOSWIG)
   set_target_properties(NTPoly PROPERTIES POSITION_INDEPENDENT_CODE True)
 endif()
-target_link_libraries(NTPoly ${MPI_Fortran_LIBRARIES} ${EigenSolver_LIBRARIES}
+target_link_libraries(NTPoly PUBLIC ${MPI_Fortran_LIBRARIES} ${EigenSolver_LIBRARIES}
                       ${OpenMP_Fortran_LIBRARIES} ${LAPACK_LIBRARIES} 
                       ${BLAS_LIBRARIES})
 target_include_directories(NTPoly PUBLIC ${EigenSolver_INCLUDE_DIRS}
