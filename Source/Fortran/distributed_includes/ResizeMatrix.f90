@@ -1,4 +1,5 @@
   INTEGER :: II
+  LOGICAL :: matrix_is_complex
 
   !! Get the triplet values.
   CALL GetMatrixTripletList(this, tlist)
@@ -14,7 +15,9 @@
   END DO
 
   !! Rebuild.
-  CALL ConstructEmptyMatrix(this, new_size)
+  matrix_is_complex = this%is_complex
+  CALL ConstructEmptyMatrix(this, new_size, process_grid_in = this%process_grid, &
+       & is_complex_in = matrix_is_complex)
   CALL FillMatrixFromTripletList(this, pruned, preduplicated_in = .TRUE.)
 
   !! Cleanup

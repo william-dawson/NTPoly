@@ -3185,3 +3185,50 @@ comparisons and192 mixed/changed-input cases. Maximum solver relative difference
 is3.73e-9, EVD residual1.02e-14 and orthogonality error4.40e-14. Device memchecks
 report zero errors with API-probe reporting disabled; installed consumers pass.
 Final jobs324823/324845 finish exit0; all jobs are finished.
+
+## Finding 36: complex kernel cost is modest; public boundaries dominate (2026-11-12)
+
+The new product_gpu_bench compares real, zero-imaginary complex and genuinely
+complex D*A*D^H products with the same sparse pattern and product magnitudes.
+It validates every full result against CPU1 outside the timer and separates
+cold from warm calls. Timers cover the public MatrixMultiply API, including
+normal output construction, communication and import/export. Phase construction
+and reference checking are excluded. Datatype order rotates each repetition.
+
+The first four-GPU warm calls cost15.993/51.862ms at10k and35.199/150.331ms at20k
+(real/complex, paired allocation). Removing redundant all-rank output triplet
+redistribution lowers complex calls to37.616/105.858ms (1.38x/1.42x improvement),
+with real controls15.710/35.020ms. One-GPU10k is32.296/84.610ms after the change.
+The remaining overhead is2.39x at10k,3.02x at20k and2.62x on one-GPU10k; it is
+not uniformly the hoped-for2x. A complex-specific admission model now counts
+actual global input coordinates and the complex path's real buffers/sort space,
+rather than multiplying the unrelated real-resident worst-case slot estimate.
+It retains caps, live-memory headroom and index guards and admits the64k sparse
+case on four GPUs, where complex previously fell back to CPU.
+
+At64k, new GPU real/complex are126.794/551.916ms, a4.35x datatype ratio. Validated
+CPU128 controls on the same allocation take609.117ms complex (a limited1.10x
+GPU advantage). At10k and20k CPU128 complex27.817/72.472ms still beats the shared
+GPU calls. This is multiplication, not a full complex purification comparison.
+All product output patterns match and maximum matrix differences are below
+4.83e-16. The controls' successful multiplication does not repair the separately
+excluded threaded10k TRS2 fingerprint problem.
+
+CUDA-only warm profiles span3 real and6 complex calls on rank0. The new multiply
+kernels average34.1us real versus52.4us complex (1.54x), all kernel time totals
+12.31ms, and cudaMalloc/cudaFree API time totals71.11ms. The allocation number
+is aggregate across both datatypes; API durations can include synchronization.
+Host coordinate and output construction remain separate costs. This does not
+justify tuning the multiply PTX. Prioritize grid-owned reusable complex scratch,
+complex GPU matrix ownership/accessible CSC input, then resident purification.
+Custom Cholesky remains deferred pending discussion.
+
+Benchmark input resizing exposed a general library bug: ResizeMatrix discarded
+an explicitly supplied process grid and used the default grid, which need not
+be constructed. Preserve the supplied grid and scalar type. Real/complex
+shrink/grow regressions pass with an unconstructed default grid. Host regressions
+and48 complex solver APIs on1/2/4 ranks, square/rectangular grids and cap fallback
+pass; device memcheck reports zero errors with API probes disabled. Jobs325216
+and325315 complete exit0; initial324874 times out during resizing before20k
+multiplication starts. All jobs are finished. Evidence and replay scripts:
+validation/rikyu-complex-products-20261112. All task staging is on data1.

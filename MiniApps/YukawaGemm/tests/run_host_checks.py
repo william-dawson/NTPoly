@@ -42,7 +42,7 @@ def main():
         shutil.copyfile(HERE / 'import_csc_test.cu', fixture_app / 'tests/import_csc_test.cu')
         shutil.copyfile(HERE / 'resident_panels_test.cpp', fixture_app / 'tests/resident_panels_test.cpp')
         shutil.copyfile(HERE / 'nccl_transport_test.cpp', fixture_app / 'tests/nccl_transport_test.cpp')
-        for name in ('test_identity.f90', 'test_gemm_threshold.f90', 'test_cg_residual.f90'):
+        for name in ('test_identity.f90', 'test_gemm_threshold.f90', 'test_cg_residual.f90', 'test_resize_grid.F90'):
             shutil.copyfile(HERE / name, fixture_app / 'tests' / name)
         for name in ("CMakeLists.txt", "yukawa_gemm.f90", "trs2_reference.F90", "solver_csr.f90", "solver_nccl.f90", "generate_yukawa.f90", "cusparse_gemm.cu", "nccl_panels.cu", "resident_panels.cu"):
             shutil.copyfile(APP / name, fixture_app / name)
@@ -134,6 +134,12 @@ END MODULE
              "-framework", "Accelerate", "-o", work / "cg-residual"])
         for ranks in (1, 2, 4):
             print(run(["mpirun", "-n", ranks, work / "cg-residual"],
+                      env=dict(os.environ, OMP_NUM_THREADS="1"), timeout=30).strip())
+        run(["mpifort", "-g", "-fcheck=all", "-ffree-line-length-none", "-I", build / "include", "-J", work,
+             HERE / "test_resize_grid.F90", build / "lib/libNTPoly.a", "-fopenmp",
+             "-framework", "Accelerate", "-o", work / "resize-grid"])
+        for ranks in (1, 4):
+            print(run(["mpirun", "-n", ranks, work / "resize-grid"],
                       env=dict(os.environ, OMP_NUM_THREADS="1"), timeout=30).strip())
         # The same API suite must remain usable in a CPU-only library build.
         # Only GPU ownership counters are stubbed; all solver/algebra code is real.

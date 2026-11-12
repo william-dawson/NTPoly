@@ -5,7 +5,7 @@ MODULE PSMatrixGPUBackendModule
   USE DataTypesModule, ONLY: NTREAL, MPINTLONG, MPINTREAL
   USE ISO_FORTRAN_ENV, ONLY: INT64, REAL64
   USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
-  USE GPUPlanningModule, ONLY: EstimateGPUPlan, GPUMemoryBudget
+  USE GPUPlanningModule, ONLY: EstimateGPUPlan, EstimateComplexProductPlan, GPUMemoryBudget
   USE NTMPIModule
   USE PSMatrixModule, ONLY: Matrix_ps, ConstructEmptyMatrix, MergeMatrixLocalBlocks, SplitMatrixToLocalBlocks, &
     GatherMatrixToProcess, FillMatrixFromTripletList, GetMatrixTripletList
@@ -788,18 +788,10 @@ CONTAINS
     INTEGER(INT64), INTENT(OUT) :: peak
     REAL(REAL64), INTENT(OUT) :: seconds
     LOGICAL, INTENT(OUT) :: safe
-    INTEGER(INT64) :: sort_scratch
-    CALL EstimateGPUPlan(n,pr,pc,nnz_a,nnz_x,iterations,peak,seconds,safe)
-    IF(matrix%is_complex .AND. safe) THEN
-      ! Bound CUDA double2 alignment with 32-byte coordinates (up to eight int
-      ! wire words), and reserve explicit scratch for the largest sorted panel.
-      sort_scratch=64_INT64*INT(n/pr,INT64)*INT(n/pc,INT64)*MAX(pr,pc)
-      safe=peak<=(HUGE(peak)-sort_scratch)/3 .AND. INT(n,INT64)*(n/MIN(pr,pc))<=HUGE(0)/8
-      IF(safe) THEN
-        peak=peak*3+sort_scratch;seconds=seconds*2
-      ELSE
-        peak=HUGE(peak)
-      END IF
+    IF(matrix%is_complex) THEN
+      CALL EstimateComplexProductPlan(n,pr,pc,nnz_a,nnz_x,iterations,peak,seconds,safe)
+    ELSE
+      CALL EstimateGPUPlan(n,pr,pc,nnz_a,nnz_x,iterations,peak,seconds,safe)
     END IF
   END SUBROUTINE
 
@@ -902,7 +894,7 @@ CONTAINS
         END DO
       END IF
       CALL ConstructEmptyMatrix(c,a%actual_matrix_dimension,process_grid_in=a%process_grid,is_complex_in=.TRUE.)
-      CALL FillMatrixFromTripletList(c,entries,preduplicated_in=.TRUE.)
+      CALL FillMatrixFromTripletList(c,entries,preduplicated_in=.TRUE.,prepartitioned_in=.NOT.root_mode)
       CALL DestructTripletList(entries)
       performed=.TRUE.
       CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_REPORT',report)

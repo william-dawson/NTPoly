@@ -28,7 +28,9 @@ sorting are per product. This provides solver coverage, not the residency or
 performance of the specialized real TRS2 loop. Complex TRS2 uses shared GPU
 products when `NTPOLY_GPU_ALGEBRA=1`; `NTPOLY_GPU_TRS2=1` alone retains its CPU
 path for complex input. Complex admission uses larger payload and wire-count
-bounds; the ranking model has not been calibrated with complex workloads.
+bounds based on actual input nnz and the buffers this path owns; the ranking
+model has not been calibrated with complex workloads. All-rank output is already
+partitioned and skips redistribution. The64k sparse benchmark now admits four GPUs.
 
 ## Coverage map
 
@@ -97,6 +99,23 @@ square root takes1.174s versus1.616s (1.30x/1.38x). Output differences are below
 8.91e-16; validated residual norms are about1e-6. This includes per-product
 boundaries. It is not the physical-H purification workload. Tiny problems are
 correctness tests and generally favor CPU. The generic flag remains opt-in.
+
+## Measured complex multiplication
+
+Matched complete MatrixMultiply calls, including import/export and allocation,
+use a diagonal-unitary phase transform to preserve real/complex product patterns.
+After removing redundant output redistribution, warm4GPU medians are15.710/37.616ms
+real/complex at10k (2.39x),35.020/105.858ms at20k (3.02x), and126.794/551.916ms at64k
+(4.35x). The64k complex call is1.10x faster than CPU128 (609.117ms); the smaller
+CPU controls are faster than the shared GPU path. One-GPU10k is32.296/84.610ms
+(2.62x). All full-matrix errors are below4.83e-16. These are products, not
+complete purification calls. This does not establish complex solver speedups.
+
+A warm rank-zero profile measures34.1us real and52.4us complex multiply kernels
+(1.54x), but allocation/free API time totals71.11ms across3 real and6 complex
+calls, versus12.31ms of all GPU kernels. Those aggregated scopes are distinct.
+Owned complex storage, reusable scratch and avoiding redundant conversion are
+more useful next steps than PTX tuning. See Finding36 and the benchmark evidence.
 
 ## Cleanup direction
 

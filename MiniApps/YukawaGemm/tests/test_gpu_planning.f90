@@ -31,5 +31,17 @@ PROGRAM TestGPUPlanning
   IF(safe) STOP 12
   CALL EstimateGPUPlan(10000,0,2,1_INT64,1_INT64,24,invalid,t,safe)
   IF(safe) STOP 13
+  ! Complex panels scale with actual sparse input counts, not dense panel bounds.
+  CALL EstimateComplexProductPlan(64000,2,2,5200000_INT64,2600000_INT64,1,big,t,safe)
+  IF(.NOT.safe .OR. .NOT.IEEE_IS_FINITE(t)) STOP 14
+  IF(big<48_INT64*32000*32000 .OR. big>80000000000_INT64) STOP 15
+  CALL EstimateComplexProductPlan(64000,1,1,5200000_INT64,2600000_INT64,1,invalid,t,safe)
+  IF(safe) STOP 16
+  CALL EstimateComplexProductPlan(64000,2,2,INT(HUGE(0),INT64)/8+1,0_INT64,1,invalid,t,safe)
+  IF(safe .OR. invalid/=HUGE(invalid)) STOP 17
+  CALL EstimateComplexProductPlan(10001,2,2,1_INT64,1_INT64,1,invalid,t,safe)
+  IF(safe) STOP 18
+  CALL EstimateComplexProductPlan(HUGE(0),1,1,HUGE(0_INT64),0_INT64,1,invalid,t,safe)
+  IF(safe) STOP 19
   PRINT *, 'GPU planning: fill-sensitive ranking, peak bounds, caps and integer overflow: PASS'
 END PROGRAM
