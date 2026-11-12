@@ -3619,3 +3619,94 @@ complex bitmap/touched-entry pruning/packing and resident complex ownership;
 custom Cholesky remains deferred. The real public path now has about3ms of
 resident product and5.2ms of output-boundary work; do not microtune the0.314ms
 arithmetic kernel before considering larger measured costs.
+
+## Finding 43: export cost is dominated by first-touch of fresh host pages (2026-11-12)
+
+Production implementation remains7290e763. This is inspection/profiling only;
+no production conversion/ownership/overlap change has been made. Job326203(c068)
+completes exit0. Data/source/scripts/raw nsys reports are under data1; home files
+untouched except provider-generated script inspected read-only.
+
+**Correct the attribution:** the0.103ms ConstructEmptyMatrix stage from Finding42
+is metadata/empty-matrix construction, not allocation of the full output payload.
+DownloadLocalGPU's stage36 (named output_GPU_CSR_to_CSC_and_copy) also includes
+DestructMatrix(local) and ALLOCATE of its three Fortran destination arrays.
+The earlier interpretation that payload allocation itself was already measured
+as small was unsupported. The new experiment measures it directly.
+
+A benchmark links the unchanged CUDA implementation by inclusion in its diagnostic
+translation unit (the archive's duplicate object is not extracted). It uses the
+actual retained product slot after two public64k real GPU multiplies, then leases
+that same grid context. The actual exporter is a control. A split sequence uses
+the same cuSPARSE algorithm/device scratch and a BIND(C) callback that performs
+ordinary Fortran ALLOCATE. This permits conversion to be enqueued before CPU
+allocation/first-touch. Each variant is checked for exact equality of every CSC
+index/value to actual production output. Full product CPU error<4.5e-16.
+
+Forward/reverse sweeps,8 calls/mode/sweep,4GPU/2x2/1thread. Discard the first call
+per mode/sweep; select the slowest rank independently for each of14 warm calls:
+
+| Export variant | Median ms | Mean ms |
+|---|---:|---:|
+| Actual production export, fresh Fortran arrays | 4.956 | 4.951 |
+| Split sequential export, fresh arrays | 4.995 | 5.035 |
+| Overlap allocation with conversion | 4.957 | 5.029 |
+| First-touch pages before conversion | 4.821 | 4.826 |
+| Overlap allocation+first-touch with conversion | 4.772 | 4.767 |
+| Reuse backed ordinary Fortran arrays | 1.205 | 1.206 |
+| Reuse pinned host arrays | 1.201 | 1.204 |
+
+Split sequential means, additive host clocks: allocation0.013ms,residency probe
+0.013,prepare0.053,conversion launch API0.309,wait0.098,column-pointer copy0.016,
+index copy1.662,value copy2.854,other0.017,total5.035ms. The separate conversion
+GPU event span is0.391ms; it overlaps host clocks and is not added. Nsight sums
+actual conversion kernels to0.300ms on rank3. GPU-event copy span includes host
+gaps between sequential blocking calls; it is not the sum of DMA activity.
+
+Explicit first-touch means3.471ms; subsequent three copy APIs sum0.843ms, versus
+4.532ms for fresh arrays. Total remains4.826ms because physical page backing
+was moved earlier. mincore reports only1 resident page in each large fresh
+index/value allocation before use on heavy ranks. Reused ordinary arrays and
+pinned allocations are backed. This strongly identifies fresh-page first-touch
+as the dominant removable component, rather than the13–20us ALLOCATE call or
+HBM format conversion. Touch writes only one byte per base page plus the end.
+
+Allocation-only overlap makes no material change (4.995→4.957ms median).
+First-touch overlap saves about0.05ms compared with sequential touching
+(4.821→4.772ms). The conversion GPU span is only0.39ms, and the launch API takes
+about0.30ms before returning; the remaining wait falls0.101→0.015ms when touching
+overlaps. Even ideal complete conversion overlap can hide only about0.39ms of
+3.47ms first-touch work. Retaining physical host pages is the larger headroom.
+
+Warm pinned storage provides essentially the same result as ordinary backed
+Fortran arrays. It is not necessary to infer that pinning is the primary fix.
+Pinned allocation setup is outside warm clocks and costs4.08–4.11ms once on
+heavy ranks; never quote1.2ms as fresh pinned-allocation-inclusive export time.
+The reused host experiments retain a fixed output size. Production matrices
+own exact-sized allocatables; translating reuse into the public API requires
+preserving ownership/freshness and handling changing nnz. A staging buffer
+followed by a CPU payload copy has not been measured here. No full-API speedup
+from host reuse is claimed.
+
+Nsight captures5 warm exports on all4 ranks for modes actual/sequential/overlap/
+overlap-touch/pinned. There are no product or NCCL kernels in these isolated
+captures and no warm CUDA allocation/free calls. Each capture has20 D2H operations:
+15 payload copies plus5 scalar readbacks internal to cuSPARSE. Heavy rank3
+exports86.961MB/call. Recorded D2H GPU activity per call is0.965/0.998/1.100/
+0.850/0.707ms across those modes; API time includes host handling/waits and
+profiling perturbation. Do not subtract independently captured API/event/wall
+numbers to invent a precise staging duration. Kernel sums stay about0.300ms.
+
+Unmodified full public controls before/after experiments retain10.104/10.346ms
+warm medians. Their means10.156/17.224ms preserve one58.751ms after-control outlier;
+no cause assigned. Export variants and tiny257 memcheck all complete; sanitizer
+reports0 errors with API-probe reporting suppressed as before. Production solver
+regressions were not rerun because no production code changed. The earlier
+intermittent threaded BLAS issue remains undiagnosed.
+
+Evidence/replay/source/executable hashes and analyzer:
+validation/rikyu-export-profile-20261112. Next useful export work is safe reuse
+of already-backed caller output storage or earlier/parallel page preparation;
+measure any extra staging copy and ownership changes end-to-end. Conversion-only
+overlap has limited headroom. Complex bitmap/touched-entry work remains the other
+material kernel priority; custom Cholesky remains deferred.

@@ -259,6 +259,23 @@ real/complex API and native/threaded regressions pass; memory checker0 errors.
 Earlier intermittent threaded BLAS failure remains undiagnosed. See Finding42
 and validation/rikyu-real-workspace-20261112 for raw data, hashes and scopes.
 
+## Host export allocation and overlap profile
+
+Finding43 separates the previously combined export stage. The earlier0.103ms
+empty-matrix construction did not measure payload allocation. Ordinary Fortran
+ALLOCATE takes0.013ms; first-touching fresh output pages takes3.471ms on heavy
+64k output ranks. Conversion GPU event span0.391ms (kernel sum0.300ms) offers
+limited overlap. Isolated export medians: actual4.956ms,allocation-overlap4.957,
+sequential first-touch4.821,overlapped first-touch4.772,reused ordinary host
+buffers1.205,reused pinned1.201. Pinned setup~4.1ms is excluded from warm times.
+Reusing backed pages is the larger headroom; pinning alone is not established
+as necessary. These are fixed-output-size experiments, not a changed public API
+or measured full-solver speedup. Preserve matrix ownership and changing-nnz
+behavior before implementing host reuse. Full public controls remain10.104/
+10.346ms median. Exact-output checks and tiny memcheck pass; all-rank profiles
+confirm the isolated scopes. Production remains7290e763. Evidence:
+validation/rikyu-export-profile-20261112.
+
 ## Cleanup direction
 
 1. Keep GPU admission, context leasing, import/export and ownership in the shared
