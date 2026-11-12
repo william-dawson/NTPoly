@@ -16,6 +16,9 @@ PROGRAM EigenGPUTest
   TYPE(Matrix_ps) :: h,wcpu,wgpu,qcpu,qgpu,reference,check_matrix,temp,identity,qt,pcpu,pgpu
   TYPE(TripletList_r) :: entries
   TYPE(Triplet_r) :: entry
+  TYPE(TripletList_c) :: complex_entries
+  TYPE(Triplet_c) :: complex_entry
+  LOGICAL :: complex_problem
   TYPE(SolverParameters_t) :: params
   INTEGER :: ierr,rank,nr,pr,n,example,mode,k,j,status,slices,work_comm
   REAL(NTREAL) :: error,t0,seconds,residual,orthogonality,dc,dg,ht,ct,gt
@@ -40,7 +43,8 @@ PROGRAM EigenGPUTest
     CALL MPI_Comm_dup(MPI_COMM_WORLD,work_comm,ierr)
   END IF
   CALL ConstructProcessGrid(work_comm,pr,nr/pr/slices,slices)
-  CALL ConstructEmptyMatrix(h,n)
+  CALL GET_COMMAND_ARGUMENT(5,arg);complex_problem=TRIM(arg)=='complex'
+  CALL ConstructEmptyMatrix(h,n,is_complex_in=complex_problem)
   CALL ConstructSolverParameters(params,threshold_in=0.0_NTREAL,be_verbose_in=.FALSE.)
   DO example=1,8
     CALL FillInput()
@@ -84,8 +88,8 @@ PROGRAM EigenGPUTest
     residual=0;orthogonality=0
     IF(example/=6) THEN
       CALL Finite(qgpu)
-      CALL TransposeMatrix(qcpu,qt);CALL MatrixMultiply(qcpu,qt,pcpu)
-      CALL TransposeMatrix(qgpu,qt);CALL MatrixMultiply(qgpu,qt,pgpu)
+      CALL TransposeMatrix(qcpu,qt);CALL ConjugateMatrix(qt);CALL MatrixMultiply(qcpu,qt,pcpu)
+      CALL TransposeMatrix(qgpu,qt);CALL ConjugateMatrix(qt);CALL MatrixMultiply(qgpu,qt,pgpu)
       CALL Difference(pcpu,pgpu,error)
       IF(.NOT.(error<1e-9_NTREAL)) CALL Fail('projector',error)
       IF(params%threshold==0 .AND. example/=8) THEN
@@ -101,7 +105,13 @@ PROGRAM EigenGPUTest
             CALL AppendToTripletList(entries,entry)
           END DO
         END IF
-        CALL FillMatrixFromTripletList(identity,entries);CALL DestructTripletList(entries)
+        IF(complex_problem) THEN
+          CALL CopyTripletList(entries,complex_entries)
+          CALL FillMatrixFromTripletList(identity,complex_entries);CALL DestructTripletList(complex_entries)
+        ELSE
+          CALL FillMatrixFromTripletList(identity,entries)
+        END IF
+        CALL DestructTripletList(entries)
         CALL Difference(identity,check_matrix,orthogonality)
         IF(.NOT.(orthogonality<1e-10_NTREAL)) CALL Fail('orthogonality',orthogonality)
       END IF
@@ -149,7 +159,22 @@ CONTAINS
         END IF
       END DO
     END IF
-    CALL FillMatrixFromTripletList(h,entries);CALL DestructTripletList(entries)
+    IF(complex_problem) THEN
+      CALL CopyTripletList(entries,complex_entries)
+      DO i=1,complex_entries%CurrentSize
+        IF(complex_entries%DATA(i)%index_row<complex_entries%DATA(i)%index_column) THEN
+          complex_entries%DATA(i)%point_value=complex_entries%DATA(i)%point_value+CMPLX(0.0_NTREAL,.04_NTREAL,NTREAL)
+        ELSE IF(complex_entries%DATA(i)%index_row>complex_entries%DATA(i)%index_column) THEN
+          complex_entries%DATA(i)%point_value=complex_entries%DATA(i)%point_value-CMPLX(0.0_NTREAL,.04_NTREAL,NTREAL)
+        END IF
+        IF(example==8 .AND. complex_entries%DATA(i)%index_row==complex_entries%DATA(i)%index_column) &
+          complex_entries%DATA(i)%point_value=complex_entries%DATA(i)%point_value+CMPLX(0.0_NTREAL,.2_NTREAL,NTREAL)
+      END DO
+      CALL FillMatrixFromTripletList(h,complex_entries);CALL DestructTripletList(complex_entries)
+    ELSE
+      CALL FillMatrixFromTripletList(h,entries)
+    END IF
+    CALL DestructTripletList(entries)
   END SUBROUTINE
   SUBROUTINE ComplexFallback()
     TYPE(Matrix_ps) :: ch,cw,gw,cq,gq,ct,p1,p2
@@ -180,7 +205,7 @@ CONTAINS
     CALL Difference(p1,p2,error);IF(.NOT.(error<1e-12_NTREAL)) CALL Fail('complex projector',error)
     CALL DestructMatrix(ch);CALL DestructMatrix(cw);CALL DestructMatrix(gw);CALL DestructMatrix(cq)
     CALL DestructMatrix(gq);CALL DestructMatrix(ct);CALL DestructMatrix(p1);CALL DestructMatrix(p2)
-    IF(rank==0) PRINT *, 'COMPLEX EIGEN CPU FALLBACK PASS'
+    IF(rank==0) PRINT *, 'COMPLEX EIGEN COMPARISON PASS'
   END SUBROUTINE
   SUBROUTINE Difference(a,b,result)
     TYPE(Matrix_ps), INTENT(IN) :: a,b
@@ -191,6 +216,15 @@ CONTAINS
   SUBROUTINE Finite(a)
     TYPE(Matrix_ps), INTENT(IN) :: a
     INTEGER :: i,j
+    IF(a%is_complex) THEN
+      DO j=1,SIZE(a%local_data_c,2)
+        DO i=1,SIZE(a%local_data_c,1)
+          IF(ANY(.NOT.IEEE_IS_FINITE(REAL(a%local_data_c(i,j)%values,NTREAL))) .OR. &
+             ANY(.NOT.IEEE_IS_FINITE(AIMAG(a%local_data_c(i,j)%values)))) CALL Fail('nonfinite complex output',1.0_NTREAL)
+        END DO
+      END DO
+      RETURN
+    END IF
     DO j=1,SIZE(a%local_data_r,2)
       DO i=1,SIZE(a%local_data_r,1)
         IF(ANY(.NOT.IEEE_IS_FINITE(a%local_data_r(i,j)%values))) CALL Fail('nonfinite output',1.0_NTREAL)

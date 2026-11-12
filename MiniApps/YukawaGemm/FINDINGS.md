@@ -3143,3 +3143,45 @@ compare them directly with persistent-workspace standalone benchmark scopes.
 Details, raw failures, hashes and replay scripts:
 `validation/rikyu-eigen-20261112`; API/build documentation:
 Documentation/CUSOLVERMP.md. Custom Cholesky remains deferred pending discussion.
+
+## Finding 35: complex FP64 eigen and shared product coverage (2026-11-12)
+
+cuSOLVERMp EigenDecomposition now accepts complex Hermitian input as well as
+real symmetric input. A shared typed adapter handles CUDA_C_64F storage,
+conjugate upper-triangle mirroring, real diagonal/eigenvalue semantics,
+complex-magnitude vector pruning and datatype-sized memory admission.
+Eigenvalues stay real and eigenvectors stay complex. The separate eigen-only
+build remains supported. Process slices beyond one retain CPU fallback.
+
+`NTPOLY_GPU_ALGEBRA=1` also dispatches complex/mixed MatrixMultiply through a
+native complex dense accumulator, using the existing grid-owned NCCL context
+for GPU row/column panels. It sums AB before applying alpha and magnitude
+pruning, then adds beta*C without the product threshold. Zero-threshold output
+keeps nonzero subnormal components. Host coordinate import/export, per-product
+allocation and sorting remain explicit costs; this is shared operation coverage,
+not a resident complex TRS2 iteration or a demonstrated complex speedup. The
+memory bound includes larger payloads, explicit sorting scratch and wire-count
+limits. Complex rank-selection timing estimates remain uncalibrated.
+
+The complex solver suite covers 48 entry points: the original custom Cholesky
+helpers are real-only and are deliberately excluded, pending discussion. Real
+49-entry coverage is retained. Tests compare full results across 1/2/4 ranks,
+root/all placement, a 2x2 grid, capacity fallback and sliced CPU fallback.
+Additional cases check mixed datatypes, joint magnitude pruning, cancellation,
+logical padding and fresh input values. EVD comparisons include full/partial/
+empty spectra, omitted vectors, thresholding, projectors, residuals and
+orthogonality, upper-triangle semantics and distributed 1025/block512 storage.
+See `validation/rikyu-complex-20261112` for final results and failure history.
+
+An initial compile helper collided with the system finite function. The first
+complex harness also attempted conversion of already-complex matrices using
+an API that leaves its output untouched, producing an uninitialized test input.
+The next harness attempted the existing real-only Cholesky. Both harness issues
+are corrected without changing custom Cholesky. Preserve their failed runs;
+they are not evidence of a RIKYU/NCCL outage.
+
+Final validation totals:112 EVD cases,769 solver comparisons,288 direct product
+comparisons and192 mixed/changed-input cases. Maximum solver relative difference
+is3.73e-9, EVD residual1.02e-14 and orthogonality error4.40e-14. Device memchecks
+report zero errors with API-probe reporting disabled; installed consumers pass.
+Final jobs324823/324845 finish exit0; all jobs are finished.

@@ -148,7 +148,14 @@ if(NTPOLY_ENABLE_GPU_TRS2)
     if(NOT CUSPARSE_ENABLED OR NOT NCCL_INCLUDE_DIR OR NOT NCCL_LIBRARY)
         message(FATAL_ERROR "NTPOLY_ENABLE_GPU_TRS2 requires CUDA, cuSPARSE and NCCL")
     endif()
-    add_custom_target(ntpoly_gpu_objects DEPENDS ${CUSPARSE_OBJ} ${NCCL_OBJ} ${RESIDENT_OBJ})
+    set(COMPLEX_OBJ ${CMAKE_CURRENT_BINARY_DIR}/complex_products.o)
+    add_custom_command(OUTPUT ${COMPLEX_OBJ}
+        COMMAND ${NVCC_BIN} -O3 -std=c++17 -ccbin ${CMAKE_CXX_COMPILER}
+            -arch=sm_100 -c ${PROJECT_SOURCE_DIR}/Source/GPU/complex_products.cu -o ${COMPLEX_OBJ}
+        DEPENDS ${PROJECT_SOURCE_DIR}/Source/GPU/complex_products.cu VERBATIM)
+    set_source_files_properties(${COMPLEX_OBJ} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
+    target_sources(NTPoly PRIVATE ${COMPLEX_OBJ})
+    add_custom_target(ntpoly_gpu_objects DEPENDS ${CUSPARSE_OBJ} ${NCCL_OBJ} ${RESIDENT_OBJ} ${COMPLEX_OBJ})
     add_dependencies(NTPoly ntpoly_gpu_objects)
     target_link_libraries(NTPoly PUBLIC ${CUSPARSE_LIB} ${NCCL_LIBRARY}
         ${CUDA_HOME}/lib64/libcudart.so stdc++)

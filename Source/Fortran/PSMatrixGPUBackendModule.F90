@@ -8,9 +8,9 @@ MODULE PSMatrixGPUBackendModule
   USE GPUPlanningModule, ONLY: EstimateGPUPlan, GPUMemoryBudget
   USE NTMPIModule
   USE PSMatrixModule, ONLY: Matrix_ps, ConstructEmptyMatrix, MergeMatrixLocalBlocks, SplitMatrixToLocalBlocks, &
-    GatherMatrixToProcess, FillMatrixFromTripletList
-  USE SMatrixModule, ONLY: Matrix_lsr, DestructMatrix, MatrixToTripletList
-  USE TripletListModule, ONLY: TripletList_r, ConstructTripletList, DestructTripletList
+    GatherMatrixToProcess, FillMatrixFromTripletList, GetMatrixTripletList
+  USE SMatrixModule, ONLY: Matrix_lsr, Matrix_lsc, DestructMatrix, MatrixToTripletList
+  USE TripletListModule, ONLY: TripletList_r, TripletList_c, ConstructTripletList, DestructTripletList
   USE SolverCSR, ONLY: TransposeCSR
   USE SolverNCCL, ONLY: InitSolverNCCL, WarmSolverNCCL, FinishSolverNCCL, SolverScalarSum, nccl_active
   IMPLICIT NONE
@@ -29,6 +29,21 @@ MODULE PSMatrixGPUBackendModule
     GENERIC :: ASSIGNMENT(=) => AssignGPU
   END TYPE
   INTERFACE
+    INTEGER(C_INT) FUNCTION complex_product(rows,columns,n,row_offset,column_offset,na,ar,ac,av,nb,br,bc,bv, &
+        nc,cr,cc,cv,alpha,beta,threshold,output,count) BIND(C,NAME='ntpoly_complex_product_')
+      IMPORT C_INT,C_DOUBLE,C_DOUBLE_COMPLEX,C_PTR
+      INTEGER(C_INT) :: rows,columns,n,row_offset,column_offset,na,nb,nc,count
+      INTEGER(C_INT) :: ar(*),ac(*),br(*),bc(*),cr(*),cc(*)
+      COMPLEX(C_DOUBLE_COMPLEX) :: av(*),bv(*),cv(*)
+      REAL(C_DOUBLE) :: alpha,beta,threshold
+      TYPE(C_PTR) :: output
+    END FUNCTION
+    SUBROUTINE complex_export(output,rows,columns,values) BIND(C,NAME='ntpoly_complex_product_export_')
+      IMPORT C_INT,C_DOUBLE_COMPLEX,C_PTR
+      TYPE(C_PTR) :: output
+      INTEGER(C_INT) :: rows(*),columns(*)
+      COMPLEX(C_DOUBLE_COMPLEX) :: values(*)
+    END SUBROUTINE
     INTEGER(C_INT) FUNCTION import_csc(slot,rows,columns,nnz,cp,ri,values) BIND(C,NAME='gpu_ops_import_csc_')
       IMPORT C_INT,C_PTR
       INTEGER(C_INT) :: slot,rows,columns,nnz
@@ -153,7 +168,12 @@ CONTAINS
     IF(global_flags(1)/=-global_flags(2)) CALL FailGPU(TRIM(name)//' differs between ranks')
     requested=global_flags(1)==1
     IF(.NOT.requested) RETURN
-    IF(matrix%is_complex .OR. matrix%process_grid%num_process_slices/=1) THEN
+    IF(matrix%is_complex .AND. .NOT.PRESENT(option_name)) THEN
+      ! Complex TRS2 can use shared products, but the resident real iteration
+      ! must not reinterpret complex payloads or abort an otherwise valid solve.
+      requested=.FALSE.;RETURN
+    END IF
+    IF(matrix%process_grid%num_process_slices/=1) THEN
       IF(PRESENT(option_name)) THEN
         requested=.FALSE.
       ELSE
@@ -205,12 +225,7 @@ CONTAINS
     IF(cap==HUGE(cap)) cap=-1_INT64
     ! Count local sub-blocks without merging/copying their payloads.
     local_wh=0; local_x=0
-    DO j=1,SIZE(wh%local_data_r,2)
-      DO k=1,SIZE(wh%local_data_r,1)
-        local_wh=local_wh+SIZE(wh%local_data_r(k,j)%values,KIND=INT64)
-        local_x=local_x+SIZE(x%local_data_r(k,j)%values,KIND=INT64)
-      END DO
-    END DO
+    local_wh=LocalGPUCount(wh);local_x=LocalGPUCount(x)
     CALL MPI_Allreduce(local_wh,nnz_wh,1,MPINTLONG,MPI_SUM,comm,ierr)
     CALL MPI_Allreduce(local_x,nnz_x,1,MPINTLONG,MPI_SUM,comm,ierr)
     IF(PRESENT(initial_shift)) THEN
@@ -231,10 +246,8 @@ CONTAINS
     IF(PRESENT(preserve_padding)) THEN
       IF(preserve_padding) root_dimension=wh%logical_matrix_dimension
     END IF
-    CALL EstimateGPUPlan(root_dimension,1,1,nnz_wh,nnz_x,iterations, &
-      root_peak,root_seconds,root_index)
-    CALL EstimateGPUPlan(wh%logical_matrix_dimension,pr,pc,nnz_wh,nnz_x,iterations, &
-      all_peak,all_seconds,all_index)
+    CALL MatrixGPUPlan(wh,root_dimension,1,1,nnz_wh,nnz_x,iterations,root_peak,root_seconds,root_index)
+    CALL MatrixGPUPlan(wh,wh%logical_matrix_dimension,pr,pc,nnz_wh,nnz_x,iterations,all_peak,all_seconds,all_index)
     root_budget=0; all_budget=0; root_fit=.FALSE.; all_fit=.FALSE.
     IF(code/=1 .AND. root_index .AND. (cap<0 .OR. root_peak<=cap)) THEN
       IF(rank==0) THEN
@@ -303,11 +316,7 @@ CONTAINS
     comm=wh%process_grid%global_comm; rank=wh%process_grid%global_rank
     participant=.NOT.root_only .OR. rank==0
     local_wh=0
-    DO j=1,SIZE(wh%local_data_r,2)
-      DO k=1,SIZE(wh%local_data_r,1)
-        local_wh=local_wh+SIZE(wh%local_data_r(k,j)%values,KIND=INT64)
-      END DO
-    END DO
+    local_wh=LocalGPUCount(wh)
     CALL MPI_Allreduce(local_wh,nnz_wh,1,MPINTLONG,MPI_SUM,comm,ierr)
     IF(PRESENT(extra_fixed_nnz)) THEN
       IF(extra_fixed_nnz<0 .OR. nnz_wh>HUGE(nnz_wh)-extra_fixed_nnz) CALL FailGPU('fixed input count overflow')
@@ -321,7 +330,7 @@ CONTAINS
         IF(preserve_padding) n=wh%logical_matrix_dimension
       END IF
     END IF
-    CALL EstimateGPUPlan(n,pr,pc,nnz_wh,0_INT64,1,peak,seconds,index_safe)
+    CALL MatrixGPUPlan(wh,n,pr,pc,nnz_wh,0_INT64,1,peak,seconds,index_safe)
     CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_MEMORY_MB',cap_text)
     cap=-1
     IF(LEN_TRIM(cap_text)>0) THEN
@@ -681,6 +690,10 @@ CONTAINS
     CHARACTER(16) :: report
     performed=.FALSE.
     IF(.NOT.GPURequested(a,'NTPOLY_GPU_ALGEBRA')) RETURN
+    IF(a%is_complex .OR. b%is_complex) THEN
+      CALL TryComplexMultiply(a,b,c,alpha,beta,threshold,performed)
+      RETURN
+    END IF
     keep_c=ABS(beta)>=TINY(beta)
     valid=1
     IF(nccl_active .OR. b%is_complex) valid=0
@@ -746,6 +759,155 @@ CONTAINS
       IF(TRIM(report)=='1' .AND. a%process_grid%global_rank==0) PRINT *, 'NTPoly GPU algebra product'
     END IF
     CALL ReleaseGPU(ga); CALL ReleaseGPU(gb); CALL ReleaseGPU(gc); CALL ReleaseGPU(product)
+    IF(participant) CALL EndGPUBackend()
+  END SUBROUTINE
+
+  INTEGER(INT64) FUNCTION LocalGPUCount(matrix) RESULT(count)
+    TYPE(Matrix_ps), INTENT(IN) :: matrix
+    INTEGER :: i,j
+    count=0
+    IF(matrix%is_complex) THEN
+      DO j=1,SIZE(matrix%local_data_c,2)
+        DO i=1,SIZE(matrix%local_data_c,1)
+          count=count+SIZE(matrix%local_data_c(i,j)%values,KIND=INT64)
+        END DO
+      END DO
+    ELSE
+      DO j=1,SIZE(matrix%local_data_r,2)
+        DO i=1,SIZE(matrix%local_data_r,1)
+          count=count+SIZE(matrix%local_data_r(i,j)%values,KIND=INT64)
+        END DO
+      END DO
+    END IF
+  END FUNCTION
+
+  SUBROUTINE MatrixGPUPlan(matrix,n,pr,pc,nnz_a,nnz_x,iterations,peak,seconds,safe)
+    TYPE(Matrix_ps), INTENT(IN) :: matrix
+    INTEGER, INTENT(IN) :: n,pr,pc,iterations
+    INTEGER(INT64), INTENT(IN) :: nnz_a,nnz_x
+    INTEGER(INT64), INTENT(OUT) :: peak
+    REAL(REAL64), INTENT(OUT) :: seconds
+    LOGICAL, INTENT(OUT) :: safe
+    INTEGER(INT64) :: sort_scratch
+    CALL EstimateGPUPlan(n,pr,pc,nnz_a,nnz_x,iterations,peak,seconds,safe)
+    IF(matrix%is_complex .AND. safe) THEN
+      ! Bound CUDA double2 alignment with 32-byte coordinates (up to eight int
+      ! wire words), and reserve explicit scratch for the largest sorted panel.
+      sort_scratch=64_INT64*INT(n/pr,INT64)*INT(n/pc,INT64)*MAX(pr,pc)
+      safe=peak<=(HUGE(peak)-sort_scratch)/3 .AND. INT(n,INT64)*(n/MIN(pr,pc))<=HUGE(0)/8
+      IF(safe) THEN
+        peak=peak*3+sort_scratch;seconds=seconds*2
+      ELSE
+        peak=HUGE(peak)
+      END IF
+    END IF
+  END SUBROUTINE
+
+  SUBROUTINE ComplexCoordinates(matrix,root_mode,rows,columns,values,count)
+    TYPE(Matrix_ps), INTENT(IN) :: matrix
+    LOGICAL, INTENT(IN) :: root_mode
+    INTEGER(C_INT), ALLOCATABLE, INTENT(OUT) :: rows(:),columns(:)
+    COMPLEX(C_DOUBLE_COMPLEX), ALLOCATABLE, INTENT(OUT) :: values(:)
+    INTEGER(C_INT), INTENT(OUT) :: count
+    TYPE(TripletList_c) :: entries
+    TYPE(Matrix_lsc) :: local
+    INTEGER :: i
+    CALL ConstructTripletList(entries)
+    IF(root_mode) THEN
+      CALL GatherMatrixToProcess(matrix,local,0,include_padding_in=.TRUE.)
+      IF(matrix%process_grid%global_rank==0) CALL MatrixToTripletList(local,entries)
+      CALL DestructMatrix(local)
+    ELSE
+      CALL GetMatrixTripletList(matrix,entries)
+    END IF
+    count=entries%CurrentSize
+    ALLOCATE(rows(MAX(1,count)),columns(MAX(1,count)),values(MAX(1,count)))
+    DO i=1,count
+      rows(i)=entries%DATA(i)%index_row;columns(i)=entries%DATA(i)%index_column
+      values(i)=entries%DATA(i)%point_value
+    END DO
+    CALL DestructTripletList(entries)
+  END SUBROUTINE
+
+  SUBROUTINE TryComplexMultiply(a,b,c,alpha,beta,threshold,performed)
+    TYPE(Matrix_ps), INTENT(IN) :: a,b
+    TYPE(Matrix_ps), INTENT(INOUT) :: c
+    REAL(NTREAL), INTENT(IN) :: alpha,beta,threshold
+    LOGICAL, INTENT(OUT) :: performed
+    TYPE(TripletList_c) :: entries
+    INTEGER(C_INT), ALLOCATABLE :: ar(:),ac(:),br(:),bc(:),cr(:),cc(:),outrows(:),outcols(:)
+    COMPLEX(C_DOUBLE_COMPLEX), ALLOCATABLE :: av(:),bv(:),cv(:),outvalues(:)
+    INTEGER(C_INT) :: na,nb,nc,count,rows,columns,n,row_offset,column_offset,status
+    INTEGER :: valid,all_valid,ierr,i
+    INTEGER(INT64) :: extra,global_extra
+    TYPE(C_PTR) :: output
+    LOGICAL :: allowed,root_mode,participant,keep_c
+    CHARACTER(16) :: report
+    performed=.FALSE.;valid=1;keep_c=ABS(beta)>=TINY(beta)
+    IF(nccl_active .OR. .NOT.ASSOCIATED(a%process_grid,b%process_grid)) valid=0
+    IF(a%logical_matrix_dimension/=b%logical_matrix_dimension .OR. &
+       a%actual_matrix_dimension/=b%actual_matrix_dimension) valid=0
+    IF(.NOT.IEEE_IS_FINITE(alpha) .OR. .NOT.IEEE_IS_FINITE(beta) .OR. &
+       .NOT.IEEE_IS_FINITE(threshold) .OR. threshold<0) valid=0
+    IF(keep_c) THEN
+      IF(.NOT.ASSOCIATED(a%process_grid,c%process_grid)) valid=0
+      IF(a%logical_matrix_dimension/=c%logical_matrix_dimension .OR. &
+         a%actual_matrix_dimension/=c%actual_matrix_dimension) valid=0
+    END IF
+    CALL MPI_Allreduce(valid,all_valid,1,MPI_INTEGER,MPI_MIN,a%process_grid%global_comm,ierr)
+    IF(all_valid==0) RETURN
+    ! Select using a complex input so the memory estimate includes complex payloads.
+    extra=LocalGPUCount(b)
+    IF(.NOT.a%is_complex) extra=LocalGPUCount(a)
+    IF(keep_c) extra=extra+LocalGPUCount(c)
+    CALL MPI_Allreduce(extra,global_extra,1,MPINTLONG,MPI_SUM,a%process_grid%global_comm,ierr)
+    IF(a%is_complex) THEN
+      CALL SelectGPUBackend(a,a,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+    ELSE
+      CALL SelectGPUBackend(b,b,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+    END IF
+    IF(.NOT.allowed) RETURN
+    CALL BeginGPUBackend(a,root_mode)
+    IF(a%is_complex) THEN
+      CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+    ELSE
+      CALL CheckGPUMemory(b,b,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+    END IF
+    participant=.NOT.root_mode .OR. a%process_grid%global_rank==0
+    IF(allowed) THEN
+      CALL ComplexCoordinates(a,root_mode,ar,ac,av,na)
+      CALL ComplexCoordinates(b,root_mode,br,bc,bv,nb)
+      nc=0
+      IF(keep_c) THEN
+        CALL ComplexCoordinates(c,root_mode,cr,cc,cv,nc)
+      ELSE
+        ALLOCATE(cr(1),cc(1),cv(1))
+      END IF
+      CALL ConstructTripletList(entries)
+      IF(participant) THEN
+        n=a%logical_matrix_dimension;rows=a%local_rows;columns=a%local_columns
+        row_offset=a%start_row-1;column_offset=a%start_column-1
+        IF(root_mode) THEN
+          rows=n;columns=n;row_offset=0;column_offset=0
+        END IF
+        status=complex_product(rows,columns,n,row_offset,column_offset,na,ar,ac,av,nb,br,bc,bv, &
+          nc,cr,cc,cv,alpha,beta,threshold,output,count)
+        IF(status/=0) CALL FailGPU('complex product failed')
+        ALLOCATE(outrows(MAX(1,count)),outcols(MAX(1,count)),outvalues(MAX(1,count)))
+        CALL complex_export(output,outrows,outcols,outvalues)
+        CALL ConstructTripletList(entries,count)
+        DO i=1,count
+          entries%DATA(i)%index_row=outrows(i);entries%DATA(i)%index_column=outcols(i)
+          entries%DATA(i)%point_value=outvalues(i)
+        END DO
+      END IF
+      CALL ConstructEmptyMatrix(c,a%actual_matrix_dimension,process_grid_in=a%process_grid,is_complex_in=.TRUE.)
+      CALL FillMatrixFromTripletList(c,entries,preduplicated_in=.TRUE.)
+      CALL DestructTripletList(entries)
+      performed=.TRUE.
+      CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_REPORT',report)
+      IF(TRIM(report)=='1' .AND. a%process_grid%global_rank==0) PRINT *, 'NTPoly GPU algebra complex product'
+    END IF
     IF(participant) CALL EndGPUBackend()
   END SUBROUTINE
 

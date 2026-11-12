@@ -1,7 +1,8 @@
 # GPU solver coverage and implementation boundaries
 
 The optional backend is built with `NTPOLY_ENABLE_GPU_TRS2=ON`. It currently
-provides real FP64 products on one process slice. GPU dispatch is opt-in:
+provides real and complex FP64 shared products on one process slice. The
+specialized resident TRS2 iteration remains real FP64. GPU dispatch is opt-in:
 
 - `NTPOLY_GPU_TRS2=1` selects the resident TRS2 implementation, including
   working-H/basis products, bounds, initial guess and its iterative algebra.
@@ -12,12 +13,22 @@ provides real FP64 products on one process slice. GPU dispatch is opt-in:
   coverage path; whole-solver residency and speedups must be measured separately.
 - Both flags can be used together. The resident TRS2 loop remains the specialized
   fast path. Existing rank-policy, memory/index admission and safe CPU fallback
-  apply to the shared products. Complex and sliced products use the CPU path.
+  apply to the shared products. Multiple process slices use the CPU path.
 
-The caller can build the matrix on either processor. Imports borrow accessible
+The caller can build the matrix on either processor. Real imports borrow accessible
 CSC arrays synchronously and create the backend CSR representation. Multiple
 local blocks and root coalescing still involve CPU composition/gathering. There
 is no pointer-address cache: changed values at the same address are re-imported.
+
+Complex shared products use native complex accumulation, magnitude-based
+pruning of `alpha*A*B`, then addition of `beta*C`. Mixed real/complex inputs
+are supported. Coordinate import/export remains a host boundary; row/column
+panel payloads use the leased NCCL GPU context. Temporary buffers and panel
+sorting are per product. This provides solver coverage, not the residency or
+performance of the specialized real TRS2 loop. Complex TRS2 uses shared GPU
+products when `NTPOLY_GPU_ALGEBRA=1`; `NTPOLY_GPU_TRS2=1` alone retains its CPU
+path for complex input. Complex admission uses larger payload and wire-count
+bounds; the ranking model has not been calibrated with complex workloads.
 
 ## Coverage map
 
@@ -32,18 +43,18 @@ is no pointer-address cache: changed values at the same address are re-imported.
 | CG | A*P and initial residual product | Direct Frobenius dot products and updates |
 | Canonical/grand-canonical Fermi expansion | Expansion and density/basis products | Scalar occupation/control and updates |
 | Energy density, McWeeny, gap estimate, geometry extrapolation | Their shared products | Control and linear operations |
-| Dense functions, dense density/FOE | Products; optional real cuSOLVERMp eigendecomposition | Control and unsupported eigenproblem fallback |
-| SVD | Polar/products; optional real cuSOLVERMp Hermitian eigenproblem | Unsupported eigenproblem fallback |
+| Dense functions, dense density/FOE | Products; optional real/complex cuSOLVERMp eigendecomposition | Control and unsupported eigenproblem fallback |
+| SVD | Polar/products; optional real/complex cuSOLVERMp Hermitian eigenproblem | Unsupported eigenproblem fallback |
 | Cholesky | No product-based acceleration | Existing column/pivot implementation |
 
-Resident GPU matrices already provide owned copy, scale, thresholded increment,
+Real resident GPU matrices already provide owned copy, scale, thresholded increment,
 trace, dot, product and bounds operations. Basic public operations such as scale,
 copy, diagonal scaling, Hadamard, transpose, permutation and symmetrization still
 run on CPU. Keep these simple until whole-call measurements identify a material
 cost or a residency requirement; do not add import/export solely to move a cheap
 operation to a GPU.
 
-The optional `NTPOLY_ENABLE_CUSOLVERMP` backend now connects real FP64 dense
+The optional `NTPOLY_ENABLE_CUSOLVERMP` backend connects real/complex FP64 dense
 EigenDecomposition to cuSOLVERMp with `NTPOLY_GPU_EIGEN=1`; dense wrappers and
 SVD inherit that eigenproblem path. See [CUSOLVERMP.md](CUSOLVERMP.md) for its
 placement, conversion, fallback and validation boundaries. Custom Cholesky
@@ -51,10 +62,10 @@ remains on CPU pending discussion.
 
 ## Validation scope
 
-The API suite compares49 entry points and18 matrix-product cases on1/2/4
+The API suite compares49 real or48 complex entry points and18 matrix-product cases on1/2/4
 ranks, root/all GPU policies, zero-memory CPU fallback and a two-slice CPU
 fallback. It checks full matrix differences, finite payloads, slot lifetime,
-context teardown and complex fallback. Dense/SVD/Cholesky comparisons include
+context teardown and complex products. Dense/SVD/Cholesky comparisons include
 CPU stages and do not establish GPU implementation of those stages. Small
 coverage tests are correctness tests, not performance benchmarks.
 
@@ -100,5 +111,5 @@ correctness tests and generally favor CPU. The generic flag remains opt-in.
 4. Prefer a small number of explicit ownership boundaries to long-lived pointer
    caches. Retain managed-memory compatibility and fresh-input semantics.
 5. Add ordinary build/test integration, bindings and precision/grid coverage.
-   Do not call an untested complex or sliced path GPU-supported because its
-   CPU fallback succeeds.
+   Do not call an untested sliced path GPU-supported because its CPU fallback
+   succeeds. Complex whole-solver performance and residency remain separate work.

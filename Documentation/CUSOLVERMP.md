@@ -2,7 +2,7 @@
 
 Configure with `-DNTPOLY_ENABLE_CUSOLVERMP=ON` and set `NTPOLY_GPU_EIGEN=1`
 at runtime. The ordinary distributed `EigenDecomposition` API then tries the
-real FP64 GPU backend before the configured CPU LAPACK/EigenExa implementation.
+real/complex FP64 GPU backend before the configured CPU LAPACK/EigenExa implementation.
 It is independent of `NTPOLY_ENABLE_GPU_TRS2`; both can be enabled together.
 Custom Cholesky is unchanged.
 
@@ -21,9 +21,11 @@ DMatrix LAPACK routines are unchanged.
 - The threshold applies separately to returned eigenvalues/eigenvector entries,
   as in the CPU path. Thresholding can reduce orthogonality; use zero threshold
   for residual/orthogonality checks.
-- Real inputs use the CPU LAPACK upper-triangle convention. The adapter forms
-  the symmetric distributed matrix from that triangle; lower entries cannot
-  change the selected problem.
+- Inputs use the CPU LAPACK upper-triangle convention. The adapter forms
+  the symmetric/Hermitian distributed matrix from that triangle, conjugating
+  the mirror for complex input and ignoring the diagonal imaginary part.
+  Eigenvalues remain real; complex eigenvectors retain both components.
+  Vector pruning uses complex magnitude, rather than pruning components.
 - Inputs are redistributed from Matrix_ps sparse triplets into block-cyclic
   dense GPU arrays. Eigenvectors are compacted on GPU before host return and
   redistribution into NTPoly's normal layout. These are explicit boundary
@@ -37,8 +39,8 @@ baseline; larger problems use all admitted application ranks. The solver uses
 its own balanced2D grid and redistributes back to the caller's grid. A1x4
 application grid can therefore use a2x2 dense solver grid.
 
-Real matrices on one NTPoly process slice are supported initially. Complex
-matrices and multiple process slices retain CPU fallback. Multiple GPUs and
+Real and complex FP64 matrices on one NTPoly process slice are supported.
+Multiple process slices retain CPU fallback. Multiple GPUs and
 multiple slices are different axes: a2x2x1 application uses four ranks on one
 slice;2x2x2 uses eight ranks across two slices.
 
@@ -69,7 +71,7 @@ The CPU-only build keeps all CUDA dependencies optional.
 
 `eigen_gpu_test` compares CPU/GPU eigenvalues and spectral projectors, checks
 residuals and orthogonality, partial/zero/oversized nvals, omitted vectors,
-thresholding, changed inputs, upper-triangle semantics, complex and sliced
+thresholding, changed inputs, upper-triangle semantics, complex Hermitian matrices and sliced
 fallback, and dense callers. Tests use the ordinary public API.
 `eigen_gpu_bench` measures complete public calls; spectrum trace/Frobenius
 fingerprints and repeated-output checks are outside its timer. A values-only

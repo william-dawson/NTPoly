@@ -1,11 +1,11 @@
-! Optional real FP64 cuSOLVERMp boundary for the ordinary dense eigen API.
+! Optional real/complex FP64 cuSOLVERMp boundary for the ordinary dense eigen API.
 MODULE PSMatrixEigenGPUModule
   USE ISO_C_BINDING
   USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
   USE DataTypesModule, ONLY: NTREAL
   USE NTMPIModule
   USE PSMatrixModule, ONLY: Matrix_ps, GetMatrixTripletList, ConstructEmptyMatrix, FillMatrixFromTripletList
-  USE TripletListModule, ONLY: TripletList_r, ConstructTripletList, DestructTripletList, AppendToTripletList
+  USE TripletListModule, ONLY: TripletList_r, TripletList_c, ConstructTripletList, DestructTripletList, AppendToTripletList
   USE TripletModule, ONLY: Triplet_r
   IMPLICIT NONE
   PRIVATE
@@ -18,6 +18,20 @@ MODULE PSMatrixEigenGPUModule
       REAL(C_DOUBLE) :: values(*),threshold
       TYPE(C_PTR) :: output
     END FUNCTION
+    INTEGER(C_INT) FUNCTION solve_complex(comm,n,pr,pc,count,rows,columns,values,nvals,vectors,threshold,root,output) &
+        BIND(C,NAME='ntpoly_cusolvermp_eigh_complex_')
+      IMPORT C_INT,C_DOUBLE,C_DOUBLE_COMPLEX,C_PTR
+      INTEGER(C_INT) :: comm,n,pr,pc,count,rows(*),columns(*),nvals,vectors,root
+      COMPLEX(C_DOUBLE_COMPLEX) :: values(*)
+      REAL(C_DOUBLE) :: threshold
+      TYPE(C_PTR) :: output
+    END FUNCTION
+    SUBROUTINE coordinates_complex(output,rows,columns,values) BIND(C,NAME='ntpoly_cusolvermp_coordinates_complex_')
+      IMPORT C_INT,C_DOUBLE_COMPLEX,C_PTR
+      TYPE(C_PTR) :: output
+      INTEGER(C_INT) :: rows(*),columns(*)
+      COMPLEX(C_DOUBLE_COMPLEX) :: values(*)
+    END SUBROUTINE
     SUBROUTINE result_info(output,count,values,eigen_count) BIND(C,NAME='ntpoly_cusolvermp_result_')
       IMPORT C_INT,C_PTR
       TYPE(C_PTR) :: output,values
@@ -43,9 +57,11 @@ CONTAINS
     LOGICAL, INTENT(OUT) :: performed
     TYPE(Matrix_ps), OPTIONAL, INTENT(INOUT) :: eigenvectors
     TYPE(TripletList_r) :: entries,output_entries
+    TYPE(TripletList_c) :: complex_entries,complex_output
     TYPE(Triplet_r) :: entry
     INTEGER(C_INT), ALLOCATABLE :: rows(:),columns(:)
     REAL(C_DOUBLE), ALLOCATABLE :: values(:)
+    COMPLEX(C_DOUBLE_COMPLEX), ALLOCATABLE :: complex_values(:)
     REAL(C_DOUBLE), POINTER :: ev(:)
     TYPE(C_PTR) :: output,ev_pointer
     CHARACTER(32) :: option,policy
@@ -75,7 +91,7 @@ CONTAINS
       PRINT *, 'NTPoly GPU eigen: rank policy must be auto, all or root'
       CALL MPI_Abort(matrix%process_grid%global_comm,1,ierr)
     END IF
-    IF(matrix%is_complex .OR. matrix%process_grid%num_process_slices/=1) RETURN
+    IF(matrix%process_grid%num_process_slices/=1) RETURN
     IF(.NOT.IEEE_IS_FINITE(threshold) .OR. threshold<0 .OR. nvals<0) RETURN
     n=matrix%actual_matrix_dimension
     IF(n<1) RETURN
@@ -83,19 +99,33 @@ CONTAINS
     root=0
     IF(flags(2)==2 .OR. (flags(2)==0 .AND. n<=16384)) root=1
     IF(wanted==0) THEN
-      CALL ConstructEmptyMatrix(eigenvalues,matrix)
+      CALL ConstructEmptyMatrix(eigenvalues,matrix%actual_matrix_dimension, &
+        process_grid_in=matrix%process_grid,is_complex_in=.FALSE.)
       IF(PRESENT(eigenvectors)) CALL ConstructEmptyMatrix(eigenvectors,matrix)
       performed=.TRUE.;RETURN
     END IF
-    CALL GetMatrixTripletList(matrix,entries)
-    count=entries%CurrentSize
-    ALLOCATE(rows(MAX(1,count)),columns(MAX(1,count)),values(MAX(1,count)))
-    DO i=1,count
-      rows(i)=entries%DATA(i)%index_row;columns(i)=entries%DATA(i)%index_column;values(i)=entries%DATA(i)%point_value
-    END DO
-    CALL DestructTripletList(entries)
     pr=matrix%process_grid%num_process_rows;pc=matrix%process_grid%num_process_columns
-    status=solve(matrix%process_grid%global_comm,n,pr,pc,count,rows,columns,values,wanted,vectors,threshold,root,output)
+    IF(matrix%is_complex) THEN
+      CALL GetMatrixTripletList(matrix,complex_entries)
+      count=complex_entries%CurrentSize
+      ALLOCATE(rows(MAX(1,count)),columns(MAX(1,count)),complex_values(MAX(1,count)))
+      DO i=1,count
+        rows(i)=complex_entries%DATA(i)%index_row;columns(i)=complex_entries%DATA(i)%index_column
+        complex_values(i)=complex_entries%DATA(i)%point_value
+      END DO
+      CALL DestructTripletList(complex_entries)
+      status=solve_complex(matrix%process_grid%global_comm,n,pr,pc,count,rows,columns,complex_values, &
+        wanted,vectors,threshold,root,output)
+    ELSE
+      CALL GetMatrixTripletList(matrix,entries)
+      count=entries%CurrentSize
+      ALLOCATE(rows(MAX(1,count)),columns(MAX(1,count)),values(MAX(1,count)))
+      DO i=1,count
+        rows(i)=entries%DATA(i)%index_row;columns(i)=entries%DATA(i)%index_column;values(i)=entries%DATA(i)%point_value
+      END DO
+      CALL DestructTripletList(entries)
+      status=solve(matrix%process_grid%global_comm,n,pr,pc,count,rows,columns,values,wanted,vectors,threshold,root,output)
+    END IF
     IF(status/=0) THEN
       IF(matrix%process_grid%global_rank==0) PRINT *, 'NTPoly cuSOLVERMp eigen: CPU fallback (capacity/layout unavailable)'
       RETURN
@@ -110,21 +140,35 @@ CONTAINS
         CALL AppendToTripletList(output_entries,entry)
       END DO
     END IF
-    CALL ConstructEmptyMatrix(eigenvalues,matrix)
+    CALL ConstructEmptyMatrix(eigenvalues,matrix%actual_matrix_dimension, &
+        process_grid_in=matrix%process_grid,is_complex_in=.FALSE.)
     CALL FillMatrixFromTripletList(eigenvalues,output_entries,preduplicated_in=.TRUE.)
     CALL DestructTripletList(output_entries)
     IF(PRESENT(eigenvectors)) THEN
-      DEALLOCATE(rows,columns,values)
-      ALLOCATE(rows(MAX(1,count)),columns(MAX(1,count)),values(MAX(1,count)))
-      CALL coordinates(output,rows,columns,values)
-      CALL ConstructTripletList(output_entries,count)
-      DO i=1,count
-        output_entries%DATA(i)%index_row=rows(i);output_entries%DATA(i)%index_column=columns(i)
-        output_entries%DATA(i)%point_value=values(i)
-      END DO
+      DEALLOCATE(rows,columns)
+      ALLOCATE(rows(MAX(1,count)),columns(MAX(1,count)))
       CALL ConstructEmptyMatrix(eigenvectors,matrix)
-      CALL FillMatrixFromTripletList(eigenvectors,output_entries,preduplicated_in=.TRUE.)
-      CALL DestructTripletList(output_entries)
+      IF(matrix%is_complex) THEN
+        DEALLOCATE(complex_values);ALLOCATE(complex_values(MAX(1,count)))
+        CALL coordinates_complex(output,rows,columns,complex_values)
+        CALL ConstructTripletList(complex_output,count)
+        DO i=1,count
+          complex_output%DATA(i)%index_row=rows(i);complex_output%DATA(i)%index_column=columns(i)
+          complex_output%DATA(i)%point_value=complex_values(i)
+        END DO
+        CALL FillMatrixFromTripletList(eigenvectors,complex_output,preduplicated_in=.TRUE.)
+        CALL DestructTripletList(complex_output)
+      ELSE
+        DEALLOCATE(values);ALLOCATE(values(MAX(1,count)))
+        CALL coordinates(output,rows,columns,values)
+        CALL ConstructTripletList(output_entries,count)
+        DO i=1,count
+          output_entries%DATA(i)%index_row=rows(i);output_entries%DATA(i)%index_column=columns(i)
+          output_entries%DATA(i)%point_value=values(i)
+        END DO
+        CALL FillMatrixFromTripletList(eigenvectors,output_entries,preduplicated_in=.TRUE.)
+        CALL DestructTripletList(output_entries)
+      END IF
     END IF
     CALL free_result(output)
     performed=.TRUE.

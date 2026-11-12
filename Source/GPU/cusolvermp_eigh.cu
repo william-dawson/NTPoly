@@ -1,6 +1,8 @@
-// Real FP64 Matrix_ps eigensolver boundary. No benchmark/file-format dependency.
+// Real/complex FP64 Matrix_ps eigensolver boundary. No benchmark/file-format dependency.
 #include <mpi.h>
 #include <cuda_runtime.h>
+#include <cuComplex.h>
+#include <type_traits>
 #include <nccl.h>
 #include <cusolverMp.h>
 #include <algorithm>
@@ -15,19 +17,31 @@
 #include <vector>
 
 namespace {
-struct Coordinate { int row,column; double value; };
-struct Entry { uint64_t offset; double value; };
-struct Result { std::vector<Coordinate> entries; std::vector<double> eigenvalues; };
+template<class T> struct Coordinate { int row,column; T value; };
+template<class T> struct Entry { uint64_t offset; T value; };
+struct Result {
+ std::vector<Coordinate<double>> entries;
+ std::vector<Coordinate<cuDoubleComplex>> complex_entries;
+ std::vector<double> eigenvalues;
+};
+__host__ __device__ double magnitude(double x) { return fabs(x); }
+__host__ __device__ double magnitude(cuDoubleComplex x) { return hypot(x.x,x.y); }
+double conjugate(double x) { return x; }
+cuDoubleComplex conjugate(cuDoubleComplex x) { return make_cuDoubleComplex(x.x,-x.y); }
+double diagonal(double x) { return x; }
+cuDoubleComplex diagonal(cuDoubleComplex x) { return make_cuDoubleComplex(x.x,0); }
+bool finite_value(double x) { return std::isfinite(x); }
+bool finite_value(cuDoubleComplex x) { return std::isfinite(x.x)&&std::isfinite(x.y); }
 void check(int status,MPI_Comm comm,const char* operation) {
  if(status) { int rank;MPI_Comm_rank(comm,&rank);std::fprintf(stderr,"NTPoly cuSOLVERMp rank %d: %s failed (%d)\n",rank,operation,status);MPI_Abort(comm,1);std::abort(); }
 }
 #define CHECK(expr) check(int(expr),comm,#expr)
 bool unanimous(bool value,MPI_Comm comm) { int a=value,b=0;MPI_Allreduce(&a,&b,1,MPI_INT,MPI_MIN,comm);return b!=0; }
-struct Session {
+template<class T> struct Session {
  cudaStream_t stream=nullptr; ncclComm_t nccl=nullptr; cusolverMpHandle_t solver=nullptr;
  cusolverMpGrid_t grid=nullptr; cusolverMpMatrixDescriptor_t desc=nullptr;
- double *a=nullptr,*q=nullptr,*w=nullptr; void *work=nullptr; Entry* input=nullptr;
- int* info=nullptr;unsigned long long* count=nullptr;Coordinate* output=nullptr;
+ T *a=nullptr,*q=nullptr; double* w=nullptr; void *work=nullptr; Entry<T>* input=nullptr;
+ int* info=nullptr;unsigned long long* count=nullptr;Coordinate<T>* output=nullptr;
  ~Session() {
   if(stream)cudaStreamSynchronize(stream);
   for(void* p:{static_cast<void*>(a),static_cast<void*>(q),static_cast<void*>(w),work,
@@ -39,18 +53,18 @@ struct Session {
   if(stream)cudaStreamDestroy(stream);
  }
 };
-__global__ void fill(double* a,const Entry* entries,size_t count) {
+template<class T> __global__ void fill(T* a,const Entry<T>* entries,size_t count) {
  for(size_t i=size_t(blockIdx.x)*blockDim.x+threadIdx.x;i<count;i+=size_t(blockDim.x)*gridDim.x)
   a[entries[i].offset]=entries[i].value;
 }
-__global__ void compact(const double* q,int64_t rows,int64_t columns,int64_t ld,
- int block,int pr,int pc,int nr,int nc,int nvals,double threshold,unsigned long long* count,Coordinate* out) {
+template<class T> __global__ void compact(const T* q,int64_t rows,int64_t columns,int64_t ld,
+ int block,int pr,int pc,int nr,int nc,int nvals,double threshold,unsigned long long* count,Coordinate<T>* out) {
  unsigned long long total=0;
  for(int64_t x=int64_t(blockIdx.x)*blockDim.x+threadIdx.x;x<rows*columns;x+=int64_t(blockDim.x)*gridDim.x) {
   int64_t i=x%rows,j=x/rows;
   int r=int((i/block*nr+pr)*block+i%block),c=int((j/block*nc+pc)*block+j%block);
-  double v=q[i+j*ld];
-  if(c<nvals&&fabs(v)>threshold) {
+  T v=q[i+j*ld];
+  if(c<nvals&&magnitude(v)>threshold) {
    if(out) {auto index=atomicAdd(count,1ULL);out[index]={r+1,c+1,v};}else ++total;
   }
  }
@@ -58,8 +72,8 @@ __global__ void compact(const double* q,int64_t rows,int64_t columns,int64_t ld,
 }
 // Capacity failures decline collectively. Runtime/numerical failures are errors,
 // not a silent switch to a different answer after a failed collective.
-int solve(MPI_Comm comm,int n,int nr,int nc,int block,int nvals,bool vectors,double threshold,
-          const std::vector<Coordinate>& coordinates,Result& result) {
+template<class T> int solve(MPI_Comm comm,int n,int nr,int nc,int block,int nvals,bool vectors,double threshold,
+          const std::vector<Coordinate<T>>& coordinates,Result& result,std::vector<Coordinate<T>>& result_entries) {
  int rank,size;MPI_Comm_rank(comm,&rank);MPI_Comm_size(comm,&size);
  MPI_Comm local;CHECK(MPI_Comm_split_type(comm,MPI_COMM_TYPE_SHARED,rank,MPI_INFO_NULL,&local));
  int local_rank,local_size;MPI_Comm_rank(local,&local_rank);MPI_Comm_size(local,&local_size);
@@ -82,33 +96,34 @@ int solve(MPI_Comm comm,int n,int nr,int nc,int block,int nvals,bool vectors,dou
  // Installed0.7.2 gives an incorrect spectrum for an empty-owner layout
  // (N129, block64,1x4), despite numerical info0. Decline collectively.
  if(!unanimous(rows>0&&cols>0&&(!vectors||uint64_t(rows)*uint64_t(cols)<=INT_MAX),comm))return 1;
- size_t cells=size_t(ld)*std::max<int64_t>(1,cols),bytes=cells*sizeof(double),free_mem,total_mem;
+ size_t cells=size_t(ld)*std::max<int64_t>(1,cols),bytes=cells*sizeof(T),free_mem,total_mem;
  CHECK(cudaMemGetInfo(&free_mem,&total_mem));
  size_t cap=std::numeric_limits<size_t>::max();const char* cap_env=std::getenv("NTPOLY_GPU_EIGEN_MEMORY_MB");
  if(cap_env&&*cap_env) {
   char* end=nullptr;unsigned long long mb=std::strtoull(cap_env,&end,10);
   check((*cap_env=='-'||*end||mb>SIZE_MAX/1048576)?1:0,comm,"invalid NTPOLY_GPU_EIGEN_MEMORY_MB");cap=size_t(mb)*1048576;
  }
- size_t fixed=2*bytes+size_t(n)*8+coordinates.size()*sizeof(Entry)+sizeof(int)+sizeof(unsigned long long);
- size_t export_bound=vectors?size_t(rows)*size_t(cols)*sizeof(Coordinate):0;
+ size_t fixed=2*bytes+size_t(n)*8+coordinates.size()*sizeof(Entry<T>)+sizeof(int)+sizeof(unsigned long long);
+ size_t export_bound=vectors?size_t(rows)*size_t(cols)*sizeof(Coordinate<T>):0;
  if(!unanimous(fixed<=cap&&export_bound<=cap-fixed&&fixed+export_bound<=free_mem*0.8,comm))return 1;
- Session s;
+ Session<T> s;
+ constexpr auto datatype=std::is_same<T,double>::value?CUDA_R_64F:CUDA_C_64F;
  CHECK(cudaStreamCreate(&s.stream));ncclUniqueId id;if(rank==0)CHECK(ncclGetUniqueId(&id));
  CHECK(MPI_Bcast(&id,sizeof(id),MPI_BYTE,0,comm));CHECK(ncclCommInitRank(&s.nccl,size,id,rank));
  CHECK(cusolverMpCreate(&s.solver,device,s.stream));
  CHECK(cusolverMpCreateDeviceGrid(s.solver,&s.grid,s.nccl,nr,nc,CUSOLVERMP_GRID_MAPPING_ROW_MAJOR));
- CHECK(cusolverMpCreateMatrixDesc(&s.desc,s.grid,CUDA_R_64F,n,n,block,block,0,0,ld));
+ CHECK(cusolverMpCreateMatrixDesc(&s.desc,s.grid,datatype,n,n,block,block,0,0,ld));
  bool allocated=cudaMalloc(&s.a,bytes)==cudaSuccess;
  allocated=(cudaMalloc(&s.q,bytes)==cudaSuccess)&&allocated;
  allocated=(cudaMalloc(&s.w,size_t(n)*8)==cudaSuccess)&&allocated;
  allocated=(cudaMalloc(&s.info,sizeof(int))==cudaSuccess)&&allocated;
  if(!unanimous(allocated,comm)) {cudaGetLastError();return 1;}
  char compz='V';size_t dw=0,hw=0;
- CHECK(cusolverMpSyevd_bufferSize(s.solver,&compz,CUBLAS_FILL_MODE_LOWER,n,s.a,1,1,s.desc,s.w,s.q,1,1,s.desc,CUDA_R_64F,&dw,&hw));
+ CHECK(cusolverMpSyevd_bufferSize(s.solver,&compz,CUBLAS_FILL_MODE_LOWER,n,s.a,1,1,s.desc,s.w,s.q,1,1,s.desc,datatype,&dw,&hw));
  CHECK(cudaMemGetInfo(&free_mem,&total_mem));
  if(!unanimous(dw<=cap-fixed-export_bound&&dw+export_bound<=free_mem*0.8,comm))return 1;
  std::vector<unsigned char> host;
- std::vector<Entry> packed;
+ std::vector<Entry<T>> packed;
  try {
   host.resize(std::max<size_t>(hw,1));packed.reserve(coordinates.size());
   for(auto e:coordinates) {
@@ -117,31 +132,31 @@ int solve(MPI_Comm comm,int n,int nr,int nc,int block,int nvals,bool vectors,dou
   }
  } catch(const std::bad_alloc&) {allocated=false;}
  allocated=(cudaMalloc(&s.work,std::max<size_t>(dw,1))==cudaSuccess)&&allocated;
- allocated=(cudaMalloc(&s.input,std::max<size_t>(1,packed.size())*sizeof(Entry))==cudaSuccess)&&allocated;
+ allocated=(cudaMalloc(&s.input,std::max<size_t>(1,packed.size())*sizeof(Entry<T>))==cudaSuccess)&&allocated;
  if(!unanimous(allocated,comm)){cudaGetLastError();return 1;}
- CHECK(cudaMemcpyAsync(s.input,packed.data(),packed.size()*sizeof(Entry),cudaMemcpyHostToDevice,s.stream));
+ CHECK(cudaMemcpyAsync(s.input,packed.data(),packed.size()*sizeof(Entry<T>),cudaMemcpyHostToDevice,s.stream));
  CHECK(cudaMemsetAsync(s.a,0,bytes,s.stream));fill<<<256,256,0,s.stream>>>(s.a,s.input,packed.size());CHECK(cudaGetLastError());
- CHECK(cusolverMpSyevd(s.solver,&compz,CUBLAS_FILL_MODE_LOWER,n,s.a,1,1,s.desc,s.w,s.q,1,1,s.desc,CUDA_R_64F,s.work,dw,host.data(),hw,s.info));
+ CHECK(cusolverMpSyevd(s.solver,&compz,CUBLAS_FILL_MODE_LOWER,n,s.a,1,1,s.desc,s.w,s.q,1,1,s.desc,datatype,s.work,dw,host.data(),hw,s.info));
  CHECK(cudaStreamSynchronize(s.stream));int info;CHECK(cudaMemcpy(&info,s.info,sizeof(int),cudaMemcpyDeviceToHost));
  check(info,comm,"Syevd numerical info");
  if(rank==0){result.eigenvalues.resize(nvals);CHECK(cudaMemcpy(result.eigenvalues.data(),s.w,size_t(nvals)*8,cudaMemcpyDeviceToHost));}
  if(vectors) {
   CHECK(cudaMalloc(&s.count,sizeof(unsigned long long)));CHECK(cudaMemsetAsync(s.count,0,sizeof(unsigned long long),s.stream));
-  compact<<<256,256,0,s.stream>>>(s.q,rows,cols,ld,block,pr,pc,nr,nc,nvals,threshold,s.count,nullptr);CHECK(cudaGetLastError());
+  compact<<<256,256,0,s.stream>>>(s.q,rows,cols,ld,block,pr,pc,nr,nc,nvals,threshold,s.count,static_cast<Coordinate<T>*>(nullptr));CHECK(cudaGetLastError());
   CHECK(cudaStreamSynchronize(s.stream));unsigned long long count;CHECK(cudaMemcpy(&count,s.count,sizeof(count),cudaMemcpyDeviceToHost));
   check(count>INT_MAX?1:0,comm,"eigenvector output exceeds Matrix_ps local index capacity");
-  result.entries.resize(size_t(count));CHECK(cudaMalloc(&s.output,std::max<size_t>(count,1)*sizeof(Coordinate)));
+  result_entries.resize(size_t(count));CHECK(cudaMalloc(&s.output,std::max<size_t>(count,1)*sizeof(Coordinate<T>)));
   CHECK(cudaMemsetAsync(s.count,0,sizeof(unsigned long long),s.stream));
   compact<<<256,256,0,s.stream>>>(s.q,rows,cols,ld,block,pr,pc,nr,nc,nvals,threshold,s.count,s.output);CHECK(cudaGetLastError());
-  CHECK(cudaStreamSynchronize(s.stream));CHECK(cudaMemcpy(result.entries.data(),s.output,size_t(count)*sizeof(Coordinate),cudaMemcpyDeviceToHost));
+  CHECK(cudaStreamSynchronize(s.stream));CHECK(cudaMemcpy(result_entries.data(),s.output,size_t(count)*sizeof(Coordinate<T>),cudaMemcpyDeviceToHost));
  }
- if(rank==0)std::printf("NTPoly cuSOLVERMp eigen: n=%d active=%d grid=%dx%d block=%d nvals=%d vectors=%d\n",n,size,nr,nc,block,nvals,int(vectors));
+ if(rank==0)std::printf("NTPoly cuSOLVERMp eigen: n=%d active=%d grid=%dx%d block=%d nvals=%d vectors=%d complex=%d\n",n,size,nr,nc,block,nvals,int(vectors),int(!std::is_same<T,double>::value));
  return 0;
 }
 }
 
-extern "C" int ntpoly_cusolvermp_eigh_(int* fcomm,int* n,int* nr,int* nc,int* count,
- const int* rows,const int* columns,const double* values,int* nvals,int* vectors,double* threshold,int* root,void** out) {
+template<class T> int dispatch(int* fcomm,int* n,int* nr,int* nc,int* count,
+ const int* rows,const int* columns,const T* values,int* nvals,int* vectors,double* threshold,int* root,void** out) {
  MPI_Comm comm=MPI_Comm_f2c(MPI_Fint(*fcomm));int rank,size;MPI_Comm_rank(comm,&rank);MPI_Comm_size(comm,&size);
  *out=nullptr;
  try {
@@ -151,22 +166,22 @@ extern "C" int ntpoly_cusolvermp_eigh_(int* fcomm,int* n,int* nr,int* nc,int* co
    for(int candidate=1;candidate<=size/candidate;candidate++)if(size%candidate==0)pr=candidate;
    pc=size/pr;
   }
-  MPI_Datatype coordinate_type;CHECK(MPI_Type_contiguous(sizeof(Coordinate),MPI_BYTE,&coordinate_type));CHECK(MPI_Type_commit(&coordinate_type));
+  MPI_Datatype coordinate_type;CHECK(MPI_Type_contiguous(sizeof(Coordinate<T>),MPI_BYTE,&coordinate_type));CHECK(MPI_Type_commit(&coordinate_type));
   std::vector<int> counts(size,0),recv_counts(size),offsets(size),recv_offsets(size),cursor;
   std::vector<int64_t> planned(size,0);
-  std::vector<Coordinate> input;
+  std::vector<Coordinate<T>> input;
   // Match NTPoly's LAPACK upper-triangle convention. Materialize its symmetric
   // counterpart as well for the distributed implementation.
   auto visit=[&](auto append) {
    for(int i=0;i<*count;i++) {
-    check(rows[i]<1||columns[i]<1||!std::isfinite(values[i]),comm,"invalid eigensolver input");
+    check(rows[i]<1||columns[i]<1||!finite_value(values[i]),comm,"invalid eigensolver input");
     if(rows[i]>*n||columns[i]>*n||rows[i]>columns[i])continue;
-    append(Coordinate{rows[i],columns[i],values[i]});
-    if(rows[i]!=columns[i])append(Coordinate{columns[i],rows[i],values[i]});
+    append(Coordinate<T>{rows[i],columns[i],rows[i]==columns[i]?diagonal(values[i]):values[i]});
+    if(rows[i]!=columns[i])append(Coordinate<T>{columns[i],rows[i],conjugate(values[i])});
    }
   };
-  auto owner=[&](Coordinate e){return *root?0:((e.row-1)/block%pr)*pc+(e.column-1)/block%pc;};
-  visit([&](Coordinate e){planned[owner(e)]++;});
+  auto owner=[&](Coordinate<T> e){return *root?0:((e.row-1)/block%pr)*pc+(e.column-1)/block%pc;};
+  visit([&](Coordinate<T> e){planned[owner(e)]++;});
   bool counts_safe=true;
   for(int i=0;i<size;i++){if(planned[i]>INT_MAX)counts_safe=false;else counts[i]=int(planned[i]);}
   if(!unanimous(counts_safe,comm)){MPI_Type_free(&coordinate_type);return 1;}
@@ -175,19 +190,34 @@ extern "C" int ntpoly_cusolvermp_eigh_(int* fcomm,int* n,int* nr,int* nc,int* co
   for(int i=0;i<size;i++){offsets[i]=int(total);recv_offsets[i]=int(in_total);total+=counts[i];in_total+=recv_counts[i];if(total>INT_MAX||in_total>INT_MAX)safe=false;}
   if(!unanimous(safe,comm)){MPI_Type_free(&coordinate_type);return 1;}
   input.resize(size_t(total));cursor=offsets;
-  visit([&](Coordinate e){input[cursor[owner(e)]++]=e;});
-  std::vector<Coordinate> received(size_t(in_total),Coordinate{});
+  visit([&](Coordinate<T> e){input[cursor[owner(e)]++]=e;});
+  std::vector<Coordinate<T>> received(size_t(in_total),Coordinate<T>{});
   CHECK(MPI_Alltoallv(input.data(),counts.data(),offsets.data(),coordinate_type,received.data(),recv_counts.data(),recv_offsets.data(),coordinate_type,comm));
   CHECK(MPI_Type_free(&coordinate_type));
   Result* result=new Result;int status=0;
-  if(!*root||rank==0)status=solve(*root?MPI_COMM_SELF:comm,*n,pr,pc,block,*nvals,*vectors!=0,*threshold,received,*result);
+  auto& output_entries=[&]() -> std::vector<Coordinate<T>>& {
+   if constexpr(std::is_same<T,double>::value)return result->entries;else return result->complex_entries;
+  }();
+  if(!*root||rank==0)status=solve(*root?MPI_COMM_SELF:comm,*n,pr,pc,block,*nvals,*vectors!=0,*threshold,received,*result,output_entries);
   if(*root)CHECK(MPI_Bcast(&status,1,MPI_INT,0,comm));
   if(status){delete result;return status;}
   *out=result;return 0;
  } catch(const std::bad_alloc&) {check(1,comm,"host eigensolver allocation");return -1;}
 }
+extern "C" int ntpoly_cusolvermp_eigh_(int* comm,int* n,int* nr,int* nc,int* count,
+ const int* rows,const int* columns,const double* values,int* nvals,int* vectors,double* threshold,int* root,void** out) {
+ return dispatch(comm,n,nr,nc,count,rows,columns,values,nvals,vectors,threshold,root,out);
+}
+extern "C" int ntpoly_cusolvermp_eigh_complex_(int* comm,int* n,int* nr,int* nc,int* count,
+ const int* rows,const int* columns,const cuDoubleComplex* values,int* nvals,int* vectors,double* threshold,int* root,void** out) {
+ return dispatch(comm,n,nr,nc,count,rows,columns,values,nvals,vectors,threshold,root,out);
+}
+extern "C" void ntpoly_cusolvermp_coordinates_complex_(void** handle,int* rows,int* columns,cuDoubleComplex* values) {
+ const auto& entries=static_cast<Result*>(*handle)->complex_entries;
+ for(size_t i=0;i<entries.size();i++){rows[i]=entries[i].row;columns[i]=entries[i].column;values[i]=entries[i].value;}
+}
 extern "C" void ntpoly_cusolvermp_result_(void** handle,int* count,const double** eigenvalues,int* eigen_count) {
- auto* result=static_cast<Result*>(*handle);*count=int(result->entries.size());*eigen_count=int(result->eigenvalues.size());
+ auto* result=static_cast<Result*>(*handle);*count=int(result->entries.size()+result->complex_entries.size());*eigen_count=int(result->eigenvalues.size());
  *eigenvalues=result->eigenvalues.data();
 }
 extern "C" void ntpoly_cusolvermp_coordinates_(void** handle,int* rows,int* columns,double* values) {
