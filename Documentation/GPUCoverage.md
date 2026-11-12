@@ -20,14 +20,30 @@ CSC arrays synchronously and create the backend CSR representation. Multiple
 local blocks and root coalescing still involve CPU composition/gathering. There
 is no pointer-address cache: changed values at the same address are re-imported.
 
+Real shared products retain CSR operand/result slots, communication panels,
+cuSPARSE conversion buffers, and Thrust scratch across calls. Pass the ordinary
+`memory_pool_in` argument to `MatrixMultiply` to keep these buffers in a
+`MatrixMemoryPool_p`; without it, the process grid owns the scratch. Buffers grow
+when needed and input payloads are refreshed on every operation. Real and complex
+scratch can share the same pool. Direct pool assignment, including arrays,
+retains the GPU scratch owner and independently copies CPU pool arrays; GPU
+execution remains serialized. Explicit destruction or automatic finalization
+releases the last pool reference. A pool may outlive its grid and be reused on
+another compatible grid on the same GPU. Grid-owned scratch dies with the grid;
+idle scratch in either ownership mode can be reclaimed by memory admission.
+The existing process-wide real dense accumulator remains a separate retained
+allocation. GPU-enabled pool construction/destruction/assignment are impure;
+the CPU-only constructor/destructor retain their pure interfaces.
+
 Complex shared products use native complex accumulation, magnitude-based
 pruning of `alpha*A*B`, then addition of `beta*C`. Mixed real/complex inputs
 are supported. Coordinate import/export remains a host boundary; row/column
 panel payloads use the leased NCCL GPU context. Device buffers and Thrust
-sorting/scan scratch are retained by that process-grid context and reused.
+sorting/scan scratch are retained by the supplied memory pool or process-grid
+context and reused.
 Input values and patterns are imported afresh, including changes at the same
 address. Memory admission can reclaim idle scratch from any local grid before
-retrying; cap changes and grid teardown also release it. Scratch reuse preserves
+retrying; cap changes also release idle scratch, and grid teardown releases grid-owned scratch. Scratch reuse preserves
 communicators and does not retain matrix contents between operations.
 This provides solver coverage, not the residency or
 performance of the specialized real TRS2 loop. Complex TRS2 uses shared GPU
@@ -226,6 +242,22 @@ include waits and overlap kernel execution; do not subtract them directly
 from wall time. All-rank NCCL kernel counts match8 exchanges/product. See
 Finding41 and validation/rikyu-current-profile-20261112. No production code
 changed for this measurement.
+
+## Persistent workspace measurements
+
+The real64k full public-call median falls25.916→9.994ms (2.59x) with an explicit
+memory pool; default grid-owned scratch is10.063ms. Matched14 warm samples per
+variant on4 GPUs; means30.998/10.182/16.084ms old/pool/grid preserve outliers.
+Explicit-pool additive means: checks0.568,inputs1.296,product3.058,host result5.202,
+cleanup0.007,other0.051ms. Separate arithmetic kernel0.313600ms is included in
+the product; retained resident control2.975ms excludes public boundaries.
+All4 ranks show zero CUDA allocation/free calls over5 captured warm products,
+with unchanged8 NCCL exchanges/product. Allocation-free scope is the measured
+alpha1,beta0 real path. Full10k/20k medians2.348/3.794ms have no paired small
+controls here. Pool/grid lifetime, scalar/array copying/finalization, cap eviction,
+real/complex API and native/threaded regressions pass; memory checker0 errors.
+Earlier intermittent threaded BLAS failure remains undiagnosed. See Finding42
+and validation/rikyu-real-workspace-20261112 for raw data, hashes and scopes.
 
 ## Cleanup direction
 

@@ -11,6 +11,7 @@ MODULE PSMatrixGPUBackendModule
     GatherMatrixToProcess, FillMatrixFromTripletList, GetMatrixTripletList
   USE SMatrixModule, ONLY: Matrix_lsr, Matrix_lsc, DestructMatrix, MatrixToTripletList
   USE TripletListModule, ONLY: TripletList_r, TripletList_c, ConstructTripletList, DestructTripletList
+  USE PMatrixMemoryPoolModule, ONLY: MatrixMemoryPool_p,ActivateGPUWorkspace
   USE SolverCSR, ONLY: TransposeCSR
   USE SolverNCCL, ONLY: InitSolverNCCL, WarmSolverNCCL, FinishSolverNCCL, SolverScalarSum, nccl_active
   IMPLICIT NONE
@@ -31,6 +32,7 @@ MODULE PSMatrixGPUBackendModule
     PRIVATE
     INTEGER(C_INT) :: handle=0, rows=0, columns=0, dimension=0, diagonal=0
     INTEGER(C_INT) :: process_rows=0, process_columns=0
+    LOGICAL :: borrowed=.FALSE.
   CONTAINS
     FINAL :: DestroyGPU
     PROCEDURE, PRIVATE :: AssignGPU
@@ -64,6 +66,15 @@ MODULE PSMatrixGPUBackendModule
     END FUNCTION
     INTEGER(C_INT) FUNCTION trim_workspaces(cleared) BIND(C,NAME='solver_nccl_trim_workspaces_')
       IMPORT C_INT
+      INTEGER(C_INT) :: cleared
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION workspace_slots(slots) BIND(C,NAME='gpu_shared_workspace_slots_')
+      IMPORT C_INT
+      INTEGER(C_INT) :: slots(4)
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION trim_workspace_limit(limit,cleared) BIND(C,NAME='solver_nccl_trim_workspaces_limit_')
+      IMPORT C_INT,C_INT64_T
+      INTEGER(C_INT64_T) :: limit
       INTEGER(C_INT) :: cleared
     END FUNCTION
     INTEGER(C_INT) FUNCTION import_csc(slot,rows,columns,nnz,cp,ri,values) BIND(C,NAME='gpu_ops_import_csc_')
@@ -243,7 +254,7 @@ CONTAINS
     INTEGER :: local_comm,local_size,valid,all_valid,root_dimension
     INTEGER(C_INT8_T), ALLOCATABLE :: devices(:,:)
     INTEGER(C_INT8_T) :: identity(16)
-    INTEGER(C_INT) :: device,count,status
+    INTEGER(C_INT) :: device,count,status,cleared
     INTEGER(INT64) :: nnz_wh,nnz_x,root_peak,all_peak,root_budget,all_budget,cap,local_cap
     INTEGER(INT64) :: cap_mb,local_wh,local_x,free_bytes,total_bytes
     REAL(REAL64) :: root_seconds,all_seconds
@@ -274,6 +285,9 @@ CONTAINS
     CALL MPI_Allreduce(local_cap,cap,1,MPINTLONG,MPI_MIN,comm,ierr)
     IF(cap==HUGE(cap)) cap=-1_INT64
     IF(PRESENT(memory_limit)) memory_limit=cap
+    IF(cap>=0) THEN
+      IF(trim_workspace_limit(cap,cleared)/=0) CALL FailGPU('workspace cap reclamation failed')
+    END IF
     ! Count local sub-blocks without merging/copying their payloads.
     local_wh=0; local_x=0
     local_wh=LocalGPUCount(wh);local_x=LocalGPUCount(x)
@@ -455,14 +469,14 @@ CONTAINS
   END SUBROUTINE
 
   SUBROUTINE EndGPUBackend()
-    IF(free_panels()/=0) CALL FailGPU('panel cleanup failed')
     IF(suspend_context()/=0) CALL FailGPU('context release failed')
     nccl_active=.FALSE.
   END SUBROUTINE
 
   IMPURE ELEMENTAL SUBROUTINE DestroyGPU(matrix)
     TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
-    IF(matrix%handle/=0) CALL destroy_slot(matrix%handle)
+    IF(matrix%handle/=0 .AND. .NOT.matrix%borrowed) CALL destroy_slot(matrix%handle)
+    matrix%handle=0;matrix%borrowed=.FALSE.
   END SUBROUTINE
 
   SUBROUTINE ReleaseGPU(matrix)
@@ -678,7 +692,7 @@ CONTAINS
     CLASS(GPUMatrix_t), INTENT(INOUT) :: destination
     TYPE(GPUMatrix_t), INTENT(IN) :: source
     IF(source%handle==0) THEN
-      IF(destination%handle/=0) CALL destroy_slot(destination%handle)
+      CALL DestroyGPU(destination)
     ELSE
       CALL CopyGPU(source,destination)
     END IF
@@ -795,21 +809,23 @@ CONTAINS
 
   ! Shared API boundary for iterative solver families. Keep the public CPU
   ! representation and perform the expensive product on the admitted GPU grid.
-  SUBROUTINE TryGPUMatrixMultiply(a,b,c,alpha,beta,threshold,performed)
+  SUBROUTINE TryGPUMatrixMultiply(a,b,c,alpha,beta,threshold,performed,memory_pool)
     TYPE(Matrix_ps), INTENT(IN) :: a,b
     TYPE(Matrix_ps), INTENT(INOUT) :: c
     REAL(NTREAL), INTENT(IN) :: alpha,beta,threshold
     LOGICAL, INTENT(OUT) :: performed
+    TYPE(MatrixMemoryPool_p), OPTIONAL, INTENT(INOUT) :: memory_pool
     TYPE(GPUMatrix_t) :: ga,gb,gc,product
     LOGICAL :: root_mode,allowed,keep_c,participant
     INTEGER :: valid,all_valid,ierr,j,k
+    INTEGER(C_INT) :: slots(4)
     INTEGER(INT64) :: extra,global_extra
     CHARACTER(16) :: report,timing_option
     REAL(C_DOUBLE) :: stage_stamp,whole_start,multiply_phases(4)
     performed=.FALSE.
     IF(.NOT.GPURequested(a,'NTPOLY_GPU_ALGEBRA')) RETURN
     IF(a%is_complex .OR. b%is_complex) THEN
-      CALL TryComplexMultiply(a,b,c,alpha,beta,threshold,performed)
+      CALL TryComplexMultiply(a,b,c,alpha,beta,threshold,performed,memory_pool)
       RETURN
     END IF
     product_stage_times=0
@@ -857,11 +873,24 @@ CONTAINS
       timing_product=.FALSE.;RETURN
     END IF
     CALL BeginGPUBackend(a,root_mode)
+    IF((.NOT.root_mode .OR. a%process_grid%global_rank==0) .AND. PRESENT(memory_pool)) &
+      CALL ActivateGPUWorkspace(memory_pool)
     CALL MarkProductStage(5,stage_stamp)
     CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
     CALL MarkProductStage(6,stage_stamp)
     participant=.NOT.root_mode .OR. a%process_grid%global_rank==0
+    IF(.NOT.allowed) THEN
+      IF(participant) THEN
+        IF(clear_active_workspace()/=0) CALL FailGPU('real workspace eviction failed')
+      END IF
+      CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+    END IF
     IF(allowed) THEN
+      IF(participant) THEN
+        IF(workspace_slots(slots)/=0) CALL FailGPU('real workspace slots failed')
+        ga%handle=slots(1);gb%handle=slots(2);gc%handle=slots(3);product%handle=slots(4)
+        ga%borrowed=.TRUE.;gb%borrowed=.TRUE.;gc%borrowed=.TRUE.;product%borrowed=.TRUE.
+      END IF
       timing_operand=1
       CALL UploadGPURegion(a,ga,root_mode,preserve_padding=.TRUE.)
       CALL MarkProductStage(7,stage_stamp)
@@ -1004,11 +1033,12 @@ CONTAINS
     evicted=global_hit/=0
   END FUNCTION
 
-  SUBROUTINE TryComplexMultiply(a,b,c,alpha,beta,threshold,performed)
+  SUBROUTINE TryComplexMultiply(a,b,c,alpha,beta,threshold,performed,memory_pool)
     TYPE(Matrix_ps), INTENT(IN) :: a,b
     TYPE(Matrix_ps), INTENT(INOUT) :: c
     REAL(NTREAL), INTENT(IN) :: alpha,beta,threshold
     LOGICAL, INTENT(OUT) :: performed
+    TYPE(MatrixMemoryPool_p), OPTIONAL, INTENT(INOUT) :: memory_pool
     TYPE(TripletList_c) :: entries
     INTEGER(C_INT), ALLOCATABLE :: ar(:),ac(:),br(:),bc(:),cr(:),cc(:),outrows(:),outcols(:)
     COMPLEX(C_DOUBLE_COMPLEX), ALLOCATABLE :: av(:),bv(:),cv(:),outvalues(:)
@@ -1052,6 +1082,8 @@ CONTAINS
     END IF
     IF(.NOT.allowed) RETURN
     CALL BeginGPUBackend(a,root_mode)
+    IF((.NOT.root_mode .OR. a%process_grid%global_rank==0) .AND. PRESENT(memory_pool)) &
+      CALL ActivateGPUWorkspace(memory_pool)
     IF(a%is_complex) THEN
       CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
     ELSE

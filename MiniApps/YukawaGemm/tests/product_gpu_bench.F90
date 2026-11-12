@@ -6,18 +6,21 @@ PROGRAM ProductGPUBench
   USE DataTypesModule, ONLY: NTREAL,MPINTLONG
   USE ProcessGridModule
   USE PSMatrixModule
+  USE PMatrixMemoryPoolModule
   USE PSMatrixGPUBackendModule, ONLY: GetGPUProductTimings
   USE PSMatrixAlgebraModule
   USE TripletListModule
   USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
   IMPLICIT NONE
   TYPE(ProcessGrid_t), TARGET :: reference_grid,grids(0:2)
+  TYPE(MatrixMemoryPool_p) :: workspace_pool(0:2)
   TYPE(Matrix_ps) :: input,reference(0:2),a(0:2),result,difference
   TYPE(TripletList_r) :: input_entries,result_entries
   TYPE(TripletList_c) :: complex_entries
   CHARACTER(1024) :: filename,arg,backend
   INTEGER :: ierr,rank,nr,pr,n,reps,threads,rep,kind,step,status,provided,j,k,selected_kind
-  LOGICAL :: profile,stage_timing
+  LOGICAL :: profile,stage_timing,use_pool,check_workspace
+  INTEGER(C_INT64_T) :: allocation_before
   REAL(C_DOUBLE) :: stage_local(43)
   REAL(C_DOUBLE), ALLOCATABLE :: stage_all(:,:)
   REAL(NTREAL) :: t0,seconds,error,threshold
@@ -27,6 +30,9 @@ PROGRAM ProductGPUBench
     END SUBROUTINE
     SUBROUTINE profile_end() BIND(C,NAME='gpu_profile_end_')
     END SUBROUTINE
+    INTEGER(C_INT64_T) FUNCTION workspace_allocations() BIND(C,NAME='gpu_workspace_allocation_count_')
+      IMPORT C_INT64_T
+    END FUNCTION
     INTEGER(C_INT) FUNCTION setenv(name,value,overwrite) BIND(C)
       IMPORT C_INT,C_CHAR
       CHARACTER(C_CHAR) :: name(*),value(*)
@@ -49,6 +55,8 @@ PROGRAM ProductGPUBench
   CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_TIMING',arg)
   stage_timing=TRIM(arg)=='1' .AND. TRIM(backend)=='gpu'
   IF(stage_timing) ALLOCATE(stage_all(43,nr))
+  CALL GET_COMMAND_ARGUMENT(9,arg);use_pool=TRIM(arg)=='pool'
+  CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_WORKSPACE_CHECK',arg);check_workspace=TRIM(arg)=='1'
   threshold=1e-8_NTREAL
   status=setenv('NTPOLY_GPU_ALGEBRA'//C_NULL_CHAR,'0'//C_NULL_CHAR,1_C_INT)
   CALL OMP_SET_NUM_THREADS(1)
@@ -90,9 +98,17 @@ PROGRAM ProductGPUBench
       ! Rotate ordering so one datatype does not always benefit from running last.
       kind=MOD(step+rep-1,3)
       IF(selected_kind>=0 .AND. selected_kind/=kind) CYCLE
+      IF(check_workspace .AND. kind==0) allocation_before=workspace_allocations()
       CALL MPI_Barrier(MPI_COMM_WORLD,ierr);t0=MPI_Wtime()
-      CALL MatrixMultiply(a(kind),a(kind),result,threshold_in=threshold)
+      IF(use_pool) THEN
+        CALL MatrixMultiply(a(kind),a(kind),result,threshold_in=threshold,memory_pool_in=workspace_pool(kind))
+      ELSE
+        CALL MatrixMultiply(a(kind),a(kind),result,threshold_in=threshold)
+      END IF
       seconds=MPI_Wtime()-t0
+      IF(check_workspace .AND. kind==0 .AND. rep>1) THEN
+        IF(workspace_allocations()/=allocation_before) CALL MPI_Abort(MPI_COMM_WORLD,11,ierr)
+      END IF
       IF(stage_timing .AND. kind==0) THEN
         stage_local(1)=seconds
         CALL GetGPUProductTimings(stage_local(2:43))
@@ -137,6 +153,7 @@ PROGRAM ProductGPUBench
   IF(profile) CALL profile_end()
   CALL MPI_Barrier(MPI_COMM_WORLD,ierr);t0=MPI_Wtime()
   DO kind=0,2
+    CALL DestructMatrixMemoryPool(workspace_pool(kind))
     CALL DestructMatrix(a(kind));CALL DestructMatrix(reference(kind));CALL DestructProcessGrid(grids(kind))
   END DO
   CALL DestructTripletList(input_entries);CALL DestructMatrix(input);CALL DestructProcessGrid(reference_grid)

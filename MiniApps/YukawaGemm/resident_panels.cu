@@ -9,6 +9,7 @@
 #include <climits>
 #include <cstdio>
 #include <vector>
+#include "../../Source/GPU/workspace.hpp"
 
 extern "C" {
 void gpu_ops_get_(int*,int**,int**,double**,int*,int*);
@@ -22,19 +23,19 @@ int cusparse_gemm_device_dense_(int,int,int,int,const int*,const int*,const doub
     std::fprintf(stderr,"Resident panels %s:%d: %s\n",__FILE__,__LINE__,cudaGetErrorString(e));return -1;} }while(0)
 #define CHECK(call) do { if((call)!=0) return -1; }while(0)
 namespace {
-struct Buffer {
-    void *data=nullptr; size_t capacity=0;
-    int reserve(size_t bytes) {
-        bytes=std::max(bytes,size_t(8));
-        if(bytes<=capacity) return 0;
-        if(data) { DCUDA(cudaFree(data)); data=nullptr; capacity=0; }
-        DCUDA(cudaMalloc(&data,bytes)); capacity=bytes; return 0;
+using Buffer=ntpoly_gpu::Buffer;
+struct CSR {Buffer rp,ci,values;};
+struct PanelWorkspace {
+    CSR local,row_received,column_received,a,b;
+    Buffer row_displacements,column_displacements;
+    ntpoly_gpu::ScratchPool temporary;
+    uint64_t bytes()const {
+        uint64_t result=temporary.bytes()+row_displacements.capacity+column_displacements.capacity;
+        for(auto* csr:{&local,&row_received,&column_received,&a,&b})
+            result+=csr->rp.capacity+csr->ci.capacity+csr->values.capacity;
+        return result;
     }
-    template<class T> T *as() { return static_cast<T*>(data); }
-    int clear() { if(data) DCUDA(cudaFree(data)); data=nullptr; capacity=0; return 0; }
 };
-struct CSR { Buffer rp,ci,values; } local,row_received,column_received,a,b;
-Buffer row_displacements,column_displacements;
 double elapsed(std::chrono::steady_clock::time_point start) {
     return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
 }
@@ -76,7 +77,7 @@ __global__ void zero_base_columns(int count,int *ci) {
     int j=blockIdx.x*blockDim.x+threadIdx.x;
     if(j<count) --ci[j];
 }
-int exchange(int which,int rows,int nnz,CSR &received,Buffer &device_displs,
+int exchange(CSR& local,int which,int rows,int nnz,CSR &received,Buffer &device_displs,
              std::vector<int> &counts,std::vector<int> &displs,int &total) {
     int peers,rank;
     CHECK(solver_nccl_group_info_(which,&peers,&rank));
@@ -107,7 +108,7 @@ int exchange(int which,int rows,int nnz,CSR &received,Buffer &device_displs,
     DCUDA(cudaDeviceSynchronize());
     return 0;
 }
-int snapshot(int slot,int rows,int &nnz) {
+int snapshot(CSR& local,int slot,int rows,int &nnz) {
     int *rp,*ci,slot_rows; double *values;
     gpu_ops_get_(&slot,&rp,&ci,&values,&slot_rows,&nnz);
     if(slot_rows!=rows || nnz<0) return -1;
@@ -133,26 +134,32 @@ extern "C" int gpu_resident_multiply_(int left_slot,int right_slot,int output_sl
     if(peers!=process_columns) return -1;
     CHECK(solver_nccl_group_info_(2,&peers,&rank));
     if(peers!=process_rows) return -1;
+    auto* workspace=ntpoly_gpu::workspace<PanelWorkspace>(ntpoly_gpu::panel_workspace);
+    if(!workspace)return -1;
+    auto& local=workspace->local;auto& row_received=workspace->row_received;
+    auto& column_received=workspace->column_received;auto& a=workspace->a;auto& b=workspace->b;
+    auto& row_displacements=workspace->row_displacements;auto& column_displacements=workspace->column_displacements;
+    ntpoly_gpu::Allocator allocator{&workspace->temporary};auto policy=thrust::cuda::par(allocator);
     auto start=std::chrono::steady_clock::now();
     int nnz;
-    CHECK(snapshot(left_slot,rows,nnz));
+    CHECK(snapshot(local,left_slot,rows,nnz));
     std::vector<int> counts,displs;
     int nnz_a,nnz_b;
-    CHECK(exchange(1,rows,nnz,row_received,row_displacements,counts,displs,nnz_a));
+    CHECK(exchange(local,1,rows,nnz,row_received,row_displacements,counts,displs,nnz_a));
     phases[0]=elapsed(start); start=std::chrono::steady_clock::now();
     CHECK(a.rp.reserve(size_t(rows+1)*sizeof(int)));
     CHECK(a.ci.reserve(size_t(nnz_a)*sizeof(int)));
     CHECK(a.values.reserve(size_t(nnz_a)*sizeof(double)));
     horizontal_counts<<<(rows+255)/256,256>>>(rows,process_columns,row_received.rp.as<int>(),a.rp.as<int>());
     DCUDA(cudaGetLastError());
-    thrust::inclusive_scan(thrust::device,a.rp.as<int>(),a.rp.as<int>()+rows+1,a.rp.as<int>());
+    thrust::inclusive_scan(policy,a.rp.as<int>(),a.rp.as<int>()+rows+1,a.rp.as<int>());
     horizontal_pack<<<rows,128>>>(rows,columns,process_columns,row_received.rp.as<int>(),
         row_received.ci.as<int>(),row_received.values.as<double>(),row_displacements.as<int>(),
         a.rp.as<int>(),a.ci.as<int>(),a.values.as<double>());
     DCUDA(cudaGetLastError()); DCUDA(cudaDeviceSynchronize());
     phases[1]=elapsed(start); start=std::chrono::steady_clock::now();
-    if(left_slot!=right_slot) CHECK(snapshot(right_slot,rows,nnz));
-    CHECK(exchange(2,rows,nnz,column_received,column_displacements,counts,displs,nnz_b));
+    if(left_slot!=right_slot) CHECK(snapshot(local,right_slot,rows,nnz));
+    CHECK(exchange(local,2,rows,nnz,column_received,column_displacements,counts,displs,nnz_b));
     CHECK(b.rp.reserve(size_t(n+1)*sizeof(int)));
     vertical_rows<<<(n+1+255)/256,256>>>(rows,process_rows,column_received.rp.as<int>(),
         column_displacements.as<int>(),nnz_b,b.rp.as<int>());
@@ -173,9 +180,5 @@ extern "C" int gpu_resident_square_(int input_slot,int output_slot,int rows,int 
 }
 
 extern "C" int gpu_resident_free_() {
-    DCUDA(cudaDeviceSynchronize());
-    for(CSR *p:{&local,&row_received,&column_received,&a,&b}) {
-        CHECK(p->rp.clear()); CHECK(p->ci.clear()); CHECK(p->values.clear());
-    }
-    CHECK(row_displacements.clear()); CHECK(column_displacements.clear()); return 0;
+    return solver_nccl_workspace_clear_kind_?solver_nccl_workspace_clear_kind_(ntpoly_gpu::panel_workspace):0;
 }

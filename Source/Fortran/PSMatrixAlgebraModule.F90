@@ -153,7 +153,7 @@ CONTAINS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     END IF
 
 #ifdef NTPOLY_ENABLE_GPU_TRS2
-    CALL TryGPUMatrixMultiply(matA,matB,matC,alpha,beta,threshold,gpu_performed)
+    CALL TryGPUMatrixMultiply(matA,matB,matC,alpha,beta,threshold,gpu_performed,memory_pool_in)
     IF(gpu_performed) RETURN
 #endif
 

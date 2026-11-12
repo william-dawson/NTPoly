@@ -38,6 +38,8 @@ def main():
         fixture_app = fixture / "app"
         fixture_app.mkdir()
         (fixture_app / 'tests').mkdir()
+        (fixture / 'Source/GPU').mkdir(parents=True)
+        shutil.copyfile(NTPOLY / 'Source/GPU/workspace.hpp', fixture / 'Source/GPU/workspace.hpp')
         shutil.copyfile(HERE / 'device_partials_test.cpp', fixture_app / 'tests/device_partials_test.cpp')
         shutil.copyfile(HERE / 'import_csc_test.cu', fixture_app / 'tests/import_csc_test.cu')
         shutil.copyfile(HERE / 'resident_panels_test.cpp', fixture_app / 'tests/resident_panels_test.cpp')

@@ -3537,3 +3537,85 @@ CPU transpose pass times are0. No implementation/solver change or new solver
 coverage claim is introduced. Prior intermittent four-thread BLAS issue remains
 undetermined. Job325890 completes exit0; all task files/raw profiles on data1.
 Evidence/replay: validation/rikyu-current-profile-20261112.
+
+## Finding 42: keep real GPU workspace alive through memory pools (2026-11-12)
+
+`MatrixMemoryPool_p` now owns reusable GPU scratch for ordinary real/complex
+`MatrixMultiply` calls when `memory_pool_in` is supplied. Without a supplied pool,
+the grid retains scratch. Real CSR operand/result slots, communication panels,
+cuSPARSE conversion buffers and Thrust scratch grow as needed and persist across
+calls. Input payloads are refreshed every time. Direct scalar/array pool assignment
+retains a reference-counted GPU owner and deep-copies CPU pool arrays. Explicit
+pool destruction or automatic finalization releases its last reference; a pool
+can survive grid teardown and be reused on another compatible same-device grid.
+Memory admission can evict idle pool/grid scratch without invalidating owners.
+A zero cap still takes the CPU path. Existing global real dense/bitmap storage is
+separate and remains retained. GPU pool lifecycle operations are impure; CPU-only
+constructor/destructor purity is preserved. GPU calls remain serialized.
+
+Matched final64k real,4GPU/2x2/1thread results,14 warm calls per variant:
+
+| Public API scope | Median ms | Mean ms |
+|---|---:|---:|
+| Previous implementation5e89cc74 | 25.916 | 30.998 |
+| Explicit memory pool | 9.994 | 10.182 |
+| Default grid-owned scratch | 10.063 | 16.084 |
+
+Explicit-pool median speedup2.59x. Preserve all samples: baseline has53.76/69.64ms
+outliers; grid cache has79.48/24.14ms; explicit pool has one12.74ms call. No cause
+for timing outliers has been established. Initial independent allocation also
+has25.156/10.289/10.177ms medians (old/pool/grid). Means are not interchanged with
+medians. Final full public10k/20k explicit-pool medians2.348/3.794ms, without paired
+small-problem old controls on this allocation. No new full-solver speedup claimed.
+
+Additive critical-rank means for explicit pool, ms:
+
+| Work | Mean ms |
+|---|---:|
+| Checks, admission, context | 0.568 |
+| Import A | 0.735 |
+| Import B | 0.561 |
+| Product, including communication/clear/multiply/count/compact | 3.058 |
+| Construct/export host result | 5.202 |
+| Cleanup | 0.007 |
+| Other | 0.051 |
+| Total | 10.182 |
+
+**Arithmetic multiplication itself is0.313600ms on rank3**, inside the product,
+from a separate5-call CUDA capture. Rank0 is0.315469ms. Other rank3 kernel means:
+clear1.185798ms,count0.146528ms,compact0.749306ms. Do not add these kernel durations
+to unprofiled wall stages. Compact was3.297ms in Finding41; mathematical kernels
+are unchanged and capacity reuse improves its measured time. Migration causality
+was not separately instrumented. Retained resident product control2.975ms is a
+separate scope and excludes ordinary input/output boundaries.
+
+All four ranks show **zero cudaMalloc, cudaMallocManaged and cudaFree** across
+five warm captured full products, versus36 allocations+36 frees per call in
+Finding41. Adapter counters also assert no warm growth. This result covers the
+benchmarked alpha=1,beta=0 path; it does not assert every basic operation or every
+coefficient variant is allocation-free. NCCL still records40 SendRecv kernels
+per rank/5 calls, exactly8 per product. Row/column wall phases include adapter
+work and peer waits; do not interpret their reduction as a faster network.
+Final full64k output has15,040,832 nnz,error<5.86e-16. GPU import/export paths are
+confirmed by zero host fallback timings. Input/output conversion still occurs
+in the public API; scratch reuse does not cache caller matrix contents.
+
+Validation: host suite passes; real workspace scalar/array assignment, automatic
+finalization, changing shapes/fresh values, independent pools, cross-grid reuse,
+grid-before-pool teardown, default grid reuse, real/complex shared pool, cap
+zero eviction/recreation pass root/all1/2/4 ranks plus2x2. Existing complex
+workspace tests pass root/all1/2/4. Standalone CSC roundtrip, NCCL transport,
+resident independent AB/empty/alias,49 real APIs,48 complex APIs,root and4-thread
+multiblock49 APIs,8 native TRS2 parity cases plus ownership/bounds/context tests
+all pass. Workspace compute-sanitizer reports0 errors (API-probe reporting
+suppressed as previously). The earlier intermittent threaded DGEMM argument8
+failure did not recur; it remains undiagnosed, not fixed by this change.
+
+Jobs326067(c068) and326102(c134) complete exit0. All task files/raw nsys reports
+are under the data1 workdir; home files untouched except provider-generated job
+scripts inspected read-only. Evidence, exact scripts, initial/final hashes and
+analyzer: validation/rikyu-real-workspace-20261112. Next material GPU work remains
+complex bitmap/touched-entry pruning/packing and resident complex ownership;
+custom Cholesky remains deferred. The real public path now has about3ms of
+resident product and5.2ms of output-boundary work; do not microtune the0.314ms
+arithmetic kernel before considering larger measured costs.

@@ -86,7 +86,7 @@ if (NVCC_BIN)
                     -c ${CMAKE_CURRENT_SOURCE_DIR}/cusparse_gemm.cu
                     -o ${CUSPARSE_OBJ}
                     -I${CUDA_HOME}/include
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cusparse_gemm.cu
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/cusparse_gemm.cu ${PROJECT_SOURCE_DIR}/Source/GPU/workspace.hpp
             WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
             COMMENT "Compiling YukawaGemm CUDA backend"
             VERBATIM)
@@ -101,7 +101,7 @@ if (NVCC_BIN)
             COMMAND ${NVCC_BIN} -O2 -std=c++17 -ccbin ${CMAKE_CXX_COMPILER}
                 -arch=sm_100 -c ${CMAKE_CURRENT_SOURCE_DIR}/resident_panels.cu
                 -o ${RESIDENT_OBJ} -I${CUDA_HOME}/include
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resident_panels.cu VERBATIM)
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/resident_panels.cu ${PROJECT_SOURCE_DIR}/Source/GPU/workspace.hpp VERBATIM)
         set_source_files_properties(${RESIDENT_OBJ} PROPERTIES GENERATED TRUE EXTERNAL_OBJECT TRUE)
         if(NTPOLY_ENABLE_GPU_TRS2)
             target_sources(NTPoly PRIVATE ${RESIDENT_OBJ})
@@ -184,6 +184,9 @@ if(NTPOLY_ENABLE_GPU_TRS2)
     add_executable(complex_workspace_test tests/complex_workspace_test.F90)
     target_include_directories(complex_workspace_test PRIVATE ${CMAKE_BINARY_DIR}/include)
     target_link_libraries(complex_workspace_test PRIVATE NTPoly ${TOOLCHAIN_LIBS})
+    add_executable(real_workspace_test tests/real_workspace_test.F90)
+    target_include_directories(real_workspace_test PRIVATE ${CMAKE_BINARY_DIR}/include)
+    target_link_libraries(real_workspace_test PRIVATE NTPoly ${TOOLCHAIN_LIBS})
     add_executable(product_gpu_bench tests/product_gpu_bench.F90)
     target_include_directories(product_gpu_bench PRIVATE ${CMAKE_BINARY_DIR}/include)
     target_link_libraries(product_gpu_bench PRIVATE NTPoly ${TOOLCHAIN_LIBS})

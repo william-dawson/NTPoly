@@ -34,6 +34,7 @@
 #include <thrust/scan.h>
 #include <thrust/execution_policy.h>
 #include <thrust/functional.h>
+#include "../../Source/GPU/workspace.hpp"
 
 #define CU_CHECK(call) do {                                              \
     cudaError_t err = (call);                                             \
@@ -1322,6 +1323,32 @@ int cusparse_gemm_ab_dense_(const int m, const int n, const int k,
 
 void gpu_ops_alloc_(int*,int*,int*,int**,int**,double**,int*);
 
+void gpu_ops_create_(int*);
+void gpu_ops_destroy_(int*);
+void gpu_ops_mark_workspace_(int*);
+uint64_t gpu_ops_slot_bytes_(int*);
+uint64_t gpu_ops_allocation_count_();
+struct RealWorkspace {
+    ntpoly_gpu::Buffer offsets,conversion,cp,ri,values;
+    ntpoly_gpu::ScratchPool temporary;
+    int slots[4]={0,0,0,0};
+    ~RealWorkspace(){for(auto& slot:slots)if(slot)gpu_ops_destroy_(&slot);}
+    uint64_t bytes()const {
+        uint64_t total=offsets.capacity+conversion.capacity+cp.capacity+ri.capacity+values.capacity+temporary.bytes();
+        for(int slot:slots)if(slot)total+=gpu_ops_slot_bytes_(&slot);return total;
+    }
+};
+static RealWorkspace* real_workspace(){return ntpoly_gpu::workspace<RealWorkspace>(ntpoly_gpu::real_workspace);}
+int gpu_shared_workspace_slots_(int* slots) {
+    auto* workspace=real_workspace();if(!workspace)return -1;
+    for(int i=0;i<4;++i){
+        if(!workspace->slots[i]){gpu_ops_create_(&workspace->slots[i]);gpu_ops_mark_workspace_(&workspace->slots[i]);}
+        slots[i]=workspace->slots[i];
+    }
+    return 0;
+}
+uint64_t gpu_workspace_allocation_count_(){return ntpoly_gpu::allocation_count+gpu_ops_allocation_count_();}
+
 // Device panel path: inputs use fully device-resident, zero-based CSR.
 // Produce the thresholded result directly in an operation slot. Only the
 // resulting nnz count crosses to the host; no CSR payload is downloaded.
@@ -1370,10 +1397,17 @@ int cusparse_gemm_device_dense_(int m,int n,int k,int na,const int *arp,
     if(bitmap) solver_bitmap_count_kernel<<<m,256>>>(k,words,d_ks_dense,d_solver_bitmap,threshold,d_row_count);
     else ksplit_count_kernel<<<m,256>>>(d_ks_dense,m,k,threshold,d_row_count);
     CU_CHECK(cudaGetLastError());
-    int64_t total=thrust::reduce(thrust::device,d_row_count,d_row_count+m,
-                                int64_t(0),thrust::plus<int64_t>());
+    int64_t total;
+    auto* workspace=real_workspace();
+    if(workspace){
+        ntpoly_gpu::Allocator allocator{&workspace->temporary};auto policy=thrust::cuda::par(allocator);
+        total=thrust::reduce(policy,d_row_count,d_row_count+m,int64_t(0),thrust::plus<int64_t>());
+        thrust::exclusive_scan(policy,d_row_count,d_row_count+m,d_out_row_ptr);
+    }else{
+        total=thrust::reduce(thrust::device,d_row_count,d_row_count+m,int64_t(0),thrust::plus<int64_t>());
+        thrust::exclusive_scan(thrust::device,d_row_count,d_row_count+m,d_out_row_ptr);
+    }
     if(total<0 || total>INT_MAX) return -1;
-    thrust::exclusive_scan(thrust::device,d_row_count,d_row_count+m,d_out_row_ptr);
     int nz=int(total),error=-1;
     CU_CHECK(cudaMemcpy(d_out_row_ptr+m,&nz,sizeof(int),cudaMemcpyHostToDevice));
     int *rp=nullptr,*ci=nullptr; double *values=nullptr;
@@ -1501,22 +1535,27 @@ int gpu_ops_import_csc_impl(int *slot,int *rows,int *columns,int *nnz,
     cusparseHandle_t handle=get_handle();
     if(!handle) return -1;
     ImportScratch scratch;
-    if(times)scratch.free_seconds=times+4;
+    auto* workspace=real_workspace();
+    if(times && !workspace)scratch.free_seconds=times+4;
+    int* offsets=nullptr;void* temporary=nullptr;
     size_t offsets_bytes=(size_t(*columns)+1)*sizeof(int);
-    CU_CHECK(cudaMalloc(&scratch.offsets,offsets_bytes));
+    if(workspace){if(workspace->offsets.reserve(offsets_bytes)!=0)return -1;offsets=workspace->offsets.as<int>();}
+    else{CU_CHECK(cudaMalloc(&scratch.offsets,offsets_bytes));offsets=scratch.offsets;}
     size_t workspace_bytes=0,free_bytes,total_bytes;
     cusparseStatus_t status=cusparseCsr2cscEx2_bufferSize(handle,*columns,*rows,*nnz,input,
-        scratch.offsets,ri,output,rp,ci,CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,
+        offsets,ri,output,rp,ci,CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,
         CUSPARSE_CSR2CSC_ALG1,&workspace_bytes);
     if(status!=CUSPARSE_STATUS_SUCCESS) return -1;
     CU_CHECK(cudaMemGetInfo(&free_bytes,&total_bytes));
-    if(workspace_bytes>free_bytes-free_bytes/5) return 1;
-    if(workspace_bytes) CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));
+    size_t available=free_bytes+(workspace?workspace->conversion.capacity:0);
+    if((!workspace || workspace_bytes>workspace->conversion.capacity) && workspace_bytes>available-available/5) return 1;
+    if(workspace){if(workspace->conversion.reserve(workspace_bytes)!=0)return -1;temporary=workspace->conversion.data;}
+    else if(workspace_bytes){CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));temporary=scratch.workspace;}
     stamp(2); // cuSPARSE setup and temporary allocation
-    import_one_based_offsets<<<(*columns+256)/256,256>>>(*columns+1,cp,scratch.offsets);
+    import_one_based_offsets<<<(*columns+256)/256,256>>>(*columns+1,cp,offsets);
     CU_CHECK(cudaGetLastError());
-    status=cusparseCsr2cscEx2(handle,*columns,*rows,*nnz,input,scratch.offsets,ri,output,rp,ci,
-        CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,CUSPARSE_CSR2CSC_ALG1,scratch.workspace);
+    status=cusparseCsr2cscEx2(handle,*columns,*rows,*nnz,input,offsets,ri,output,rp,ci,
+        CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,CUSPARSE_CSR2CSC_ALG1,temporary);
     if(status!=CUSPARSE_STATUS_SUCCESS) return -1;
     subtract_one_kernel<<<(*rows+256)/256,256>>>(rp,*rows+1);
     CU_CHECK(cudaGetLastError());
@@ -1563,28 +1602,41 @@ int gpu_ops_export_csc_(int *slot,int *columns,int *column_ptr,int *row_indices,
     }
     auto handle=get_handle();if(!handle)return -1;
     ExportScratch storage;auto& scratch=storage.conversion;
-    CU_CHECK(cudaMalloc(&storage.cp,(size_t(*columns)+1)*sizeof(int)));
-    CU_CHECK(cudaMalloc(&storage.ri,size_t(nnz)*sizeof(int)));
-    CU_CHECK(cudaMalloc(&storage.values,size_t(nnz)*sizeof(double)));
-    CU_CHECK(cudaMalloc(&scratch.offsets,(size_t(rows)+1)*sizeof(int)));
+    auto* workspace=real_workspace();
+    int *dcp=nullptr,*dri=nullptr,*offsets=nullptr;double* dv=nullptr;void* temporary=nullptr;
+    if(workspace){
+        if(workspace->cp.reserve((size_t(*columns)+1)*sizeof(int)) ||
+           workspace->ri.reserve(size_t(nnz)*sizeof(int)) || workspace->values.reserve(size_t(nnz)*sizeof(double)) ||
+           workspace->offsets.reserve((size_t(rows)+1)*sizeof(int)))return -1;
+        dcp=workspace->cp.as<int>();dri=workspace->ri.as<int>();dv=workspace->values.as<double>();
+        offsets=workspace->offsets.as<int>();
+    }else{
+        CU_CHECK(cudaMalloc(&storage.cp,(size_t(*columns)+1)*sizeof(int)));
+        CU_CHECK(cudaMalloc(&storage.ri,size_t(nnz)*sizeof(int)));
+        CU_CHECK(cudaMalloc(&storage.values,size_t(nnz)*sizeof(double)));
+        CU_CHECK(cudaMalloc(&scratch.offsets,(size_t(rows)+1)*sizeof(int)));
+        dcp=storage.cp;dri=storage.ri;dv=storage.values;offsets=scratch.offsets;
+    }
     size_t workspace_bytes=0,free_bytes,total_bytes;
-    auto status=cusparseCsr2cscEx2_bufferSize(handle,rows,*columns,nnz,input,scratch.offsets,ci,
-        storage.values,storage.cp,storage.ri,CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,
+    auto status=cusparseCsr2cscEx2_bufferSize(handle,rows,*columns,nnz,input,offsets,ci,
+        dv,dcp,dri,CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,
         CUSPARSE_CSR2CSC_ALG1,&workspace_bytes);
     if(status!=CUSPARSE_STATUS_SUCCESS)return -1;
     CU_CHECK(cudaMemGetInfo(&free_bytes,&total_bytes));
-    if(workspace_bytes>free_bytes-free_bytes/5)return 1;
-    if(workspace_bytes)CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));
-    import_one_based_offsets<<<(rows+256)/256,256>>>(rows+1,rp,scratch.offsets);
+    size_t available=free_bytes+(workspace?workspace->conversion.capacity:0);
+    if((!workspace || workspace_bytes>workspace->conversion.capacity) && workspace_bytes>available-available/5)return 1;
+    if(workspace){if(workspace->conversion.reserve(workspace_bytes)!=0)return -1;temporary=workspace->conversion.data;}
+    else if(workspace_bytes){CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));temporary=scratch.workspace;}
+    import_one_based_offsets<<<(rows+256)/256,256>>>(rows+1,rp,offsets);
     CU_CHECK(cudaGetLastError());
-    status=cusparseCsr2cscEx2(handle,rows,*columns,nnz,input,scratch.offsets,ci,storage.values,storage.cp,storage.ri,
-        CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,CUSPARSE_CSR2CSC_ALG1,scratch.workspace);
+    status=cusparseCsr2cscEx2(handle,rows,*columns,nnz,input,offsets,ci,dv,dcp,dri,
+        CUDA_R_64F,CUSPARSE_ACTION_NUMERIC,CUSPARSE_INDEX_BASE_ONE,CUSPARSE_CSR2CSC_ALG1,temporary);
     if(status!=CUSPARSE_STATUS_SUCCESS)return -1;
-    subtract_one_kernel<<<(*columns+256)/256,256>>>(storage.cp,*columns+1);
+    subtract_one_kernel<<<(*columns+256)/256,256>>>(dcp,*columns+1);
     CU_CHECK(cudaGetLastError());CU_CHECK(cudaDeviceSynchronize());
-    CU_CHECK(cudaMemcpy(cp,storage.cp,(size_t(*columns)+1)*sizeof(int),cudaMemcpyDefault));
-    CU_CHECK(cudaMemcpy(ri,storage.ri,size_t(nnz)*sizeof(int),cudaMemcpyDefault));
-    CU_CHECK(cudaMemcpy(output,storage.values,size_t(nnz)*sizeof(double),cudaMemcpyDefault));
+    CU_CHECK(cudaMemcpy(cp,dcp,(size_t(*columns)+1)*sizeof(int),cudaMemcpyDefault));
+    CU_CHECK(cudaMemcpy(ri,dri,size_t(nnz)*sizeof(int),cudaMemcpyDefault));
+    CU_CHECK(cudaMemcpy(output,dv,size_t(nnz)*sizeof(double),cudaMemcpyDefault));
     return 0;
 }
 
@@ -1597,10 +1649,12 @@ typedef struct {
     int nnz;
     int64_t cap_rp;
     int64_t cap_nnz;
+    bool workspace;
 } ops_slot_t;
 static std::deque<ops_slot_t> g_ops(OPS_SLOTS);
 static std::vector<int> g_free_ops;
-static int g_owned_live=0;
+static int g_owned_live=0,g_workspace_live=0;
+static uint64_t g_ops_allocations=0;
 static int g_ops_dev = -1;  // bound by gpu_ops_init_ (per local rank)
 
 // managed scratch for increment
@@ -1702,6 +1756,15 @@ void gpu_ops_init_(int *err, int *dev_out)
 // Library-owned matrices acquire independent slots beyond the legacy four.
 // deque keeps existing references stable when another matrix is created.
 int gpu_ops_live_count_() { return g_owned_live; }
+int gpu_ops_workspace_slot_count_(){return g_workspace_live;}
+uint64_t gpu_ops_allocation_count_(){return g_ops_allocations;}
+uint64_t gpu_ops_slot_bytes_(int* slot){
+    int s=*slot-1;if(s<0 || s>=static_cast<int>(g_ops.size()))return 0;
+    return uint64_t(g_ops[s].cap_rp)*sizeof(int)+uint64_t(g_ops[s].cap_nnz)*(sizeof(int)+sizeof(double));
+}
+void gpu_ops_mark_workspace_(int* slot){
+    auto& matrix=g_ops[*slot-1];if(!matrix.workspace){matrix.workspace=true;--g_owned_live;++g_workspace_live;}
+}
 
 void gpu_ops_create_(int *slot)
 {
@@ -1722,8 +1785,9 @@ void gpu_ops_destroy_(int *slot)
     if (matrix.rp) ops_check(cudaFree(matrix.rp));
     if (matrix.ci) ops_check(cudaFree(matrix.ci));
     if (matrix.val) ops_check(cudaFree(matrix.val));
+    if(matrix.workspace)--g_workspace_live;else --g_owned_live;
     matrix = ops_slot_t{};
-    g_free_ops.push_back(*slot); *slot = 0; --g_owned_live;
+    g_free_ops.push_back(*slot); *slot = 0;
 }
 
 // Allocate (or grow) slot s and hand the managed pointers back to Fortran,
@@ -1740,6 +1804,7 @@ void gpu_ops_alloc_(int *slot, int *m, int *nnz,
         if (g_ops[s].rp) cudaFree(g_ops[s].rp);
         if (cudaMallocManaged(&g_ops[s].rp, sizeof(int) * (size_t)(*m + 1))
             != cudaSuccess) return;
+        ++g_ops_allocations;
         g_ops[s].cap_rp = *m + 1;
     }
     if (g_ops[s].cap_nnz < nnz64) {
@@ -1749,6 +1814,7 @@ void gpu_ops_alloc_(int *slot, int *m, int *nnz,
             != cudaSuccess) return;
         if (cudaMallocManaged(&g_ops[s].val, sizeof(double) * (size_t)nnz64)
             != cudaSuccess) return;
+        g_ops_allocations+=2;
         g_ops[s].cap_nnz = nnz64;
     }
     if (*nnz == 0) {
