@@ -22,6 +22,8 @@
 #include <deque>
 #include <cmath>
 #include <ctime>
+#include <chrono>
+#include <algorithm>
 #include <utility>
 #include <climits>
 #include <cstdint>
@@ -1460,13 +1462,22 @@ __global__ void import_one_based_offsets(int count,const int *source,int *output
 struct ImportScratch {
     int *offsets=nullptr;
     void *workspace=nullptr;
-    ~ImportScratch() { if(workspace) cudaFree(workspace); if(offsets) cudaFree(offsets); }
+    double *free_seconds=nullptr;
+    ~ImportScratch() {
+        auto start=free_seconds?std::chrono::steady_clock::now():std::chrono::steady_clock::time_point{};
+        if(workspace) cudaFree(workspace); if(offsets) cudaFree(offsets);
+        if(free_seconds)*free_seconds+=std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+    }
 };
 
 // Synchronous, read-only borrowing of CSC inputs. Output owns its CSR storage.
 // 1 declines to the existing host conversion; -1 is an execution error.
-int gpu_ops_import_csc_(int *slot,int *rows,int *columns,int *nnz,
-    const int *column_ptr,const int *row_indices,const double *values) {
+int gpu_ops_import_csc_impl(int *slot,int *rows,int *columns,int *nnz,
+    const int *column_ptr,const int *row_indices,const double *values,double *times) {
+    if(times)std::fill(times,times+5,0.0);
+    auto start=times?std::chrono::steady_clock::now():std::chrono::steady_clock::time_point{};
+    auto stamp=[&](int stage){if(times){auto now=std::chrono::steady_clock::now();
+        times[stage]+=std::chrono::duration<double>(now-start).count();start=now;}};
     if(*slot<1 || *rows<1 || *columns<1 || *nnz<0) return -1;
     int device,pageable=0;
     CU_CHECK(cudaGetDevice(&device));
@@ -1481,13 +1492,16 @@ int gpu_ops_import_csc_(int *slot,int *rows,int *columns,int *nnz,
     }
     if(!cp || (*nnz && (!ri || !input))) return 1;
     CU_CHECK(cudaDeviceSynchronize());
+    stamp(0); // pointer checks and readiness sync
     int *rp,*ci,error; double *output;
     gpu_ops_alloc_(slot,rows,nnz,&rp,&ci,&output,&error);
     if(error) return -1;
+    stamp(1); // owned slot allocation
     if(*nnz==0) return 0;
     cusparseHandle_t handle=get_handle();
     if(!handle) return -1;
     ImportScratch scratch;
+    if(times)scratch.free_seconds=times+4;
     size_t offsets_bytes=(size_t(*columns)+1)*sizeof(int);
     CU_CHECK(cudaMalloc(&scratch.offsets,offsets_bytes));
     size_t workspace_bytes=0,free_bytes,total_bytes;
@@ -1498,6 +1512,7 @@ int gpu_ops_import_csc_(int *slot,int *rows,int *columns,int *nnz,
     CU_CHECK(cudaMemGetInfo(&free_bytes,&total_bytes));
     if(workspace_bytes>free_bytes-free_bytes/5) return 1;
     if(workspace_bytes) CU_CHECK(cudaMalloc(&scratch.workspace,workspace_bytes));
+    stamp(2); // cuSPARSE setup and temporary allocation
     import_one_based_offsets<<<(*columns+256)/256,256>>>(*columns+1,cp,scratch.offsets);
     CU_CHECK(cudaGetLastError());
     status=cusparseCsr2cscEx2(handle,*columns,*rows,*nnz,input,scratch.offsets,ri,output,rp,ci,
@@ -1506,7 +1521,17 @@ int gpu_ops_import_csc_(int *slot,int *rows,int *columns,int *nnz,
     subtract_one_kernel<<<(*rows+256)/256,256>>>(rp,*rows+1);
     CU_CHECK(cudaGetLastError());
     CU_CHECK(cudaDeviceSynchronize());
-    return 0;
+    stamp(3); // CSC-to-CSR kernels and completion
+    return 0; // scratch destructor measures its own frees
+}
+
+int gpu_ops_import_csc_(int *slot,int *rows,int *columns,int *nnz,
+    const int *column_ptr,const int *row_indices,const double *values) {
+    return gpu_ops_import_csc_impl(slot,rows,columns,nnz,column_ptr,row_indices,values,nullptr);
+}
+int gpu_ops_import_csc_timed_(int *slot,int *rows,int *columns,int *nnz,
+    const int *column_ptr,const int *row_indices,const double *values,double *times) {
+    return gpu_ops_import_csc_impl(slot,rows,columns,nnz,column_ptr,row_indices,values,times);
 }
 
 #define OPS_SLOTS 4

@@ -19,6 +19,14 @@ MODULE PSMatrixGPUBackendModule
   PUBLIC :: UploadGPURegion, DownloadGPURegion
   PUBLIC :: UploadGPU, DownloadGPU, CopyGPU, ScaleGPU, IncrementGPU, TraceGPU, DotGPU, SquareGPU, MultiplyGPU
   PUBLIC :: TryGPUSimilarityTransform, TryGPUMatrixMultiply, ReleaseGPU, BoundsGPURegion, PruneGPU
+  ! Opt-in local stage times; collected by the benchmark after the public timer.
+  ! 1 total; 2:18 exclusive wrapper stages; 19:22 resident subphases;
+  ! 23:27 and 28:32 import A/B subphases; 33 shape/merge; 34 host fallback;
+  ! 35:38 output substeps; 39:42 CPU transpose substeps.
+  REAL(C_DOUBLE) :: product_stage_times(42)=0
+  LOGICAL :: timing_product=.FALSE.
+  INTEGER :: timing_operand=0
+  PUBLIC :: GetGPUProductTimings
   TYPE :: GPUMatrix_t
     PRIVATE
     INTEGER(C_INT) :: handle=0, rows=0, columns=0, dimension=0, diagonal=0
@@ -62,6 +70,12 @@ MODULE PSMatrixGPUBackendModule
       IMPORT C_INT,C_PTR
       INTEGER(C_INT) :: slot,rows,columns,nnz
       TYPE(C_PTR), VALUE :: cp,ri,values
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION import_csc_timed(slot,rows,columns,nnz,cp,ri,values,times) BIND(C,NAME='gpu_ops_import_csc_timed_')
+      IMPORT C_INT,C_PTR,C_DOUBLE
+      INTEGER(C_INT) :: slot,rows,columns,nnz
+      TYPE(C_PTR), VALUE :: cp,ri,values
+      REAL(C_DOUBLE) :: times(5)
     END FUNCTION
     INTEGER(C_INT) FUNCTION bounds_slot(slot,columns,diagonal,lower,upper) BIND(C,NAME='gpu_ops_bounds_')
       IMPORT C_INT,C_DOUBLE
@@ -158,6 +172,19 @@ MODULE PSMatrixGPUBackendModule
     END FUNCTION
   END INTERFACE
 CONTAINS
+  SUBROUTINE GetGPUProductTimings(times)
+    REAL(C_DOUBLE), INTENT(OUT) :: times(42)
+    times=product_stage_times
+  END SUBROUTINE
+
+  SUBROUTINE MarkProductStage(stage,stamp)
+    INTEGER, INTENT(IN) :: stage
+    REAL(C_DOUBLE), INTENT(INOUT) :: stamp
+    REAL(C_DOUBLE) :: now
+    IF(.NOT.timing_product) RETURN
+    now=MPI_Wtime();product_stage_times(stage)=product_stage_times(stage)+now-stamp;stamp=now
+  END SUBROUTINE
+
   SUBROUTINE FailGPU(message)
     CHARACTER(*), INTENT(IN) :: message
     INTEGER :: ierr
@@ -453,8 +480,11 @@ CONTAINS
     TYPE(Matrix_ps), INTENT(IN), TARGET :: host
     TYPE(GPUMatrix_t), INTENT(INOUT) :: matrix
     TYPE(Matrix_lsr) :: local
+    REAL(C_DOUBLE) :: stamp
+    IF(timing_product) stamp=MPI_Wtime()
     IF(host%is_complex) CALL FailGPU('complex upload is unsupported')
     CALL ShapeGPU(host,matrix)
+    CALL MarkProductStage(33,stamp)
     IF(SIZE(host%local_data_r,1)==1 .AND. SIZE(host%local_data_r,2)==1) THEN
       ! Borrow the existing block for the synchronous conversion. No merge
       ! or payload access on the CPU is needed for the common one-block case.
@@ -462,6 +492,7 @@ CONTAINS
       RETURN
     END IF
     CALL MergeMatrixLocalBlocks(host,local)
+    CALL MarkProductStage(33,stamp)
     CALL UploadLocalGPU(local,matrix)
     CALL DestructMatrix(local)
   END SUBROUTINE
@@ -476,6 +507,8 @@ CONTAINS
     INTEGER(C_INT), POINTER :: fr(:),fi(:)
     REAL(C_DOUBLE), POINTER :: fv(:)
     CHARACTER(16) :: mode,report
+    REAL(C_DOUBLE) :: stamp,import_phases(5)
+    INTEGER :: base
     mode=''
     CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_IMPORT',mode)
     IF(TRIM(mode)/='' .AND. TRIM(mode)/='auto' .AND. TRIM(mode)/='host') CALL FailGPU('invalid GPU import mode')
@@ -485,7 +518,13 @@ CONTAINS
       IF(nnz>0) THEN
         pi=C_LOC(local%inner_index(1)); pv=C_LOC(local%values(1))
       END IF
-      status=import_csc(matrix%handle,matrix%rows,matrix%columns,nnz,C_LOC(local%outer_index(1)),pi,pv)
+      IF(timing_product .AND. timing_operand>0) THEN
+        status=import_csc_timed(matrix%handle,matrix%rows,matrix%columns,nnz,C_LOC(local%outer_index(1)),pi,pv,import_phases)
+        base=23+(timing_operand-1)*5
+        product_stage_times(base:base+4)=import_phases
+      ELSE
+        status=import_csc(matrix%handle,matrix%rows,matrix%columns,nnz,C_LOC(local%outer_index(1)),pi,pv)
+      END IF
       IF(status<0) CALL FailGPU('device CSC import failed')
       IF(status==0) THEN
         CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_IMPORT_REPORT',report)
@@ -493,6 +532,7 @@ CONTAINS
         RETURN
       END IF
     END IF
+    IF(timing_product) stamp=MPI_Wtime()
     CALL TransposeCSR(matrix%columns,matrix%rows,local%outer_index,local%inner_index,local%values,rp,ci,values)
     nnz=SIZE(ci)
     CALL allocate_slot(matrix%handle,matrix%rows,nnz,pr,pi,pv,status)
@@ -500,6 +540,7 @@ CONTAINS
     CALL C_F_POINTER(pr,fr,[matrix%rows+1]); CALL C_F_POINTER(pi,fi,[MAX(nnz,1)])
     CALL C_F_POINTER(pv,fv,[MAX(nnz,1)])
     fr=rp; fi(1:nnz)=ci; fv(1:nnz)=values
+    CALL MarkProductStage(34,stamp)
   END SUBROUTINE
 
   SUBROUTINE DownloadLocalGPU(matrix,local)
@@ -509,23 +550,37 @@ CONTAINS
     TYPE(C_PTR) :: pr,pi,pv
     INTEGER(C_INT), POINTER :: rp(:),ci(:)
     REAL(C_DOUBLE), POINTER :: values(:)
+    REAL(C_DOUBLE) :: stamp,transpose_phases(4)
+    IF(timing_product) stamp=MPI_Wtime()
     IF(matrix%handle==0) CALL FailGPU('download from uninitialized matrix')
     CALL get_slot(matrix%handle,pr,pi,pv,rows,nnz)
     CALL C_F_POINTER(pr,rp,[rows+1]); CALL C_F_POINTER(pi,ci,[MAX(nnz,1)])
     CALL C_F_POINTER(pv,values,[MAX(nnz,1)])
     local%rows=matrix%rows; local%columns=matrix%columns
-    CALL TransposeCSR(matrix%rows,matrix%columns,rp,ci,values,local%outer_index,local%inner_index,local%values)
+    CALL MarkProductStage(35,stamp)
+    IF(timing_product) THEN
+      CALL TransposeCSR(matrix%rows,matrix%columns,rp,ci,values,local%outer_index,local%inner_index,local%values, &
+        transpose_phases)
+      product_stage_times(39:42)=transpose_phases
+    ELSE
+      CALL TransposeCSR(matrix%rows,matrix%columns,rp,ci,values,local%outer_index,local%inner_index,local%values)
+    END IF
+    CALL MarkProductStage(36,stamp)
   END SUBROUTINE
 
   SUBROUTINE DownloadGPU(matrix,host)
     TYPE(GPUMatrix_t), INTENT(IN) :: matrix
     TYPE(Matrix_ps), INTENT(INOUT) :: host
     TYPE(Matrix_lsr) :: local
+    REAL(C_DOUBLE) :: stamp
     IF(host%is_complex .OR. host%local_rows/=matrix%rows .OR. host%local_columns/=matrix%columns) &
       CALL FailGPU('download shape mismatch')
     CALL DownloadLocalGPU(matrix,local)
+    IF(timing_product) stamp=MPI_Wtime()
     CALL SplitMatrixToLocalBlocks(host,local)
+    CALL MarkProductStage(37,stamp)
     CALL DestructMatrix(local)
+    CALL MarkProductStage(38,stamp)
   END SUBROUTINE
 
   SUBROUTINE UploadGPURegion(host,matrix,root_only,preserve_padding)
@@ -715,12 +770,19 @@ CONTAINS
     LOGICAL :: root_mode,allowed,keep_c,participant
     INTEGER :: valid,all_valid,ierr,j,k
     INTEGER(INT64) :: extra,global_extra
-    CHARACTER(16) :: report
+    CHARACTER(16) :: report,timing_option
+    REAL(C_DOUBLE) :: stage_stamp,whole_start,multiply_phases(4)
     performed=.FALSE.
     IF(.NOT.GPURequested(a,'NTPOLY_GPU_ALGEBRA')) RETURN
     IF(a%is_complex .OR. b%is_complex) THEN
       CALL TryComplexMultiply(a,b,c,alpha,beta,threshold,performed)
       RETURN
+    END IF
+    product_stage_times=0
+    CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_TIMING',timing_option)
+    timing_product=TRIM(timing_option)=='1'
+    IF(timing_product) THEN
+      whole_start=MPI_Wtime();stage_stamp=whole_start
     END IF
     keep_c=ABS(beta)>=TINY(beta)
     valid=1
@@ -736,7 +798,10 @@ CONTAINS
          a%actual_matrix_dimension/=c%actual_matrix_dimension) valid=0
     END IF
     CALL MPI_Allreduce(valid,all_valid,1,MPI_INTEGER,MPI_MIN,a%process_grid%global_comm,ierr)
-    IF(all_valid==0) RETURN
+    IF(all_valid==0) THEN
+      timing_product=.FALSE.;RETURN
+    END IF
+    CALL MarkProductStage(2,stage_stamp)
     extra=0
     DO j=1,SIZE(b%local_data_r,2)
       DO k=1,SIZE(b%local_data_r,1)
@@ -751,20 +816,37 @@ CONTAINS
       END DO
     END IF
     CALL MPI_Allreduce(extra,global_extra,1,MPINTLONG,MPI_SUM,a%process_grid%global_comm,ierr)
+    CALL MarkProductStage(3,stage_stamp)
     CALL SelectGPUBackend(a,a,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
-    IF(.NOT.allowed) RETURN
+    CALL MarkProductStage(4,stage_stamp)
+    IF(.NOT.allowed) THEN
+      timing_product=.FALSE.;RETURN
+    END IF
     CALL BeginGPUBackend(a,root_mode)
+    CALL MarkProductStage(5,stage_stamp)
     CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+    CALL MarkProductStage(6,stage_stamp)
     participant=.NOT.root_mode .OR. a%process_grid%global_rank==0
     IF(allowed) THEN
+      timing_operand=1
       CALL UploadGPURegion(a,ga,root_mode,preserve_padding=.TRUE.)
+      CALL MarkProductStage(7,stage_stamp)
+      timing_operand=2
       CALL UploadGPURegion(b,gb,root_mode,preserve_padding=.TRUE.)
+      CALL MarkProductStage(8,stage_stamp)
+      timing_operand=0
       IF(keep_c) CALL UploadGPURegion(c,gc,root_mode,preserve_padding=.TRUE.)
+      CALL MarkProductStage(9,stage_stamp)
       IF(participant) THEN
         ! CPU GEMM thresholds alpha*A*B BEFORE adding beta*C.
         ! Thresholding AB first would lose terms when |alpha|>1.
         IF(ABS(alpha)==1.0_NTREAL) THEN
-          CALL MultiplyGPU(ga,gb,product,threshold)
+          IF(timing_product) THEN
+            CALL MultiplyGPU(ga,gb,product,threshold,multiply_phases)
+            product_stage_times(19:22)=multiply_phases
+          ELSE
+            CALL MultiplyGPU(ga,gb,product,threshold)
+          END IF
           IF(alpha<0) CALL ScaleGPU(product,alpha)
         ELSE
           CALL MultiplyGPU(ga,gb,product,0.0_NTREAL)
@@ -776,18 +858,28 @@ CONTAINS
           CALL IncrementGPU(product,gc,1.0_NTREAL,0.0_NTREAL)
         END IF
       END IF
+      CALL MarkProductStage(10,stage_stamp)
       CALL ConstructEmptyMatrix(c,a)
+      CALL MarkProductStage(11,stage_stamp)
       IF(keep_c) THEN
         CALL DownloadGPURegion(gc,c,root_mode)
       ELSE
         CALL DownloadGPURegion(product,c,root_mode)
       END IF
+      CALL MarkProductStage(12,stage_stamp)
       performed=.TRUE.
       CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_REPORT',report)
       IF(TRIM(report)=='1' .AND. a%process_grid%global_rank==0) PRINT *, 'NTPoly GPU algebra product'
     END IF
-    CALL ReleaseGPU(ga); CALL ReleaseGPU(gb); CALL ReleaseGPU(gc); CALL ReleaseGPU(product)
+    CALL MarkProductStage(13,stage_stamp)
+    CALL ReleaseGPU(ga);CALL MarkProductStage(14,stage_stamp)
+    CALL ReleaseGPU(gb);CALL MarkProductStage(15,stage_stamp)
+    CALL ReleaseGPU(gc);CALL MarkProductStage(16,stage_stamp)
+    CALL ReleaseGPU(product);CALL MarkProductStage(17,stage_stamp)
     IF(participant) CALL EndGPUBackend()
+    CALL MarkProductStage(18,stage_stamp)
+    IF(timing_product) product_stage_times(1)=MPI_Wtime()-whole_start
+    timing_product=.FALSE.;timing_operand=0
   END SUBROUTINE
 
   INTEGER(INT64) FUNCTION LocalGPUCount(matrix) RESULT(count)

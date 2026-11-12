@@ -161,6 +161,24 @@ primary comparison. Interleaved64k checks also keep all real/complex calls on
 GPU by reclaiming idle scratch before admission retry. Teardown is outside warm
 product timers. These remain full product measurements, not resident solvers.
 
+## Full real public-call stage diagnostics
+
+`NTPOLY_GPU_ALGEBRA_TIMING=1` records optional real shared-product stages;
+`GetGPUProductTimings` returns42 local values for the benchmark to gather after
+its public timer. No extra CUDA synchronization or inter-stage MPI barriers
+are inserted. See Finding39 and validation/rikyu-product-stages-20261112.
+
+At64k/4GPUs the full real call averages126.664ms over14 warm calls: checks/
+context0.501ms, A/B imports6.102ms, product8.195ms, host result108.222ms,
+cleanup3.596ms and dispatch/reporting0.047ms. The host result comprises CPU
+CSR-to-CSC35.396ms and local-block population72.091ms plus construction/freeing.
+The general block splitter performs two additional sparse transposes even for
+one local block. These costs remain outside the user's resident GPU target.
+The same-allocation retained product is2.992ms. Fresh slots/panel buffers make
+the product stage inside the public call8.195ms; subtracting separate scopes
+does not isolate conversion alone. Baseline/timer-disabled controls have
+126–127ms medians. No algorithm or one-block shortcut is changed here.
+
 ## Cleanup direction
 
 1. Keep GPU admission, context leasing, import/export and ownership in the shared

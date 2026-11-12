@@ -6,6 +6,7 @@ PROGRAM ProductGPUBench
   USE DataTypesModule, ONLY: NTREAL,MPINTLONG
   USE ProcessGridModule
   USE PSMatrixModule
+  USE PSMatrixGPUBackendModule, ONLY: GetGPUProductTimings
   USE PSMatrixAlgebraModule
   USE TripletListModule
   USE, INTRINSIC :: IEEE_ARITHMETIC, ONLY: IEEE_IS_FINITE
@@ -16,7 +17,9 @@ PROGRAM ProductGPUBench
   TYPE(TripletList_c) :: complex_entries
   CHARACTER(1024) :: filename,arg,backend
   INTEGER :: ierr,rank,nr,pr,n,reps,threads,rep,kind,step,status,provided,j,k,selected_kind
-  LOGICAL :: profile
+  LOGICAL :: profile,stage_timing
+  REAL(C_DOUBLE) :: stage_local(43)
+  REAL(C_DOUBLE), ALLOCATABLE :: stage_all(:,:)
   REAL(NTREAL) :: t0,seconds,error,threshold
   INTEGER(KIND=8) :: nnz_input,nnz_output
   INTERFACE
@@ -43,6 +46,9 @@ PROGRAM ProductGPUBench
   CALL GET_COMMAND_ARGUMENT(8,arg)
   IF(LEN_TRIM(arg)>0) READ(arg,*) selected_kind
   IF(selected_kind< -1 .OR. selected_kind>2) CALL MPI_Abort(MPI_COMM_WORLD,8,ierr)
+  CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_ALGEBRA_TIMING',arg)
+  stage_timing=TRIM(arg)=='1' .AND. TRIM(backend)=='gpu'
+  IF(stage_timing) ALLOCATE(stage_all(43,nr))
   threshold=1e-8_NTREAL
   status=setenv('NTPOLY_GPU_ALGEBRA'//C_NULL_CHAR,'0'//C_NULL_CHAR,1_C_INT)
   CALL OMP_SET_NUM_THREADS(1)
@@ -87,6 +93,16 @@ PROGRAM ProductGPUBench
       CALL MPI_Barrier(MPI_COMM_WORLD,ierr);t0=MPI_Wtime()
       CALL MatrixMultiply(a(kind),a(kind),result,threshold_in=threshold)
       seconds=MPI_Wtime()-t0
+      IF(stage_timing .AND. kind==0) THEN
+        stage_local(1)=seconds
+        CALL GetGPUProductTimings(stage_local(2:43))
+        CALL MPI_Gather(stage_local,43,MPI_DOUBLE_PRECISION,stage_all,43,MPI_DOUBLE_PRECISION,0,MPI_COMM_WORLD,ierr)
+        IF(rank==0) THEN
+          DO j=1,nr
+            WRITE(*,'(A,3(1X,I0),43(1X,ES24.16))') 'product_stages',kind,rep,j-1,stage_all(:,j)
+          END DO
+        END IF
+      END IF
       CALL MPI_Allreduce(MPI_IN_PLACE,seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,ierr)
       CALL CheckFinite(result)
       CALL OMP_SET_NUM_THREADS(1)

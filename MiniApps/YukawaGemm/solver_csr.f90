@@ -31,24 +31,36 @@ CONTAINS
     CALL MOVE_ALLOC(grown_val, val)
   END SUBROUTINE
 
-  SUBROUTINE TransposeCSR(m, n, rp, ci, val, tp, ti, tv)
+  SUBROUTINE TransposeCSR(m, n, rp, ci, val, tp, ti, tv, phase_times)
     INTEGER, INTENT(IN) :: m, n, rp(:), ci(:)
     REAL(C_DOUBLE), INTENT(IN) :: val(:)
     INTEGER, ALLOCATABLE, INTENT(OUT) :: tp(:), ti(:)
     REAL(C_DOUBLE), ALLOCATABLE, INTENT(OUT) :: tv(:)
+    REAL(C_DOUBLE), OPTIONAL, INTENT(OUT) :: phase_times(4)
+    REAL(C_DOUBLE) :: stamp,now
     INTEGER :: r, j, c, p
     INTEGER :: cursor(n)
+    IF(PRESENT(phase_times)) stamp=CSRWallTime()
     ALLOCATE(tp(n+1), ti(rp(m+1)), tv(rp(m+1)))
     tp = 0
+    IF(PRESENT(phase_times)) THEN
+      now=CSRWallTime();phase_times(1)=now-stamp;stamp=now
+    END IF
     DO j = 1, rp(m+1)
       c = ci(j)
       IF (c < 1 .OR. c > n) ERROR STOP 'TransposeCSR: invalid column'
       tp(c+1) = tp(c+1) + 1
     END DO
+    IF(PRESENT(phase_times)) THEN
+      now=CSRWallTime();phase_times(2)=now-stamp;stamp=now
+    END IF
     DO c = 1, n
       tp(c+1) = tp(c+1) + tp(c)
     END DO
     cursor = tp(1:n)
+    IF(PRESENT(phase_times)) THEN
+      now=CSRWallTime();phase_times(3)=now-stamp;stamp=now
+    END IF
     DO r = 1, m
       DO j = rp(r)+1, rp(r+1)
         c = ci(j)
@@ -58,7 +70,15 @@ CONTAINS
         cursor(c) = p
       END DO
     END DO
+    IF(PRESENT(phase_times)) phase_times(4)=CSRWallTime()-stamp
   END SUBROUTINE
+
+  ! Optional diagnostics use wall time without adding an MPI dependency.
+  REAL(C_DOUBLE) FUNCTION CSRWallTime() RESULT(seconds)
+    INTEGER(C_INT64_T) :: ticks,rate
+    CALL SYSTEM_CLOCK(ticks,rate)
+    seconds=REAL(ticks,C_DOUBLE)/REAL(rate,C_DOUBLE)
+  END FUNCTION
 
   ! Bound each slab by its actual number of intermediate scalar products,
   ! rather than an independence/density model. A single k cannot be split

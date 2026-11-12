@@ -3357,3 +3357,64 @@ solver APIs and18 algebra cases on1/4 ranks, workspace/fresh-input/eviction
 regressions, host checks and real/complex resident memchecks at257 pass. Memcheck
 uses report-api-errors=no for existing UCX/NCCL probes. All task files are on
 data1. Evidence: validation/rikyu-resident-products-20261112.
+
+## Finding 39: 64k real public cost is mostly host result reconstruction (2026-11-12)
+
+Opt-in NTPOLY_GPU_ALGEBRA_TIMING=1 records42 local real-backend stage values.
+The benchmark reads them after stopping its public timer and gathers all ranks
+outside that timer. Choose the rank with the maximum public wall time for each
+call, then average that rank's exclusive stages. Do not add independent MPI
+maxima or medians. Four GPUs,2x2 grid,1 thread/rank,14 warm calls from2 launches:
+
+| Exclusive group | Mean ms |
+|---|---:|
+| Admission/collective checks/context | 0.501 |
+| Import A | 3.389 |
+| Import B | 2.714 |
+| GPU product within public call | 8.195 |
+| Construct host result, including empty construction | 108.222 |
+| Free slots/panels and release context | 3.596 |
+| Dispatch/reporting/unassigned | 0.047 |
+| Total public call | 126.664 |
+
+The108.222ms result group splits into0.225ms empty result construction,
+0.010ms synchronizing/accessing CSR pointers,35.396ms CPU CSR-to-CSC,
+72.091ms SplitMatrixToLocalBlocks,0.500ms temporary destruction and negligible
+wrapper overhead. CPU transpose allocation/zero0.137ms, histogram7.101ms,
+prefix/cursor0.013ms, scatter28.137ms; small automatic-array/frame residual
+remains separate. Managed CSR CPU accesses are included in these durations.
+
+SplitMatrixToLocalBlocks invokes the general SplitMatrix even with1x1 local
+blocks. That routine splits columns, transposes, splits rows, and transposes
+back, with copies and temporary allocations/destruction. Its72.091ms is the
+measured whole routine; those internal passes were not separately timed.
+No optimization or one-block shortcut is introduced in this checkpoint.
+
+A import's query/sync, slot allocation, cuSPARSE setup/scratch, conversion/sync,
+scratch-free phases are0.025/0.124/0.579/2.474/0.181ms (plus tiny Fortran overhead).
+B phases are0.007/0.068/0.193/2.258/0.183ms. Inputs use accessible CSC borrowing;
+conversion time can include coherent access and is not raw H2D bandwidth.
+
+Product subphases on the same critical rank are1.360ms row exchange,0.532ms row
+assembly,1.076ms column exchange/assembly,5.226ms local clear/multiply/prune/
+compaction including new output-slot storage. Cleanup: A0.674ms,B0.476ms,
+product1.696ms, panels/context0.749ms; unused C release is negligible.
+
+The retained resident control on this same allocation is2.992ms. The public
+product stage is8.195ms, not3ms: fresh operand/output slots and recreated panel
+buffers remain inside its product path, whereas resident A*A retains resources
+and reuses one input slot. Do not label the entire126.664−2.992ms difference as
+pure conversion or assign an unmeasured fraction to allocation versus copies.
+
+Exact previous-binary baseline-before/after medians126.824/126.909ms;
+new timer-disabled median126.645ms; detailed launch medians126.455/126.845ms.
+No meaningful timing slowdown is resolved. Raw controls include occasional
+outliers (new-untraced357.946ms), preserved in the evidence. Primary breakdown
+is the arithmetic mean of14 stable detailed warm calls, not pooled control means.
+
+Host checks pass.49 real solver APIs/18 algebra cases with timing enabled,
+full64k output parity on every call (15,040,832 nnz,max error4.52e-16), and
+memcheck257 with0 errors pass. API-probe reporting remains suppressed as before.
+Job325611 completes exit0. Evidence: validation/rikyu-product-stages-20261112;
+all task files on data1. This adds diagnostics without changing arithmetic,
+data movement, existing synchronization or the user's resident-performance scope.
