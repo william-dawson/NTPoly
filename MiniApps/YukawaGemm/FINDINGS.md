@@ -3071,8 +3071,8 @@ percentages or the claim that every tested wrapper is fully GPU implemented.
 
 CUDA-only follow-up317170 completes all six GPU solver calls, preserves their
 ~1e-6 residuals, and writes a usable Nsight report. Its exit1 is a subsequent
-statistics-export refusal (SQLite older than the report); summaries are being
-regenerated with `--force-export=true`. Rank-zero kernels total1.073s across
+statistics-export refusal (SQLite older than the report); summary recovery317187 completes successfully
+with `--force-export=true`. Rank-zero kernels total1.073s across
 all six calls, cold startup and untimed residual validation. Largest custom
 kernels total0.213s compact,0.142s product and0.099s clear; cuSPARSE conversion
 also appears prominently. This capture is neither a warm-only decomposition
