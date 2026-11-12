@@ -3481,3 +3481,59 @@ All jobs are finished. Evidence/replay/final source hashes:
 validation/rikyu-result-rebuild-20261112; all remote task files on data1.
 Next resident GPU target remains the complex full dense prune/count/pack passes
 from Finding38. Custom Cholesky remains deferred.
+
+## Finding 41: current full-call profile includes explicit multiply timing (2026-11-12)
+
+Profile unchanged implementation5e89cc74,64k real,4GPUs,2x2 MPI grid,1 thread/rank.
+Job325890 verifies the five source SHA256 values against the committed code,
+records executable hashes, and uses existing binaries without rebuilding.
+Fourteen unprofiled warm calls before/after an all-rank CUDA-only capture have
+27.450ms mean,27.485ms pooled median. Rank3 is critical for all14 calls.
+Exclusive means from the same critical rank per call:
+
+| Stage | Mean ms |
+|---|---:|
+| Checks/admission/context | 0.551 |
+| Import A | 3.690 |
+| Import B | 3.017 |
+| Distributed product | 9.414 |
+| Host result construction/conversion/bulk copy | 7.232 |
+| Cleanup | 3.502 |
+| Dispatch/report/unassigned | 0.044 |
+| Full public call | 27.450 |
+
+Product9.414ms includes row exchange2.013ms, row assembly0.684ms, column
+exchange/assembly1.384ms and local allocation/clear/multiply/count/compaction
+5.330ms. The retained resident product control is3.018ms, a different scope:
+public calls recreate operand/result slots and panel scratch.
+
+**Arithmetic multiply kernel itself:** critical rank3 averages0.315328ms over
+5 warm captured calls (rank0 0.314822ms; ranks1/2 0.056032/0.054989ms). This
+includes sparse traversal and accumulation, and excludes communication, clear,
+pruning/counting and sparse compaction. It is a subset of the product time,
+not an additional row to add to the public wall time. Other critical-rank kernel
+means: clear1.186842ms,count0.146483ms,compaction3.296538ms. Kernel times come
+from a separate instrumented capture; do not force them into an additive
+partition of the unprofiled wall table or infer achieved HBM bandwidth.
+
+Every rank performs27 cudaMalloc+9 cudaMallocManaged+36 cudaFree calls per
+public product. Rank3 allocation/free API durations total61.160ms over5 calls
+(12.232ms/call), including waits/overlap with device execution. They are not an
+independent additive cost or an immediately removable wall-time amount.
+Repeated allocation/lifetime work remains material compared with0.315ms arithmetic.
+
+All four ranks record40 NCCL SendRecv kernels:5 calls times8 exchanges (2 nnz
+metadata and6 CSR payload exchanges). Counts match implementation exactly;
+NCCL durations include peer waits and do not measure link bandwidth. Rank3
+D2H payload totals434.805MB across5 calls, about86.96MB/call, mainly output CSC.
+Ranks0/3 carry much larger local outputs than ranks1/2; an all-rank capture
+avoids treating rank0 as universally representative.
+
+Before/after medians27.426/27.636ms; timer-disabled median27.842ms (one347.660ms
+outlier retained). Captured whole-call samples34.273/26.590/27.034/27.222/50.182ms
+show why the unprofiled table is primary. All benchmark outputs have15,040,832
+nnz and differences<4.54e-16. All traced unprofiled ranks use GPU import/export;
+CPU transpose pass times are0. No implementation/solver change or new solver
+coverage claim is introduced. Prior intermittent four-thread BLAS issue remains
+undetermined. Job325890 completes exit0; all task files/raw profiles on data1.
+Evidence/replay: validation/rikyu-current-profile-20261112.

@@ -208,6 +208,25 @@ pass. One earlier four-thread multiblock invocation stopped with a DGEMM
 argument8 error; the exact baseline/initial/final-auto/final-host controls all
 pass on rerun. The failure remains undiagnosed and its logs are preserved.
 
+## Current profile with multiply timing
+
+Unchanged implementation5e89cc74 on a fresh64k/4GPU allocation averages27.450ms
+for the full public real product (14 warm calls; pooled median27.485ms).
+Checks/context0.551ms, inputs6.707ms, product9.414ms, result7.232ms,
+cleanup3.502ms and dispatch/report0.044ms form the additive critical-rank table.
+Within the product, communication/assembly costs4.082ms and local allocation/
+clear/multiply/count/compaction5.330ms. Retained resident control3.018ms has a
+different allocation/lifetime scope.
+
+The arithmetic multiply kernel alone averages0.315ms on the critical rank;
+clear1.187ms,count0.146ms,compaction3.297ms come from a separate CUDA-only
+capture. These are subsets, not extra additive wall-time rows. Every rank
+makes36 CUDA allocations and36 frees per public product. Their API durations
+include waits and overlap kernel execution; do not subtract them directly
+from wall time. All-rank NCCL kernel counts match8 exchanges/product. See
+Finding41 and validation/rikyu-current-profile-20261112. No production code
+changed for this measurement.
+
 ## Cleanup direction
 
 1. Keep GPU admission, context leasing, import/export and ownership in the shared
