@@ -687,16 +687,18 @@ CONTAINS
     CALL MultiplyGPU(source,source,destination,threshold)
   END SUBROUTINE
 
-  SUBROUTINE MultiplyGPU(left,right,destination,threshold)
+  SUBROUTINE MultiplyGPU(left,right,destination,threshold,phase_times)
     TYPE(GPUMatrix_t), INTENT(IN) :: left,right
     TYPE(GPUMatrix_t), INTENT(INOUT) :: destination
     REAL(NTREAL), INTENT(IN) :: threshold
+    REAL(C_DOUBLE), OPTIONAL, INTENT(OUT) :: phase_times(4)
     REAL(C_DOUBLE) :: phases(4)
     CALL CheckShapes(left,right)
     IF(destination%handle==0) CALL create_slot(destination%handle)
     IF(left%handle==destination%handle .OR. right%handle==destination%handle) CALL FailGPU('in-place product is unsupported')
     IF(resident_multiply(left%handle,right%handle,destination%handle,left%rows,left%dimension,left%columns, &
         left%process_rows,left%process_columns,threshold,phases)/=0) CALL FailGPU('resident product failed')
+    IF(PRESENT(phase_times)) phase_times=phases
     destination%rows=left%rows; destination%columns=left%columns
     destination%dimension=left%dimension; destination%diagonal=left%diagonal
     destination%process_rows=left%process_rows; destination%process_columns=left%process_columns

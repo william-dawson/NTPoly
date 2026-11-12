@@ -3281,3 +3281,79 @@ on1/4/square grids,49 real APIs,18 algebra cases, NCCL transport1/4 and host
 regressions pass. Device memcheck reports0 with API-probe reporting disabled.
 Evidence: validation/rikyu-complex-workspace-20261112; all remote task files on
 data1. Custom Cholesky remains deferred.
+
+## Finding 38: resident products are much faster than public-boundary timings (2026-11-12)
+
+The user explicitly requests multiplication timing after GPU input placement,
+excluding input/output conversion. Earlier Findings36–37 measured the complete
+public MatrixMultiply call; they are valid for that scope but do not characterize
+resident GPU multiplication. Do not use those boundary-dominated times to label
+the performance of the entire GPU port.
+
+New resident_product_bench imports once, repeats the actual production GPU
+product, then exports/validates the complete final matrix once. Real uses
+UploadGPU/MultiplyGPU/DownloadGPU; complex uses the same extracted compute helper
+as the ordinary host-facing product. No new arithmetic algorithm is introduced.
+The timed region includes NCCL panels, metadata, GPU panel assembly/sort,
+accumulator clear, multiplication, thresholding, sparse compaction and completion
+synchronization. Scalar metadata and host launch overhead remain included.
+There is no matrix payload upload/download in the measured region. Complex
+phase diagnostics add synchronization at phase boundaries; normal products do
+not acquire those additional phase boundaries. Report MPI maxima per call.
+
+Matched four-GPU/CPU128 medians in ms (7 warm GPU,5 warm CPU samples):
+
+| Size | CPU real | Resident GPU real | CPU complex | Resident GPU complex |
+|---|---|---|---|---|
+| 10k | 26.253 | 0.536 | 30.637 | 1.271 |
+| 20k | 60.388 | 0.803 | 73.577 | 3.020 |
+| 64k | 457.110 | 2.995 | 608.403 | 21.486 |
+
+64k speedups are152.6x real and28.3x complex against these CPU128 controls.
+These are multiplication benchmarks, not complete purification runs. The CPU
+reference is native MatrixMultiply, including its normal communication/output
+work; GPU representation conversion is absent from CPU timing. Timing does not
+establish equal CPU/GPU byte traffic or actual memory-bandwidth utilization.
+CPU10k real varies across allocations (previous19.2ms versus current26.3ms).
+Maximum final matrix difference is4.47e-16 and output counts agree.
+
+Local product after panels exist is0.229/0.688ms real/complex at10k,
+0.452/2.229ms at20k, and2.488/19.672ms at64k. This excludes communication/panel
+assembly and is a subset, not the headline distributed time. One-GPU resident
+real/complex are0.573/2.772ms at10k and1.344/8.914ms at20k.64k/one GPU remains
+outside conservative dense-output/index admission and was not forced to run.
+Small real problems strong-scale poorly because communication dominates.
+
+Separate64k rank-zero CUDA captures contain4 warm products each. Host/device
+copy-size totals round to0.000MB in each direction (scalar metadata only);
+bulk matrix input/output is outside capture. Complex profiler wall times are
+26–31ms versus21.5ms unprofiled: do not substitute them for the primary results
+or treat device kernel sums as an additive whole-call decomposition.
+
+The complex arithmetic multiply kernel averages0.393ms versus0.314ms real
+(1.25x). Complex prune is11.049ms, count2.286ms and pack3.796ms. Dense memset
+adds roughly2.11ms per product. Real instead uses its bitmap to avoid broad
+dense scans. Thus complex/real resident overhead grows2.37x→3.76x→7.17x with
+size; it is a GPU algorithm difference, not input/output conversion.
+
+At64k/2x2 the complex accumulator is16.384GB/GPU. Clear writes one array,
+prune reads/writes it, and count/pack each read it: about81.92GB/GPU of logical
+streaming traffic before sparse/atomic/panel/output overhead. At8TB/s that alone
+has a10.24ms floor. Dividing by19.672ms local time gives4.16TB/s logical
+throughput, not a measured physical HBM counter. Nominal CPU/GPU bandwidth ratios
+cannot bound application speedup when algorithms and traffic differ.
+
+PTX/SASS from the exact built object confirms vectorized16-byte prune loads/
+stores,28 registers, zero stack/local memory and no spill instructions. Each
+cell, including zeros, executes an inlined robust hypot sequence with scaled
+FP64 arithmetic, reciprocal-square-root refinement and FMAs before selection.
+No out-of-line math call or spill problem explains the11ms. Next useful GPU
+work is avoiding full dense complex passes (bitmap/touched-entry processing and
+fused pruning), with numerical semantics preserved. Do not prioritize public
+input/output conversion against the user's stated performance scope.
+
+Job325485 completes exit0; exact-object audit325519 completes exit0.48 complex
+solver APIs and18 algebra cases on1/4 ranks, workspace/fresh-input/eviction
+regressions, host checks and real/complex resident memchecks at257 pass. Memcheck
+uses report-api-errors=no for existing UCX/NCCL probes. All task files are on
+data1. Evidence: validation/rikyu-resident-products-20261112.

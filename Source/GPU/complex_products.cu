@@ -1,6 +1,8 @@
 // Native complex FP64 shared products. CPU coordinates are an API boundary;
 // row/column panel payloads travel GPU-to-GPU through the leased NCCL context.
 #include <cuda_runtime.h>
+#include <cuda_profiler_api.h>
+#include <chrono>
 #include <cuComplex.h>
 #include <thrust/sort.h>
 #include <thrust/scan.h>
@@ -170,6 +172,53 @@ __global__ void pack_output(const cuDoubleComplex* dense,int columns,int row_off
   out+=__popc(mask);
  }
 }
+double elapsed(std::chrono::steady_clock::time_point start) {
+ return std::chrono::duration<double>(std::chrono::steady_clock::now()-start).count();
+}
+int compute_product(int* rows,int* columns,int* n,int* row_offset,int* column_offset,
+ int* na,Buffer& local_a,int* nb,Buffer& local_b,int* nc,Buffer& local_c,
+ double* alpha,double* beta,double* threshold,int* count,Workspace& workspace,double* phases) {
+ auto& panel_a=workspace.panel_a;auto& panel_b=workspace.panel_b;
+ auto& arp=workspace.arp;auto& brp=workspace.brp;auto& dense=workspace.dense;
+ auto& counts=workspace.counts;auto& packed=workspace.packed;
+ ScratchAllocator allocator{&workspace.scratch};
+ auto policy=thrust::cuda::par(allocator);
+  auto start=std::chrono::steady_clock::now();
+  int count_a,count_b;
+  CHECK(exchange(1,*na,local_a,panel_a,count_a));CHECK(exchange(2,*nb,local_b,panel_b,count_b));
+  if(phases){phases[0]=elapsed(start);start=std::chrono::steady_clock::now();}
+  // Sort panels and build CSR offsets entirely on the device.
+  thrust::sort(policy,panel_a.as<Coordinate>(),panel_a.as<Coordinate>()+count_a,Less{});
+  thrust::sort(policy,panel_b.as<Coordinate>(),panel_b.as<Coordinate>()+count_b,Less{});
+  CHECK(arp.allocate(size_t(*rows+1)*sizeof(int)));CHECK(brp.allocate(size_t(*n+1)*sizeof(int)));
+  CUDA(cudaMemset(arp.p,0,size_t(*rows+1)*sizeof(int)));CUDA(cudaMemset(brp.p,0,size_t(*n+1)*sizeof(int)));
+  row_counts<<<256,256>>>(panel_a.as<Coordinate>(),count_a,*row_offset,arp.as<int>());
+  row_counts<<<256,256>>>(panel_b.as<Coordinate>(),count_b,0,brp.as<int>());CUDA(cudaGetLastError());
+  thrust::inclusive_scan(policy,arp.as<int>(),arp.as<int>()+*rows+1,arp.as<int>());
+  thrust::inclusive_scan(policy,brp.as<int>(),brp.as<int>()+*n+1,brp.as<int>());
+  if(phases){CUDA(cudaDeviceSynchronize());
+   phases[1]=elapsed(start);start=std::chrono::steady_clock::now();}
+  size_t cells=size_t(*rows)*size_t(*columns);CHECK(dense.allocate(cells*sizeof(cuDoubleComplex)));
+  CUDA(cudaMemset(dense.p,0,cells*sizeof(cuDoubleComplex)));
+  multiply<<<*rows,128>>>(*columns,arp.as<int>(),panel_a.as<Coordinate>(),brp.as<int>(),panel_b.as<Coordinate>(),
+   *column_offset,dense.as<cuDoubleComplex>());CUDA(cudaGetLastError());
+  prune<<<256,256>>>(dense.as<cuDoubleComplex>(),cells,*alpha,*threshold);CUDA(cudaGetLastError());
+  if(*nc) {
+   increment<<<256,256>>>(dense.as<cuDoubleComplex>(),*columns,*row_offset,*column_offset,local_c.as<Coordinate>(),*nc,*beta);
+   CUDA(cudaGetLastError());
+  }
+  if(phases){CUDA(cudaDeviceSynchronize());
+   phases[2]=elapsed(start);start=std::chrono::steady_clock::now();}
+  CHECK(counts.allocate(size_t(*rows+1)*sizeof(int)));CUDA(cudaMemset(counts.p,0,sizeof(int)));
+  count_output<<<*rows,256>>>(dense.as<cuDoubleComplex>(),*rows,*columns,counts.as<int>());CUDA(cudaGetLastError());
+  thrust::inclusive_scan(policy,counts.as<int>(),counts.as<int>()+*rows+1,counts.as<int>());
+  CUDA(cudaMemcpy(count,counts.as<int>()+*rows,sizeof(int),cudaMemcpyDeviceToHost));
+  CHECK(packed.allocate(size_t(*count)*sizeof(Coordinate)));
+  pack_output<<<*rows,32>>>(dense.as<cuDoubleComplex>(),*columns,*row_offset,*column_offset,counts.as<int>(),packed.as<Coordinate>());
+  CUDA(cudaGetLastError());
+  if(phases){CUDA(cudaDeviceSynchronize());phases[3]=elapsed(start);}
+  return 0;
+}
 struct Result { std::vector<Coordinate> entries; };
 }
 extern "C" int ntpoly_complex_product_(int* rows,int* columns,int* n,int* row_offset,int* column_offset,
@@ -181,43 +230,13 @@ extern "C" int ntpoly_complex_product_(int* rows,int* columns,int* n,int* row_of
  try {
   auto& workspace=get_workspace();
   auto& local_a=workspace.local_a;auto& local_b=workspace.local_b;
-  auto& panel_a=workspace.panel_a;auto& panel_b=workspace.panel_b;auto& local_c=workspace.local_c;
-  auto& arp=workspace.arp;auto& brp=workspace.brp;auto& dense=workspace.dense;
-  auto& counts=workspace.counts;auto& packed=workspace.packed;
-  ScratchAllocator allocator{&workspace.scratch};
-  auto policy=thrust::cuda::par(allocator);
   CHECK(upload(*na,ar,ac,av,local_a,workspace.host));CHECK(upload(*nb,br,bc,bv,local_b,workspace.host));
-  int count_a,count_b;
-  CHECK(exchange(1,*na,local_a,panel_a,count_a));CHECK(exchange(2,*nb,local_b,panel_b,count_b));
-  // Sort panels and build CSR offsets entirely on the device.
-  thrust::sort(policy,panel_a.as<Coordinate>(),panel_a.as<Coordinate>()+count_a,Less{});
-  thrust::sort(policy,panel_b.as<Coordinate>(),panel_b.as<Coordinate>()+count_b,Less{});
-  CHECK(arp.allocate(size_t(*rows+1)*sizeof(int)));CHECK(brp.allocate(size_t(*n+1)*sizeof(int)));
-  CUDA(cudaMemset(arp.p,0,size_t(*rows+1)*sizeof(int)));CUDA(cudaMemset(brp.p,0,size_t(*n+1)*sizeof(int)));
-  row_counts<<<256,256>>>(panel_a.as<Coordinate>(),count_a,*row_offset,arp.as<int>());
-  row_counts<<<256,256>>>(panel_b.as<Coordinate>(),count_b,0,brp.as<int>());CUDA(cudaGetLastError());
-  thrust::inclusive_scan(policy,arp.as<int>(),arp.as<int>()+*rows+1,arp.as<int>());
-  thrust::inclusive_scan(policy,brp.as<int>(),brp.as<int>()+*n+1,brp.as<int>());
-  size_t cells=size_t(*rows)*size_t(*columns);CHECK(dense.allocate(cells*sizeof(cuDoubleComplex)));
-  CUDA(cudaMemset(dense.p,0,cells*sizeof(cuDoubleComplex)));
-  multiply<<<*rows,128>>>(*columns,arp.as<int>(),panel_a.as<Coordinate>(),brp.as<int>(),panel_b.as<Coordinate>(),
-   *column_offset,dense.as<cuDoubleComplex>());CUDA(cudaGetLastError());
-  prune<<<256,256>>>(dense.as<cuDoubleComplex>(),cells,*alpha,*threshold);CUDA(cudaGetLastError());
-  if(*nc) {
-   CHECK(upload(*nc,cr,cc,cv,local_c,workspace.host));
-   increment<<<256,256>>>(dense.as<cuDoubleComplex>(),*columns,*row_offset,*column_offset,local_c.as<Coordinate>(),*nc,*beta);
-   CUDA(cudaGetLastError());
-  }
-  CHECK(counts.allocate(size_t(*rows+1)*sizeof(int)));CUDA(cudaMemset(counts.p,0,sizeof(int)));
-  count_output<<<*rows,256>>>(dense.as<cuDoubleComplex>(),*rows,*columns,counts.as<int>());CUDA(cudaGetLastError());
-  thrust::inclusive_scan(policy,counts.as<int>(),counts.as<int>()+*rows+1,counts.as<int>());
-  CUDA(cudaMemcpy(count,counts.as<int>()+*rows,sizeof(int),cudaMemcpyDeviceToHost));
-  CHECK(packed.allocate(size_t(*count)*sizeof(Coordinate)));
-  pack_output<<<*rows,32>>>(dense.as<cuDoubleComplex>(),*columns,*row_offset,*column_offset,counts.as<int>(),packed.as<Coordinate>());
-  CUDA(cudaGetLastError());
+  if(*nc)CHECK(upload(*nc,cr,cc,cv,workspace.local_c,workspace.host));
+  CHECK(compute_product(rows,columns,n,row_offset,column_offset,na,local_a,nb,local_b,nc,workspace.local_c,
+      alpha,beta,threshold,count,workspace,nullptr));
   Result* result=new Result;
   try {result->entries.resize(*count);}catch(...){delete result;throw;}
-  auto error=cudaMemcpy(result->entries.data(),packed.p,size_t(*count)*sizeof(Coordinate),cudaMemcpyDeviceToHost);
+  auto error=cudaMemcpy(result->entries.data(),workspace.packed.p,size_t(*count)*sizeof(Coordinate),cudaMemcpyDeviceToHost);
   if(error!=cudaSuccess){delete result;return -1;}*output=result;
   return 0;
  }catch(const std::exception& e){std::fprintf(stderr,"Complex product: %s\n",e.what());return -1;}
@@ -231,3 +250,31 @@ extern "C" void ntpoly_complex_product_export_(void** handle,int* rows,int* colu
 // Regression observability: scratch ownership and actual device growth only.
 extern "C" int ntpoly_complex_workspace_count_(){return workspace_count;}
 extern "C" uint64_t ntpoly_complex_allocation_count_(){return allocation_count;}
+
+// Benchmark the actual shared-product implementation with a single input import
+// and a single final export. Per-call times include panel communication, sort,
+// accumulation, thresholding, sparse compaction, scalar nnz metadata and sync.
+// No matrix payload crosses the CPU boundary inside the measured region.
+extern "C" int ntpoly_complex_resident_benchmark_(int* rows,int* columns,int* n,
+ int* row_offset,int* column_offset,int* nnz,const int* ir,const int* ic,const cuDoubleComplex* iv,
+ double* threshold,int* repetitions,int* profile,double* seconds,double* phases,void** output,int* count) {
+ *output=nullptr;*count=0;
+ if(*repetitions<2)return -1;
+ try {
+  auto& workspace=get_workspace();
+  CHECK(upload(*nnz,ir,ic,iv,workspace.local_a,workspace.host));
+  CUDA(cudaDeviceSynchronize());
+  int zero=0;double alpha=1,beta=0;
+  for(int rep=0;rep<*repetitions;++rep) {
+   if(*profile && rep==1)CUDA(cudaProfilerStart());
+   auto start=std::chrono::steady_clock::now();
+   CHECK(compute_product(rows,columns,n,row_offset,column_offset,nnz,workspace.local_a,
+       nnz,workspace.local_a,&zero,workspace.local_c,&alpha,&beta,threshold,count,workspace,phases+4*rep));
+   seconds[rep]=elapsed(start);
+  }
+  if(*profile)CUDA(cudaProfilerStop());
+  auto result=std::make_unique<Result>();result->entries.resize(*count);
+  CUDA(cudaMemcpy(result->entries.data(),workspace.packed.p,size_t(*count)*sizeof(Coordinate),cudaMemcpyDeviceToHost));
+  *output=result.release();return 0;
+ }catch(const std::exception& e){std::fprintf(stderr,"Complex resident benchmark: %s\n",e.what());return -1;}
+}

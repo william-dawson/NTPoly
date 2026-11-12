@@ -105,7 +105,37 @@ square root takes1.174s versus1.616s (1.30x/1.38x). Output differences are below
 boundaries. It is not the physical-H purification workload. Tiny problems are
 correctness tests and generally favor CPU. The generic flag remains opt-in.
 
-## Measured complex multiplication
+## Measured resident multiplication (primary GPU performance scope)
+
+The requested GPU performance scope starts after input placement and ends with
+a GPU sparse result. Import/conversion and final host output construction are
+excluded. `resident_product_bench` loads once, repeatedly calls the production
+GPU product and exports/validates the final result once. Timers include NCCL,
+GPU panel assembly/sorting, clear, arithmetic, pruning/counting, compaction,
+scalar metadata and completion synchronization. This is a distributed resident
+operation, not just an isolated multiply kernel. Warm medians on4 GPUs:
+
+| Size | CPU128 real ms | GPU real ms | CPU128 complex ms | GPU complex ms |
+|---|---|---|---|---|
+| 10k | 26.253 | 0.536 | 30.637 | 1.271 |
+| 20k | 60.388 | 0.803 | 73.577 | 3.020 |
+| 64k | 457.110 | 2.995 | 608.403 | 21.486 |
+
+64k multiplication speedups versus matched CPU128 are152.6x real and28.3x
+complex. Local clear/arithmetic/prune/compaction after panels exist is2.488ms
+real and19.672ms complex; that subset excludes communication/assembly. These
+measurements do not establish complete purification speedups or physical HBM
+utilization. CPU and GPU algorithms move different amounts of data.
+
+Complex64k profiling identifies11.05ms dense pruning,2.29ms count and3.80ms
+packing versus0.39ms arithmetic multiply. PTX/SASS shows vector loads/stores,
+28 registers, no spills, and an inlined robust magnitude calculation even on
+zero cells. The useful next GPU optimization is avoiding full dense complex
+passes through bitmap/touched-entry processing and pruning fusion. Public
+input/output conversion is outside the user's current performance target.
+See Finding38 and validation/rikyu-resident-products-20261112.
+
+## Measured public-boundary complex multiplication
 
 Matched complete MatrixMultiply calls, including import/export and allocation,
 use a diagonal-unitary phase transform to preserve real/complex product patterns.
