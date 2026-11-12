@@ -26,11 +26,15 @@ struct Context {
     void *input=nullptr,*output=nullptr;
     size_t input_capacity=0,output_capacity=0;
     int device=-1;
+    void *workspace=nullptr;
+    void (*workspace_destroy)(void*)=nullptr;
+    uint64_t (*workspace_bytes)(void*)=nullptr;
 };
 // The mini-app retains its legacy context. Library grids own independent contexts.
 Context legacy_context;
 Context *current=&legacy_context;
 int owned_contexts=0;
+std::vector<Context*> context_registry;
 #define CUDA(call) do { auto e=(call); if(e!=cudaSuccess) { std::fprintf(stderr,"NCCL staging CUDA: %s\n",cudaGetErrorString(e)); return -1; } } while(0)
 #define NCCL(call) do { auto e=(call); if(e!=ncclSuccess) { std::fprintf(stderr,"NCCL: %s\n",ncclGetErrorString(e)); return -1; } } while(0)
 int reserve(void **p,size_t &capacity,size_t required) {
@@ -86,6 +90,7 @@ int solver_nccl_context_create_(void **ptr) {
     if(!context) return -1;
     auto error=cudaGetDevice(&context->device);
     if(error!=cudaSuccess) { delete context; return -1; }
+    try {context_registry.push_back(context);} catch(const std::bad_alloc&){delete context;return -1;}
     *ptr=context;
     ++owned_contexts;
     return 0;
@@ -97,6 +102,48 @@ int solver_nccl_context_select_(void *ptr) {
     int device; CUDA(cudaGetDevice(&device));
     if(device!=context->device) return -1;
     current=context;
+    return 0;
+}
+// Optional backend scratch is owned by the same grid as its communicator.
+// The callback keeps transport-only executables independent of CUDA algebra.
+int solver_nccl_workspace_get_(void **ptr) {
+    if(!ptr || current->groups[0].size<1) return -1;
+    *ptr=current->workspace; return 0;
+}
+int solver_nccl_workspace_attach_(void *ptr,void (*destroy)(void*),uint64_t (*bytes)(void*)) {
+    if(!ptr || !destroy || !bytes || current->workspace || current->groups[0].size<1) return -1;
+    current->workspace=ptr; current->workspace_destroy=destroy;current->workspace_bytes=bytes; return 0;
+}
+int solver_nccl_workspace_clear_() {
+    if(!current->workspace) return 0;
+    CUDA(cudaDeviceSynchronize());
+    current->workspace_destroy(current->workspace);
+    current->workspace=nullptr;current->workspace_destroy=nullptr;current->workspace_bytes=nullptr;
+    return 0;
+}
+int solver_nccl_context_clear_workspace_(void *ptr,const int64_t *limit,int *cleared) {
+    *cleared=0;
+    if(!ptr || *limit<0) return 0;
+    auto *context=static_cast<Context*>(ptr);
+    if(current==context) return -1; // Use workspace_clear for an active lease.
+    if(!context->workspace || (*limit>0 && context->workspace_bytes(context->workspace)<=uint64_t(*limit))) return 0;
+    int old_device;CUDA(cudaGetDevice(&old_device));CUDA(cudaSetDevice(context->device));
+    Context *saved=current;current=context;
+    int status=solver_nccl_workspace_clear_();if(!status)*cleared=1;current=saved;
+    CUDA(cudaSetDevice(old_device));return status;
+}
+// Reclaim only scratch from idle grid contexts; communicator and matrix
+// ownership are unaffected. This also protects real operations from caches
+// retained by other complex grids on the same device.
+int solver_nccl_trim_workspaces_(int *cleared) {
+    *cleared=0;
+    for(auto* context:context_registry) {
+        if(context==current || !context->workspace)continue;
+        int hit=0;const int64_t limit=0;
+        int status=solver_nccl_context_clear_workspace_(context,&limit,&hit);
+        if(status)return status;
+        *cleared+=hit;
+    }
     return 0;
 }
 int solver_nccl_context_suspend_() {
@@ -199,6 +246,7 @@ int solver_nccl_sum_(double *value) {
     CUDA(cudaStreamSynchronize(current->stream)); return 0;
 }
 int solver_nccl_finish_() {
+    if(solver_nccl_workspace_clear_()!=0) return -1;
     if(current->stream) CUDA(cudaStreamSynchronize(current->stream));
     for(auto &g:current->groups) {
         if(g.comm && !g.world_shared) NCCL(ncclCommDestroy(g.comm));
@@ -221,6 +269,7 @@ int solver_nccl_context_free_(void **ptr) {
     int status=solver_nccl_finish_(); current=saved;
     CUDA(cudaSetDevice(old_device));
     if(status) return status;
+    context_registry.erase(std::remove(context_registry.begin(),context_registry.end(),context),context_registry.end());
     delete context; *ptr=nullptr; --owned_contexts;
     return 0;
 }
@@ -228,6 +277,11 @@ int solver_nccl_context_free_(void **ptr) {
 #else
 extern "C" {
 int solver_nccl_context_count_() { return 0; }
+int solver_nccl_workspace_get_(void**) { return -1; }
+int solver_nccl_workspace_attach_(void*,void(*)(void*),uint64_t(*)(void*)) { return -1; }
+int solver_nccl_workspace_clear_() { return 0; }
+int solver_nccl_trim_workspaces_(int*) { return -1; }
+int solver_nccl_context_clear_workspace_(void*,const int64_t*,int*) { return -1; }
 int solver_nccl_context_create_(void**) { return -1; }
 int solver_nccl_context_select_(void*) { return -1; }
 int solver_nccl_context_suspend_() { return -1; }

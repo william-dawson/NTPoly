@@ -15,7 +15,7 @@ PROGRAM ProductGPUBench
   TYPE(TripletList_r) :: input_entries,result_entries
   TYPE(TripletList_c) :: complex_entries
   CHARACTER(1024) :: filename,arg,backend
-  INTEGER :: ierr,rank,nr,pr,n,reps,threads,rep,kind,step,status,provided,j,k
+  INTEGER :: ierr,rank,nr,pr,n,reps,threads,rep,kind,step,status,provided,j,k,selected_kind
   LOGICAL :: profile
   REAL(NTREAL) :: t0,seconds,error,threshold
   INTEGER(KIND=8) :: nnz_input,nnz_output
@@ -39,6 +39,10 @@ PROGRAM ProductGPUBench
   CALL GET_COMMAND_ARGUMENT(5,arg);READ(arg,*) threads
   CALL GET_COMMAND_ARGUMENT(6,arg);READ(arg,*) reps
   CALL GET_COMMAND_ARGUMENT(7,arg);profile=TRIM(arg)=='profile'
+  selected_kind=-1
+  CALL GET_COMMAND_ARGUMENT(8,arg)
+  IF(LEN_TRIM(arg)>0) READ(arg,*) selected_kind
+  IF(selected_kind< -1 .OR. selected_kind>2) CALL MPI_Abort(MPI_COMM_WORLD,8,ierr)
   threshold=1e-8_NTREAL
   status=setenv('NTPOLY_GPU_ALGEBRA'//C_NULL_CHAR,'0'//C_NULL_CHAR,1_C_INT)
   CALL OMP_SET_NUM_THREADS(1)
@@ -79,6 +83,7 @@ PROGRAM ProductGPUBench
     DO step=0,2
       ! Rotate ordering so one datatype does not always benefit from running last.
       kind=MOD(step+rep-1,3)
+      IF(selected_kind>=0 .AND. selected_kind/=kind) CYCLE
       CALL MPI_Barrier(MPI_COMM_WORLD,ierr);t0=MPI_Wtime()
       CALL MatrixMultiply(a(kind),a(kind),result,threshold_in=threshold)
       seconds=MPI_Wtime()-t0
@@ -114,11 +119,17 @@ PROGRAM ProductGPUBench
     END DO
   END DO
   IF(profile) CALL profile_end()
+  CALL MPI_Barrier(MPI_COMM_WORLD,ierr);t0=MPI_Wtime()
   DO kind=0,2
     CALL DestructMatrix(a(kind));CALL DestructMatrix(reference(kind));CALL DestructProcessGrid(grids(kind))
   END DO
   CALL DestructTripletList(input_entries);CALL DestructMatrix(input);CALL DestructProcessGrid(reference_grid)
-  IF(rank==0) PRINT *, 'PRODUCT BENCH COMPLETE'
+  seconds=MPI_Wtime()-t0
+  CALL MPI_Allreduce(MPI_IN_PLACE,seconds,1,MPI_DOUBLE_PRECISION,MPI_MAX,MPI_COMM_WORLD,ierr)
+  IF(rank==0) THEN
+    WRITE(*,'(A,1X,ES24.16)') 'product_teardown',seconds
+    PRINT *, 'PRODUCT BENCH COMPLETE'
+  END IF
   CALL MPI_Finalize(ierr)
 CONTAINS
   SUBROUTINE PhaseEntries(real_entries,entries,phase)

@@ -23,8 +23,13 @@ is no pointer-address cache: changed values at the same address are re-imported.
 Complex shared products use native complex accumulation, magnitude-based
 pruning of `alpha*A*B`, then addition of `beta*C`. Mixed real/complex inputs
 are supported. Coordinate import/export remains a host boundary; row/column
-panel payloads use the leased NCCL GPU context. Temporary buffers and panel
-sorting are per product. This provides solver coverage, not the residency or
+panel payloads use the leased NCCL GPU context. Device buffers and Thrust
+sorting/scan scratch are retained by that process-grid context and reused.
+Input values and patterns are imported afresh, including changes at the same
+address. Memory admission can reclaim idle scratch from any local grid before
+retrying; cap changes and grid teardown also release it. Scratch reuse preserves
+communicators and does not retain matrix contents between operations.
+This provides solver coverage, not the residency or
 performance of the specialized real TRS2 loop. Complex TRS2 uses shared GPU
 products when `NTPOLY_GPU_ALGEBRA=1`; `NTPOLY_GPU_TRS2=1` alone retains its CPU
 path for complex input. Complex admission uses larger payload and wire-count
@@ -116,6 +121,15 @@ A warm rank-zero profile measures34.1us real and52.4us complex multiply kernels
 calls, versus12.31ms of all GPU kernels. Those aggregated scopes are distinct.
 Owned complex storage, reusable scratch and avoiding redundant conversion are
 more useful next steps than PTX tuning. See Finding36 and the benchmark evidence.
+
+Reusable grid-owned scratch subsequently lowers matched warm complex calls
+from34.979/102.223/535.151ms to27.757/84.445/360.017ms at10k/20k/64k (Finding37).
+The new complex/real ratios are1.87x/2.46x/2.88x.64k complex is1.71x faster than
+matched CPU128 (614.200ms);20k CPU128 remains faster (74.842ms).10k is roughly
+tied. Separate datatype processes prevent retained caches from distorting the
+primary comparison. Interleaved64k checks also keep all real/complex calls on
+GPU by reclaiming idle scratch before admission retry. Teardown is outside warm
+product timers. These remain full product measurements, not resident solvers.
 
 ## Cleanup direction
 

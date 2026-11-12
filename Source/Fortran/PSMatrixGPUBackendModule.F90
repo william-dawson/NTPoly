@@ -44,6 +44,20 @@ MODULE PSMatrixGPUBackendModule
       INTEGER(C_INT) :: rows(*),columns(*)
       COMPLEX(C_DOUBLE_COMPLEX) :: values(*)
     END SUBROUTINE
+    INTEGER(C_INT) FUNCTION clear_context_workspace(context,limit,cleared) &
+        BIND(C,NAME='solver_nccl_context_clear_workspace_')
+      IMPORT C_PTR,C_INT,C_INT64_T
+      TYPE(C_PTR), VALUE :: context
+      INTEGER(C_INT64_T) :: limit
+      INTEGER(C_INT) :: cleared
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION clear_active_workspace() BIND(C,NAME='solver_nccl_workspace_clear_')
+      IMPORT C_INT
+    END FUNCTION
+    INTEGER(C_INT) FUNCTION trim_workspaces(cleared) BIND(C,NAME='solver_nccl_trim_workspaces_')
+      IMPORT C_INT
+      INTEGER(C_INT) :: cleared
+    END FUNCTION
     INTEGER(C_INT) FUNCTION import_csc(slot,rows,columns,nnz,cp,ri,values) BIND(C,NAME='gpu_ops_import_csc_')
       IMPORT C_INT,C_PTR
       INTEGER(C_INT) :: slot,rows,columns,nnz
@@ -183,12 +197,15 @@ CONTAINS
   END FUNCTION
 
   ! Selection happens after CPU WH/X0 setup, using the actual working pattern.
-  SUBROUTINE SelectGPUBackend(wh,x,enabled,root_only,expected_iterations,extra_fixed_nnz,initial_shift,preserve_padding)
+  RECURSIVE SUBROUTINE SelectGPUBackend(wh,x,enabled,root_only,expected_iterations,extra_fixed_nnz, &
+      initial_shift,preserve_padding,memory_limit,reclaim_workspace)
     TYPE(Matrix_ps), INTENT(IN) :: wh,x
     LOGICAL, INTENT(OUT) :: enabled,root_only
     INTEGER, INTENT(IN) :: expected_iterations
     INTEGER(INT64), OPTIONAL, INTENT(IN) :: extra_fixed_nnz
     LOGICAL, OPTIONAL, INTENT(IN) :: initial_shift,preserve_padding
+    INTEGER(INT64), OPTIONAL, INTENT(OUT) :: memory_limit
+    LOGICAL, OPTIONAL, INTENT(IN) :: reclaim_workspace
     CHARACTER(64) :: policy,cap_text,multinode
     INTEGER :: code,flags(2),global_flags(2),ierr,pr,pc,comm,rank,iterations,io,j,k
     INTEGER :: local_comm,local_size,valid,all_valid,root_dimension
@@ -198,9 +215,10 @@ CONTAINS
     INTEGER(INT64) :: nnz_wh,nnz_x,root_peak,all_peak,root_budget,all_budget,cap,local_cap
     INTEGER(INT64) :: cap_mb,local_wh,local_x,free_bytes,total_bytes
     REAL(REAL64) :: root_seconds,all_seconds
-    LOGICAL :: root_index,all_index,root_fit,all_fit
+    LOGICAL :: root_index,all_index,root_fit,all_fit,reclaim
     comm=wh%process_grid%global_comm; rank=wh%process_grid%global_rank
     enabled=.FALSE.; root_only=.FALSE.
+    reclaim=.TRUE.;IF(PRESENT(reclaim_workspace)) reclaim=reclaim_workspace
     CALL GET_ENVIRONMENT_VARIABLE('NTPOLY_GPU_RANK_POLICY',policy)
     SELECT CASE(TRIM(policy))
     CASE('','auto'); code=0
@@ -223,6 +241,7 @@ CONTAINS
     END IF
     CALL MPI_Allreduce(local_cap,cap,1,MPINTLONG,MPI_MIN,comm,ierr)
     IF(cap==HUGE(cap)) cap=-1_INT64
+    IF(PRESENT(memory_limit)) memory_limit=cap
     ! Count local sub-blocks without merging/copying their payloads.
     local_wh=0; local_x=0
     local_wh=LocalGPUCount(wh);local_x=LocalGPUCount(x)
@@ -290,6 +309,13 @@ CONTAINS
         enabled=.TRUE.
       ELSE IF(code==0 .AND. root_fit) THEN
         enabled=.TRUE.; root_only=.TRUE.
+      END IF
+    END IF
+    IF(.NOT.enabled .AND. reclaim) THEN
+      IF(EvictCachedGPUWorkspaces(wh)) THEN
+        CALL SelectGPUBackend(wh,x,enabled,root_only,expected_iterations,extra_fixed_nnz, &
+          initial_shift,preserve_padding,memory_limit,reclaim_workspace=.FALSE.)
+        RETURN
       END IF
     END IF
     IF(rank==0) THEN
@@ -821,6 +847,35 @@ CONTAINS
     CALL DestructTripletList(entries)
   END SUBROUTINE
 
+  LOGICAL FUNCTION EvictCachedGPUWorkspaces(matrix) RESULT(evicted)
+    TYPE(Matrix_ps), INTENT(IN) :: matrix
+    INTEGER(C_INT) :: cleared,status
+    INTEGER :: local_hit,global_hit,ierr
+    status=trim_workspaces(cleared)
+    IF(status/=0) CALL FailGPU('idle workspace reclamation failed')
+    local_hit=INT(cleared)
+    CALL MPI_Allreduce(local_hit,global_hit,1,MPI_INTEGER,MPI_MAX,matrix%process_grid%global_comm,ierr)
+    evicted=global_hit/=0
+  END FUNCTION
+
+  LOGICAL FUNCTION EvictComplexWorkspace(matrix,limit) RESULT(evicted)
+    TYPE(Matrix_ps), INTENT(IN) :: matrix
+    INTEGER(C_INT64_T), INTENT(IN) :: limit
+    INTEGER(C_INT) :: cleared,status
+    INTEGER :: local_hit,global_hit,mode,ierr
+    evicted=.FALSE.
+    IF(limit<0) RETURN
+    local_hit=0
+    DO mode=1,2
+      IF(.NOT.C_ASSOCIATED(matrix%process_grid%gpu_context(mode))) CYCLE
+      status=clear_context_workspace(matrix%process_grid%gpu_context(mode),limit,cleared)
+      IF(status/=0) CALL FailGPU('inactive workspace eviction failed')
+      local_hit=MAX(local_hit,INT(cleared))
+    END DO
+    CALL MPI_Allreduce(local_hit,global_hit,1,MPI_INTEGER,MPI_MAX,matrix%process_grid%global_comm,ierr)
+    evicted=global_hit/=0
+  END FUNCTION
+
   SUBROUTINE TryComplexMultiply(a,b,c,alpha,beta,threshold,performed)
     TYPE(Matrix_ps), INTENT(IN) :: a,b
     TYPE(Matrix_ps), INTENT(INOUT) :: c
@@ -831,7 +886,7 @@ CONTAINS
     COMPLEX(C_DOUBLE_COMPLEX), ALLOCATABLE :: av(:),bv(:),cv(:),outvalues(:)
     INTEGER(C_INT) :: na,nb,nc,count,rows,columns,n,row_offset,column_offset,status
     INTEGER :: valid,all_valid,ierr,i
-    INTEGER(INT64) :: extra,global_extra
+    INTEGER(INT64) :: extra,global_extra,limit,trim_limit
     TYPE(C_PTR) :: output
     LOGICAL :: allowed,root_mode,participant,keep_c
     CHARACTER(16) :: report
@@ -854,9 +909,18 @@ CONTAINS
     IF(keep_c) extra=extra+LocalGPUCount(c)
     CALL MPI_Allreduce(extra,global_extra,1,MPINTLONG,MPI_SUM,a%process_grid%global_comm,ierr)
     IF(a%is_complex) THEN
-      CALL SelectGPUBackend(a,a,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+      CALL SelectGPUBackend(a,a,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.,memory_limit=limit)
     ELSE
-      CALL SelectGPUBackend(b,b,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+      CALL SelectGPUBackend(b,b,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.,memory_limit=limit)
+    END IF
+    trim_limit=limit
+    IF(.NOT.allowed) trim_limit=0
+    IF(EvictComplexWorkspace(a,trim_limit)) THEN
+      IF(a%is_complex) THEN
+        CALL SelectGPUBackend(a,a,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+      ELSE
+        CALL SelectGPUBackend(b,b,allowed,root_mode,1,global_extra,preserve_padding=.TRUE.)
+      END IF
     END IF
     IF(.NOT.allowed) RETURN
     CALL BeginGPUBackend(a,root_mode)
@@ -866,6 +930,16 @@ CONTAINS
       CALL CheckGPUMemory(b,b,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
     END IF
     participant=.NOT.root_mode .OR. a%process_grid%global_rank==0
+    IF(.NOT.allowed) THEN
+      IF(participant) THEN
+        IF(clear_active_workspace()/=0) CALL FailGPU('active workspace eviction failed')
+      END IF
+      IF(a%is_complex) THEN
+        CALL CheckGPUMemory(a,a,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+      ELSE
+        CALL CheckGPUMemory(b,b,root_mode,allowed,global_extra,preserve_padding=.TRUE.)
+      END IF
+    END IF
     IF(allowed) THEN
       CALL ComplexCoordinates(a,root_mode,ar,ac,av,na)
       CALL ComplexCoordinates(b,root_mode,br,bc,bv,nb)

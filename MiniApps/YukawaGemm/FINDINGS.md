@@ -3232,3 +3232,52 @@ pass; device memcheck reports zero errors with API probes disabled. Jobs325216
 and325315 complete exit0; initial324874 times out during resizing before20k
 multiplication starts. All jobs are finished. Evidence and replay scripts:
 validation/rikyu-complex-products-20261112. All task staging is on data1.
+
+## Finding 37: reusable complex scratch improves full products (2026-11-12)
+
+Complex products now retain device buffers and Thrust sort/scan scratch in
+process-grid contexts. Every call imports fresh input values/patterns. Buffers
+grow when necessary, are reused without device allocations on repeated shapes,
+and are released on grid destruction or admission pressure. Communicators and
+matrix contents have separate lifetimes. This is scratch reuse, not resident
+complex purification storage.
+
+Matched old/new libraries use the same filtered benchmark driver, each datatype
+in its own MPI process. Warm medians of five calls after one cold call, four
+GPUs, including public import/export and normal output construction:
+
+| Dimension | Complex before/after ms | Improvement | New real ms | Complex/real | CPU128 complex ms |
+|---|---|---|---|---|---|
+| 10k | 34.979 / 27.757 | 1.26x | 14.867 | 1.87x | 28.333 |
+| 20k | 102.223 / 84.445 | 1.21x | 34.337 | 2.46x | 74.842 |
+| 64k | 535.151 / 360.017 | 1.49x | 124.899 | 2.88x | 614.200 |
+
+64k complex is now1.71x faster than the matched CPU128 multiplication;
+10k is effectively tied and20k remains slower than CPU. Maximum full-matrix
+difference is4.70e-16. Real timings remain essentially unchanged. This does not
+establish whole-purification speedups. Grid destruction is outside warm product
+timers; product_teardown includes all input/reference matrices and grids.
+
+The initial interleaved64k test exposed cache pressure: retained complex scratch
+made conservative admission fall back to CPU for real products. Its apparent
+datatype ratio is invalid. A registry now permits reclaiming idle scratch from
+other grids before retrying admission, preserving communicators. Cap-zero
+cross-type reclamation and a final interleaved64k control pass; all3 real and6
+complex products in that control actually dispatch to GPU. Keep the initial
+logs as failure history, not performance evidence.
+
+Warm rank-zero profiling covers3 real and6 complex products. Allocation/free
+calls decrease327→159; aggregate CUDA API time decreases71.11→10.50ms compared
+with the prior milestone profile on another allocation. This is diagnostic,
+not a paired API-time speedup. All kernels total11.19ms, complex multiply49.75us
+(previous52.44us); arithmetic kernels are unchanged. Remaining import/export,
+CPU coordinate construction and nonresident matrices matter more than PTX tuning.
+Next: owned complex GPU matrices/accessible CSC import, then resident iteration.
+
+Final job325425 completes exit0, as does initial325395. Root/all policies on
+1/2/4 ranks plus square grids pass fresh-value, six-shape, no-warm-allocation,
+independent-owner, eviction/recreation and teardown tests.48 complex solver APIs
+on1/4/square grids,49 real APIs,18 algebra cases, NCCL transport1/4 and host
+regressions pass. Device memcheck reports0 with API-probe reporting disabled.
+Evidence: validation/rikyu-complex-workspace-20261112; all remote task files on
+data1. Custom Cholesky remains deferred.

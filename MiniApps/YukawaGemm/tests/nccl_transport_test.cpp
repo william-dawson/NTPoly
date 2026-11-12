@@ -7,6 +7,8 @@
 #include <cstring>
 extern "C" {
 int solver_nccl_available_();
+int solver_nccl_workspace_get_(void**);
+int solver_nccl_workspace_attach_(void*,void(*)(void*),uint64_t(*)(void*));
 int solver_nccl_id_(int8_t*);
 int solver_nccl_init_(const int*,const int*,const int*,const int8_t*);
 int solver_nccl_members_(const int*,const int*);
@@ -15,6 +17,9 @@ int solver_nccl_gather_r_(const int*,const double*,const int*,double*,const int*
 int solver_nccl_sum_(double*);
 int solver_nccl_finish_();
 }
+static int destroyed=0;
+static void release_workspace(void* p){delete static_cast<int*>(p);++destroyed;}
+static uint64_t workspace_bytes(void*){return sizeof(int);}
 static void check(bool ok) { if(!ok) MPI_Abort(MPI_COMM_WORLD,1); }
 int main(int argc,char **argv) {
     MPI_Init(&argc,&argv);
@@ -41,6 +46,12 @@ int main(int argc,char **argv) {
         MPI_Allgather(&rank,1,MPI_INT,members.data(),1,MPI_INT,comms[group]);
         check(solver_nccl_members_(&group,members.data())==0);
     }
+    void* stored=nullptr;
+    check(solver_nccl_workspace_get_(&stored)==0 && !stored);
+    auto* resource=new int(7);
+    check(solver_nccl_workspace_attach_(resource,release_workspace,workspace_bytes)==0);
+    check(solver_nccl_workspace_attach_(resource,release_workspace,workspace_bytes)!=0);
+    check(solver_nccl_workspace_get_(&stored)==0 && stored==resource && *static_cast<int*>(stored)==7);
     for(int group=0;group<3;++group) {
         int cr,nr; MPI_Comm_rank(comms[group],&cr); MPI_Comm_size(comms[group],&nr);
         std::vector<int> counts(nr,2),displs(nr),received(2*nr);
@@ -61,7 +72,8 @@ int main(int argc,char **argv) {
     }
     double sum=rank+1;
     check(solver_nccl_sum_(&sum)==0 && sum==size*(size+1)/2.0);
-    check(solver_nccl_finish_()==0);
+    check(solver_nccl_finish_()==0 && destroyed==1);
+    check(solver_nccl_workspace_get_(&stored)!=0);
     if(rank==0) std::printf("NCCL transport fixed/variable/empty/scalar checks: PASS np=%d\n",size);
     MPI_Comm_free(&comms[1]); MPI_Comm_free(&comms[2]);
     MPI_Finalize();

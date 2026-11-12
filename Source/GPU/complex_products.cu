@@ -5,6 +5,7 @@
 #include <thrust/sort.h>
 #include <thrust/scan.h>
 #include <thrust/execution_policy.h>
+#include <thrust/system/cuda/execution_policy.h>
 #include <algorithm>
 #include <climits>
 #include <cstdint>
@@ -12,7 +13,11 @@
 #include <cmath>
 #include <cstdio>
 #include <vector>
+#include <memory>
+#include <stdexcept>
 extern "C" {
+int solver_nccl_workspace_get_(void**);
+int solver_nccl_workspace_attach_(void*,void(*)(void*),uint64_t(*)(void*));
 int solver_nccl_group_info_(int,int*,int*);
 int solver_nccl_gather_i_(const int*,const int*,const int*,int*,const int*,const int*);
 int solver_nccl_device_gather_(int,const void*,int,void*,const int*,const int*,int);
@@ -23,19 +28,79 @@ namespace {
 struct Coordinate { int row,column;cuDoubleComplex value; };
 static_assert(sizeof(Coordinate)%sizeof(int)==0 && sizeof(Coordinate)<=32,"coordinate wire/planner size");
 constexpr int words=sizeof(Coordinate)/sizeof(int);
+uint64_t allocation_count=0;
+int workspace_count=0;
 struct Buffer {
- void* p=nullptr;
+ void* p=nullptr;size_t capacity=0;
+ Buffer()=default;
+ Buffer(const Buffer&)=delete;Buffer& operator=(const Buffer&)=delete;
  ~Buffer(){if(p)cudaFree(p);}
- int allocate(size_t bytes){CUDA(cudaMalloc(&p,std::max<size_t>(bytes,1)));return 0;}
+ int allocate(size_t bytes) {
+  bytes=std::max<size_t>(bytes,1);
+  if(bytes<=capacity)return 0;
+  // Free before growth, rather than transiently retaining two full buffers.
+  if(p){CUDA(cudaFree(p));p=nullptr;capacity=0;}
+  CUDA(cudaMalloc(&p,bytes));capacity=bytes;++allocation_count;return 0;
+ }
  template<class T>T* as(){return static_cast<T*>(p);}
 };
+struct ScratchPool {
+ struct Block {std::unique_ptr<Buffer> storage;bool used=false;};
+ std::vector<Block> blocks;
+ char* acquire(size_t bytes) {
+  Block* selected=nullptr;
+  for(auto& block:blocks)if(!block.used&&block.storage->capacity>=bytes)
+   if(!selected||block.storage->capacity<selected->storage->capacity)selected=&block;
+  if(!selected) {
+   for(auto& block:blocks)if(!block.used){selected=&block;break;}
+   if(!selected){blocks.push_back({std::make_unique<Buffer>(),false});selected=&blocks.back();}
+  }
+  if(selected->storage->allocate(bytes)!=0)throw std::bad_alloc();
+  selected->used=true;return selected->storage->as<char>();
+ }
+ void release(char* ptr) {
+  for(auto& block:blocks)if(block.storage->p==ptr&&block.used){block.used=false;return;}
+  throw std::runtime_error("invalid complex scratch release");
+ }
+};
+struct ScratchAllocator {
+ using value_type=char;
+ ScratchPool* pool;
+ char* allocate(std::ptrdiff_t bytes){if(bytes<0)throw std::bad_alloc();return pool->acquire(size_t(bytes));}
+ void deallocate(char* ptr,size_t){pool->release(ptr);}
+};
+struct Workspace {
+ Buffer local_a,local_b,panel_a,panel_b,local_c,arp,brp,dense,counts,packed;
+ ScratchPool scratch;
+ std::vector<Coordinate> host;
+ Workspace(){++workspace_count;}
+ ~Workspace(){--workspace_count;}
+ uint64_t bytes() const {
+  uint64_t total=0;
+  for(auto* buffer:{&local_a,&local_b,&panel_a,&panel_b,&local_c,&arp,&brp,&dense,&counts,&packed})total+=buffer->capacity;
+  for(const auto& block:scratch.blocks)total+=block.storage->capacity;
+  return total;
+ }
+};
+void destroy_workspace(void* ptr){delete static_cast<Workspace*>(ptr);}
+uint64_t workspace_bytes(void* ptr){return static_cast<Workspace*>(ptr)->bytes();}
+Workspace& get_workspace() {
+ void* ptr=nullptr;
+ if(solver_nccl_workspace_get_(&ptr)!=0)throw std::runtime_error("complex workspace requires an active context");
+ if(!ptr) {
+  auto owner=std::make_unique<Workspace>();
+  if(solver_nccl_workspace_attach_(owner.get(),destroy_workspace,workspace_bytes)!=0)throw std::runtime_error("complex workspace ownership");
+  ptr=owner.release();
+ }
+ return *static_cast<Workspace*>(ptr);
+}
 struct Less {
  __host__ __device__ bool operator()(Coordinate a,Coordinate b) const {
   return a.row<b.row||(a.row==b.row&&a.column<b.column);
  }
 };
-int upload(int count,const int* rows,const int* cols,const cuDoubleComplex* values,Buffer& output) {
- std::vector<Coordinate> host(count);
+int upload(int count,const int* rows,const int* cols,const cuDoubleComplex* values,Buffer& output,std::vector<Coordinate>& host) {
+ host.resize(count);
  for(int i=0;i<count;i++)host[i]={rows[i]-1,cols[i]-1,values[i]};
  CHECK(output.allocate(size_t(count)*sizeof(Coordinate)));
  CUDA(cudaMemcpy(output.p,host.data(),host.size()*sizeof(Coordinate),cudaMemcpyHostToDevice));
@@ -114,32 +179,38 @@ extern "C" int ntpoly_complex_product_(int* rows,int* columns,int* n,int* row_of
  double* alpha,double* beta,double* threshold,void** output,int* count) {
  *output=nullptr;*count=0;
  try {
-  Buffer local_a,local_b,panel_a,panel_b,local_c,arp,brp,dense,counts,packed;
-  CHECK(upload(*na,ar,ac,av,local_a));CHECK(upload(*nb,br,bc,bv,local_b));
+  auto& workspace=get_workspace();
+  auto& local_a=workspace.local_a;auto& local_b=workspace.local_b;
+  auto& panel_a=workspace.panel_a;auto& panel_b=workspace.panel_b;auto& local_c=workspace.local_c;
+  auto& arp=workspace.arp;auto& brp=workspace.brp;auto& dense=workspace.dense;
+  auto& counts=workspace.counts;auto& packed=workspace.packed;
+  ScratchAllocator allocator{&workspace.scratch};
+  auto policy=thrust::cuda::par(allocator);
+  CHECK(upload(*na,ar,ac,av,local_a,workspace.host));CHECK(upload(*nb,br,bc,bv,local_b,workspace.host));
   int count_a,count_b;
   CHECK(exchange(1,*na,local_a,panel_a,count_a));CHECK(exchange(2,*nb,local_b,panel_b,count_b));
   // Sort panels and build CSR offsets entirely on the device.
-  thrust::sort(thrust::device,panel_a.as<Coordinate>(),panel_a.as<Coordinate>()+count_a,Less{});
-  thrust::sort(thrust::device,panel_b.as<Coordinate>(),panel_b.as<Coordinate>()+count_b,Less{});
+  thrust::sort(policy,panel_a.as<Coordinate>(),panel_a.as<Coordinate>()+count_a,Less{});
+  thrust::sort(policy,panel_b.as<Coordinate>(),panel_b.as<Coordinate>()+count_b,Less{});
   CHECK(arp.allocate(size_t(*rows+1)*sizeof(int)));CHECK(brp.allocate(size_t(*n+1)*sizeof(int)));
   CUDA(cudaMemset(arp.p,0,size_t(*rows+1)*sizeof(int)));CUDA(cudaMemset(brp.p,0,size_t(*n+1)*sizeof(int)));
   row_counts<<<256,256>>>(panel_a.as<Coordinate>(),count_a,*row_offset,arp.as<int>());
   row_counts<<<256,256>>>(panel_b.as<Coordinate>(),count_b,0,brp.as<int>());CUDA(cudaGetLastError());
-  thrust::inclusive_scan(thrust::device,arp.as<int>(),arp.as<int>()+*rows+1,arp.as<int>());
-  thrust::inclusive_scan(thrust::device,brp.as<int>(),brp.as<int>()+*n+1,brp.as<int>());
+  thrust::inclusive_scan(policy,arp.as<int>(),arp.as<int>()+*rows+1,arp.as<int>());
+  thrust::inclusive_scan(policy,brp.as<int>(),brp.as<int>()+*n+1,brp.as<int>());
   size_t cells=size_t(*rows)*size_t(*columns);CHECK(dense.allocate(cells*sizeof(cuDoubleComplex)));
   CUDA(cudaMemset(dense.p,0,cells*sizeof(cuDoubleComplex)));
   multiply<<<*rows,128>>>(*columns,arp.as<int>(),panel_a.as<Coordinate>(),brp.as<int>(),panel_b.as<Coordinate>(),
    *column_offset,dense.as<cuDoubleComplex>());CUDA(cudaGetLastError());
   prune<<<256,256>>>(dense.as<cuDoubleComplex>(),cells,*alpha,*threshold);CUDA(cudaGetLastError());
   if(*nc) {
-   CHECK(upload(*nc,cr,cc,cv,local_c));
+   CHECK(upload(*nc,cr,cc,cv,local_c,workspace.host));
    increment<<<256,256>>>(dense.as<cuDoubleComplex>(),*columns,*row_offset,*column_offset,local_c.as<Coordinate>(),*nc,*beta);
    CUDA(cudaGetLastError());
   }
   CHECK(counts.allocate(size_t(*rows+1)*sizeof(int)));CUDA(cudaMemset(counts.p,0,sizeof(int)));
   count_output<<<*rows,256>>>(dense.as<cuDoubleComplex>(),*rows,*columns,counts.as<int>());CUDA(cudaGetLastError());
-  thrust::inclusive_scan(thrust::device,counts.as<int>(),counts.as<int>()+*rows+1,counts.as<int>());
+  thrust::inclusive_scan(policy,counts.as<int>(),counts.as<int>()+*rows+1,counts.as<int>());
   CUDA(cudaMemcpy(count,counts.as<int>()+*rows,sizeof(int),cudaMemcpyDeviceToHost));
   CHECK(packed.allocate(size_t(*count)*sizeof(Coordinate)));
   pack_output<<<*rows,32>>>(dense.as<cuDoubleComplex>(),*columns,*row_offset,*column_offset,counts.as<int>(),packed.as<Coordinate>());
@@ -156,3 +227,7 @@ extern "C" void ntpoly_complex_product_export_(void** handle,int* rows,int* colu
  for(size_t i=0;i<result->entries.size();i++){rows[i]=result->entries[i].row;columns[i]=result->entries[i].column;values[i]=result->entries[i].value;}
  delete result;*handle=nullptr;
 }
+
+// Regression observability: scratch ownership and actual device growth only.
+extern "C" int ntpoly_complex_workspace_count_(){return workspace_count;}
+extern "C" uint64_t ntpoly_complex_allocation_count_(){return allocation_count;}
